@@ -16,7 +16,7 @@ import { join, resolve } from "node:path";
 import { publicValue, visibilityOf } from "../engine/visibility.mjs";
 
 // Which record field each fact name stands for (the fields a facts builder asks for).
-export const FACT_FIELDS = {
+export const FACT_FIELDS: Record<string, [string, string]> = {
   problem: ["foundation/problem.json", "statement"],
   segment: ["foundation/problem.json", "segment"],
   forms: ["foundation/problem.json", "forms"],
@@ -25,9 +25,9 @@ export const FACT_FIELDS = {
 };
 
 /** The fact names the pages use: { name: [page, ...] }. */
-export function factsUsed(content) {
-  const used = {};
-  const walk = (d) => readdirSync(d, { withFileTypes: true }).flatMap((e) => e.isDirectory() ? walk(join(d, e.name)) : e.name.endsWith(".mdx") ? [join(d, e.name)] : []);
+export function factsUsed(content: string): Record<string, string[]> {
+  const used: Record<string, string[]> = {};
+  const walk = (d: string): string[] => readdirSync(d, { withFileTypes: true }).flatMap((e) => e.isDirectory() ? walk(join(d, e.name)) : e.name.endsWith(".mdx") ? [join(d, e.name)] : []);
   for (const f of existsSync(content) ? walk(content) : []) {
     const text = readFileSync(f, "utf8").replace(/\{\/\*[\s\S]*?\*\/\}/g, "");
     for (const m of text.matchAll(/<(?:Fact|FactList)\s+name="([^"]+)"/g)) (used[m[1]] ??= []).push(f.slice(content.length + 1));
@@ -35,14 +35,16 @@ export function factsUsed(content) {
   return used;
 }
 
+/** One fact a page uses that the gate refused, or that the facts file lacks. */
+export type Refusal = { name: string, record: string, field: string, visibility: string, why: string, pages: string[] };
+
 /**
  * Each refusal: { name, record, field, visibility, why, pages }.
- * @param {string} dir the venture
- * @param {{ content: string, facts: string }} where the app's pages (MDX) and its facts file
+ * dir is the venture; where holds the app's pages (MDX) and its facts file.
  */
-export function refusals(dir, { content, facts }) {
-  const have = existsSync(facts) ? JSON.parse(readFileSync(facts, "utf8")) : {};
-  const out = [];
+export function refusals(dir: string, { content, facts }: { content: string, facts: string }): Refusal[] {
+  const have = (existsSync(facts) ? JSON.parse(readFileSync(facts, "utf8")) : {}) as Record<string, unknown>;
+  const out: Refusal[] = [];
   for (const [name, pages] of Object.entries(factsUsed(content))) {
     const at = FACT_FIELDS[name];
     if (!at) continue; // not a record field (phases come from the method, terms from the docs)
@@ -57,10 +59,11 @@ export function refusals(dir, { content, facts }) {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const argv = process.argv.slice(2);
-  const opt = (n) => argv.includes(`--${n}`) ? argv[argv.indexOf(`--${n}`) + 1] : undefined;
-  if (!argv[0] || argv[0].startsWith("--") || !opt("content") || !opt("facts")) { console.error("usage: node packages/naive/src/checks/check-visibility.ts <venture dir> --content <pages dir> --facts <venture-facts.json> [--json]"); process.exit(2); }
+  const opt = (n: string): string | undefined => argv.includes(`--${n}`) ? argv[argv.indexOf(`--${n}`) + 1] : undefined;
+  const content = opt("content"), facts = opt("facts");
+  if (!argv[0] || argv[0].startsWith("--") || !content || !facts) { console.error("usage: node packages/naive/src/checks/check-visibility.ts <venture dir> --content <pages dir> --facts <venture-facts.json> [--json]"); process.exit(2); }
   const dir = resolve(argv[0]);
-  const r = refusals(dir, { content: resolve(opt("content")), facts: resolve(opt("facts")) });
+  const r = refusals(dir, { content: resolve(content), facts: resolve(facts) });
   if (argv.includes("--json")) console.log(JSON.stringify(r, null, 2));
   else {
     for (const x of r) console.error(`REFUSED  <Fact name="${x.name}"> on ${x.pages.join(", ")}: ${x.record}#${x.field} is ${x.visibility} (${x.why}). A person approves it: mentura visibility ${x.record.replace(/\.json$/, "")} ${x.field} --venture <id> --public --by <name>, or writes an approved variant (variant_of: ${x.record}#${x.field})`);

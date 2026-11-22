@@ -20,20 +20,21 @@ import { ventureFile } from "../core/venture-paths.mjs";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { payouts } from "../engine/payouts.mjs";
+import type { Board, Exit, FounderAgreement, Ownership, Venture } from "../records/types/records.d.ts";
 
 const dir = process.argv[2];
 if (!dir) { console.error("usage: node packages/naive/src/checks/check-governance.ts <workspace or venture dir>"); process.exit(2); }
-const load = (p) => JSON.parse(readFileSync(p, "utf8"));
-const walk = (d) => readdirSync(d, { withFileTypes: true }).flatMap((e) => e.name === "node_modules" || e.name.startsWith(".") ? []
+const load = <T>(p: string): T => JSON.parse(readFileSync(p, "utf8")) as T;
+const walk = (d: string): string[] => readdirSync(d, { withFileTypes: true }).flatMap((e) => e.name === "node_modules" || e.name.startsWith(".") ? []
   : e.isDirectory() ? walk(join(d, e.name)) : e.name === "venture.json" ? [d] : []);
-const errors = [], warnings = [];
+const errors: string[] = [], warnings: string[] = [];
 let checked = 0;
 
 for (const root of walk(dir)) {
-  const v = load(ventureFile(root, "venture.json"));
-  const g = (f) => { const p = ventureFile(root, `governance/${f}`); return existsSync(p) ? load(p) : null; };
-  const own = g("ownership.json"), boards = g("board.json"), fa = g("founder-agreement.json"), exit = g("exit.json");
-  const at = (f) => `${v.id}/governance/${f}`;
+  const v = load<Venture>(ventureFile(root, "venture.json"));
+  const g = <T>(f: string): T | null => { const p = ventureFile(root, `governance/${f}`); return existsSync(p) ? load<T>(p) : null; };
+  const own = g<Ownership>("ownership.json"), boards = g<Board>("board.json"), fa = g<FounderAgreement>("founder-agreement.json"), exit = g<Exit>("exit.json");
+  const at = (f: string) => `${v.id}/governance/${f}`;
   const people = (v.members ?? []).filter((m) => typeof m === "string" || m.kind !== "agent").length;
   const form = v.form ?? {};
   if (form.funding === "venture-capital" && (!own || !boards?.boards.some((b) => b.kind === "formal"))) errors.push(`${v.id}: venture-capital funding needs governance/ownership.json and a formal board in governance/board.json`);
@@ -42,10 +43,10 @@ for (const root of walk(dir)) {
   if (!own) { if (boards || fa || exit) errors.push(`${v.id}: board, founder agreement or exit records need governance/ownership.json`); continue; }
   checked++;
 
-  const holders = new Map(), classes = new Map();
+  const holders = new Map<string, Ownership["holders"][number]>(), classes = new Map<string, Ownership["classes"][number]>();
   for (const h of own.holders) { if (holders.has(h.id)) errors.push(`${at("ownership.json")}: duplicate holder ${h.id}`); holders.set(h.id, h); }
   for (const c of own.classes) { if (classes.has(c.id)) errors.push(`${at("ownership.json")}: duplicate class ${c.id}`); classes.set(c.id, c); }
-  for (const c of own.classes) if (c.kind === "preferred" && !(c.price_per_share > 0)) errors.push(`${at("ownership.json")}: preferred class ${c.id} needs price_per_share, the basis of its preference`);
+  for (const c of own.classes) if (c.kind === "preferred" && !((c.price_per_share ?? 0) > 0)) errors.push(`${at("ownership.json")}: preferred class ${c.id} needs price_per_share, the basis of its preference`);
   for (const gr of own.grants) {
     if (!holders.has(gr.holder)) errors.push(`${at("ownership.json")}: grant to unknown holder ${gr.holder}`);
     if (!classes.has(gr.class)) errors.push(`${at("ownership.json")}: grant of unknown class ${gr.class}`);
@@ -55,7 +56,7 @@ for (const root of walk(dir)) {
   if (own.unit === "percent") { const sum = own.grants.reduce((n, gr) => n + gr.amount, 0); if (Math.abs(sum - 100) > 0.01) errors.push(`${at("ownership.json")}: a percent split adds up to ${sum}, not 100`); }
   if (form.legal_form === "s-corp" && new Set(own.classes.map((c) => `${c.kind}:${c.price_per_share ?? ""}:${JSON.stringify(c.liquidation ?? {})}`)).size > 1) errors.push(`${at("ownership.json")}: an S corporation may have only one class of stock (classes may differ in votes only)`);
   if (form.legal_form === "llc" && own.unit === "shares") warnings.push(`${at("ownership.json")}: an LLC usually counts units, not shares`);
-  if (["c-corp", "s-corp", "benefit-corp"].includes(form.legal_form) && own.unit === "units") warnings.push(`${at("ownership.json")}: a corporation counts shares, not units`);
+  if (form.legal_form && ["c-corp", "s-corp", "benefit-corp"].includes(form.legal_form) && own.unit === "units") warnings.push(`${at("ownership.json")}: a corporation counts shares, not units`);
 
   const founders = own.holders.filter((h) => h.kind === "founder").map((h) => h.id);
   if (founders.length >= 2 && !fa) errors.push(`${v.id}: ${founders.length} founders share ownership but there is no governance/founder-agreement.json`);
@@ -87,7 +88,7 @@ for (const root of walk(dir)) {
     const ids = (exit.scenarios ?? []).map((s) => s.id);
     if (new Set(ids).size !== ids.length) errors.push(`${at("exit.json")}: duplicate scenario ids`);
     for (const s of exit.scenarios ?? []) {
-      const r = payouts(own, s.value);
+      const r = payouts(own, s.value) as { payouts: { amount: number }[] };
       const sum = r.payouts.reduce((n, p) => n + p.amount, 0);
       if (Math.abs(sum - s.value) > 1) errors.push(`${at("exit.json")}: scenario ${s.id} pays out ${sum}, not ${s.value}`);
     }

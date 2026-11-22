@@ -5,16 +5,18 @@ import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { lint } from "./lint-people.ts";
+import { lint, type Finding } from "./lint-people.ts";
 import { routes } from "../records/routes/routes.mjs";
 
 const root = new URL("../../../..", import.meta.url).pathname;
 const cli = join(root, "packages/naive/src/checks/lint-people.ts");
 let failed = 0;
-const t = (name, fn) => { try { fn(); console.log(`ok   ${name}`); } catch (e) { failed++; console.log(`FAIL ${name}: ${e.message}`); } };
-const ok = (c, m) => { if (!c) throw new Error(m ?? "assertion failed"); };
-const rulesOf = (r, id) => r.findings.filter((x) => x.rule === id);
-const venture = (files) => {
+const t = (name: string, fn: () => void) => { try { fn(); console.log(`ok   ${name}`); } catch (e) { failed++; console.log(`FAIL ${name}: ${(e as Error).message}`); } };
+const ok = (c: unknown, m?: string) => { if (!c) throw new Error(m ?? "assertion failed"); };
+/** The lint's result, from lint() or its --json output. */
+type Result = { ok: boolean, findings: Finding[] };
+const rulesOf = (r: Result, id: string) => r.findings.filter((x) => x.rule === id);
+const venture = (files: Record<string, unknown>) => {
   const dir = mkdtempSync(join(tmpdir(), "people-lint-"));
   for (const [rel, body] of Object.entries(files)) {
     const p = join(dir, rel);
@@ -23,17 +25,17 @@ const venture = (files) => {
   }
   return dir;
 };
-const run = (dir, extra = []) => spawnSync(process.execPath, [cli, dir, ...extra], { encoding: "utf8" });
+const run = (dir: string, extra: string[] = []) => spawnSync(process.execPath, [cli, dir, ...extra], { encoding: "utf8" });
 
-const founder = (extra = {}) => ({ id: "ada", name: "Ada Lovelace", role: "founder", hats: ["products"], ...extra });
-const plan = (roles, recruiting = []) => ({ venture: "kept", roles, ...(recruiting.length ? { recruiting } : {}) });
-const role = (id, occupant, extra = {}) => ({ id, occupant, needed_by: "discovery", status: occupant === "person" && id !== "founder" ? "open" : "filled", ...(id === "founder" ? {} : { name: id }), ...extra });
-const decided = (extra = {}) => ({
+const founder = (extra: Record<string, unknown> = {}) => ({ id: "ada", name: "Ada Lovelace", role: "founder", hats: ["products"], ...extra });
+const plan = (roles: unknown[], recruiting: unknown[] = []) => ({ venture: "kept", roles, ...(recruiting.length ? { recruiting } : {}) });
+const role = (id: string, occupant: string, extra: Record<string, unknown> = {}) => ({ id, occupant, needed_by: "discovery", status: occupant === "person" && id !== "founder" ? "open" : "filled", ...(id === "founder" ? {} : { name: id }), ...extra });
+const decided = (extra: Record<string, unknown> = {}) => ({
   id: "pay", question: "Whom do we pay first?", status: "decided",
   provenance: { drafted_by: { kind: "person", id: "ada" }, approved_by: "Ada Lovelace", approved_at: "2026-10-29T00:00:00Z", phase: "discovery", wording: "own" },
   ...extra,
 });
-const base = (over = {}) => ({
+const base = (over: Record<string, unknown> = {}) => ({
   "venture.json": { id: "kept", name: "Kept", phase: "discovery", departments: ["products"] },
   "people/people.json": { venture: "kept", mode: "solo", people: [founder()] },
   "people/team-plan.json": plan([role("founder", "person"), role("architect", "agent")]),
@@ -126,7 +128,7 @@ t("exit 1 if and only if a fail-closed rule has a finding", () => {
   ok(run(dir).status === 0, "a closed rule with no finding must exit 0");
   writeFileSync(join(dir, "naive.config.json"), JSON.stringify({ people_lint: { rules: { "role-no-function": { mode: "fail-closed" }, "hire-before-plan": { mode: "fail-open" } } } }) + "\n");
   const closed = run(dir, ["--json"]);
-  const body = JSON.parse(closed.stdout);
+  const body = JSON.parse(closed.stdout) as Result;
   ok(closed.status === 1 && body.ok === false && body.findings.some((x) => x.rule === "role-no-function" && x.mode === "fail-closed") && body.findings.some((x) => x.rule === "decision-no-person" && x.mode === "fail-open"), closed.stdout);
   writeFileSync(join(dir, "people/people.json"), JSON.stringify({ venture: "kept", mode: "solo", people: [founder()] }, null, 2) + "\n");
   writeFileSync(join(dir, "decisions/pay.decision.json"), JSON.stringify(decided(), null, 2) + "\n");
@@ -169,7 +171,7 @@ t("records are read through ventureFile, including a structured venture", () => 
     "k-base/decisions/pay.decision.json": decided({ provenance: { drafted_by: { kind: "agent", id: "builder" } } }),
   });
   const cliRun = run(dir, ["--json"]);
-  const body = JSON.parse(cliRun.stdout);
+  const body = JSON.parse(cliRun.stdout) as Result;
   ok(cliRun.status === 1, cliRun.stdout + cliRun.stderr);
   ok(body.findings.some((x) => x.rule === "role-no-function" && x.file === "people/people.json" && /Kbase/.test(x.message)), JSON.stringify(body.findings));
   ok(body.findings.some((x) => x.rule === "decision-no-person" && x.file === "decisions/pay.decision.json"), JSON.stringify(body.findings));
@@ -191,7 +193,7 @@ t("people/team-plan.json wins over operations/team-plan.json when both exist", (
 });
 
 t("the people/lint route is registered on the router", () => {
-  const route = routes().find((r) => r.route === "people/lint");
+  const route = routes().find((r: { route: string }) => r.route === "people/lint");
   ok(route && route.kind === "command" && route.script === "packages/naive/src/checks/lint-people.ts" && route.actions.includes("run"), JSON.stringify(route));
 });
 

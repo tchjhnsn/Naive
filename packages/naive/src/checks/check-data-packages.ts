@@ -17,16 +17,16 @@ if (!dir) { console.error("usage: node packages/naive/src/checks/check-data-pack
 
 const PACKS = ["customers", "investors", "money"];
 const KEEP = new Set(["stream.json", "summary.md"]);
-const walk = (d) => existsSync(d) ? readdirSync(d, { withFileTypes: true }).flatMap((e) => e.name === "node_modules" || e.name.startsWith(".") ? []
+const walk = (d: string): string[] => existsSync(d) ? readdirSync(d, { withFileTypes: true }).flatMap((e) => e.name === "node_modules" || e.name.startsWith(".") ? []
   : e.isDirectory() ? walk(join(d, e.name)) : e.name === "venture.json" ? [d] : []) : [];
-const load = (p) => JSON.parse(readFileSync(p, "utf8"));
-const tracked = (root, rel) => {
+const load = (p: string): { id?: string, sensitive?: unknown } => JSON.parse(readFileSync(p, "utf8"));
+const tracked = (root: string, rel: string) => {
   const g = spawnSync("git", ["ls-files", "--error-unmatch", "--", rel], { cwd: root, encoding: "utf8" });
   return g.status === 0;
 };
-const inGit = (root) => spawnSync("git", ["rev-parse", "--is-inside-work-tree"], { cwd: root, encoding: "utf8" }).status === 0;
+const inGit = (root: string) => spawnSync("git", ["rev-parse", "--is-inside-work-tree"], { cwd: root, encoding: "utf8" }).status === 0;
 
-const errors = [];
+const errors: string[] = [];
 let n = 0;
 for (const v of walk(dir)) {
   n++;
@@ -66,7 +66,7 @@ for (const v of walk(dir)) {
     for (const f of readdirSync(sd)) if (f.startsWith("original.") && (!git || tracked(v, join("raw/sources", s, f)))) errors.push(`${id}/raw/sources/${s}/${f}: original.* stays out of git`);
   }
   const map = ["ideas/map.mdx", "purpose/ideas/map.mdx"].map((f) => ventureFile(v, f)).find((p) => existsSync(p));
-  const rawIds = new Set();
+  const rawIds = new Set<string>();
   const dump = join(ventureFile(v, "raw/dump"));
   if (existsSync(dump)) for (const f of readdirSync(dump)) if (f !== ".gitkeep") rawIds.add(f.replace(/\.[^.]+$/, ""));
   if (existsSync(sources)) for (const s of readdirSync(sources)) if (!s.startsWith(".")) rawIds.add(s);

@@ -26,14 +26,14 @@ const argv = process.argv.slice(2);
 const ri = argv.indexOf("--root");
 const repo = ri >= 0 ? argv[ri + 1] : new URL("../../../..", import.meta.url).pathname;
 const only = argv.filter((a, i) => a !== "--root" && argv[i - 1] !== "--root");
-const read = (p) => readFileSync(join(repo, p), "utf8");
+const read = (p: string) => readFileSync(join(repo, p), "utf8");
 
-const walk = (d) => !existsSync(d) ? [] : readdirSync(d, { withFileTypes: true }).flatMap((e) =>
+const walk = (d: string): string[] => !existsSync(d) ? [] : readdirSync(d, { withFileTypes: true }).flatMap((e) =>
   e.name === "node_modules" || e.name.startsWith(".") ? [] : e.isDirectory() ? walk(join(d, e.name)) : [join(d, e.name)]);
 // The docs this linter scans. The docs-required CI check counts a change as docs only when it touches one of these.
 // repos/ holds vendored source that agents read as reference (AGENTS.md, Vendored repositories), and dist/ the compiled
 // package's copies of these docs (EE-159); neither is Naive's docs.
-const scanned = (r) => !r.startsWith("repos/") && !r.startsWith("dist/") && !r.split("/").some((p) => p === "node_modules" || p.startsWith(".")) && (/^docs\/master\/[^/]+\.md$/.test(r) || /(^|\/)(SKILL|README)\.md$/.test(r) || /^packages\/naive\/library\/packages\/[^/]+\/playbooks\/[^/]+\.md$/.test(r));
+const scanned = (r: string) => !r.startsWith("repos/") && !r.startsWith("dist/") && !r.split("/").some((p) => p === "node_modules" || p.startsWith(".")) && (/^docs\/master\/[^/]+\.md$/.test(r) || /(^|\/)(SKILL|README)\.md$/.test(r) || /^packages\/naive\/library\/packages\/[^/]+\/playbooks\/[^/]+\.md$/.test(r));
 const stdinPaths = () => readFileSync(0, "utf8").split("\n").map((l) => l.trim()).filter(Boolean);
 if (argv[0] === "--scanned") {
   for (const r of stdinPaths()) if (scanned(r)) console.log(r);
@@ -42,7 +42,7 @@ if (argv[0] === "--scanned") {
 // The README.md nearest a code file, searched up to its top-level folder (never the repo root README).
 // Anything under a playbooks/ folder is content, not code (Torian's decision for now).
 const CODE = /^(schema|interface|packages|purpose)\/(?!(?:.*\/)?playbooks\/).*(?<!\.mdx?)$/;
-const nearestReadme = (r) => {
+const nearestReadme = (r: string) => {
   for (let d = r.split("/").slice(0, -1); d.length; d.pop()) if (existsSync(join(repo, ...d, "README.md"))) return [...d, "README.md"].join("/");
   return null;
 };
@@ -61,31 +61,31 @@ const docs = only.length ? only.map((f) => f.startsWith("/") ? f : join(repo, f)
 // --- What the code has ---
 const naiveSrc = read("packages/naive/src/interfaces/cli/naive.mjs");
 const menturaSrc = read("packages/naive/src/interfaces/cli/mentura.mjs");
-const literals = (src) => new Set([...src.matchAll(/cmd === "([a-z-]+)"/g)].map((m) => m[1])
+const literals = (src: string) => new Set([...src.matchAll(/cmd === "([a-z-]+)"/g)].map((m) => m[1])
   .concat([...src.matchAll(/\[((?:"[a-z-]+",?\s*)+)\]\.includes\(cmd\)/g)].flatMap((m) => [...m[1].matchAll(/"([a-z-]+)"/g)].map((x) => x[1]))));
 const naiveCmds = literals(naiveSrc);
 const menturaCmds = literals(menturaSrc);
 const { routes, resolve } = await import(join(repo, "packages/naive/src/records/routes/routes.mjs"));
-const table = routes();
+const table: { route: string }[] = routes();
 const routeTop = new Set(table.map((r) => r.route.split("/")[0]));
 // packages/<name> is a route alias for a venture package (packages/naive/src/router/package-routes.mjs), not a folder: the
 // packages live at packages/naive/library/packages/<name> (EE-116).
-const packageAlias = (c) => /^packages\/[a-z0-9-]+$/.test(c) && existsSync(join(repo, "packages/naive/library", c, "package.json"));
-const isRoute = (c) => !!resolve(c.replace(/<[^>]+>/g, "x")).r || table.some((r) => r.route === c.replace(/<[^>]+>/g, "[id]")) || packageAlias(c);
+const packageAlias = (c: string) => /^packages\/[a-z0-9-]+$/.test(c) && existsSync(join(repo, "packages/naive/library", c, "package.json"));
+const isRoute = (c: string) => !!resolve(c.replace(/<[^>]+>/g, "x")).r || table.some((r) => r.route === c.replace(/<[^>]+>/g, "[id]")) || packageAlias(c);
 
 // The flags a naive command reads: in naive.mjs's branch for it and in the scripts that branch runs.
 // Only flag definitions count: a literal --name, or a name passed to a flag reader. Any other string is not a flag.
-const flagWords = (src) => new Set([...src.matchAll(/--([a-z][a-z-]*)/g), ...src.matchAll(/(?<![\w.])(?:opt|flag|has|pass)\(\s*"([a-z][a-z-]*)"/g)].map((m) => m[1]));
-const branchOf = (cmd) => {
+const flagWords = (src: string) => new Set([...src.matchAll(/--([a-z][a-z-]*)/g), ...src.matchAll(/(?<![\w.])(?:opt|flag|has|pass)\(\s*"([a-z][a-z-]*)"/g)].map((m) => m[1]));
+const branchOf = (cmd: string) => {
   const lines = naiveSrc.split("\n");
   const start = lines.findIndex((l) => new RegExp(`cmd === "${cmd}"`).test(l) && /if \(/.test(l));
   if (start < 0) return "";
-  let end = lines.findIndex((l, i) => i > start && /^(\} )?else|^\}/.test(l));
+  const end = lines.findIndex((l, i) => i > start && /^(\} )?else|^\}/.test(l));
   return lines.slice(start, end < 0 ? undefined : end).join("\n").replaceAll("${cmd}", cmd);
 };
-const fnSrc = (name) => { const m = naiveSrc.match(new RegExp(`(?:async )?function ${name}\\([\\s\\S]*?\\n\\}`)); return m ? m[0] : ""; };
-const flagCache = {};
-function flagsOf(cmd) {
+const fnSrc = (name: string) => { const m = naiveSrc.match(new RegExp(`(?:async )?function ${name}\\([\\s\\S]*?\\n\\}`)); return m ? m[0] : ""; };
+const flagCache: Record<string, Set<string>> = {};
+function flagsOf(cmd: string) {
   if (flagCache[cmd]) return flagCache[cmd];
   const branch = branchOf(cmd);
   let src = branch + [...branch.matchAll(/\b([a-zA-Z]+)\(here\(\)\)|\b(dev|check|info)\(/g)].map((m) => fnSrc(m[1] ?? m[2])).join("\n") + fnSrc("here");
@@ -97,11 +97,11 @@ function flagsOf(cmd) {
 // --- The claims ---
 const REPO_DIRS = ["schema", "interface", "purpose", "packages", "docs"];
 const VENTURE = /^(k-base|meta|codebase|artifacts|raw|inbox|founder|_drafts|_private|my-|\.release|\.naive|operations|evidence)\b/;
-const failures = [];
+const failures: string[] = [];
 let claims = 0;
-const fail = (f, n, claim, why) => failures.push(`${relative(repo, f)}:${n}: ${claim}: ${why}`);
+const fail = (f: string, n: number, claim: string, why: string) => failures.push(`${relative(repo, f)}:${n}: ${claim}: ${why}`);
 
-function checkCommand(f, n, line) {
+function checkCommand(f: string, n: number, line: string) {
   for (const m of line.matchAll(/(?:^|[\s`(|;&$])(?:npx )?(naive|mentura) ([a-z][a-z-]*)((?:\s+(?:"[^"]*"|'[^']*'|<[^>]+>|\[[^\]]*\]|[^\s`|;&#]+))*)/g)) {
     const [, bin, cmd, tail] = m;
     claims++;
@@ -119,7 +119,7 @@ function checkCommand(f, n, line) {
 const INLINE_LINK = /\]\(\s*(?:<([^>\n]+)>|((?:[^()\s]|\([^()\s]*\))+))(?:\s+(?:"[^"]*"|'[^']*'|\([^)]*\)))?\s*\)/g;
 const LINK_DEFINITION = /^ {0,3}\[(?!\^)[^\]]+\]:\s*(?:<([^>\n]+)>|(\S+))/g;
 
-function checkLink(f, n, t) {
+function checkLink(f: string, n: number, t: string) {
   if (/^([a-z][a-z0-9+.-]*:|#|\/)/i.test(t)) return;
   claims++;
   let path;
@@ -129,7 +129,7 @@ function checkLink(f, n, t) {
   if (!targets.some((x) => existsSync(x))) fail(f, n, t, "the link points at nothing");
 }
 
-function checkInline(f, n, c) {
+function checkInline(f: string, n: number, c: string) {
   c = c.trim();
   if (/^(naive|mentura|npx) /.test(c)) return checkCommand(f, n, c);
   const top = c.split("/")[0];
@@ -147,7 +147,7 @@ function checkInline(f, n, c) {
 
 for (const f of docs) {
   const lines = readFileSync(f, "utf8").split("\n");
-  let fence = null;
+  let fence: string | null = null;
   lines.forEach((line, i) => {
     const n = i + 1;
     if (/^\s*(```|~~~)/.test(line)) { fence = fence ? null : line.trim().slice(3) || "text"; return; }

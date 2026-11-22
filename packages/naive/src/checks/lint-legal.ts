@@ -27,34 +27,40 @@ export const RULES = [
   { id: "agreement-no-counterparty", description: "An agreement with no counterparty record", severity: "warn", mode: "fail-open" },
 ];
 
-const readText = (dir, rel) => {
+// A JSON object from a record that may be malformed: every field is unknown until checked. The generated record
+// types describe valid records, and this lint reads any.
+type Loose = { readonly [key: string]: unknown };
+/** One lint finding. */
+export type Finding = { rule: string, mode: string, file: string, message: string, suggestion: string };
+
+const readText = (dir: string, rel: string): string | null => {
   try { return readFileSync(ventureFile(dir, rel), "utf8"); } catch { return null; }
 };
 
 // absent: no file. malformed: the bytes are not JSON. ok: a parsed value.
-function readJson(dir, rel) {
+function readJson(dir: string, rel: string): { status: "absent" } | { status: "ok", value: unknown } | { status: "malformed" } {
   const text = readText(dir, rel);
   if (text === null) return { status: "absent" };
   try { return { status: "ok", value: JSON.parse(text) }; } catch { return { status: "malformed" }; }
 }
 
-const plain = (v) => v !== null && typeof v === "object" && !Array.isArray(v);
+const plain = (v: unknown): v is Loose => v !== null && typeof v === "object" && !Array.isArray(v);
 
-function modesOf(dir) {
+function modesOf(dir: string) {
   const loaded = readJson(dir, "naive.config.json");
   const root = loaded.status === "ok" && plain(loaded.value) ? loaded.value.legal_lint : undefined;
   const table = plain(root) ? root.rules : undefined;
-  return (id, fallback) => {
+  return (id: string, fallback: string) => {
     const row = plain(table) ? table[id] : undefined;
     const mode = plain(row) ? row.mode : undefined;
     return mode === "fail-open" || mode === "fail-closed" ? mode : fallback;
   };
 }
 
-function walkMdx(dir, logical) {
+function walkMdx(dir: string, logical: string): string[] {
   let entries;
   try { entries = readdirSync(ventureFile(dir, logical), { withFileTypes: true }); } catch { return []; }
-  const out = [];
+  const out: string[] = [];
   for (const e of entries) {
     if (e.name.startsWith(".") || e.name.startsWith("_") || e.name === "node_modules") continue;
     const rel = `${logical}/${e.name}`;
@@ -68,11 +74,11 @@ function walkMdx(dir, logical) {
 }
 
 // Frontmatter only. A file that does not open and close a block is not a claim.
-function claimOf(text) {
+function claimOf(text: string | null) {
   if (typeof text !== "string") return null;
   const block = text.match(/^---\r?\n([\s\S]*?)\r?\n---/);
   if (!block) return null;
-  const meta = {};
+  const meta: Record<string, string | undefined> = {};
   for (const line of block[1].split(/\r?\n/)) {
     const kv = line.match(/^([A-Za-z0-9_-]+):\s*(.*)$/);
     if (!kv) continue;
@@ -87,15 +93,15 @@ function claimOf(text) {
   return { public: true, claim, source };
 }
 
-function holderIds(dir) {
+function holderIds(dir: string) {
   const loaded = readJson(dir, "governance/ownership.json");
-  const ids = new Set();
+  const ids = new Set<string>();
   if (loaded.status !== "ok" || !plain(loaded.value) || !Array.isArray(loaded.value.holders)) return ids;
-  for (const h of loaded.value.holders) if (plain(h) && typeof h.id === "string" && ID.test(h.id)) ids.add(h.id);
+  for (const h of loaded.value.holders as unknown[]) if (plain(h) && typeof h.id === "string" && ID.test(h.id)) ids.add(h.id);
   return ids;
 }
 
-function counterpartyExists(dir, id, holders) {
+function counterpartyExists(dir: string, id: string, holders: Set<string>) {
   if (!ID.test(id)) return false;
   const paths = [
     `people/founders/${id}.json`,
@@ -110,22 +116,22 @@ function counterpartyExists(dir, id, holders) {
 }
 
 // null when the file is missing or does not parse. [] when it parses and names no holder.
-function partiesOf(dir) {
+function partiesOf(dir: string): string[] | null {
   const loaded = readJson(dir, "governance/founder-agreement.json");
   if (loaded.status !== "ok" || !plain(loaded.value)) return null;
   const founders = loaded.value.founders;
   if (!Array.isArray(founders)) return [];
-  const ids = [];
-  for (const f of founders) if (plain(f) && typeof f.holder === "string" && ID.test(f.holder)) ids.push(f.holder);
+  const ids: string[] = [];
+  for (const f of founders as unknown[]) if (plain(f) && typeof f.holder === "string" && ID.test(f.holder)) ids.push(f.holder);
   return ids;
 }
 
-export function lint(dir) {
+export function lint(dir: string) {
   const mode = modesOf(dir);
   const rules = RULES.map((r) => ({ ...r, mode: mode(r.id, r.mode) }));
   const byId = Object.fromEntries(rules.map((r) => [r.id, r.mode]));
-  const findings = [];
-  const add = (rule, file, message, suggestion) => findings.push({ rule, mode: byId[rule], file, message, suggestion });
+  const findings: Finding[] = [];
+  const add = (rule: string, file: string, message: string, suggestion: string) => findings.push({ rule, mode: byId[rule], file, message, suggestion });
 
   const files = CONTENT.flatMap((d) => walkMdx(dir, d)).sort();
   for (const file of files) {

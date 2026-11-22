@@ -27,7 +27,15 @@
 import { existsSync, readFileSync } from "node:fs";
 import { logicalFiles, ventureFile } from "../core/venture-paths.mjs";
 
-const load = (dir, rel) => {
+// A JSON object from a record that may be malformed: every field is unknown until checked. The generated record
+// types describe valid records, and this lint reads any.
+type Loose = { readonly [key: string]: unknown };
+/** An alignment principle this lint can read. */
+type Principle = Loose & { readonly id: string, readonly statement: string };
+/** One lint finding. */
+export type Finding = { rule: string, mode: string, file: string, message: string, suggestion: string };
+
+const load = (dir: string, rel: string): unknown => {
   try { return JSON.parse(readFileSync(ventureFile(dir, rel), "utf8")); } catch { return null; }
 };
 
@@ -42,28 +50,28 @@ export const RULES = [
   { id: "update-unconfirmed-numbers", description: "An investor update with unconfirmed numbers", severity: "warn", mode: "fail-open" },
 ];
 
-const kept = (rel) => {
+const kept = (rel: string) => {
   const parts = rel.split("/");
   if (parts.some((p) => p.startsWith(".") || p.startsWith("_"))) return false;
   return parts[0] !== "codebase" && parts[0] !== "repo" && parts[0] !== "node_modules";
 };
 
-function decisionPaths(dir) {
-  return logicalFiles(dir).filter((rel) => kept(rel) && rel.endsWith(".decision.json") && rel.split("/").at(-2) === "decisions").sort();
+function decisionPaths(dir: string): string[] {
+  return logicalFiles(dir).filter((rel: string) => kept(rel) && rel.endsWith(".decision.json") && rel.split("/").at(-2) === "decisions").sort();
 }
 
-function investorPaths(dir) {
-  return logicalFiles(dir).filter((rel) => kept(rel) && /^investors\/[^/]+\.json$/.test(rel)).sort();
+function investorPaths(dir: string): string[] {
+  return logicalFiles(dir).filter((rel: string) => kept(rel) && /^investors\/[^/]+\.json$/.test(rel)).sort();
 }
 
-const record = (v) => v && typeof v === "object" && !Array.isArray(v);
+const record = (v: unknown): v is Loose => !!v && typeof v === "object" && !Array.isArray(v);
 
-function prose(d) {
-  const parts = [];
+function prose(d: Loose) {
+  const parts: string[] = [];
   if (typeof d.answer === "string") parts.push(d.answer);
   if (typeof d.note === "string") parts.push(d.note);
-  if (Array.isArray(d.options)) for (const o of d.options) if (typeof o === "string") parts.push(o);
-  if (Array.isArray(d.outcomes)) for (const o of d.outcomes) {
+  if (Array.isArray(d.options)) for (const o of d.options as unknown[]) if (typeof o === "string") parts.push(o);
+  if (Array.isArray(d.outcomes)) for (const o of d.outcomes as unknown[]) {
     if (!record(o)) continue;
     if (typeof o.id === "string") parts.push(o.id);
     if (typeof o.projected === "string") parts.push(o.projected);
@@ -71,31 +79,31 @@ function prose(d) {
   return parts.join("\n");
 }
 
-function principlesOf(dir) {
+function principlesOf(dir: string): Principle[] {
   for (const rel of ["foundation/alignment.json", "purpose/alignment.json"]) {
     const rec = load(dir, rel);
     if (!record(rec) || !("principles" in rec)) continue;
-    const principles = (Array.isArray(rec.principles) ? rec.principles : []).filter((p) => record(p) && typeof p.id === "string" && typeof p.statement === "string");
+    const principles = (Array.isArray(rec.principles) ? rec.principles as unknown[] : []).filter((p): p is Principle => record(p) && typeof p.id === "string" && typeof p.statement === "string");
     return principles;
   }
   return [];
 }
 
-function forbiddenClause(statement) {
+function forbiddenClause(statement: string) {
   const m = statement.match(/\b(?:never|must not)\b\s+([^.]{12,})/i);
   return m ? m[1].trim() : null;
 }
 
 // Hyphenated words of 10 or more characters, or plain words of 12 or more when there is no hyphenated word.
-function distinctive(clause) {
-  const words = clause.toLowerCase().match(/[a-z0-9]+(?:-[a-z0-9]+)*/g) ?? [];
+function distinctive(clause: string) {
+  const words: string[] = clause.toLowerCase().match(/[a-z0-9]+(?:-[a-z0-9]+)*/g) ?? [];
   const tokens = [...new Set(words.filter((w) => !STOP.has(w)))];
   const hyphenated = tokens.filter((w) => w.includes("-") && w.length >= 10);
   if (hyphenated.length) return hyphenated;
   return tokens.filter((w) => w.length >= 12);
 }
 
-function conflictingWords(statement, terms) {
+function conflictingWords(statement: string, terms: string) {
   const whole = statement.trim().toLowerCase();
   if (whole && terms.toLowerCase().includes(whole)) return null;
   const clause = forbiddenClause(statement);
@@ -107,41 +115,45 @@ function conflictingWords(statement, terms) {
   return hit.length === need.length ? hit.join(", ") : null;
 }
 
-function termsField(t) {
+function termsField(t: unknown) {
   if (typeof t === "string") return t.trim();
   if (!record(t)) return "";
   return ["text", "summary", "instrument", "note"].map((k) => (typeof t[k] === "string" ? t[k] : "")).filter(Boolean).join("\n").trim();
 }
 
-function ownershipText(o) {
-  const bits = [];
-  if (Array.isArray(o.classes)) for (const c of o.classes) {
+function ownershipText(o: Loose) {
+  const bits: string[] = [];
+  if (Array.isArray(o.classes)) for (const c of o.classes as unknown[]) {
     if (!record(c) || !Array.isArray(c.rights)) continue;
-    for (const r of c.rights) if (typeof r === "string") bits.push(r, r.replace(/-/g, " "));
+    for (const r of c.rights as unknown[]) if (typeof r === "string") bits.push(r, r.replace(/-/g, " "));
   }
-  if (Array.isArray(o.instruments)) for (const i of o.instruments) {
+  if (Array.isArray(o.instruments)) for (const i of o.instruments as unknown[]) {
     if (!record(i) || typeof i.kind !== "string") continue;
     bits.push(i.kind, i.kind.replace(/-/g, " "));
   }
   return bits.join("\n").trim();
 }
 
-function hasFigure(n) {
+function hasFigure(n: Loose) {
   if (typeof n.value === "number") return Number.isFinite(n.value);
   return typeof n.value === "string" && n.value.trim() !== "";
 }
 
-const figureName = (n) => (typeof n.name === "string" && n.name.trim() ? n.name.trim() : typeof n.label === "string" && n.label.trim() ? n.label.trim() : "a number");
+const figureName = (n: Loose) => (typeof n.name === "string" && n.name.trim() ? n.name.trim() : typeof n.label === "string" && n.label.trim() ? n.label.trim() : "a number");
 
 export { investorsLintCommands } from "../records/routes/commands.mjs";
 
-export function lint(dir) {
+export function lint(dir: string) {
   const cfg = load(dir, "naive.config.json");
-  const overrides = record(cfg) && record(cfg.investors_lint) && record(cfg.investors_lint.rules) ? cfg.investors_lint.rules : {};
-  const rules = RULES.map((r) => ({ ...r, mode: overrides[r.id]?.mode === "fail-open" || overrides[r.id]?.mode === "fail-closed" ? overrides[r.id].mode : r.mode }));
+  const overrides: Loose = record(cfg) && record(cfg.investors_lint) && record(cfg.investors_lint.rules) ? cfg.investors_lint.rules : {};
+  const rules = RULES.map((r) => {
+    const entry = overrides[r.id];
+    const set = record(entry) ? entry.mode : undefined;
+    return { ...r, mode: set === "fail-open" || set === "fail-closed" ? set : r.mode };
+  });
   const mode = Object.fromEntries(rules.map((r) => [r.id, r.mode]));
-  const findings = [];
-  const add = (rule, file, message, suggestion) => findings.push({ rule, mode: mode[rule], file, message, suggestion });
+  const findings: Finding[] = [];
+  const add = (rule: string, file: string, message: string, suggestion: string) => findings.push({ rule, mode: mode[rule], file, message, suggestion });
 
   for (const rel of decisionPaths(dir)) {
     const d = load(dir, rel);
@@ -152,7 +164,7 @@ export function lint(dir) {
   }
 
   const principles = principlesOf(dir);
-  const sources = [];
+  const sources: { file: string, text: string }[] = [];
   for (const rel of investorPaths(dir)) {
     const rec = load(dir, rel);
     if (!record(rec)) continue;
@@ -178,9 +190,9 @@ export function lint(dir) {
   for (const rel of investorPaths(dir)) {
     const rec = load(dir, rel);
     if (!record(rec) || !Array.isArray(rec.updates)) continue;
-    rec.updates.forEach((u, i) => {
+    (rec.updates as unknown[]).forEach((u, i) => {
       if (!record(u) || !Array.isArray(u.numbers)) return;
-      const bad = u.numbers.filter((n) => record(n) && hasFigure(n) && n.confirmed !== true);
+      const bad = (u.numbers as unknown[]).filter((n): n is Loose => record(n) && hasFigure(n) && n.confirmed !== true);
       if (!bad.length) return;
       const status = typeof u.status === "string" && u.status.trim() ? u.status.trim() : "draft";
       const id = typeof u.id === "string" && u.id.trim() ? u.id.trim() : `update ${i + 1}`;

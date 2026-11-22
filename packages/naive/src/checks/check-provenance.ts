@@ -19,25 +19,26 @@ import { ventureFile } from "../core/venture-paths.mjs";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { contentHash, gateLineKey, gateSidecar, lineHash, LOG, packageForSidecar } from "../core/provenance.mjs";
+import type { ProvenanceEntry, Venture } from "../records/types/records.d.ts";
 
-const errors = [], warnings = [];
+const errors: string[] = [], warnings: string[] = [];
 let logs = 0, lines = 0;
 
 // One sidecar. The chain still detects an edited line. Nothing here requires one gate to precede another.
-function checkSidecar(packageFile) {
+function checkSidecar(packageFile: string) {
   const log = gateSidecar(packageFile);
   if (!existsSync(log)) return;
   logs++;
   const label = log;
-  let prev = "genesis";
-  const seen = new Set();
-  /** @type {any} */
-  let last = null;
+  let prev: string | null = "genesis";
+  const seen = new Set<string>();
+  // Assigned inside the callback below, so its type is stated rather than narrowed from null.
+  let last = null as ProvenanceEntry | null;
   readFileSync(log, "utf8").split("\n").forEach((l, i) => {
     if (!l.trim()) return;
     const where = `${label}:${i + 1}`;
-    let e;
-    try { e = JSON.parse(l); } catch { errors.push(`${where}: not JSON`); prev = null; return; }
+    let e: ProvenanceEntry;
+    try { e = JSON.parse(l) as ProvenanceEntry; } catch { errors.push(`${where}: not JSON`); prev = null; return; }
     lines++;
     if (e.activity !== "gate") errors.push(`${where}: a package sidecar holds gate lines only`);
     if (prev !== null && e.prev !== prev) errors.push(`${where}: chain broken: prev does not match the line before (a line was edited, removed or reordered)`);
@@ -69,9 +70,9 @@ if (packageFlag !== -1) {
 
 const dir = process.argv[2];
 if (!dir) { console.error("usage: node packages/naive/src/checks/check-provenance.ts <workspace or venture dir>"); process.exit(2); }
-const walk = (d) => readdirSync(d, { withFileTypes: true }).flatMap((e) => e.name === "node_modules" || e.name.startsWith(".") ? []
+const walk = (d: string): string[] => readdirSync(d, { withFileTypes: true }).flatMap((e) => e.name === "node_modules" || e.name.startsWith(".") ? []
   : e.isDirectory() ? walk(join(d, e.name)) : e.name === "venture.json" ? [d] : []);
-const sidecars = (d) => readdirSync(d, { withFileTypes: true }).flatMap((e) => e.name === "node_modules" || e.name.startsWith(".") ? []
+const sidecars = (d: string): string[] => readdirSync(d, { withFileTypes: true }).flatMap((e) => e.name === "node_modules" || e.name.startsWith(".") ? []
   : e.isDirectory() ? sidecars(join(d, e.name)) : e.name.endsWith(".provenance.jsonl") && e.name !== LOG ? [join(d, e.name)] : []);
 
 for (const root of walk(dir)) {
@@ -81,14 +82,14 @@ for (const root of walk(dir)) {
     continue;
   }
   logs++;
-  const id = JSON.parse(readFileSync(join(root, "venture.json"), "utf8")).id;
-  let prev = "genesis", at = "";
-  const last = new Map();
+  const id = (JSON.parse(readFileSync(join(root, "venture.json"), "utf8")) as Venture).id;
+  let prev: string | null = "genesis", at = "";
+  const last = new Map<string, ProvenanceEntry>();
   readFileSync(f, "utf8").split("\n").forEach((l, i) => {
     if (!l.trim()) return;
     const where = `${id}/${LOG}:${i + 1}`;
-    let e;
-    try { e = JSON.parse(l); } catch { errors.push(`${where}: not JSON`); prev = null; return; }
+    let e: ProvenanceEntry;
+    try { e = JSON.parse(l) as ProvenanceEntry; } catch { errors.push(`${where}: not JSON`); prev = null; return; }
     lines++;
     if (prev !== null && e.prev !== prev) errors.push(`${where}: chain broken: prev does not match the line before (a line was edited, removed or reordered)`);
     if (e.hash !== lineHash(e.prev, e)) errors.push(`${where}: hash does not match the line's content (the line was edited)`);

@@ -8,41 +8,40 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { ventureFile } from "../core/venture-paths.mjs";
 import { routes } from "../records/routes/routes.mjs";
+import type { Finding } from "./lint-money.ts";
 
 const repo = new URL("../../../..", import.meta.url).pathname;
 const cli = join(repo, "packages/naive/src/checks/lint-money.ts");
 let failed = 0;
-const expect = (name, ok, detail = "") => {
+const expect = (name: string, ok: unknown, detail: unknown = "") => {
   console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${typeof detail === "string" ? detail : JSON.stringify(detail)}`}`);
   if (!ok) failed++;
 };
 
-/**
- * @param {Record<string, unknown>} files
- * @param {{ layout?: string }} [options]
- */
-function venture(files, { layout } = {}) {
+function venture(files: Record<string, unknown>, { layout }: { layout?: string } = {}) {
   const dir = mkdtempSync(join(tmpdir(), "money-lint-"));
   writeFileSync(join(dir, "venture.json"), JSON.stringify({ id: "fixture", name: "Fixture", phase: "discovery", ...(layout ? { layout } : {}) }));
   for (const [rel, body] of Object.entries(files)) put(dir, rel, body);
   return dir;
 }
-function put(dir, rel, body) {
+function put(dir: string, rel: string, body: unknown) {
   const p = ventureFile(dir, rel);
   mkdirSync(dirname(p), { recursive: true });
   writeFileSync(p, typeof body === "string" ? body : `${JSON.stringify(body, null, 2)}\n`);
 }
-function run(dir, extra = []) {
+function run(dir: string, extra: string[] = []) {
   return spawnSync("node", [cli, dir, ...extra], { encoding: "utf8" });
 }
-function json(dir) {
+/** The lint's --json output, or null when it printed none. */
+type Body = { ok: boolean, findings: Finding[] } | null;
+function json(dir: string) {
   const r = run(dir, ["--json"]);
-  let body = null;
+  let body: Body = null;
   try { body = JSON.parse(r.stdout); } catch { body = null; }
   return { ...r, body };
 }
-const ids = (body) => (body?.findings ?? []).map((f) => f.rule);
-const byRule = (body, rule) => (body?.findings ?? []).filter((f) => f.rule === rule);
+const ids = (body: Body) => (body?.findings ?? []).map((f) => f.rule);
+const byRule = (body: Body, rule: string) => (body?.findings ?? []).filter((f) => f.rule === rule);
 
 const transfer = (over = {}) => ({
   id: "operating-transfer",
@@ -85,7 +84,7 @@ const secret = { id: "txn", amount: { amount: 919191, currency: "USD" }, note: "
     "money/_streams/transactions/not-json.json": "{",
   });
   const c = json(clean);
-  expect("a clean venture stays silent", c.status === 0 && c.body?.ok === true && c.body.findings.length === 0, c.stdout + c.stderr);
+  expect("a clean venture stays silent", c.status === 0 && c.body?.ok === true && c.body?.findings.length === 0, c.stdout + c.stderr);
   rmSync(clean, { recursive: true, force: true });
 
   const empty = venture({});
@@ -99,20 +98,20 @@ const secret = { id: "txn", amount: { amount: 919191, currency: "USD" }, note: "
   const dir = venture({});
   const file = "money/decisions/operating.transfer.decision.json";
   let r = json(dir);
-  expect("replay start: nothing to flag", r.status === 0 && r.body.findings.length === 0, r.stdout);
+  expect("replay start: nothing to flag", r.status === 0 && r.body?.findings.length === 0, r.stdout);
   put(dir, file, transfer({ status: "open" }));
   r = json(dir);
   expect("replay propose: a proposal with no approver is flagged", r.status === 0 && byRule(r.body, "transfer-no-approver")[0]?.message.includes("proposed"), r.stdout);
   put(dir, file, transfer({ status: "open", decided_by: "Ada Lovelace" }));
   r = json(dir);
-  expect("replay name the approver: the proposal goes quiet", r.status === 0 && r.body.findings.length === 0, r.stdout);
+  expect("replay name the approver: the proposal goes quiet", r.status === 0 && r.body?.findings.length === 0, r.stdout);
   put(dir, file, transfer({
     status: "decided",
     decided_by: "Ada Lovelace",
     provenance: { drafted_by: { kind: "person", id: "Ada Lovelace" }, approved_by: "Ada Lovelace", approved_at: "2026-10-29T00:00:00Z", phase: "discovery", wording: "own" },
   }));
   r = json(dir);
-  expect("replay approve: a named approval stays quiet", r.status === 0 && r.body.findings.length === 0, r.stdout);
+  expect("replay approve: a named approval stays quiet", r.status === 0 && r.body?.findings.length === 0, r.stdout);
   put(dir, file, transfer({
     status: "decided",
     decided_by: "Ada Lovelace",
@@ -120,7 +119,7 @@ const secret = { id: "txn", amount: { amount: 919191, currency: "USD" }, note: "
     outcomes: [{ id: "executed", projected: "The cash has moved.", result: "met" }],
   }));
   r = json(dir);
-  expect("replay execute with a named approver: still quiet", r.status === 0 && r.body.findings.length === 0, r.stdout);
+  expect("replay execute with a named approver: still quiet", r.status === 0 && r.body?.findings.length === 0, r.stdout);
   put(dir, file, transfer({
     status: "executed",
     outcomes: [{ id: "executed", projected: "The cash has moved.", result: "met" }],
@@ -129,7 +128,7 @@ const secret = { id: "txn", amount: { amount: 919191, currency: "USD" }, note: "
   expect("replay execute after the name is removed: flagged, and the phase is executed", r.status === 0 && /executed/.test(byRule(r.body, "transfer-no-approver")[0]?.message ?? ""), r.stdout);
   put(dir, file, "{");
   r = json(dir);
-  expect("replay unreadable transfer: no crash and no finding", r.status === 0 && r.body.findings.length === 0, r.stderr + r.stdout);
+  expect("replay unreadable transfer: no crash and no finding", r.status === 0 && r.body?.findings.length === 0, r.stderr + r.stdout);
   rmSync(dir, { recursive: true, force: true });
 }
 
@@ -155,7 +154,7 @@ const secret = { id: "txn", amount: { amount: 919191, currency: "USD" }, note: "
     }),
   });
   const r = json(dir);
-  expect("approved_by agent is not a named approver", r.body.findings.some((f) => f.rule === "transfer-no-approver"), r.stdout);
+  expect("approved_by agent is not a named approver", r.body?.findings.some((f) => f.rule === "transfer-no-approver"), r.stdout);
   rmSync(dir, { recursive: true, force: true });
 }
 
@@ -166,20 +165,20 @@ const secret = { id: "txn", amount: { amount: 919191, currency: "USD" }, note: "
     "money/decisions/operating.transfer.decision.json": transfer({ status: "executed" }),
   };
   const open = json(venture({ ...files, "naive.config.json": { money_lint: { rules: { "account-no-owner": { mode: "fail-open" }, "transfer-no-approver": { mode: "fail-open" } } } } }));
-  expect("fail-open findings exit 0", open.status === 0 && open.body.ok === true && open.body.findings.length === 2, open.stdout);
+  expect("fail-open findings exit 0", open.status === 0 && open.body?.ok === true && open.body?.findings.length === 2, open.stdout);
   const acct = json(venture({ ...files, "naive.config.json": { money_lint: { rules: { "account-no-owner": { mode: "fail-closed" } } } } }));
-  expect("a fail-closed account rule with a finding exits 1", acct.status === 1 && acct.body.ok === false && byRule(acct.body, "account-no-owner")[0].mode === "fail-closed" && byRule(acct.body, "transfer-no-approver")[0].mode === "fail-open", acct.stdout);
+  expect("a fail-closed account rule with a finding exits 1", acct.status === 1 && acct.body?.ok === false && byRule(acct.body, "account-no-owner")[0].mode === "fail-closed" && byRule(acct.body, "transfer-no-approver")[0].mode === "fail-open", acct.stdout);
   const onlyTransfer = json(venture({
     "money/operating.json": owned,
     "money/decisions/operating.transfer.decision.json": transfer({ status: "executed" }),
     "naive.config.json": { money_lint: { rules: { "account-no-owner": { mode: "fail-closed" }, "transfer-no-approver": { mode: "fail-open" } } } },
   }));
-  expect("fail-closed on a rule with no finding stays exit 0", onlyTransfer.status === 0 && onlyTransfer.body.ok === true && ids(onlyTransfer.body).join() === "transfer-no-approver", onlyTransfer.stdout);
+  expect("fail-closed on a rule with no finding stays exit 0", onlyTransfer.status === 0 && onlyTransfer.body?.ok === true && ids(onlyTransfer.body).join() === "transfer-no-approver", onlyTransfer.stdout);
   const closedQuiet = json(venture({
     "money/operating.json": owned,
     "naive.config.json": { money_lint: { rules: { "account-no-owner": { mode: "fail-closed" }, "transfer-no-approver": { mode: "fail-closed" } } } },
   }));
-  expect("fail-closed with no findings exits 0", closedQuiet.status === 0 && closedQuiet.body.findings.length === 0, closedQuiet.stdout);
+  expect("fail-closed with no findings exits 0", closedQuiet.status === 0 && closedQuiet.body?.findings.length === 0, closedQuiet.stdout);
   const unknown = json(venture({ ...files, "naive.config.json": { money_lint: { rules: { "account-no-owner": { mode: "loud" } } } } }));
   expect("an unknown mode stays fail-open and exits 0", unknown.status === 0 && byRule(unknown.body, "account-no-owner")[0].mode === "fail-open", unknown.stdout);
 }
@@ -195,7 +194,7 @@ const secret = { id: "txn", amount: { amount: 919191, currency: "USD" }, note: "
     "money/_streams/transactions/broken.json": "{",
   });
   const r = json(dir);
-  expect("malformed account, decision, config and stream do not crash", r.status === 0 && r.body && r.body.findings.length === 0, r.stderr + r.stdout);
+  expect("malformed account, decision, config and stream do not crash", r.status === 0 && r.body && r.body?.findings.length === 0, r.stderr + r.stdout);
   rmSync(dir, { recursive: true, force: true });
 
   const structured = venture({
@@ -204,13 +203,13 @@ const secret = { id: "txn", amount: { amount: 919191, currency: "USD" }, note: "
   mkdirSync(join(structured, "money"), { recursive: true });
   writeFileSync(join(structured, "money/decoy.json"), JSON.stringify({ id: "decoy", name: "Decoy" }));
   const seen = json(structured);
-  expect("structured layout reads the owned account through ventureFile and ignores a flat-path decoy", seen.status === 0 && seen.body.findings.length === 0 && ventureFile(structured, "money/operating.json").includes(`${join("k-base", "money")}`), seen.stdout);
+  expect("structured layout reads the owned account through ventureFile and ignores a flat-path decoy", seen.status === 0 && seen.body?.findings.length === 0 && ventureFile(structured, "money/operating.json").includes(`${join("k-base", "money")}`), seen.stdout);
   const child = join(structured, "nested");
   mkdirSync(join(child, "money"), { recursive: true });
   writeFileSync(join(child, "venture.json"), JSON.stringify({ id: "child", name: "Child", phase: "discovery" }));
   writeFileSync(join(child, "money/secret.json"), JSON.stringify({ id: "secret", name: "Secret" }));
   const nested = json(structured);
-  expect("a nested venture's account is not linted with the parent", nested.body.findings.length === 0, nested.stdout);
+  expect("a nested venture's account is not linted with the parent", nested.body?.findings.length === 0, nested.stdout);
   rmSync(structured, { recursive: true, force: true });
 }
 
@@ -228,7 +227,7 @@ const secret = { id: "txn", amount: { amount: 919191, currency: "USD" }, note: "
 
 // ---- The route, and naive check runs this lint.
 {
-  const route = routes().find((x) => x.route === "money/lint");
+  const route = routes().find((x: { route: string }) => x.route === "money/lint");
   expect("money/lint is a command route on packages/naive/src/checks/lint-money.ts", route?.kind === "command" && route.script === "packages/naive/src/checks/lint-money.ts" && route.actions.includes("run"), route);
   const ws = mkdtempSync(join(tmpdir(), "money-lint-ws-"));
   const dir = join(ws, "fixture");

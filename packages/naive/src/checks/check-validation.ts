@@ -27,40 +27,59 @@ import { ventureFile } from "../core/venture-paths.mjs";
 import { line } from "../engine/detectors.mjs";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
+import type { Product, ValidationEvidence, ValidationGoToMarket, ValidationOperationsReadiness, ValidationPricing, ValidationProblem, ValidationProductMarketFit, ValidationSolution, ValidationTeam, Venture } from "../records/types/records.d.ts";
 
 import { LEVELS, WEIGHT, START, gradeItem, gradeRecord } from "../engine/evidence-grade.mjs";
 export { LEVELS, WEIGHT, START, gradeItem, gradeRecord };
 
+/** A validation record. Which sub-score it is comes from its file name, so code narrows it by that name. */
+export type SubScoreRecord = ValidationProblem | ValidationSolution | ValidationProductMarketFit | ValidationPricing | ValidationGoToMarket | ValidationTeam | ValidationOperationsReadiness;
+/** One evidence item with its grade. */
+export type GradedItem = { e: ValidationEvidence, level: string, why: string[] };
+/** A record's grade; operations readiness adds each tier's. */
+export type Graded = { level: string, weight: number, why: string[], items: GradedItem[], tiers?: { tier: string, grade: string }[] };
+/** The validation score weights and floors (packages/naive/src/functions/strategy/kits/validation/weights.json, no schema). */
+export type Weights = {
+  base: Record<string, number>, by_path: Record<string, Record<string, number> | undefined>, by_kind: Record<string, Record<string, number> | undefined>,
+  floors: Record<string, number>, floors_by_path: Record<string, Record<string, number> | undefined>, threshold: number,
+};
+/** A graded sub-score as the score reads it. */
+export type ScoredRecord = { probability?: number | null, weight: number };
+
 export const SUBSCORES = ["problem", "solution", "product-market-fit", "pricing", "go-to-market", "team", "operations-readiness"];
 
 // Operations readiness grades as its weakest tier; every other record from its own evidence.
-export function grade(name, rec, today = new Date()) {
-  if (name !== "operations-readiness") return gradeRecord(rec, today);
-  const tiers = rec.tiers.map((t) => ({ tier: t.tier, ...gradeRecord(t, today) }));
+export function grade(name: string, rec: SubScoreRecord, today = new Date()): Graded {
+  if (name !== "operations-readiness") return gradeRecord(rec, today) as Graded;
+  const tiers = (rec as ValidationOperationsReadiness).tiers.map((t) => ({ tier: t.tier, ...(gradeRecord(t, today) as Graded) }));
   const worst = tiers.reduce((a, b) => (LEVELS.indexOf(b.level) < LEVELS.indexOf(a.level) ? b : a));
-  return { level: worst.level, weight: WEIGHT[worst.level], why: [`weakest tier: ${worst.tier}`], items: tiers.flatMap((t) => t.items), tiers: tiers.map((t) => ({ tier: t.tier, grade: t.level })) };
+  return { level: worst.level, weight: WEIGHT[worst.level as keyof typeof WEIGHT], why: [`weakest tier: ${worst.tier}`], items: tiers.flatMap((t) => t.items), tiers: tiers.map((t) => ({ tier: t.tier, grade: t.level })) };
 }
 
 // Facts the records' data shows, beside the grade.
-export function facts(name, rec) {
-  const f = {};
+export function facts(name: string, rec: SubScoreRecord) {
+  const f: { ellis_share?: number, retention_levels_off?: boolean, gaps?: string[] } = {};
   if (name === "product-market-fit") {
-    if (rec.ellis) f.ellis_share = +(rec.ellis.very_disappointed / rec.ellis.asked).toFixed(2);
-    const c = (rec.retention?.cohorts ?? []).filter((x) => x.active.length >= 4);
+    const pmf = rec as ValidationProductMarketFit;
+    if (pmf.ellis) f.ellis_share = +(pmf.ellis.very_disappointed / pmf.ellis.asked).toFixed(2);
+    const c = (pmf.retention?.cohorts ?? []).filter((x) => x.active.length >= 4);
     if (c.length) f.retention_levels_off = c.every((x) => { const a = x.active.slice(-3); return Math.abs(a[0] - a[2]) / x.size <= 0.05 && a[2] > 0; });
   }
-  if (name === "team") f.gaps = rec.needed.filter((n) => !rec.held.some((h) => h.skill === n.skill)).map((n) => `${n.skill} (by ${n.by_phase})`);
+  if (name === "team") {
+    const team = rec as ValidationTeam;
+    f.gaps = team.needed.filter((n) => !team.held.some((h) => h.skill === n.skill)).map((n) => `${n.skill} (by ${n.by_phase})`);
+  }
   return f;
 }
 
-export function kindOf(products) {
+export function kindOf(products: Product[]) {
   if (products.some((p) => p.software)) return "software";
   if (products.some((p) => p.offering === "service")) return "service";
   if (products.some((p) => p.offering === "content")) return "content";
   return products.length ? "physical" : "software";
 }
 
-export function score(records, W, { path = "build-first", kind = "software" } = {}) {
+export function score(records: Record<string, ScoredRecord | undefined>, W: Weights, { path = "build-first", kind = "software" }: { path?: string, kind?: string } = {}) {
   const parts = SUBSCORES.map((id) => {
     const w = Math.max(0, (W.base[id] ?? 0) + (W.by_path[path]?.[id] ?? 0) + (W.by_kind[kind]?.[id] ?? 0));
     const r = records[id];
@@ -78,30 +97,33 @@ export function score(records, W, { path = "build-first", kind = "software" } = 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const dir = process.argv[2];
   if (!dir) { console.error("usage: node packages/naive/src/checks/check-validation.ts <workspace or venture dir> [--json] [--score]"); process.exit(2); }
-  const load = (p) => JSON.parse(readFileSync(p, "utf8"));
-  const walk = (d) => readdirSync(d, { withFileTypes: true }).flatMap((e) => e.name === "node_modules" || e.name.startsWith(".") ? []
+  const load = <T>(p: string | URL): T => JSON.parse(readFileSync(p, "utf8")) as T;
+  const walk = (d: string): string[] => readdirSync(d, { withFileTypes: true }).flatMap((e) => e.name === "node_modules" || e.name.startsWith(".") ? []
     : e.isDirectory() ? walk(join(d, e.name)) : e.name === "venture.json" ? [d] : []);
-  const W = load(new URL("../functions/strategy/kits/validation/weights.json", import.meta.url));
-  const errors = [], out = [], scores = [];
+  const W = load<Weights>(new URL("../functions/strategy/kits/validation/weights.json", import.meta.url));
+  const errors: string[] = [];
+  const out: { venture: string, record: string, grade: string, weight: number, why: string[], probability: number | null, facts: ReturnType<typeof facts>, tiers: Graded["tiers"], items: { id: string, kind: string, grade: string, why: string[], supports: boolean }[] }[] = [];
+  const scores: ({ venture: string } & ReturnType<typeof score>)[] = [];
   const today = new Date();
   for (const root of walk(dir)) {
-    const v = load(ventureFile(root, "venture.json"));
-    const places = [["foundation/problem.json", "problem"], ["validation", null], ["purpose/validation", null]].flatMap(([rel, name]) => {
+    const v = load<Venture>(ventureFile(root, "venture.json"));
+    const where: [string, string | null][] = [["foundation/problem.json", "problem"], ["validation", null], ["purpose/validation", null]];
+    const places = where.flatMap(([rel, name]): [string, string, string][] => {
       const p = ventureFile(root, rel);
       if (name) return existsSync(p) ? [[name, p, `${v.id}/${rel}`]] : [];
       if (!existsSync(p)) return [];
       return readdirSync(p).filter((x) => x.endsWith(".json")).sort().map((f) => [f.replace(/\.json$/, ""), join(p, f), `${v.id}/${rel}/${f}`]);
     });
     if (!places.length) continue;
-    const graded = {};
-    let path;
-    const seen = new Set();
+    const graded: Record<string, ScoredRecord> = {};
+    let path: string | undefined;
+    const seen = new Set<string>();
     for (const [name, file, at] of places) {
       if (seen.has(name)) continue;
       seen.add(name);
-      const rec = load(file);
+      const rec = load<SubScoreRecord>(file);
       if (!SUBSCORES.includes(name)) { errors.push(`${at}: not a validation sub-score (${SUBSCORES.join(", ")})`); continue; }
-      const all = name === "operations-readiness" ? rec.tiers.flatMap((t) => t.evidence) : rec.evidence ?? [];
+      const all = name === "operations-readiness" ? (rec as ValidationOperationsReadiness).tiers.flatMap((t) => t.evidence) : rec.evidence ?? [];
       const ids = all.map((e) => e.id);
       if (new Set(ids).size !== ids.length) errors.push(`${at}: duplicate evidence ids`);
       for (const e of all) {
@@ -110,16 +132,17 @@ if (import.meta.url === `file://${process.argv[1]}`) {
         if (new Date(e.collected) > today) errors.push(`${at}: ${e.id} was collected in the future`);
       }
       if (name === "product-market-fit") {
-        if (rec.ellis && rec.ellis.very_disappointed > rec.ellis.asked) errors.push(`${at}: more very disappointed than asked`);
-        for (const c of rec.retention?.cohorts ?? []) if (c.active.some((a) => a > c.size)) errors.push(`${at}: cohort ${c.start} has more active users than its size`);
+        const pmf = rec as ValidationProductMarketFit;
+        if (pmf.ellis && pmf.ellis.very_disappointed > pmf.ellis.asked) errors.push(`${at}: more very disappointed than asked`);
+        for (const c of pmf.retention?.cohorts ?? []) if (c.active.some((a) => a > c.size)) errors.push(`${at}: cohort ${c.start} has more active users than its size`);
       }
-      if (name === "go-to-market") path = rec.path;
+      if (name === "go-to-market") path = (rec as ValidationGoToMarket).path;
       const r = grade(name, rec, today);
       graded[name] = { probability: rec.probability?.p ?? 0, weight: r.weight };
       out.push({ venture: v.id, record: name, grade: r.level, weight: r.weight, why: r.why, probability: rec.probability?.p ?? null, facts: facts(name, rec), tiers: r.tiers,
         items: r.items.map((i) => ({ id: i.e.id, kind: i.e.kind, grade: i.level, why: i.why, supports: i.e.supports !== false })) });
     }
-    const products = ["product", "products"].flatMap((d) => existsSync(ventureFile(root, d)) ? readdirSync(ventureFile(root, d)).filter((f) => f.endsWith(".json")).map((f) => load(ventureFile(root, `${d}/${f}`))) : []);
+    const products = ["product", "products"].flatMap((d) => existsSync(ventureFile(root, d)) ? readdirSync(ventureFile(root, d)).filter((f) => f.endsWith(".json")).map((f) => load<Product>(ventureFile(root, `${d}/${f}`))) : []);
     scores.push({ venture: v.id, ...score(graded, { ...W, threshold: line(root, "validation-recommend", W.threshold) }, { path: path ?? "build-first", kind: kindOf(products) }) });
   }
   const wantScore = process.argv.includes("--score");

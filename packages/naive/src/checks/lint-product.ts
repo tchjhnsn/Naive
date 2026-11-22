@@ -13,8 +13,17 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ventureFile } from "../core/venture-paths.mjs";
 
-const load = (f) => { try { return JSON.parse(readFileSync(f, "utf8")); } catch { return null; } };
-const read = (dir, rel) => { const f = ventureFile(dir, rel); return existsSync(f) ? load(f) : null; };
+// A JSON object from a record that may be malformed: every field is unknown until checked. The generated record
+// types describe valid records, and this lint reads any.
+type Loose = { readonly [key: string]: unknown };
+const isLoose = (v: unknown): v is Loose => !!v && typeof v === "object" && !Array.isArray(v);
+/** One lint finding. */
+export type Finding = { rule: string, mode: string, file: string, message: string, suggestion: string };
+/** A foundation input by key: an ICP profile's jobs (icp:<id>) or a pricing record (pricing:<product id>). */
+export type Input = { route: string, jobs?: string[], file?: string };
+
+const load = (f: string): unknown => { try { return JSON.parse(readFileSync(f, "utf8")); } catch { return null; } };
+const read = (dir: string, rel: string): unknown => { const f = ventureFile(dir, rel); return existsSync(f) ? load(f) : null; };
 
 export const RULES = [
   { id: "product-no-icp", description: "A product with no ICP it is offered to", severity: "warn", mode: "fail-open" },
@@ -22,7 +31,7 @@ export const RULES = [
   { id: "business-model-no-pricing", description: "A business model with no pricing record", severity: "warn", mode: "fail-open" },
 ];
 
-function listJson(dir, rel) {
+function listJson(dir: string, rel: string): string[] {
   const d = ventureFile(dir, rel);
   if (!existsSync(d)) return [];
   try {
@@ -30,41 +39,41 @@ function listJson(dir, rel) {
   } catch { return []; }
 }
 
-const profilesOf = (rec) => {
-  if (!rec || typeof rec !== "object" || Array.isArray(rec)) return [];
-  if (Array.isArray(rec.profiles)) return rec.profiles.filter((p) => p && typeof p === "object" && !Array.isArray(p));
+const profilesOf = (rec: unknown): Loose[] => {
+  if (!isLoose(rec)) return [];
+  if (Array.isArray(rec.profiles)) return (rec.profiles as unknown[]).filter(isLoose);
   return typeof rec.id === "string" ? [rec] : [];
 };
 
 /** Foundation ICP profiles and pricing records, keyed. Missing or unreadable files add no keys. */
-export function inputs(dir) {
-  const out = {};
+export function inputs(dir: string) {
+  const out: Record<string, Input | undefined> = {};
   const folder = listJson(dir, "foundation/icp");
   const profiles = folder.length
     ? folder.flatMap((name) => profilesOf(read(dir, `foundation/icp/${name}`)))
     : profilesOf(read(dir, "foundation/icp.json") ?? read(dir, "purpose/icp.json"));
   for (const p of profiles) {
     if (typeof p.id !== "string" || !p.id || p.status === "retired") continue;
-    const jobs = Array.isArray(p.jobs) ? p.jobs.filter((j) => typeof j === "string" && j) : [];
+    const jobs = Array.isArray(p.jobs) ? (p.jobs as unknown[]).filter((j): j is string => typeof j === "string" && j !== "") : [];
     out[`icp:${p.id}`] = { jobs, route: folder.length ? `foundation/icp/${p.id}` : "foundation/icp" };
   }
   for (const rel of ["validation/pricing.json", "purpose/validation/pricing.json"]) {
     const p = read(dir, rel);
-    if (!p || typeof p !== "object" || Array.isArray(p) || typeof p.product !== "string" || !p.product) continue;
+    if (!isLoose(p) || typeof p.product !== "string" || !p.product) continue;
     const key = `pricing:${p.product}`;
     if (!out[key]) out[key] = { route: "validation/pricing", file: rel };
   }
   return out;
 }
 
-function productFiles(dir) {
-  const out = [];
+function productFiles(dir: string) {
+  const out: { rel: string, rec: Loose }[] = [];
   for (const folder of ["product", "products"]) {
     for (const name of listJson(dir, folder)) {
       if (name.startsWith("anatomy")) continue;
       const rel = `${folder}/${name}`;
       const rec = read(dir, rel);
-      if (!rec || typeof rec !== "object" || Array.isArray(rec)) continue;
+      if (!isLoose(rec)) continue;
       if (typeof rec.id !== "string" && typeof rec.name !== "string") continue;
       out.push({ rel, rec });
     }
@@ -72,31 +81,35 @@ function productFiles(dir) {
   return out.sort((a, b) => a.rel.localeCompare(b.rel));
 }
 
-function ruleModes(dir) {
+function ruleModes(dir: string) {
   const raw = read(dir, "naive.config.json");
-  const block = raw && typeof raw === "object" && !Array.isArray(raw) ? raw.product_lint : null;
-  const rules = block && typeof block === "object" && !Array.isArray(block) ? block.rules : null;
-  const cfg = rules && typeof rules === "object" && !Array.isArray(rules) ? rules : {};
-  return RULES.map((r) => ({ ...r, mode: ["fail-open", "fail-closed"].includes(cfg[r.id]?.mode) ? cfg[r.id].mode : r.mode }));
+  const block = isLoose(raw) ? raw.product_lint : null;
+  const rules = isLoose(block) ? block.rules : null;
+  const cfg: Loose = isLoose(rules) ? rules : {};
+  return RULES.map((r) => {
+    const entry = cfg[r.id];
+    const set = isLoose(entry) ? entry.mode : undefined;
+    return { ...r, mode: typeof set === "string" && ["fail-open", "fail-closed"].includes(set) ? set : r.mode };
+  });
 }
 
-const strings = (v) => Array.isArray(v) ? v.filter((x) => typeof x === "string" && x) : [];
+const strings = (v: unknown): string[] => Array.isArray(v) ? (v as unknown[]).filter((x): x is string => typeof x === "string" && x !== "") : [];
 
 /** Findings for one venture. A missing or malformed record is skipped; it never throws. */
-export function lint(dir) {
+export function lint(dir: string) {
   const rules = ruleModes(dir);
   const mode = Object.fromEntries(rules.map((r) => [r.id, r.mode]));
   const found = inputs(dir);
-  const findings = [];
-  const add = (rule, file, message, suggestion) => findings.push({ rule, mode: mode[rule], file, message, suggestion });
+  const findings: Finding[] = [];
+  const add = (rule: string, file: string, message: string, suggestion: string) => findings.push({ rule, mode: mode[rule], file, message, suggestion });
 
   for (const { rel, rec } of productFiles(dir)) {
     if (rec.status === "retired") continue;
     const offered = strings(rec.offered_to).filter((id) => found[`icp:${id}`]);
-    const jobs = new Set(offered.flatMap((id) => found[`icp:${id}`].jobs));
+    const jobs = new Set(offered.flatMap((id) => found[`icp:${id}`]?.jobs ?? []));
     if (!offered.length) add("product-no-icp", rel, "offered to no ICP profile", "set offered_to to an id from foundation/icp");
-    for (const feature of Array.isArray(rec.features) ? rec.features : []) {
-      if (!feature || typeof feature !== "object" || Array.isArray(feature)) continue;
+    for (const feature of Array.isArray(rec.features) ? rec.features as unknown[] : []) {
+      if (!isLoose(feature)) continue;
       const name = typeof feature.name === "string" && feature.name ? feature.name : (typeof feature.id === "string" ? feature.id : "feature");
       const job = typeof feature.job === "string" ? feature.job : "";
       if (!job || !jobs.has(job)) add("feature-no-job", rel, `feature "${name}" serves no job of an ICP it is offered to`, "set its job to a job on one of those ICP profiles");

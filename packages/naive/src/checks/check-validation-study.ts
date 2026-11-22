@@ -10,25 +10,26 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { manifest } from "../engine/beta-gate.mjs";
 import { ventureFile } from "../core/venture-paths.mjs";
+import type { BetaCapabilities, Bug, ValidationFeedback, ValidationInterview } from "../records/types/records.d.ts";
 
-const list = (d) => existsSync(d) ? readdirSync(d).filter((f) => f.endsWith(".json")).map((f) => ({ f, r: JSON.parse(readFileSync(join(d, f), "utf8")) })) : [];
-const walk = (d) => readdirSync(d, { withFileTypes: true }).flatMap((e) => e.name === "node_modules" || e.name.startsWith(".") ? [] : e.isDirectory() ? walk(join(d, e.name)) : e.name === "venture.json" ? [d] : []);
+const list = <T>(d: string): { f: string, r: T }[] => existsSync(d) ? readdirSync(d).filter((f) => f.endsWith(".json")).map((f) => ({ f, r: JSON.parse(readFileSync(join(d, f), "utf8")) as T })) : [];
+const walk = (d: string): string[] => readdirSync(d, { withFileTypes: true }).flatMap((e) => e.name === "node_modules" || e.name.startsWith(".") ? [] : e.isDirectory() ? walk(join(d, e.name)) : e.name === "venture.json" ? [d] : []);
 
-export function check(dir) {
-  const problems = [];
-  const m = manifest();
-  for (const { f, r } of list(ventureFile(dir, "validation/interviews"))) {
+export function check(dir: string): string[] {
+  const problems: string[] = [];
+  const m = manifest() as BetaCapabilities;
+  for (const { f, r } of list<ValidationInterview>(ventureFile(dir, "validation/interviews"))) {
     if (r.id !== f.replace(/\.json$/, "")) problems.push(`validation/interviews/${f}: id ${r.id} is not the file name`);
     if (!r.consent?.given) problems.push(`validation/interviews/${f}: no consent given; keep only the raw source until there is`);
     if (r.icp && !existsSync(ventureFile(dir, `foundation/icp/${r.icp}.json`))) problems.push(`validation/interviews/${f}: no ICP profile ${r.icp} (foundation/icp/${r.icp}.json)`);
     if (r.follow_up?.outcome_vs_prediction && !r.prediction) problems.push(`validation/interviews/${f}: a follow-up outcome without a prediction to compare it to`);
   }
-  for (const { f, r } of list(ventureFile(dir, "validation/feedback"))) {
+  for (const { f, r } of list<ValidationFeedback>(ventureFile(dir, "validation/feedback"))) {
     const cap = m.capabilities.find((c) => c.id === r.capability);
     if (!cap) problems.push(`validation/feedback/${f}: no beta capability ${r.capability}`);
     else if (cap.checkpoint.id !== r.checkpoint) problems.push(`validation/feedback/${f}: ${r.capability}'s checkpoint is ${cap.checkpoint.id}, not ${r.checkpoint}`);
   }
-  for (const { f, r } of list(ventureFile(dir, "product/bugs")))
+  for (const { f, r } of list<Bug>(ventureFile(dir, "product/bugs")))
     if (r.status === "fixed" && !r.fixed_in) problems.push(`product/bugs/${f}: fixed, but fixed_in is missing`);
   return problems;
 }

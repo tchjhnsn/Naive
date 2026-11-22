@@ -18,11 +18,41 @@ import { createHash } from "node:crypto";
 import { ventureFile } from "../core/venture-paths.mjs";
 import { readConfig } from "../engine/naive-config.mjs";
 import { decisions, decisionFiles, propose, decisionFile } from "../engine/decisions.mjs";
+import type { Constraints, DecisionRecord, ExitCriteria, Goal, NaiveConfig, Requirement, Venture } from "../records/types/records.d.ts";
+
+type Aspect = "undefined-term" | "unmeasurable" | "no-owner" | "unsupported-premise" | "orphan" | "conflict" | "dependency" | "phase-mismatch";
+type Kind = "goal" | "requirement" | "criterion" | "constraint" | "decision";
+// Where a graph node came from: its logical path, and whether it is a held draft.
+type Mark = { _rel: string, _draft: boolean };
+type Measure = NonNullable<Goal["measures"]>[number] & { goal: string };
+type Criterion = ExitCriteria["criteria"][number] & { phase: ExitCriteria["phase"] } & Mark;
+/** The venture's premise graph, as graph() builds it from the records. */
+export type PremiseGraph = {
+  goals: (Goal & Mark)[],
+  measures: Map<string, Measure>,
+  requirements: (Requirement & Mark)[],
+  criteria: Criterion[],
+  constraints: (Constraints["must_not"][number] & Mark)[],
+  decisions: (DecisionRecord & { _rel: string })[],
+  functions: unknown[],
+  decisionIds: Set<string>,
+  phase: Venture["phase"] | undefined,
+};
+// What a cell needs from the record it is about.
+type Node = { id: string, phase?: string, _draft?: boolean };
+// The values a cell is filled with, beyond its record, field and aspect.
+type Fill = { term?: string, detail?: string, claim?: string, expected?: string, phase?: string, other?: string, later?: string };
+/** One state(record, field, aspect) whose state is a premise to attack. */
+export type Cell = { kind: Kind, record: string, field: string, aspect: Aspect } & Fill & { links: string[], draft: boolean };
+/** One finding, after the rules are applied. */
+export type Finding = { record: string, field: string, aspect: Aspect, question: string, links: string[], severity: string, term?: string, draft?: boolean };
+type Entry = { rel: string, rec: unknown, draft: boolean };
+type Proposed = { finding: Finding, ok: boolean, result?: { kept?: string, proposed?: string, file?: string | null, status?: string }, error?: string, errors?: string[] };
 
 export const PHASES = ["discovery", "validation", "beachhead", "scale", "platform"];
 
 // The aspects, each a rule id. ask(cell) is the formula that turns a filled cell into a question.
-export const ASPECTS = {
+export const ASPECTS: Record<Aspect, { description: string, ask: (c: Cell) => string }> = {
   "undefined-term": { description: "A vague word with no definition or threshold in the record or its parents", ask: (c) => `What exactly does "${c.term}" mean in ${c.record}.${c.field}, and what threshold separates it from its opposite?` },
   "unmeasurable": { description: "No verified_by, measure or evidence path", ask: (c) => `How would anyone know ${c.record}.${c.field} holds? ${c.detail}` },
   "no-owner": { description: "No owner or decider", ask: (c) => `Who owns ${c.record}${c.field ? ` (${c.field})` : ""}, and who decides when it changes?` },
@@ -39,24 +69,24 @@ export const VAGUE = ["moderate", "enough", "sufficient", "stable", "good", "rel
 const LINTER = "premise-lint";
 // The linter's own decisions are told by id, which survives every version of the record.
 const OWN_ID = /^premise-[0-9a-f]{10}$/;
-const load = (f) => { try { return JSON.parse(readFileSync(f, "utf8")); } catch { return null; } };
-const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-const hasWord = (text, w) => new RegExp(`(^|[^\\p{L}\\p{N}-])${esc(w)}(?=$|[^\\p{L}\\p{N}-])`, "iu").test(text ?? "");
-const words = (s) => new Set(String(s ?? "").toLowerCase().match(/[a-z0-9]{3,}/g) ?? []);
-const listed = (xs) => xs.length > 1 ? `${xs.slice(0, -1).join(", ")} and ${xs.at(-1)}` : xs.join("");
-const jaccard = (a, b) => { const A = words(a), B = words(b); if (!A.size || !B.size) return 0; let n = 0; for (const x of A) if (B.has(x)) n++; return n / (A.size + B.size - n); };
+const load = (f: string): unknown => { try { return JSON.parse(readFileSync(f, "utf8")); } catch { return null; } };
+const esc = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const hasWord = (text: string | undefined, w: string) => new RegExp(`(^|[^\\p{L}\\p{N}-])${esc(w)}(?=$|[^\\p{L}\\p{N}-])`, "iu").test(text ?? "");
+const words = (s: unknown) => new Set(String(s ?? "").toLowerCase().match(/[a-z0-9]{3,}/g) ?? []);
+const listed = (xs: string[]) => xs.length > 1 ? `${xs.slice(0, -1).join(", ")} and ${xs.at(-1)}` : xs.join("");
+const jaccard = (a: unknown, b: unknown) => { const A = words(a), B = words(b); if (!A.size || !B.size) return 0; let n = 0; for (const x of A) if (B.has(x)) n++; return n / (A.size + B.size - n); };
 
 // ---- Records ---------------------------------------------------------------------------------
 
 // Drafts are held in _drafts/ as <logical path with / as __>.draft.
-function drafts(dir) {
+function drafts(dir: string): Entry[] {
   const d = ventureFile(dir, "_drafts");
   if (!existsSync(d)) return [];
   return readdirSync(d).filter((f) => f.endsWith(".draft")).map((f) => ({ rel: f.replace(/\.draft$/, "").split("__").join("/"), rec: load(join(d, f)), draft: true })).filter((x) => x.rec);
 }
-function canonical(dir) {
-  const out = [];
-  const add = (rel) => { const r = load(ventureFile(dir, rel)); if (r) out.push({ rel, rec: r, draft: false }); };
+function canonical(dir: string): Entry[] {
+  const out: Entry[] = [];
+  const add = (rel: string) => { const r = load(ventureFile(dir, rel)); if (r) out.push({ rel, rec: r, draft: false }); };
   for (const sub of ["foundation/goals", "foundation/requirements", "foundation/exit-criteria"]) {
     const d = ventureFile(dir, sub);
     if (existsSync(d)) for (const f of readdirSync(d).filter((f) => f.endsWith(".json")).sort()) add(`${sub}/${f}`);
@@ -65,32 +95,36 @@ function canonical(dir) {
   return out;
 }
 /** The venture's premise graph: goals, measures, requirements, exit criteria, constraints and decisions. */
-export function graph(dir, { includeDrafts = false } = {}) {
-  const byRel = new Map();
+export function graph(dir: string, { includeDrafts = false }: { includeDrafts?: boolean } = {}): PremiseGraph {
+  const byRel = new Map<string, Entry>();
   for (const x of canonical(dir)) byRel.set(x.rel, x);
   if (includeDrafts) for (const x of drafts(dir)) if (/^foundation\//.test(x.rel)) byRel.set(x.rel, x); // a draft stands for the record it would become
-  const g = { goals: [], measures: new Map(), requirements: [], criteria: [], constraints: [], decisions: [], functions: [] };
+  // decisionIds and phase are filled in below, after the records.
+  const g: PremiseGraph = { goals: [], measures: new Map(), requirements: [], criteria: [], constraints: [], decisions: [], functions: [], decisionIds: new Set(), phase: undefined };
+  // Each record is read as the type its folder holds.
   for (const { rel, rec, draft } of byRel.values()) {
-    if (rel.startsWith("foundation/goals/")) { g.goals.push({ ...rec, _rel: rel, _draft: draft }); for (const m of rec.measures ?? []) g.measures.set(`${rec.id}/${m.id}`, { ...m, goal: rec.id }); }
-    else if (rel.startsWith("foundation/requirements/")) g.requirements.push({ ...rec, _rel: rel, _draft: draft });
-    else if (rel.startsWith("foundation/exit-criteria/")) for (const c of rec.criteria ?? []) g.criteria.push({ ...c, phase: rec.phase, _rel: rel, _draft: draft });
-    else if (rel === "foundation/constraints.json") for (const c of rec.must_not ?? []) g.constraints.push({ ...c, _rel: rel, _draft: draft });
+    if (rel.startsWith("foundation/goals/")) { const goal = rec as Goal; g.goals.push({ ...goal, _rel: rel, _draft: draft }); for (const m of goal.measures ?? []) g.measures.set(`${goal.id}/${m.id}`, { ...m, goal: goal.id }); }
+    else if (rel.startsWith("foundation/requirements/")) g.requirements.push({ ...(rec as Requirement), _rel: rel, _draft: draft });
+    else if (rel.startsWith("foundation/exit-criteria/")) { const exit = rec as ExitCriteria; for (const c of exit.criteria ?? []) g.criteria.push({ ...c, phase: exit.phase, _rel: rel, _draft: draft }); }
+    else if (rel === "foundation/constraints.json") for (const c of (rec as Constraints).must_not ?? []) g.constraints.push({ ...c, _rel: rel, _draft: draft });
   }
   // Decisions this linter drafted are its own output, not premises of the venture.
   for (const rel of decisionFiles(dir)) {
-    const rec = load(ventureFile(dir, rel));
+    const rec = load(ventureFile(dir, rel)) as DecisionRecord | null;
     if (rec?.id && !OWN_ID.test(rec.id)) g.decisions.push({ ...rec, _rel: rel });
   }
   // A parent may be any decision decisions.mjs resolves: the linter's own, the roots, a foundation statement.
-  g.decisionIds = new Set(decisions(dir, Date.now()).decisions.map((d) => d.id));
-  const v = load(join(dir, "venture.json")) ?? {};
-  g.functions = Array.isArray(v.functions) ? v.functions.map((f) => f.id ?? f) : Object.keys(v.functions ?? {});
+  g.decisionIds = new Set(decisions(dir, Date.now()).decisions.map((d: { id: string }) => d.id));
+  const v = (load(join(dir, "venture.json")) ?? {}) as Partial<Venture>;
+  // An older venture.json lists its functions as an array of ids or { id } objects.
+  const fns: unknown = v.functions;
+  g.functions = Array.isArray(fns) ? fns.map((f: unknown) => (f as { id?: unknown }).id ?? f) : Object.keys(v.functions ?? {});
   g.phase = v.phase;
   return g;
 }
 
 // A route per record, so a finding names what it is about and `naive lint premises <route>` can filter.
-const routeOf = {
+const routeOf: Record<Kind, (r: Node) => string> = {
   goal: (r) => `foundation/goals/${r.id}`,
   requirement: (r) => `foundation/requirements/${r.id}`,
   criterion: (r) => `foundation/exit-criteria/${r.phase}#${r.id}`,
@@ -101,27 +135,27 @@ const routeOf = {
 // ---- Cells and the formula -------------------------------------------------------------------
 
 /** Generates the cells: every (record, field, aspect) whose state is a premise to attack. No model. */
-export function cells(g) {
-  const out = [];
-  const cell = (kind, rec, field, aspect, fill = {}, links = []) => out.push({ kind, record: routeOf[kind](rec), field, aspect, ...fill, links, draft: !!rec._draft });
-  const goalOf = (id) => g.goals.find((x) => x.id === id);
+export function cells(g: PremiseGraph): Cell[] {
+  const out: Cell[] = [];
+  const cell = (kind: Kind, rec: Node, field: string, aspect: Aspect, fill: Fill = {}, links: string[] = []) => out.push({ kind, record: routeOf[kind](rec), field, aspect, ...fill, links, draft: !!rec._draft });
+  const goalOf = (id: string | undefined) => g.goals.find((x) => x.id === id);
   // Measures are keyed <goal>/<measure>. A bare measure id resolves only when exactly one goal has it.
-  const measuresNamed = (id) => g.measures.has(id) ? [g.measures.get(id)] : [...g.measures.values()].filter((m) => m.id === id);
-  const measureOf = (id) => { const ms = measuresNamed(id); return ms.length === 1 ? ms[0] : undefined; };
+  const measuresNamed = (id: string): Measure[] => { const m = g.measures.get(id); return m ? [m] : [...g.measures.values()].filter((x) => x.id === id); };
+  const measureOf = (id: string) => { const ms = measuresNamed(id); return ms.length === 1 ? ms[0] : undefined; };
   // One spelling per measure, so a/count and a unique bare count compare equal. An ambiguous id stays as written.
-  const measureKey = (id) => { const m = measureOf(id); return m ? `${m.goal}/${m.id}` : id; };
-  const ambiguity = (route, verb, id) => `${route} ${verb} measure ${id}, which goals ${listed(measuresNamed(id).map((m) => m.goal))} share; name it as <goal>/${id}.`;
-  const resolves = (id) => !!(goalOf(id) || measuresNamed(id).length || g.requirements.some((r) => r.id === id));
+  const measureKey = (id: string) => { const m = measureOf(id); return m ? `${m.goal}/${m.id}` : id; };
+  const ambiguity = (route: string, verb: string, id: string) => `${route} ${verb} measure ${id}, which goals ${listed(measuresNamed(id).map((m) => m.goal))} share; name it as <goal>/${id}.`;
+  const resolves = (id: string) => !!(goalOf(id) || measuresNamed(id).length || g.requirements.some((r) => r.id === id));
 
   // The text a record inherits from its parents: a vague word defined there is defined here.
-  const parentsText = (ids) => (ids ?? []).map((id) => { const goal = goalOf(id) ?? goalOf(measureOf(id)?.goal); const m = measureOf(id); return JSON.stringify(goal ?? {}) + JSON.stringify(m ?? {}); }).join(" ");
-  const defined = (term, ownText, parentText) => {
+  const parentsText = (ids: string[] | undefined) => (ids ?? []).map((id) => { const goal = goalOf(id) ?? goalOf(measureOf(id)?.goal); const m = measureOf(id); return JSON.stringify(goal ?? {}) + JSON.stringify(m ?? {}); }).join(" ");
+  const defined = (term: string, ownText: string, parentText: string) => {
     const both = `${ownText} ${parentText}`;
     // A definition says what the term means, or puts a number or unit beside it.
     return new RegExp(`${esc(term)}[^.]{0,40}(means|is defined|=|:\\s*\\d|\\d+\\s*(%|percent|of \\d))`, "i").test(both)
       || new RegExp(`\\b(define|definition of)\\b[^.]{0,20}${esc(term)}`, "i").test(both);
   };
-  const vague = (kind, rec, field, text, parentIds) => {
+  const vague = (kind: Kind, rec: Node, field: string, text: string | undefined, parentIds: string[] | undefined) => {
     for (const term of VAGUE) if (hasWord(text, term) && !defined(term, JSON.stringify(rec), parentsText(parentIds))) cell(kind, rec, field, "undefined-term", { term }, parentIds ?? []);
   };
 
@@ -137,7 +171,7 @@ export function cells(g) {
 
   // Requirements
   const goalText = g.goals.map((x) => JSON.stringify(x)).join(" ").toLowerCase();
-  const reqGraph = new Map(g.requirements.map((r) => [r.id, (r.derives_from ?? []).filter((d) => g.requirements.some((x) => x.id === d))]));
+  const reqGraph = new Map(g.requirements.map((r): [string, string[]] => [r.id, (r.derives_from ?? []).filter((d) => g.requirements.some((x) => x.id === d))]));
   for (const r of g.requirements) {
     const parents = r.derives_from ?? [];
     vague("requirement", r, "statement", r.statement, parents);
@@ -156,8 +190,8 @@ export function cells(g) {
     if (r.weight === 3) for (const f of r.constrains ?? []) if (!hasWord(goalText, f)) cell("requirement", r, `constrains.${f}`, "conflict", { detail: `${routeOf.requirement(r)} has weight 3 and constrains ${f}, but no goal names ${f}.` }, [f]);
     for (const f of r.constrains ?? []) if (g.functions.length && !g.functions.includes(f)) cell("requirement", r, `constrains.${f}`, "dependency", { detail: `constrains ${f}, which is not a function in venture.json` }, [f]);
     // Cycle through requirement-to-requirement derivations.
-    const seen = new Set(); const stack = [...(reqGraph.get(r.id) ?? [])];
-    while (stack.length) { const x = stack.pop(); if (x === r.id) { cell("requirement", r, "derives_from", "dependency", { detail: "derives, through other requirements, from itself" }); break; } if (seen.has(x)) continue; seen.add(x); stack.push(...(reqGraph.get(x) ?? [])); }
+    const seen = new Set<string>(); const stack = [...(reqGraph.get(r.id) ?? [])];
+    while (stack.length) { const x = stack.pop(); if (x === undefined) break; if (x === r.id) { cell("requirement", r, "derives_from", "dependency", { detail: "derives, through other requirements, from itself" }); break; } if (seen.has(x)) continue; seen.add(x); stack.push(...(reqGraph.get(x) ?? [])); }
   }
 
   // Exit criteria
@@ -195,7 +229,7 @@ export function cells(g) {
   }
 
   // Decisions
-  const ids = new Map(g.decisions.map((d) => [d.id, d]));
+  const ids = new Map(g.decisions.map((d): [string, PremiseGraph["decisions"][number]] => [d.id, d]));
   for (const d of g.decisions) {
     if (d.status === "decided" && !(d.decided_by ?? d.provenance?.approved_by)) cell("decision", d, "decided_by", "no-owner");
     if (d.status === "decided" && !(d.reasons ?? []).length) cell("decision", d, "answer", "unsupported-premise", { claim: typeof d.answer === "string" ? d.answer : JSON.stringify(d.answer ?? null) });
@@ -203,7 +237,7 @@ export function cells(g) {
     if (d.parent && !g.decisionIds.has(d.parent)) cell("decision", d, "parent", "dependency", { detail: `names parent ${d.parent}, which is no decision here` }, [d.parent]);
     for (const u of d.unlocks ?? []) if (typeof u === "string" && !g.decisionIds.has(u)) cell("decision", d, "unlocks", "dependency", { detail: `unlocks ${u}, which is no decision here` }, [u]);
     const seen = new Set([d.id]); let p = d.parent;
-    while (p && ids.has(p)) { if (seen.has(p)) { cell("decision", d, "parent", "dependency", { detail: "is, through its parents, its own ancestor" }); break; } seen.add(p); p = ids.get(p).parent; }
+    while (p && ids.has(p)) { if (seen.has(p)) { cell("decision", d, "parent", "dependency", { detail: "is, through its parents, its own ancestor" }); break; } seen.add(p); p = ids.get(p)?.parent; }
   }
   return out;
 }
@@ -211,17 +245,16 @@ export function cells(g) {
 // ---- Rules -----------------------------------------------------------------------------------
 
 /** The level of each rule: naive.config.json premise_lint.rules, default warn. */
-export function levels(config = {}) {
-  const set = config.premise_lint?.rules ?? {};
-  return Object.fromEntries(Object.keys(ASPECTS).map((a) => { const lvl = set[a]; return [a, ["off", "warn", "error"].includes(lvl) ? lvl : "warn"]; }));
+export function levels(config: NaiveConfig = {}): Record<string, string> {
+  const set: Record<string, unknown> = config.premise_lint?.rules ?? {};
+  return Object.fromEntries(Object.keys(ASPECTS).map((a) => { const lvl = set[a]; return [a, typeof lvl === "string" && ["off", "warn", "error"].includes(lvl) ? lvl : "warn"]; }));
 }
 
-/** Findings: {record, field, aspect, question, links, severity, term?}, deduplicated, rules applied.
- *  @param {string} dir @param {{ route?: *, includeDrafts?: boolean, config?: * }} [opts] */
-export function lint(dir, { route, includeDrafts = false, config } = {}) {
+/** Findings: {record, field, aspect, question, links, severity, term?}, deduplicated, rules applied. */
+export function lint(dir: string, { route, includeDrafts = false, config }: { route?: string, includeDrafts?: boolean, config?: NaiveConfig } = {}): Finding[] {
   const lv = levels(config ?? readConfig(dir));
-  const seen = new Set();
-  const out = [];
+  const seen = new Set<string>();
+  const out: Finding[] = [];
   for (const c of cells(graph(dir, { includeDrafts }))) {
     if (lv[c.aspect] === "off") continue;
     if (route && !(c.record === route || c.record.startsWith(route.replace(/\/$/, "") + "/") || c.record.startsWith(route + "#"))) continue;
@@ -236,16 +269,16 @@ export function lint(dir, { route, includeDrafts = false, config } = {}) {
 
 // What tells two cells of one (record, field, aspect) apart. Anything else may change without
 // re-asking a question a person answered.
-const cellDetail = (f) => f.term ? [f.term] : ["dependency", "conflict", "phase-mismatch"].includes(f.aspect) ? [...f.links].sort() : [];
+const cellDetail = (f: Finding): string[] => f.term ? [f.term] : ["dependency", "conflict", "phase-mismatch"].includes(f.aspect) ? [...f.links].sort() : [];
 
 /** Writes each finding as an open decision (an agent proposes; a person decides). A finding whose
  *  decision already exists is left alone unless it is still open with other wording, so a rerun never
  *  reopens what a person decided. */
-export function proposeFindings(dir, findings) {
-  return findings.map((f) => {
+export function proposeFindings(dir: string, findings: Finding[]): Proposed[] {
+  return findings.map((f): Proposed => {
     const id = `premise-${createHash("sha256").update([f.record, f.field, f.aspect, ...cellDetail(f)].join("|")).digest("hex").slice(0, 10)}`;
     const file = decisionFile(dir, id);
-    const prior = file && load(ventureFile(dir, file));
+    const prior = file ? load(ventureFile(dir, file)) as DecisionRecord | null : null;
     if (prior && (prior.status !== "open" || prior.question === f.question)) return { finding: f, ok: true, result: { kept: id, file, status: prior.status } };
     const r = propose(dir, { id, question: f.question, note: `premise-lint ${f.aspect} on ${f.record} ${f.field}` }, { agentId: LINTER, via: "cli" });
     return { finding: f, ...r };

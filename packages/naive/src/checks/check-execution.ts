@@ -16,38 +16,39 @@ import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { ventureFile } from "../core/venture-paths.mjs";
 import { independent, reviewIsIndependent } from "./verify.ts";
+import type { DecisionRights, Evidence, Handoff, Venture } from "../records/types/records.d.ts";
 
 const dir = process.argv[2];
 if (!dir) { console.error("usage: node packages/naive/src/checks/check-execution.ts <venture dir>"); process.exit(2); }
 const root = new URL("../../../..", import.meta.url).pathname;
-const load = (p) => JSON.parse(readFileSync(p, "utf8"));
-const jsonIn = (d) => existsSync(d) ? readdirSync(d).filter((f) => f.endsWith(".json")).map((f) => join(d, f)) : [];
-const RANK = { decide: 0, "decide-inform": 1, "recommend-approve": 2, escalate: 3 };
+const load = <T>(p: string): T => JSON.parse(readFileSync(p, "utf8")) as T;
+const jsonIn = (d: string) => existsSync(d) ? readdirSync(d).filter((f) => f.endsWith(".json")).map((f) => join(d, f)) : [];
+const RANK: Record<string, number> = { decide: 0, "decide-inform": 1, "recommend-approve": 2, escalate: 3 };
 
-const venture = load(join(dir, "venture.json"));
-const roles = new Set(load(join(root, "packages/naive/template/governance/roles/agent-roles.json")).roles.map((r) => r.id));
-const template = load(join(root, "packages/naive/template/governance/decision-rights.json"));
-const errors = [];
+const venture = load<Venture>(join(dir, "venture.json"));
+const roles = new Set(load<{ roles: { id: string }[] }>(join(root, "packages/naive/template/governance/roles/agent-roles.json")).roles.map((r) => r.id));
+const template = load<DecisionRights>(join(root, "packages/naive/template/governance/decision-rights.json"));
+const errors: string[] = [];
 
 const classes = new Map(template.classes.map((c) => [c.id, c]));
 const own = join(ventureFile(dir, "governance/decision-rights.json"));
-if (existsSync(own)) for (const c of load(own).classes) {
+if (existsSync(own)) for (const c of load<DecisionRights>(own).classes) {
   const t = classes.get(c.id);
   if (t && RANK[c.level] < RANK[t.level] && !c.decision) errors.push(`decision-rights/${c.id}: loosens ${t.level} to ${c.level} without naming a decision`);
   classes.set(c.id, { ...t, ...c });
 }
 for (const c of classes.values()) if (!roles.has(c.owner)) errors.push(`decision-rights/${c.id}: owner ${c.owner} is not a role`);
 
-const results = new Map();
+const results = new Map<string, Evidence>();
 for (const f of jsonIn(join(ventureFile(dir, "evidence/results")))) {
-  const e = load(f);
+  const e = load<Evidence>(f);
   if (e.passed !== e.results.every((r) => r.passed)) errors.push(`evidence/${e.id}: passed says ${e.passed} but its results disagree`);
   results.set(resolve(f), e);
 }
 
 let count = 0;
 for (const f of jsonIn(join(ventureFile(dir, "operations/handoffs")))) {
-  const h = load(f), at = `handoff/${h.id}`;
+  const h = load<Handoff>(f), at = `handoff/${h.id}`;
   count++;
   if (h.venture !== venture.id) errors.push(`${at}: venture ${h.venture} is not ${venture.id}`);
   if (!roles.has(h.role)) errors.push(`${at}: role ${h.role} is not a role`);
@@ -74,7 +75,7 @@ for (const f of jsonIn(join(ventureFile(dir, "operations/handoffs")))) {
   if (!["draft", "ready"].includes(h.status) && !h.claimed_by) errors.push(`${at}: ${h.status} but not claimed`);
   if (h.status === "done") {
     if (!h.pr) errors.push(`${at}: done without a PR`);
-    const proved = new Set();
+    const proved = new Set<string>();
     for (const p of h.evidence ?? []) {
       const e = results.get(resolve(dirname(f), p));
       if (!e) { errors.push(`${at}: evidence ${p} not found under evidence/results`); continue; }

@@ -15,22 +15,23 @@ import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { ventureFile } from "../core/venture-paths.mjs";
 import { reviewIsIndependent } from "./verify.ts";
+import type { Decision, DecisionRights, Handoff } from "../records/types/records.d.ts";
 
 const [dir, id] = process.argv.slice(2);
 if (!dir || !id) { console.error("usage: node packages/naive/src/checks/check-ready.ts <venture dir> <handoff id> [--record --by <who>]"); process.exit(2); }
-const opt = (k) => process.argv.includes(k) ? process.argv[process.argv.indexOf(k) + 1] : undefined;
+const opt = (k: string): string | undefined => process.argv.includes(k) ? process.argv[process.argv.indexOf(k) + 1] : undefined;
 const root = new URL("../../../..", import.meta.url).pathname;
-const load = (p) => JSON.parse(readFileSync(p, "utf8"));
+const load = <T>(p: string): T => JSON.parse(readFileSync(p, "utf8")) as T;
 const hPath = join(ventureFile(dir, "operations/handoffs"), `${id}.json`);
-const h = load(hPath);
-const items = [];
-const item = (name, ok, why = "") => items.push({ name, ok, why });
+const h = load<Handoff>(hPath);
+const items: { name: string, ok: boolean, why: string }[] = [];
+const item = (name: string, ok: boolean, why = "") => items.push({ name, ok, why });
 
 // 1. The brief says what done looks like and what to do, with no placeholders left.
 const bPath = join(ventureFile(dir, "operations/handoffs"), h.brief);
 const brief = existsSync(bPath) ? readFileSync(bPath, "utf8") : "";
 item("brief exists", !!brief, bPath);
-const section = (name) => { const m = brief.match(new RegExp(`^##\\s+(?:\\d+\\.\\s*)?${name}\\b[^\\n]*\\n([\\s\\S]*?)(?=^##\\s|$(?![\\s\\S]))`, "mi")); return m ? m[1].trim() : null; };
+const section = (name: string) => { const m = brief.match(new RegExp(`^##\\s+(?:\\d+\\.\\s*)?${name}\\b[^\\n]*\\n([\\s\\S]*?)(?=^##\\s|$(?![\\s\\S]))`, "mi")); return m ? m[1].trim() : null; };
 for (const s of ["Outcome", "Work"]) { const t = section(s); item(`brief has its ${s} section, with text`, !!t, t === null ? "missing" : "empty"); }
 const holes = brief.match(/\b(TBD|TODO|FIXME)\b|\?\?\?|<(?:title|role|entity|outcome|id|date)[^>]*>/gi) ?? [];
 item("brief has no placeholders left", !holes.length, holes.slice(0, 3).join(", "));
@@ -39,9 +40,9 @@ item("brief has no placeholders left", !holes.length, holes.slice(0, 3).join(", 
 const products = new Set(["products", "product"].flatMap((folder) => existsSync(ventureFile(dir, folder)) ? readdirSync(ventureFile(dir, folder)).filter((f) => f.endsWith(".json")).map((f) => f.slice(0, -5)) : []));
 const missingProducts = (h.products ?? []).filter((p) => !products.has(p));
 item("every product it serves exists", !missingProducts.length, missingProducts.join(", "));
-const logs = [join(root, "docs/decisions/decisions.json"), join(ventureFile(dir, "knowledge/decisions.json"))].filter(existsSync).flatMap((f) => load(f).decisions);
+const logs = [join(root, "docs/decisions/decisions.json"), join(ventureFile(dir, "knowledge/decisions.json"))].filter(existsSync).flatMap((f) => load<Decision>(f).decisions);
 const decisions = new Map(logs.map((d) => [d.id, d]));
-const badDecisions = (h.governed_by ?? []).filter((d) => !decisions.has(d) || ["withdrawn", "superseded"].includes(decisions.get(d).status));
+const badDecisions = (h.governed_by ?? []).filter((d) => !decisions.has(d) || (["withdrawn", "superseded"] as (string | undefined)[]).includes(decisions.get(d)?.status));
 item("every governing decision exists and is in force or proposed", !badDecisions.length, badDecisions.join(", "));
 // A method assignment (such as a MAD A-NNN) belongs to the build method a venture uses, which is
 // not part of Mentura (EE-038); a handoff may cite one, and this does not check it.
@@ -49,10 +50,10 @@ const missingInputs = (h.inputs ?? []).filter((p) => !existsSync(join(root, p)))
 item("every input it needs exists", !missingInputs.length, missingInputs.join(", "));
 
 // 3. The holder can act inside its rights.
-const roles = new Set(load(join(root, "packages/naive/template/governance/roles/agent-roles.json")).roles.map((r) => r.id));
-const classes = new Map(load(join(root, "packages/naive/template/governance/decision-rights.json")).classes.map((c) => [c.id, c]));
+const roles = new Set(load<{ roles: { id: string }[] }>(join(root, "packages/naive/template/governance/roles/agent-roles.json")).roles.map((r) => r.id));
+const classes = new Map(load<DecisionRights>(join(root, "packages/naive/template/governance/decision-rights.json")).classes.map((c) => [c.id, c]));
 const own = join(ventureFile(dir, "governance/decision-rights.json"));
-if (existsSync(own)) for (const c of load(own).classes) classes.set(c.id, { ...classes.get(c.id), ...c });
+if (existsSync(own)) for (const c of load<DecisionRights>(own).classes) classes.set(c.id, { ...classes.get(c.id), ...c });
 item(`role ${h.role} exists`, roles.has(h.role));
 const foreign = h.decision_classes.filter((c) => classes.get(c)?.owner !== h.role);
 item("every decision class it carries belongs to its role", !foreign.length, foreign.join(", "));
@@ -84,9 +85,10 @@ const ready = items.every((i) => i.ok);
 console.log(ready ? `${h.id} is ready to execute.` : `${h.id} is not ready: ask its author before starting.`);
 if (process.argv.includes("--record")) {
   if (!ready) process.exit(1);
-  if (!opt("--by")) { console.error("--record needs --by <role or session>"); process.exit(2); }
+  const by = opt("--by");
+  if (!by) { console.error("--record needs --by <role or session>"); process.exit(2); }
   const version = execSync("git rev-parse --short HEAD", { cwd: root, encoding: "utf8" }).trim();
-  h.ready_check = { at: new Date().toISOString().replace(/\.\d+Z$/, "Z"), by: opt("--by"), version, items: items.length };
+  h.ready_check = { at: new Date().toISOString().replace(/\.\d+Z$/, "Z"), by, version, items: items.length };
   if (h.status === "draft") h.status = "ready";
   writeFileSync(hPath, JSON.stringify(h, null, 2) + "\n");
   console.log(`recorded in ${hPath}`);

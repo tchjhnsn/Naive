@@ -13,28 +13,32 @@ import { LOCAL, MAP, registry } from "../store/connectors/index.mjs";
 import { ANY, CONTEXT, specificity } from "../store/connectors/resolve.mjs";
 import { ventureFile } from "../core/venture-paths.mjs";
 import { readDataModel } from "../records/index.mjs";
+import type { DataModel, KnowledgeSources, SystemsCatalog, Venture } from "../records/types/records.d.ts";
+
+/** One rule of a source map's source-of-truth matrix (EE-042). */
+type Rule = NonNullable<KnowledgeSources["rules"]>[number];
 
 const dir = process.argv[2];
 if (!dir) { console.error("usage: node packages/naive/src/checks/check-sources.ts <workspace or venture dir>"); process.exit(2); }
 const root = new URL("../../../..", import.meta.url).pathname;
-const walk = (d) => readdirSync(d, { withFileTypes: true }).flatMap((e) => e.name === "node_modules" || e.name.startsWith(".") ? []
+const walk = (d: string): string[] => readdirSync(d, { withFileTypes: true }).flatMap((e) => e.name === "node_modules" || e.name.startsWith(".") ? []
   : e.isDirectory() ? walk(join(d, e.name)) : e.name === "venture.json" ? [d] : []);
-const model = readDataModel();
+const model = readDataModel() as DataModel;
 const ventureTypes = new Set(model.records.filter((r) => r.level === "venture").map((r) => r.id));
 const PINNED = new Set(["venture", "provenance", "knowledge-sources"]);
 const reg = registry();
 // The systems a function's truth can live in (EE-083); a connected one must have code that reads it.
-const catalog = JSON.parse(readFileSync(join(root, "packages/naive/src/engine/systems-catalog.json"), "utf8"));
-const errors = [];
+const catalog = JSON.parse(readFileSync(join(root, "packages/naive/src/engine/systems-catalog.json"), "utf8")) as SystemsCatalog;
+const errors: string[] = [];
 let maps = 0;
 
 for (const v of walk(dir)) {
   const f = ventureFile(v, MAP);
   if (!existsSync(f)) continue;
   maps++;
-  const id = JSON.parse(readFileSync(join(v, "venture.json"), "utf8")).id;
-  const m = JSON.parse(readFileSync(f, "utf8"));
-  const ids = new Set([LOCAL]);
+  const id = (JSON.parse(readFileSync(join(v, "venture.json"), "utf8")) as Venture).id;
+  const m = JSON.parse(readFileSync(f, "utf8")) as KnowledgeSources;
+  const ids = new Set<string>([LOCAL]);
   for (const s of m.sources ?? []) {
     const where = `${id}: source ${s.id}`;
     if (ids.has(s.id)) errors.push(`${where}: duplicate id${s.id === LOCAL ? " (venture is the venture's own folder)" : ""}`);
@@ -67,7 +71,7 @@ for (const v of walk(dir)) {
     if (s.status === "connected" && !sys.connect) errors.push(`${id}: ${fn} says ${s.system} is connected, but no code reads ${sys.label} yet; it is pointed`);
     if (s.source && !ids.has(s.source)) errors.push(`${id}: ${fn} names source ${s.source}, which is not in sources`);
   }
-  const overlap = (a, b) => a.record === b.record && ["attribute", ...CONTEXT].every((k) => a[k] === ANY || b[k] === ANY || a[k] === b[k]);
+  const overlap = (a: Rule, b: Rule) => a.record === b.record && ["attribute", ...CONTEXT].every((key) => { const k = key as keyof Rule; return a[k] === ANY || b[k] === ANY || a[k] === b[k]; });
   for (let i = 0; i < rules.length; i++) for (let j = i + 1; j < rules.length; j++)
     if (overlap(rules[i], rules[j]) && specificity(rules[i]) === specificity(rules[j]) && rules[i].attribute === rules[j].attribute)
       errors.push(`${id}: rules ${i + 1} and ${j + 1} (${rules[i].record}) can both hold and tie at the same specificity; narrow one`);

@@ -15,15 +15,16 @@
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { checkOntology, decidePackage } from "../terms/ontology-gate.ts";
+import type { OntologyMetamodelNoun, OntologyMetamodelOntology, Reference } from "../records/types/records.d.ts";
 
 // EE_ROOT points the check at another copy of the repository (used by packages/naive/src/checks/test.ts).
 const root = process.env.EE_ROOT?.replace(/\/?$/, "/") ?? new URL("../../../..", import.meta.url).pathname;
-const { check, nouns } = JSON.parse(readFileSync(join(root, "packages/naive/src/terms/ontology.json"), "utf8"));
+const { check, nouns } = JSON.parse(readFileSync(join(root, "packages/naive/src/terms/ontology.json"), "utf8")) as OntologyMetamodelOntology;
 
 if (process.argv.includes("--md")) {
-  const caps = (n) => n.level === "function" && n.capabilities?.length ? ` Capabilities: ${n.capabilities.join(", ")}.` : "";
-  const row = (n) => `| ${n.noun} | ${n.meaning}${caps(n)} | ${n.standard} | ${(n.references ?? []).join(", ")} | ${n.function ?? ""} | ${n.handoff_type ? "yes" : ""} |`;
-  const lines = [];
+  const caps = (n: OntologyMetamodelNoun) => n.level === "function" && n.capabilities?.length ? ` Capabilities: ${n.capabilities.join(", ")}.` : "";
+  const row = (n: OntologyMetamodelNoun) => `| ${n.noun} | ${n.meaning}${caps(n)} | ${n.standard} | ${(n.references ?? []).join(", ")} | ${n.function ?? ""} | ${n.handoff_type ? "yes" : ""} |`;
+  const lines: string[] = [];
   for (const level of [...new Set(nouns.filter((n) => n.status !== "retired").map((n) => n.level))]) {
     lines.push(`\n### ${level[0].toUpperCase() + level.slice(1)}\n\n| Noun | Meaning | Standard | References | Function | Handoff type |\n| --- | --- | --- | --- | --- | --- |`);
     nouns.filter((n) => n.level === level && n.status !== "retired").forEach((n) => lines.push(row(n)));
@@ -57,13 +58,14 @@ if (packageAt !== -1) {
   }
 }
 
-const walk = (p) => statSync(p).isDirectory()
+const walk = (p: string): string[] => statSync(p).isDirectory()
   ? readdirSync(p).flatMap((e) => walk(join(p, e)))
   : /\.(mdx?|json|mjs)$/.test(p) ? [p] : [];
 const files = check.map((c) => join(root, c)).filter(existsSync).flatMap(walk)
   .filter((f) => !f.endsWith("packages/naive/src/terms/ontology.json") && !f.endsWith("check-nouns.ts"));
-const errors = [];
-for (const n of nouns.filter((x) => x.retired_pattern)) {
+const errors: string[] = [];
+for (const n of nouns) {
+  if (!n.retired_pattern) continue;
   const re = new RegExp(n.retired_pattern, "i");
   for (const f of files) readFileSync(f, "utf8").split("\n").forEach((line, i) => {
     if (re.test(line) && !/\(was|retired/i.test(line)) errors.push(`${f.slice(root.length)}:${i + 1}: retired noun "${n.noun}" (use ${n.replaced_by})`);
@@ -71,12 +73,12 @@ for (const n of nouns.filter((x) => x.retired_pattern)) {
 }
 // Layer references (packages/naive/src/records/layers/<layer>/references), and those of any kit inside a function module
 // (packages/naive/src/functions/<function>/kits/<kit>/references).
-const sub = (d) => existsSync(join(root, d)) ? readdirSync(join(root, d)) : [];
+const sub = (d: string) => existsSync(join(root, d)) ? readdirSync(join(root, d)) : [];
 const LAYERS = "packages/naive/src/records/layers", FUNCTIONS = "packages/naive/src/functions";
 const refFiles = [...sub(LAYERS).map((l) => join(LAYERS, l, "references/references.json")),
   ...sub(FUNCTIONS).flatMap((f) => sub(join(FUNCTIONS, f, "kits")).map((k) => join(FUNCTIONS, f, "kits", k, "references/references.json")))];
 const known = new Set(refFiles.filter((f) => existsSync(join(root, f)))
-  .flatMap((f) => JSON.parse(readFileSync(join(root, f), "utf8")).references.map((r) => r.id)));
+  .flatMap((f) => (JSON.parse(readFileSync(join(root, f), "utf8")) as Reference).references.map((r) => r.id)));
 for (const n of nouns) for (const r of n.references ?? []) if (!known.has(r)) errors.push(`packages/naive/src/terms/ontology.json: ${n.noun} cites unknown reference ${r}`);
 errors.push(...checkOntology(root));
 

@@ -11,10 +11,24 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join, relative } from "node:path";
 import { logical, ventureFile } from "../core/venture-paths.mjs";
 import { roles as roleRegistry } from "../engine/venture-type.mjs";
+import type { VentureRole } from "../records/types/records.d.ts";
 
-const asArray = (x) => Array.isArray(x) ? x : [];
-const registry = () => {
-  try { return new Map(roleRegistry().map((r) => [r.id, r])); } catch { return new Map(); }
+// A JSON object from a record that may be malformed: every field is unknown until checked. The generated record
+// types describe valid records, and this lint reads any.
+type Loose = { readonly [key: string]: unknown };
+/** Missing, malformed, or a parsed object. */
+type Loaded = { status: "missing" } | { status: "malformed" } | { status: "ok", value: Loose };
+/** The fields this lint reads from a decision. */
+type DecisionFields = { status?: unknown, decided_by?: unknown, provenance?: { approved_by?: unknown, drafted_by?: { kind?: unknown, id?: unknown } } };
+type Registry = Map<string, VentureRole["roles"][number]>;
+/** One lint finding. */
+export type Finding = { rule: string, mode: string, file: string, message: string, suggestion: string };
+
+const asArray = (x: unknown): unknown[] => Array.isArray(x) ? x : [];
+// The entries of an array read as objects; a primitive entry reads every field as undefined, as in JavaScript.
+const entries = (x: unknown) => asArray(x) as (Loose | null | undefined)[];
+const registry = (): Registry => {
+  try { return new Map((roleRegistry() as VentureRole["roles"]).map((r) => [r.id, r])); } catch { return new Map(); }
 };
 
 export const RULES = [
@@ -26,7 +40,7 @@ export const RULES = [
 const PLAN_FILES = ["people/team-plan.json", "operations/team-plan.json"];
 
 // Missing, malformed, or a parsed object. Arrays and other JSON are malformed. Never throws.
-function loadRecord(dir, rel) {
+function loadRecord(dir: string, rel: string): Loaded {
   const f = ventureFile(dir, rel);
   if (!existsSync(f)) return { status: "missing" };
   try {
@@ -36,9 +50,9 @@ function loadRecord(dir, rel) {
   } catch { return { status: "malformed" }; }
 }
 
-function decisionRels(dir) {
-  const out = [];
-  const walk = (d) => {
+function decisionRels(dir: string) {
+  const out: string[] = [];
+  const walk = (d: string) => {
     let entries;
     try { entries = readdirSync(d, { withFileTypes: true }); } catch { return; }
     for (const e of entries) {
@@ -54,7 +68,7 @@ function decisionRels(dir) {
   return [...new Set(out)].sort();
 }
 
-function teamPlan(dir) {
+function teamPlan(dir: string): { rel: string } & Loaded {
   for (const rel of PLAN_FILES) {
     const rec = loadRecord(dir, rel);
     if (rec.status !== "missing") return { rel, ...rec };
@@ -62,28 +76,28 @@ function teamPlan(dir) {
   return { rel: PLAN_FILES[0], status: "missing" };
 }
 
-function ownersOf(venture) {
-  const out = new Set();
+function ownersOf(venture: Loose | null) {
+  const out = new Set<string>();
   const fns = venture?.functions;
   if (!fns || typeof fns !== "object" || Array.isArray(fns)) return out;
-  for (const f of Object.values(fns)) if (f && typeof f.owner === "string" && f.owner.trim()) out.add(f.owner.trim());
+  for (const f of Object.values(fns as Record<string, { owner?: unknown } | null>)) if (f && typeof f.owner === "string" && f.owner.trim()) out.add(f.owner.trim());
   return out;
 }
 
 // Structured layout: venture.json functions say who owns each one. Flat layout: hats do.
-function personOwns(p, venture) {
+function personOwns(p: Loose, venture: Loose | null) {
   if (!p || typeof p !== "object") return false;
   if (venture?.layout === "structured" || (venture?.layout === "src" && venture.functions !== undefined)) {
     const owners = ownersOf(venture);
     return [p.id, p.role, p.name].some((x) => typeof x === "string" && owners.has(x.trim()));
   }
-  const hats = asArray(p.hats).filter((h) => typeof h === "string" && h);
+  const hats = asArray(p.hats).filter((h): h is string => typeof h === "string" && h !== "");
   if (!hats.length) return false;
   const departments = asArray(venture?.departments).filter((d) => typeof d === "string");
   return departments.length ? hats.some((h) => departments.includes(h)) : true;
 }
 
-function mustOwn(roleId, reg) {
+function mustOwn(roleId: unknown, reg: Registry) {
   if (typeof roleId !== "string" || !roleId) return false;
   const role = reg.get(roleId);
   return !(role && role.owns_when_solo === false);
@@ -91,19 +105,19 @@ function mustOwn(roleId, reg) {
 
 // A hire is a recruiting entry of kind hire, or a person who is not a founder.
 // Advisors, board members and limited partners are not hires. An unknown role is.
-function isHireRole(roleId, reg) {
+function isHireRole(roleId: string, reg: Registry) {
   const role = reg.get(roleId);
   if (!role) return true;
   return !role.founder && role.kind === "operator";
 }
 
-function namedRoles(plan) {
-  const ids = new Set();
-  for (const r of asArray(plan?.roles)) if (r && typeof r.id === "string" && r.id) ids.add(r.id);
+function namedRoles(plan: Loose) {
+  const ids = new Set<string>();
+  for (const r of entries(plan?.roles)) if (r && typeof r.id === "string" && r.id) ids.add(r.id);
   return ids;
 }
 
-function decisionHasPerson(d, names, checkRoster) {
+function decisionHasPerson(d: DecisionFields, names: Set<unknown>, checkRoster: boolean) {
   const agent = d?.provenance?.drafted_by?.kind === "agent" && typeof d.provenance.drafted_by.id === "string" ? d.provenance.drafted_by.id : null;
   return [d?.provenance?.approved_by, d?.decided_by].some((name) => {
     if (typeof name !== "string" || !name.trim() || name.trim() === agent) return false;
@@ -113,27 +127,28 @@ function decisionHasPerson(d, names, checkRoster) {
 
 export { peopleLintCommands } from "../records/routes/commands.mjs";
 
-export function lint(dir) {
+export function lint(dir: string) {
   const reg = registry();
   const cfg = loadRecord(dir, "naive.config.json");
-  const raw = cfg.status === "ok" ? cfg.value?.people_lint?.rules : null;
-  const rulesCfg = raw && typeof raw === "object" && !Array.isArray(raw) ? raw : {};
+  const raw = cfg.status === "ok" ? (cfg.value as { people_lint?: { rules?: unknown } })?.people_lint?.rules : null;
+  const rulesCfg: Loose = raw && typeof raw === "object" && !Array.isArray(raw) ? raw as Loose : {};
   const rules = RULES.map((r) => {
-    const mode = rulesCfg[r.id] && typeof rulesCfg[r.id] === "object" ? rulesCfg[r.id].mode : undefined;
+    const entry = rulesCfg[r.id];
+    const mode = entry && typeof entry === "object" ? (entry as { mode?: unknown }).mode : undefined;
     return { ...r, mode: mode === "fail-open" || mode === "fail-closed" ? mode : r.mode };
   });
   const modeOf = Object.fromEntries(rules.map((r) => [r.id, r.mode]));
-  const findings = [];
-  const add = (rule, file, message, suggestion) => findings.push({ rule, mode: modeOf[rule], file, message, suggestion });
+  const findings: Finding[] = [];
+  const add = (rule: string, file: string, message: string, suggestion: string) => findings.push({ rule, mode: modeOf[rule], file, message, suggestion });
 
   const ventureRec = loadRecord(dir, "venture.json");
   const venture = ventureRec.status === "ok" ? ventureRec.value : null;
   const roster = loadRecord(dir, "people/people.json");
-  const people = roster.status === "ok" ? asArray(roster.value.people).filter((p) => p && typeof p === "object") : [];
+  const people = roster.status === "ok" ? asArray(roster.value.people).filter((p): p is Loose => Boolean(p) && typeof p === "object") : [];
   const names = new Set(people.flatMap((p) => [p.id, typeof p.name === "string" ? p.name.trim() : ""].filter((x) => typeof x === "string" && x)));
   const plan = teamPlan(dir);
-  const named = plan.status === "ok" ? namedRoles(plan.value) : new Set();
-  const reported = new Set();
+  const named = plan.status === "ok" ? namedRoles(plan.value) : new Set<string>();
+  const reported = new Set<unknown>();
 
   if (roster.status === "ok") for (const p of people) {
     if (!mustOwn(p.role, reg) || personOwns(p, venture)) continue;
@@ -141,7 +156,7 @@ export function lint(dir) {
     const who = p.name || p.id || p.role;
     add("role-no-function", "people/people.json", `${who} is a ${p.role} and owns no function`, `name ${p.id || p.role} as the owner of a function in venture.json, or give them a hat the venture imports`);
   }
-  if (plan.status === "ok") for (const r of asArray(plan.value.roles)) {
+  if (plan.status === "ok") for (const r of entries(plan.value.roles)) {
     if (!r || r.occupant !== "person" || typeof r.id !== "string" || !mustOwn(r.id, reg) || reported.has(r.id)) continue;
     const held = people.some((p) => p.role === r.id && personOwns(p, venture));
     const byId = (venture?.layout === "structured" || (venture?.layout === "src" && venture.functions !== undefined)) && ownersOf(venture).has(r.id);
@@ -150,7 +165,7 @@ export function lint(dir) {
     add("role-no-function", plan.rel, `role ${r.id} owns no function`, `name ${r.id} as a function owner in venture.json, or give the person who holds it a hat`);
   }
 
-  if (plan.status === "ok") for (const rec of asArray(plan.value.recruiting)) {
+  if (plan.status === "ok") for (const rec of entries(plan.value.recruiting)) {
     if (!rec || typeof rec !== "object" || rec.kind !== "hire" || typeof rec.role !== "string" || !rec.role || named.has(rec.role)) continue;
     add("hire-before-plan", plan.rel, `a hire for ${rec.role} is on the books and the team plan does not name that role`, `add ${rec.role} to the team plan before hiring`);
   }
@@ -162,7 +177,7 @@ export function lint(dir) {
 
   for (const rel of decisionRels(dir)) {
     const rec = loadRecord(dir, rel);
-    if (rec.status !== "ok" || rec.value.status !== "decided" || decisionHasPerson(rec.value, names, roster.status === "ok")) continue;
+    if (rec.status !== "ok" || rec.value.status !== "decided" || decisionHasPerson(rec.value as DecisionFields, names, roster.status === "ok")) continue;
     add("decision-no-person", rel, "decided, and no person owns it", "set provenance.approved_by to the person who decided");
   }
 

@@ -20,12 +20,21 @@ import { ventureFile } from "../core/venture-paths.mjs";
 
 const PRODUCT_ID = /^[a-z0-9-]+$/;
 
+// A JSON object from a record that may be malformed: every field is unknown until checked. The generated record
+// types describe valid records, and this lint reads any.
+type Loose = { readonly [key: string]: unknown };
+const isLoose = (v: unknown): v is Loose => !!v && typeof v === "object" && !Array.isArray(v);
+/** A JSON file read, or why it was not. */
+type Read = { status: "ok", record: unknown } | { status: "malformed" } | { status: "missing" };
+/** One lint finding. */
+export type Finding = { rule: string, mode: string, file: string, message: string, suggestion: string };
+
 export const RULES = [
   { id: "no-icp-match", description: "A customer that matches no ICP", severity: "warn", mode: "fail-open" },
   { id: "promise-not-kept", description: "A promise to a customer the product does not keep", severity: "warn", mode: "fail-open" },
 ];
 
-function readJson(dir, rel) {
+function readJson(dir: string, rel: string): Read {
   const p = ventureFile(dir, rel);
   try {
     if (!existsSync(p) || !statSync(p).isFile()) return existsSync(p) ? { status: "malformed" } : { status: "missing" };
@@ -35,7 +44,7 @@ function readJson(dir, rel) {
   }
 }
 
-function listJson(dir, rel) {
+function listJson(dir: string, rel: string): string[] {
   const p = ventureFile(dir, rel);
   try {
     if (!existsSync(p) || !statSync(p).isDirectory()) return [];
@@ -45,16 +54,17 @@ function listJson(dir, rel) {
   }
 }
 
-function addProfile(ids, rec) {
-  if (!rec || typeof rec !== "object") return;
-  if (Array.isArray(rec)) { for (const p of rec) addProfile(ids, p); return; }
-  if (Array.isArray(rec.profiles)) { for (const p of rec.profiles) addProfile(ids, p); return; }
+function addProfile(ids: Set<string>, value: unknown) {
+  if (!value || typeof value !== "object") return;
+  if (Array.isArray(value)) { for (const p of value as unknown[]) addProfile(ids, p); return; }
+  const rec = value as Loose;
+  if (Array.isArray(rec.profiles)) { for (const p of rec.profiles as unknown[]) addProfile(ids, p); return; }
   if (typeof rec.id === "string" && rec.status !== "retired") ids.add(rec.id.trim().replace(/^icp:/i, ""));
 }
 
 /** Profile ids the venture still has. A missing or unreadable record contributes none. */
-function profileIds(dir) {
-  const ids = new Set();
+function profileIds(dir: string) {
+  const ids = new Set<string>();
   const files = listJson(dir, "foundation/icp");
   if (files.length) {
     for (const f of files) {
@@ -72,28 +82,29 @@ function profileIds(dir) {
   return ids;
 }
 
-function modesOf(dir) {
+function modesOf(dir: string) {
   const got = readJson(dir, "naive.config.json");
-  const block = got.status === "ok" && got.record && typeof got.record === "object" && !Array.isArray(got.record) ? got.record.customers_lint : null;
-  const rules = block && typeof block === "object" && !Array.isArray(block) && block.rules && typeof block.rules === "object" && !Array.isArray(block.rules) ? block.rules : {};
+  const block = got.status === "ok" && isLoose(got.record) ? got.record.customers_lint : null;
+  const rules: Loose = isLoose(block) && isLoose(block.rules) ? block.rules : {};
   return RULES.map((r) => {
-    const mode = rules[r.id] && typeof rules[r.id] === "object" ? rules[r.id].mode : undefined;
+    const entry = rules[r.id];
+    const mode = entry && typeof entry === "object" ? (entry as { mode?: unknown }).mode : undefined;
     return { ...r, mode: mode === "fail-open" || mode === "fail-closed" ? mode : r.mode };
   });
 }
 
-function namedIcp(customer) {
+function namedIcp(customer: Loose) {
   if (typeof customer.icp !== "string") return null;
   const id = customer.icp.trim().replace(/^icp:/i, "");
   return id || null;
 }
 
-function promisesOf(customer) {
+function promisesOf(customer: Loose) {
   const raw = Object.hasOwn(customer, "promises") ? customer.promises : Object.hasOwn(customer, "promise") ? [customer.promise] : [];
   if (!Array.isArray(raw)) return [];
-  const out = [];
-  for (const p of raw) {
-    if (!p || typeof p !== "object" || Array.isArray(p) || typeof p.product !== "string" || typeof p.text !== "string") continue;
+  const out: { product: string, text: string }[] = [];
+  for (const p of raw as unknown[]) {
+    if (!isLoose(p) || typeof p.product !== "string" || typeof p.text !== "string") continue;
     const product = p.product.trim();
     const text = p.text.trim();
     if (product && text) out.push({ product, text });
@@ -101,8 +112,7 @@ function promisesOf(customer) {
   return out;
 }
 
-/** @returns {{ status: string, file?: string, record?: any }} */
-function productByKey(dir, id) {
+function productByKey(dir: string, id: string): { status: "missing" } | (Exclude<Read, { status: "missing" }> & { file: string }) {
   for (const rel of [`product/${id}.json`, `products/${id}.json`]) {
     const got = readJson(dir, rel);
     if (got.status !== "missing") return { ...got, file: rel };
@@ -110,13 +120,13 @@ function productByKey(dir, id) {
   return { status: "missing" };
 }
 
-function keeps(record, text) {
-  if (!record || typeof record !== "object" || Array.isArray(record) || record.status === "retired") return false;
+function keeps(record: unknown, text: string) {
+  if (!isLoose(record) || record.status === "retired") return false;
   const hay = [record.job, record.description].filter((x) => typeof x === "string").join("\n").toLowerCase();
   return hay.includes(text.toLowerCase());
 }
 
-function promiseProblem(dir, { product, text }) {
+function promiseProblem(dir: string, { product, text }: { product: string, text: string }) {
   if (!PRODUCT_ID.test(product)) {
     return { message: `promises "${text}" of product key "${product}", which is not a product id`, suggestion: "name the product's id, a record at product/<id>.json" };
   }
@@ -124,7 +134,7 @@ function promiseProblem(dir, { product, text }) {
   if (got.status === "missing") {
     return { message: `promises "${text}", and no product record has the key ${product}`, suggestion: `add product/${product}.json, or take the promise off the customer` };
   }
-  if (got.status !== "ok" || !got.record || typeof got.record !== "object" || Array.isArray(got.record)) {
+  if (got.status !== "ok" || !isLoose(got.record)) {
     return { message: `promises "${text}" of ${product}, and ${got.file} is not readable`, suggestion: `fix ${got.file} so it is a JSON product record` };
   }
   if (got.record.status === "retired") {
@@ -136,16 +146,16 @@ function promiseProblem(dir, { product, text }) {
   return null;
 }
 
-export function lint(dir) {
+export function lint(dir: string) {
   const rules = modesOf(dir);
   const mode = Object.fromEntries(rules.map((r) => [r.id, r.mode]));
-  const findings = [];
-  const add = (rule, file, message, suggestion) => findings.push({ rule, mode: mode[rule], file, message, suggestion });
+  const findings: Finding[] = [];
+  const add = (rule: string, file: string, message: string, suggestion: string) => findings.push({ rule, mode: mode[rule], file, message, suggestion });
   const ids = profileIds(dir);
   for (const name of listJson(dir, "customers")) {
     const rel = `customers/${name}`;
     const got = readJson(dir, rel);
-    if (got.status !== "ok" || !got.record || typeof got.record !== "object" || Array.isArray(got.record)) continue;
+    if (got.status !== "ok" || !isLoose(got.record)) continue;
     const icp = namedIcp(got.record);
     if (!icp || !ids.has(icp)) add("no-icp-match", rel, icp ? `matches no ICP: "${icp}" is not a profile` : "matches no ICP: no icp profile is named", "set icp to a profile id from foundation/icp");
     for (const promise of promisesOf(got.record)) {

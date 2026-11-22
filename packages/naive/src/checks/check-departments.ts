@@ -10,16 +10,17 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { catalog, foldersOf } from "../engine/departments.mjs";
+import type { DepartmentCatalog, Venture } from "../records/types/records.d.ts";
 
 const dir = process.argv[2];
 if (!dir) { console.error("usage: node packages/naive/src/checks/check-departments.ts <workspace or venture dir>"); process.exit(2); }
-const walk = (d) => readdirSync(d, { withFileTypes: true }).flatMap((e) => e.name === "node_modules" || e.name.startsWith(".") ? []
+const walk = (d: string): string[] => readdirSync(d, { withFileTypes: true }).flatMap((e) => e.name === "node_modules" || e.name.startsWith(".") ? []
   : e.isDirectory() ? walk(join(d, e.name)) : e.name === "venture.json" ? [d] : []);
-const byId = new Map(catalog().map((d) => [d.id, d]));
-const errors = [];
+const byId = new Map((catalog() as DepartmentCatalog["departments"]).map((d) => [d.id, d]));
+const errors: string[] = [];
 let ventures = 0, folders = 0;
 for (const v of walk(dir)) {
-  const venture = JSON.parse(readFileSync(join(v, "venture.json"), "utf8"));
+  const venture = JSON.parse(readFileSync(join(v, "venture.json"), "utf8")) as Venture;
   const listed = venture.departments ?? [];
   const found = foldersOf(v);
   if (!listed.length && !found.length) continue;

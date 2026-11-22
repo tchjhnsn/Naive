@@ -10,21 +10,25 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { roles as ROLES, types as TYPES } from "../engine/venture-type.mjs";
 import { ventureFile } from "../core/venture-paths.mjs";
+import type { Founder, People, Venture, VentureRole, VentureTypes } from "../records/types/records.d.ts";
+
+/** people/people.json as this check reads it: hats are strings, since a hat that is not a function is a finding. */
+type Roster = Omit<People, "people"> & { people: (Omit<People["people"][number], "hats"> & { hats?: string[] })[] };
 
 const ws = process.argv[2];
 if (!ws || !existsSync(ws)) { console.error("usage: node packages/naive/src/checks/check-people.ts <workspace>"); process.exit(2); }
-const load = (p) => JSON.parse(readFileSync(p, "utf8"));
-const walk = (d) => readdirSync(d, { withFileTypes: true }).flatMap((e) => e.name === "node_modules" || e.name.startsWith(".") ? []
+const load = <T>(p: string): T => JSON.parse(readFileSync(p, "utf8")) as T;
+const walk = (d: string): string[] => readdirSync(d, { withFileTypes: true }).flatMap((e) => e.name === "node_modules" || e.name.startsWith(".") ? []
   : e.isDirectory() ? walk(join(d, e.name)) : e.name === "venture.json" ? [d] : []);
 
-const types = new Map(TYPES().map((t) => [t.id, t]));
-const roles = new Map(ROLES().map((r) => [r.id, r]));
-const errors = [];
+const types = new Map((TYPES() as VentureTypes["types"]).map((t) => [t.id, t]));
+const roles = new Map((ROLES() as VentureRole["roles"]).map((r) => [r.id, r]));
+const errors: string[] = [];
 let ventures = 0, rosters = 0;
 for (const dir of walk(ws)) {
   ventures++;
-  const v = load(join(dir, "venture.json"));
-  const at = (m) => errors.push(`${v.id}: ${m}`);
+  const v = load<Venture>(join(dir, "venture.json"));
+  const at = (m: string) => errors.push(`${v.id}: ${m}`);
   const type = v.type ? types.get(v.type) : null;
   if (v.type && !type) at(`type ${v.type} is not in packages/naive/src/engine/venture-types.json`);
   const rosterFile = join(ventureFile(dir, "people/people.json"));
@@ -32,18 +36,20 @@ for (const dir of walk(ws)) {
   const files = existsSync(fdir) ? readdirSync(fdir).filter((f) => f.endsWith(".json")) : [];
   if (!existsSync(rosterFile)) { if (files.length) at("people/founders/ has files but there is no people/people.json"); continue; }
   rosters++;
-  const roster = load(rosterFile);
+  const roster = load<Roster>(rosterFile);
+  // contributors is read though the schema has no such field, so a function entry is read with it.
+  const functions = Object.entries(v.functions ?? {}) as [string, { owner: string, contributors?: string[] }][];
   // In the structured layout (EE-086) the org chart is venture.json's functions, and a person's hats are the
   // functions they own there; in the flat layout, the departments venture.json imports, worn as hats in people/.
   const structured = v.layout === "structured" || (v.layout === "src" && v.functions !== undefined);
-  const imported = new Set(structured ? Object.keys(v.functions ?? {}) : v.departments ?? []);
+  const imported = new Set<string>(structured ? Object.keys(v.functions ?? {}) : v.departments ?? []);
   const ids = new Set(roster.people.map((p) => p.id));
   if (structured) {
-    for (const [fn, f] of Object.entries(v.functions ?? {})) {
+    for (const [fn, f] of functions) {
       if (f.owner && !ids.has(f.owner)) at(`venture.json says ${f.owner} owns ${fn}, but people/people.json has no ${f.owner}`);
       for (const c of f.contributors ?? []) if (!ids.has(c) && !roles.has(c)) at(`${fn} names contributor ${c}, who is neither a person in people/ nor a role`);
     }
-    for (const p of roster.people) p.hats = Object.entries(v.functions ?? {}).filter(([, f]) => f.owner === p.id).map(([fn]) => fn);
+    for (const p of roster.people) p.hats = functions.filter(([, f]) => f.owner === p.id).map(([fn]) => fn);
   }
   for (const p of roster.people) {
     const role = roles.get(p.role);
@@ -57,7 +63,7 @@ for (const dir of walk(ws)) {
       if (p.founder_file !== f) at(`${p.id} is a founder, so founder_file is ${f}`);
       else if (!existsSync(ventureFile(dir, f))) at(`${f} is missing`);
       else {
-        const rec = load(ventureFile(dir, f));
+        const rec = load<Founder>(ventureFile(dir, f));
         if (rec.id !== p.id || rec.role !== p.role) at(`${f} says ${rec.id} is a ${rec.role}; the roster says ${p.id} is a ${p.role}`);
         if (!structured && JSON.stringify([...(rec.hats ?? [])].sort()) !== JSON.stringify([...p.hats].sort())) at(`${f} and the roster disagree on ${p.id}'s hats`);
         if (structured && rec.hats) at(`${f} stores hats; in the structured layout they are read from venture.json`);
@@ -68,7 +74,7 @@ for (const dir of walk(ws)) {
   if (roster.mode === "solo") {
     if (roster.people.length !== 1) at(`a solo venture has one person; people/people.json lists ${roster.people.length}`);
     else if (roles.get(roster.people[0].role)?.owns_when_solo && imported.size) {
-      const missing = [...imported].filter((h) => !roster.people[0].hats.includes(h));
+      const missing = [...imported].filter((h) => !roster.people[0].hats?.includes(h));
       if (missing.length) at(`${roster.people[0].id} is alone, so owns every function; missing ${missing.join(", ")}`);
     }
   }

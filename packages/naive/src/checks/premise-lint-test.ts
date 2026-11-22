@@ -11,8 +11,8 @@ import { lint, proposeFindings, ASPECTS } from "./premise-lint.ts";
 import { approve } from "../engine/decisions.mjs";
 
 let failed = 0;
-const ok = (cond, name) => { console.log(`${cond ? "ok  " : "FAIL"}  ${name}`); if (!cond) failed++; };
-const put = (dir, rel, o) => { mkdirSync(join(dir, rel, ".."), { recursive: true }); writeFileSync(join(dir, rel), typeof o === "string" ? o : JSON.stringify(o, null, 2)); };
+const ok = (cond: unknown, name: string) => { console.log(`${cond ? "ok  " : "FAIL"}  ${name}`); if (!cond) failed++; };
+const put = (dir: string, rel: string, o: unknown) => { mkdirSync(join(dir, rel, ".."), { recursive: true }); writeFileSync(join(dir, rel), typeof o === "string" ? o : JSON.stringify(o, null, 2)); };
 
 const dir = mkdtempSync(join(tmpdir(), "premise-lint-"));
 put(dir, "venture.json", { id: "fixture", phase: "discovery", functions: { product: {}, validation: {}, marketing: {} } });
@@ -33,7 +33,7 @@ put(dir, "_drafts/foundation__goals__drafted.json.draft", { id: "drafted", state
 
 const before = readdirSync(join(dir, "foundation/goals")).map((f) => readFileSync(join(dir, "foundation/goals", f), "utf8")).join();
 const all = lint(dir, { config: {} });
-const has = (aspect, record, field) => all.some((f) => f.aspect === aspect && f.record === record && (!field || f.field === field));
+const has = (aspect: string, record: string, field?: string) => all.some((f) => f.aspect === aspect && f.record === record && (!field || f.field === field));
 
 const crit = "foundation/exit-criteria/discovery#problem-graded-moderate";
 ok(all.some((f) => f.record === crit && f.aspect === "undefined-term" && /"moderate"/.test(f.question)), "'problem graded moderate or better' is an undefined term");
@@ -82,10 +82,12 @@ ok(p.every((x) => x.ok) && files.length === p.length && files.every((f) => JSON.
 
 // Rerunning --propose never reopens a decision a person decided, and files nothing twice.
 const [first] = p;
-const decided = approve(dir, first.result.proposed, { by: "Torian", answer: "moderate means a 3 of 5 on the problem rubric", reasons: [{ kind: "for", claim: "the rubric already grades problems" }] });
+const firstResult = first.result;
+if (!firstResult?.proposed || !firstResult.file) throw new Error("the first finding was not proposed");
+const decided = approve(dir, firstResult.proposed, { by: "Torian", answer: "moderate means a 3 of 5 on the problem rubric", reasons: [{ kind: "for", claim: "the rubric already grades problems" }] });
 const again = proposeFindings(dir, all.filter((f) => f.record === crit));
-const rec = JSON.parse(readFileSync(join(dir, first.result.file), "utf8"));
-ok(decided.ok && rec.status === "decided" && !rec.versions && again.every((x) => x.ok && x.result.kept), "rerunning --propose keeps decided and already-filed decisions as they are");
+const rec = JSON.parse(readFileSync(join(dir, firstResult.file), "utf8"));
+ok(decided.ok && rec.status === "decided" && !rec.versions && again.every((x) => x.ok && x.result?.kept), "rerunning --propose keeps decided and already-filed decisions as they are");
 ok(readdirSync(join(dir, "decisions")).filter((f) => f.startsWith("premise-")).length === files.length, "rerunning --propose files no duplicates");
 
 // Measure ids are scoped by goal: two goals with the same measure id do not overwrite each other.
@@ -112,9 +114,9 @@ ok(!f4.some((f) => f.record === "foundation/exit-criteria/discovery#vague" && f.
 
 // Repeated real CLI runs on fresh state.
 const linterPath = new URL("./premise-lint.ts", import.meta.url).pathname;
-const run = (d, ...a) => spawnSync("node", [linterPath, d, "--propose", ...a], { encoding: "utf8" });
-const premiseFiles = (d) => existsSync(join(d, "decisions")) ? readdirSync(join(d, "decisions")).filter((f) => f.startsWith("premise-")) : [];
-const fresh = (statement) => { const d = mkdtempSync(join(tmpdir(), "premise-lint-")); put(d, "venture.json", { id: "fresh", phase: "discovery" }); put(d, "foundation/goals/g.json", { id: "g", statement, kind: "venture", why: "x", owner: "T", measures: [{ id: "m", statement: "m", target: 1 }] }); return d; };
+const run = (d: string, ...a: string[]) => spawnSync("node", [linterPath, d, "--propose", ...a], { encoding: "utf8" });
+const premiseFiles = (d: string) => existsSync(join(d, "decisions")) ? readdirSync(join(d, "decisions")).filter((f) => f.startsWith("premise-")) : [];
+const fresh = (statement: string) => { const d = mkdtempSync(join(tmpdir(), "premise-lint-")); put(d, "venture.json", { id: "fresh", phase: "discovery" }); put(d, "foundation/goals/g.json", { id: "g", statement, kind: "venture", why: "x", owner: "T", measures: [{ id: "m", statement: "m", target: 1 }] }); return d; };
 const d4 = fresh("Grow a good business.");
 const counts = [1, 2, 3, 4].map(() => { run(d4); return premiseFiles(d4).length; });
 const events = () => existsSync(join(d4, "provenance.jsonl")) ? readFileSync(join(d4, "provenance.jsonl"), "utf8") : "";
@@ -174,7 +176,7 @@ ok(redone.ok && JSON.parse(readFileSync(join(d8, "decisions", `${own}.decision.j
 // An unrelated parent does not re-ask a question a person answered.
 const d9 = fresh("Grow a business.");
 put(d9, "foundation/goals/h.json", { id: "h", statement: "Hire.", kind: "venture", why: "x", owner: "T", measures: [{ id: "n", statement: "n" }] });
-const parented = (derives_from, serves) => {
+const parented = (derives_from: string[], serves: string[]) => {
   put(d9, "foundation/requirements/r.json", { id: "r", statement: "Stay reliable.", derives_from, must_hold_by: "discovery", verified_by: { kind: "check", ref: "x" } });
   put(d9, "foundation/exit-criteria/discovery.json", { phase: "discovery", criteria: [{ id: "c", statement: "Done", serves }] });
 };

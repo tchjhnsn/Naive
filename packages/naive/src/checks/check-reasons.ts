@@ -11,11 +11,14 @@ import { existsSync, readdirSync } from "node:fs";
 import { join, relative } from "node:path";
 import { decisions } from "../engine/decisions.mjs";
 
+/** A decision as decisions() lists it, with the cited reasons that changed since approval. */
+type Decided = { id: string, reasons_changed?: { ref: string }[] };
+
 if (import.meta.url === `file://${process.argv[1]}`) {
   const arg = process.argv[2];
   if (!arg) { console.error("usage: node packages/naive/src/checks/check-reasons.ts <venture or workspace dir> [--json]"); process.exit(2); }
-  const walk = (d) => existsSync(join(d, "venture.json")) ? [d] : readdirSync(d, { withFileTypes: true }).filter((e) => e.isDirectory() && !e.name.startsWith(".") && !e.name.startsWith("_")).flatMap((e) => walk(join(d, e.name)));
-  const found = walk(arg).flatMap((dir) => decisions(dir).decisions.filter((d) => d.reasons_changed?.length).flatMap((d) => d.reasons_changed.map((c) => ({ dir: relative(process.cwd(), dir) || ".", id: d.id, ...c }))));
+  const walk = (d: string): string[] => existsSync(join(d, "venture.json")) ? [d] : readdirSync(d, { withFileTypes: true }).filter((e) => e.isDirectory() && !e.name.startsWith(".") && !e.name.startsWith("_")).flatMap((e) => walk(join(d, e.name)));
+  const found = walk(arg).flatMap((dir) => decisions(dir).decisions.filter((d: Decided) => d.reasons_changed?.length).flatMap((d: Decided) => (d.reasons_changed ?? []).map((c) => ({ dir: relative(process.cwd(), dir) || ".", id: d.id, ...c }))));
   if (process.argv.includes("--json")) console.log(JSON.stringify(found, null, 2));
   else for (const f of found) console.log(`STALE  ${f.dir}: the reason you decided ${f.id} changed: ${f.ref}`);
   if (!found.length && !process.argv.includes("--json")) console.log("no decided decision's reasons changed");

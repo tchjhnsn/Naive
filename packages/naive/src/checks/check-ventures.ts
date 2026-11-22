@@ -13,30 +13,32 @@
 import { ventureFile } from "../core/venture-paths.mjs";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, join } from "node:path";
+import type { Account, Product, Venture } from "../records/types/records.d.ts";
 
 const models = (() => {
-  const b = JSON.parse(readFileSync(new URL("../records/vocab/business-models.json", import.meta.url), "utf8"));
+  const b = JSON.parse(readFileSync(new URL("../records/vocab/business-models.json", import.meta.url), "utf8")) as { patterns: { id: string }[], extras: { id: string }[] };
   return new Set([...b.patterns, ...b.extras].map((m) => m.id));
 })();
 
 const dir = process.argv[2];
 if (!dir) { console.error("usage: node packages/naive/src/checks/check-ventures.ts <dir>"); process.exit(2); }
-const load = (p) => JSON.parse(readFileSync(p, "utf8"));
+const load = <T>(p: string): T => JSON.parse(readFileSync(p, "utf8")) as T;
 // node_modules is skipped, as the other checks skip it: an installed framework carries example ventures.
-const walk = (d) => readdirSync(d, { withFileTypes: true }).flatMap((e) => e.name === "node_modules" || e.name.startsWith(".") ? []
+const walk = (d: string): string[] => readdirSync(d, { withFileTypes: true }).flatMap((e) => e.name === "node_modules" || e.name.startsWith(".") ? []
   : e.isDirectory() ? walk(join(d, e.name)) : e.name === "venture.json" ? [join(d, e.name)] : []);
-const jsonIn = (d) => existsSync(d) ? readdirSync(d).filter((f) => f.endsWith(".json")).map((f) => join(d, f)) : [];
-const accountsIn = (d) => existsSync(d) ? readdirSync(d).map((c) => join(d, c, "account.json")).filter(existsSync) : [];
+const jsonIn = (d: string) => existsSync(d) ? readdirSync(d).filter((f) => f.endsWith(".json")).map((f) => join(d, f)) : [];
+const accountsIn = (d: string) => existsSync(d) ? readdirSync(d).map((c) => join(d, c, "account.json")).filter(existsSync) : [];
 
-const ventures = new Map();
-const errors = [], warnings = [];
+// Keyed by id as read; a parent of null finds nothing, as with any unknown id.
+const ventures = new Map<string | null, Venture & { products: Product[], accounts: Account[] }>();
+const errors: string[] = [], warnings: string[] = [];
 for (const f of walk(dir)) {
-  const v = load(f);
+  const v = load<Venture>(f);
   if (ventures.has(v.id)) errors.push(`${f}: duplicate venture id ${v.id}`);
   const root = dirname(f);
   for (const [k, l] of Object.entries(v.layers ?? {})) if (l && !existsSync(ventureFile(root, l.location))) errors.push(`${v.id}: ${k} layer location ${l.location} not found (relative to the venture folder)`);
   const productFiles = [...jsonIn(ventureFile(root, "product")), ...jsonIn(ventureFile(root, "products"))];
-  ventures.set(v.id, { ...v, products: productFiles.map(load), accounts: accountsIn(ventureFile(root, "accounts")).map(load) });
+  ventures.set(v.id, { ...v, products: productFiles.map((p) => load<Product>(p)), accounts: accountsIn(ventureFile(root, "accounts")).map((a) => load<Account>(a)) });
 }
 if (!ventures.size) { console.error(`no venture.json found under ${dir}`); process.exit(1); }
 
@@ -50,7 +52,7 @@ for (const v of ventures.values()) {
     }
   }
   for (const l of v.links ?? []) if (!ventures.has(l.to)) errors.push(`${v.id}: link to unknown venture ${l.to}`);
-  const ids = new Set();
+  const ids = new Set<string>();
   for (const p of v.products) {
     if (ids.has(p.id)) errors.push(`${v.id}: duplicate product id ${p.id}`);
     ids.add(p.id);
@@ -64,8 +66,8 @@ for (const v of ventures.values()) {
     if (sc?.level === "layer" && !sc.layer) errors.push(`${v.id}/${p.id}: a layer-scoped product names its layer`);
     if (sc?.level === "tier" && (!sc.tier || (sc.layer && sc.layer !== "operations"))) errors.push(`${v.id}/${p.id}: a tier-scoped product names its tier, which sits in the operations layer`);
   }
-  const repos = new Set(); // a venture may use its own repos or a parent's (EE-020)
-  for (let a = v; a; a = ventures.get(a.parent)) for (const r of a.repos ?? []) repos.add(r.id);
+  const repos = new Set<string>(); // a venture may use its own repos or a parent's (EE-020)
+  for (let a: typeof v | undefined = v; a; a = ventures.get(a.parent)) for (const r of a.repos ?? []) repos.add(r.id);
   for (const r of v.repos ?? []) for (const t of r.products ?? []) if (!ids.has(t)) errors.push(`${v.id}/repos/${r.id}: holds unknown product ${t}`);
   for (const p of v.products) {
     if (p.software && !repos.size) errors.push(`${v.id}/${p.id}: builds software, so the venture (or a parent) needs a repository in repos`);
@@ -78,5 +80,5 @@ for (const v of ventures.values()) {
 
 for (const w of warnings) console.warn(`warning: ${w}`);
 if (errors.length) { console.error(errors.join("\n")); process.exit(1); }
-const count = (k) => [...ventures.values()].reduce((n, v) => n + v[k].length, 0);
+const count = (k: "products" | "accounts") => [...ventures.values()].reduce((n, v) => n + v[k].length, 0);
 console.log(`${ventures.size} ventures, ${count("products")} products, ${count("accounts")} accounts: all cross-venture rules hold.`);

@@ -24,30 +24,31 @@ import { ventureFile } from "../core/venture-paths.mjs";
 import { measures } from "../engine/canonical.mjs";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
+import type { AgentCapability, DecisionRights, LeadPlan, RoleTemplate, TeamPlan, Venture } from "../records/types/records.d.ts";
 
 const dir = process.argv[2];
 if (!dir) { console.error("usage: node packages/naive/src/checks/check-team.ts <workspace or venture dir>"); process.exit(2); }
 const repo = new URL("../../../..", import.meta.url).pathname;
-const load = (p) => JSON.parse(readFileSync(p, "utf8"));
-const walk = (d) => readdirSync(d, { withFileTypes: true }).flatMap((e) => e.name === "node_modules" || e.name.startsWith(".") ? []
+const load = <T>(p: string): T => JSON.parse(readFileSync(p, "utf8")) as T;
+const walk = (d: string): string[] => readdirSync(d, { withFileTypes: true }).flatMap((e) => e.name === "node_modules" || e.name.startsWith(".") ? []
   : e.isDirectory() ? walk(join(d, e.name)) : e.name === "venture.json" ? [d] : []);
 const PHASES = ["discovery", "validation", "beachhead", "scale", "platform"];
-const registry = new Map(load(join(repo, "packages/naive/template/governance/roles/agent-roles.json")).roles.map((r) => [r.id, r]));
-const template = load(join(repo, "packages/naive/template/governance/decision-rights.json"));
-const caps = load(join(repo, "packages/naive/src/functions/human-capital/capabilities/agent-capabilities.json"));
-const errors = [], warnings = [], recruitNow = [];
+const registry = new Map(load<{ roles: { id: string, occupant?: string }[] }>(join(repo, "packages/naive/template/governance/roles/agent-roles.json")).roles.map((r) => [r.id, r]));
+const template = load<DecisionRights>(join(repo, "packages/naive/template/governance/decision-rights.json"));
+const caps = load<AgentCapability>(join(repo, "packages/naive/src/functions/human-capital/capabilities/agent-capabilities.json"));
+const errors: string[] = [], warnings: string[] = [], recruitNow: string[] = [];
 const { routes, glob: routeGlob } = await import("../records/routes/routes.mjs");
-const routeList = routes().map((r) => r.route.replace("[id]", "x"));
+const routeList: string[] = routes().map((r: { route: string }) => r.route.replace("[id]", "x"));
 // A glob with no wildcard may name one item of a collection, such as operations/lead/growth-lead.
-const items = routes().filter((r) => r.route.includes("[id]")).map((r) => new RegExp(`^${r.route.replace(/[.+^${}()|\\]/g, "\\$&").replace("[id]", "[a-z0-9-]+")}$`));
-const reachesRoute = (g) => routeList.some((x) => routeGlob(g).test(x)) || items.some((re) => re.test(g));
+const items: RegExp[] = routes().filter((r: { route: string }) => r.route.includes("[id]")).map((r: { route: string }) => new RegExp(`^${r.route.replace(/[.+^${}()|\\]/g, "\\$&").replace("[id]", "[a-z0-9-]+")}$`));
+const reachesRoute = (g: string) => routeList.some((x) => routeGlob(g).test(x)) || items.some((re) => re.test(g));
 
 // Role templates by id: the template's, overlaid by a venture's own governance/roles (as check-delegation.ts reads them).
-const rolesIn = (d) => existsSync(d) ? readdirSync(d).filter((f) => f.endsWith(".json")).map((f) => load(join(d, f))).filter((r) => r.id && !Array.isArray(r.roles)) : [];
+const rolesIn = (d: string): RoleTemplate[] => existsSync(d) ? readdirSync(d).filter((f) => f.endsWith(".json")).map((f) => load<RoleTemplate & { roles?: unknown }>(join(d, f))).filter((r) => r.id && !Array.isArray(r.roles)) : [];
 const templateRoles = rolesIn(join(repo, "packages/naive/template/governance/roles"));
 // What a lead may write: its own plan, decisions and handoffs. Checked against every route a glob reaches.
-const leadMayWrite = (id, route) => route === `operations/lead/${id}` || /^decisions(\/|$)/.test(route) || /^operations\/handoff(\/|$)/.test(route);
-const LEAD_WRITES = (id) => `its lead plan (operations/lead/${id}), decisions/* and operations/handoff/*`;
+const leadMayWrite = (id: string, route: string) => route === `operations/lead/${id}` || /^decisions(\/|$)/.test(route) || /^operations\/handoff(\/|$)/.test(route);
+const LEAD_WRITES = (id: string) => `its lead plan (operations/lead/${id}), decisions/* and operations/handoff/*`;
 
 const capIds = caps.capabilities.map((c) => c.id);
 if (new Set(capIds).size !== capIds.length) errors.push("agent-capabilities.json: duplicate ids");
@@ -62,22 +63,22 @@ const cap = new Map(caps.capabilities.map((c) => [c.id, c]));
 
 let checked = 0;
 for (const root of walk(dir)) {
-  const v = load(ventureFile(root, "venture.json"));
+  const v = load<Venture>(ventureFile(root, "venture.json"));
   const pPath = [ventureFile(root, "people/team-plan.json"), ventureFile(root, "operations/team-plan.json")].find((p) => existsSync(p)) ?? ventureFile(root, "operations/team-plan.json");
   if (!existsSync(pPath)) continue;
   checked++;
-  const plan = load(pPath), at = `${v.id}/operations/team-plan.json`;
+  const plan = load<TeamPlan>(pPath), at = `${v.id}/operations/team-plan.json`;
   // The venture's decision rights: the template, tightened by the venture's own file.
   const classes = new Map(template.classes.map((c) => [c.id, c]));
   const own = ventureFile(root, "governance/decision-rights.json");
-  if (existsSync(own)) for (const c of load(own).classes) classes.set(c.id, { ...classes.get(c.id), ...c });
+  if (existsSync(own)) for (const c of load<DecisionRights>(own).classes) classes.set(c.id, { ...classes.get(c.id), ...c });
   const ids = plan.roles.map((r) => r.id);
   if (new Set(ids).size !== ids.length) errors.push(`${at}: duplicate role ids`);
   const persons = new Set(plan.roles.filter((r) => r.occupant === "person").map((r) => r.id));
   const leads = new Map([...templateRoles, ...rolesIn(ventureFile(root, "governance/roles"))].map((r) => [r.id, r]));
   for (const [id, r] of leads) if (!r.portfolio) leads.delete(id);
   // Telos measures through the canonical core: the goals' measures, else the unmigrated telos's (telos-to-goals keeps the ids).
-  const measureIds = new Set(measures(root).map((m) => m.id));
+  const measureIds = new Set<string>(measures(root).map((m: { id: string }) => m.id));
   const leadsDir = ventureFile(root, "operations/leads");
   for (const f of existsSync(leadsDir) ? readdirSync(leadsDir).filter((f) => f.endsWith(".json")) : []) {
     const id = f.slice(0, -5);
@@ -107,11 +108,13 @@ for (const root of walk(dir)) {
       const lat = `${v.id}/operations/leads/${r.id}.json`;
       if (!existsSync(lp)) errors.push(`${at}: ${r.id} is a lead with no lead plan (operations/leads/${r.id}.json), so it is bound to no telos measure`);
       else {
-        const pl = load(lp);
+        const pl = load<LeadPlan>(lp);
         if (pl.lead !== r.id) errors.push(`${lat}: names lead ${pl.lead}, not ${r.id}`);
         if (!pl.measures?.length) errors.push(`${lat}: ${r.id} is bound to no telos measure; a lead with no outcome has no basis for choosing between tasks`);
         for (const m of pl.measures ?? []) if (!measureIds.has(m)) errors.push(`${lat}: measure ${m} is not a telos measure id${measureIds.size ? "" : " (the venture has no measures)"}`);
-        for (const f of pl.portfolio ?? []) if (!lead.portfolio.includes(f)) errors.push(`${lat}: portfolio function ${f} is not in ${r.id}'s portfolio (${lead.portfolio.join(", ")})`);
+        // Only roles with a portfolio stay in leads.
+        const portfolio = lead.portfolio ?? [];
+        for (const f of pl.portfolio ?? []) if (!portfolio.includes(f)) errors.push(`${lat}: portfolio function ${f} is not in ${r.id}'s portfolio (${portfolio.join(", ")})`);
         for (const b of pl.bets ?? []) {
           for (const m of b.measures ?? []) if (!(pl.measures ?? []).includes(m)) errors.push(`${lat}: bet ${b.id} serves measure ${m}, which the plan does not bind`);
           for (const h of b.handoffs ?? []) if (!existsSync(ventureFile(root, `operations/handoffs/${h}.json`))) errors.push(`${lat}: bet ${b.id} cites handoff ${h}, which does not exist`);

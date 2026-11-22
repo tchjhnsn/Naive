@@ -24,9 +24,18 @@ const PRICING = ["validation/pricing.json", "purpose/validation/pricing.json"];
 const COSTS = "finance/costs.json";
 const METRICS = "finance/metrics.json";
 
-const load = (f) => { try { return JSON.parse(readFileSync(f, "utf8")); } catch { return null; } };
-const num = (v) => (typeof v === "number" && Number.isFinite(v) ? v : null);
-const asText = (v) => (typeof v === "string" ? v : Array.isArray(v) ? v.filter((x) => typeof x === "string").join("\n") : "");
+// A JSON object from a record that may be malformed: every field is unknown until checked. The generated record
+// types describe valid records, and this lint reads any. isObject lets arrays through, as the checks it replaces did.
+type Loose = { readonly [key: string]: unknown };
+const isObject = (v: unknown): v is Loose => !!v && typeof v === "object";
+const isLoose = (v: unknown): v is Loose => isObject(v) && !Array.isArray(v);
+/** One lint finding. */
+export type Finding = { rule: string, mode: string, file: string, message: string, suggestion: string };
+type Add = (rule: string, file: string, message: string, suggestion: string) => void;
+
+const load = (f: string): unknown => { try { return JSON.parse(readFileSync(f, "utf8")); } catch { return null; } };
+const num = (v: unknown) => (typeof v === "number" && Number.isFinite(v) ? v : null);
+const asText = (v: unknown) => (typeof v === "string" ? v : Array.isArray(v) ? (v as unknown[]).filter((x) => typeof x === "string").join("\n") : "");
 
 export const RULES = [
   { id: "spend-no-runway", description: "A spend decision with no runway impact", severity: "warn", mode: "fail-open" },
@@ -38,9 +47,9 @@ const SPEND_ID = /(^|[.-])spend([.-]|$)/i;
 const SPEND_WORD = /\b(spend|spending)\b/i;
 
 // Every decisions/*.decision.json under the venture, skipping hidden folders, drafts, code and nested ventures.
-function decisionFiles(dir) {
-  const out = [];
-  const walk = (d, depth) => {
+function decisionFiles(dir: string) {
+  const out: string[] = [];
+  const walk = (d: string, depth: number) => {
     let entries;
     try { entries = readdirSync(d, { withFileTypes: true }); } catch { return; }
     for (const e of entries) {
@@ -56,45 +65,47 @@ function decisionFiles(dir) {
   return out.sort();
 }
 
-function phaseOf(venture) {
-  const phase = venture && typeof venture === "object" ? venture.phase : undefined;
-  return PHASES.includes(phase) ? phase : null;
+function phaseOf(venture: unknown) {
+  const phase = isObject(venture) ? venture.phase : undefined;
+  return typeof phase === "string" && PHASES.includes(phase) ? phase : null;
 }
 
-function modesOf(config) {
-  const cfg = config && typeof config === "object" ? config.finance_lint?.rules : undefined;
+function modesOf(config: unknown) {
+  const block = isObject(config) ? config.finance_lint : undefined;
+  const cfg = isObject(block) ? block.rules : undefined;
   const rules = RULES.map((r) => {
-    const mode = cfg && typeof cfg === "object" ? cfg[r.id]?.mode : undefined;
+    const entry = isObject(cfg) ? cfg[r.id] : undefined;
+    const mode = isObject(entry) ? entry.mode : undefined;
     return { ...r, mode: mode === "fail-open" || mode === "fail-closed" ? mode : r.mode };
   });
-  return { rules, mode: Object.fromEntries(rules.map((r) => [r.id, r.mode])) };
+  return { rules, mode: Object.fromEntries(rules.map((r) => [r.id, r.mode])) as Record<string, string> };
 }
 
 // A spend decision names spend in its id or question. Withdrawn decisions are closed and are not checked.
-function isSpend(d) {
-  if (!d || typeof d !== "object" || Array.isArray(d) || d.status === "withdrawn") return false;
+function isSpend(d: unknown) {
+  if (!isLoose(d) || d.status === "withdrawn") return false;
   const id = typeof d.id === "string" ? d.id : "";
   const question = typeof d.question === "string" ? d.question : "";
   return SPEND_ID.test(id) || SPEND_WORD.test(id) || SPEND_WORD.test(question);
 }
 
 // Runway impact is said in the answer, the note or an option: the word runway, or a citation of the money summary.
-function hasRunwayImpact(d) {
+function hasRunwayImpact(d: Loose) {
   const text = [asText(d.answer), asText(d.note), asText(d.options)].join("\n");
   return /\brunway\b/i.test(text) || /money\/_summary\.json/.test(text) || /purpose\/money\/summary/.test(text);
 }
 
-function costList(record) {
-  if (Array.isArray(record)) return record;
-  if (record && typeof record === "object" && Array.isArray(record.costs)) return record.costs;
-  if (record && typeof record === "object" && Array.isArray(record.points)) return record.points;
+function costList(record: unknown): unknown[] {
+  if (Array.isArray(record)) return record as unknown[];
+  if (isObject(record) && Array.isArray(record.costs)) return record.costs as unknown[];
+  if (isObject(record) && Array.isArray(record.points)) return record.points as unknown[];
   return [];
 }
 
-function costsByName(record) {
-  const map = new Map();
+function costsByName(record: unknown) {
+  const map = new Map<string, { amount: number, currency: string | null }>();
   for (const item of costList(record)) {
-    if (!item || typeof item !== "object" || typeof item.name !== "string") continue;
+    if (!isObject(item) || typeof item.name !== "string") continue;
     const amount = num(item.amount ?? item.cost);
     if (amount == null) continue;
     map.set(item.name, { amount, currency: typeof item.currency === "string" ? item.currency : null });
@@ -102,23 +113,25 @@ function costsByName(record) {
   return map;
 }
 
-function priceFindings(dir, add) {
+function priceFindings(dir: string, add: Add) {
   const costs = costsByName(load(ventureFile(dir, COSTS)));
-  const seen = new Set();
+  const seen = new Set<string>();
   for (const rel of PRICING) {
     const record = load(ventureFile(dir, rel));
-    if (!record || typeof record !== "object" || seen.has(rel)) continue;
+    if (!isObject(record) || seen.has(rel)) continue;
     seen.add(rel);
-    const points = Array.isArray(record.points) ? record.points : [];
+    const points = Array.isArray(record.points) ? record.points as unknown[] : [];
     for (const pt of points) {
-      if (!pt || typeof pt !== "object") continue;
+      if (!isObject(pt)) continue;
       const price = num(pt.amount);
       let cost = num(pt.cost);
       let costCurrency = typeof pt.currency === "string" ? pt.currency : null;
       if (cost == null && typeof pt.name === "string" && costs.has(pt.name)) {
         const c = costs.get(pt.name);
-        cost = c.amount;
-        costCurrency = c.currency ?? costCurrency;
+        if (c) {
+          cost = c.amount;
+          costCurrency = c.currency ?? costCurrency;
+        }
       }
       if (price == null || cost == null) continue;
       const priceCurrency = typeof pt.currency === "string" ? pt.currency : null;
@@ -131,33 +144,33 @@ function priceFindings(dir, add) {
   }
 }
 
-function metricFindings(dir, phase, add) {
+function metricFindings(dir: string, phase: string | null, add: Add) {
   if (!phase) return;
   const record = load(ventureFile(dir, METRICS));
-  if (!record || typeof record !== "object" || Array.isArray(record)) return;
-  const list = Array.isArray(record.metrics) ? record.metrics : [];
+  if (!isLoose(record)) return;
+  const list = Array.isArray(record.metrics) ? record.metrics as unknown[] : [];
   for (const metric of list) {
-    if (!metric || typeof metric !== "object" || typeof metric.id !== "string" || !metric.id) continue;
-    const targets = metric.targets && typeof metric.targets === "object" && !Array.isArray(metric.targets) ? metric.targets : {};
+    if (!isObject(metric) || typeof metric.id !== "string" || !metric.id) continue;
+    const targets: Loose = isLoose(metric.targets) ? metric.targets : {};
     const target = targets[phase];
     if (typeof target === "number" && Number.isFinite(target)) continue;
     add("metric-no-target", METRICS, `${metric.id} has no numeric target for ${phase}`, `Set targets.${phase} to the number ${metric.id} should hit in ${phase}`);
   }
 }
 
-export function lint(dir) {
+export function lint(dir: string) {
   const { rules, mode } = modesOf(load(ventureFile(dir, "naive.config.json")));
   const phase = phaseOf(load(ventureFile(dir, "venture.json")));
-  const findings = [];
-  const add = (rule, file, message, suggestion) => findings.push({ rule, mode: mode[rule], file, message, suggestion });
+  const findings: Finding[] = [];
+  const add = (rule: string, file: string, message: string, suggestion: string) => findings.push({ rule, mode: mode[rule], file, message, suggestion });
 
-  const seen = new Set();
+  const seen = new Set<string>();
   for (const abs of decisionFiles(dir)) {
     const rel = logical(dir, relative(dir, abs)).split(sep).join("/");
     if (!rel || seen.has(rel)) continue;
     seen.add(rel);
     const d = load(ventureFile(dir, rel));
-    if (!isSpend(d)) continue;
+    if (!isLoose(d) || !isSpend(d)) continue;
     if (!hasRunwayImpact(d)) add("spend-no-runway", rel, "spend decision does not say what it does to runway", "Say the runway impact in the answer, and cite money/_summary.json");
   }
   priceFindings(dir, add);

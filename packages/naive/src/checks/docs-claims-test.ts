@@ -7,9 +7,9 @@ import { join } from "node:path";
 
 const repo = new URL("../../../..", import.meta.url).pathname;
 const dir = mkdtempSync(join(tmpdir(), "docs-claims-"));
-const run = (text, ext = ".md") => { const f = join(dir, `${Math.random().toString(36).slice(2)}${ext}`); writeFileSync(f, text); return spawnSync("node", ["packages/naive/src/checks/check-docs-claims.ts", f], { cwd: repo, encoding: "utf8" }); };
+const run = (text: string, ext = ".md") => { const f = join(dir, `${Math.random().toString(36).slice(2)}${ext}`); writeFileSync(f, text); return spawnSync("node", ["packages/naive/src/checks/check-docs-claims.ts", f], { cwd: repo, encoding: "utf8" }); };
 let failed = 0;
-const expect = (name, text, ok, pattern, ext) => {
+const expect = (name: string, text: string, ok: boolean, pattern?: RegExp | null, ext?: string) => {
   const r = run(text, ext);
   const good = (r.status === 0) === ok && (!pattern || pattern.test(r.stdout));
   if (!good) failed++;
@@ -52,8 +52,8 @@ const tree = join(dir, "tree");
 for (const d of ["packages/naive/src/engine", "packages/naive/src/checks", "packages/naive/src/records", "purpose/deep", "interface"]) mkdirSync(join(tree, d), { recursive: true });
 for (const r of ["packages/naive/src/engine/README.md", "packages/naive/src/checks/README.md", "packages/naive/src/records/README.md", "purpose/README.md", "purpose/deep/README.md"]) writeFileSync(join(tree, r), "");
 mkdirSync(join(tree, "purpose/deep/playbooks"), { recursive: true });
-const owedOf = (input) => spawnSync("node", ["packages/naive/src/checks/check-docs-claims.ts", "--readmes", "--root", tree], { cwd: repo, encoding: "utf8", input }).stdout.trim();
-const owed = [
+const owedOf = (input: string) => spawnSync("node", ["packages/naive/src/checks/check-docs-claims.ts", "--readmes", "--root", tree], { cwd: repo, encoding: "utf8", input }).stdout.trim();
+const owed: [string, string, string][] = [
   ["code next to a README owes that README", "packages/naive/src/engine/x.mjs\n", "packages/naive/src/engine/README.md"],
   ["a lint owes the checks README", "packages/naive/src/checks/lint-finance.ts\n", "packages/naive/src/checks/README.md"],
   ["a playbook with no README in its package owes none", "packages/naive/library/packages/finance/playbooks/bessemer-saas-metrics.md\n", ""],
@@ -73,9 +73,9 @@ const workflow = readFileSync(join(repo, ".github/workflows/docs-required.yml"),
 const wired = workflow.includes('echo "$changed" | node packages/naive/src/checks/check-docs-claims.ts --scanned') && workflow.includes('echo "$changed" | node packages/naive/src/checks/check-docs-claims.ts --readmes') && workflow.includes('echo "$changed" | node packages/naive/src/checks/check-docs-claims.ts --code');
 if (!wired) failed++;
 console.log(`${wired ? "pass" : "FAIL"}  the docs-required workflow asks this linter which changes are docs`);
-const check = (name, good, detail) => { if (!good) failed++; console.log(`${good ? "pass" : "FAIL"}  ${name}${good ? "" : `\n  ${detail}`}`); };
+const check = (name: string, good: boolean, detail: string) => { if (!good) failed++; console.log(`${good ? "pass" : "FAIL"}  ${name}${good ? "" : `\n  ${detail}`}`); };
 const escapePattern = workflow.match(/grep -qE '([^']+)'/)?.[1] ?? "";
-const escapes = (body) => spawnSync("grep", ["-qE", escapePattern], { input: body }).status === 0;
+const escapes = (body: string) => spawnSync("grep", ["-qE", escapePattern], { input: body }).status === 0;
 const message = workflow.split("\n").find((l) => l.includes("or start a line")) ?? "";
 const example = message.match(/for example: (.+?)\.?"$/)?.[1] ?? "";
 for (const [name, body, ok] of [
@@ -89,10 +89,10 @@ for (const [name, body, ok] of [
   ["a blank reason before CR", "No docs change: \r\n", false],
   ["a blank reason after a tab", "No docs change:\t\n", false],
   ["the failure message's own example", example, true],
-]) check(`the escape line ${ok ? "takes" : "rejects"} ${name}`, escapes(body) === ok, `pattern ${escapePattern}`);
+] as [string, string, boolean][]) check(`the escape line ${ok ? "takes" : "rejects"} ${name}`, escapes(body) === ok, `pattern ${escapePattern}`);
 check("the failure message never offers the placeholder", message !== "" && !workflow.includes("'No docs change: <"), message);
 const codeLine = workflow.split("\n").find((l) => l.trim().startsWith("code="))?.trim() ?? "";
-const codeOf = (changed) => spawnSync("bash", ["-c", `${codeLine}\nprintf %s "$code"`], { cwd: repo, encoding: "utf8", env: { ...process.env, changed } }).stdout.trim();
+const codeOf = (changed: string) => spawnSync("bash", ["-c", `${codeLine}\nprintf %s "$code"`], { cwd: repo, encoding: "utf8", env: { ...process.env, changed } }).stdout.trim();
 check("the workflow's code is any non-Markdown file", codeOf("schema/notes.md\npurpose/x.mdx\ndocs/a.mjs") === "" && codeOf("schema/data.json\nschema/notes.md") === "schema/data.json", codeLine);
 check("the workflow's code skips playbooks but keeps playbook schemas", codeOf("packages/naive/src/functions/strategy/playbooks/torians-playbook.json\npackages/naive/library/packages/finance/playbooks/x.json") === "" && codeOf("packages/naive/src/records/playbook.schema.json") === "packages/naive/src/records/playbook.schema.json", codeLine);
 const all = spawnSync("node", ["packages/naive/src/checks/check-docs-claims.ts"], { cwd: repo, encoding: "utf8" });

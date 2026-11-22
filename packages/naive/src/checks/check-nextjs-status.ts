@@ -15,6 +15,7 @@
 
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
+import type { NextjsStatus } from "../records/types/records.d.ts";
 
 const repo = new URL("../../../..", import.meta.url).pathname;
 const LEDGER = "docs/design/NAIVE_NEXTJS_TRANSLATION_2026-10-28.md";
@@ -28,9 +29,9 @@ if (PAGES_ONLY && !DOCS) { console.error("--pages-only needs --docs <dir>, the d
 const STATES = ["built", "partial", "not built", "n/a"];
 
 const ids = [...readFileSync(join(repo, LEDGER), "utf8").matchAll(/^\| ([A-Z]-\d+) \|/gm)].map((m) => m[1]);
-const data = JSON.parse(readFileSync(join(repo, STATUS), "utf8"));
-const errors = [];
-const seen = new Map();
+const data = JSON.parse(readFileSync(join(repo, STATUS), "utf8")) as NextjsStatus;
+const errors: string[] = [];
+const seen = new Map<string, NextjsStatus["rows"][number]>();
 for (const r of data.rows) {
   if (seen.has(r.id)) errors.push(`${r.id} has two entries`);
   seen.set(r.id, r);
@@ -47,14 +48,14 @@ for (const r of data.rows) {
 }
 for (const id of ids) if (!seen.has(id)) errors.push(`${id} is in the ledger but has no status`);
 
-const count = (s) => data.rows.filter((r) => r.status === s).length;
+const count = (s: string) => data.rows.filter((r) => r.status === s).length;
 const counts = Object.fromEntries(STATES.map((s) => [s, count(s)]));
 
 function page() {
   const chapters = [...new Set(data.rows.map((r) => r.chapter))];
   // MDX reads { and < as code outside backticks, so they are escaped there.
-  const mdx = (t) => t.split(/(`[^`]*`)/).map((x, i) => i % 2 ? x : x.replace(/[{}]/g, (c) => `\\${c}`).replace(/</g, "&lt;").replace(/>/g, "&gt;")).join("");
-  const cell = (s) => mdx(String(s ?? "")).replace(/\|/g, "\\|");
+  const mdx = (t: string) => t.split(/(`[^`]*`)/).map((x, i) => i % 2 ? x : x.replace(/[{}]/g, (c) => `\\${c}`).replace(/</g, "&lt;").replace(/>/g, "&gt;")).join("");
+  const cell = (s: unknown) => mdx(String(s ?? "")).replace(/\|/g, "\\|");
   const lines = [
     "---",
     "title: What's built",

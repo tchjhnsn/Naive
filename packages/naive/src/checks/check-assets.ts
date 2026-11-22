@@ -12,7 +12,7 @@ import { checkAssets } from "../engine/assets.mjs";
 
 const dir = process.argv[2];
 if (!dir || !existsSync(dir)) { console.error("usage: node packages/naive/src/checks/check-assets.ts <workspace or venture dir>"); process.exit(2); }
-const walk = (d) => existsSync(join(d, "venture.json")) ? [d] : readdirSync(d, { withFileTypes: true }).flatMap((e) => e.isDirectory() && !e.name.startsWith(".") && e.name !== "node_modules" ? walk(join(d, e.name)) : []);
+const walk = (d: string): string[] => existsSync(join(d, "venture.json")) ? [d] : readdirSync(d, { withFileTypes: true }).flatMap((e) => e.isDirectory() && !e.name.startsWith(".") && e.name !== "node_modules" ? walk(join(d, e.name)) : []);
 let failed = 0;
 for (const v of walk(dir)) {
   const r = checkAssets(v);

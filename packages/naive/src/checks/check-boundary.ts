@@ -16,6 +16,7 @@
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
+import type { Integration } from "../records/types/records.d.ts";
 
 const root = resolve(process.env.EE_ROOT ?? new URL("../../../..", import.meta.url).pathname);
 /** Folders of the apps that depend on Naive; none of them is in this repository. */
@@ -23,14 +24,14 @@ export const APP_FOLDERS = ["platform", "console"];
 // repos/ is vendored reference source (AGENTS.md, Vendored repositories), never imported by Naive; dist/ is the compiled copy (EE-159).
 const SKIP = /^(\.git|node_modules|\.next|_pagefind|out|generated|preserved|repos|dist)$/;
 const CODE = /\.(mjs|cjs|js|jsx|ts|tsx|mts|cts)$/;
-const errors = [];
+const errors: string[] = [];
 
-const walk = (d) => readdirSync(d, { withFileTypes: true }).flatMap((e) => SKIP.test(e.name) ? []
+const walk = (d: string): string[] => readdirSync(d, { withFileTypes: true }).flatMap((e) => SKIP.test(e.name) ? []
   : e.isDirectory() ? walk(join(d, e.name)) : CODE.test(e.name) ? [join(d, e.name)] : []);
 
 // Comments dropped, line by line: a line that starts a comment (//, /* or a block comment's *), and a
 // trailing comment after whitespace. A URL in a string keeps its // because a colon comes before it.
-const code = (src) => src.split("\n").map((l) => /^\s*(\/\/|\/\*|\*)/.test(l) ? "" : l.replace(/\s\/\/\s.*$/, "")).join("\n");
+const code = (src: string) => src.split("\n").map((l) => /^\s*(\/\/|\/\*|\*)/.test(l) ? "" : l.replace(/\s\/\/\s.*$/, "")).join("\n");
 
 const app = APP_FOLDERS.join("|");
 // A literal that is an app path: optional ./ or ../ segments, then the app folder and a slash.
@@ -52,7 +53,7 @@ for (const f of walk(root)) {
 
 // 2. Connectors in the registry.
 const regFile = join(root, "packages/naive/src/records/layers/knowledge/tooling/integrations.json");
-const reg = existsSync(regFile) ? JSON.parse(readFileSync(regFile, "utf8")).filter((t) => t.connector) : [];
+const reg = existsSync(regFile) ? (JSON.parse(readFileSync(regFile, "utf8")) as Integration[]).filter((t): t is Integration & { connector: NonNullable<Integration["connector"]> } => Boolean(t.connector)) : [];
 const NET = /\bfetch\s*\(|["']node:(https?|net|tls|dgram)["']/;
 for (const t of reg) {
   const abs = resolve(root, t.connector.module);

@@ -19,7 +19,17 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { logicalFiles, ventureFile } from "../core/venture-paths.mjs";
 
-const read = (dir, rel) => {
+// The fields this lint reads from a decision, an account or naive.config.json. A record may be malformed, so every
+// leaf is unknown until checked: the generated record types describe valid records, and this lint reads any.
+type Loose = {
+  id?: unknown, name?: unknown, owner?: unknown, status?: unknown, decided_by?: unknown,
+  outcomes?: { id?: unknown, result?: unknown }[], provenance?: { approved_by?: unknown },
+  money_lint?: { rules?: unknown },
+};
+/** One lint finding. */
+export type Finding = { rule: string, mode: string, file: string, message: string, suggestion: string };
+
+const read = (dir: string, rel: string): unknown => {
   try { return JSON.parse(readFileSync(ventureFile(dir, rel), "utf8")); } catch { return null; }
 };
 
@@ -33,7 +43,7 @@ const MODES = new Set(["fail-open", "fail-closed"]);
 
 // Proposed, approved, or executed. Schema status open/decided maps onto the first two.
 // status "executed", or an outcome whose id is "executed" and whose result is not pending, is executed.
-export function phaseOf(d) {
+export function phaseOf(d: Loose | null | undefined) {
   const status = typeof d?.status === "string" ? d.status : "";
   const executed = status === "executed" || (Array.isArray(d?.outcomes) && d.outcomes.some((o) =>
     o && typeof o === "object" && o.id === "executed" && typeof o.result === "string" && o.result !== "pending"));
@@ -43,7 +53,7 @@ export function phaseOf(d) {
 }
 
 // A person named on the decision. "agent" is not a person (decision-record.schema.json).
-export function namedApprover(d) {
+export function namedApprover(d: Loose | null | undefined) {
   for (const a of [d?.provenance?.approved_by, d?.decided_by]) {
     if (typeof a !== "string") continue;
     const name = a.trim();
@@ -52,46 +62,51 @@ export function namedApprover(d) {
   return null;
 }
 
-function consider(rel) {
+function consider(rel: string) {
   const parts = rel.split("/");
   if (parts.some((s) => !s || s.startsWith(".") || s.startsWith("_") || SKIP.has(s))) return false;
   return /^money\/[^/]+\.json$/.test(rel) || (parts.at(-2) === "decisions" && rel.endsWith(".decision.json"));
 }
 
-function isTransfer(rel, d) {
-  const base = rel.split("/").at(-1).slice(0, -".decision.json".length);
+function isTransfer(rel: string, d: Loose) {
+  const base = String(rel.split("/").at(-1)).slice(0, -".decision.json".length);
   const segs = base.split(".");
   const topic = segs.slice(1).join(".");
   if (segs[0] === "transfer" || topic === "transfer" || topic.startsWith("transfer-")) return true;
   return typeof d.id === "string" && (d.id === "transfer" || d.id.startsWith("transfer-"));
 }
 
-function rulesConfig(raw) {
-  const rules = raw && typeof raw === "object" && !Array.isArray(raw) && raw.money_lint && typeof raw.money_lint === "object" && !Array.isArray(raw.money_lint)
-    ? raw.money_lint.rules : null;
-  return rules && typeof rules === "object" && !Array.isArray(rules) ? rules : {};
+function rulesConfig(raw: unknown): Record<string, { mode?: unknown } | undefined> {
+  const config = raw as Loose | null;
+  const rules = config && typeof config === "object" && !Array.isArray(config) && config.money_lint && typeof config.money_lint === "object" && !Array.isArray(config.money_lint)
+    ? config.money_lint.rules : null;
+  return rules && typeof rules === "object" && !Array.isArray(rules) ? rules as Record<string, { mode?: unknown } | undefined> : {};
 }
 
-function accountLabel(rel, a) {
+function accountLabel(rel: string, a: Loose) {
   if (typeof a.name === "string" && a.name.trim()) return a.name.trim();
   if (typeof a.id === "string" && a.id.trim()) return a.id.trim();
-  return rel.split("/").at(-1).replace(/\.json$/, "");
+  return String(rel.split("/").at(-1)).replace(/\.json$/, "");
 }
 
-export function lint(dir) {
+export function lint(dir: string) {
   const cfg = rulesConfig(read(dir, "naive.config.json"));
-  const rules = RULES.map((r) => ({ ...r, mode: MODES.has(cfg[r.id]?.mode) ? cfg[r.id].mode : r.mode }));
+  const rules = RULES.map((r) => {
+    const set = cfg[r.id]?.mode;
+    return { ...r, mode: typeof set === "string" && MODES.has(set) ? set : r.mode };
+  });
   const mode = Object.fromEntries(rules.map((r) => [r.id, r.mode]));
-  const findings = [];
-  const add = (rule, file, message, suggestion) => findings.push({ rule, mode: mode[rule], file, message, suggestion });
-  let files = [];
+  const findings: Finding[] = [];
+  const add = (rule: string, file: string, message: string, suggestion: string) => findings.push({ rule, mode: mode[rule], file, message, suggestion });
+  let files: string[] = [];
   try { files = logicalFiles(dir); } catch { files = []; }
   for (const rel of files.filter(consider).sort()) {
-    const data = read(dir, rel);
-    if (!data || typeof data !== "object" || Array.isArray(data)) continue;
+    const parsed = read(dir, rel);
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) continue;
+    const data = parsed as Loose;
     if (rel.endsWith(".decision.json")) {
       if (!isTransfer(rel, data) || namedApprover(data)) continue;
-      const id = typeof data.id === "string" && data.id.trim() ? data.id.trim() : rel.split("/").at(-1).replace(/\.decision\.json$/, "");
+      const id = typeof data.id === "string" && data.id.trim() ? data.id.trim() : String(rel.split("/").at(-1)).replace(/\.decision\.json$/, "");
       add("transfer-no-approver", rel, `transfer ${id} is ${phaseOf(data)} and names no approver`, "Name the person who approves this transfer in provenance.approved_by or decided_by.");
     } else if (typeof data.owner !== "string" || !data.owner.trim()) {
       add("account-no-owner", rel, `account ${accountLabel(rel, data)} has no owner`, "Name the person who owns this account in owner.");

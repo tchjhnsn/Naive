@@ -19,23 +19,24 @@
 import { ventureFile } from "../core/venture-paths.mjs";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
+import type { Handoff, PublicationPolicy, Venture } from "../records/types/records.d.ts";
 
 const dir = process.argv[2];
 if (!dir) { console.error("usage: node packages/naive/src/checks/check-publication.ts <workspace or venture dir>"); process.exit(2); }
-const load = (p) => JSON.parse(readFileSync(p, "utf8"));
-const walk = (d) => readdirSync(d, { withFileTypes: true }).flatMap((e) => e.name === "node_modules" || e.name.startsWith(".") ? []
+const load = <T>(p: string | URL): T => JSON.parse(readFileSync(p, "utf8")) as T;
+const walk = (d: string): string[] => readdirSync(d, { withFileTypes: true }).flatMap((e) => e.name === "node_modules" || e.name.startsWith(".") ? []
   : e.isDirectory() ? walk(join(d, e.name)) : e.name === "venture.json" ? [d] : []);
-const roles = new Map(load(new URL("../../template/governance/roles/agent-roles.json", import.meta.url)).roles.map((r) => [r.id, r]));
-const errors = [], warnings = [];
+const roles = new Map(load<{ roles: { id: string, occupant?: string }[] }>(new URL("../../template/governance/roles/agent-roles.json", import.meta.url)).roles.map((r) => [r.id, r]));
+const errors: string[] = [], warnings: string[] = [];
 let checked = 0;
 
 for (const root of walk(dir)) {
-  const v = load(ventureFile(root, "venture.json"));
+  const v = load<Venture>(ventureFile(root, "venture.json"));
   const pPath = ventureFile(root, "governance/publication-policy.json");
-  const policy = existsSync(pPath) ? load(pPath) : null;
+  const policy = existsSync(pPath) ? load<PublicationPolicy>(pPath) : null;
   const at = `${v.id}/governance/publication-policy.json`;
   const hDir = ventureFile(root, "operations/handoffs");
-  const handoffs = existsSync(hDir) ? readdirSync(hDir).filter((f) => f.endsWith(".json")).map((f) => [f, load(join(hDir, f))]) : [];
+  const handoffs = existsSync(hDir) ? readdirSync(hDir).filter((f) => f.endsWith(".json")).map((f): [string, Handoff] => [f, load<Handoff>(join(hDir, f))]) : [];
 
   for (const [f, h] of handoffs) {
     const publishes = (h.decision_classes ?? []).includes("public-commitment") || (h.escalations ?? []).some((e) => e.class === "public-commitment");
@@ -43,14 +44,15 @@ for (const root of walk(dir)) {
     if (!publishes) { if (h.publication) warnings.push(`${where}: names a publication but has no public-commitment class`); continue; }
     if (!policy) { errors.push(`${where}: publishes, but the venture has no governance/publication-policy.json`); continue; }
     if (!h.publication) { errors.push(`${where}: publishes, so it names its channel and content (publication)`); continue; }
-    const ch = policy.channels.find((c) => c.id === h.publication.channel);
-    if (!ch) errors.push(`${where}: unknown channel ${h.publication.channel}`);
-    else if (!ch.rules.some((r) => r.content === h.publication.content)) errors.push(`${where}: channel ${ch.id} has no rule for "${h.publication.content}"`);
+    const publication = h.publication;
+    const ch = policy.channels.find((c) => c.id === publication.channel);
+    if (!ch) errors.push(`${where}: unknown channel ${publication.channel}`);
+    else if (!ch.rules.some((r) => r.content === publication.content)) errors.push(`${where}: channel ${ch.id} has no rule for "${publication.content}"`);
   }
   if (!policy) continue;
   checked++;
 
-  const dup = (xs, what) => { const ids = xs.map((x) => x.id); if (new Set(ids).size !== ids.length) errors.push(`${at}: duplicate ${what} ids`); };
+  const dup = (xs: { id: string }[], what: string) => { const ids = xs.map((x) => x.id); if (new Set(ids).size !== ids.length) errors.push(`${at}: duplicate ${what} ids`); };
   dup(policy.channels, "channel"); dup(policy.guidelines ?? [], "guideline"); dup(policy.teams ?? [], "team");
   const teams = new Map((policy.teams ?? []).map((t) => [t.id, t]));
   for (const t of teams.values()) {
@@ -64,10 +66,10 @@ for (const root of walk(dir)) {
     if (g.url && !g.checked) warnings.push(`${at}: guideline ${g.id} has a url but no checked date`);
   }
 
-  const person = (id) => roles.get(id)?.occupant === "person";
+  const person = (id: string) => roles.get(id)?.occupant === "person";
   for (const c of policy.channels) {
     for (const g of c.guidelines ?? []) if (!guidelines.has(g)) errors.push(`${at}: channel ${c.id} follows unknown guideline ${g}`);
-    if (!(c.guidelines ?? []).some((g) => ["brand", "editorial"].includes(guidelines.get(g)?.kind))) warnings.push(`${at}: channel ${c.id} follows no brand or editorial guideline`);
+    if (!(c.guidelines ?? []).some((g) => (["brand", "editorial"] as (string | undefined)[]).includes(guidelines.get(g)?.kind))) warnings.push(`${at}: channel ${c.id} follows no brand or editorial guideline`);
     const onPlatform = ["social", "newsletter", "app-store"].includes(c.kind);
     if (onPlatform && !c.platform) errors.push(`${at}: channel ${c.id} is ${c.kind}, so it names its platform`);
     if (c.platform && !(c.guidelines ?? []).some((g) => guidelines.get(g)?.kind === "platform")) errors.push(`${at}: channel ${c.id} runs on ${c.platform} but cites none of its rules (a guideline of kind platform)`);
@@ -84,7 +86,7 @@ for (const root of walk(dir)) {
       for (const id of [...(r.drafters ?? []), ...r.approvers]) if (!roles.has(id) && !teams.has(id)) errors.push(`${rule}: unknown role or team ${id}`);
       for (const id of r.approvers) {
         if (roles.has(id) && !person(id)) errors.push(`${rule}: ${id} is an agent role; agents draft and check, a person approves`);
-        if (teams.has(id) && !teams.get(id).members.some(person)) errors.push(`${rule}: team ${id} has no person, so it cannot approve`);
+        if (teams.has(id) && !teams.get(id)?.members.some(person)) errors.push(`${rule}: team ${id} has no person, so it cannot approve`);
       }
       if (!r.approvers.some((id) => person(id) || teams.get(id)?.members.some(person))) errors.push(`${rule}: no person approves`);
       for (const l of r.from_layers ?? []) if (v.layers && v.layers[l] === false) warnings.push(`${rule}: publishes from ${l}, which this venture has turned off`);

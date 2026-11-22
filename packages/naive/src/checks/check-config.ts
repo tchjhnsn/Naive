@@ -25,16 +25,17 @@ import { gateOf, repo, resolve, routes } from "../records/routes/routes.mjs";
 import { agentFromEnv, record } from "../core/provenance.mjs";
 import { ventureFile } from "../core/venture-paths.mjs";
 import { validateFile } from "../records/validate.mjs";
+import type { NaiveConfig } from "../records/types/records.d.ts";
 
 const FRAMEWORKS = ["idea-map"];
 
 /** Problems with a venture's naive.config.json: { errors, warnings }. */
-export function check(dir) {
-  const errors = [], warnings = [];
+export function check(dir: string): { errors: string[], warnings: string[], note?: string } {
+  const errors: string[] = [], warnings: string[] = [];
   const f = ventureFile(dir, CONFIG);
   if (!existsSync(f)) return { errors, warnings, note: `no ${CONFIG}: every default applies` };
-  let raw;
-  try { raw = rawConfig(dir); } catch (e) { return { errors: [e.message], warnings }; }
+  let raw: unknown;
+  try { raw = rawConfig(dir); } catch (e) { return { errors: [(e as Error).message], warnings }; }
   const scratch = mkdtempSync(join(tmpdir(), "naive-config-"));
   writeFileSync(join(scratch, CONFIG), JSON.stringify(raw));
   const v = validateFile("naive-config.schema.json", join(scratch, CONFIG));
@@ -42,8 +43,8 @@ export function check(dir) {
   if (v.status !== 0) errors.push(`${CONFIG} does not match packages/naive/src/records/naive-config.schema.json:\n${(v.stdout + v.stderr).trim()}`);
   const config = configFor(dir);
   const table = routes();
-  const known = (p) => !!resolve(p).r || table.some((r) => patternRe(p).test(r.route) || patternRe(p).test(r.route.replace(/\[id\]/g, "x")));
-  const ids = new Set();
+  const known = (p: string) => !!resolve(p).r || table.some((r: { route: string }) => patternRe(p).test(r.route) || patternRe(p).test(r.route.replace(/\[id\]/g, "x")));
+  const ids = new Set<string>();
   for (const r of rulesFor(config).filter((x) => x.source === "naive.config.json" && !x.fail_closed)) {
     if (ids.has(r.id)) errors.push(`gate rule ${r.id}: duplicate id`);
     ids.add(r.id);
@@ -54,53 +55,54 @@ export function check(dir) {
   for (const p of pinProblems(config)) errors.push(p.installed ? `packages: ${p.package} is pinned to ${p.pinned} but ${p.installed} is installed` : `packages: ${p.package} is not an installed package`);
   const plan = teamPlan(dir);
   for (const [fn, role] of Object.entries(config.owners ?? {})) {
-    if (plan && !(plan.roles ?? []).some((r) => r.id === role)) errors.push(`owners: ${fn} names ${role}, which is not a role in the team plan`);
+    if (plan && !(plan.roles ?? []).some((r: { id: string }) => r.id === role)) errors.push(`owners: ${fn} names ${role}, which is not a role in the team plan`);
     if (!plan) warnings.push(`owners: ${fn} names ${role}, and there is no team plan to check it against`);
   }
   for (const fw of Object.keys(config.questions ?? {})) if (!FRAMEWORKS.includes(fw)) errors.push(`questions: ${fw} asks no System 1 questions (one of ${FRAMEWORKS.join(", ")})`);
   return { errors, warnings };
 }
 
-/** What the gate would do with a write to a route, without writing. @param {string} dir @param {string} route @param {{ actor?: string, role?: string, confidence?: number }} [opts] */
-export function explain(dir, route, { actor = "agent", role, confidence } = {}) {
+/** What the gate would do with a write to a route, without writing. */
+export function explain(dir: string, route: string, { actor = "agent", role, confidence }: { actor?: string, role?: string, confidence?: number } = {}) {
   const { r, params } = resolve(route);
   if (!r || r.kind !== "record" || !r.actions.includes("write")) throw new Error(`${route} is not a writable record route`);
   const concrete = r.collection === "item" ? r.route.replace("[id]", params.id) : r.route;
   const cls = gateOf(r, dir);
-  const files = (r.collection === "item" ? r.files.map((x) => x.replace("*", params.id)) : r.files);
-  const exists = files.some((x) => existsSync(ventureFile(dir, x)));
-  const verdict = evaluate(/** @type {Parameters<typeof evaluate>[0]} */ ({ config: configFor(dir), dir, route: concrete, table: r.route, record: r.record, actor, role, confidence, exists, decisionOwner: cls?.owner ?? undefined }));
+  const files = (r.collection === "item" ? r.files.map((x: string) => x.replace("*", params.id)) : r.files);
+  const exists = files.some((x: string) => existsSync(ventureFile(dir, x)));
+  const verdict = evaluate({ config: configFor(dir), dir, route: concrete, table: r.route, record: r.record, actor, role, confidence, exists, decisionOwner: cls?.owner ?? undefined });
   return { route: concrete, record: r.record, actor, role: role ?? null, confidence: confidence ?? null, decision_class: cls ? { class: cls.class, level: cls.level, drafts: cls.drafts && actor !== "person" } : null, gate: verdict };
 }
 
 /** Pins packages at their installed versions and logs the change. Returns the new pins. */
-export function pin(dir, names) {
-  const raw = rawConfig(dir), have = installed();
-  const chosen = names?.length ? names : Object.keys(raw.packages ?? {}).length ? Object.keys(raw.packages) : Object.keys(have);
+export function pin(dir: string, names?: string[]): NaiveConfig["packages"] {
+  const raw = rawConfig(dir) as NaiveConfig, have = installed() as Record<string, string>;
+  const chosen = names?.length ? names : Object.keys(raw.packages ?? {}).length ? Object.keys(raw.packages ?? {}) : Object.keys(have);
   const unknown = chosen.filter((n) => !have[n]);
   if (unknown.length) throw new Error(`not installed: ${unknown.join(", ")}`);
   raw.packages = { ...(raw.packages ?? {}), ...Object.fromEntries(chosen.map((n) => [n, have[n]])) };
   writeFileSync(ventureFile(dir, CONFIG), JSON.stringify(raw, null, 2) + "\n");
-  record(dir, /** @type {Parameters<typeof record>[1]} */ ({ entity: CONFIG, route: "system/naive-config", activity: "write", agent: agentFromEnv("person", "cli"), note: `pinned ${chosen.join(", ")} at the installed versions` }));
+  record(dir, { entity: CONFIG, route: "system/naive-config", activity: "write", agent: agentFromEnv("person", "cli"), note: `pinned ${chosen.join(", ")} at the installed versions` } as Parameters<typeof record>[1]);
   return raw.packages;
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const argv = process.argv.slice(2);
-  const opt = (n) => { const i = argv.indexOf(`--${n}`); return i >= 0 && argv[i + 1] && !argv[i + 1].startsWith("--") ? argv[i + 1] : undefined; };
+  const opt = (n: string): string | undefined => { const i = argv.indexOf(`--${n}`); return i >= 0 && argv[i + 1] && !argv[i + 1].startsWith("--") ? argv[i + 1] : undefined; };
   const dir = argv[0] && resolvePath(argv[0]);
   if (!dir || !existsSync(join(dir, "venture.json"))) { console.error("usage: node packages/naive/src/checks/check-config.ts <venture dir> [--json | --resolved | --rules | --explain <route> | --pin [<packages>]]"); process.exit(2); }
-  const out = (x) => console.log(JSON.stringify(x, null, 2));
+  const out = (x: unknown) => console.log(JSON.stringify(x, null, 2));
   try {
     if (argv.includes("--resolved")) { out(configFor(dir)); process.exit(0); }
     if (argv.includes("--rules")) { out(rulesFor(configFor(dir)).map((r) => ({ id: r.id, source: r.source, routes: r.routes, then: r.then, ...(r.when ? { when: r.when } : {}), actors: r.actors ?? ["agent"] }))); process.exit(0); }
     if (argv.includes("--explain")) {
       const c = opt("confidence");
-      out(explain(dir, opt("explain"), { actor: opt("as") === "person" ? "person" : "agent", role: opt("role") ?? process.env.MENTURA_ACTOR_ID, confidence: c === undefined ? undefined : Number(c) }));
+      // A missing route reaches explain as undefined and fails there, as it always has.
+      out(explain(dir, opt("explain") as string, { actor: opt("as") === "person" ? "person" : "agent", role: opt("role") ?? process.env.MENTURA_ACTOR_ID, confidence: c === undefined ? undefined : Number(c) }));
       process.exit(0);
     }
     if (argv.includes("--pin")) { out({ pinned: pin(dir, opt("pin")?.split(",").filter(Boolean)) }); process.exit(0); }
-  } catch (e) { console.error(String(e.message ?? e)); process.exit(1); }
+  } catch (e) { console.error(String((e as Error).message ?? e)); process.exit(1); }
   const r = check(dir);
   if (argv.includes("--json")) out(r);
   else {

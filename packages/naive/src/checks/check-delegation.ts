@@ -23,31 +23,34 @@ import { join } from "node:path";
 import { grantBacked, liveGrant, readDelegation } from "../core/venture-paths.mjs";
 import { independent } from "./verify.ts";
 import { readSchema } from "../records/index.mjs";
+import type { Delegation, DecisionRights, DepartmentCatalog, RoleTemplate } from "../records/types/records.d.ts";
 
 const root = new URL("../../../..", import.meta.url).pathname;
 const template = join(root, "packages/naive/template/governance");
-const load = (p) => JSON.parse(readFileSync(p, "utf8"));
-const opt = (n) => process.argv.includes(n) ? process.argv[process.argv.indexOf(n) + 1] : undefined;
+const load = <T>(p: string): T => JSON.parse(readFileSync(p, "utf8")) as T;
+const opt = (n: string): string | undefined => process.argv.includes(n) ? process.argv[process.argv.indexOf(n) + 1] : undefined;
 const today = opt("--today") ?? new Date().toISOString().slice(0, 10);
 
 const arg = process.argv[2] && !process.argv[2].startsWith("--") ? process.argv[2] : null;
 const venture = arg && statSync(arg).isDirectory() ? arg : null;
 const file = !arg ? join(template, "delegation.json") : venture ? join(venture, "governance/delegation.json") : arg;
 if (!existsSync(file)) { console.log(`no delegation record at ${file}: nothing to check`); process.exit(0); }
-const own = (rel) => { const p = venture && join(venture, "governance", rel); return p && existsSync(p) ? p : null; };
+const own = (rel: string) => { const p = venture && join(venture, "governance", rel); return p && existsSync(p) ? p : null; };
 
-let d;
-try { d = readDelegation(file); } catch (e) { console.log(`FAIL  ${e.message}`); process.exit(1); }
+type Grant = Delegation["grants"][number];
+let d: Delegation;
+try { d = readDelegation(file) as Delegation; } catch (e) { console.log(`FAIL  ${(e as Error).message}`); process.exit(1); }
 // A venture's own classes and roles overlay the template's, by id, as check-ready.ts and router.mjs do.
-const classes = new Set(load(join(template, "decision-rights.json")).classes.map((c) => c.id));
-if (own("decision-rights.json")) for (const c of load(own("decision-rights.json")).classes) classes.add(c.id);
-const functions = new Set(load(join(root, "packages/naive/src/functions/departments.json")).departments.map((f) => f.id));
-const errors = [];
+const classes = new Set(load<DecisionRights>(join(template, "decision-rights.json")).classes.map((c) => c.id));
+const ownRights = own("decision-rights.json");
+if (ownRights) for (const c of load<DecisionRights>(ownRights).classes) classes.add(c.id);
+const functions = new Set(load<DepartmentCatalog>(join(root, "packages/naive/src/functions/departments.json")).departments.map((f) => f.id));
+const errors: string[] = [];
 // Every file in roles/ is one role template, except the indexes, which list roles in a roles array.
 // A template missing its id or verified_by is reported, never skipped.
-const roles = new Map();
-for (const dir of [join(template, "roles"), own("roles")].filter(Boolean)) for (const f of readdirSync(dir).filter((f) => f.endsWith(".json"))) {
-  const r = load(join(dir, f));
+const roles = new Map<string, RoleTemplate>();
+for (const dir of [join(template, "roles"), own("roles")].filter((p): p is string => Boolean(p))) for (const f of readdirSync(dir).filter((f) => f.endsWith(".json"))) {
+  const r = load<RoleTemplate & { roles?: unknown }>(join(dir, f));
   if (Array.isArray(r.roles)) continue;
   if (!r.id) errors.push(`role file ${f}: has no id`);
   else if (r.verified_by === undefined) errors.push(`role/${r.id}: has no verified_by (null only for the chief delegator)`);
@@ -77,7 +80,7 @@ const oneWay = new Set(d.one_way_doors ?? []);
 const never = new Set(d.never_redelegated ?? []);
 
 // Leads: no one-way door or never-redelegated class is grantable to one, and the portfolios cover every function once.
-const leads = [...roles.values()].filter((r) => r.portfolio);
+const leads = [...roles.values()].filter((r): r is RoleTemplate & { portfolio: string[] } => Boolean(r.portfolio));
 for (const r of leads) for (const c of r.grantable_classes) {
   if (oneWay.has(c)) errors.push(`role/${r.id}: is a lead and lists ${c}, a one-way door, as grantable; a person decides it`);
   if (never.has(c)) errors.push(`role/${r.id}: is a lead and lists ${c}, which is never re-delegated, as grantable; it comes straight from ${d.root} to a function agent or a person`);
@@ -89,9 +92,9 @@ if (leads.length) {
     if (by.length > 1) errors.push(`portfolios: function ${f} is in more than one lead's portfolio (${by.join(", ")})`);
   }
 }
-const live = (g) => liveGrant(g, today);
+const live = (g: Grant) => liveGrant(g, today);
 const SCOPE = new RegExp(readSchema("delegation").properties.grants.items.properties.scope.pattern);
-const name = (g, i) => `grant/${g.id ?? i}`;
+const name = (g: Grant, i: number) => `grant/${g.id ?? i}`;
 
 d.grants.forEach((g, i) => {
   const at = name(g, i);

@@ -8,18 +8,19 @@
 
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
+import type { Integration } from "../records/types/records.d.ts";
 
 // EE_ROOT points the check at another copy of the repository (used by packages/naive/src/checks/test.ts).
 const root = process.env.EE_ROOT?.replace(/\/?$/, "/") ?? new URL("../../../..", import.meta.url).pathname;
 const MIN_REACH = 3;
-const errors = [];
+const errors: string[] = [];
 let count = 0;
 const LAYERS = join(root, "packages/naive/src/records/layers");
 for (const layer of existsSync(LAYERS) ? readdirSync(LAYERS) : []) {
   const f = join(LAYERS, layer, "tooling/integrations.json");
   if (!existsSync(f)) continue;
-  const ids = new Set();
-  for (const t of JSON.parse(readFileSync(f, "utf8"))) {
+  const ids = new Set<string>();
+  for (const t of JSON.parse(readFileSync(f, "utf8")) as Integration[]) {
     count++;
     if (ids.has(t.id)) errors.push(`${layer}: duplicate id ${t.id}`);
     ids.add(t.id);

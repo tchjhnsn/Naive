@@ -8,13 +8,12 @@
 export const KINDS = ["conformance", "model", "person"];
 
 // The verifier is named and is not the builder.
-export const independent = (builder, verifier) => typeof verifier === "string" && verifier !== "" && verifier !== builder;
+export const independent = (builder: string | undefined, verifier: unknown): boolean => typeof verifier === "string" && verifier !== "" && verifier !== builder;
 
 // What is wrong with one check, or an empty list. known(verifier) says whether the verifier exists.
-/** @param {{ kind?: string, verifier?: string, target?: string }} check @param {string} [builder] @param {(verifier: string) => boolean} [known] */
-export function verificationErrors({ kind, verifier, target }, builder, known = () => true) {
-  const errors = [];
-  if (!KINDS.includes(kind)) errors.push(`${target ?? "check"}: unknown kind ${kind}`);
+export function verificationErrors({ kind, verifier, target }: { kind?: string, verifier?: string, target?: string }, builder?: string, known: (verifier: string) => boolean = () => true): string[] {
+  const errors: string[] = [];
+  if (!kind || !KINDS.includes(kind)) errors.push(`${target ?? "check"}: unknown kind ${kind}`);
   if (kind === "conformance") return errors;
   if (!verifier) errors.push(`${target ?? "check"}: names no verifier`);
   else if (!known(verifier)) errors.push(`${target ?? "check"}: verifier ${verifier} is not known`);
@@ -23,5 +22,5 @@ export function verificationErrors({ kind, verifier, target }, builder, known = 
 }
 
 // A handoff review criterion is a person check whose verifier is its reviewer role.
-export const reviewIsIndependent = (criterion, holder, roles) =>
+export const reviewIsIndependent = (criterion: { id?: string, reviewer?: string }, holder: string | undefined, roles: Set<string>): boolean =>
   !verificationErrors({ kind: "person", verifier: criterion.reviewer, target: criterion.id }, holder, (r) => roles.has(r)).length;
