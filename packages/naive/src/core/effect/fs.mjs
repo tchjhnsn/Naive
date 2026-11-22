@@ -3,7 +3,7 @@
 // host can provide its own. NodeFs is the default, backed by node:fs.
 // A .mjs file because router and store modules import it and Node does not strip types under node_modules.
 import { Context, Effect, Layer } from "effect";
-import { appendFileSync, closeSync, existsSync, mkdirSync, openSync, readdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { appendFileSync, closeSync, existsSync, linkSync, mkdirSync, openSync, readdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { IoError, NotFound, ParseError } from "./errors.mjs";
 
@@ -20,6 +20,7 @@ import { IoError, NotFound, ParseError } from "./errors.mjs";
  *   readonly isDirectory: (path: string) => Effect.Effect<boolean>,
  *   readonly rename: (from: string, to: string) => Effect.Effect<void, IoError>,
  *   readonly remove: (path: string) => Effect.Effect<void, IoError>,
+ *   readonly link: (from: string, to: string) => Effect.Effect<void, IoError>,
  * }} VentureFsShape
  */
 
@@ -49,6 +50,7 @@ export const nodeFs = {
   isDirectory: (path) => Effect.sync(() => existsSync(path) && statSync(path).isDirectory()),
   rename: (from, to) => Effect.try({ try: () => { mkdirSync(dirname(to), { recursive: true }); renameSync(from, to); }, catch: io(from, "rename") }),
   remove: (path) => Effect.try({ try: () => rmSync(path, { recursive: true, force: true }), catch: io(path, "remove") }),
+  link: (from, to) => Effect.try({ try: () => linkSync(from, to), catch: io(from, "link") }),
 };
 
 export const NodeFs = Layer.succeed(VentureFs, nodeFs);
@@ -84,6 +86,12 @@ export const memoryFs = (files = {}) => {
     isDirectory: (path) => Effect.sync(() => under(path).length > 0),
     rename: (from, to) => Effect.sync(() => { const t = map.get(from); if (t !== undefined) { map.delete(from); map.set(to, t); } }),
     remove: (path) => Effect.sync(() => { map.delete(path); mtimes.delete(path); inodes.delete(path); for (const k of under(path)) map.delete(k); }),
+    link: (from, to) => Effect.suspend(() => {
+      const t = map.get(from);
+      if (t === undefined || map.has(to)) return Effect.fail(new IoError({ path: from, op: "link", cause: t === undefined ? "missing" : "exists" }));
+      map.set(to, t); inodes.set(to, inodes.get(from) ?? ++inode); mtimes.set(to, mtimes.get(from) ?? Date.now());
+      return Effect.void;
+    }),
   };
 };
 
