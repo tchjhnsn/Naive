@@ -93,10 +93,14 @@ t("installed from the registry, the venture depends on the framework by version,
   for (const d of deps) ok(spawnSync("npm", ["pack", "--pack-destination", packs], { cwd: join(repo, "node_modules", d), env, encoding: "utf8" }).status === 0, `npm pack ${d}`);
   const i = spawnSync("npm", ["install", "--offline", tgz("naive-framework"), tgz("create-venture"), ...deps.map(tgz)], { cwd: proj, env, encoding: "utf8" });
   ok(i.status === 0, i.stderr);
-  const r = spawnSync("node", [join(proj, "node_modules/.bin/create-venture"), "from-registry", "--yes", "--skip-install", "--no-git"], { cwd: base, env, encoding: "utf8" });
+  // Both run the installed framework's compiled copy (EE-159), so they need no type stripping at all.
+  const noStrip = { ...env, NODE_OPTIONS: "--no-experimental-strip-types" };
+  const r = spawnSync("node", [join(proj, "node_modules/.bin/create-venture"), "from-registry", "--yes", "--skip-install", "--no-git"], { cwd: base, env: noStrip, encoding: "utf8" });
   ok(r.status === 0, r.stderr + r.stdout);
   const fwVersion = load(join(repo, "package.json")).version;
   ok(load(join(base, "from-registry/package.json")).devDependencies["naive-framework"] === `^${fwVersion}`, readFileSync(join(base, "from-registry/package.json"), "utf8"));
+  const c = spawnSync("node", [join(proj, "node_modules/.bin/naive"), "check"], { cwd: join(base, "from-registry"), env: noStrip, encoding: "utf8" });
+  ok(c.status === 0 && /all passing/.test(c.stdout), c.stdout + c.stderr);
 });
 
 t("--framework given as name@range keeps only the range", () => {

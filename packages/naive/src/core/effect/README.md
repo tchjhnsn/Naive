@@ -4,7 +4,7 @@ Up: [core](../README.md)
 
 ## What this is
 
-Naive's base for code written with [Effect](https://effect.website) (EE-125). It holds the tagged errors every Effect in Naive fails with, the file system as a service, and the runners that let code that is not Effect yet call code that is. Effect is pinned to one exact version in the root `package.json`. The files are `.mjs` with JSDoc types, because router and store modules import them and Node does not strip types under `node_modules`; a module moved to Effect that an app imports stays `.mjs` for the same reason.
+Naive's base for code written with [Effect](https://effect.website) (EE-125). It holds the tagged errors every Effect in Naive fails with, the file system as a service, and the runners that let code that is not Effect yet call code that is. Effect is pinned to one exact version in the root `package.json`. The files are `.mjs` with JSDoc types until core moves to TypeScript; the package ships compiled JavaScript (EE-159), so a module moved to Effect may be `.ts` even when an app imports it.
 
 ```mermaid
 flowchart LR
