@@ -31,7 +31,8 @@ const read = (p) => readFileSync(join(repo, p), "utf8");
 const walk = (d) => !existsSync(d) ? [] : readdirSync(d, { withFileTypes: true }).flatMap((e) =>
   e.name === "node_modules" || e.name.startsWith(".") ? [] : e.isDirectory() ? walk(join(d, e.name)) : [join(d, e.name)]);
 // The docs this linter scans. The docs-required CI check counts a change as docs only when it touches one of these.
-const scanned = (r) => !r.split("/").some((p) => p === "node_modules" || p.startsWith(".")) && (/^docs\/master\/[^/]+\.md$/.test(r) || /(^|\/)(SKILL|README)\.md$/.test(r) || /^packages\/naive\/library\/packages\/[^/]+\/playbooks\/[^/]+\.md$/.test(r));
+// repos/ holds vendored source that agents read as reference (AGENTS.md, Vendored repositories); it is not Naive's docs.
+const scanned = (r) => !r.startsWith("repos/") && !r.split("/").some((p) => p === "node_modules" || p.startsWith(".")) && (/^docs\/master\/[^/]+\.md$/.test(r) || /(^|\/)(SKILL|README)\.md$/.test(r) || /^packages\/naive\/library\/packages\/[^/]+\/playbooks\/[^/]+\.md$/.test(r));
 const stdinPaths = () => readFileSync(0, "utf8").split("\n").map((l) => l.trim()).filter(Boolean);
 if (argv[0] === "--scanned") {
   for (const r of stdinPaths()) if (scanned(r)) console.log(r);
