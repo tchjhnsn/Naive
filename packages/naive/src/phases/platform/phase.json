@@ -1,0 +1,104 @@
+{
+  "id": "platform",
+  "step": 5,
+  "name": "Platform",
+  "question": "What will others build on, so the venture can't be displaced?",
+  "binding_constraint": "becoming what others build on before the core goes stale",
+  "references": [
+    "baghai-coley-white-1999-alchemy-of-growth",
+    "google-2026-six-phase-model"
+  ],
+  "gate": {
+    "name": "Others build on it",
+    "asks": [
+      "Do others build on what the venture offers?",
+      "Would they lose something if the venture went away?",
+      "Is the next horizon funded before the core goes stale?"
+    ],
+    "evidence": [
+      {
+        "id": "connections",
+        "statement": "Connections through which others build on the venture",
+        "source": "connection"
+      },
+      {
+        "id": "partners",
+        "statement": "Stakeholder updates to the partners and backers who depend on it",
+        "source": "stakeholder-update"
+      },
+      {
+        "id": "risks",
+        "statement": "A risk register that covers what others depend on",
+        "source": "risk"
+      }
+    ]
+  },
+  "workflows": [
+    "strategy/strategy-review",
+    "products/weekly-product-review",
+    "external-relationships/monthly-investor-update",
+    "it/quarterly-access-review",
+    "risk-and-compliance/quarterly-risk-review",
+    "assets/monthly-asset-review",
+    "finance/monthly-spend-review",
+    "capabilities/weekly-process-review"
+  ],
+  "weights": {
+    "version": "0.1.0",
+    "note": "Unvalidated priors, ours: how much each function's open decisions count when decisions are ranked across functions in this phase. They sum to 1. The decision queue ranks with them (packages/naive/src/engine/decision-queue.mjs, EE-127).",
+    "functions": {
+      "strategy": {
+        "weight": 0.12,
+        "why": "Choosing what others build on, before the core goes stale"
+      },
+      "products": {
+        "weight": 0.14,
+        "why": "The platform surface others build on"
+      },
+      "marketing-and-sales": {
+        "weight": 0.07,
+        "why": "Selling to builders and partners as well as customers"
+      },
+      "supply-chain": {
+        "weight": 0.02,
+        "why": "Supply is settled"
+      },
+      "service-delivery": {
+        "weight": 0.03,
+        "why": "Delivery is settled"
+      },
+      "customer-service": {
+        "weight": 0.04,
+        "why": "Support for builders on the platform"
+      },
+      "human-capital": {
+        "weight": 0.06,
+        "why": "Teams for new horizons"
+      },
+      "it": {
+        "weight": 0.1,
+        "why": "Access, interfaces and the systems others connect to"
+      },
+      "finance": {
+        "weight": 0.09,
+        "why": "Funding new horizons from the core"
+      },
+      "assets": {
+        "weight": 0.03,
+        "why": "Owned assets and intellectual property matter more"
+      },
+      "risk-and-compliance": {
+        "weight": 0.09,
+        "why": "Others depend on the venture, so its failures spread"
+      },
+      "external-relationships": {
+        "weight": 0.15,
+        "why": "Partners and builders are who the platform is for"
+      },
+      "capabilities": {
+        "weight": 0.06,
+        "why": "Keeping the organisation able to renew itself"
+      }
+    }
+  }
+}

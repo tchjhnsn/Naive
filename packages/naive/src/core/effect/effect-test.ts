@@ -4,7 +4,7 @@ import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Effect } from "effect";
-import { CannotRun, NotFound, Refused } from "./errors.mjs";
+import { CannotRun, IoError, NotFound, Refused } from "./errors.mjs";
 import { MemoryFs, readJson, VentureFs, writeJson } from "./fs.mjs";
 import { describe, exitCode, runPromise, runSync } from "./run.mjs";
 
@@ -50,6 +50,11 @@ await test("exit codes: CannotRun is 2, every other failure 1", () => {
   assert.equal(exitCode(new CannotRun({ message: "no python" })), 2);
   assert.equal(exitCode(new Refused({ rule: "writer", message: "no" })), 1);
   assert.match(describe(new Refused({ rule: "writer", message: "an agent may not write it", hint: "emit a signal" })), /refused \(writer\)/);
+});
+
+await test("every error carries a readable message", () => {
+  assert.equal(new NotFound({ what: "file", path: "/v/a.json" }).message, "file not found: /v/a.json");
+  assert.match(new IoError({ path: "/v", op: "read", cause: new Error("EACCES") }).message, /cannot read \/v: EACCES/);
 });
 
 for (const [name, ok] of results) console.log(`${ok ? "ok  " : "FAIL"} ${name}`);

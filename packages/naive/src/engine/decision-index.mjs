@@ -15,7 +15,10 @@
 //      passes, and with files outside provenance, so no cached entry is reused); the cursor only
 //      counts the provenance events since the last run;
 //   5. rank history: each re-score appends {at, decision, rank, score, why, cause} to
-//      .naive/decision-index-history.jsonl.
+//      .naive/decision-index-history.jsonl;
+//   6. the decision queue (packages/naive/src/engine/decision-queue.mjs, EE-127): each decision's owning function,
+//      the score ranked within each function (by_function), themes of decisions on the same record or handoff, and
+//      one short queue across functions, the score weighted by the function's weight in the venture's phase.
 //
 // The index is a cache (.naive/decision-index.json, gitignored), recomputed in full on every run and
 // never written to provenance. Qualitative notes are an agent's draft: note is null until one writes it, and only decisions above the threshold get one.
@@ -31,6 +34,7 @@ import { decisionFile, decisions, ownScore, PHASES } from "./decisions.mjs";
 import { structural, ventureRecords } from "./impact.mjs";
 import { ventureFile } from "../core/venture-paths.mjs";
 import { line } from "./detectors.mjs";
+import { rank } from "./decision-queue.mjs";
 
 export const INDEX = ".naive/decision-index.json";
 export const HISTORY = ".naive/decision-index-history.jsonl";
@@ -167,6 +171,9 @@ function entry(d, ctx, now) {
 
 const order = (es) => es.sort((a, b) => b.score - a.score || a.id.localeCompare(b.id)).map((e, i) => ({ ...e, rank: i + 1 }));
 
+// The queue, the per-function index and the themes over the ranked entries (decision-queue.mjs).
+const ranking = (dir, ctx, entries) => rank(dir, ctx.m.phase, entries.map((e) => ({ entry: e, decision: ctx.byId.get(e.id), raw: ctx.raw.get(e.id) ?? {} })));
+
 function history(dir, rows) {
   if (!rows.length) return;
   mkdirSync(join(dir, ".naive"), { recursive: true });
@@ -192,7 +199,7 @@ export function rebuild(dir, { now = Date.now(), cause = "rebuild" } = {}) {
   const at = stamp();
   history(dir, entries.map((e) => ({ at, decision: e.id, rank: e.rank, score: e.score, why: e.why, cause })));
   return save(dir, { venture: ctx.m.venture, phase: ctx.m.phase, built_at: at, updated_at: at, threshold: line(dir, "decision-index-note", THRESHOLD),
-    cursor: { events: log.length, hash: log.at(-1)?.hash ?? null }, last_update: { mode: "rebuild", events: log.length, seeds: [], touched: entries.map((e) => ({ id: e.id, weight: 1 })) }, entries });
+    cursor: { events: log.length, hash: log.at(-1)?.hash ?? null }, last_update: { mode: "rebuild", events: log.length, seeds: [], touched: entries.map((e) => ({ id: e.id, weight: 1 })) }, entries, ...ranking(dir, ctx, entries) });
 }
 
 /** Re-scores every active decision, as a rebuild does: scores depend on time (due, overdue) and on
@@ -212,7 +219,7 @@ export function update(dir, { now = Date.now(), since } = {}) {
   history(dir, moved.map((e) => ({ at, decision: e.id, rank: e.rank, score: e.score, why: e.why, cause: prior.has(e.id) ? "rank moved" : "new decision" })));
   const active = new Set(ranked.map((e) => e.id));
   return save(dir, { venture: ctx.m.venture, phase: ctx.m.phase, built_at: idx.built_at, updated_at: at, threshold: line(dir, "decision-index-note", THRESHOLD), cursor: { events: log.length, hash: log.at(-1)?.hash ?? null },
-    last_update: { mode: "update", events: events.length, seeds: [], touched: moved.map((e) => ({ id: e.id, weight: 1 })), removed: [...prior.keys()].filter((id) => !active.has(id)) }, entries: ranked });
+    last_update: { mode: "update", events: events.length, seeds: [], touched: moved.map((e) => ({ id: e.id, weight: 1 })), removed: [...prior.keys()].filter((id) => !active.has(id)) }, entries: ranked, ...ranking(dir, ctx, ranked) });
 }
 
 /** A decision's rank over time, from the history. */
@@ -231,11 +238,14 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const idx = mode === "rebuild" ? rebuild(dir) : mode === "read" ? (read(dir) ?? rebuild(dir)) : update(dir, { since });
   const brief = { venture: idx.venture, phase: idx.phase, updated_at: idx.updated_at, last_update: { mode: idx.last_update.mode, events: idx.last_update.events, touched: idx.last_update.touched.length },
     flagged: idx.entries.filter((e) => e.flags.length).map((e) => ({ id: e.id, flags: e.flags.map((f) => f.why) })),
-    entries: idx.entries.map((e) => ({ rank: e.rank, id: e.id, score: e.score, weight: e.weight.total, render: e.render, functions: e.impact.functions, why: e.why })) };
+    entries: idx.entries.map((e) => ({ rank: e.rank, id: e.id, score: e.score, weight: e.weight.total, render: e.render, functions: e.impact.functions, why: e.why })),
+    by_function: idx.by_function ?? {}, themes: idx.themes ?? [], queue: idx.queue ?? [] };
   if (argv.includes("--json")) console.log(JSON.stringify(brief, null, 2));
   else {
     console.log(`${idx.venture} (${idx.phase}): ${idx.last_update.mode}, ${idx.last_update.events} events, ${idx.last_update.touched.length} re-scored`);
     for (const e of brief.entries) console.log(`${String(e.rank).padStart(3)}. ${e.id.padEnd(40)} ${String(e.score).padStart(5)}  x${e.weight}  ${e.why.join("; ")}`);
     for (const f of brief.flagged) console.log(`flagged ${f.id}: ${f.flags.join("; ")}`);
+    if (brief.queue.length) console.log("queue:");
+    for (const q of brief.queue) console.log(`${String(q.rank).padStart(3)}. ${q.id.padEnd(40)} ${String(q.score).padStart(7)}  ${q.function}${q.lead ? ` (${q.lead})` : ""}${q.members.length > 1 ? `, theme of ${q.members.length}` : ""}`);
   }
 }

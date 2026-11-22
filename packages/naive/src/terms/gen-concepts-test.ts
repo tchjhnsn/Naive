@@ -62,12 +62,12 @@ try {
   ontology([...keywords.map((k) => noun(k, "syntax", "macro")), noun("level", "sorry", null)]);
   const quoted = run();
   const kw = readFileSync(join(root, OUTPUT), "utf8");
-  const defs = kw.match(/^def .*$/gm) ?? [];
+  const defs: string[] = kw.match(/^def .*$/gm) ?? [];
   expect("Lean keywords and digit-led nouns: the generator exits 0", quoted.status === 0, quoted.out);
   expect("Lean keywords: every concept name is in «» quotes", defs.length === keywords.length + 1 && defs.every((d) => /^def «[A-Za-z0-9_]+» : Concept Placement :=/.test(d)), defs.join("\n"));
   expect("Lean keywords: the names are the nouns', not renamed", ["«sorry»", "«termination_by»", "«set_option»", "«decide»", "«3dModel»", "«at»"].every((n) => defs.some((d) => d.startsWith(`def ${n} :`))), defs.join("\n"));
   expect("Lean keywords: Level and Department constructors are quoted too", kw.includes("inductive Level | «sorry» | «syntax»") && kw.includes("inductive Department | «macro»") && kw.includes("Level.«syntax»") && kw.includes("Department.«macro»"), kw);
-  expect("Lean keywords: decide and some are called by full name", (kw.match(/fun f => .*$/gm) ?? []).every((c) => c.startsWith("fun f => Decidable.decide (f.level = Level.«") || c.startsWith("fun f => Decidable.decide (f.department = Option.some Department.«")), kw);
+  expect("Lean keywords: decide and some are called by full name", (kw.match(/fun f => .*$/gm) ?? ([] as string[])).every((c) => c.startsWith("fun f => Decidable.decide (f.level = Level.«") || c.startsWith("fun f => Decidable.decide (f.department = Option.some Department.«")), kw);
 
   ontology([noun("cap table", "governance", null), noun("Cap-Table", "venture", null)]);
   const clash = run();
