@@ -145,7 +145,7 @@ Both of these can pass and can fail. `packages/naive/test/verification/playbook-
 node packages/naive/src/interfaces/cli/mentura.mjs foundation/problem check --venture <id> --json
 ```
 
-This runs `packages/naive/src/checks/check-validation.mjs`.
+This runs `packages/naive/src/checks/check-validation.ts`.
 
 It fails, and the command exits 1, when an evidence item cites a path that is not in the venture folder, a URL with no `checked` date, a `collected` date in the future, or a repeated id.
 

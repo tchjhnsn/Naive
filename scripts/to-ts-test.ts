@@ -42,7 +42,7 @@ t("a bare name only one file has is rewritten, and a longer name is left", () =>
 });
 
 t("a relative path names the file beside the referrer, never one at the root", () => {
-  const tr = new Set([...tracked, "test.mjs", "packages/naive/src/checks/test.mjs", "packages/naive/src/checks/README.md"]);
+  const tr = new Set([...tracked, "test.mjs", "packages/naive/src/checks/test.ts", "packages/naive/src/checks/README.md"]);
   const r = plan(["test.mjs"], tr);
   const text = "[`test.mjs`](./test.mjs)";
   assert.equal(rewrite("packages/naive/src/checks/README.md", text, r, tr), text);

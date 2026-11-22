@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "ownership.schema.json",
   "title": "Ownership (cap table)",
-  "description": "Who owns the venture and on what terms, at <venture>/governance/ownership.json (EE-022): share classes and the rights each carries, holders, grants with vesting, the option pool, and unpriced instruments such as SAFEs. It is a record of what was agreed, not the legal document: the signed documents are the truth, and decisions to change this file are founder decisions made with counsel (decision class ownership-or-control). packages/naive/src/checks/check-governance.mjs checks it; packages/naive/src/engine/payouts.mjs computes payouts from it.",
+  "description": "Who owns the venture and on what terms, at <venture>/governance/ownership.json (EE-022): share classes and the rights each carries, holders, grants with vesting, the option pool, and unpriced instruments such as SAFEs. It is a record of what was agreed, not the legal document: the signed documents are the truth, and decisions to change this file are founder decisions made with counsel (decision class ownership-or-control). packages/naive/src/checks/check-governance.ts checks it; packages/naive/src/engine/payouts.mjs computes payouts from it.",
   "type": "object",
   "required": [
     "updated",

@@ -106,7 +106,7 @@ expect("lenient blocks less than standard", phaseGate(fresh, { preset: "lenient"
 put(fresh, "naive.config.json", { phase_gates: { preset: "strict", items: { discovery: { channel: { boundary: "fail-open" } } } } });
 const strict = phaseGate(fresh);
 expect("the preset and overrides come from naive.config.json", strict.preset === "strict" && strict.items.find((r) => r.id === "channel")?.boundary === "fail-open" && strict.items.find((r) => r.id === "customer")?.min === "high", strict.items.map((r) => [r.id, r.min, r.boundary]));
-const cfgCheck = node(["packages/naive/src/checks/check-config.mjs", fresh]);
+const cfgCheck = node(["packages/naive/src/checks/check-config.ts", fresh]);
 expect("the phase_gates config passes the config check", cfgCheck.status === 0, cfgCheck.stdout + cfgCheck.stderr);
 
 // ---- Enforcement in the lifecycle ----

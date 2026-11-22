@@ -25,11 +25,11 @@ const migrate = (dir, m) => m.apply(dir, context(dir, { dry: false, git: false, 
 
 const tel = copy("telos", "tandem");
 migrate(tel, telosToGoals);
-const migrated = run("check-telos.mjs", tel);
+const migrated = run("check-telos.ts", tel);
 expect("check-telos checks a migrated venture's canonical records", migrated.status === 0 && /^1 ventures with a telos/m.test(migrated.stdout), migrated.stdout + migrated.stderr);
 const ec = join(tel, "foundation/exit-criteria/validation.json");
 save(ec, { ...load(ec), criteria: load(ec).criteria.map((c, i) => i ? c : { ...c, serves: ["no-such-measure"] }) });
-const broken = run("check-telos.mjs", tel);
+const broken = run("check-telos.ts", tel);
 expect("check-telos fails a migrated exit criterion that serves no known measure", broken.status === 1 && /validation\/\S+ serves unknown measure no-such-measure/.test(broken.stderr), broken.stdout + broken.stderr);
 
 const w = await call({ venture: "tandem", route: "foundation/telos", action: "write", actor: "person", input: load(join(tel, "_private/archive/telos.json")), workspace: join(tmp, "telos") });
@@ -46,25 +46,25 @@ const withCriteria = (ws, phase) => {
   save(join(d, "foundation/exit-criteria/discovery.json"), criteria);
   return d;
 };
-const fresh = run("check-telos.mjs", withCriteria("fresh", "discovery"));
+const fresh = run("check-telos.ts", withCriteria("fresh", "discovery"));
 expect("a fresh discovery venture with exit criteria and no venture goal passes", fresh.status === 0 && /^0 ventures with a telos/m.test(fresh.stdout), fresh.stdout + fresh.stderr);
-const past = run("check-telos.mjs", withCriteria("past", "validation"));
+const past = run("check-telos.ts", withCriteria("past", "validation"));
 expect("past Discovery, exit criteria with no venture goal warn that the telos is missing", past.status === 0 && /past Discovery with no telos/.test(past.stderr), past.stdout + past.stderr);
 
 const unmigrated = copy("unmigrated", "tandem");
 mkdirSync(join(unmigrated, "foundation/exit-criteria"), { recursive: true });
 save(join(unmigrated, "foundation/exit-criteria/discovery.json"), criteria);
-const kept = run("check-telos.mjs", unmigrated);
+const kept = run("check-telos.ts", unmigrated);
 expect("a valid unmigrated telos plus one canonical record still checks the telos", kept.status === 0 && /^1 ventures with a telos/m.test(kept.stdout), kept.stdout + kept.stderr);
 const tf = join(unmigrated, "purpose/telos.json");
 save(tf, { ...load(tf), measures: load(tf).measures.map((m) => ({ ...m, primary: false })) });
-const keptBroken = run("check-telos.mjs", unmigrated);
+const keptBroken = run("check-telos.ts", unmigrated);
 expect("that unmigrated telos still fails its own rules", keptBroken.status === 1 && /purpose\/telos.json: exactly one measure is primary/.test(keptBroken.stderr), keptBroken.stdout + keptBroken.stderr);
 
 const bare = withCriteria("bare", "discovery");
 mkdirSync(join(bare, "foundation/goals"));
 save(join(bare, "foundation/goals/telos.json"), { id: "telos", statement: "Every household keeps its own books", kind: "venture" });
-const noMeasures = run("check-telos.mjs", bare);
+const noMeasures = run("check-telos.ts", bare);
 expect("a venture goal with no measures warns", noMeasures.status === 0 && /the venture goal has no measures yet/.test(noMeasures.stderr), noMeasures.stdout + noMeasures.stderr);
 
 // Ambition is the canonical scale goal, so venture.json's stale tier must not answer for it.
@@ -74,7 +74,7 @@ rmSync(join(amb, "governance/exit.json"), { force: true });
 save(join(amb, "venture.json"), { ...load(join(amb, "venture.json")), ambition: "lifestyle" });
 save(join(amb, "foundation/goals/scale.json"), { id: "scale", statement: "The venture means to grow fast", kind: "scale", value: "aggressive-growth" });
 save(join(amb, "foundation/goals/owner-outcome.json"), { id: "owner-outcome", statement: "The owners intend to hold", kind: "owner", value: "hold" });
-const ambition = run("check-telos.mjs", amb);
+const ambition = run("check-telos.ts", amb);
 expect("ambition comes from canonical.scale, not venture.json", ambition.status === 0 && /aggressive growth usually means investors/.test(ambition.stderr), ambition.stdout + ambition.stderr);
 
 const dep = copy("departments", "acme-labs");
@@ -85,11 +85,11 @@ migrate(dep, structured);
 expect("the migration keeps lockfiles and .vscode/ at the top", ["pnpm-lock.yaml", "yarn.lock", "bun.lock", ".vscode/settings.json"].every((f) => existsSync(join(dep, f)) && !existsSync(join(dep, "k-base", f))));
 expect("venture-paths resolves lockfiles and .vscode/ at the top, as the migration left them", ["pnpm-lock.yaml", "yarn.lock", "bun.lock", "bun.lockb", ".vscode/settings.json"].every((f) => physical(dep, f) === f));
 expect("department folders moved into k-base/", existsSync(join(dep, "k-base/operations/departments")) && !existsSync(join(dep, "operations")));
-const ok = run("check-departments.mjs", dep);
+const ok = run("check-departments.ts", dep);
 expect("check-departments passes a structured venture", ok.status === 0 && /[1-9]\d* folder/.test(ok.stdout), ok.stdout + ok.stderr);
 const vj = load(join(dep, "venture.json"));
 save(join(dep, "venture.json"), { ...vj, departments: [...vj.departments, "risk-and-compliance"] });
-const missing = run("check-departments.mjs", dep);
+const missing = run("check-departments.ts", dep);
 expect("check-departments still finds what is wrong in a structured venture", missing.status === 1 && /risk-and-compliance is listed but has no folder/.test(missing.stderr) && !/is not in venture.json departments/.test(missing.stderr), missing.stderr);
 
 const before = readdirSync(dep).sort().join();

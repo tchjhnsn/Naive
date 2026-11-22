@@ -38,7 +38,7 @@
   ],
   "writes": [],
   "checks": [
-    "packages/naive/src/checks/check-integrations.mjs",
+    "packages/naive/src/checks/check-integrations.ts",
     "packages/naive/src/interfaces/test.mjs",
     "packages/naive/src/interfaces/adapters.mjs",
     "packages/naive/src/interfaces/tests/gate-test.mjs",

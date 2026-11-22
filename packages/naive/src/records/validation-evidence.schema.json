@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "validation-evidence.schema.json",
   "title": "Validation evidence item",
-  "description": "One piece of cited evidence behind a validation record (EE-026), shared by every validation sub-score. packages/naive/src/checks/check-validation.mjs grades each item from its kind, audience, sample, specificity and age (adapted from GRADE), and grades the record from its items. A claim with no evidence grades very low.",
+  "description": "One piece of cited evidence behind a validation record (EE-026), shared by every validation sub-score. packages/naive/src/checks/check-validation.ts grades each item from its kind, audience, sample, specificity and age (adapted from GRADE), and grades the record from its items. A claim with no evidence grades very low.",
   "type": "object",
   "required": [
     "id",

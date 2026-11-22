@@ -86,7 +86,7 @@ function buildRoutes() {
     const pick = (tdir) => existsSync(join(repo, tdir)) ? readdirSync(join(repo, tdir)).filter((f) => f === `${short}.md` || (f.startsWith(`${short}-`) && f.endsWith(".md"))).sort((a, b) => (a === `${short}.md` ? -1 : b === `${short}.md` ? 1 : a.localeCompare(b)))[0] : null;
     const found = tdirs.map((tdir) => [tdir, pick(tdir)]).find(([, n]) => n);
     const template = found ? `${found[0]}/${found[1]}` : null;
-    const checks = [...new Set((r.refs ?? []).map((x) => x.checked_by).filter((c) => c && /^packages\/naive\/src\/[a-z]+\/check-[a-z-]+\.mjs$/.test(c) && c !== "packages/naive/src/checks/check-data-model.mjs"))];
+    const checks = [...new Set((r.refs ?? []).map((x) => x.checked_by).filter((c) => c && /^packages\/naive\/src\/[a-z]+\/check-[a-z-]+\.mjs$/.test(c) && c !== "packages/naive/src/checks/check-data-model.ts"))];
     const legacy = [r.layer === "system" ? "system" : r.layer, sub, short].filter(Boolean).join("/");
     const base = PACKAGE_ROUTE[r.id] ?? legacy;
     const form = r.form ?? "json";
@@ -145,7 +145,7 @@ function buildRoutes() {
     ...load(join(repo, "packages/naive/src/functions/strategy/venture-anatomy.json")).submatrices.map((/** @type {{ id: string, label: string, record: string | null }} */ s) =>
       cmd(`identity/venture-anatomy/${s.id}`, "packages/naive/src/engine/venture-anatomy.ts", `One sub-matrix of the Venture Anatomy Matrix, ${s.label}: the ${s.record ?? "(not built)"} records it reads, its owner, cells by status and the S-K items it covers (EE-157)`, { args: ["--sub", s.id] })),
     cmd("purpose/foundation", "packages/naive/src/engine/foundation.mjs", "The venture's strategic foundation by the Five Ws and How plus whether, each confirmed, drafted by an agent, waiting as a draft, or missing (EE-051)"),
-    cmd("purpose/validation/score", "packages/naive/src/checks/check-validation.mjs", "Held (EE-050): the single validation score from graded evidence (EE-026); purpose/validation/assess replaces it for the problem", { args: ["--score"] }),
+    cmd("purpose/validation/score", "packages/naive/src/checks/check-validation.ts", "Held (EE-050): the single validation score from graded evidence (EE-026); purpose/validation/assess replaces it for the problem", { args: ["--score"] }),
     cmd("governance/payouts", "packages/naive/src/engine/payouts.mjs", "Who gets what at a sale value, from the cap table (EE-022); input value, else the scenarios in exit.json", { needs: ["governance/ownership.json"], venture_arg: "id" }),
     cmd("system/overview", null, "The venture at a glance: telos, validation, need-now, time to ready, team and recent provenance, rendered as parallel slots", { internal: "overview" }),
     cmd("system/robots", null, "Which roles may read and write which routes, from the team plan", { internal: "robots" }),
@@ -173,15 +173,15 @@ function buildRoutes() {
   );
   out.push(...cacheRoutes(cmd)); // Caching hook: system/cache, system/judge, system/answer (packages/naive/src/engine/caching.mjs).
   out.push(...brandCommands(cmd)); // Brand hook: brand tokens, voice, glossary terms, sitemap.xml, asset facts (packages/naive/src/engine/brand.mjs).
-  out.push(...investorsLintCommands(cmd)); // Investors lint hook: investors/lint (packages/naive/src/checks/lint-investors.mjs).
-  out.push(...productCommands(cmd)); // Product lint hook: product/lint (packages/naive/src/checks/lint-product.mjs).
-  out.push(...moneyCommands(cmd)); // Money lint: transfer decisions and account owners (packages/naive/src/checks/lint-money.mjs).
+  out.push(...investorsLintCommands(cmd)); // Investors lint hook: investors/lint (packages/naive/src/checks/lint-investors.ts).
+  out.push(...productCommands(cmd)); // Product lint hook: product/lint (packages/naive/src/checks/lint-product.ts).
+  out.push(...moneyCommands(cmd)); // Money lint: transfer decisions and account owners (packages/naive/src/checks/lint-money.ts).
   out.push(...customersLintCommands(cmd)); // Customers lint: ICP match and promises read from product records by key.
-  out.push(...validationCommands(cmd)); // Validation lint: claims, shelf life, agent grades, Discovery-grade decisions (packages/naive/src/checks/lint-validation.mjs).
-  out.push(...financeCommands(cmd)); // Finance lint: spend, price below cost, metric targets (packages/naive/src/checks/lint-finance.mjs).
-  out.push(...legalCommands(cmd)); // Legal lint hook: public claims and agreements (packages/naive/src/checks/lint-legal.mjs).
-  out.push(...peopleLintCommands(cmd)); // People lint: role, hire and decision alignment (packages/naive/src/checks/lint-people.mjs).
-  out.push(...foundationLintCommands(cmd)); // Foundation lint: mission, ICP jobs, alignment checks, problem forms (packages/naive/src/checks/lint-foundation.mjs).
+  out.push(...validationCommands(cmd)); // Validation lint: claims, shelf life, agent grades, Discovery-grade decisions (packages/naive/src/checks/lint-validation.ts).
+  out.push(...financeCommands(cmd)); // Finance lint: spend, price below cost, metric targets (packages/naive/src/checks/lint-finance.ts).
+  out.push(...legalCommands(cmd)); // Legal lint hook: public claims and agreements (packages/naive/src/checks/lint-legal.ts).
+  out.push(...peopleLintCommands(cmd)); // People lint: role, hire and decision alignment (packages/naive/src/checks/lint-people.ts).
+  out.push(...foundationLintCommands(cmd)); // Foundation lint: mission, ICP jobs, alignment checks, problem forms (packages/naive/src/checks/lint-foundation.ts).
   return out.sort((a, b) => a.route.localeCompare(b.route));
 }
 

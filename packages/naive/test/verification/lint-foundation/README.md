@@ -1,6 +1,6 @@
 # Foundation lint
 
-Model of one run of `packages/naive/src/checks/lint-foundation.mjs` (route `foundation/lint`). TLC checks the rules below. The chart draws the same run in coarser labels: the four fixtures share two judged states, because a finding exits the same way whichever rule produced it.
+Model of one run of `packages/naive/src/checks/lint-foundation.ts` (route `foundation/lint`). TLC checks the rules below. The chart draws the same run in coarser labels: the four fixtures share two judged states, because a finding exits the same way whichever rule produced it.
 
 The chart hides the `Done` step. That step changes nothing after the run has exited. TLC found 14 of them (7 record shapes, each with the rule fail-open and fail-closed).
 

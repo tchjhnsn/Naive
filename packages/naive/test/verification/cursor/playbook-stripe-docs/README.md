@@ -8,7 +8,7 @@ The model leaves out three things the replay still runs, because they are not te
 
 - A direct write of `decisions/[id]` with `status` `decided` and no `provenance.approved_by`. An agent's write is held as a draft and the read returns null, so Check 2 fails it. A person's write is refused. `propose` refuses it.
 - `propose` with `at` set to `product`. The file lands at `product/decisions/<id>.decision.json`. `decisions/<id>` reads `result` null, though the `decisions` list shows it. The template says not to set `at`.
-- `product/[id] check`. It runs `packages/naive/src/checks/check-ventures.mjs` on the whole venture. A second card with `software: true` and no `repos` entry fails `product/ledger check` with `docs-probe/ledger-soft: builds software, so the venture (or a parent) needs a repository in repos`. The playbook does not use that action as proof the spec worked.
+- `product/[id] check`. It runs `packages/naive/src/checks/check-ventures.ts` on the whole venture. A second card with `software: true` and no `repos` entry fails `product/ledger check` with `docs-probe/ledger-soft: builds software, so the venture (or a parent) needs a repository in repos`. The playbook does not use that action as proof the spec worked.
 
 ## Regenerate
 

@@ -69,12 +69,12 @@
   ],
   "templates": [],
   "checks": [
-    "packages/naive/src/checks/check-execution.mjs",
-    "packages/naive/src/checks/check-governance.mjs",
+    "packages/naive/src/checks/check-execution.ts",
+    "packages/naive/src/checks/check-governance.ts",
     "packages/naive/src/engine/payouts.mjs",
-    "packages/naive/src/checks/check-telos.mjs",
-    "packages/naive/src/checks/check-publication.mjs",
-    "packages/naive/src/checks/lint-legal.mjs"
+    "packages/naive/src/checks/check-telos.ts",
+    "packages/naive/src/checks/check-publication.ts",
+    "packages/naive/src/checks/lint-legal.ts"
   ],
   "skill": {
     "id": "legal-function",

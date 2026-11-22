@@ -43,8 +43,8 @@
     "reference"
   ],
   "checks": [
-    "packages/naive/src/checks/check-sources.mjs",
-    "packages/naive/src/checks/check-where-used.mjs",
+    "packages/naive/src/checks/check-sources.ts",
+    "packages/naive/src/checks/check-where-used.ts",
     "packages/naive/src/checks/check-sdlc-catalog.ts"
   ],
   "gaps": [

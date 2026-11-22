@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "venture.schema.json",
   "title": "Venture",
-  "description": "One venture: anything a builder undertakes, from a hobby to a company (EE-011). Each venture keeps a venture.json at its root, beside its venture profile. Its products are cards in products/, the parties it keeps records for are accounts in accounts/ (optional, EE-021), and ventures can hold ventures. Cross-venture rules are checked by packages/naive/src/checks/check-ventures.mjs. Nouns follow packages/naive/src/terms/ontology.md (EE-014).",
+  "description": "One venture: anything a builder undertakes, from a hobby to a company (EE-011). Each venture keeps a venture.json at its root, beside its venture profile. Its products are cards in products/, the parties it keeps records for are accounts in accounts/ (optional, EE-021), and ventures can hold ventures. Cross-venture rules are checked by packages/naive/src/checks/check-ventures.ts. Nouns follow packages/naive/src/terms/ontology.md (EE-014).",
   "type": "object",
   "required": [
     "id",

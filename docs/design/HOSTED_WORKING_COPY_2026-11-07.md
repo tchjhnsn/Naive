@@ -96,7 +96,7 @@ To commit correctly, a host has to know what each file in the folder is:
 - **log**: an append-only file, such as `provenance.jsonl`, `traces/<session>.jsonl`, and later the detection ledger (`governance/detectors/<id>.trials.jsonl`). A commit may only add lines at the end.
 - **derived**: a cache Naive can rebuild, such as `.naive/decision-index.json`. A host may keep it to save time, or drop it.
 
-The data model gains a `kind` per path pattern, defaulting to record. `node packages/naive/src/checks/check-data-model.mjs` already insists that every JSON file has a record type, and it extends to logs and derived files.
+The data model gains a `kind` per path pattern, defaulting to record. `node packages/naive/src/checks/check-data-model.ts` already insists that every JSON file has a record type, and it extends to logs and derived files.
 
 ### 3. The connector contract compares versions on write
 
@@ -144,7 +144,7 @@ All in Naive, one item per pull request.
 | # | Item | Verifier |
 |---|---|---|
 | 1 | `check-write-scope.ts` with today's exceptions named | the suite runs under it; a write outside the venture in a broken copy fails it |
-| 2 | `kind` (record, log, derived) in the data model; `check-data-model.mjs` covers it | every path under the example ventures has a kind |
+| 2 | `kind` (record, log, derived) in the data model; `check-data-model.ts` covers it | every path under the example ventures has a kind |
 | 3 | `base` and `append` in the connector contract, the filesystem connector and the suite | a stale base is refused; an append over a moved log is refused; the chain checks still pass |
 | 4 | `NAIVE_RUNTIME=hosted` and host-registered hooks in place of `NAIVE_*_CMD` | each refused feature returns its message; the laptop path is unchanged |
 | 5 | In-process validation on the write path | agrees with `validate.py` on every example record |

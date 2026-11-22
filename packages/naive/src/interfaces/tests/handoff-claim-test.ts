@@ -3,7 +3,7 @@
 // addressed to another role or is already claimed is refused; after a claim only the claimant writes progress and
 // evidence and only the requester (requested_by) writes the verification and acceptance, so a lead cannot accept a
 // handoff it did not request and a claimant cannot verify its own work; the requester sends work back and it is
-// claimed again; a handoff without requested_by is written as before; and check-ready.mjs and check-execution.mjs
+// claimed again; a handoff without requested_by is written as before; and check-ready.ts and check-execution.ts
 // refuse a review whose reviewer is not the requester. Every venture lives in a temporary workspace.
 //
 //   node packages/naive/src/interfaces/tests/handoff-claim-test.ts
@@ -37,8 +37,8 @@ const ROLE = "finance-agent", LEAD = "finance-lead", OTHER_LEAD = "growth-lead";
 const handoff = (id: string, extra: Record<string, unknown> = {}): Handoff => ({
   id, title: `Handoff ${id}`, venture: V, role: ROLE, brief: `${id}.md`, decision_classes: ["implementation-detail"],
   done_criteria: [
-    { id: "holds", kind: "conformance", check: "node packages/naive/src/checks/check-execution.mjs ." },
-    { id: "proof", kind: "self-proof", check: "node packages/naive/src/checks/check-ready.mjs ." },
+    { id: "holds", kind: "conformance", check: "node packages/naive/src/checks/check-execution.ts ." },
+    { id: "proof", kind: "self-proof", check: "node packages/naive/src/checks/check-ready.ts ." },
     { id: "fit", kind: "review", reviewer: LEAD, check: "Does it answer the question the lead asked?" },
   ],
   status: "ready", attempts: 0, max_attempts: 3, run_cap: "2h", requested_by: LEAD, ...extra,
@@ -174,17 +174,17 @@ process.stdout.write(JSON.stringify({ i: ${i}, ok: r.ok, by: r.result?.claimed_b
   expect("the claim action still refuses a claimed handoff without requested_by", !c.ok && /already claimed/.test(c.error ?? ""), show(c));
 }
 
-// check-ready.mjs and check-execution.mjs refuse a review whose reviewer is not the requester.
+// check-ready.ts and check-execution.ts refuse a review whose reviewer is not the requester.
 {
   const mismatch = handoff("mismatch", { done_criteria: [
-    { id: "holds", kind: "conformance", check: "node packages/naive/src/checks/check-execution.mjs ." },
-    { id: "proof", kind: "self-proof", check: "node packages/naive/src/checks/check-ready.mjs ." },
+    { id: "holds", kind: "conformance", check: "node packages/naive/src/checks/check-execution.ts ." },
+    { id: "proof", kind: "self-proof", check: "node packages/naive/src/checks/check-ready.ts ." },
     { id: "fit", kind: "review", reviewer: "architect", check: "Is it right?" },
   ] });
   await asPerson("mismatch", mismatch);
-  const ready = spawnSync(process.execPath, [join(repo, "packages/naive/src/checks/check-ready.mjs"), dir, "mismatch"], { encoding: "utf8", env });
+  const ready = spawnSync(process.execPath, [join(repo, "packages/naive/src/checks/check-ready.ts"), dir, "mismatch"], { encoding: "utf8", env });
   expect("check-ready refuses a review not judged by the requester", /FAIL {2}every review is judged by its requester finance-lead: fit names architect/.test(ready.stdout), ready.stdout + ready.stderr);
-  const exec = spawnSync(process.execPath, [join(repo, "packages/naive/src/checks/check-execution.mjs"), dir], { encoding: "utf8", env });
+  const exec = spawnSync(process.execPath, [join(repo, "packages/naive/src/checks/check-execution.ts"), dir], { encoding: "utf8", env });
   expect("check-execution refuses a review not judged by the requester", exec.status !== 0 && /handoff\/mismatch\/fit: review is judged by the requester finance-lead, not architect/.test(exec.stderr), exec.stdout + exec.stderr);
   expect("check-execution takes the requester's own verification", !/handoff\/work: verified by/.test(exec.stderr), exec.stderr);
 }
