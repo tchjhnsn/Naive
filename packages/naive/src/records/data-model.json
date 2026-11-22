@@ -1181,6 +1181,58 @@
       "note": "Days since last touch and the streak, for the docket; a long silence is a gentle nudge (naive activity --write)"
     },
     {
+      "id": "service-offer",
+      "layer": "operations",
+      "function": "service-delivery",
+      "level": "venture",
+      "schema": "packages/naive/src/records/service-offer.schema.json",
+      "generator": "packages/naive/src/engine/generators/service-offer.ts",
+      "writer": "function",
+      "paths": [
+        "instance/**/service-delivery/offers/*.json",
+        "packages/naive/src/records/examples/**/service-delivery/offers/*.json"
+      ],
+      "refs": [
+        {
+          "field": "product",
+          "to": "product",
+          "checked_by": null
+        }
+      ],
+      "note": "One service catalogue entry (ITIL 4 service catalogue management; APQC PCF 5.1.2): outcome, inclusions and exclusions, price model and price, duration and prerequisites. Owned by the service-delivery function; only the service-delivery agent (service-delivery-agent) or a person writes it (writer function)"
+    },
+    {
+      "id": "engagement",
+      "layer": "operations",
+      "function": "service-delivery",
+      "level": "venture",
+      "schema": "packages/naive/src/records/engagement.schema.json",
+      "generator": "packages/naive/src/engine/generators/engagement.ts",
+      "writer": "function",
+      "paths": [
+        "instance/**/service-delivery/engagements/*.json",
+        "packages/naive/src/records/examples/**/service-delivery/engagements/*.json"
+      ],
+      "refs": [
+        {
+          "field": "client",
+          "to": "customer",
+          "checked_by": null
+        },
+        {
+          "field": "offer",
+          "to": "service-offer",
+          "checked_by": null
+        },
+        {
+          "field": "handoffs[]",
+          "to": "handoff",
+          "checked_by": null
+        }
+      ],
+      "note": "One client engagement (APQC PCF 5.3): client, offer, deliverables with acceptance criteria, change requests, budget, status and close review. Its work runs as handoffs it lists by id. Owned by the service-delivery function; only the service-delivery agent or a person writes it (writer function)"
+    },
+    {
       "id": "evidence",
       "layer": "evidence",
       "function": null,
@@ -1213,6 +1265,41 @@
       "paths": [
         "packages/naive/test/evals/*.json"
       ]
+    },
+    {
+      "id": "process",
+      "layer": "operations",
+      "function": "capabilities",
+      "level": "venture",
+      "schema": "packages/naive/src/records/process.schema.json",
+      "generator": "packages/naive/src/engine/generators/process.ts",
+      "writer": "function",
+      "paths": [
+        "instance/**/capabilities/processes/*.json",
+        "packages/naive/src/records/examples/**/capabilities/processes/*.json"
+      ],
+      "note": "One recurring business process in the process catalog (APQC PCF 13.1, SIPOC): purpose, one owner, trigger, suppliers, inputs, outputs and customers, the working procedure with its control points, and cycle time, rework rate and first-pass yield. Only the capabilities agent or a person writes it (writer function)"
+    },
+    {
+      "id": "postmortem",
+      "layer": "operations",
+      "function": "capabilities",
+      "level": "venture",
+      "schema": "packages/naive/src/records/postmortem.schema.json",
+      "generator": "packages/naive/src/engine/generators/postmortem.ts",
+      "writer": "function",
+      "paths": [
+        "instance/**/capabilities/postmortems/*.json",
+        "packages/naive/src/records/examples/**/capabilities/postmortems/*.json"
+      ],
+      "refs": [
+        {
+          "field": "process",
+          "to": "process",
+          "checked_by": null
+        }
+      ],
+      "note": "One blameless postmortem (Google SRE book ch. 15; ISO 9001:2015 clause 10.2; APQC PCF 13.3.3): summary, impact, timeline, contributing causes as process or system conditions, corrective and preventive actions with owners, and lessons. The capabilities agent drafts it; a person reviews it before it closes"
     },
     {
       "id": "design-documents-registry",
@@ -1414,6 +1501,34 @@
       ],
       "note": "Where the venture publishes and who may publish what there: channels, guidelines, checks, preview and approvers; every publication passes this gate (EE-025)",
       "decision_class": "strategy-or-constitution"
+    },
+    {
+      "id": "risk",
+      "layer": "governance",
+      "function": "risk-and-compliance",
+      "level": "venture",
+      "schema": "packages/naive/src/records/risk.schema.json",
+      "generator": "packages/naive/src/engine/generators/risk.ts",
+      "writer": "function",
+      "paths": [
+        "instance/**/legal/risks/*.json",
+        "packages/naive/src/records/examples/**/legal/risks/*.json"
+      ],
+      "note": "One entry of the risk register: cause, consequence, owner, likelihood and impact as 90% ranges, treatment and review date (ISO 31000:2018 6.4 to 6.6). Only the risk-and-compliance agent (risk-and-compliance-agent) or a person writes it (writer function)"
+    },
+    {
+      "id": "obligation",
+      "layer": "governance",
+      "function": "risk-and-compliance",
+      "level": "venture",
+      "schema": "packages/naive/src/records/obligation.schema.json",
+      "generator": "packages/naive/src/engine/generators/obligation.ts",
+      "writer": "function",
+      "paths": [
+        "instance/**/legal/obligations/*.json",
+        "packages/naive/src/records/examples/**/legal/obligations/*.json"
+      ],
+      "note": "One entry of the obligations register, the compliance calendar: a filing, tax, election, renewal or notice with its due date, authority, owner and evidence (ISO 37301:2021 4.5; APQC 11.2.2.2). The agent prepares; a person files, signs and pays. Only the risk-and-compliance agent (risk-and-compliance-agent) or a person writes it (writer function)"
     },
     {
       "id": "internal-terms",
@@ -1829,6 +1944,64 @@
       "note": "A customer master record. Activity is an append-only stream. The package is never complete (EE-070)."
     },
     {
+      "id": "support-policy",
+      "layer": "operations",
+      "function": "customer-service",
+      "level": "venture",
+      "schema": "packages/naive/src/records/support-policy.schema.json",
+      "generator": "packages/naive/src/engine/generators/support-policy.ts",
+      "writer": "function",
+      "paths": [
+        "instance/**/support/policy.json",
+        "packages/naive/src/records/examples/**/support/policy.json"
+      ],
+      "refs": [
+        {
+          "field": "channels[].connection",
+          "to": "connection",
+          "checked_by": null
+        }
+      ],
+      "decision_class": "public-commitment",
+      "note": "The venture's support policy: channels and hours, response targets per channel and segment, the refund rule and limit, what sends a case to a person, and the contact reason list (APQC PCF 6.1.3 to 6.1.5, ISO 10002). Owned by the support package and the customer service function; only the customer service agent or a person writes it, and an agent's write is held for a person under public-commitment"
+    },
+    {
+      "id": "support-case",
+      "layer": "operations",
+      "function": "customer-service",
+      "level": "venture",
+      "schema": "packages/naive/src/records/support-case.schema.json",
+      "generator": "packages/naive/src/engine/generators/support-case.ts",
+      "writer": "function",
+      "paths": [
+        "instance/**/support/cases/*.json",
+        "packages/naive/src/records/examples/**/support/cases/*.json"
+      ],
+      "refs": [
+        {
+          "field": "customer",
+          "to": "customer",
+          "checked_by": null
+        },
+        {
+          "field": "reason",
+          "to": "support-policy",
+          "checked_by": null
+        },
+        {
+          "field": "bug",
+          "to": "bug",
+          "checked_by": null
+        },
+        {
+          "field": "refund.decision",
+          "to": "decision-record",
+          "checked_by": null
+        }
+      ],
+      "note": "One customer contact and its handling: a question, problem, request or complaint, tagged with a contact reason, from first reply to resolution (APQC PCF 6.2.2 and 6.2.3, ISO 10002 for complaints). No transcript and no contact details: the customer is a customer record id and the conversation stays in the helpdesk. Owned by the support package and the customer service function; only the customer service agent or a person writes it (writer function)"
+    },
+    {
       "id": "investor",
       "layer": "purpose",
       "function": "external-relationships",
@@ -1839,6 +2012,52 @@
         "packages/naive/src/records/examples/**/investors/*.json"
       ],
       "note": "An investor master record. Activity is an append-only stream. The package is never complete (EE-070)."
+    },
+    {
+      "id": "raise",
+      "layer": "purpose",
+      "function": "external-relationships",
+      "level": "venture",
+      "schema": "packages/naive/src/records/raise.schema.json",
+      "generator": "packages/naive/src/engine/generators/raise.ts",
+      "writer": "function",
+      "paths": [
+        "instance/**/investor-relations/raises/*.json",
+        "packages/naive/src/records/examples/**/investor-relations/raises/*.json"
+      ],
+      "refs": [
+        {
+          "field": "targets[].investor",
+          "to": "investor",
+          "checked_by": null
+        },
+        {
+          "field": "meetings[].investor",
+          "to": "investor",
+          "checked_by": null
+        },
+        {
+          "field": "decision",
+          "to": "decision-record",
+          "checked_by": null
+        }
+      ],
+      "note": "One fundraise as a bounded project (APQC PCF 12.1; Graham, How to Raise Money): the ask and the milestone it reaches, opening and stop dates, the securities exemption, materials, target investors with their pipeline status, and every meeting with its follow-up. Only the external-relationships agent or a person writes it (writer function). Accepting terms is an ownership-or-control decision a person takes"
+    },
+    {
+      "id": "stakeholder-update",
+      "layer": "purpose",
+      "function": "external-relationships",
+      "level": "venture",
+      "schema": "packages/naive/src/records/stakeholder-update.schema.json",
+      "generator": "packages/naive/src/engine/generators/stakeholder-update.ts",
+      "writer": "function",
+      "paths": [
+        "instance/**/investor-relations/updates/*.json",
+        "packages/naive/src/records/examples/**/investor-relations/updates/*.json"
+      ],
+      "note": "One investor or board update for one period (APQC PCF 12.1.3, 12.3.1): headline, metrics with their source, highlights, lowlights, at most three asks and runway. The external-relationships agent drafts it; a person approves and sends it (public-commitment)",
+      "decision_class": "public-commitment"
     },
     {
       "id": "money-account",
@@ -1885,6 +2104,104 @@
       ],
       "note": "One line of the spend register, one paid service per record (lead agents design, build plan item 2). Only the finance agent (finance-agent) or a person writes it (writer function). The access matrix is the source map's spend-register rules: the bank statement sync masters amount, currency and dates, finance owns status, IT's tool record masters approval (packages/naive/template/knowledge/sources.json)",
       "decision_class": "spend-register-upkeep"
+    },
+    {
+      "id": "supplier",
+      "layer": "operations",
+      "function": "supply-chain",
+      "level": "venture",
+      "schema": "packages/naive/src/records/supplier.schema.json",
+      "generator": "packages/naive/src/engine/generators/supplier.ts",
+      "writer": "function",
+      "paths": [
+        "instance/**/supply-chain/suppliers/*.json",
+        "packages/naive/src/records/examples/**/supply-chain/suppliers/*.json"
+      ],
+      "refs": [],
+      "note": "One approved supplier list entry (ISO 9001:2015 clause 8.4; APQC PCF 4.2.2): what the supplier may supply, its status, who approved it, its Kraljic risk class and whether it is a single source. Owned by the supply-chain function; only the supply-chain agent (supply-chain-agent) or a person writes it (writer function). Approval is a person's"
+    },
+    {
+      "id": "purchase-order",
+      "layer": "operations",
+      "function": "supply-chain",
+      "level": "venture",
+      "schema": "packages/naive/src/records/purchase-order.schema.json",
+      "generator": "packages/naive/src/engine/generators/purchase-order.ts",
+      "writer": "function",
+      "paths": [
+        "instance/**/supply-chain/purchase-orders/*.json",
+        "packages/naive/src/records/examples/**/supply-chain/purchase-orders/*.json"
+      ],
+      "refs": [
+        {
+          "field": "supplier",
+          "to": "supplier",
+          "checked_by": null
+        }
+      ],
+      "note": "One purchase order to a supplier (APQC PCF 4.2.3; Incoterms 2020): lines, currency, Incoterms rule and named place, delivery date, payment terms and status. Owned by the supply-chain function; only the supply-chain agent or a person writes it. It commits money, so its writes carry decision class spend-money and an agent's write is held as a draft for a person",
+      "decision_class": "spend-money"
+    },
+    {
+      "id": "budget",
+      "layer": "purpose",
+      "function": "finance",
+      "level": "venture",
+      "schema": "packages/naive/src/records/budget.schema.json",
+      "generator": "packages/naive/src/engine/generators/budget.ts",
+      "writer": "function",
+      "paths": [
+        "instance/**/finance/budget/*.json",
+        "packages/naive/src/records/examples/**/finance/budget/*.json"
+      ],
+      "note": "A budget: planned revenue and spend by category and month, each line citing its source, and the opening cash it starts from (APQC 9.1.1). Runway is projected from it by projectRunway in packages/naive/src/engine/generators/budget.ts, never stored. Only the finance agent (finance-agent) or a person writes it (writer function)"
+    },
+    {
+      "id": "fixed-asset",
+      "layer": "operations",
+      "function": "assets",
+      "level": "venture",
+      "schema": "packages/naive/src/records/fixed-asset.schema.json",
+      "generator": "packages/naive/src/engine/generators/fixed-asset.ts",
+      "writer": "function",
+      "paths": [
+        "instance/**/assets/register/*.json",
+        "packages/naive/src/records/examples/**/assets/register/*.json"
+      ],
+      "refs": [
+        {
+          "field": "spend",
+          "to": "spend-register",
+          "checked_by": null
+        },
+        {
+          "field": "lease",
+          "to": "lease",
+          "checked_by": null
+        }
+      ],
+      "note": "One entry of the asset register: a piece of equipment, its custodian, cost and disposal (ISO 55000:2024; APQC 10.3.2). Only the assets agent (assets-agent) or a person writes it (writer function)"
+    },
+    {
+      "id": "lease",
+      "layer": "operations",
+      "function": "assets",
+      "level": "venture",
+      "schema": "packages/naive/src/records/lease.schema.json",
+      "generator": "packages/naive/src/engine/generators/lease.ts",
+      "writer": "function",
+      "paths": [
+        "instance/**/assets/leases/*.json",
+        "packages/naive/src/records/examples/**/assets/leases/*.json"
+      ],
+      "refs": [
+        {
+          "field": "spend",
+          "to": "spend-register",
+          "checked_by": null
+        }
+      ],
+      "note": "One lease or space commitment: term, rent, notice days, auto-renewal and personal guarantee (ASC 842, IFRS 16; APQC 10.1.3). Signing, renewing or giving notice is a founder decision. Only the assets agent (assets-agent) or a person writes it (writer function)"
     },
     {
       "id": "data-stream",
@@ -2208,6 +2525,53 @@
       "note": "The capability clusters of the whole-venture monorepo thesis: one outside tool per cluster, not one per function. Each names the functions that depend on it and the gap kinds that justify an outside tool (regulated authority, a network or money rail, a runtime, a UI preference). It names no vendor (lead agents design, build plan item 7)"
     },
     {
+      "id": "function-module",
+      "layer": "operations",
+      "function": "capabilities",
+      "level": "method",
+      "schema": "packages/naive/src/records/function-module.schema.json",
+      "generator": "packages/naive/src/engine/generators/function-module.ts",
+      "paths": [
+        "packages/naive/src/functions/*/function.json"
+      ],
+      "refs": [
+        { "field": "id", "to": "department-catalog", "checked_by": "packages/naive/src/checks/check-functions.ts" },
+        { "field": "clusters", "to": "capability-cluster", "checked_by": "packages/naive/src/checks/check-functions.ts" },
+        { "field": "intake", "to": "function-workflow", "checked_by": "packages/naive/src/checks/check-functions.ts" }
+      ],
+      "note": "A function module's manifest: its purpose, intake workflow, the telos measure kinds it moves and the capability clusters it relies on. Records owned, lead and write reach are derived, not held here"
+    },
+    {
+      "id": "function-decisions",
+      "layer": "governance",
+      "function": "capabilities",
+      "level": "method",
+      "schema": "packages/naive/src/records/function-decisions.schema.json",
+      "generator": "packages/naive/src/engine/generators/function-decisions.ts",
+      "paths": [
+        "packages/naive/src/functions/*/decisions.json"
+      ],
+      "refs": [
+        { "field": "rows[].class", "to": "decision-rights", "checked_by": "packages/naive/src/checks/check-functions.ts" }
+      ],
+      "note": "A function's decision matrix: decide, recommend or escalate for each decision class its work raises. Never loosens a one-way door or a never-redelegated class"
+    },
+    {
+      "id": "function-workflow",
+      "layer": "operations",
+      "function": "capabilities",
+      "level": "method",
+      "schema": "packages/naive/src/records/function-workflow.schema.json",
+      "generator": "packages/naive/src/engine/generators/function-workflow.ts",
+      "paths": [
+        "packages/naive/src/functions/*/workflows/*.json"
+      ],
+      "refs": [
+        { "field": "steps[].raises", "to": "function-decisions", "checked_by": "packages/naive/src/checks/check-functions.ts" }
+      ],
+      "note": "One recurring piece of a function's work: trigger, steps, the routes each writes, the decision classes it raises, and done criteria in the handoff's form"
+    },
+    {
       "id": "connection",
       "layer": "operations",
       "function": "it",
@@ -2318,6 +2682,42 @@
       ],
       "decision_class": "public-commitment",
       "note": "Brand tokens in the marketing package (Y-3): colors, licensed self-hosted typefaces (T-1), the font each role uses with scopes where nearer context wins (Y-5, T-2), voice rules (the global stylesheet for words), the logo and marks (P-24) and outside design systems by reference (Y-4). Read by every agent's layout; marketing/brand/tokens renders it for interfaces"
+    },
+    {
+      "id": "opportunity",
+      "layer": "purpose",
+      "function": "marketing-and-sales",
+      "level": "venture",
+      "schema": "packages/naive/src/records/opportunity.schema.json",
+      "generator": "packages/naive/src/engine/generators/opportunity.ts",
+      "writer": "function",
+      "paths": [
+        "instance/**/sales/opportunities/*.json",
+        "packages/naive/src/records/examples/**/sales/opportunities/*.json"
+      ],
+      "refs": [
+        {
+          "field": "account",
+          "to": "account",
+          "checked_by": null
+        },
+        {
+          "field": "customer",
+          "to": "customer",
+          "checked_by": null
+        },
+        {
+          "field": "icp",
+          "to": "icp",
+          "checked_by": null
+        },
+        {
+          "field": "outcome.competitor",
+          "to": "competitor",
+          "checked_by": null
+        }
+      ],
+      "note": "One potential sale in the pipeline, from lead to won or lost (APQC PCF 3.5.1), with MEDDIC qualification and a win-loss reason once closed. Owned by the sales package and the marketing and sales function; only the marketing and sales agent (marketing-and-sales-agent) or a person writes it (writer function). Leads and win-loss reasons are the function's first research patterns"
     },
     {
       "id": "public-assets",

@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "risk.schema.json",
+  "title": "Risk",
+  "description": "One entry of the venture's risk register (ISO 31000:2018 clauses 6.4 to 6.6: risk assessment, risk treatment, monitoring and review), at legal/risks/<id>.json (route legal/risks/[id]): what could happen, why, what it would cost, who owns it and what the venture does about it. Likelihood and impact are 90% ranges, not ordinal scores (Hubbard, The Failure of Risk Management; Cox 2008), so expected loss can be computed and compared. Every live risk has a person owner and a review date. The risk-and-compliance function owns it, and only the risk-and-compliance agent (role risk-and-compliance-agent) or a person writes it (writer function in packages/naive/src/records/data-model.json).",
+  "type": "object",
+  "required": ["id", "title", "cause", "consequence", "category", "owner", "likelihood", "impact", "treatment", "status", "review_date"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$", "description": "The risk's id, the file name without .json" },
+    "title": { "type": "string", "minLength": 1, "description": "The event, in a short sentence" },
+    "cause": { "type": "string", "minLength": 1, "description": "What would make it happen" },
+    "consequence": { "type": "string", "minLength": 1, "description": "What it would do to the venture" },
+    "category": { "enum": ["legal", "regulatory", "financial", "operational", "security", "privacy", "strategic", "reputational"] },
+    "owner": { "type": "string", "minLength": 1, "description": "The person who owns the risk's treatment, by people record id or role" },
+    "likelihood": {
+      "type": "object",
+      "required": ["low", "high"],
+      "additionalProperties": false,
+      "description": "The chance it happens in the next 12 months, as a 90% range of probabilities",
+      "properties": { "low": { "type": "number", "minimum": 0, "maximum": 1 }, "high": { "type": "number", "minimum": 0, "maximum": 1 } }
+    },
+    "impact": {
+      "type": "object",
+      "required": ["low", "high", "currency"],
+      "additionalProperties": false,
+      "description": "What it would cost if it happens, as a 90% range",
+      "properties": { "low": { "type": "number", "minimum": 0 }, "high": { "type": "number", "minimum": 0 }, "currency": { "type": "string", "pattern": "^[A-Z]{3}$" } }
+    },
+    "treatment": { "enum": ["avoid", "reduce", "transfer", "accept"], "description": "The ISO 31000 6.5 options in short: avoid (stop the activity), reduce (add a control), transfer (insurance or a contract), accept (live with it, with a reason)" },
+    "treatment_plan": { "type": "string", "description": "What the venture does, and the handoff or decision that carries it" },
+    "status": { "enum": ["open", "treating", "closed"] },
+    "review_date": { "type": "string", "format": "date", "description": "When the owner next reviews it" },
+    "related": { "type": "array", "items": { "type": "string" }, "description": "Routes of records the risk concerns, such as an obligation or a lease" },
+    "note": { "type": "string" }
+  }
+}

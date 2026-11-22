@@ -1,0 +1,13 @@
+{
+  "function": "products",
+  "rows": [
+    { "class": "domain-fact", "level": "decide", "examples": ["Record that a bug reproduces on the signup page", "Set a crash on checkout to P0", "Record that 9 of 22 surveyed users said very disappointed"] },
+    { "class": "set-priorities", "level": "recommend", "approver": "product-lead", "examples": ["Fix the import bug before building the second report", "Take the onboarding change into the next cycle and drop the settings page"] },
+    { "class": "experience-design", "level": "escalate", "examples": ["Change the onboarding flow from three screens to one", "Move pricing into the app header"] },
+    { "class": "production-ship", "level": "escalate", "examples": ["Release version 0.4 to every beta tester", "Turn the new editor on for paying customers"] },
+    { "class": "continue-or-stop", "level": "escalate", "examples": ["Stop building the mobile app after two cycles with no retained users", "Start building the API product"] },
+    { "class": "change-direction", "level": "escalate", "examples": ["Move from individual designers to agency teams as the target customer"] },
+    { "class": "strategy-or-constitution", "level": "escalate", "examples": ["Add a second product to the lineup", "Retire the free plan"] },
+    { "class": "public-commitment", "level": "escalate", "examples": ["Publish release notes for version 0.4", "Tell beta testers a feature ships next month"] }
+  ]
+}

@@ -38,6 +38,9 @@ const ch = w1.result?.changed;
 expect("M-3: a write answers with the record's state before and after", ch?.record?.from === "missing" && ch?.record?.to === "confirmed" && ch?.record?.package === "foundation", ch);
 expect("M-3: it names each package whose progress moved", ch?.packages?.some((p) => p.package === "foundation" && p.progress.to > p.progress.from), ch?.packages);
 expect("M-3: it names the records that move now because of it", ch?.moves_now?.some((m) => m.record === "validation-solution" && m.route === "validation/solution"), ch?.moves_now);
+// naive#71: a record that names another venture is refused, and nothing is written.
+const wrongVenture = await call({ venture: "other", route: "foundation/problem", action: "write", workspace: ws, input: problem, actor: "person" });
+expect("a record whose venture field names another venture is refused", !wrongVenture.ok && /names venture acme, but it is being written to other/.test(wrongVenture.error ?? ""), wrongVenture);
 expect("M-3: it names the need-now rows it settled", ch?.need_now?.some((n) => n.record === "validation-problem" && n.from === "suggest now" && n.to === "held"), ch?.need_now);
 expect("M-17: a write answers with the next route: the next required record in its package", w1.result?.next?.route === "foundation/icp/[id]" && w1.result.next.action === "write" && /mentura foundation\/icp\/<id> write --venture acme/.test(w1.result.next.command), w1.result?.next);
 const w2 = await c("validation/solution", "write", { input: { venture: "acme", statement: "Online booking", alternatives: ["a receptionist"], evidence: [] } });

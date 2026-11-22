@@ -1,0 +1,30 @@
+{
+  "name": "supply-chain",
+  "title": "Supply chain",
+  "kind": "data",
+  "purpose": "The venture's approved suppliers and its purchase orders, one supply-chain/suppliers/<id>.json and one supply-chain/purchase-orders/<id>.json each (ISO 9001:2015 clause 8.4; APQC PCF 4.2; Incoterms 2020). Only a venture that makes, buys or ships physical goods keeps it. The supply-chain function owns it, so the supply-chain agent gets its write routes. Never complete.",
+  "function": "supply-chain",
+  "required": [],
+  "optional": [],
+  "refs": [
+    "product",
+    "spend-register"
+  ],
+  "gates": [
+    "freshness"
+  ],
+  "layer": "operations",
+  "records": [
+    "supplier",
+    "purchase-order"
+  ],
+  "schemas": [
+    "packages/naive/src/records/supplier.schema.json",
+    "packages/naive/src/records/purchase-order.schema.json"
+  ],
+  "templates": [],
+  "checks": [],
+  "skill": null,
+  "use_model": [],
+  "complete": false
+}

@@ -1,0 +1,30 @@
+{
+  "name": "support",
+  "title": "Support",
+  "kind": "data",
+  "purpose": "Customer support: the support policy (support/policy.json: channels, response targets, the refund rule, what goes to a person) and one support/cases/<id>.json per customer contact (APQC PCF 6.1 and 6.2, ISO 10002). The customer service function owns it, so its agent gets its first write routes. Never complete.",
+  "function": "customer-service",
+  "required": [],
+  "optional": [],
+  "refs": [
+    "customer",
+    "bug"
+  ],
+  "gates": [
+    "freshness"
+  ],
+  "layer": "operations",
+  "records": [
+    "support-policy",
+    "support-case"
+  ],
+  "schemas": [
+    "packages/naive/src/records/support-policy.schema.json",
+    "packages/naive/src/records/support-case.schema.json"
+  ],
+  "templates": [],
+  "checks": [],
+  "skill": null,
+  "use_model": [],
+  "complete": false
+}

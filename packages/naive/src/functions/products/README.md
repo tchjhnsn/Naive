@@ -10,6 +10,12 @@ The products and services function (APQC 2.0, Develop and Manage Products and Se
 
 | Path | Holds |
 |---|---|
+| [function.json](./function.json) | The manifest: purpose, intake, measures, capability clusters |
+| [agent.md](./agent.md) | The products agent's instructions |
+| [decisions.json](./decisions.json) | The decision matrix |
+| [workflows/intake.json](./workflows/intake.json) | Workflow: learn the venture's products |
+| [workflows/weekly-product-review.json](./workflows/weekly-product-review.json) | Workflow: review discovery, bugs and the next build each week |
+| [skills/four-risks-review](./skills/four-risks-review) | Skill: check a product or a build for evidence on the four risks (value, usability, feasibility, viability), weekly customer touchpoints and the product-market fit survey |
 | [frameworks/product-anatomy](./frameworks/product-anatomy) | Product Anatomy Matrix: fix the venture's core product first, judge every product against it with typed questions (Jev plus a reasoning model), then deduce each product's |
 | [sdlc/README.md](./sdlc/README.md) | SDLC catalog |
 | [sdlc/catalog.json](./sdlc/catalog.json) | A record |

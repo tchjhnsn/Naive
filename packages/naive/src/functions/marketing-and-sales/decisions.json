@@ -1,0 +1,14 @@
+{
+  "function": "marketing-and-sales",
+  "rows": [
+    { "class": "domain-fact", "level": "decide", "examples": ["Move an opportunity from lead to qualified once the economic buyer and the pain are known", "Record that a lost deal was lost on price, as the buyer said", "Mark a customer record as paying from the first invoice"] },
+    { "class": "defer-or-route", "level": "decide", "examples": ["Send a feature a buyer asked for to products as a handoff", "Pass a customer's complaint raised in a sales call to customer service"] },
+    { "class": "set-priorities", "level": "recommend", "approver": "growth-lead", "examples": ["Which three traction channels to test this month", "Which stalled opportunities to work this week and which to close as lost"] },
+    { "class": "public-commitment", "level": "escalate", "examples": ["Send an outreach email or a follow-up to a lead", "Publish a site page or a post", "Change the brand's colors, voice rules or logo", "Reply in public to a review"] },
+    { "class": "legal-or-terms", "level": "escalate", "examples": ["Send a quote with a discount or non-standard terms", "Sign a customer contract or a reseller agreement"] },
+    { "class": "spend-money", "level": "escalate", "examples": ["Start a paid ad campaign", "Pay for a conference booth or a list of contacts"] },
+    { "class": "experience-design", "level": "escalate", "examples": ["Change the site's navigation or the layout of the pricing page"] },
+    { "class": "strategy-or-constitution", "level": "escalate", "examples": ["Change the price points or the plans on offer", "Name a different primary customer profile or market category"] },
+    { "class": "irreversible-data-change", "level": "escalate", "examples": ["Delete a customer record because the customer asked", "Merge two customer records into one"] }
+  ]
+}

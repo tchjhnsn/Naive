@@ -870,6 +870,74 @@
       },
       "why": "One line per paid service once the venture pays for tools, so finance can see renewals and IT's tools can be checked against spend"
     },
+    "budget": {
+      "base": {
+        "discovery": 0.1,
+        "validation": 0.4,
+        "beachhead": 0.7,
+        "scale": 0.9,
+        "platform": 0.9
+      },
+      "when": [
+        {
+          "if": "raising",
+          "at_least": 0.8
+        }
+      ],
+      "why": "Planned revenue and spend by month, each line citing its source, so runway is projected rather than guessed; from Validation, or sooner when raising"
+    },
+    "fixed-asset": {
+      "base": {
+        "discovery": 0,
+        "validation": 0.1,
+        "beachhead": 0.4,
+        "scale": 0.6,
+        "platform": 0.7
+      },
+      "why": "Once the venture buys equipment in its own name or issues a device that holds data to someone"
+    },
+    "lease": {
+      "base": {
+        "discovery": 0,
+        "validation": 0.1,
+        "beachhead": 0.3,
+        "scale": 0.6,
+        "platform": 0.7
+      },
+      "why": "Once the venture commits to space or equipment on terms, so notice and renewal dates reach the founder in time"
+    },
+    "risk": {
+      "base": {
+        "discovery": 0,
+        "validation": 0.3,
+        "beachhead": 0.5,
+        "scale": 0.8,
+        "platform": 0.9
+      },
+      "when": [
+        {
+          "if": "regulated",
+          "at_least": 0.6
+        }
+      ],
+      "why": "A short list of the risks that could hurt the venture most, each owned, from Validation; sooner in a regulated field"
+    },
+    "obligation": {
+      "base": {
+        "discovery": 0.1,
+        "validation": 0.5,
+        "beachhead": 0.7,
+        "scale": 0.9,
+        "platform": 0.9
+      },
+      "when": [
+        {
+          "if": "founders>=2",
+          "at_least": 0.7
+        }
+      ],
+      "why": "Every legal duty with a date (franchise tax, annual report, an 83(b) within 30 days of a grant) once the venture forms or issues stock"
+    },
     "marketing-brand": {
       "base": {
         "discovery": 0.2,
@@ -1036,6 +1104,36 @@
       },
       "why": "One per outside system the venture connects; needed from the first tool that holds records or acts for the venture (the thesis's pilot order starts with runtime and data, then product email)"
     },
+    "opportunity": {
+      "base": {
+        "discovery": 0.2,
+        "validation": 0.6,
+        "beachhead": 0.9,
+        "scale": 1,
+        "platform": 1
+      },
+      "why": "One per potential sale; needed once the founder is talking to buyers, so the pipeline and win-loss reasons are written down (APQC 3.5.1)"
+    },
+    "support-policy": {
+      "base": {
+        "discovery": 0,
+        "validation": 0.3,
+        "beachhead": 0.7,
+        "scale": 0.9,
+        "platform": 0.9
+      },
+      "why": "Needed from the first paying customer or beta user who depends on the product: channels, response targets and the refund rule (APQC 6.1)"
+    },
+    "support-case": {
+      "base": {
+        "discovery": 0,
+        "validation": 0.2,
+        "beachhead": 0.6,
+        "scale": 0.9,
+        "platform": 0.9
+      },
+      "why": "One per customer contact; needed once customers depend on the product, so contact reasons can be counted and sent to product (APQC 6.2)"
+    },
     "research-program": {
       "base": {
         "discovery": 0.05,
@@ -1125,6 +1223,110 @@
         "platform": 0.3
       },
       "why": "Opt-in usage events; only for ventures in the plugin beta or on Mentura, and only when someone turns them on"
+    },
+    "service-offer": {
+      "base": {
+        "discovery": 0,
+        "validation": 0.3,
+        "beachhead": 0.6,
+        "scale": 0.8,
+        "platform": 0.8
+      },
+      "when": [
+        {
+          "if": "offering:service",
+          "at_least": 0.7
+        }
+      ],
+      "why": "What the venture sells as a service, its scope and price, once it sells one (ITIL 4 service catalogue)"
+    },
+    "engagement": {
+      "base": {
+        "discovery": 0,
+        "validation": 0.2,
+        "beachhead": 0.5,
+        "scale": 0.8,
+        "platform": 0.8
+      },
+      "when": [
+        {
+          "if": "offering:service",
+          "at_least": 0.6
+        }
+      ],
+      "why": "One per client engagement, with deliverables and acceptance tests, once a service is being delivered (APQC 5.3)"
+    },
+    "process": {
+      "base": {
+        "discovery": 0,
+        "validation": 0.1,
+        "beachhead": 0.4,
+        "scale": 0.8,
+        "platform": 0.9
+      },
+      "why": "A catalog entry for a process the venture repeats, so it can be measured and improved once work repeats (APQC 13.1)"
+    },
+    "postmortem": {
+      "base": {
+        "discovery": 0,
+        "validation": 0.1,
+        "beachhead": 0.4,
+        "scale": 0.7,
+        "platform": 0.8
+      },
+      "why": "A blameless review after something went wrong, with owned actions, once there are customers to let down (Google SRE ch. 15)"
+    },
+    "raise": {
+      "base": {
+        "discovery": 0,
+        "validation": 0.2,
+        "beachhead": 0.4,
+        "scale": 0.5,
+        "platform": 0.5
+      },
+      "when": [
+        {
+          "if": "raising",
+          "at_least": 0.9
+        }
+      ],
+      "why": "One per fundraise, with its ask, dates, materials and investor pipeline, when the founder raises (APQC 12.1)"
+    },
+    "stakeholder-update": {
+      "base": {
+        "discovery": 0,
+        "validation": 0.1,
+        "beachhead": 0.4,
+        "scale": 0.6,
+        "platform": 0.6
+      },
+      "when": [
+        {
+          "if": "raising",
+          "at_least": 0.6
+        }
+      ],
+      "why": "A monthly update to investors and advisers with at most three asks, once there are investors to update"
+    },
+    "supplier": {
+      "base": {
+        "discovery": 0,
+        "validation": 0.1,
+        "beachhead": 0.2,
+        "scale": 0.3,
+        "platform": 0.3
+      },
+      "why": "An approved supplier list entry, for ventures that make or ship physical goods (ISO 9001 8.4)"
+    },
+    "purchase-order": {
+      "base": {
+        "discovery": 0,
+        "validation": 0.05,
+        "beachhead": 0.2,
+        "scale": 0.3,
+        "platform": 0.3
+      },
+      "why": "One per order to a supplier, for ventures that buy goods to make or sell (APQC 4.2.3)"
     }
   }
 }

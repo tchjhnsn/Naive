@@ -1,0 +1,30 @@
+{
+  "name": "investor-relations",
+  "title": "Investor relations",
+  "kind": "data",
+  "purpose": "How the venture raises money and keeps its investors and board informed (APQC PCF 12.1 and 12.3): one investor-relations/raises/<id>.json per fundraise, with its ask, materials, target investors, meetings and follow-ups, and one investor-relations/updates/<id>.json per investor or board update. The external-relationships function owns it, so only the external-relationships agent or a person writes these records. Never complete.",
+  "function": "external-relationships",
+  "required": [],
+  "optional": [],
+  "refs": [
+    "investor",
+    "money-summary"
+  ],
+  "gates": [
+    "freshness"
+  ],
+  "layer": "purpose",
+  "records": [
+    "raise",
+    "stakeholder-update"
+  ],
+  "schemas": [
+    "packages/naive/src/records/raise.schema.json",
+    "packages/naive/src/records/stakeholder-update.schema.json"
+  ],
+  "templates": [],
+  "checks": [],
+  "skill": null,
+  "use_model": [],
+  "complete": false
+}
