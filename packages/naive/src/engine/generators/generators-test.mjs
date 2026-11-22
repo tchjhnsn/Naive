@@ -20,6 +20,9 @@ import * as supportPolicy from "./support-policy.ts";
 import * as supportCase from "./support-case.ts";
 import * as validationPlan from "./validation-plan.ts";
 import * as gatePolicies from "./phase-gate-policies.ts";
+import * as marketAnatomy from "./market-anatomy.ts";
+import * as industryAnatomy from "./industry-anatomy.ts";
+import * as ventureAnatomy from "./venture-anatomy.ts";
 import { readFileSync } from "node:fs";
 
 let fails = 0;
@@ -29,7 +32,7 @@ writeFileSync(join(v, "venture.json"), JSON.stringify({ id: "kettle" }));
 mkdirSync(join(v, "product/bugs"), { recursive: true });
 writeFileSync(join(v, "product/bugs/save-loses-draft.json"), "{}");
 
-for (const g of [bug, glossary, reference, traceSpan, detector, detectorTrial, connection, capabilityCluster, leadPlan, rawDump, triage, opportunity, supportPolicy, supportCase, validationPlan, gatePolicies]) t(`${g.record}: describe asks at least one required field`, g.describe().ask.some((q) => q.required));
+for (const g of [bug, glossary, reference, traceSpan, detector, detectorTrial, connection, capabilityCluster, leadPlan, rawDump, triage, opportunity, supportPolicy, supportCase, validationPlan, gatePolicies, marketAnatomy, industryAnatomy, ventureAnatomy]) t(`${g.record}: describe asks at least one required field`, g.describe().ask.some((q) => q.required));
 
 const b = bug.draft({ title: "Save loses draft", severity: "P1", found_in: "0.6.0", repro: "open, type, save" }, { venture: v });
 t("bug: draft passes the schema", b.ok);
@@ -140,6 +143,15 @@ t("phase-gate-policies: strictness ranks lenient below standard below strict", g
 const { decision: _d, ...short } = presets.standard;
 t("phase-gate-policies: a preset missing an item is refused", !gatePolicies.draft({ ...shipped, phases: { discovery: { ...shipped.phases.discovery, presets: { standard: short } } } }).ok);
 t("phase-gate-policies: an item naming an unknown record type is refused", !gatePolicies.draft({ ...shipped, phases: { discovery: { ...shipped.phases.discovery, items: [{ ...shipped.phases.discovery.items[0], record: "nope" }, ...shipped.phases.discovery.items.slice(1)] } } }).ok);
+
+const mk = marketAnatomy.draft({}, { venture: v });
+t("market-anatomy: an empty draft is the whole sub-matrix, every cell unknown, at markets/primary", mk.ok && mk.route === "markets/primary" && mk.draft.venture === "kettle" && Object.values(mk.draft.cells).length === 11 && Object.values(mk.draft.cells).every((c) => c.status === "unknown"));
+t("market-anatomy: a given cell is kept and a null status is refused", marketAnatomy.draft({ cells: { deal_size_usd: { status: "estimated", value: 900 } } }).draft.cells.deal_size_usd.value === 900 && !marketAnatomy.draft({ cells: { deal_size_usd: { status: null } } }).ok);
+const ind = industryAnatomy.draft({ naics: "541511", name: "Custom Computer Programming Services" });
+t("industry-anatomy: a NAICS code names the id, and every cell starts unknown", ind.ok && ind.route === "industries/naics-541511" && Object.values(ind.draft.cells).length === 10 && Object.values(ind.draft.cells).every((c) => c.status === "unknown"));
+const shippedVam = JSON.parse(readFileSync(new URL("../../functions/strategy/venture-anatomy.json", import.meta.url), "utf8"));
+t("venture-anatomy: the shipped matrix redrafts and passes", ventureAnatomy.draft(shippedVam).ok);
+t("venture-anatomy: a viewpoint reading a sub-matrix the matrix lacks is refused", !ventureAnatomy.draft({ ...shippedVam, viewpoints: [{ id: "x", label: "X", concerns: "?", kind: "submatrices", reads: ["nope"] }] }).ok);
 
 console.log(fails ? `${fails} failed` : "record generators: all pass");
 process.exitCode = fails ? 1 : 0;

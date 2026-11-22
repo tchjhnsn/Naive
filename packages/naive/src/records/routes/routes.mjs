@@ -140,6 +140,10 @@ function buildRoutes() {
     cmd("identity/lean-canvas", "packages/naive/src/engine/lean-canvas.mjs", "The Lean Canvas as the venture's shared kernel (EE-155): nine boxes, each a reference to a record its owning function writes, with status, what filling it unlocks and the roadmap (the current gate's evidence first)"),
     ...load(join(repo, "packages/naive/src/functions/strategy/lean-canvas.json")).boxes.map((/** @type {{ id: string, label: string, record: string }} */ b) =>
       cmd(`identity/lean-canvas/${b.id}`, "packages/naive/src/engine/lean-canvas.mjs", `One box of the Lean Canvas, ${b.label}: the ${b.record} record it references, its owner, status and what it unlocks (EE-155)`, { args: ["--box", b.id] })),
+    // The Venture Anatomy Matrix (EE-157): the whole matrix, and each sub-matrix at its own route.
+    cmd("identity/venture-anatomy", "packages/naive/src/engine/venture-anatomy.ts", "The Venture Anatomy Matrix, the venture's architecture description after ISO/IEC/IEEE 42010 (EE-157): eleven sub-matrices, each with its owner, cells known, estimated or unknown, the confidence share, Regulation S-K coverage and nesting"),
+    ...load(join(repo, "packages/naive/src/functions/strategy/venture-anatomy.json")).submatrices.map((/** @type {{ id: string, label: string, record: string | null }} */ s) =>
+      cmd(`identity/venture-anatomy/${s.id}`, "packages/naive/src/engine/venture-anatomy.ts", `One sub-matrix of the Venture Anatomy Matrix, ${s.label}: the ${s.record ?? "(not built)"} records it reads, its owner, cells by status and the S-K items it covers (EE-157)`, { args: ["--sub", s.id] })),
     cmd("purpose/foundation", "packages/naive/src/engine/foundation.mjs", "The venture's strategic foundation by the Five Ws and How plus whether, each confirmed, drafted by an agent, waiting as a draft, or missing (EE-051)"),
     cmd("purpose/validation/score", "packages/naive/src/checks/check-validation.mjs", "Held (EE-050): the single validation score from graded evidence (EE-026); purpose/validation/assess replaces it for the problem", { args: ["--score"] }),
     cmd("governance/payouts", "packages/naive/src/engine/payouts.mjs", "Who gets what at a sale value, from the cap table (EE-022); input value, else the scenarios in exit.json", { needs: ["governance/ownership.json"], venture_arg: "id" }),
@@ -280,6 +284,7 @@ const PACKAGE_ROUTE = {
   "fixed-asset": "assets/register", lease: "assets/leases", risk: "legal/risks", obligation: "legal/obligations",
   people: "people", founder: "people/founders", "fund-thesis": "fund/thesis", "fund-terms": "fund/terms", deal: "deals",
   connection: "it/connections",
+  "market-anatomy": "markets", "industry-anatomy": "industries",
   supplier: "supply-chain/suppliers", "purchase-order": "supply-chain/purchase-orders",
   "service-offer": "service-delivery/offers", engagement: "service-delivery/engagements",
   opportunity: "sales/opportunities", "support-policy": "support/policy", "support-case": "support/cases",

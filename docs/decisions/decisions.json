@@ -1866,6 +1866,57 @@
           "expect": "exists"
         }
       ]
+    },
+    {
+      "id": "EE-157",
+      "date": "2026-11-22",
+      "status": "in-force",
+      "decision": "Naive gets the Venture Anatomy Matrix, a sibling of the Product Anatomy Matrix, as the venture's architecture description in the sense of ISO/IEC/IEEE 42010:2022 (iso-42010-2022-architecture-description). The matrix is the root; each of its eleven sub-matrices (identity, customer, market, industry, product, competition, business model, team, capital, risk, traction) is a model held by record types the data model already has, owned by the function the data model gives its record type, and the strategy function owns the matrix itself, which copies nothing. Views come from viewpoints: the Lean Canvas is a view over the matrix, not a separate record, beside the Business Model Canvas (osterwalder-2004-business-model-ontology) and an S-1 outline (sec-form-s-1). Regulation S-K is the coverage check (sec-regulation-s-k, sec-2020-s-k-modernization): items 101 business, 105 risk factors, 303 MD&A, 401 management and 403 ownership, and the Regulation S-X financial statements, each map to at least one sub-matrix. Two new record types, market-anatomy (markets/<id>.json, marketing and sales) and industry-anatomy (industries/<id>.json, strategy), hold cells of one shared shape whose status is known, estimated or unknown; unknown is a value, never null, and every new venture starts with markets/primary.json and industries/primary.json with every cell unknown. Time travel is bitemporal (sql-2011-temporal): application time on each cell (valid_from, valid_to) and system time from the provenance log and the blob store (readAsOf). Thresholds for phase gates come from a calibration over the market and industry sub-matrices, which proposes a decision a person accepts and never sets a gate on its own. The thresholds are unvalidated priors, ours. Matrices live in Naive now, one per venture; industry matrices shared across ventures belong to Mentura later.",
+      "why": "Torian, 2026-11-22: the venture needs one model that spans its functions and can be read at any time, so that what counts as enough evidence at a gate is derived from the venture's market and industry rather than fixed. Business architecture standards were compared (bizbok-15-business-architecture, gartner-2017-digital-twin-organization): ISO 42010 is the formal standard for an architecture description with views and viewpoints, the canvases are too narrow to be the whole model, and the disclosure items an S-1 requires are the most complete public list of what an investor asks about a company.",
+      "related": [
+        "EE-156",
+        "EE-155",
+        "EE-126",
+        "EE-121"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/functions/strategy/venture-anatomy.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/venture-anatomy.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/records/anatomy-cell.schema.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/records/market-anatomy.schema.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/records/industry-anatomy.schema.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "docs/design/VENTURE_ANATOMY_MATRIX_2026-11-22.md",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
     }
   ]
 }

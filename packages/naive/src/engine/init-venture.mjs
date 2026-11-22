@@ -20,6 +20,7 @@ import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { KBASE, ventureFile } from "../core/venture-paths.mjs";
+import { primaryAnatomy } from "./generators/anatomy-cells.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repo = join(here, "../../../..");
@@ -157,6 +158,15 @@ const productDecisions = structured ? "product/decisions" : "products/decisions"
 if (decisionSet === "product-foundation") mkdirSync(join(ventureFile(dir, productDecisions)), { recursive: true });
 if (decisionSet === "product-foundation") for (const d of productFoundation) writeFileSync(join(ventureFile(dir, productDecisions), `product.${d.id.replace(/^product-/, "")}.decision.json`),
   JSON.stringify({ ...d, layer: "purpose", boundary: "fail-closed", needed_in: phase, status: "open", provenance: framework }, null, 2) + "\n");
+// The Venture Anatomy Matrix (EE-157): every venture starts with its primary market and industry, every cell unknown,
+// so the matrix is whole from the first day and filling it moves cells to estimated or known. The cells come from the
+// schemas through generators/anatomy-cells.mjs, which the market and industry generators share.
+const anatomy = primaryAnatomy(id);
+if (anatomy.errors.length) { console.error(anatomy.errors.join("\n")); process.exit(1); }
+for (const [file, rec] of [["industries/primary.json", anatomy.industry], ["markets/primary.json", anatomy.market]]) {
+  mkdirSync(dirname(ventureFile(dir, String(file))), { recursive: true });
+  writeFileSync(ventureFile(dir, String(file)), JSON.stringify(rec, null, 2) + "\n");
+}
 // The type's functions are imported like any department (EE-047): listed in venture.json, with their folders.
 // In the structured layout the org chart is venture.json's functions; the flat layout imports departments.
 if (vtype && !structured) for (const d of vtype.departments) {
