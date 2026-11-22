@@ -97,6 +97,7 @@ const steps = [
   ["dependency rules break on copies that violate them", "node", ["scripts/dependency-rules-test.ts"]],
   ["vendored repositories match their pins (repos/effect is the installed effect version)", "node", ["scripts/vendored.ts"]],
   ["vendored check breaks on copies", "node", ["scripts/vendored-test.ts"]],
+  ["to-ts: references to a converted module are rewritten, others left", "node", ["scripts/to-ts-test.ts"]],
   ["activity (active minutes, days in the venture's zone, streak)", "node", ["packages/naive/src/engine/activity-test.mjs"]],
   ["telos: examples", "node", ["packages/naive/src/checks/check-telos.mjs", "packages/naive/src/records/examples/workspace"]],
   ["publishing gate: field visibility, leak canaries, internal terms", "node", ["packages/naive/src/functions/marketing-and-sales/marketing/leaks-test.mjs"]],

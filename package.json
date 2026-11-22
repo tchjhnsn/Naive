@@ -16,7 +16,7 @@
     "./src/*.d.ts": "./dist/packages/naive/src/*.d.ts",
     "./src/*.ts": {
       "types": "./packages/naive/src/*.ts",
-      "default": "./dist/packages/naive/src/*.js"
+      "default": "./dist/packages/naive/src/*.mjs"
     },
     "./src/*": {
       "types": "./packages/naive/src/*",
@@ -30,7 +30,7 @@
     "./packages/*.d.ts": "./dist/packages/*.d.ts",
     "./packages/*.ts": {
       "types": "./packages/*.ts",
-      "default": "./dist/packages/*.js"
+      "default": "./dist/packages/*.mjs"
     },
     "./packages/*": {
       "types": "./packages/*",
