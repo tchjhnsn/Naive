@@ -9,7 +9,7 @@
 // Supports Feature, Rule, Background, Scenario, the five step keywords and # comments; not
 // Scenario Outline, tables or doc strings yet.
 
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 
 /** A scenario, with the background steps of its rule before its own. */
 export type Scenario = { name: string; rule: string | null; steps: string[] };
