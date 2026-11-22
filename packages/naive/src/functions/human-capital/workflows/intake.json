@@ -40,11 +40,8 @@
     },
     {
       "id": "draft-team-plan",
-      "do": "Draft the team plan: the roles the work needs, agent or person for each from the capability register, and the human loops.",
+      "do": "Draft the team plan: the roles the work needs, agent or person for each from the capability register, and the human loops, as a proposed decision for the founder: only a person writes the team plan, because it sets every agent's reach.",
       "skill": "team-design",
-      "writes": [
-        "people/team-plan"
-      ],
       "raises": [
         "set-priorities"
       ]
