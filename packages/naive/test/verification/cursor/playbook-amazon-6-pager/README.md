@@ -26,7 +26,7 @@ TLA2TOOLS=/path/to/tla2tools.jar JAVA=java \
   /path/to/pstack/skills/statechart/scripts/statechart.ts \
   packages/naive/test/verification/cursor/playbook-amazon-6-pager/AmazonSixPager.tla \
   --config packages/naive/test/verification/cursor/playbook-amazon-6-pager/AmazonSixPager.cfg \
-  --view packages/naive/test/verification/cursor/playbook-amazon-6-pager/view.mjs \
+  --view packages/naive/test/verification/cursor/playbook-amazon-6-pager/view.ts \
   --out /tmp/amazon-six-pager-chart
 ```
 
@@ -35,7 +35,7 @@ Copy `chart.mmd` from that directory over `out/chart.mmd`. Render with Pele 1.9.
 Replay the rules on a fixture venture:
 
 ```sh
-node packages/naive/test/verification/cursor/playbook-amazon-6-pager/replay.mjs
+node packages/naive/test/verification/cursor/playbook-amazon-6-pager/replay.ts
 ```
 
 ## Rules

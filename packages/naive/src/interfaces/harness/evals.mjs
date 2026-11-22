@@ -7,9 +7,9 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { decisions } from "../../engine/decisions.ts";
-import { DUMP, MAP, parse } from "../../functions/strategy/frameworks/idea-map/ideamap.mjs";
-import { GRAPH } from "../../functions/strategy/frameworks/idea-map/graph.mjs";
-import { ideasOf } from "../../functions/strategy/frameworks/idea-map/route.mjs";
+import { DUMP, MAP, parse } from "../../functions/strategy/frameworks/idea-map/ideamap.ts";
+import { GRAPH } from "../../functions/strategy/frameworks/idea-map/graph.ts";
+import { ideasOf } from "../../functions/strategy/frameworks/idea-map/route.ts";
 import { createHash } from "node:crypto";
 import { ventureFile } from "../../core/venture-paths.ts";
 

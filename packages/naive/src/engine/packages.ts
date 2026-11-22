@@ -41,7 +41,7 @@ type Status = "confirmed" | "agent" | "draft" | "missing";
 type Answered = Question & { value: unknown; by: "records" | "jev" | "open"; p?: number };
 /** Answers from Jev, by question key (q:<id>). */
 type Answers = Record<string, { noul?: number } | undefined>;
-/** The idea map's routing for a venture (packages/naive/src/functions/strategy/frameworks/idea-map/route.mjs), the parts read here. */
+/** The idea map's routing for a venture (packages/naive/src/functions/strategy/frameworks/idea-map/route.ts), the parts read here. */
 type Routing = {
   destinations?: { id: string; title?: string; stage?: string; ideas: unknown[]; next?: { by?: string; do?: string; command?: string } | null }[];
   loose?: unknown[];
@@ -130,7 +130,7 @@ export const HOME: Record<string, string | undefined> = Object.fromEntries(Objec
 
 /**
  * The venture package. `routes` is the idea map's routing for the venture (route() in
- * packages/naive/src/functions/strategy/frameworks/idea-map/route.mjs), passed in by packages/naive/src/router/orchestration/venture-package.mjs:
+ * packages/naive/src/functions/strategy/frameworks/idea-map/route.ts), passed in by packages/naive/src/router/orchestration/venture-package.mjs:
  * with it, each record gets the idea map's title and where the founder's ideas for it stand. This
  * module does not import the idea map, because the idea map reads schema/ itself (router inversion,
  * step 4c).

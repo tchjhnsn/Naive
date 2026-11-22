@@ -117,7 +117,7 @@ That writes `foundation/icp/<profile id>` as a person. The typed confirmation is
 
 ## Checks
 
-Run these on each draft while its `pending_draft` is set (open the draft file the read names), and again on the live profiles after accept. A check that cannot fail is not a check. Each one below fails on a record you can build, and passes on a record you can build. The replay is `node packages/naive/test/verification/playbook-jtbd/replay.mjs`.
+Run these on each draft while its `pending_draft` is set (open the draft file the read names), and again on the live profiles after accept. A check that cannot fail is not a check. Each one below fails on a record you can build, and passes on a record you can build. The replay is `node packages/naive/test/verification/playbook-jtbd/replay.ts`.
 
 ### 1. Every profile has a job
 

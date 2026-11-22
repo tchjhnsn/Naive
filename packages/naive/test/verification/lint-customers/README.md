@@ -14,7 +14,7 @@ From the repo root, with Java 11 or later and tla2tools.jar 1.7.4 (sha256 `936a2
 TLA2TOOLS=/path/to/tla2tools.jar JAVA=java \
   /path/to/pstack/skills/statechart/scripts/statechart \
   packages/naive/test/verification/lint-customers/CustomersLint.tla \
-  --view packages/naive/test/verification/lint-customers/view.mjs \
+  --view packages/naive/test/verification/lint-customers/view.ts \
   --out /tmp/customers-lint-chart
 ```
 

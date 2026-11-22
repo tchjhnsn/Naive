@@ -1,6 +1,6 @@
 # Verification: cursor/mdx-everything (gate wave 1, item 2)
 
-`PublicWords.tla` models (for `packages/naive/src/functions/marketing-and-sales/marketing/publish-build.mjs`) one record field on its way to a public channel: its visibility sidecar, its MDX
+`PublicWords.tla` models (for `packages/naive/src/functions/marketing-and-sales/marketing/publish-build.ts`) one record field on its way to a public channel: its visibility sidecar, its MDX
 public variant, and what a build puts in the output. `CODE = "branch"` (`PublicWords.cfg`) is this branch;
 `CODE = "main"` (`PublicWords-main.cfg`) is origin/main at 566bb99. `replay.mjs` replays each rule against
 the real code, on a fixture venture and on Naive's example software venture (`packages/naive/src/records/examples/software/ventures/relay`), with the stand-in channel builders in `packages/naive/src/functions/marketing-and-sales/marketing/fixtures/`.
@@ -11,10 +11,10 @@ When this branch was verified, the replay also ran main's site one-pager and the
 
 ```sh
 # TLC: TLA2TOOLS=<tla2tools.jar> JAVA=<java 11+>, statechart from pstack-kit/skills/statechart
-statechart packages/naive/test/verification/mdx-everything/PublicWords.tla --config packages/naive/test/verification/mdx-everything/PublicWords.cfg --view packages/naive/test/verification/mdx-everything/view.mjs --out packages/naive/test/verification/mdx-everything/out
-statechart packages/naive/test/verification/mdx-everything/PublicWords.tla --config packages/naive/test/verification/mdx-everything/PublicWords-main.cfg --view packages/naive/test/verification/mdx-everything/view.mjs --out packages/naive/test/verification/mdx-everything/out-main
+statechart packages/naive/test/verification/mdx-everything/PublicWords.tla --config packages/naive/test/verification/mdx-everything/PublicWords.cfg --view packages/naive/test/verification/mdx-everything/view.ts --out packages/naive/test/verification/mdx-everything/out
+statechart packages/naive/test/verification/mdx-everything/PublicWords.tla --config packages/naive/test/verification/mdx-everything/PublicWords-main.cfg --view packages/naive/test/verification/mdx-everything/view.ts --out packages/naive/test/verification/mdx-everything/out-main
 node pstack-kit/naive-example/pele/render.mjs packages/naive/test/verification/mdx-everything/out*/chart.mmd   # then png.sh for chart.png
-node packages/naive/test/verification/mdx-everything/replay.mjs
+node packages/naive/test/verification/mdx-everything/replay.ts
 ```
 
 ## Rules

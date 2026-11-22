@@ -43,9 +43,9 @@ import { basename, join, resolve } from "node:path";
 import { judgeCommand } from "../../engine/caching.ts";
 import { decisions } from "../../engine/decisions.ts";
 import { docket } from "../../engine/docket.ts";
-import { CONVENTIONS, DUMP, MAP, parse, render, split, summary, clean, request, fromAnswers } from "../../functions/strategy/frameworks/idea-map/ideamap.mjs";
-import { GRAPH, build as buildGraph, request as graphRequest } from "../../functions/strategy/frameworks/idea-map/graph.mjs";
-import { understood } from "../../functions/strategy/frameworks/idea-map/route.mjs";
+import { CONVENTIONS, DUMP, MAP, parse, render, split, summary, clean, request, fromAnswers } from "../../functions/strategy/frameworks/idea-map/ideamap.ts";
+import { GRAPH, build as buildGraph, request as graphRequest } from "../../functions/strategy/frameworks/idea-map/graph.ts";
+import { understood } from "../../functions/strategy/frameworks/idea-map/route.ts";
 import { createHash } from "node:crypto";
 import { agentFromEnv, record as prov } from "../../core/provenance.ts";
 import { evaluate } from "./evals.mjs";
@@ -317,7 +317,7 @@ if (jev) {
 }
 let pk = spawnSync("node", [join(repo, "packages/naive/src/router/orchestration/venture-package.mjs"), dir, ...pkgArgs, "--json"], { encoding: "utf8" });
 if (pk.status === 0 && JSON.parse(pk.stdout).core.some((x) => x.id === "marketing" && x.in === "now")) {
-  const sp = spawnSync("node", [join(repo, "packages/naive/src/functions/marketing-and-sales/marketing/site/plan.mjs"), dir, "--write"], { encoding: "utf8" });
+  const sp = spawnSync("node", [join(repo, "packages/naive/src/functions/marketing-and-sales/marketing/site/plan.ts"), dir, "--write"], { encoding: "utf8" });
   if (sp.status === 0) prov(dir, { entity: "operations/marketing/sitemap.json", route: "operations/marketing/sitemap", activity: "create", derived_from: ["purpose/icp.json", "products/"], agent: agentFromEnv("agent", "harness", { id: "naive-planner" }), note: "the site planned from the venture's records: the marketing package is open" });
 }
 pk = spawnSync("node", [join(repo, "packages/naive/src/router/orchestration/venture-package.mjs"), dir, ...pkgArgs, "--write", "--json"], { encoding: "utf8" });

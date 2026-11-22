@@ -13,7 +13,7 @@ TLA2TOOLS=/path/to/tla2tools.jar JAVA=/usr/bin/java \
   /path/to/statechart/scripts/statechart \
   packages/naive/test/verification/playbook-jtbd/JtbdPlaybook.tla \
   --config packages/naive/test/verification/playbook-jtbd/JtbdPlaybook.cfg \
-  --view packages/naive/test/verification/playbook-jtbd/view.mjs \
+  --view packages/naive/test/verification/playbook-jtbd/view.ts \
   --out /tmp/jtbd-chart
 ```
 
@@ -31,7 +31,7 @@ sh png.sh packages/naive/test/verification/playbook-jtbd/out/chart.svg
 Replay the rules on a fixture venture.
 
 ```sh
-node packages/naive/test/verification/playbook-jtbd/replay.mjs
+node packages/naive/test/verification/playbook-jtbd/replay.ts
 ```
 
 ## Rules

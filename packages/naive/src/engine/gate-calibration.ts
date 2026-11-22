@@ -22,7 +22,7 @@ import { CannotRun, NotFound, Refused, SchemaInvalid } from "../core/effect/erro
 import { readJson, VentureFs } from "../core/effect/fs.ts";
 import { runMain, runSync } from "../core/effect/run.ts";
 import { ventureFile } from "../core/venture-paths.ts";
-import { ROOT } from "../phases/phases.mjs";
+import { ROOT } from "../phases/phases.ts";
 import { readDataModel, readSchema, venturePaths } from "../records/index.ts";
 import { validateValue } from "../records/validate.ts";
 import type { AnatomyCellEnumCell, AnatomyCellNumberCell, GateCalibration, IndustryAnatomy, MarketAnatomy, PhaseGatePolicies } from "../records/types/records.d.ts";

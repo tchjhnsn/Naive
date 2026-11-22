@@ -11,8 +11,8 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ventureFile } from "../core/venture-paths.ts";
-import { telosExitCriteria, telosMeasures } from "../../../../frameworks/telos/adapter.mjs";
-import { ambitionOf } from "../../../../frameworks/ambition-tier/adapter.mjs";
+import { telosExitCriteria, telosMeasures } from "../../../../frameworks/telos/adapter.ts";
+import { ambitionOf } from "../../../../frameworks/ambition-tier/adapter.ts";
 import type { ExitCriteria, Goal, Requirement, Telos, Venture } from "../records/types/records.d.ts";
 
 const load = (f: string) => JSON.parse(readFileSync(f, "utf8"));

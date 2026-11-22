@@ -12,18 +12,18 @@ The statechart command writes only to a new or empty folder. TLC is the copy the
 rm -rf packages/naive/test/verification/cursor/playbook-y-combinator-fundraise/out
 <statechart>/scripts/statechart \
   packages/naive/test/verification/cursor/playbook-y-combinator-fundraise/YCFundraise.tla \
-  --view packages/naive/test/verification/cursor/playbook-y-combinator-fundraise/view.mjs \
+  --view packages/naive/test/verification/cursor/playbook-y-combinator-fundraise/view.ts \
   --out packages/naive/test/verification/cursor/playbook-y-combinator-fundraise/out
 node <pele>/render.mjs packages/naive/test/verification/cursor/playbook-y-combinator-fundraise/out/chart.mmd
 sh <pele>/png.sh packages/naive/test/verification/cursor/playbook-y-combinator-fundraise/out/chart.svg
-node packages/naive/test/verification/cursor/playbook-y-combinator-fundraise/replay.mjs
+node packages/naive/test/verification/cursor/playbook-y-combinator-fundraise/replay.ts
 ```
 
 `<statechart>` is the pstack `skills/statechart` directory. `<pele>` is `naive-example/pele` from the same kit, after `npm ci`. This run used those paths under `/tmp/pstack/pstack-kit/`.
 
 ## Rules
 
-TLC on 29 October 2026: 12 distinct states, 15 steps, no error (`out/tlc.out`). The chart draws 14 arrows. Replay: `node packages/naive/test/verification/cursor/playbook-y-combinator-fundraise/replay.mjs` printed `37/37 passed`.
+TLC on 29 October 2026: 12 distinct states, 15 steps, no error (`out/tlc.out`). The chart draws 14 arrows. Replay: `node packages/naive/test/verification/cursor/playbook-y-combinator-fundraise/replay.ts` printed `37/37 passed`.
 
 | Rule | TLC | Replay |
 | --- | --- | --- |

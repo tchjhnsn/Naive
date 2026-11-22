@@ -12,7 +12,7 @@ The statechart script is the pstack `statechart` skill (`scripts/statechart`). I
 TLA2TOOLS=/path/to/tla2tools.jar JAVA=java \
   /path/to/statechart/scripts/statechart \
   packages/naive/test/verification/playbook-netflix-culture/NetflixCulture.tla \
-  --view packages/naive/test/verification/playbook-netflix-culture/view.mjs \
+  --view packages/naive/test/verification/playbook-netflix-culture/view.ts \
   --out /tmp/netflix-culture-chart
 ```
 
@@ -26,7 +26,7 @@ sh png.sh /tmp/netflix-culture-chart/chart.svg
 Replay the routes on fixture ventures:
 
 ```bash
-node packages/naive/test/verification/playbook-netflix-culture/replay.mjs
+node packages/naive/test/verification/playbook-netflix-culture/replay.ts
 ```
 
 Re-run both after any edit to the playbook or to a route the template names.

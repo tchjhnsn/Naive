@@ -137,7 +137,7 @@ Do not invent a count, a quote, or a source. A missing source stays an open ques
 
 ## Checks
 
-Both of these can pass and can fail. `packages/naive/test/verification/playbook-lean-validation/replay.mjs` runs them on a fixture venture.
+Both of these can pass and can fail. `packages/naive/test/verification/playbook-lean-validation/replay.ts` runs them on a fixture venture.
 
 ### The source check
 

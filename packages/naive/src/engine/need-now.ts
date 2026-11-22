@@ -19,7 +19,7 @@ import { ventureFile } from "../core/venture-paths.ts";
 import { scale } from "./canonical.ts";
 import { readDataModel, venturePaths } from "../records/index.ts";
 import { runSync } from "../core/effect/run.ts";
-import { loadPhases } from "../phases/phases.mjs";
+import { loadPhases } from "../phases/phases.ts";
 
 import type { DataModel } from "../records/types/records.d.ts";
 

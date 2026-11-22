@@ -12,7 +12,7 @@ From the repo root. Needs Java 11 or later, `tla2tools.jar` 1.7.4, and Node 22. 
 rm -rf packages/naive/test/verification/lint-finance/out
 TLA2TOOLS="$TLA2TOOLS" JAVA=java node --experimental-strip-types "$STATECHART" \
   packages/naive/test/verification/lint-finance/FinanceLint.tla \
-  --view packages/naive/test/verification/lint-finance/view.mjs \
+  --view packages/naive/test/verification/lint-finance/view.ts \
   --out packages/naive/test/verification/lint-finance/out
 node render.mjs packages/naive/test/verification/lint-finance/out/chart.mmd
 sh png.sh packages/naive/test/verification/lint-finance/out/chart.svg

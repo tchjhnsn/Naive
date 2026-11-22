@@ -79,7 +79,7 @@ import { staleOf } from "../engine/stale.ts";
 import { ventureFile } from "../core/venture-paths.ts";
 import { isFunction, templateOf } from "../engine/research-programs.ts";
 import { coreOf, statementsIn, withCore } from "../engine/venture-core.ts";
-import { telosView } from "../../../../frameworks/telos/adapter.mjs";
+import { telosView } from "../../../../frameworks/telos/adapter.ts";
 import { migrated, scale } from "../engine/canonical.ts";
 import { schemaNameOf } from "../records/index.ts";
 import { validateFile } from "../records/validate.ts";

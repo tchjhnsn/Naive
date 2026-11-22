@@ -15,7 +15,7 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { judgeCommand } from "../../engine/caching.ts";
 import { envCommand, hostHook, isHosted, missingHook } from "../../core/runtime.ts";
-import { factsOf, icpOf, request, score, PRESENCE } from "../../functions/marketing-and-sales/marketing/site/presence.mjs";
+import { factsOf, icpOf, request, score, PRESENCE } from "../../functions/marketing-and-sales/marketing/site/presence.ts";
 
 // A host's hook stands in for a command (hosted only): the same arguments and input, the same answer.
 const runHook = async (hook, args, input) => { const r = await hook(args, input ?? ""); return { code: r.status, out: r.stdout, err: r.stderr }; };

@@ -10,7 +10,7 @@ import * as mig from "../../engine/migrations/telos-to-goals.ts";
 import { lifecycle, meet } from "../../engine/lifecycle.ts";
 import { exitCriteria, scale } from "../../engine/canonical.ts";
 import { check } from "../../engine/check-frameworks.ts";
-import { telosView } from "../../../../../frameworks/telos/adapter.mjs";
+import { telosView } from "../../../../../frameworks/telos/adapter.ts";
 import { call } from "../../router/router.mjs";
 
 const repo = new URL("../../../../..", import.meta.url).pathname;

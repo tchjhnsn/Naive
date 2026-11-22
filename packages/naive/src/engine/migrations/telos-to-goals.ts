@@ -5,7 +5,7 @@
 //      (foundation/goals/telos.json, kind venture, with its measures; foundation/goals/owner-outcome.json,
 //      kind owner) and one foundation/exit-criteria/<phase>.json per phase, met marks kept.
 //   2. The old telos.json is archived at _private/archive/telos.json, never deleted. The foundation/telos
-//      route still reads: the router renders it from the canonical records (frameworks/telos/adapter.mjs).
+//      route still reads: the router renders it from the canonical records (frameworks/telos/adapter.ts).
 //   3. venture.json's ambition becomes foundation/goals/scale.json (kind scale) and leaves venture.json.
 //   4. A canonical record already there is escalated, never overwritten.
 //
@@ -14,8 +14,8 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ventureFile } from "../../core/venture-paths.ts";
-import { split, telosFile } from "../../../../../frameworks/telos/adapter.mjs";
-import { toScaleGoal } from "../../../../../frameworks/ambition-tier/adapter.mjs";
+import { split, telosFile } from "../../../../../frameworks/telos/adapter.ts";
+import { toScaleGoal } from "../../../../../frameworks/ambition-tier/adapter.ts";
 
 /** The part of the upgrade context (packages/naive/src/engine/upgrades.ts) this migration uses. */
 type Ctx = { write(rel: string, text: string, opts?: { activity?: string; note?: string; derived_from?: string[]; log?: boolean }): void; mv(from: string, to: string): void; escalate(msg: string): void; note(msg: string): void };

@@ -1,5 +1,5 @@
 // Checks each venture's telos (EE-023): start with the end. The telos is the venture goal in
-// foundation/goals with its exit criteria, read as the telos view (frameworks/telos/adapter.mjs), and
+// foundation/goals with its exit criteria, read as the telos view (frameworks/telos/adapter.ts), and
 // before telos-to-goals it is foundation/telos.json (or purpose/telos.json). Canonical records with no
 // venture goal are no telos yet. Every path resolves through venture-paths.mjs. Rules:
 //   measures: ids unique, exactly one primary. A venture goal with no measures yet is a warning.
@@ -16,7 +16,7 @@
 
 import { ventureFile } from "../core/venture-paths.ts";
 import { scale } from "../engine/canonical.ts";
-import { telosFile, telosView } from "../../../../frameworks/telos/adapter.mjs";
+import { telosFile, telosView } from "../../../../frameworks/telos/adapter.ts";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import type { Exit, Telos, Venture } from "../records/types/records.d.ts";

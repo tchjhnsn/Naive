@@ -10,7 +10,7 @@ Checked with TLC 1.7.4 (`tla2tools.jar` sha256 `936a262061c914694dfd669a543be245
 TLA2TOOLS=/path/to/tla2tools.jar JAVA=java \
   /path/to/pstack/skills/statechart/scripts/statechart \
   packages/naive/test/verification/lint-validation/ValidationLint.tla \
-  --view packages/naive/test/verification/lint-validation/view.mjs \
+  --view packages/naive/test/verification/lint-validation/view.ts \
   --out /tmp/validation-lint-chart
 ```
 

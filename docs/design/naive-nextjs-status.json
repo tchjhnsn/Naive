@@ -8,7 +8,7 @@
    "status": "built",
    "evidence": [
     "packages/create-venture/index.mjs",
-    "packages/create-venture/test.mjs",
+    "packages/create-venture/test.ts",
     "packages/naive/src/engine/init-venture.ts"
    ],
    "page": "get-started/install",
@@ -20,7 +20,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/interfaces/cli/naive.mjs",
-    "packages/create-venture/test.mjs",
+    "packages/create-venture/test.ts",
     "packages/naive/src/interfaces/demo/board.mjs",
     "packages/naive/src/interfaces/cli/find-venture.mjs"
    ],
@@ -33,7 +33,7 @@
    "status": "built",
    "evidence": [
     "packages/create-venture/index.mjs",
-    "packages/create-venture/test.mjs"
+    "packages/create-venture/test.ts"
    ],
    "page": "get-started/install",
    "note": "--yes: the discovery phase, the phase's packages, the checks and AGENTS.md"
@@ -56,7 +56,7 @@
    "evidence": [
     "package.json",
     "packages/create-venture/index.mjs",
-    "packages/create-venture/test.mjs"
+    "packages/create-venture/test.ts"
    ],
    "page": "get-started/install",
    "note": "Node 20 or later and any package manager (npm, pnpm, yarn, bun); python3 with jsonschema for schema checks"
@@ -67,7 +67,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/interfaces/cli/naive.mjs",
-    "packages/create-venture/test.mjs"
+    "packages/create-venture/test.ts"
    ],
    "note": "Supported agents: Claude Code and Cursor over MCP, any MCP client, and HTTP; naive info shows which a venture is connected to",
    "page": "get-started/install"
@@ -78,7 +78,7 @@
    "status": "partial",
    "evidence": [
     "packages/create-venture/index.mjs",
-    "packages/create-venture/test.mjs"
+    "packages/create-venture/test.ts"
    ],
    "note": "Name, then recommended / previous / customize (phase, layers, legal form, idea dump), with answers kept for the next venture. Missing: the AI-native option where System 1 answers the setup questions from a pasted idea dump",
    "page": "get-started/install"
@@ -99,7 +99,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/interfaces/cli/naive.mjs",
-    "packages/create-venture/test.mjs"
+    "packages/create-venture/test.ts"
    ],
    "page": "get-started/install",
    "note": "naive check runs every check that reads a venture"
@@ -199,7 +199,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/interfaces/cli/naive.mjs",
-    "packages/create-venture/test.mjs"
+    "packages/create-venture/test.ts"
    ],
    "page": "get-started/install",
    "note": "The root layout is AGENTS.md; create-venture writes it and naive dev writes a stub when it is missing"
@@ -230,7 +230,7 @@
    "status": "partial",
    "evidence": [
     "packages/naive/src/interfaces/cli/naive.mjs",
-    "packages/create-venture/test.mjs"
+    "packages/create-venture/test.ts"
    ],
    "note": "Edit a record and the board updates; naive dev checks each saved record against its schema and prints what does not match. Missing: System 1 (Noul) checks per field on save",
    "page": "get-started/install"
@@ -241,7 +241,7 @@
    "status": "built",
    "evidence": [
     "packages/create-venture/index.mjs",
-    "packages/create-venture/test.mjs",
+    "packages/create-venture/test.ts",
     "packages/naive/src/records/validate.ts"
    ],
    "page": "get-started/install",
@@ -253,7 +253,7 @@
    "status": "built",
    "evidence": [
     "packages/create-venture/index.mjs",
-    "packages/create-venture/test.mjs"
+    "packages/create-venture/test.ts"
    ],
    "page": "get-started/install",
    "note": "create-venture maps every record file to its JSON Schema in .vscode/settings.json, so editors complete and check records; the MCP server gives agents the same routes"
@@ -279,7 +279,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/interfaces/cli/naive.mjs",
-    "packages/create-venture/test.mjs",
+    "packages/create-venture/test.ts",
     "packages/naive/src/engine/upgrade-venture.ts"
    ],
    "page": "get-started/install",
@@ -303,7 +303,7 @@
     "packages/naive/src/engine/naive-config.ts",
     "packages/naive/src/records/naive-config.schema.json",
     "packages/naive/src/checks/check-config.ts",
-    "packages/naive/src/functions/strategy/frameworks/idea-map/ideamap.mjs",
+    "packages/naive/src/functions/strategy/frameworks/idea-map/ideamap.ts",
     "packages/naive/src/records/data-model.json",
     "packages/naive/src/interfaces/tests/gate-test.mjs"
    ],
@@ -560,7 +560,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/engine/brand.ts",
-    "packages/naive/src/functions/marketing-and-sales/marketing/site/plan.mjs",
+    "packages/naive/src/functions/marketing-and-sales/marketing/site/plan.ts",
     "packages/naive/src/router/router.mjs",
     "packages/naive/src/interfaces/tests/brand-test.mjs"
    ],
@@ -738,7 +738,7 @@
    "note": "Covered by I-21: The root layout is AGENTS.md; create-venture writes it and naive dev writes a stub when it is missing",
    "evidence": [
     "packages/naive/src/interfaces/cli/naive.mjs",
-    "packages/create-venture/test.mjs"
+    "packages/create-venture/test.ts"
    ],
    "page": "get-started/install"
   },

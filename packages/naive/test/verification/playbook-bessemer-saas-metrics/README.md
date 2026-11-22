@@ -15,7 +15,7 @@ rm -rf /tmp/bessemer-chart
 sh <pstack>/skills/statechart/scripts/statechart \
   packages/naive/test/verification/playbook-bessemer-saas-metrics/BessemerSaasMetrics.tla \
   --config packages/naive/test/verification/playbook-bessemer-saas-metrics/BessemerSaasMetrics.cfg \
-  --view packages/naive/test/verification/playbook-bessemer-saas-metrics/view.mjs \
+  --view packages/naive/test/verification/playbook-bessemer-saas-metrics/view.ts \
   --out /tmp/bessemer-chart
 ```
 
@@ -24,7 +24,7 @@ sh <pstack>/skills/statechart/scripts/statechart \
 Replay the routes:
 
 ```sh
-node packages/naive/test/verification/playbook-bessemer-saas-metrics/replay.mjs
+node packages/naive/test/verification/playbook-bessemer-saas-metrics/replay.ts
 ```
 
 An earlier run of TLC 1.7.4 (the statechart script's pinned jar) reported 496 states, 520 steps and exit 0. Re-run on 30 October 2026 with TLC 2.19 on OpenJDK 21: the same result, saved in `out/tlc.out`. The TLC column below comes from the same run. The chart draws 13 states and 12 arrows.

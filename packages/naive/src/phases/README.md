@@ -8,7 +8,7 @@ The five lifecycle phases as phase modules (EE-126): one folder per phase (disco
 
 ```mermaid
 flowchart LR
-  PJ["phases/&lt;id&gt;/phase.json<br/>gate, evidence, workflows, weights"] --> LOAD["phases.mjs<br/>loadPhase, loadPhases,<br/>phaseWeights, phaseGateRecords,<br/>phasePriors"]
+  PJ["phases/&lt;id&gt;/phase.json<br/>gate, evidence, workflows, weights"] --> LOAD["phases.ts<br/>loadPhase, loadPhases,<br/>phaseWeights, phaseGateRecords,<br/>phasePriors"]
   NN["engine/need-now.json"] -->|derived| LOAD
   DEP["functions/departments.json"] -->|derived| LOAD
   LOAD --> LC["engine/lifecycle.ts"]
@@ -23,7 +23,7 @@ flowchart LR
 
 | Path | Holds |
 |---|---|
-| [`phases.mjs`](./phases.mjs) | The loader, in Effect (EE-125) through `VentureFs`: `loadPhase(id)` and `loadPhases()` (in lifecycle order) check each file's shape (the whole of `packages/naive/src/records/phase-module.schema.json` is the check's job) and fail with `NotFound` or `SchemaInvalid`; `phaseWeights(phase)` gives each function's weight; `phaseGateRecords(phase)` gives the record types its gate asks for as exit evidence, in the gate's order, which the decision queue raises (EE-155); `phasePriors(phase)` derives the phase's need-now priors for record types and functions. Callers that are not Effect run them with `runSync`. |
+| [`phases.ts`](./phases.ts) | The loader, in Effect (EE-125) through `VentureFs`: `loadPhase(id)` and `loadPhases()` (in lifecycle order) check each file's shape (the whole of `packages/naive/src/records/phase-module.schema.json` is the check's job) and fail with `NotFound` or `SchemaInvalid`; `phaseWeights(phase)` gives each function's weight; `phaseGateRecords(phase)` gives the record types its gate asks for as exit evidence, in the gate's order, which the decision queue raises (EE-155); `phasePriors(phase)` derives the phase's need-now priors for record types and functions. Callers that are not Effect run them with `runSync`. |
 | [`gate-policies.json`](./gate-policies.json) | How strict each phase gate is (EE-156): per gate item, what proves it, how its strength is measured (grade, count, coverage, authority) and the fields it requires, plus the presets lenient, standard and strict, each giving every item a minimum level and a boundary (fail-closed or fail-open). Only discovery has items so far. Read by [`phase-gate.ts`](../engine/phase-gate.ts). |
 | [`gate-calibration.json`](./gate-calibration.json) | How a venture's gate thresholds follow from its market and industry (EE-157): rules as data, each with an id, the market or industry cells it reads, a plain reason and the mark that its numbers are unvalidated priors. They set the interview counts per level from reachable buyers, raise or make fail-closed the items a high cost of error, a big deal, a long sales cycle or direct network effects call for, shorten how old evidence may be in a fast industry or an emerging market, and say what an override needs and how the problem is confirmed. Its schema is `packages/naive/src/records/gate-calibration.schema.json`. Read by [`gate-calibration.ts`](../engine/gate-calibration.ts). |
 | [`discovery/phase.json`](./discovery/phase.json) | Problem-solution fit. |
@@ -40,7 +40,7 @@ flowchart LR
 
 ## How it connects
 
-- Called by: [`lifecycle.ts`](../engine/lifecycle.ts), [`need-now.ts`](../engine/need-now.ts), [`anatomy.mjs`](../functions/products/frameworks/product-anatomy/anatomy.mjs) and [`check-phases.ts`](../checks/check-phases.ts). [`routes.ts`](../records/routes/routes.ts) reads the `phase.json` files as data, because the records unit comes before this one.
+- Called by: [`lifecycle.ts`](../engine/lifecycle.ts), [`need-now.ts`](../engine/need-now.ts), [`anatomy.ts`](../functions/products/frameworks/product-anatomy/anatomy.ts) and [`check-phases.ts`](../checks/check-phases.ts). [`routes.ts`](../records/routes/routes.ts) reads the `phase.json` files as data, because the records unit comes before this one.
 - Calls: [`core/effect`](../core/effect/README.md) only. It checks each file's shape itself, so it never depends on the record validator, which a host or a test may replace.
 
 ## Not built

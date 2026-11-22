@@ -16,9 +16,9 @@ The strategy function (APQC 1.0, Develop Vision and Strategy). Its governance si
 | [workflows/intake.json](./workflows/intake.json) | Workflow: learn the venture's strategy |
 | [workflows/strategy-review.json](./workflows/strategy-review.json) | Workflow: review the strategy against the evidence |
 | [features/decisions.feature](./features/decisions.feature) | Gherkin behaviors (EE-050) |
-| [features/decisions.steps.mjs](./features/decisions.steps.mjs) | Step definitions for the behaviors beside it |
+| [features/decisions.steps.mjs](./features/decisions.steps.ts) | Step definitions for the behaviors beside it |
 | [features/strategic-foundation.feature](./features/strategic-foundation.feature) | Gherkin behaviors (EE-050) |
-| [features/strategic-foundation.steps.mjs](./features/strategic-foundation.steps.mjs) | Step definitions for the behaviors beside it |
+| [features/strategic-foundation.steps.mjs](./features/strategic-foundation.steps.ts) | Step definitions for the behaviors beside it |
 | [frameworks/business-discovery-framework-amendments-2026-05-20.md](./frameworks/business-discovery-framework-amendments-2026-05-20.md) | Discovery Framework Amendments: 2026-05-20 |
 | [frameworks/business-discovery-framework.html](./frameworks/business-discovery-framework.html) | A rendered document |
 | [frameworks/business-discovery-framework.md](./frameworks/business-discovery-framework.md) | Business Discovery Framework |

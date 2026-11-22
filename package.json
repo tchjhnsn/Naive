@@ -63,7 +63,7 @@
     "!dist/.build-stamp",
     ".claude-plugin/plugin.json",
     "schema/",
-    "scripts/diagnose-transcripts.mjs",
+    "scripts/diagnose-transcripts.ts",
     "packages/",
     "governance/",
     "frameworks/",

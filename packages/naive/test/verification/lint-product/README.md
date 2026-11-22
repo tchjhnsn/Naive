@@ -16,7 +16,7 @@ rm -rf /tmp/product-lint-chart
 /path/to/pstack/skills/statechart/scripts/statechart \
   packages/naive/test/verification/lint-product/ProductLint.tla \
   --config packages/naive/test/verification/lint-product/ProductLint.cfg \
-  --view packages/naive/test/verification/lint-product/view.mjs \
+  --view packages/naive/test/verification/lint-product/view.ts \
   --out /tmp/product-lint-chart
 ```
 

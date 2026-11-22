@@ -15,11 +15,11 @@ Installed under `node_modules`, where Node does not strip types, it runs the fra
 | Path | Holds |
 |---|---|
 | [`index.mjs`](./index.mjs) | The generator. |
-| [`test.mjs`](./test.mjs) | Its tests. |
+| [`test.mjs`](./test.ts) | Its tests. |
 | [`package.json`](./package.json) | The package, with its `create-venture` bin. |
 
 ## Run and test
 
-- `node packages/create-venture/test.mjs` tests the generator; `node test.mjs` runs it. The registry test packs the framework, create-venture and the framework's runtime dependencies (`effect`) from this checkout and installs them offline, then runs the installed create-venture and `naive check` with type stripping off (`--no-experimental-strip-types`), so both run compiled JavaScript.
+- `node packages/create-venture/test.ts` tests the generator; `node test.mjs` runs it. The registry test packs the framework, create-venture and the framework's runtime dependencies (`effect`) from this checkout and installs them offline, then runs the installed create-venture and `naive check` with type stripping off (`--no-experimental-strip-types`), so both run compiled JavaScript.
 
 Its `naive dev` test expects every record to be checked as it is saved, because the check runs in process through `validateFile` in [`packages/naive/src/records/validate.ts`](../naive/src/records/README.md) and needs no Python.

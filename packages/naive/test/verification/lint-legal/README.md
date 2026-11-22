@@ -12,7 +12,7 @@ From the repo root, with `mise` on `PATH` (the statechart script installs TLC an
 rm -rf /tmp/legal-lint-chart && mkdir /tmp/legal-lint-chart
 /path/to/pstack/skills/statechart/scripts/statechart packages/naive/test/verification/lint-legal/LegalLint.tla \
   --config packages/naive/test/verification/lint-legal/LegalLint.cfg \
-  --view packages/naive/test/verification/lint-legal/view.mjs \
+  --view packages/naive/test/verification/lint-legal/view.ts \
   --out /tmp/legal-lint-chart
 cp /tmp/legal-lint-chart/chart.mmd packages/naive/test/verification/lint-legal/out/chart.mmd
 ```

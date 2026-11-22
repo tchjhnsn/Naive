@@ -19,7 +19,7 @@ import { join } from "node:path";
 import { readJson, VentureFs } from "../core/effect/fs.ts";
 import { runSync } from "../core/effect/run.ts";
 import { ventureFile } from "../core/venture-paths.ts";
-import { phaseGateRecords, phaseWeights, ROOT } from "../phases/phases.mjs";
+import { phaseGateRecords, phaseWeights, ROOT } from "../phases/phases.ts";
 import { readDataModel } from "../records/index.ts";
 import { recordOf } from "./decisions.ts";
 import type { NaiveError } from "../core/effect/errors.ts";

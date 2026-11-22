@@ -243,7 +243,7 @@ It fails when any of these is true:
 
 It passes when none of those are true.
 
-`packages/naive/test/verification/playbook-netflix-culture/replay.mjs` runs both checks on a fixture venture, including a missing brief, a pasted principle, an invented figure, a check before you decide, and a check after you decide.
+`packages/naive/test/verification/playbook-netflix-culture/replay.ts` runs both checks on a fixture venture, including a missing brief, a pasted principle, an invented figure, a check before you decide, and a check after you decide.
 
 ## Sources
 

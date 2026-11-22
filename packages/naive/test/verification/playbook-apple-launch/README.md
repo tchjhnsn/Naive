@@ -16,7 +16,7 @@ export JAVA=java
 rm -rf packages/naive/test/verification/playbook-apple-launch/out
 <statechart>/scripts/statechart packages/naive/test/verification/playbook-apple-launch/AppleLaunch.tla \
   --config packages/naive/test/verification/playbook-apple-launch/AppleLaunch.cfg \
-  --view packages/naive/test/verification/playbook-apple-launch/view.mjs \
+  --view packages/naive/test/verification/playbook-apple-launch/view.ts \
   --out packages/naive/test/verification/playbook-apple-launch/out
 ```
 
@@ -30,7 +30,7 @@ sh png.sh packages/naive/test/verification/playbook-apple-launch/out/chart.svg
 Replay the template on fixture ventures:
 
 ```sh
-node packages/naive/test/verification/playbook-apple-launch/replay.mjs
+node packages/naive/test/verification/playbook-apple-launch/replay.ts
 ```
 
 ## Rules

@@ -72,7 +72,7 @@ Status stays `draft`. Role is `builder` unless step 3 named another role that ow
 
 `done_criteria` needs one `conformance` and one `self-proof` (`packages/naive/src/checks/check-ready.ts`, `packages/naive/src/checks/check-execution.ts`). Use:
 
-- conformance: `node packages/naive/test/verification/playbook-basecamp-shape-up/pitch-check.mjs <path to the brief>`
+- conformance: `node packages/naive/test/verification/playbook-basecamp-shape-up/pitch-check.ts <path to the brief>`
 - self-proof: a command that runs this cycle's work and exits 0 when that work actually happened. Until you have that command, use `node -e "console.error('replace this command with one that runs the cycle work'); process.exit(1)"`. That command fails on purpose.
 - review, optional: a question for a role other than the holder, for example architect: "Does what shipped stay inside the no-gos?"
 
@@ -108,7 +108,7 @@ The holes you already patched in the shaping: the approaches this cycle will not
 What this cycle leaves out so the appetite holds.
 ```
 
-A small batch in the book is one or two weeks inside a six-week cycle. This template's check expects a six-week appetite. A pitch whose appetite does not say six weeks fails `pitch-check.mjs`.
+A small batch in the book is one or two weeks inside a six-week cycle. This template's check expects a six-week appetite. A pitch whose appetite does not say six weeks fails `pitch-check.ts`.
 
 This handoff is the pitch. It is not a backlog item. A pitch you do not bet stays `draft`. You do not open a list route for it.
 
@@ -186,11 +186,11 @@ When the work did ship inside the appetite, write `evidence/[id]` with `subject.
 
 ## Checks
 
-Each of these can pass and can fail. The replay is `node packages/naive/test/verification/playbook-basecamp-shape-up/replay.mjs`.
+Each of these can pass and can fail. The replay is `node packages/naive/test/verification/playbook-basecamp-shape-up/replay.ts`.
 
 | Check | Pass | Fail |
 |---|---|---|
-| `node packages/naive/test/verification/playbook-basecamp-shape-up/pitch-check.mjs <brief>` | Outcome, Work, and the five pitch sections all have text, and the appetite says six weeks | Any of those sections is missing or empty, or the appetite does not say six weeks |
+| `node packages/naive/test/verification/playbook-basecamp-shape-up/pitch-check.ts <brief>` | Outcome, Work, and the five pitch sections all have text, and the appetite says six weeks | Any of those sections is missing or empty, or the appetite does not say six weeks |
 | `node packages/naive/src/checks/check-ready.ts <venture dir> <handoff id>` | The brief, products, governing log entry, role, classes, and criteria scripts are in place | Any of those is missing. A `governed_by` id that exists only as `decisions/[id]` fails, because this checker reads the decision log |
 | `node packages/naive/src/checks/check-execution.ts <venture dir>` | A draft cycle handoff with a known role and both kinds of criteria, or a done handoff with a pull request and passing evidence, or an escalated handoff with an open question and `claimed_by` | `done` with no evidence, or `escalated` with no open question, or `in-progress` with no `ready_check` |
 | Read `decisions/<bet id>` and `system/provenance` | The cycle handoff is `draft`, or the bet is `decided` with `answer` exactly `bet` and provenance shows `approve()` (`activity` accept, agent kind person, `approved_by` set) | The cycle handoff is past `draft` while the bet is missing, still open, answered anything other than `bet`, or `decided` with no person accept in the provenance log |

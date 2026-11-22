@@ -32,7 +32,7 @@ import { ventureFile } from "../core/venture-paths.ts";
 import { exitCriteria } from "./canonical.ts";
 import { validateFile } from "../records/validate.ts";
 import { runSync } from "../core/effect/run.ts";
-import { loadPhases } from "../phases/phases.mjs";
+import { loadPhases } from "../phases/phases.ts";
 import { meter, phaseGate } from "./phase-gate.ts";
 import type { ExitCriteria, LifecyclePlaybook, Telos } from "../records/types/records.d.ts";
 

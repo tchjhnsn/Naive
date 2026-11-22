@@ -19,7 +19,7 @@ TLA2TOOLS=/path/to/tla2tools.jar JAVA=java \
   /path/to/statechart \
   packages/naive/test/verification/lint-foundation/FoundationLint.tla \
   --config packages/naive/test/verification/lint-foundation/FoundationLint.cfg \
-  --view packages/naive/test/verification/lint-foundation/view.mjs \
+  --view packages/naive/test/verification/lint-foundation/view.ts \
   --out packages/naive/test/verification/lint-foundation/out
 ```
 

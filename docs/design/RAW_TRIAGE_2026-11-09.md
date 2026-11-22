@@ -101,7 +101,7 @@ A run starts by inserting `(tenant, raw_path)` into `triage_claims` with `on con
 
 ## The questions
 
-Naive holds the questions as data in `packages/naive/src/engine/triage.ts` and builds one Jev request per entry in the shape `platform/integrations/jev.mjs` already sends (`state`, `model`, `questions`). Jev's request takes Noul and Score questions today (`ideamap.mjs`, `anatomy.mjs`); a choice among options is one Noul per option, and code takes the strongest, as the idea map does.
+Naive holds the questions as data in `packages/naive/src/engine/triage.ts` and builds one Jev request per entry in the shape `platform/integrations/jev.mjs` already sends (`state`, `model`, `questions`). Jev's request takes Noul and Score questions today (`ideamap.ts`, `anatomy.ts`); a choice among options is one Noul per option, and code takes the strongest, as the idea map does.
 
 | Step | Question | Primitive | Decides |
 |---|---|---|---|

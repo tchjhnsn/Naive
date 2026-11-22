@@ -1630,7 +1630,7 @@ export type FounderAgreement = {
   deadlock?: string;
 };
 
-/** One idea of a person's (people/<person-id>/ideas/<id>.json, EE-114), owned by the person, not a venture. It exists before any venture and outlives one; a venture cites the idea it grew from. The text is the person's, verbatim; an agent never rewrites it. Ideas under founders/<handle>/ideas/ still validate until the founders folder moves (not built yet). Its relations and scope are checked through the EE-095 term engine (term typed-link): node packages/naive/src/functions/strategy/frameworks/idea-map/graph.mjs check <ideas folder>. */
+/** One idea of a person's (people/<person-id>/ideas/<id>.json, EE-114), owned by the person, not a venture. It exists before any venture and outlives one; a venture cites the idea it grew from. The text is the person's, verbatim; an agent never rewrites it. Ideas under founders/<handle>/ideas/ still validate until the founders folder moves (not built yet). Its relations and scope are checked through the EE-095 term engine (term typed-link): node packages/naive/src/functions/strategy/frameworks/idea-map/graph.ts check <ideas folder>. */
 export type FounderIdea = {
   id: string;
   /** The idea in its owner's own words */
@@ -1664,10 +1664,10 @@ export type FounderIdea = {
   note?: string;
 };
 
-/** How this idea relates to the one it names: broader, narrower and related (SKOS), part-of and derived-from (preserved PR 157), builds-on (the idea graph), supports and contradicts (AIF, IBIS). The idea relations in packages/naive/src/terms/relations.ts, which packages/naive/src/functions/strategy/frameworks/idea-map/test.mjs keeps equal to this list */
+/** How this idea relates to the one it names: broader, narrower and related (SKOS), part-of and derived-from (preserved PR 157), builds-on (the idea graph), supports and contradicts (AIF, IBIS). The idea relations in packages/naive/src/terms/relations.ts, which packages/naive/src/functions/strategy/frameworks/idea-map/test.ts keeps equal to this list */
 export type FounderIdeaRelation = "broader" | "narrower" | "related" | "part-of" | "derived-from" | "builds-on" | "supports" | "contradicts";
 
-/** How the idea attaches to its scope. The scope attachments in packages/naive/src/terms/relations.ts, which packages/naive/src/functions/strategy/frameworks/idea-map/test.mjs keeps equal to this list */
+/** How the idea attaches to its scope. The scope attachments in packages/naive/src/terms/relations.ts, which packages/naive/src/functions/strategy/frameworks/idea-map/test.ts keeps equal to this list */
 export type FounderIdeaAttachment = "creates" | "amends" | "appends-to" | "derives-from";
 
 /** A person who inspires the founder, and what about them invokes the founder's zeal (founders/<handle>/inspirations/<id>.json). A public figure may be named; a private person is an opaque id whose name sits in founders/<handle>/_private/. */
@@ -2407,7 +2407,7 @@ export type IcpProfile = {
   conversation?: ConversationRef[];
 };
 
-/** The structured form of a founder's idea map (EE-060): a Merkle DAG. Each idea's hash covers its text and the hashes of the ideas it builds on, so a change upstream changes every hash downstream. Written by packages/naive/src/functions/strategy/frameworks/idea-map/graph.mjs; it holds no decisions. */
+/** The structured form of a founder's idea map (EE-060): a Merkle DAG. Each idea's hash covers its text and the hashes of the ideas it builds on, so a change upstream changes every hash downstream. Written by packages/naive/src/functions/strategy/frameworks/idea-map/graph.ts; it holds no decisions. */
 export type IdeaGraph = {
   version: string;
   venture: string;
@@ -3086,7 +3086,7 @@ export type MarketingDesignSystem = {
 /** The inputs the choice rests on, by key from marketing/design-system/inputs: mission, problem, icp:<id>, alignment:<id>, market:<product>, founder:<id>, competitor:<name> */
 export type MarketingDesignSystemFrom = string[];
 
-/** The planned public site (EE-064): which information is shown where, how (the MDX component), when and for whom, with the reasons, planned from the venture's records by packages/naive/src/functions/marketing-and-sales/marketing/site/plan.mjs. A marketing record, part of the marketing package handed to engineering (EE-065). Version 0.x, unevaluated. */
+/** The planned public site (EE-064): which information is shown where, how (the MDX component), when and for whom, with the reasons, planned from the venture's records by packages/naive/src/functions/marketing-and-sales/marketing/site/plan.ts. A marketing record, part of the marketing package handed to engineering (EE-065). Version 0.x, unevaluated. */
 export type MarketingSitemap = {
   version: string;
   venture: string;
@@ -3313,7 +3313,7 @@ export type NaiveConfig = {
       by?: string;
     }[];
   };
-  /** The publish build (packages/naive/src/functions/marketing-and-sales/marketing/publish-build.mjs): the venture's channels and the folder they build into. Naive ships no channel; the venture or its app names each one */
+  /** The publish build (packages/naive/src/functions/marketing-and-sales/marketing/publish-build.ts): the venture's channels and the folder they build into. Naive ships no channel; the venture or its app names each one */
   publish_build?: {
     /** The default output folder, relative to the venture folder (default .release/publish-build) */
     out?: string;
@@ -4103,7 +4103,7 @@ export type PhaseGatePoliciesLevel = "very low" | "low" | "moderate" | "high";
 
 export type PhaseGatePoliciesId = string;
 
-/** The manifest of one lifecycle phase as a module (EE-126), at packages/naive/src/phases/<id>/phase.json: the phase's question, its stage gate (what the gate asks, after Cooper's stage-gate) and the exit evidence the gate requires, the function workflows active in the phase and the weights that rank decisions across the 13 functions. A phase module has no agent and owns no records. It is the one place a phase's name, question and gate are defined: packages/naive/src/engine/lifecycle.ts, the route table and Product Anatomy read them from here. Its need-now priors are not held here: packages/naive/src/phases/phases.mjs derives them from packages/naive/src/engine/need-now.json and packages/naive/src/functions/departments.json. packages/naive/src/checks/check-phases.ts checks every module. */
+/** The manifest of one lifecycle phase as a module (EE-126), at packages/naive/src/phases/<id>/phase.json: the phase's question, its stage gate (what the gate asks, after Cooper's stage-gate) and the exit evidence the gate requires, the function workflows active in the phase and the weights that rank decisions across the 13 functions. A phase module has no agent and owns no records. It is the one place a phase's name, question and gate are defined: packages/naive/src/engine/lifecycle.ts, the route table and Product Anatomy read them from here. Its need-now priors are not held here: packages/naive/src/phases/phases.ts derives them from packages/naive/src/engine/need-now.json and packages/naive/src/functions/departments.json. packages/naive/src/checks/check-phases.ts checks every module. */
 export type PhaseModule = {
   /** The phase (EE-012), the same as the folder's name. */
   id: "discovery" | "validation" | "beachhead" | "scale" | "platform";
@@ -5203,7 +5203,7 @@ export type SignalCitation = {
   ref: string;
 });
 
-/** How present a venture's public records are on its marketing site, weighed by who the site must speak to now (EE-062, EE-063). Written by packages/naive/src/functions/marketing-and-sales/marketing/site/presence.mjs from a read of the site; version 0.x, ours and unevaluated. */
+/** How present a venture's public records are on its marketing site, weighed by who the site must speak to now (EE-062, EE-063). Written by packages/naive/src/functions/marketing-and-sales/marketing/site/presence.ts from a read of the site; version 0.x, ours and unevaluated. */
 export type SitePresence = {
   version: string;
   site: string;

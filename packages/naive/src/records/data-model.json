@@ -726,7 +726,7 @@
         {
           "field": "(keys)",
           "to": "product",
-          "checked_by": "packages/naive/src/functions/products/frameworks/product-anatomy/anatomy.mjs"
+          "checked_by": "packages/naive/src/functions/products/frameworks/product-anatomy/anatomy.ts"
         }
       ],
       "note": "Scores per product per question; the matrix is rendered from them"
@@ -742,7 +742,7 @@
         "instance/**/product/anatomy/*.json",
         "instance/**/purpose/anatomy/*.json"
       ],
-      "note": "Product Anatomy input for one product with parts (venture, core, products, flows), such as Naive or Mentura; read by packages/naive/src/functions/products/frameworks/product-anatomy/anatomy.mjs"
+      "note": "Product Anatomy input for one product with parts (venture, core, products, flows), such as Naive or Mentura; read by packages/naive/src/functions/products/frameworks/product-anatomy/anatomy.ts"
     },
     {
       "id": "decision",
@@ -1347,7 +1347,7 @@
         {
           "field": "documents",
           "to": "design-document",
-          "checked_by": "packages/naive/src/functions/capabilities/skills/design-coverage/check.mjs"
+          "checked_by": "packages/naive/src/functions/capabilities/skills/design-coverage/check.ts"
         }
       ],
       "note": "Self-describing; which design documents a venture needs at which phase"
@@ -3322,7 +3322,7 @@
     },
     {
       "path": "packages/naive/src/engine/known-leaks.json",
-      "reason": "The dated list of public outputs that leak internal text today, read by packages/naive/src/functions/marketing-and-sales/marketing/canaries-test.mjs so a new leak fails and the list only shrinks; test data, not a record"
+      "reason": "The dated list of public outputs that leak internal text today, read by packages/naive/src/functions/marketing-and-sales/marketing/canaries-test.ts so a new leak fails and the list only shrinks; test data, not a record"
     },
     {
       "path": "packages/naive/src/engine/internal-terms.json",

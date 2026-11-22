@@ -18,7 +18,7 @@ From the repo root. The statechart script is `scripts/statechart` in the pstack 
 scripts/statechart \
   packages/naive/test/verification/cursor/playbook-stripe-docs/StripeDocs.tla \
   --config packages/naive/test/verification/cursor/playbook-stripe-docs/StripeDocs.cfg \
-  --view packages/naive/test/verification/cursor/playbook-stripe-docs/view.mjs \
+  --view packages/naive/test/verification/cursor/playbook-stripe-docs/view.ts \
   --out /tmp/stripe-docs-chart
 ```
 
@@ -32,7 +32,7 @@ sh png.sh /tmp/stripe-docs-chart/chart.svg
 Then:
 
 ```sh
-node packages/naive/test/verification/cursor/playbook-stripe-docs/replay.mjs
+node packages/naive/test/verification/cursor/playbook-stripe-docs/replay.ts
 ```
 
 Re-run both after any edit to the playbook's steps, routes, or checks. An earlier TLC run reported 21 states and 23 steps. Re-run on 30 October 2026 with TLC 2.19 on OpenJDK 21: the same result, saved in `out/tlc.out`. The TLC column below comes from the same run. The chart draws 15 states and 16 arrows.

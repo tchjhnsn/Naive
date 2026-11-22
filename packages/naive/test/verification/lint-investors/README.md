@@ -15,7 +15,7 @@ TLA2TOOLS=/path/to/tla2tools.jar JAVA=java \
   <statechart skill>/scripts/statechart \
   packages/naive/test/verification/lint-investors/InvestorLint.tla \
   --config packages/naive/test/verification/lint-investors/InvestorLint.cfg \
-  --view packages/naive/test/verification/lint-investors/view.mjs \
+  --view packages/naive/test/verification/lint-investors/view.ts \
   --out /tmp/investor-lint-chart
 ```
 

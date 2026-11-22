@@ -61,13 +61,13 @@
   ],
   "writes": [],
   "checks": [
-    "packages/naive/src/functions/products/frameworks/product-anatomy/anatomy.mjs",
-    "packages/naive/src/functions/products/frameworks/product-anatomy/test.mjs",
+    "packages/naive/src/functions/products/frameworks/product-anatomy/anatomy.ts",
+    "packages/naive/src/functions/products/frameworks/product-anatomy/test.ts",
     "packages/naive/src/checks/check-telos.ts",
     "packages/naive/src/engine/foundation.ts",
-    "packages/naive/src/functions/strategy/frameworks/idea-map/ideamap.mjs",
-    "packages/naive/src/functions/strategy/frameworks/idea-map/graph.mjs",
-    "packages/naive/src/functions/strategy/frameworks/idea-map/route.mjs"
+    "packages/naive/src/functions/strategy/frameworks/idea-map/ideamap.ts",
+    "packages/naive/src/functions/strategy/frameworks/idea-map/graph.ts",
+    "packages/naive/src/functions/strategy/frameworks/idea-map/route.ts"
   ],
   "gaps": [
     "ambition-tier still uses the old tiers (hobby, side-project, open-source-tool, venture, enterprise); venture.json uses hobby, survival, lifestyle, managed-growth, aggressive-growth",

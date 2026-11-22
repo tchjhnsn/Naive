@@ -13,7 +13,7 @@ rm -rf packages/naive/test/verification/playbook-lean-validation/out
 # skills/statechart/scripts/statechart in the pstack kit
 statechart \
   packages/naive/test/verification/playbook-lean-validation/LeanValidation.tla \
-  --view packages/naive/test/verification/playbook-lean-validation/view.mjs \
+  --view packages/naive/test/verification/playbook-lean-validation/view.ts \
   --out packages/naive/test/verification/playbook-lean-validation/out
 ```
 
@@ -22,7 +22,7 @@ statechart \
 Replay the routes:
 
 ```sh
-node packages/naive/test/verification/playbook-lean-validation/replay.mjs
+node packages/naive/test/verification/playbook-lean-validation/replay.ts
 ```
 
 ## This run

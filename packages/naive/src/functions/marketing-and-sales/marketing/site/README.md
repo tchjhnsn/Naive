@@ -53,7 +53,7 @@ The result is drawn as the site's sitemap. The home page sits on top, with the p
 
 ## In reverse: planning the site from the venture (EE-064)
 
-`plan.mjs` uses the same matrix in the other direction. It reads the venture's records and plans the site. The plan says what is shown where, how (the MDX component), when, and for whom, with the reason for each.
+`plan.ts` uses the same matrix in the other direction. It reads the venture's records and plans the site. The plan says what is shown where, how (the MDX component), when, and for whom, with the reason for each.
 
 - **The product decides the audience.** A product's `offered_to` names the ICP profiles it is offered to, and `serves` names the profiles it reaches through them. In a partner-led (B2B2C) venture, the partners are the site's customers. A profile can say it is `reached_through` another and which buying-center roles it plays (Webster and Wind 1972, with the initiator added by Bonoma 1982).
 - **Services are already an offering type** on the product card (product, service, platform, content, marketplace), so services drive the site like any other product.
@@ -72,7 +72,7 @@ The result is drawn as the site's sitemap. The home page sits on top, with the p
   This keeps internal content out of public pages and keeps generic text off them.
 - **The handoff (EE-065).** The plan, the content variants and the brand make up the marketing package. Marketing hands it to engineering, which builds the site and does not decide what goes where. Planning the sitemap and designing the site are separate agents.
 
-Run it with `node packages/naive/src/functions/marketing-and-sales/marketing/site/plan.mjs <venture> [--raising] [--hiring] [--contributors] [--write]`, or from the board's /site page with "Plan from my venture".
+Run it with `node packages/naive/src/functions/marketing-and-sales/marketing/site/plan.ts <venture> [--raising] [--hiring] [--contributors] [--write]`, or from the board's /site page with "Plan from my venture".
 
 ## What is not settled
 

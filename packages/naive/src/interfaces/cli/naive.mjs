@@ -322,7 +322,7 @@ else if (cmd === "build" || cmd === "start") {
   const [sub = "list", ...more] = args;
   process.exit(run("packages/naive/src/engine/user-frameworks.ts", [sub, ...more, from]));
 } else if (cmd === "diagnose") {
-  process.exit(run("scripts/diagnose-transcripts.mjs", rest));
+  process.exit(run("scripts/diagnose-transcripts.ts", rest));
 } else if (cmd === "activity") {
   process.exit(run("packages/naive/src/engine/activity.ts", rest));
 } else if (cmd === "workspace") {
