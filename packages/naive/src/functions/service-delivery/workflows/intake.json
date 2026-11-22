@@ -1,0 +1,18 @@
+{
+  "id": "intake",
+  "function": "service-delivery",
+  "title": "Learn the venture's services and engagements",
+  "trigger": { "kind": "intake" },
+  "reads": ["venture", "foundation/telos", "product", "customers", "validation/pricing", "service-delivery/offers", "service-delivery/engagements", "operations/handoff"],
+  "steps": [
+    { "id": "read-what-exists", "do": "Read the service offers, engagements, customers and handoffs, and list what is missing, most needed first." },
+    { "id": "ask-offers", "do": "Ask the founder which services the venture sells, with the outcome, what each includes and excludes and how it is priced, and draft one offer per service; any new or retired offer goes to the founder.", "ask": true, "writes": ["service-delivery/offers/[id]"], "raises": ["strategy-or-constitution"] },
+    { "id": "ask-engagements", "do": "Ask which client engagements are running or signed, and write one engagement each with its deliverables, due dates and the acceptance test for each deliverable.", "skill": "engagement-delivery", "ask": true, "writes": ["service-delivery/engagements/[id]"] },
+    { "id": "open-handoffs", "do": "Open a handoff for each deliverable due in the next two weeks, with the acceptance test as its done criteria, and list it on the engagement.", "writes": ["operations/handoff/[id]", "service-delivery/engagements/[id]"] },
+    { "id": "summarize", "do": "Tell the founder in one message which engagements run, what is due in the next two weeks, every deliverable without an acceptance test and any unsigned statement of work, raising the order of work to the product lead.", "raises": ["set-priorities", "legal-or-terms"] }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/records/validate.mjs" },
+    { "id": "every-deliverable-testable", "kind": "review", "check": "Does every deliverable of every active engagement have an acceptance test the client can apply?", "reviewer": "product-lead" }
+  ]
+}

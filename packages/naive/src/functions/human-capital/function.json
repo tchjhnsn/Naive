@@ -1,0 +1,15 @@
+{
+  "id": "human-capital",
+  "purpose": "Know who works on the venture, person or agent, in which role and on what terms, and open a person role only when agents cannot do the work.",
+  "intake": "intake",
+  "measures": [
+    "cost_or_time_saved",
+    "compliance_met"
+  ],
+  "clusters": [
+    "identity-and-secrets",
+    "money-and-books",
+    "signatures-and-privileged-records",
+    "private-contact-records"
+  ]
+}

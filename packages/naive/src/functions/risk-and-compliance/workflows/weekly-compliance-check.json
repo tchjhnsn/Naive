@@ -1,0 +1,17 @@
+{
+  "id": "weekly-compliance-check",
+  "function": "risk-and-compliance",
+  "title": "Check the compliance calendar each week",
+  "trigger": { "kind": "schedule", "cadence": "weekly" },
+  "reads": ["legal/obligations", "governance/ownership", "assets/leases", "evidence"],
+  "steps": [
+    { "id": "find-due", "do": "List every upcoming obligation whose alert date (twice its preparation days before the due date) has passed, most urgent first, not curable before late fee before curable.", "skill": "compliance-calendar" },
+    { "id": "prepare", "do": "For each one due, prepare what the owner needs to file, sign or pay (the form, the figures and the fee) and bring it to the founder as a decision.", "skill": "compliance-calendar", "raises": ["legal-or-terms", "spend-money"] },
+    { "id": "record-met", "do": "Mark each obligation met only with its evidence (a filing receipt or proof of mailing), and roll a recurring one forward to its next due date.", "writes": ["legal/obligations/[id]"] },
+    { "id": "catch-new", "do": "Check new ownership grants and new leases for duties they create (an 83(b) within 30 days of a grant, a lease's notice date) and add each as an obligation.", "writes": ["legal/obligations/[id]"], "raises": ["ownership-or-control"] }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/records/validate.mjs" },
+    { "id": "nothing-due-silent", "kind": "review", "check": "Is every obligation past its alert date either met with evidence or open as a decision for the founder?", "reviewer": "finance-lead" }
+  ]
+}

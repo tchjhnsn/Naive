@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "service-offer.schema.json",
+  "title": "Service offer",
+  "description": "One entry of the venture's service catalogue, at service-delivery/offers/<id>.json (route service-delivery/offers/[id]): a named service with its outcome, what it includes and excludes, how it is priced and how long it takes. It follows ITIL 4 service catalogue management and APQC PCF 5.1.2 (develop service delivery strategies). The service-delivery function owns it, and only the service-delivery agent (role service-delivery-agent) or a person writes it. Publishing an offer or its price outside the venture is a public-commitment decision.",
+  "type": "object",
+  "required": ["id", "name", "outcome", "includes", "price_model", "status"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$", "description": "The offer's id, the file name without .json" },
+    "name": { "type": "string", "minLength": 1 },
+    "outcome": { "type": "string", "minLength": 1, "description": "What the client has at the end, in one sentence" },
+    "includes": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 }, "description": "The deliverables and activities in scope" },
+    "excludes": { "type": "array", "items": { "type": "string", "minLength": 1 }, "description": "What is out of scope, said plainly so a change request can point to it" },
+    "price_model": { "enum": ["fixed", "value", "time-and-materials", "retainer", "subscription"], "description": "How it is priced. Time and materials only when scope cannot be defined" },
+    "price": { "type": ["number", "null"], "minimum": 0, "description": "The list price, or the rate for time and materials, or null when quoted per client" },
+    "currency": { "type": "string", "pattern": "^[A-Z]{3}$", "description": "ISO 4217 code, such as USD" },
+    "duration_days": { "type": "integer", "minimum": 1, "description": "The usual length from start to acceptance, in days" },
+    "prerequisites": { "type": "array", "items": { "type": "string", "minLength": 1 }, "description": "What the client must provide before work starts" },
+    "runbook": { "type": "string", "description": "Where the offer's delivery runbook is, as a venture path" },
+    "product": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$", "description": "The product card this offer belongs to, by id, when the venture keeps one" },
+    "status": { "enum": ["draft", "offered", "retired"], "description": "offered once a person has approved it for sale" },
+    "note": { "type": "string" }
+  }
+}

@@ -1718,6 +1718,44 @@
       ]
     },
     {
+      "id": "EE-125",
+      "date": "2026-11-22",
+      "status": "in-force",
+      "decision": "Naive's code uses Effect (effect.website), its first runtime dependency, pinned exactly. Code that reads or writes files, can fail, runs work concurrently or needs a service is written as Effects: it fails with Naive's tagged errors (packages/naive/src/core/effect/errors.mjs), reaches files through the VentureFs service so a test can provide an in-memory one, and runs from older code through runSync and runPromise, which keep a module's existing exports while its callers move. Pure functions (scoring arithmetic, the term engine, signal ids) stay plain functions. New code is written this way, and existing units move one per pull request with their tests unchanged.",
+      "why": "Torian, 2026-11-22 00:37Z in the thread proving Naive's 13 functions: use effect.website, and use it more widely than the new code.",
+      "related": [
+        "EE-118"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/core/effect/run.mjs",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
+      "id": "EE-126",
+      "date": "2026-11-22",
+      "status": "in-force",
+      "decision": "Each lifecycle phase (discovery, validation, beachhead, scale, platform) is a phase module: one folder holding its stage gate, the exit evidence the gate asks for, the need-now priors for the phase, the function workflows active in it and the weights that rank decisions across functions. A phase module has no agent and owns no records; the 13 function agents do the work, and the phase only says what counts now. Phase modules are written in Effect (EE-125).",
+      "why": "Torian chose phase modules (stage-gate, after Cooper) over phase functions by decision card on 2026-11-22 00:36Z: phases describe when, functions describe who, so a phase with its own agent would duplicate the functions.",
+      "related": [
+        "EE-125",
+        "EE-028",
+        "EE-012"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "docs/decisions/decisions.json",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
       "id": "EE-127",
       "date": "2026-11-19",
       "status": "in-force",

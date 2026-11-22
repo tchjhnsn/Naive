@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "fixed-asset.schema.json",
+  "title": "Fixed asset",
+  "description": "One entry of the venture's asset register (ISO 55000:2024 asset; APQC 10.3.2, update work and asset records), at assets/register/<id>.json (route assets/register/[id]): one piece of physical equipment the venture owns, leases or uses, who holds it, what it cost and how it left. Register every purchase above the capitalization threshold the founder sets with finance, and every portable device that holds data whatever its cost. Intangible assets (domains, trademarks, code) are not fixed assets. The assets function owns it, and only the assets agent (role assets-agent) or a person writes it (writer function in packages/naive/src/records/data-model.json).",
+  "type": "object",
+  "required": ["id", "name", "category", "holds_data", "custodian", "acquired", "cost", "currency", "ownership", "status"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$", "description": "The asset's tag, the file name without .json" },
+    "name": { "type": "string", "minLength": 1, "description": "What it is, such as 14-inch laptop" },
+    "category": { "enum": ["computer", "phone", "peripheral", "furniture", "production-equipment", "lab-equipment", "vehicle", "other"] },
+    "serial": { "type": "string", "description": "The maker's serial number" },
+    "holds_data": { "type": "boolean", "description": "True when the device stores venture or customer data, so it must be wiped before it leaves (NIST SP 800-88)" },
+    "custodian": { "type": ["string", "null"], "pattern": "^[a-z][a-z0-9-]*$", "description": "The person who holds it, by people record id, or null when it is in storage" },
+    "location": { "type": "string", "description": "Where it is kept, such as home office or the workshop" },
+    "acquired": { "type": "string", "format": "date", "description": "The date the venture bought, leased or received it" },
+    "cost": { "type": "number", "minimum": 0, "description": "What it cost to acquire, in currency" },
+    "currency": { "type": "string", "pattern": "^[A-Z]{3}$", "description": "ISO 4217 code" },
+    "ownership": { "enum": ["owned", "leased", "contributed", "borrowed"], "description": "contributed: a founder gave it to the venture, which is an ownership matter; borrowed: the venture uses it and someone else owns it" },
+    "capitalized": { "type": "boolean", "description": "True when finance books it as an asset and depreciates it; false when it was expensed under the capitalization threshold" },
+    "useful_life_months": { "type": "integer", "minimum": 1, "description": "How long the venture expects to use it" },
+    "warranty_end": { "type": ["string", "null"], "format": "date" },
+    "spend": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$", "description": "The spend register line that paid for it, by id (finance/spend/<id>), when it was bought" },
+    "lease": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$", "description": "The lease it is held under, by id (assets/leases/<id>), when leased" },
+    "status": { "enum": ["in-use", "in-storage", "in-repair", "disposed"] },
+    "disposal": {
+      "type": "object",
+      "required": ["date", "method", "wiped"],
+      "additionalProperties": false,
+      "description": "How it left the venture (APQC 10.4). Required once status is disposed",
+      "properties": {
+        "date": { "type": "string", "format": "date" },
+        "method": { "enum": ["sold", "traded", "recycled", "scrapped", "returned", "lost"] },
+        "wiped": { "type": ["boolean", "null"], "description": "True when its data was wiped before it left, null when it held no data" },
+        "evidence": { "type": "string", "description": "Where the wipe or sale is proved: a receipt, a certificate or an evidence record" },
+        "proceeds": { "type": "number", "minimum": 0 }
+      }
+    },
+    "note": { "type": "string" }
+  },
+  "if": { "properties": { "status": { "const": "disposed" } }, "required": ["status"] },
+  "then": { "required": ["disposal"] }
+}

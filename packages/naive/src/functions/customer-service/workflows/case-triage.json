@@ -1,0 +1,18 @@
+{
+  "id": "case-triage",
+  "function": "customer-service",
+  "title": "Triage each new support case",
+  "trigger": { "kind": "event", "route": "support/cases/[id]" },
+  "reads": ["support/policy", "support/cases", "customers", "product/bugs"],
+  "steps": [
+    { "id": "classify", "do": "Set the case's kind and contact reason from the policy's reason list, and link an earlier case on the same issue for the same customer.", "skill": "support-triage", "writes": ["support/cases/[id]"] },
+    { "id": "check-escalation", "do": "If the case matches anything in the policy's escalate_when list, bring it to the founder at once with the case and what is known.", "skill": "support-triage", "raises": ["legal-or-terms", "irreversible-data-change"] },
+    { "id": "draft-reply", "do": "Draft the reply from what the records and published help say, and raise it for the founder to send.", "skill": "support-triage", "raises": ["public-commitment"] },
+    { "id": "propose-refund", "do": "When the policy's refund rule applies, propose the refund or credit with its amount and the rule it follows.", "raises": ["spend-money"] },
+    { "id": "route", "do": "Send a reproducible defect to products and buying interest to marketing and sales as handoffs, and link them from the case.", "writes": ["operations/handoff/[id]", "support/cases/[id]"], "raises": ["defer-or-route"] }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/records/validate.mjs" },
+    { "id": "triaged", "kind": "review", "check": "Does the case have a kind and a reason, and is its reply drafted or its escalation open as a decision within the policy's first response target?", "reviewer": "growth-lead" }
+  ]
+}

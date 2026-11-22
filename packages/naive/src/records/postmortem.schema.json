@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "postmortem.schema.json",
+  "title": "Postmortem",
+  "description": "One blameless postmortem, at capabilities/postmortems/<id>.json (route capabilities/postmortems/[id]): what happened, its impact, a timeline, the contributing causes as conditions of the process or system and never as people, the corrective and preventive actions with an owner each, and the lessons to reuse. It follows the Google SRE book, chapter 15 (postmortem culture), ISO 9001:2015 clause 10.2 (nonconformity and corrective action) and APQC PCF 13.3.3 (manage non-conformance) and 13.4.4.2 (capture lessons learned). The capabilities function owns it, and only its agent (capabilities-agent) or a person writes it (writer function). The agent drafts it; a person reviews it before it closes.",
+  "type": "object",
+  "required": ["id", "title", "date", "trigger", "summary", "contributing_causes", "actions", "status"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$", "description": "The postmortem's id, the file name without .json" },
+    "title": { "type": "string", "minLength": 1 },
+    "date": { "type": "string", "format": "date", "description": "The day the event happened" },
+    "trigger": { "enum": ["customer-visible-failure", "data-loss", "one-way-door-reversed", "handoff-failed-twice", "security-event", "requested"], "description": "Which trigger, set in advance, made it owed. Anyone may request one" },
+    "process": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$", "description": "The process record (capabilities/processes/<id>.json) it concerns, when one exists" },
+    "summary": { "type": "string", "minLength": 1 },
+    "impact": { "type": "string", "description": "Who or what was affected, and how much" },
+    "timeline": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["at", "event"],
+        "additionalProperties": false,
+        "properties": { "at": { "type": "string", "minLength": 1 }, "event": { "type": "string", "minLength": 1 } }
+      }
+    },
+    "contributing_causes": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 }, "description": "Conditions of the process or system the venture controls, never a person's name" },
+    "actions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["action", "kind", "owner", "status"],
+        "additionalProperties": false,
+        "properties": {
+          "action": { "type": "string", "minLength": 1 },
+          "kind": { "enum": ["corrective", "preventive", "mitigation"] },
+          "owner": { "type": "string", "minLength": 1 },
+          "due": { "type": ["string", "null"], "format": "date" },
+          "status": { "enum": ["open", "done", "dropped"] },
+          "handoff": { "type": "string", "description": "The handoff that carries it, by id" }
+        }
+      }
+    },
+    "lessons": { "type": "array", "items": { "type": "string", "minLength": 1 }, "description": "What another process or function can reuse" },
+    "status": { "enum": ["draft", "reviewed", "closed"], "description": "draft: written by the agent. reviewed: a person reviewed it. closed: every action is done or dropped" },
+    "reviewed_by": { "type": "string" },
+    "note": { "type": "string" }
+  }
+}

@@ -25,7 +25,8 @@ delete process.env.MENTURA_PERSON;
 const cliPath = join(repo, "packages/naive/src/interfaces/cli/mentura.mjs");
 const cli = (...a: string[]) => spawnSync(process.execPath, [cliPath, ...a], { encoding: "utf8", env });
 const json = (o: unknown): string => JSON.stringify(o, null, 2) + "\n";
-const solution = (statement: string) => ({ venture: "x", statement, alternatives: ["a receptionist"], evidence: [] });
+// Each record names the venture it is written to (the router refuses another, naive#71).
+const solution = (statement: string, venture = "x") => ({ venture, statement, alternatives: ["a receptionist"], evidence: [] });
 const DETECTOR = {
   id: "gate-confidence", tier: "low", call_site: "packages/naive/src/engine/gate.mjs confidence_below",
   question: { verb: "hold", noun: "write", asking_function: "governance", text: "Does this write need a person?" },
@@ -46,7 +47,7 @@ function venture(id: string, withDetector: boolean): string {
   if (withDetector) { mkdirSync(join(dir, "governance/detectors"), { recursive: true }); writeFileSync(join(dir, "governance/detectors/gate-confidence.json"), json(DETECTOR)); }
   return dir;
 }
-const write = async (v: string, input: unknown, extra: Record<string, unknown> = {}): Promise<Reply> => await call({ venture: v, route: "validation/solution", action: "write", input, workspace: ws, ...extra }) as Reply;
+const write = async (v: string, input: unknown, extra: Record<string, unknown> = {}): Promise<Reply> => await call({ venture: v, route: "validation/solution", action: "write", input: { ...(input as Record<string, unknown>), venture: v }, workspace: ws, ...extra }) as Reply;
 const ledgerLines = (dir: string): LedgerLine[] => {
   const f = join(dir, ledgerPath("gate-confidence"));
   return existsSync(f) ? readFileSync(f, "utf8").split("\n").filter((l) => l.trim()).map((l) => JSON.parse(l) as LedgerLine) : [];
@@ -85,7 +86,7 @@ const ctx = (v: string) => ({ venture: v, workspace: ws });
   const trial = ledgerLines(dir)[0];
   expect("a confident agent write lands as before and is a no trial", agent.ok && agent.result?.draft === false && trial?.call === "no" && trial.provenance === agent.result?.provenance, JSON.stringify(trial));
   const input = join(ws, "revert.json");
-  writeFileSync(input, json(solution("the person's own version")));
+  writeFileSync(input, json(solution("the person's own version", "reverted")));
   const back = cli("validation/solution", "write", "--venture", "reverted", "--input", input, "--as", "person", "--revert");
   const lines = ledgerLines(dir);
   expect("a person reverts the write with --revert, logged as a rollback", back.status === 0 && entries(dir).at(-2)?.activity === "rollback", back.stdout + back.stderr);

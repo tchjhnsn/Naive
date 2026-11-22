@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "lease.schema.json",
+  "title": "Lease",
+  "description": "One lease or space commitment of the venture (a lease under ASC 842 and IFRS 16; APQC 10.1.3, provide workspace and facilities), at assets/leases/<id>.json (route assets/leases/[id]): premises, coworking or equipment, with its term, rent, notice and renewal dates and the terms that are hard to exit (a personal guarantee, auto-renewal). It abstracts the signed document and never replaces it. Signing, renewing or giving notice is a person's decision. The assets function owns it, and only the assets agent (role assets-agent) or a person writes it (writer function in packages/naive/src/records/data-model.json).",
+  "type": "object",
+  "required": ["id", "kind", "counterparty", "start", "end", "rent", "auto_renews", "notice_days", "personal_guarantee", "status"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$", "description": "The lease's id, the file name without .json" },
+    "kind": { "enum": ["premises", "coworking", "equipment", "vehicle"] },
+    "counterparty": { "type": "string", "minLength": 1, "description": "The landlord, coworking operator or lessor" },
+    "start": { "type": "string", "format": "date" },
+    "end": { "type": ["string", "null"], "format": "date", "description": "The last day of the current term, or null for month-to-month" },
+    "rent": {
+      "type": "object",
+      "required": ["amount", "currency", "cadence"],
+      "additionalProperties": false,
+      "properties": {
+        "amount": { "type": "number", "minimum": 0 },
+        "currency": { "type": "string", "pattern": "^[A-Z]{3}$" },
+        "cadence": { "enum": ["monthly", "quarterly", "annual"] },
+        "escalation": { "type": "string", "description": "How the rent rises, such as 3% each year" }
+      }
+    },
+    "deposit": { "type": "number", "minimum": 0 },
+    "auto_renews": { "type": "boolean", "description": "True when the term renews unless notice is given" },
+    "notice_days": { "type": "integer", "minimum": 0, "description": "Days of notice the venture must give to end the lease or not renew it" },
+    "break_clause": { "type": "string", "description": "When and how the venture may end early, and at what cost" },
+    "personal_guarantee": { "type": "boolean", "description": "True when a founder personally guarantees the rent. Signing one is always a founder decision" },
+    "insurance_required": { "type": "string", "description": "Cover the lease requires the venture to hold" },
+    "spend": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$", "description": "The spend register line that pays the rent, by id (finance/spend/<id>)" },
+    "document": { "type": "string", "description": "Where the signed lease is kept" },
+    "status": { "enum": ["proposed", "active", "notice-given", "ended"], "description": "proposed waits on the founder's decision to sign" },
+    "note": { "type": "string" }
+  }
+}
