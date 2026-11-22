@@ -104,10 +104,10 @@ The Everything Ecosystem methodology, packaged as one private repo (EE-001). Pro
 
 Naive is moving from JavaScript to TypeScript in four phases (EE-087): type-check the JavaScript, generate record types from `packages/naive/src/records/*.schema.json`, rename modules to `.ts` folder by folder, and publish compiled JavaScript. The last phase is done (EE-159): the package ships `dist/`, so a module an app or a venture reaches from node_modules may be `.ts`. Until the renaming is done:
 
-- New files are `.ts`, with no exception, including modules the router, `init-venture`, `create-venture` and the CLIs import. They run under Node's type stripping in the repository, so they use erasable syntax only: no `enum`, no `namespace`, no parameter properties (`erasableSyntaxOnly` in `tsconfig.json` enforces it). Import another `.ts` file by its `.ts` name. Code that runs a `.ts` script by path names it by its `.ts` path as a string literal or through `naiveScript`, so the compiled copy runs the `.js`.
+- New files are `.ts`, with no exception, including modules the router, `init-venture`, `create-venture` and the CLIs import. They run under Node's type stripping in the repository, so they use erasable syntax only: no `enum`, no `namespace`, no parameter properties (`erasableSyntaxOnly` in `tsconfig.json` enforces it). Import another `.ts` file by its `.ts` name. Code that runs a `.ts` script by path names it by its `.ts` path as a string literal or through `naiveScript`, so the compiled copy runs the `.mjs`. Every compiled file is `.mjs` (`scripts/build.ts`), so a module converted from `.mjs` to `.ts` keeps the path an app imports it by.
 - A record's type comes from its JSON Schema, never typed by hand.
 - No `any` in new code. Use `unknown` and narrow it.
-- Existing `.mjs` files are converted in their phase, not inside unrelated PRs.
+- Existing `.mjs` files are converted unit by unit, not inside unrelated PRs. `node scripts/to-ts.ts <file.mjs>...` renames them with git mv and rewrites every reference in the repository (`node scripts/to-ts-test.ts`); typing them under `tsconfig.strict.json` is the converter's work.
 
 ## Vendored repositories
 
