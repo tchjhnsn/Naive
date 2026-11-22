@@ -10,7 +10,7 @@
     "directory": "packages/create-venture"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22.19.0"
   },
   "bin": {
     "create-venture": "index.mjs"
