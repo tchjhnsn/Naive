@@ -13,108 +13,189 @@
 // list) while it compares and writes, so two processes cannot both pass the check. A lock older
 // than LOCK_STALE_MS is taken to be left by a process that died, and is removed.
 
-import { appendFileSync, closeSync, existsSync, mkdirSync, openSync, readFileSync, readdirSync, renameSync, rmSync, statSync, writeFileSync } from "node:fs";
+// The connector is written as Effects over VentureFs (EE-125): connectEffects(options) gives the connector
+// whose five methods return Effects, for code that composes them; connect(options) gives the same
+// connector with each method run as a Promise, the contract every caller and app uses.
+
 import { basename, dirname, join } from "node:path";
-import { blobSha, checkWrite, isText, matches, safePath } from "./contract.mjs";
+import { Effect } from "effect";
+import { blobSha, checkWriteEffect, isText, matches, safePathEffect } from "./contract.mjs";
+import { Refused } from "../../core/effect/errors.mjs";
+import { VentureFs } from "../../core/effect/fs.mjs";
+import { runPromise, runSync } from "../../core/effect/run.mjs";
 import { layoutOf, logicalFiles, ventureFile } from "../../core/venture-paths.mjs";
 import { git as runGit } from "../../core/runtime.mjs";
+
+/** @typedef {import("../../core/effect/errors.mjs").NaiveError} NaiveError */
+/** @typedef {{ path: string, version: string }} Listed */
+/** @typedef {{ path: string, content: string, version: string, commit?: string }} Item */
+/** @typedef {{ base?: string | null, append?: boolean, message?: string, title?: string }} WriteOptions */
+/**
+ * The filesystem connector with Effect methods. Each needs VentureFs and fails with a tagged error.
+ * @typedef {{
+ *   id: string, kind: "filesystem", writes: string, root: string,
+ *   list: (prefix?: string) => Effect.Effect<Listed[], NaiveError, "naive/VentureFs">,
+ *   read: (p: string) => Effect.Effect<Item | null, NaiveError, "naive/VentureFs">,
+ *   version: (p: string) => Effect.Effect<string | null, NaiveError, "naive/VentureFs">,
+ *   search: (query: string, opts?: { limit?: number }) => Effect.Effect<Listed[], NaiveError, "naive/VentureFs">,
+ *   write: (p: string, content: string | Buffer, opts?: WriteOptions) => Effect.Effect<Listed, NaiveError, "naive/VentureFs">,
+ * }} EffectConnector
+ */
 
 const SKIP = new Set(["node_modules"]);
 const LOCK_STALE_MS = 30_000;
 const LOCK_TRIES = 200;
 
-/** Runs f while holding an exclusive lock file for the item f writes. */
-function withLock(f, fn) {
+/**
+ * Runs an Effect while holding an exclusive lock file for the item f it writes.
+ * @template A, E
+ * @param {string} f @param {Effect.Effect<A, E, "naive/VentureFs">} use
+ * @returns {Effect.Effect<A, E | NaiveError, "naive/VentureFs">}
+ */
+const withLock = (f, use) => Effect.gen(function* () {
+  const fs = yield* VentureFs;
   const lock = join(dirname(f), `.${basename(f)}.lock`);
   for (let i = 0; ; i++) {
-    try { closeSync(openSync(lock, "wx")); break; } catch (e) {
-      if (/** @type {NodeJS.ErrnoException} */ (e).code !== "EEXIST") throw e;
-      try { if (Date.now() - statSync(lock).mtimeMs > LOCK_STALE_MS) { rmSync(lock, { force: true }); continue; } } catch { continue; }
-      if (i >= LOCK_TRIES) throw new Error(`${f} is locked by another writer`);
-      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 10);
-    }
+    if (yield* fs.createExclusive(lock)) break;
+    const st = yield* fs.stat(lock);
+    if (!st) continue;
+    if (Date.now() - st.mtimeMs > LOCK_STALE_MS) { yield* fs.remove(lock); continue; }
+    if (i >= LOCK_TRIES) return yield* Effect.fail(new Refused({ rule: "locked", message: `${f} is locked by another writer` }));
+    yield* Effect.sleep("10 millis");
   }
-  try { return fn(); } finally { rmSync(lock, { force: true }); }
-}
+  return yield* Effect.ensuring(use, Effect.ignore(fs.remove(lock)));
+});
 
-/** @param {{ id?: string, root?: string, writes?: string, venture?: boolean }} [opts] */
-export function connect({ id = "venture", root, writes = "direct", venture = false } = {}) {
-  if (!root) throw new Error("the filesystem connector needs a root folder");
-  if (writes === "pull-request") throw new Error("the filesystem connector writes direct or none");
+/**
+ * The filesystem connector, its methods written as Effects.
+ * @param {{ id?: string, root?: string, writes?: string, venture?: boolean }} [opts]
+ * @returns {Effect.Effect<EffectConnector, Refused>}
+ */
+export const connectEffects = ({ id = "venture", root, writes = "direct", venture = false } = {}) => Effect.suspend(() => {
+  if (!root) return Effect.fail(new Refused({ rule: "filesystem-options", message: "the filesystem connector needs a root folder" }));
+  if (writes === "pull-request") return Effect.fail(new Refused({ rule: "filesystem-options", message: "the filesystem connector writes direct or none" }));
+  const top = root;
 
-  const walk = (d, rel = "") => !existsSync(d) ? [] : readdirSync(d, { withFileTypes: true }).flatMap((e) => {
-    if (e.name.startsWith(".") || SKIP.has(e.name)) return [];
-    const r = rel ? `${rel}/${e.name}` : e.name;
-    if (e.isDirectory()) {
-      if (venture && (existsSync(join(d, e.name, "venture.json")) || (!rel && e.name.startsWith("_")))) return [];
-      return walk(join(d, e.name), r);
+  /** @param {string} d @param {string} [rel] @returns {Effect.Effect<string[], NaiveError, "naive/VentureFs">} */
+  const walk = (d, rel = "") => Effect.gen(function* () {
+    const fs = yield* VentureFs;
+    if (!(yield* fs.exists(d))) return [];
+    /** @type {string[]} */
+    const out = [];
+    for (const name of yield* fs.list(d)) {
+      if (name.startsWith(".") || SKIP.has(name)) continue;
+      const r = rel ? `${rel}/${name}` : name;
+      const st = yield* fs.stat(join(d, name));
+      if (!st) continue;
+      if (st.isDirectory) {
+        if (venture && ((yield* fs.exists(join(d, name, "venture.json"))) || (!rel && name.startsWith("_")))) continue;
+        out.push(...(yield* walk(join(d, name), r)));
+      } else out.push(r);
     }
-    return e.isFile() ? [r] : [];
+    return out;
   });
   // A venture in the structured layout (EE-086) keeps its records in knowledge/ and meta/: read and write them
   // by their logical paths, and list them that way, so routes never see the layout.
-  const structured = venture && layoutOf(root) !== "flat"; // structured (EE-086) or src (EE-118 step 8)
-  const file = (p) => (structured ? ventureFile(root, safePath(p)) : join(root, safePath(p)));
-  const listed = () => structured ? logicalFiles(root).filter((r) => !r.split("/").some((s) => s.startsWith(".")) && !r.startsWith("_") && !r.startsWith("node_modules/")) : walk(root);
-  const git = (...args) => runGit("reading a record's last commit", ["-C", root, ...args], { encoding: "utf8" });
-  const lastCommit = (p, content) => {
+  const structured = venture && layoutOf(top) !== "flat"; // structured (EE-086) or src (EE-118 step 8)
+  /** @param {string} p */
+  const file = (p) => Effect.map(safePathEffect(p), (safe) => (structured ? ventureFile(top, safe) : join(top, safe)));
+  /** @returns {Effect.Effect<string[], NaiveError, "naive/VentureFs">} */
+  const listed = () => structured
+    ? Effect.sync(() => logicalFiles(top).filter((r) => !r.split("/").some((s) => s.startsWith(".")) && !r.startsWith("_") && !r.startsWith("node_modules/")))
+    : walk(top);
+  /** @param {...string} args */
+  const git = (...args) => runGit("reading a record's last commit", ["-C", top, ...args], { encoding: "utf8" });
+  /** @param {string} p @param {string} content */
+  const lastCommit = (p, content) => Effect.sync(() => {
     const tracked = git("ls-files", "-s", "--", p);
     if (tracked.status !== 0 || !tracked.stdout) return null;
-    if (tracked.stdout.split(/\s+/)[1] !== blobSha(content) || git("diff", "--quiet", "HEAD", "--", p).status !== 0) return null;
-    return git("log", "-1", "--format=%H", "--", p).stdout.trim() || null;
-  };
+    if (String(tracked.stdout).split(/\s+/)[1] !== blobSha(content) || git("diff", "--quiet", "HEAD", "--", p).status !== 0) return null;
+    return String(git("log", "-1", "--format=%H", "--", p).stdout).trim() || null;
+  });
+  /** The file's bytes when it is a file, else null. @param {string} f */
+  const bytesOf = (f) => Effect.gen(function* () {
+    const fs = yield* VentureFs;
+    const st = yield* fs.stat(f);
+    return st && !st.isDirectory ? yield* fs.readBytes(f) : null;
+  });
 
+  /** @type {EffectConnector} */
   const c = {
-    id, kind: "filesystem", writes, root,
-    async list(prefix = "") {
-      const pre = prefix ? safePath(prefix) : "";
-      return listed().filter((p) => !pre || p === pre || p.startsWith(`${pre}/`)).sort()
-        .map((path) => ({ path, version: blobSha(readFileSync(file(path))) }));
-    },
-    async read(p) {
-      const f = file(p);
-      if (!existsSync(f) || !statSync(f).isFile()) return null;
-      // One read: the version is the hash of exactly the content returned, even while another process appends.
-      const bytes = readFileSync(f);
-      const content = bytes.toString("utf8");
-      const commit = lastCommit(safePath(p), content);
-      return { path: safePath(p), content, version: blobSha(bytes), ...(commit ? { commit } : {}) };
-    },
-    async version(p) {
-      const f = file(p);
-      return existsSync(f) && statSync(f).isFile() ? blobSha(readFileSync(f)) : null;
-    },
-    async search(query, { limit = 50 } = {}) {
+    id, kind: "filesystem", writes, root: top,
+    list: (prefix = "") => Effect.gen(function* () {
+      const fs = yield* VentureFs;
+      const pre = prefix ? yield* safePathEffect(prefix) : "";
+      const paths = (yield* listed()).filter((p) => !pre || p === pre || p.startsWith(`${pre}/`)).sort();
+      /** @type {Listed[]} */
       const out = [];
-      for (const path of listed().sort()) {
+      for (const path of paths) out.push({ path, version: blobSha(yield* fs.readBytes(yield* file(path))) });
+      return out;
+    }),
+    read: (p) => Effect.gen(function* () {
+      // One read: the version is the hash of exactly the content returned, even while another process appends.
+      const bytes = yield* bytesOf(yield* file(p));
+      if (!bytes) return null;
+      const path = yield* safePathEffect(p);
+      const content = bytes.toString("utf8");
+      const commit = yield* lastCommit(path, content);
+      return { path, content, version: blobSha(bytes), ...(commit ? { commit } : {}) };
+    }),
+    version: (p) => Effect.gen(function* () {
+      const bytes = yield* bytesOf(yield* file(p));
+      return bytes ? blobSha(bytes) : null;
+    }),
+    search: (query, { limit = 50 } = {}) => Effect.gen(function* () {
+      const fs = yield* VentureFs;
+      /** @type {Listed[]} */
+      const out = [];
+      for (const path of (yield* listed()).sort()) {
         if (out.length >= limit) break;
-        const content = readFileSync(file(path), "utf8");
+        const content = yield* fs.readText(yield* file(path));
         if (isText(path, content) && matches(`${path}\n${content}`, query)) out.push({ path, version: blobSha(content) });
       }
       return out;
-    },
-    /** @param {string} p @param {string | Buffer} content @param {{ base?: string | null, append?: boolean, message?: string, title?: string }} [opts] */
-    async write(p, content, opts = {}) {
-      if (writes === "none") throw new Error(`${id} is read-only`);
-      const f = file(p);
-      const path = safePath(p);
-      mkdirSync(dirname(f), { recursive: true });
-      const replace = () => {
+    }),
+    write: (p, content, opts = {}) => Effect.gen(function* () {
+      if (writes === "none") return yield* Effect.fail(new Refused({ rule: "read-only", message: `${id} is read-only` }));
+      const fs = yield* VentureFs;
+      const f = yield* file(p);
+      const path = yield* safePathEffect(p);
+      const replace = Effect.gen(function* () {
         const tmp = `${f}.tmp-${process.pid}`;
-        writeFileSync(tmp, content);
-        renameSync(tmp, f);
+        yield* fs.writeText(tmp, content);
+        yield* fs.rename(tmp, f);
         return { path, version: blobSha(content) };
-      };
-      if (opts.base === undefined && !opts.append) return replace();
-      return withLock(f, () => {
-        const here = existsSync(f) && statSync(f).isFile();
-        const stored = here ? readFileSync(f) : null;
-        checkWrite(path, stored ? blobSha(stored) : null, stored ? stored.toString("utf8") : null, content, opts);
-        if (!opts.append) return replace();
-        appendFileSync(f, content);
-        return { path, version: blobSha(readFileSync(f)) };
       });
-    },
+      if (opts.base === undefined && !opts.append) return yield* replace;
+      return yield* withLock(f, Effect.gen(function* () {
+        const stored = yield* bytesOf(f);
+        yield* checkWriteEffect(path, stored ? blobSha(stored) : null, stored ? stored.toString("utf8") : null, content, opts);
+        if (!opts.append) return yield* replace;
+        yield* fs.append(f, content);
+        return { path, version: blobSha(yield* fs.readBytes(f)) };
+      }));
+    }),
   };
-  return c;
+  return Effect.succeed(c);
+});
+
+/**
+ * The filesystem connector as the contract has it: each method returns a Promise.
+ * @param {{ id?: string, root?: string, writes?: string, venture?: boolean }} [opts]
+ */
+export function connect(opts = {}) {
+  const c = runSync(connectEffects(opts));
+  return {
+    id: c.id, kind: c.kind, writes: c.writes, root: c.root,
+    /** @param {string} [prefix] */
+    list: (prefix) => runPromise(c.list(prefix)),
+    /** @param {string} p */
+    read: (p) => runPromise(c.read(p)),
+    /** @param {string} p */
+    version: (p) => runPromise(c.version(p)),
+    /** @param {string} query @param {{ limit?: number }} [o] */
+    search: (query, o) => runPromise(c.search(query, o)),
+    /** @param {string} p @param {string | Buffer} content @param {WriteOptions} [o] */
+    write: (p, content, o) => runPromise(c.write(p, content, o)),
+  };
 }

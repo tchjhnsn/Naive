@@ -13,15 +13,15 @@ flowchart LR
   EFF -->|yield* VentureFs| FS{{VentureFs}}
   FS -->|NodeFs, the default| DISK[(node:fs)]
   FS -->|MemoryFs, in tests| MEM[(a Map)]
-  EFF -->|fails with| ERR["IoError, ParseError, NotFound,<br/>SchemaInvalid, Refused, CannotRun"]
+  EFF -->|fails with| ERR["IoError, ParseError, NotFound,<br/>SchemaInvalid, Refused, CannotRun,<br/>VersionConflict"]
 ```
 
 ## Where things are
 
 | Path | Holds |
 |---|---|
-| [`errors.mjs`](./errors.mjs) | The tagged errors: `IoError`, `ParseError`, `NotFound`, `SchemaInvalid`, `Refused` (the gate, access or a writer rule) and `CannotRun` (exit code 2), and their union `NaiveError`. Catch one with `Effect.catchTag`. |
-| [`fs.mjs`](./fs.mjs) | `VentureFs`, the file system as a service (`exists`, `readText`, `writeText`, `list`, `isDirectory`, `rename`, `remove`); `NodeFs`, its layer over `node:fs`; `MemoryFs` and `memoryFs`, an in-memory one for tests; `readJson` and `writeJson`, which write JSON the way every record is written. |
+| [`errors.mjs`](./errors.mjs) | The tagged errors: `IoError`, `ParseError`, `NotFound`, `SchemaInvalid`, `Refused` (the gate, access or a writer rule), `CannotRun` (exit code 2) and `VersionConflict` (a compare-on-write whose base is stale, built with the connector contract's `(path, base, current)`), and their union `NaiveError`. Catch one with `Effect.catchTag`. |
+| [`fs.mjs`](./fs.mjs) | `VentureFs`, the file system as a service (`exists`, `readText`, `readBytes`, `writeText` of text or bytes, `append`, `createExclusive` for a lock file, `stat`, `list`, `isDirectory`, `rename`, `remove`); `NodeFs`, its layer over `node:fs`; `MemoryFs` and `memoryFs`, an in-memory one for tests; `readJson` and `writeJson`, which write JSON the way every record is written. |
 | [`run.mjs`](./run.mjs) | `runSync` and `runPromise` provide `NodeFs` and throw the tagged error itself, so a module moved to Effect keeps its exports; `runMain` runs a CLI's Effect, prints a failure in one line (`describe`) and sets the exit code (`exitCode`). |
 
 ## How to write Naive code with Effect

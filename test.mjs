@@ -151,6 +151,7 @@ const steps = [
   ["record paths: the resolver resolves every schema, and the check breaks on copies that bypass it", "node", ["packages/naive/src/checks/check-record-paths-test.ts"]],
   ["Markdown renders reach a reader that waits, whole: check-nouns --md and check-data-model --md flush stdout before they exit", "node", ["packages/naive/src/checks/md-render-flush-test.ts"]],
   ["knowledge connectors: contract evals", "node", ["packages/naive/src/store/connectors/eval.mjs"]],
+  ["knowledge connectors in Effect: the Effect versions on an in-memory VentureFs (EE-125)", "node", ["packages/naive/src/store/connectors/effects-test.ts"]],
   ["knowledge connectors through the router: router, catalog, matrix and attribute evals", "node", ["packages/naive/src/interfaces/tests/connectors-router-test.mjs"]],
   ["validation lint: claims, shelf life, agent grades, Discovery-grade decisions", "node", ["packages/naive/src/interfaces/tests/lint-validation-test.mjs"]],
   ["validation: examples", "node", ["packages/naive/src/checks/check-validation.mjs", "packages/naive/src/records/examples/workspace", "--score"]],

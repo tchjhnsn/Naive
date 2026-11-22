@@ -22,4 +22,16 @@ export class Refused extends /** @type {Tagged<"Refused", { rule: string, messag
 /** A check or command cannot run at all (a missing tool, a module that cannot be read). Exit code 2. */
 export class CannotRun extends /** @type {Tagged<"CannotRun", { message: string, cause?: unknown }>} */ (Data.TaggedError("CannotRun")) {}
 
-/** @typedef {IoError | ParseError | NotFound | SchemaInvalid | Refused | CannotRun} NaiveError */
+/**
+ * A compare-on-write refused because the item moved since the writer's base (the connector contract,
+ * EE-037). `current` is its version now, or null when it is missing; `code` is "version-conflict" for
+ * callers that test it. The constructor keeps the contract's (path, base, current).
+ */
+export class VersionConflict extends /** @type {Tagged<"VersionConflict", { path: string, base: string | null, current: string | null, code: "version-conflict", message: string }>} */ (Data.TaggedError("VersionConflict")) {
+  /** @param {string} path @param {string | null} base @param {string | null} current */
+  constructor(path, base, current) {
+    super({ path, base, current, code: "version-conflict", message: `${path} changed since version ${base ?? "(none)"}: it is ${current ?? "missing"} now; read it again and retry` });
+  }
+}
+
+/** @typedef {IoError | ParseError | NotFound | SchemaInvalid | Refused | CannotRun | VersionConflict} NaiveError */
