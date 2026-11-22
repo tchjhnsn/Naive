@@ -18,10 +18,10 @@
 
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { namedPerson, rawConfig } from "./naive-config.mjs";
-import { patternRe } from "./gate.mjs";
+import { namedPerson, rawConfig } from "./naive-config.ts";
+import { patternRe } from "./gate.ts";
 import { ventureFile } from "../core/venture-paths.ts";
-import { route as routeFeedback } from "./feedback-route.mjs";
+import { route as routeFeedback } from "./feedback-route.ts";
 import type { BetaCapabilities, ValidationFeedback } from "../records/types/records.d.ts";
 
 /** One capability in the manifest. */

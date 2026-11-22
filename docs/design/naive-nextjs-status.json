@@ -9,7 +9,7 @@
    "evidence": [
     "packages/create-venture/index.mjs",
     "packages/create-venture/test.mjs",
-    "packages/naive/src/engine/init-venture.mjs"
+    "packages/naive/src/engine/init-venture.ts"
    ],
    "page": "get-started/install",
    "note": "create-venture is on npm: npx create-venture@latest (also pnpm create venture, yarn create venture) creates the venture, writes package.json, installs naive-framework from npm and starts git. From a clone, node packages/create-venture/index.mjs does the same with the clone's framework"
@@ -43,7 +43,7 @@
    "chapter": "Chapter 1: Installation",
    "status": "built",
    "evidence": [
-    "packages/naive/src/engine/init-venture.mjs",
+    "packages/naive/src/engine/init-venture.ts",
     "packages/naive/src/router/router.mjs"
    ],
    "page": "get-started/install",
@@ -88,7 +88,7 @@
    "chapter": "Chapter 1: Installation",
    "status": "built",
    "evidence": [
-    "packages/naive/src/engine/init-venture.mjs",
+    "packages/naive/src/engine/init-venture.ts",
     "packages/naive/src/interfaces/cli/mentura.mjs"
    ],
    "page": "get-started/install"
@@ -125,7 +125,7 @@
    "chapter": "Chapter 1: Installation",
    "status": "built",
    "evidence": [
-    "packages/naive/src/engine/init-venture.mjs",
+    "packages/naive/src/engine/init-venture.ts",
     "packages/naive/src/interfaces/cli/mentura.mjs"
    ],
    "page": "get-started/install"
@@ -140,7 +140,7 @@
    "chapter": "Chapter 1: Installation",
    "status": "partial",
    "evidence": [
-    "packages/naive/src/engine/init-venture.mjs",
+    "packages/naive/src/engine/init-venture.ts",
     "packages/naive/src/interfaces/cli/mentura.mjs"
    ],
    "page": "get-started/install"
@@ -178,7 +178,7 @@
    "chapter": "Chapter 1: Installation",
    "status": "built",
    "evidence": [
-    "packages/naive/src/engine/init-venture.mjs",
+    "packages/naive/src/engine/init-venture.ts",
     "packages/naive/src/interfaces/cli/mentura.mjs"
    ],
    "page": "get-started/install"
@@ -188,7 +188,7 @@
    "chapter": "Chapter 1: Installation",
    "status": "built",
    "evidence": [
-    "packages/naive/src/engine/init-venture.mjs",
+    "packages/naive/src/engine/init-venture.ts",
     "packages/naive/src/interfaces/cli/mentura.mjs"
    ],
    "page": "get-started/install"
@@ -209,7 +209,7 @@
    "chapter": "Chapter 1: Installation",
    "status": "built",
    "evidence": [
-    "packages/naive/src/engine/init-venture.mjs",
+    "packages/naive/src/engine/init-venture.ts",
     "packages/naive/src/interfaces/cli/mentura.mjs"
    ],
    "page": "get-started/install"
@@ -219,7 +219,7 @@
    "chapter": "Chapter 1: Installation",
    "status": "partial",
    "evidence": [
-    "packages/naive/src/engine/init-venture.mjs"
+    "packages/naive/src/engine/init-venture.ts"
    ],
    "page": "get-started/install",
    "note": "init makes public/. Torian has since said public should be a reserved route name in each function, not a directory, so this waits on that design"
@@ -300,7 +300,7 @@
    "chapter": "Chapter 2: Project Structure",
    "status": "built",
    "evidence": [
-    "packages/naive/src/engine/naive-config.mjs",
+    "packages/naive/src/engine/naive-config.ts",
     "packages/naive/src/records/naive-config.schema.json",
     "packages/naive/src/checks/check-config.ts",
     "packages/naive/src/functions/strategy/frameworks/idea-map/ideamap.mjs",
@@ -346,7 +346,7 @@
    "evidence": [
     "packages/naive/src/router/router.mjs",
     "packages/naive/src/engine/decisions.ts",
-    "packages/naive/src/engine/gate.mjs"
+    "packages/naive/src/engine/gate.ts"
    ],
    "page": "get-started/the-gate"
   },
@@ -365,7 +365,7 @@
    "chapter": "Chapter 2: Project Structure",
    "status": "built",
    "evidence": [
-    "packages/naive/src/engine/naive-config.mjs",
+    "packages/naive/src/engine/naive-config.ts",
     "packages/naive/src/router/gate-hooks.mjs",
     "packages/naive/src/router/router.mjs",
     "packages/naive/src/interfaces/tests/gate-test.mjs"
@@ -1122,7 +1122,7 @@
     "packages/naive/src/interfaces/tests/model-steps-test.mjs"
    ],
    "page": "get-started/agents-and-people",
-   "note": "Model steps are declared in use_model; outputs are judgment records written as the agent (actor model-step, model name in provenance). provenanceOf() reports a judgment, and any agent record derived from it, as the agent's until a person confirms (mentura steps confirm) or its checks pass (--checks). It is a reporter: packages.mjs's confirmed status does not consult it yet."
+   "note": "Model steps are declared in use_model; outputs are judgment records written as the agent (actor model-step, model name in provenance). provenanceOf() reports a judgment, and any agent record derived from it, as the agent's until a person confirms (mentura steps confirm) or its checks pass (--checks). It is a reporter: packages.ts's confirmed status does not consult it yet."
   },
   {
    "id": "S-10",
@@ -1361,7 +1361,7 @@
     "packages/naive/src/interfaces/tests/caching-test.mjs"
    ],
    "page": "get-started/caching",
-   "note": "Computed once per action and shared: routes(), decisions() when no explicit now is passed, the venture state hash, and each command's spawn output. The foundation report is shared as the purpose/foundation command output; foundation.mjs itself was not edited."
+   "note": "Computed once per action and shared: routes(), decisions() when no explicit now is passed, the venture state hash, and each command's spawn output. The foundation report is shared as the purpose/foundation command output; foundation.ts itself was not edited."
   },
   {
    "id": "F-13",
@@ -1400,7 +1400,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/engine/decisions.ts",
-    "packages/naive/src/engine/docket.mjs",
+    "packages/naive/src/engine/docket.ts",
     "packages/naive/src/interfaces/cli/mentura.mjs"
    ],
    "page": "get-started/decisions"
@@ -1733,7 +1733,7 @@
     "packages/naive/src/engine/releases-test.mjs"
    ],
    "page": "get-started/releases",
-   "note": "Every package that is open now (packages/naive/src/engine/packages.mjs) must be releasable. A required record blocks the build, with exit 1 and the file and fix command named, if it is any of these: an agent's unconfirmed write, a draft with nothing confirmed behind it, changed since its last provenance entry, or failing its schema. check-provenance and check-private must also pass. A refused build leaves the previous release untouched. Missing records are reported as gaps and do not block. An unconfirmed optional record is left out of the release instead of blocking."
+   "note": "Every package that is open now (packages/naive/src/engine/packages.ts) must be releasable. A required record blocks the build, with exit 1 and the file and fix command named, if it is any of these: an agent's unconfirmed write, a draft with nothing confirmed behind it, changed since its last provenance entry, or failing its schema. check-provenance and check-private must also pass. A refused build leaves the previous release untouched. Missing records are reported as gaps and do not block. An unconfirmed optional record is left out of the release instead of blocking."
   },
   {
    "id": "C-14",
@@ -1809,13 +1809,13 @@
    "chapter": "Chapter 9: Revalidating",
    "status": "built",
    "evidence": [
-    "packages/naive/src/engine/freshness.mjs",
+    "packages/naive/src/engine/freshness.ts",
     "packages/naive/src/engine/freshness.json",
     "packages/naive/src/interfaces/cli/freshness.mjs",
     "packages/naive/src/interfaces/tests/freshness-test.mjs"
    ],
    "page": "get-started/revalidating",
-   "note": "Both strategies apply to records. By time: freshness profiles, with stale, expired and per-phase states. On demand: a record goes stale when a record it was derived from (provenance derived_from) is written later, when a where-used child drifts from its parent, when a decision above it changes (from decisions.ts), or when it is marked by tag, path or package. Report: node packages/naive/src/engine/freshness.mjs, mentura freshness, route system/freshness."
+   "note": "Both strategies apply to records. By time: freshness profiles, with stale, expired and per-phase states. On demand: a record goes stale when a record it was derived from (provenance derived_from) is written later, when a where-used child drifts from its parent, when a decision above it changes (from decisions.ts), or when it is marked by tag, path or package. Report: node packages/naive/src/engine/freshness.ts, mentura freshness, route system/freshness."
   },
   {
    "id": "V-2",
@@ -1824,7 +1824,7 @@
    "evidence": [
     "packages/naive/src/engine/freshness.json",
     "packages/naive/src/records/freshness-profiles.schema.json",
-    "packages/naive/src/engine/freshness.mjs",
+    "packages/naive/src/engine/freshness.ts",
     "packages/naive/src/interfaces/tests/freshness-test.mjs"
    ],
    "page": "get-started/revalidating",
@@ -1835,7 +1835,7 @@
    "chapter": "Chapter 9: Revalidating",
    "status": "built",
    "evidence": [
-    "packages/naive/src/engine/freshness.mjs",
+    "packages/naive/src/engine/freshness.ts",
     "packages/naive/src/interfaces/tests/freshness-test.mjs"
    ],
    "page": "get-started/revalidating",
@@ -1856,7 +1856,7 @@
    "chapter": "Chapter 9: Revalidating",
    "status": "built",
    "evidence": [
-    "packages/naive/src/engine/freshness.mjs",
+    "packages/naive/src/engine/freshness.ts",
     "packages/naive/src/router/router.mjs",
     "packages/naive/src/interfaces/tests/freshness-test.mjs"
    ],
@@ -1878,7 +1878,7 @@
    "chapter": "Chapter 9: Revalidating",
    "status": "built",
    "evidence": [
-    "packages/naive/src/engine/freshness.mjs",
+    "packages/naive/src/engine/freshness.ts",
     "packages/naive/src/interfaces/cli/freshness.mjs",
     "packages/naive/src/interfaces/tests/freshness-test.mjs"
    ],
@@ -1890,7 +1890,7 @@
    "chapter": "Chapter 9: Revalidating",
    "status": "built",
    "evidence": [
-    "packages/naive/src/engine/freshness.mjs",
+    "packages/naive/src/engine/freshness.ts",
     "packages/naive/src/interfaces/cli/freshness.mjs",
     "packages/naive/src/interfaces/tests/freshness-test.mjs"
    ],
@@ -2320,7 +2320,7 @@
    "chapter": "Chapter 16: Proxy",
    "status": "built",
    "evidence": [
-    "packages/naive/src/engine/gate.mjs",
+    "packages/naive/src/engine/gate.ts",
     "packages/naive/src/router/router.mjs"
    ],
    "page": "get-started/the-gate"
@@ -2330,21 +2330,21 @@
    "chapter": "Chapter 16: Proxy",
    "status": "built",
    "evidence": [
-    "packages/naive/src/engine/gate.mjs",
-    "packages/naive/src/engine/gate-drafts.mjs",
+    "packages/naive/src/engine/gate.ts",
+    "packages/naive/src/engine/gate-drafts.ts",
     "packages/naive/src/router/gate-hooks.mjs",
     "packages/naive/src/interfaces/cli/mentura.mjs",
     "packages/naive/src/interfaces/tests/gate-test.mjs"
    ],
    "page": "get-started/the-gate",
-   "note": "A rule with then:owner holds an agent's write as a draft sent to the function owner. The owner comes from naive.config.json owners (by function or package), then the decision-class owner, then the founder. Each held draft gets a sidecar, and node packages/naive/src/engine/gate-drafts.mjs --owner lists what waits for an owner. With variants:true, a second agent draft that differs from the first is kept beside it (.draft.b) under one open decision record (decisions/<record>.variants.decision.json). mentura accept --pick b --by <name> accepts that draft, decides the decision and removes the other drafts."
+   "note": "A rule with then:owner holds an agent's write as a draft sent to the function owner. The owner comes from naive.config.json owners (by function or package), then the decision-class owner, then the founder. Each held draft gets a sidecar, and node packages/naive/src/engine/gate-drafts.ts --owner lists what waits for an owner. With variants:true, a second agent draft that differs from the first is kept beside it (.draft.b) under one open decision record (decisions/<record>.variants.decision.json). mentura accept --pick b --by <name> accepts that draft, decides the decision and removes the other drafts."
   },
   {
    "id": "X-3",
    "chapter": "Chapter 16: Proxy",
    "status": "built",
    "evidence": [
-    "packages/naive/src/engine/gate.mjs",
+    "packages/naive/src/engine/gate.ts",
     "packages/naive/src/router/router.mjs"
    ],
    "page": "get-started/the-gate",
@@ -2355,9 +2355,9 @@
    "chapter": "Chapter 16: Proxy",
    "status": "built",
    "evidence": [
-    "packages/naive/src/engine/gate.mjs",
+    "packages/naive/src/engine/gate.ts",
     "packages/naive/src/engine/access.ts",
-    "packages/naive/src/engine/naive-config.mjs",
+    "packages/naive/src/engine/naive-config.ts",
     "packages/naive/src/router/gate-hooks.mjs",
     "packages/naive/src/interfaces/tests/gate-test.mjs"
    ],
@@ -2369,7 +2369,7 @@
    "chapter": "Chapter 16: Proxy",
    "status": "built",
    "evidence": [
-    "packages/naive/src/engine/gate.mjs",
+    "packages/naive/src/engine/gate.ts",
     "packages/naive/library/packages/money/package.json",
     "packages/naive/library/packages/validation/package.json",
     "packages/naive/src/interfaces/tests/gate-test.mjs"
@@ -2382,7 +2382,7 @@
    "chapter": "Chapter 16: Proxy",
    "status": "built",
    "evidence": [
-    "packages/naive/src/engine/gate.mjs",
+    "packages/naive/src/engine/gate.ts",
     "packages/naive/src/checks/check-config.ts",
     "packages/naive/src/interfaces/tests/gate-test.mjs"
    ],
@@ -2446,7 +2446,7 @@
    "evidence": [
     "packages/naive/src/engine/upgrades.mjs",
     "packages/naive/src/engine/upgrade-venture.mjs",
-    "packages/naive/src/engine/naive-config.mjs",
+    "packages/naive/src/engine/naive-config.ts",
     "packages/naive/src/engine/upgrades-test.mjs"
    ],
    "page": "get-started/upgrading",
@@ -2459,8 +2459,8 @@
    "evidence": [
     "packages/naive/src/engine/upgrades.json",
     "packages/naive/src/records/upgrade-registry.schema.json",
-    "packages/naive/src/engine/migrations/package-layout.mjs",
-    "packages/naive/src/engine/migrations/kit-to-package.mjs",
+    "packages/naive/src/engine/migrations/package-layout.ts",
+    "packages/naive/src/engine/migrations/kit-to-package.ts",
     "packages/naive/src/engine/upgrades-test.mjs"
    ],
    "page": "get-started/upgrading",
@@ -2487,8 +2487,8 @@
    "chapter": "Chapter 18: Upgrading",
    "status": "built",
    "evidence": [
-    "packages/naive/src/engine/naive-config.mjs",
-    "packages/naive/src/engine/gate.mjs",
+    "packages/naive/src/engine/naive-config.ts",
+    "packages/naive/src/engine/gate.ts",
     "packages/naive/src/checks/check-config.ts",
     "packages/naive/src/interfaces/tests/gate-test.mjs"
    ],
@@ -2501,7 +2501,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/engine/upgrades.mjs",
-    "packages/naive/src/engine/packages.mjs",
+    "packages/naive/src/engine/packages.ts",
     "packages/naive/src/engine/upgrades.json",
     "packages/naive/src/engine/upgrades-test.mjs"
    ],

@@ -12,7 +12,7 @@ import { calibrate, calibration, cellAt, decisionId, isIsoDate, parsePreset, par
 import type { IsoDate, Rules } from "./gate-calibration.ts";
 import type { AnatomyCellEnumCell, AnatomyCellNumberCell, IndustryAnatomy, MarketAnatomy, PhaseGatePolicies } from "../records/types/records.d.ts";
 import { runSync } from "../core/effect/run.ts";
-import { gradeItem } from "./evidence-grade.mjs";
+import { gradeItem } from "./evidence-grade.ts";
 import { phaseGate, POLICIES } from "./phase-gate.mjs";
 import { ventureFile } from "../core/venture-paths.ts";
 import { validateFile, validateValue } from "../records/validate.ts";
@@ -104,7 +104,7 @@ expect("the gradeItem default stays 18 months, a shorter window drops a level", 
 // ---- A venture: read, propose, config, CLI and route ----
 const ws = mkdtempSync(join(tmpdir(), "gate-calibration-"));
 const dir = join(ws, "acme");
-const init = node(["packages/naive/src/engine/init-venture.mjs", dir, "acme", "--type", "software-startup"]);
+const init = node(["packages/naive/src/engine/init-venture.ts", dir, "acme", "--type", "software-startup"]);
 expect("a software startup venture starts", init.status === 0, init.stderr);
 const put = (rel: string, value: unknown): void => {
   const f = ventureFile(dir, rel);

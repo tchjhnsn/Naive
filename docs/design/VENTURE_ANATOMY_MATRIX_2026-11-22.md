@@ -85,8 +85,8 @@ Thresholds for phase gates come from a calibration over the market and industry 
 
 - `packages/naive/src/functions/strategy/venture-anatomy.json` (record type `venture-anatomy`, schema `venture-anatomy.schema.json`, generator `packages/naive/src/engine/generators/venture-anatomy.ts`) defines the sub-matrices, the coverage items and the viewpoints. It holds no venture data.
 - `market-anatomy` (`markets/<id>.json`, route `markets/[id]`) and `industry-anatomy` (`industries/<id>.json`, route `industries/[id]`) are venture record types owned by the purpose layer. Their generators draft every cell not given as unknown.
-- `packages/naive/src/engine/init-venture.mjs` writes `markets/primary.json` and `industries/primary.json`, the market nested in the industry, from the schemas through `packages/naive/src/engine/generators/anatomy-cells.mjs`, which the two generators share. It is `.mjs` because init runs under node_modules when Naive is installed, and Node does not strip types there.
-- `packages/naive/src/engine/venture-anatomy.ts` resolves the matrix. Reading is an Effect over VentureFs with Naive's tagged errors: a definition that fails its schema or names what the data model lacks is `SchemaInvalid`, a bad time or call is `CannotRun`, and the command runs through `runMain`. Options are parsed once at the boundary into branded `SystemTime` and `ApplicationDate`. Each record type a sub-matrix reads is one `CellSource`, a union of canvas, anatomy and presence, resolved by one exhaustive switch. The rules (`statusAt`, `countOf`, `confidenceOf`, `coverageOf`, `sourcesOf`, `problemsOf`) are plain functions. `ventureAnatomy(dir, { asOf, validAt })` returns the root, `submatrix(dir, id)` one sub-matrix and `viewOf(dir, viewpoint)` a view; the Lean Canvas view delegates to `leanCanvas` in `packages/naive/src/engine/lean-canvas.mjs`.
+- `packages/naive/src/engine/init-venture.ts` writes `markets/primary.json` and `industries/primary.json`, the market nested in the industry, from the schemas through `packages/naive/src/engine/generators/anatomy-cells.ts`, which the two generators share. It is `.mjs` because init runs under node_modules when Naive is installed, and Node does not strip types there.
+- `packages/naive/src/engine/venture-anatomy.ts` resolves the matrix. Reading is an Effect over VentureFs with Naive's tagged errors: a definition that fails its schema or names what the data model lacks is `SchemaInvalid`, a bad time or call is `CannotRun`, and the command runs through `runMain`. Options are parsed once at the boundary into branded `SystemTime` and `ApplicationDate`. Each record type a sub-matrix reads is one `CellSource`, a union of canvas, anatomy and presence, resolved by one exhaustive switch. The rules (`statusAt`, `countOf`, `confidenceOf`, `coverageOf`, `sourcesOf`, `problemsOf`) are plain functions. `ventureAnatomy(dir, { asOf, validAt })` returns the root, `submatrix(dir, id)` one sub-matrix and `viewOf(dir, viewpoint)` a view; the Lean Canvas view delegates to `leanCanvas` in `packages/naive/src/engine/lean-canvas.ts`.
 - Routes: `identity/venture-anatomy` runs the matrix and `identity/venture-anatomy/<sub>` one sub-matrix.
 
 ```mermaid
@@ -151,7 +151,7 @@ sequenceDiagram
 
 ```mermaid
 flowchart TD
-  I["init-venture.mjs"] --> G1["generators/anatomy-cells.mjs<br/>primaryAnatomy: every cell unknown"]
+  I["init-venture.ts"] --> G1["generators/anatomy-cells.mjs<br/>primaryAnatomy: every cell unknown"]
   I --> G2["market nested in industry primary"]
   G1 --> F1["industries/primary.json"]
   G2 --> F2["markets/primary.json"]

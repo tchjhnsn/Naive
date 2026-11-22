@@ -71,7 +71,7 @@
   "checks": [
     "packages/naive/src/checks/check-execution.ts",
     "packages/naive/src/checks/check-governance.ts",
-    "packages/naive/src/engine/payouts.mjs",
+    "packages/naive/src/engine/payouts.ts",
     "packages/naive/src/checks/check-telos.ts",
     "packages/naive/src/checks/check-publication.ts",
     "packages/naive/src/checks/lint-legal.ts"

@@ -17,7 +17,7 @@ import { write as agentWrite } from "../../router/agent-files.ts";
 import { entries } from "../../core/provenance.ts";
 import { blobHash, hasBlob } from "../../core/blobs.ts";
 import { readAsOf } from "../../store/as-of.ts";
-import { writerRule } from "../../engine/gate.mjs";
+import { writerRule } from "../../engine/gate.ts";
 import { catalog } from "../../engine/departments.ts";
 import { functionsOf, seedPrograms, templateOf } from "../../engine/research-programs.mjs";
 import { upgrade } from "../../engine/upgrades.mjs";
@@ -56,7 +56,7 @@ try {
   expect("operations/research-program/[id] is a writable route with writer person", !!item && item.actions.includes("write") && item.writer === "person", JSON.stringify(item));
 
   // init through add-department: a typed venture gets the starter of each function its type lists.
-  const made = node("packages/naive/src/engine/init-venture.mjs", join(ws, "ventures/lab"), "lab", "--type", "side-project");
+  const made = node("packages/naive/src/engine/init-venture.ts", join(ws, "ventures/lab"), "lab", "--type", "side-project");
   if (made.status !== 0) throw new Error(made.stderr || made.stdout);
   const dir = join(ws, "ventures/lab");
   expect("init copies the starter of each function the venture lists", JSON.stringify(functionsOf(dir)) === '["strategy","products"]'

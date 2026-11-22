@@ -30,7 +30,7 @@ import { readBlob } from "../../core/blobs.ts";
 import { entries, record } from "../../core/provenance.ts";
 import { ventureFile } from "../../core/venture-paths.ts";
 import { decisionFile, propose } from "../../engine/decisions.ts";
-import { verify } from "../../engine/freshness.mjs";
+import { verify } from "../../engine/freshness.ts";
 import { mark } from "../../engine/stale.mjs";
 import { LOCAL, connect, sourcesOf } from "../../store/connectors/index.ts";
 import * as S from "../../engine/signals.ts";

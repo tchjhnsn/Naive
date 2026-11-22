@@ -7,7 +7,7 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "nod
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { approve, decisions, merge, propose } from "./decisions.ts";
-import { impact } from "./impact.mjs";
+import { impact } from "./impact.ts";
 import { record } from "../core/provenance.ts";
 import { stale } from "./stale.mjs";
 import type { DecisionImpact } from "../records/types/records.d.ts";

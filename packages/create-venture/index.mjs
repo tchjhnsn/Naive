@@ -37,7 +37,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 // types under node_modules, so an installed framework runs from its compiled copy, dist/ (EE-159).
 const framework = (() => {
   const checkout = resolve(here, "../..");
-  const root = existsSync(join(checkout, "packages/naive/src/engine/init-venture.mjs")) ? checkout
+  const root = existsSync(join(checkout, "packages/naive/src/engine/init-venture.ts")) ? checkout
     : (() => { try { return dirname(fileURLToPath(import.meta.resolve("naive-framework/package.json"))); } catch { return null; } })();
   if (!root) return null;
   return root.split(sep).includes("node_modules") && existsSync(join(root, "dist/package.json")) ? join(root, "dist") : root;
@@ -236,7 +236,7 @@ rl?.close();
 
 // 4. The venture itself, by the framework's own scaffold.
 console.log(`\nCreating a new ${vtype.label.toLowerCase()} in ${bold(dir)}, with ${mode === "solo" ? `${me} as its ${role}, wearing every hat` : `${people.length} founders`}.\n`);
-const init = spawnSync("node", [join(framework, "packages/naive/src/engine/init-venture.mjs"), dir, id, "--phase", answers.phase, "--type", vtype.id, "--layout", layout,
+const init = spawnSync("node", [join(framework, "packages/naive/src/engine/init-venture.ts"), dir, id, "--phase", answers.phase, "--type", vtype.id, "--layout", layout,
   ...(answers.layers ? ["--layers", answers.layers] : []), ...(answers.legalForm ? ["--legal-form", answers.legalForm] : [])], { encoding: "utf8" });
 if (init.status !== 0) fail((init.stderr || init.stdout).trim());
 const vfile = join(dir, "venture.json");

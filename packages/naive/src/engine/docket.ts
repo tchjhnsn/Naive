@@ -4,8 +4,8 @@
 // function, and functions are ranked against each other, so the answer can move many times in a day as
 // decisions are settled.
 //
-//   node packages/naive/src/engine/docket.mjs <venture dir> [--json]
-//   node packages/naive/src/engine/docket.mjs <venture dir> --replay [--steps <n>]   settles the top decision, again and again, in a copy
+//   node packages/naive/src/engine/docket.ts <venture dir> [--json]
+//   node packages/naive/src/engine/docket.ts <venture dir> --replay [--steps <n>]   settles the top decision, again and again, in a copy
 //
 // The model, in code (no model call):
 //   own(d)    a decision's own weight: 10 for being open, plus ownScore in packages/naive/src/engine/decisions.ts (deadline,
@@ -25,7 +25,7 @@ import { tmpdir } from "node:os";
 import { basename, join } from "node:path";
 import { decisions, ownScore } from "./decisions.ts";
 import { analytics } from "./decision-analytics.ts";
-import { PACKAGES } from "./packages.mjs";
+import { PACKAGES } from "./packages.ts";
 
 const ACTIONABLE = new Set(["now", "overdue", "stale"]);
 const OPEN = new Set(["now", "overdue", "stale", "waiting"]);
@@ -112,7 +112,7 @@ export function replay(dir, steps = 20) {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const dir = process.argv[2];
-  if (!dir) { console.error("usage: node packages/naive/src/engine/docket.mjs <venture dir> [--json] [--replay [--steps <n>]]"); process.exit(2); }
+  if (!dir) { console.error("usage: node packages/naive/src/engine/docket.ts <venture dir> [--json] [--replay [--steps <n>]]"); process.exit(2); }
   const i = process.argv.indexOf("--steps");
   if (process.argv.includes("--replay")) {
     const r = replay(dir, i >= 0 ? Number(process.argv[i + 1]) : 20);

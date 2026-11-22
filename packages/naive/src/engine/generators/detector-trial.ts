@@ -5,7 +5,7 @@
 // file, so the draft passes the schema. Whoever appends it to governance/detectors/<detector>.trials.jsonl re-chains
 // it onto the ledger's last line. Appending through the router is not built yet.
 import { randomUUID } from "node:crypto";
-import { cli, drop, questions, schemaOf, validate } from "./generate.mjs";
+import { cli, drop, questions, schemaOf, validate } from "./generate.ts";
 import { lineHash } from "../../core/provenance.ts";
 import type { DetectorTrial } from "../../records/types/records.d.ts";
 

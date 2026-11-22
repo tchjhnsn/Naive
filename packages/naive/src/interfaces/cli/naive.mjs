@@ -274,21 +274,21 @@ else if (cmd === "build" || cmd === "start") {
   const flags = rest.filter((a, i) => !(i === 0 && !a.startsWith("--")) && a !== "--framework" && a !== "--venture" && rest[i - 1] !== "--venture");
   process.exit(run("packages/naive/src/engine/upgrade-venture.mjs", dir ? [dir, ...flags] : flags));
 } else if (cmd === "frame") {
-  // The decision library (packages/naive/src/engine/frames.mjs): naive frame "<the founder's words>" runs the frame those words fit.
+  // The decision library (packages/naive/src/engine/frames.ts): naive frame "<the founder's words>" runs the frame those words fit.
   const sub = rest[0];
-  if (["list", "match", "check", "eval"].includes(sub)) process.exit(run("packages/naive/src/engine/frames.mjs", rest));
+  if (["list", "match", "check", "eval"].includes(sub)) process.exit(run("packages/naive/src/engine/frames.ts", rest));
   const words = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture" && a !== "--frame" && rest[i - 1] !== "--frame" && a !== "--lookup" && rest[i - 1] !== "--lookup").join(" ");
-  process.exit(run("packages/naive/src/engine/frames.mjs", ["run", here(), ...(opt("frame") ? [opt("frame")] : []), ...(words ? ["--text", words] : []), ...(opt("lookup") ? ["--lookup", opt("lookup")] : [])]));
+  process.exit(run("packages/naive/src/engine/frames.ts", ["run", here(), ...(opt("frame") ? [opt("frame")] : []), ...(words ? ["--text", words] : []), ...(opt("lookup") ? ["--lookup", opt("lookup")] : [])]));
 } else if (cmd === "roadmap") {
   // Decision roadmaps (packages/naive/src/engine/roadmaps.mjs): naive roadmap install <id> proposes each step's decisions, open.
   if (rest[0] === "install") process.exit(run("packages/naive/src/engine/roadmaps.mjs", ["install", here(), rest[1]]));
   process.exit(run("packages/naive/src/engine/roadmaps.mjs", ["list"]));
 } else if (cmd === "phase") {
-  // The venture development lifecycle (packages/naive/src/engine/lifecycle.mjs): where the venture is, its gate, and moving on.
+  // The venture development lifecycle (packages/naive/src/engine/lifecycle.ts): where the venture is, its gate, and moving on.
   // naive phase | naive phase --meet <criterion> [--evidence <text>] | naive phase <next> [--reason] [--override]
   const target = rest.find((a, i) => !a.startsWith("--") && !["--venture", "--meet", "--evidence", "--reason", "--override", "--by"].includes(rest[i - 1]));
   const pass = ["evidence", "reason", "override", "by"].flatMap((k) => opt(k) !== undefined ? [`--${k}`, opt(k)] : []);
-  process.exit(run("packages/naive/src/engine/lifecycle.mjs", [here(), ...(opt("meet") ? ["meet", opt("meet")] : target ? ["advance", target] : []), ...pass, ...(rest.includes("--json") ? ["--json"] : [])]));
+  process.exit(run("packages/naive/src/engine/lifecycle.ts", [here(), ...(opt("meet") ? ["meet", opt("meet")] : target ? ["advance", target] : []), ...pass, ...(rest.includes("--json") ? ["--json"] : [])]));
 } else if (cmd === "setup") {
   // Setup in the model's harness (EE-083): the state, the artifact, and the founder confirming relayed answers.
   process.exit(run("packages/naive/src/router/orchestration/setup.mjs", [here(), ...(rest.length ? rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture") : ["state"])]));

@@ -28,7 +28,7 @@ import { filterRead, hierarchy, metadataFor, resolvedBy, withParams } from "./re
 export async function snapshot(dir) {
   const safe = async (f) => { try { return await f(); } catch { return null; } };
   const { venturePackage } = await import("./orchestration/venture-package.mjs");
-  const { needNow } = await import("../engine/need-now.mjs");
+  const { needNow } = await import("../engine/need-now.ts");
   const { decisions } = await import("../engine/decisions.ts");
   return { packages: await safe(() => venturePackage(dir)), need: await safe(() => needNow(dir)), decisions: await safe(() => decisions(dir)) };
 }
@@ -85,7 +85,7 @@ export async function next(after, { record, route, draft, venture, change }) {
 /** The actions available in a route's folder to one actor (M-9). */
 export async function actionsIn({ dir, r, route, actor = "agent", actor_id, venture }) {
   const { holding, locked } = await import("../engine/decisions.ts");
-  const { configOf, hold } = await import("../engine/gate.mjs");
+  const { configOf, hold } = await import("../engine/gate.ts");
   const folder = r.collection === "item" ? r.route.slice(0, -"/[id]".length) : route.includes("/") ? route.slice(0, route.lastIndexOf("/")) : route;
   const rs = routes().filter((x) => x.route === folder || x.route.startsWith(`${folder}/`));
   const list = [];

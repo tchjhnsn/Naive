@@ -15,13 +15,13 @@ const ws = mkdtempSync(join(tmpdir(), "freshness-test-"));
 process.env.MENTURA_WORKSPACE = ws;
 delete process.env.NAIVE_NOW;
 const { call, routes } = await import("../../router/router.mjs");
-const F = await import("../../engine/freshness.mjs");
+const F = await import("../../engine/freshness.ts");
 
 let failed = 0;
 /** @param {string} name @param {unknown} ok @param {unknown} [detail] */
 const expect = (name, ok, detail = "") => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${typeof detail === "string" ? detail : JSON.stringify(detail).slice(0, 600)}`}`); if (!ok) failed++; };
 const mentura = (...a) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.mjs"), ...a], { encoding: "utf8", env: { ...process.env, MENTURA_WORKSPACE: ws } });
-const init = (id, phase = "discovery") => { const p = spawnSync("node", [join(repo, "packages/naive/src/engine/init-venture.mjs"), join(ws, id), id, "--phase", phase, "--layers", "purpose"], { encoding: "utf8" }); if (p.status !== 0) throw new Error(p.stderr); return join(ws, id); };
+const init = (id, phase = "discovery") => { const p = spawnSync("node", [join(repo, "packages/naive/src/engine/init-venture.ts"), join(ws, id), id, "--phase", phase, "--layers", "purpose"], { encoding: "utf8" }); if (p.status !== 0) throw new Error(p.stderr); return join(ws, id); };
 const item = (f, path) => f.items.find((i) => i.path === path);
 const write = (venture, route, input, provenance = {}) => call({ venture, route, action: "write", input, actor: "person", via: "cli", provenance });
 const days = (n) => new Date(Date.now() + n * 86400e3).toISOString();
@@ -186,8 +186,8 @@ for (const l of lines) { const t = join(ws, "line.json"); writeFileSync(t, l); i
 expect("every freshness log line matches its schema", valid && lines.length >= 8);
 const chain = spawnSync("node", [join(repo, "packages/naive/src/checks/check-provenance.ts"), dir], { encoding: "utf8" });
 expect("every revalidate, verify and phase is in the provenance log, and the chain holds", chain.status === 0 && /every chain holds/.test(chain.stdout), chain.stderr);
-const report = spawnSync("node", [join(repo, "packages/naive/src/engine/freshness.mjs"), dir], { encoding: "utf8" });
-expect("node packages/naive/src/engine/freshness.mjs prints the report", report.status === 0 && /clinic \(validation\)/.test(report.stdout), report.stderr);
+const report = spawnSync("node", [join(repo, "packages/naive/src/engine/freshness.ts"), dir], { encoding: "utf8" });
+expect("node packages/naive/src/engine/freshness.ts prints the report", report.status === 0 && /clinic \(validation\)/.test(report.stdout), report.stderr);
 
 console.log(failed ? `\n${failed} failing` : "\nall passing");
 process.exit(failed ? 1 : 0);

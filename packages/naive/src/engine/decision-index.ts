@@ -2,7 +2,7 @@
 // The live decision index (system/decision-index). The docket (rank(), ownScore() in decisions.ts) says
 // which open decisions matter now; the index wraps it and keeps it current from the provenance stream:
 //
-//   1. structural impact for every decision, open or decided (impact.mjs structural()): the records it
+//   1. structural impact for every decision, open or decided (impact.ts structural()): the records it
 //      would change, the records that read them or refer to their type, the functions they fall in, and
 //      the decisions linked to it (parent, children, held by, blocks, conflicts, shared records);
 //   2. a weight per decision: phase weight (1 in the venture's phase, halved for each phase further
@@ -31,7 +31,7 @@ import { appendFileSync, existsSync, mkdirSync, readdirSync, readFileSync, write
 import { join } from "node:path";
 import { entries as provenance } from "../core/provenance.ts";
 import { decisionFile, decisions, ownScore, PHASES } from "./decisions.ts";
-import { structural, ventureRecords } from "./impact.mjs";
+import { structural, ventureRecords } from "./impact.ts";
 import { ventureFile } from "../core/venture-paths.ts";
 import { line } from "./detectors.ts";
 import { rank } from "./decision-queue.ts";

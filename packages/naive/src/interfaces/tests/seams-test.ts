@@ -44,7 +44,7 @@ const line = (id: string, over: Partial<SpendRegister> = {}): SpendRegister => (
 
 function venture(id: string, connections: Connection[], spend: SpendRegister[]): string {
   const dir = join(ws, `ventures/${id}`);
-  const made = node("packages/naive/src/engine/init-venture.mjs", dir, id);
+  const made = node("packages/naive/src/engine/init-venture.ts", dir, id);
   if (made.status !== 0) throw new Error(made.stderr || made.stdout);
   for (const c of connections) put(join(dir, `it/connections/${c.id}.json`), c);
   for (const s of spend) put(join(dir, `finance/spend/${s.id}.json`), s);

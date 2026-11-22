@@ -16,7 +16,7 @@ import { call } from "../../router/router.mjs";
 import { PROJECTOR, asProjector } from "../../router/acting.mjs";
 import { write as writeFile } from "../../router/agent-files.ts";
 import { handle } from "../mcp/server.mjs";
-import { EMIT_HINT, evaluate, writerRule } from "../../engine/gate.mjs";
+import { EMIT_HINT, evaluate, writerRule } from "../../engine/gate.ts";
 import { entries } from "../../core/provenance.ts";
 import { routes } from "../../records/routes/routes.ts";
 

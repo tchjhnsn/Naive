@@ -8,7 +8,7 @@
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { frames } from "./frames.mjs";
+import { frames } from "./frames.ts";
 import type { DecisionRoadmap, RoleTemplate } from "../records/types/records.d.ts";
 
 const repo = new URL("../../../..", import.meta.url).pathname;

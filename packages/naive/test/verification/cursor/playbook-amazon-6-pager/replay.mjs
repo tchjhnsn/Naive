@@ -60,7 +60,7 @@ function evaluate(decision, ctx) {
 const ws = mkdtempSync(join(tmpdir(), "six-pager-"));
 const init = (id) => {
   const dir = join(ws, id);
-  const r = spawnSync("node", [join(repo, "packages/naive/src/engine/init-venture.mjs"), dir, id, "--phase", "validation", "--legal-form", "llc"], { encoding: "utf8" });
+  const r = spawnSync("node", [join(repo, "packages/naive/src/engine/init-venture.ts"), dir, id, "--phase", "validation", "--legal-form", "llc"], { encoding: "utf8" });
   if (r.status !== 0) die(r.stderr || r.stdout);
   return dir;
 };

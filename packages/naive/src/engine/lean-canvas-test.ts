@@ -6,7 +6,7 @@ import { spawnSync } from "node:child_process";
 import { mkdtempSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { CANVAS, canvasBox, leanCanvas, problems, roadmapOrder, unlocksOf } from "./lean-canvas.mjs";
+import { CANVAS, canvasBox, leanCanvas, problems, roadmapOrder, unlocksOf } from "./lean-canvas.ts";
 import { readDataModel } from "../records/index.ts";
 
 let failed = 0;
@@ -19,7 +19,7 @@ const repo = new URL("../../../..", import.meta.url).pathname;
 const node = (args: string[], env: Record<string, string> = {}) => spawnSync("node", args, { cwd: repo, encoding: "utf8", env: { ...process.env, ...env } });
 const ws = mkdtempSync(join(tmpdir(), "lean-canvas-"));
 const dir = join(ws, "acme");
-const made = node(["packages/naive/src/engine/init-venture.mjs", dir, "acme", "--type", "software-startup"]);
+const made = node(["packages/naive/src/engine/init-venture.ts", dir, "acme", "--type", "software-startup"]);
 expect("a software startup venture starts", made.status === 0, made.stderr);
 
 // ---- The definition ----
@@ -63,7 +63,7 @@ const r = node(["packages/naive/src/interfaces/cli/mentura.mjs", "identity/lean-
 let routed: { id?: string, status?: string } = {};
 try { routed = JSON.parse(r.stdout); } catch { routed = {}; }
 expect("identity/lean-canvas/<box> returns that one box", routed.id === "problem" && routed.status === "confirmed", r.stdout.slice(0, 300) || r.stderr);
-const whole = node(["packages/naive/src/engine/lean-canvas.mjs", dir]);
+const whole = node(["packages/naive/src/engine/lean-canvas.ts", dir]);
 expect("the command prints the roadmap", whole.status === 0 && whole.stdout.includes("Gate: Problem-solution fit"), whole.stdout || whole.stderr);
 expect("the venture folder still exists", statSync(dir).isDirectory());
 

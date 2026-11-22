@@ -35,7 +35,7 @@ export const byName = (name: string): LoadedAdapter => { const a = adapters().fi
 
 /** The skills of the packages open now in a venture. */
 export async function skillsFor(dir: string): Promise<{ id: string; path: string; package: string }[]> {
-  const { packages } = await import("./packages.mjs");
+  const { packages } = await import("./packages.ts");
   const p = packages(dir);
   return [...p.core, ...p.handoff].filter((x: { in: string }) => x.in === "now").flatMap((x: { id: string }) => {
     const f = join(repo, "packages/naive/library", "packages", x.id, "package.json");

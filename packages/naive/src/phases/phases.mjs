@@ -6,7 +6,7 @@
 // fails with Naive's tagged errors (EE-125); a caller that is not Effect yet runs it with runSync from core/effect.
 // The need-now priors of a phase are derived here from packages/naive/src/engine/need-now.json (record types) and
 // packages/naive/src/functions/departments.json (functions), never copied into phase.json.
-// A .mjs file because packages/naive/src/engine/lifecycle.mjs imports it and Node does not strip types under node_modules.
+// A .mjs file because packages/naive/src/engine/lifecycle.ts imports it and Node does not strip types under node_modules.
 import { Effect } from "effect";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -121,7 +121,7 @@ export const phaseGateRecords = (phase, opts = {}) => Effect.map(loadPhase(phase
 /**
  * The need-now priors of one phase, derived from need-now.json and departments.json: for each record type and each
  * function, the base probability a venture in this phase needs it. Conditions on venture facts are applied by
- * packages/naive/src/engine/need-now.mjs, not here.
+ * packages/naive/src/engine/need-now.ts, not here.
  * @param {string} phase
  * @param {Opts} [opts]
  * @returns {Effect.Effect<{ phase: string, suggest: number, records: Record<string, number>, functions: Record<string, number> }, LoadError, "naive/VentureFs">}

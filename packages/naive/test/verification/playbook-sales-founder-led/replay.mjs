@@ -11,7 +11,7 @@ import { call } from "../../../src/router/router.mjs";
 const root = new URL("../../../../..", import.meta.url).pathname;
 const ws = mkdtempSync(join(tmpdir(), "founder-led-"));
 mkdirSync(join(ws, "ventures"), { recursive: true });
-const init = spawnSync("node", [join(root, "packages/naive/src/engine/init-venture.mjs"), join(ws, "ventures/fixture"), "fixture", "--phase", "validation"], { encoding: "utf8" });
+const init = spawnSync("node", [join(root, "packages/naive/src/engine/init-venture.ts"), join(ws, "ventures/fixture"), "fixture", "--phase", "validation"], { encoding: "utf8" });
 if (init.status !== 0) {
   console.error(init.stderr || init.stdout);
   process.exit(1);

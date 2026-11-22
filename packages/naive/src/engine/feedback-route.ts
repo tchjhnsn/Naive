@@ -1,6 +1,6 @@
 // Feedback routing: where a beta tester's feedback goes.
 //
-//   import { route } from "./feedback-route.mjs"
+//   import { route } from "./feedback-route.ts"
 //   await route(feedback, { jev, send, fallback, env, dir })  ->  { destination, confidence, model }
 //
 // Jev (TypeSafe) decides when send is true, TYPESAFE_API_KEY is set and a jev client is injected, and its answer is

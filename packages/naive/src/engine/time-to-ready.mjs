@@ -14,7 +14,7 @@
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join, dirname } from "node:path";
-import { needNow } from "./need-now.mjs";
+import { needNow } from "./need-now.ts";
 import { ventureFile } from "../core/venture-paths.ts";
 import { git, isHosted } from "../core/runtime.ts";
 import { exitCriteria } from "./canonical.ts";

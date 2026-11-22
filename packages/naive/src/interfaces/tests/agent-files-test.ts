@@ -18,7 +18,7 @@ let failed = 0;
 const ok = (name: string, cond: boolean, detail = "") => { console.log(`${cond ? "pass" : "FAIL"}  ${name}${cond || !detail ? "" : `: ${detail}`}`); if (!cond) failed++; };
 
 const ws = mkdtempSync(join(tmpdir(), "agent-files-"));
-const init = spawnSync("node", [join(repo, "packages/naive/src/engine/init-venture.mjs"), join(ws, "kettle"), "kettle", "--layers", "purpose"], { encoding: "utf8" });
+const init = spawnSync("node", [join(repo, "packages/naive/src/engine/init-venture.ts"), join(ws, "kettle"), "kettle", "--layers", "purpose"], { encoding: "utf8" });
 if (init.status !== 0) throw new Error(init.stderr);
 process.env.MENTURA_WORKSPACE = ws;
 delete process.env.NAIVE_TRACES; delete process.env.MENTURA_TRACE_ID; delete process.env.MENTURA_SPAN_ID; delete process.env.MENTURA_SESSION;

@@ -4,7 +4,7 @@
 //   node packages/naive/src/engine/generators/signals-test.ts
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
-import { validate } from "./generate.mjs";
+import { validate } from "./generate.ts";
 import { validateFile, validateValue } from "../../records/validate.ts";
 import { readDataModel } from "../../records/index.ts";
 import { canonicalJson, idHolds, signalId } from "../../core/signal-id.ts";

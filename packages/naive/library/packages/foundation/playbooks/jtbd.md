@@ -58,7 +58,7 @@ If the read is `not_found`, stop. The circumstance for a job has to be a form th
 
 Route: `foundation/icp`, action `read`.
 
-The result maps each profile `id` to its record. Keep each whole record, because step 5 sends it back with every field it has, not only `id`, `who`, `short`, `traits`, `problem_forms`, and `jobs`. Do not add a profile. Do not drop one. Do not change which profile is `primary`. `packages/naive/src/engine/foundation.mjs` fails when more than one profile exists and the number of primary profiles is not one.
+The result maps each profile `id` to its record. Keep each whole record, because step 5 sends it back with every field it has, not only `id`, `who`, `short`, `traits`, `problem_forms`, and `jobs`. Do not add a profile. Do not drop one. Do not change which profile is `primary`. `packages/naive/src/engine/foundation.ts` fails when more than one profile exists and the number of primary profiles is not one.
 
 If the read is `not_found`, stop.
 
@@ -126,7 +126,7 @@ Read `foundation/icp`, and use a profile's draft in place of its live record whi
 - Pass: every profile has such a list.
 - Fail: any profile has no `jobs`, an empty list, or a blank string.
 
-`packages/naive/src/engine/foundation.mjs` does not check `jobs`. An empty list still leaves the `who` statement filled, because that statement is the profiles themselves. This check is the one that sees the empty list.
+`packages/naive/src/engine/foundation.ts` does not check `jobs`. An empty list still leaves the `who` statement filled, because that statement is the profiles themselves. This check is the one that sees the empty list.
 
 ### 2. A job is not a copy of who they are, or of the product's claim
 
@@ -140,12 +140,12 @@ This is an exact comparison. It catches a paste. It does not judge tone. You sti
 
 ### 3. Problem forms still resolve
 
-On a draft, compare by hand. `node packages/naive/src/engine/foundation.mjs` reads live records only, so it does not see a draft.
+On a draft, compare by hand. `node packages/naive/src/engine/foundation.ts` reads live records only, so it does not see a draft.
 
 - Pass: every id in the draft's `problem_forms` is a form `id` on `foundation/problem`.
 - Fail: an id is not on that record.
 
-On the live profiles after accept, run `node packages/naive/src/engine/foundation.mjs <venture dir>`.
+On the live profiles after accept, run `node packages/naive/src/engine/foundation.ts <venture dir>`.
 
 - Pass: exit 0.
 - Fail: exit 1, with a line that a profile names a problem form the problem record lacks.

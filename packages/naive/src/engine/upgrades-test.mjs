@@ -12,7 +12,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { entries } from "../core/provenance.ts";
 import { cmp, registry, snapshot, updateFramework } from "./upgrades.mjs";
-import { rewriteRoute } from "./migrations/kit-to-package.mjs";
+import { rewriteRoute } from "./migrations/kit-to-package.ts";
 
 const repo = new URL("../../../..", import.meta.url).pathname;
 let failed = 0;
@@ -21,7 +21,7 @@ const ws = mkdtempSync(join(tmpdir(), "upgrades-test-"));
 const run = (script, args, env = {}) => spawnSync("node", [join(repo, script), ...args], { cwd: repo, encoding: "utf8", env: { ...process.env, MENTURA_WORKSPACE: ws, ...env } });
 const naive = (args, env) => run("packages/naive/src/interfaces/cli/naive.mjs", args, env);
 const mentura = (args, env) => run("packages/naive/src/interfaces/cli/mentura.mjs", args, env);
-const make = (id, extra = []) => { const d = join(ws, id); const r = run("packages/naive/src/engine/init-venture.mjs", [d, id, ...extra]); if (r.status !== 0) throw new Error(r.stderr); return d; };
+const make = (id, extra = []) => { const d = join(ws, id); const r = run("packages/naive/src/engine/init-venture.ts", [d, id, ...extra]); if (r.status !== 0) throw new Error(r.stderr); return d; };
 const json = (f) => JSON.parse(readFileSync(f, "utf8"));
 const put = (venture, route, rec, extra = []) => { const f = join(ws, `${venture}-${route.replace(/\//g, "-")}.json`); writeFileSync(f, JSON.stringify(rec)); return mentura([route, "write", "--venture", venture, "--input", f, "--as", "person", ...extra]); };
 const reg = registry();

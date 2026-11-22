@@ -10,7 +10,7 @@
 import { existsSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { check, ordered, roadmapOf, roadmaps } from "./check-roadmap.ts";
-import { frameOf } from "./frames.mjs";
+import { frameOf } from "./frames.ts";
 
 /** Propose every step's decisions, open, with the step's place in the roadmap in the note.
  *  @param {string} dir @param {string} id @param {{ agentId?: string, harness?: string, model?: string }} [opts] */

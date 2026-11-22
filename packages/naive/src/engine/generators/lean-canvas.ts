@@ -1,6 +1,6 @@
 // Record generator for the Lean Canvas definition (EE-099, EE-155), packages/naive/src/functions/strategy/lean-canvas.json.
 // The definition is framework data, so a draft is a change to the framework (a pull request), not a venture route. A
-// box names a record type and an attribute and holds no venture data; packages/naive/src/engine/lean-canvas.mjs
+// box names a record type and an attribute and holds no venture data; packages/naive/src/engine/lean-canvas.ts
 // checks that every box's record type exists.
 import { cli, describeFrom, validate } from "./function-common.ts";
 

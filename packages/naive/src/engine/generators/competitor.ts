@@ -1,7 +1,7 @@
 // Record generator for a competitor's master record (EE-099; signal library design, everything-ecosystem
 // docs/design/SIGNAL_LIBRARY_2026-11-06.md). A person gives the name and, if they like, the domain, their stance and
 // notes; the id is the name's slug unless given. The draft is for competitors/<id>.json, which the person owns.
-import { cli, drop, questions, schemaOf, slug, validate } from "./generate.mjs";
+import { cli, drop, questions, schemaOf, slug, validate } from "./generate.ts";
 import type { Competitor } from "../../records/types/records.d.ts";
 
 export const record = "competitor";

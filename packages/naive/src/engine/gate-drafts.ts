@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Held writes (X-2): where the gate's drafts wait and for whom. The gate (packages/naive/src/engine/gate.mjs) decides;
+// Held writes (X-2): where the gate's drafts wait and for whom. The gate (packages/naive/src/engine/gate.ts) decides;
 // this stores what it held. A held write lands in _drafts/ as before, with a sidecar
 // (<draft>.gate) saying which rule held it and the function owner it was sent to. Where a rule (or
 // gate.variants in naive.config.json) keeps variants, a second agent draft that differs from the
@@ -8,7 +8,7 @@
 // asks the founder which to accept. Accepting one variant (mentura accept <route> --pick b) decides
 // that decision and removes the others.
 //
-//   node packages/naive/src/engine/gate-drafts.mjs <venture dir> [--owner <role>] [--json]   the drafts waiting, by owner
+//   node packages/naive/src/engine/gate-drafts.ts <venture dir> [--owner <role>] [--json]   the drafts waiting, by owner
 
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
@@ -147,7 +147,7 @@ export function inbox(dir, owner) {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const [dir] = process.argv.slice(2).filter((a, i, all) => !a.startsWith("--") && !(i && all[i - 1] === "--owner"));
-  if (!dir || !existsSync(join(dir, "venture.json"))) { console.error("usage: node packages/naive/src/engine/gate-drafts.mjs <venture dir> [--owner <role>] [--json]"); process.exit(2); }
+  if (!dir || !existsSync(join(dir, "venture.json"))) { console.error("usage: node packages/naive/src/engine/gate-drafts.ts <venture dir> [--owner <role>] [--json]"); process.exit(2); }
   const i = process.argv.indexOf("--owner");
   const rows = inbox(dir, i > 0 ? process.argv[i + 1] : undefined);
   if (process.argv.includes("--json")) console.log(JSON.stringify(rows, null, 2));

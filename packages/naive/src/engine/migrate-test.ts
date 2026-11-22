@@ -31,7 +31,7 @@ const before = fingerprint();
 const env = { ...process.env, MENTURA_WORKSPACE: ws, MENTURA_AGENT_CMD: `node ${join(repo, "packages/naive/src/records/examples/migrate/agent.ts")}` };
 const naive = (...a) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/naive.mjs"), ...a], { env, encoding: "utf8" });
 const mentura = (...a) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.mjs"), ...a], { env, encoding: "utf8" });
-const init = (id) => spawnSync("node", [join(repo, "packages/naive/src/engine/init-venture.mjs"), join(ws, "ventures", id), id], { encoding: "utf8" }).status === 0;
+const init = (id) => spawnSync("node", [join(repo, "packages/naive/src/engine/init-venture.ts"), join(ws, "ventures", id), id], { encoding: "utf8" }).status === 0;
 
 const dir = join(ws, "ventures", "kettle");
 expect("a new venture is created to migrate into", init("kettle"));

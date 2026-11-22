@@ -42,7 +42,7 @@ A known competitor is a subject in the `competitors` collection. A venture turns
 
 - Record types: [`competitor.schema.json`](../../../src/records/competitor.schema.json) and [`competitor-signals.schema.json`](../../../src/records/competitor-signals.schema.json), routes `purpose/competitor` and `purpose/competitor-signals`.
 - The upgrade registry, [`packages/naive/src/engine/upgrades.json`](../../../src/engine/upgrades.json), lists the package at 0.1.0 on the stable channel, so `naive upgrade` pins it in every venture as it does the other data packages. The catalog's record graph and order cover core and handoff packages only, so the package is not in [`catalog.json`](../catalog.json), like customers, investors and money.
-- The router lets only the signal projector write `competitors/<id>/signals.json` (`writerRule` in [`gate.mjs`](../../../src/engine/gate.mjs)).
+- The router lets only the signal projector write `competitors/<id>/signals.json` (`writerRule` in [`gate.ts`](../../../src/engine/gate.ts)).
 
 ## Not built
 

@@ -5,12 +5,12 @@
 // says so, with evidence; a phase change is a person's decision, and the gate refuses it while the
 // current phase has unmet criteria, unless the person overrides it with a reason (logged).
 //
-//   node packages/naive/src/engine/lifecycle.mjs <venture dir>                                  where the venture is, as text (--json)
-//   node packages/naive/src/engine/lifecycle.mjs <venture dir> meet <criterion> [--evidence <text>] [--by <person>]
-//   node packages/naive/src/engine/lifecycle.mjs <venture dir> advance <phase> [--reason <text>] [--override <why>] [--by <person>]
+//   node packages/naive/src/engine/lifecycle.ts <venture dir>                                  where the venture is, as text (--json)
+//   node packages/naive/src/engine/lifecycle.ts <venture dir> meet <criterion> [--evidence <text>] [--by <person>]
+//   node packages/naive/src/engine/lifecycle.ts <venture dir> advance <phase> [--reason <text>] [--override <why>] [--by <person>]
 //
 // advance goes one phase forward; a step back (a venture can return to discovery) needs --reason, and
-// skipping a phase needs --override. The change itself, with its staleness, is packages/naive/src/engine/freshness.mjs's phase().
+// skipping a phase needs --override. The change itself, with its staleness, is packages/naive/src/engine/freshness.ts's phase().
 //
 // The gate and the evidence that clears it come from the venture's lifecycle playbook (venture.json
 // lifecycle_playbook; packages/naive/src/functions/products/frameworks/product-anatomy/playbooks/). With none named, product-first is
@@ -27,7 +27,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { agentFromEnv, record } from "../core/provenance.ts";
-import { phase as changePhase } from "./freshness.mjs";
+import { phase as changePhase } from "./freshness.ts";
 import { ventureFile } from "../core/venture-paths.ts";
 import { exitCriteria } from "./canonical.ts";
 import { validateFile } from "../records/validate.ts";
@@ -155,7 +155,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const [dir, cmd, arg, ...rest] = process.argv.slice(2);
   const all = process.argv.slice(2);
   const opt = (k) => { const i = all.indexOf(`--${k}`); return i < 0 ? undefined : all[i + 1]; };
-  if (!dir || !existsSync(join(dir, "venture.json"))) { console.error("usage: node packages/naive/src/engine/lifecycle.mjs <venture dir> [meet <criterion> | advance <phase>]"); process.exit(2); }
+  if (!dir || !existsSync(join(dir, "venture.json"))) { console.error("usage: node packages/naive/src/engine/lifecycle.ts <venture dir> [meet <criterion> | advance <phase>]"); process.exit(2); }
   const by = opt("by") ? agentFromEnv("person", "cli", { id: opt("by") }) : undefined;
   const out = (r) => { if (!r.ok) { console.error(r.error); process.exit(1); } return r.result; };
   if (!cmd || cmd.startsWith("--")) { const l = lifecycle(dir); console.log(all.includes("--json") ? JSON.stringify(l, null, 2) : text(l)); }

@@ -104,7 +104,7 @@ govBroken("an S corporation with preferred stock fails", (d) => edit(join(d, "ve
 govBroken("an investor seat without a board-seat right fails", (d) => edit(gov(d, "ownership.json"), (o: Ownership) => { o.classes[1].rights = ["information"]; }), /holds no board-seat right/);
 govBroken("reserved matters on an advisory board fail", (d) => edit(gov(d, "board.json"), (b: Board) => { b.boards[1].reserved_matters = ["approve the budget"]; }), /advisory board advisors has reserved matters/);
 {
-  const { payouts } = await import(join(root, "packages/naive/src/engine/payouts.mjs"));
+  const { payouts } = await import(join(root, "packages/naive/src/engine/payouts.ts"));
   const own = JSON.parse(readFileSync(gov(tandem, "ownership.json"), "utf8"));
   const pay = (v: number, h: string) => payouts(own, v).payouts.find((p: { holder: string }) => p.holder === h).amount;
   expect("payouts: at a soft landing preferred takes its 1x preference", pay(3000000, "lark-ventures") === 2000000);
@@ -195,7 +195,7 @@ valBroken("duplicate evidence ids fail", (d) => edit(problemOf(d), (p: Validatio
 
 // need-now: what a venture needs at this moment (EE-028).
 {
-  const { needNow } = await import(join(root, "packages/naive/src/engine/need-now.mjs"));
+  const { needNow } = await import(join(root, "packages/naive/src/engine/need-now.ts"));
   const N = JSON.parse(readFileSync(join(root, "packages/naive/src/engine/need-now.json"), "utf8"));
   const model = readDataModel() as DataModel;
   const venture = new Set(model.records.filter((r) => r.level === "venture" && r.id !== "venture").map((r) => r.id));

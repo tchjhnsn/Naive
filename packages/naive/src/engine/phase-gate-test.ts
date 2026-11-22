@@ -7,7 +7,7 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "nod
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { itemStrength, levelFromCount, meter, phaseGate, policyFor, strictness } from "./phase-gate.mjs";
-import { advance, lifecycle } from "./lifecycle.mjs";
+import { advance, lifecycle } from "./lifecycle.ts";
 import { ventureFile } from "../core/venture-paths.ts";
 
 let failed = 0;
@@ -21,7 +21,7 @@ const node = (args: string[], env: Record<string, string> = {}) => spawnSync("no
 const ws = mkdtempSync(join(tmpdir(), "phase-gate-"));
 const make = (id: string): string => {
   const d = join(ws, id);
-  const r = node(["packages/naive/src/engine/init-venture.mjs", d, id, "--type", "software-startup"]);
+  const r = node(["packages/naive/src/engine/init-venture.ts", d, id, "--type", "software-startup"]);
   expect(`a software startup venture ${id} starts`, r.status === 0, r.stderr);
   return d;
 };

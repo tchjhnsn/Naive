@@ -76,7 +76,7 @@ check("a route the router does not have fails the call", unknown.status !== 0 &&
 
 const ws = mkdtempSync(join(tmpdir(), "yc-raise-"));
 const venture = "raise-fixture";
-const init = spawnSync("node", [join(repo, "packages/naive/src/engine/init-venture.mjs"), join(ws, "fixture"), venture, "--phase", "validation"], { encoding: "utf8" });
+const init = spawnSync("node", [join(repo, "packages/naive/src/engine/init-venture.ts"), join(ws, "fixture"), venture, "--phase", "validation"], { encoding: "utf8" });
 if (init.status !== 0) { console.error(init.stderr || init.stdout); process.exit(1); }
 
 let n = 0;

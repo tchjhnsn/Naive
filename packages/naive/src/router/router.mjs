@@ -46,10 +46,10 @@ import { basename, dirname, join, relative } from "node:path";
 import { actingAgent, agentFromEnv, entries as provEntries, record as prov } from "../core/provenance.ts";
 import { address } from "../store/connectors/contract.ts";
 import { decisionFile, holding, locked } from "../engine/decisions.ts";
-import { configOf, hold } from "../engine/gate.mjs";
+import { configOf, hold } from "../engine/gate.ts";
 import { blocked as betaBlocked } from "../engine/beta-gate.ts";
 // Freshness (Revalidating, V-1 to V-8): stale flags on reads, and the freshness and revalidate commands.
-import { readFlag as freshnessFlag } from "../engine/freshness.mjs";
+import { readFlag as freshnessFlag } from "../engine/freshness.ts";
 // Gate group hooks (M-18, F-5, X-2, X-4 to X-6, P-2, P-7, U-4): who is acting, access at the record,
 // the gate's verdict, where held drafts wait, and check settings. The logic lives in these modules.
 import { actingCall, isProjector, itemId, mayReadItem, mayReadSome } from "./acting.mjs";
@@ -177,7 +177,7 @@ export function layout(r, dir) {
   if (dir && r.kind === "record") {
     try {
       // Caching hook (O-5): shared with the system/need-now command in the same action.
-      const nn = JSON.parse(memo(`cmd:packages/naive/src/engine/need-now.mjs ${dir} --json`, () => spawnSync("node", [join(repo, "packages/naive/src/engine/need-now.mjs"), dir, "--json"], { encoding: "utf8" }), { dir }).stdout);
+      const nn = JSON.parse(memo(`cmd:packages/naive/src/engine/need-now.ts ${dir} --json`, () => spawnSync("node", [join(repo, "packages/naive/src/engine/need-now.ts"), dir, "--json"], { encoding: "utf8" }), { dir }).stdout);
       const row = nn.rows.find((x) => x.type === r.record);
       if (row) out.need_now = { phase: nn.phase, status: row.status, now: row.now, next: row.next, why: row.why };
     } catch {}

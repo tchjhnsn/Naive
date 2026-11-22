@@ -38,7 +38,7 @@ writeFileSync(join(notes, "research/interview.md"), "Ana spends Mondays on the p
 const before = { app: tree(app), notes: tree(notes), head: git(app, "rev-parse", "HEAD").stdout };
 
 const dir = join(ws, "naive", "ventures", "clinic");
-const init = spawnSync("node", [join(repo, "packages/naive/src/engine/init-venture.mjs"), dir, "clinic"], { encoding: "utf8" });
+const init = spawnSync("node", [join(repo, "packages/naive/src/engine/init-venture.ts"), dir, "clinic"], { encoding: "utf8" });
 expect("a new venture is created to port into", init.status === 0, init.stderr);
 
 const p1 = naive("port", app, "--venture", dir, "--links", join(ws, "code"));
@@ -101,7 +101,7 @@ const stale = naive("port", "--venture", dir, "--apply", "--confirm", "port");
 expect("a folder that is not the one planned is refused", stale.status !== 0 && /not the folder the plan was written for/.test(stale.stderr) && existsSync(swap));
 
 const insideV = join(ws, "host");
-const inner = spawnSync("node", [join(repo, "packages/naive/src/engine/init-venture.mjs"), join(insideV, "v"), "v"], { encoding: "utf8" });
+const inner = spawnSync("node", [join(repo, "packages/naive/src/engine/init-venture.ts"), join(insideV, "v"), "v"], { encoding: "utf8" });
 const ins = naive("port", insideV, "--venture", join(insideV, "v"));
 expect("a venture inside the folder it ports is refused", inner.status === 0 && ins.status !== 0);
 

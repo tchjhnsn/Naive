@@ -13,7 +13,7 @@
 import { createHash, randomBytes } from "node:crypto";
 import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { namedPerson, rawConfig } from "./naive-config.mjs";
+import { namedPerson, rawConfig } from "./naive-config.ts";
 
 export const FILE = ".naive/telemetry.jsonl";
 const SENT = ".naive/telemetry-sent.json";

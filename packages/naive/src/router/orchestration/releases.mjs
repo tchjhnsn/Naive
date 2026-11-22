@@ -16,7 +16,7 @@
 //   C-11  Frozen: a record whose last change a person made or confirmed, unchanged since (its sha256
 //         matches the provenance log). Holes: open decisions, _streams/, money accounts, attributes
 //         mastered in another source, and command routes that read runtime data (H-4).
-//   C-13  Every open package (packages/naive/src/engine/packages.mjs, "now") must be releasable: no record it requires
+//   C-13  Every open package (packages/naive/src/engine/packages.ts, "now") must be releasable: no record it requires
 //         may be an agent's unconfirmed write, a waiting draft with nothing confirmed, or changed since
 //         it was confirmed (an unconfirmed optional record is left out instead). Build names each blocker with the command that settles it and exits 1.
 //         Missing records are gaps the release names; they do not block it.
@@ -40,8 +40,8 @@ import { dirname, join, resolve as resolvePath } from "node:path";
 import { call, glob, routes } from "../router.mjs";
 import { agentFromEnv, entries as provEntries, record as prov } from "../../core/provenance.ts";
 import { attributeSources, connect } from "../../store/connectors/index.ts";
-import { FRAME, confirmedIn } from "../../engine/foundation.mjs";
-import { HOME, packages } from "../../engine/packages.mjs";
+import { FRAME, confirmedIn } from "../../engine/foundation.ts";
+import { HOME, packages } from "../../engine/packages.ts";
 import { CARD, MANIFEST, RECORDS, RELEASE_DIR, frozenText, readRelease } from "../../engine/release-read.mjs";
 import { ventureFile } from "../../core/venture-paths.ts";
 import { schemaNameOf } from "../../records/index.ts";

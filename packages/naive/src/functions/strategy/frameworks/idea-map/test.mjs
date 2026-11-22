@@ -218,7 +218,7 @@ t("the schemas, the term engine and Lean name the same relations", () => {
 // Routes (EE-061): the graph's ideas go to the framework's destinations, each with a stage and a step.
 const venture = (() => {
   const v = join(mkdtempSync(join(tmpdir(), "routes-")), "kept");
-  spawnSync("node", [new URL("../../../../engine/init-venture.mjs", import.meta.url).pathname, v, "kept", "--phase", "discovery"], { encoding: "utf8" });
+  spawnSync("node", [new URL("../../../../engine/init-venture.ts", import.meta.url).pathname, v, "kept", "--phase", "discovery"], { encoding: "utf8" });
   mkdirSync(join(v, "purpose/ideas"), { recursive: true });
   const tagged = [{ ...ideas[0], records: ["validation-problem"] }, { ...ideas[1], records: ["product"], exists: true }, { id: "i-03", text: "never sell patient data", departments: ["risk-and-compliance"], records: ["alignment"] }, { id: "i-04", text: "a vibe", departments: ["strategy"], records: [] }];
   writeFileSync(join(v, GRAPH), JSON.stringify(build(tagged)));

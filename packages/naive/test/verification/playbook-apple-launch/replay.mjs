@@ -35,7 +35,7 @@ expect("marketing/content has no write action", content && !content.actions.incl
 
 function venture() {
   const dir = mkdtempSync(join(tmpdir(), "apple-launch-"));
-  const p = spawnSync("node", [join(repo, "packages/naive/src/engine/init-venture.mjs"), dir, "launch", "--phase", "beachhead"], { encoding: "utf8" });
+  const p = spawnSync("node", [join(repo, "packages/naive/src/engine/init-venture.ts"), dir, "launch", "--phase", "beachhead"], { encoding: "utf8" });
   if (p.status !== 0) throw new Error(p.stderr || p.stdout);
   return dir;
 }

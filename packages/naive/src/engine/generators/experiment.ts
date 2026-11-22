@@ -6,7 +6,7 @@
 // chainOnto chains it onto a log's last line. The line goes at the end of <pattern>.experiments.jsonl. Scoring and
 // the router hook that append it are build plan items 5 and 6, not built.
 import { randomUUID } from "node:crypto";
-import { cli, drop, questions, schemaOf, validate } from "./generate.mjs";
+import { cli, drop, questions, schemaOf, validate } from "./generate.ts";
 import { lineHash } from "../../core/provenance.ts";
 import type { Experiment } from "../../records/types/records.d.ts";
 

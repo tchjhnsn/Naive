@@ -18,7 +18,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { decisions } from "./decisions.ts";
-import { HOME, PACKAGES, TITLES } from "./packages.mjs";
+import { HOME, PACKAGES, TITLES } from "./packages.ts";
 import { ventureFile } from "../core/venture-paths.ts";
 import type { DecisionRecord } from "../records/types/records.d.ts";
 

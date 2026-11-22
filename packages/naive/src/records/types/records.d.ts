@@ -605,7 +605,7 @@ export type DataModel = {
     /** Default json. json-list: the file holds a list of records. json-lines: one record per line, append-only. typescript: a TypeScript module (a recipe, <pattern>.recipe.ts); the schema, when there is one, governs the data the module exports, not the file, so packages/naive/src/records/validate.ts does not read it */
     form?: "json" | "json-list" | "markdown" | "prose" | "json-lines" | "typescript";
     kind?: DataModelKind;
-    /** Who may write records of this type. any (the default): whoever the gate and decision rights allow. projection: only the signal projector (signal library design); the router refuses every other actor, a person included, before the schema (writerRule in packages/naive/src/engine/gate.mjs). person: only a person (autoresearch design, a function's research program); the router refuses every agent, whatever its role, and the projector, before the schema, and a person's write lands live. function: only the agent of the record type's function, the team-plan role <function>-agent (EE-123), or a person; the router refuses an agent acting in any other role, or in none, and the projector, before the schema (lead agents design, the spend register). The record type must name a function */
+    /** Who may write records of this type. any (the default): whoever the gate and decision rights allow. projection: only the signal projector (signal library design); the router refuses every other actor, a person included, before the schema (writerRule in packages/naive/src/engine/gate.ts). person: only a person (autoresearch design, a function's research program); the router refuses every agent, whatever its role, and the projector, before the schema, and a person's write lands live. function: only the agent of the record type's function, the team-plan role <function>-agent (EE-123), or a person; the router refuses an agent acting in any other role, or in none, and the projector, before the schema (lead agents design, the spend register). The record type must name a function */
     writer?: "any" | "projection" | "person" | "function";
     settles?: DataModelSettles;
     /** This record type is a view of part of another type's file. Files are validated and owned by that type; the view has its own route and schema for what may be written. */
@@ -701,7 +701,7 @@ export type Deal = {
   note?: string;
 };
 
-/** The impact map of a merged decision version (packages/naive/src/engine/impact.mjs), written beside the decision as decisions/<id>.impact.json: for each venture function, the records that depend on what the merge changed (by provenance, the where-used list and data-model refs), which of them were marked stale, an agent's note, and the open follow-up decisions proposed. Naive proposes; a person decides. */
+/** The impact map of a merged decision version (packages/naive/src/engine/impact.ts), written beside the decision as decisions/<id>.impact.json: for each venture function, the records that depend on what the merge changed (by provenance, the where-used list and data-model refs), which of them were marked stale, an agent's note, and the open follow-up decisions proposed. Naive proposes; a person decides. */
 export type DecisionImpact = {
   decision: string;
   version: number;
@@ -1145,7 +1145,7 @@ export type Detector = {
   /** A short name for people. */
   title?: string;
   description?: string;
-  /** Where the call is made, such as a module and the setting it reads, for example packages/naive/src/engine/gate.mjs confidence_below. */
+  /** Where the call is made, such as a module and the setting it reads, for example packages/naive/src/engine/gate.ts confidence_below. */
   call_site?: string;
   /** Optional: the role a yes call is put to as an open decision, by id: a role in the roles registers or a role template (governance/roles/<id>.json). A seam detector names the lead whose portfolio spans the seam, such as finance-lead for tools against spend. It changes who is asked, not who decides: only a person settles the decision, and settling it resolves the call's trial. */
   assign_to?: string;
@@ -1427,7 +1427,7 @@ export type Evidence = {
   passed: boolean;
 };
 
-/** A phase's canonical exit criteria, at <venture>/foundation/exit-criteria/<phase>.json: what must be true to leave the phase, each serving a goal measure. The lifecycle gate (packages/naive/src/engine/lifecycle.mjs) reads these; a criterion is met when a person says so. */
+/** A phase's canonical exit criteria, at <venture>/foundation/exit-criteria/<phase>.json: what must be true to leave the phase, each serving a goal measure. The lifecycle gate (packages/naive/src/engine/lifecycle.ts) reads these; a criterion is met when a person says so. */
 export type ExitCriteria = {
   phase: "discovery" | "validation" | "beachhead" | "scale" | "platform";
   venture?: string;
@@ -1450,7 +1450,7 @@ export type ExitCriteria = {
   updated?: string;
 };
 
-/** How the venture might end and what each owner would get, at <venture>/governance/exit.json (EE-022): the exit paths it keeps open and the sale values to model. Payouts are never typed here: packages/naive/src/engine/payouts.mjs computes them from ownership.json for each scenario. */
+/** How the venture might end and what each owner would get, at <venture>/governance/exit.json (EE-022): the exit paths it keeps open and the sale values to model. Payouts are never typed here: packages/naive/src/engine/payouts.ts computes them from ownership.json for each scenario. */
 export type Exit = {
   paths: {
     /** hold: no exit, the owners keep it */
@@ -1772,7 +1772,7 @@ export type FounderProfile = {
   confirmed?: boolean;
 };
 
-/** One recurring venture problem, as a shape, at packages/naive/library/packages/<function>/frames/<id>.frame.json. A frame is to Naive what a component is to a React component library. It holds the goal, the decisions hidden in the founder's sentence, the premises that sentence assumes and the moves to attack them, and what current information a lookup must supply. It never holds an answer: no instrument, vendor, term or market norm, because those go stale and can be wrong. packages/naive/src/engine/frames.mjs matches a frame to the founder's words, reads the props from the venture's records, has a model judge each premise yes, no or unknown, and proposes the frame's decisions with open options for the founder to decide. */
+/** One recurring venture problem, as a shape, at packages/naive/library/packages/<function>/frames/<id>.frame.json. A frame is to Naive what a component is to a React component library. It holds the goal, the decisions hidden in the founder's sentence, the premises that sentence assumes and the moves to attack them, and what current information a lookup must supply. It never holds an answer: no instrument, vendor, term or market norm, because those go stale and can be wrong. packages/naive/src/engine/frames.ts matches a frame to the founder's words, reads the props from the venture's records, has a model judge each premise yes, no or unknown, and proposes the frame's decisions with open options for the founder to decide. */
 export type Frame = {
   id: string;
   title: string;
@@ -1787,7 +1787,7 @@ export type Frame = {
     id: string;
     /** What the founder's sentence assumes, as a yes/no proposition about this venture */
     claim: string;
-    /** The premise attack applied to it, one of packages/naive/src/engine/frames.mjs ATTACKS */
+    /** The premise attack applied to it, one of packages/naive/src/engine/frames.ts ATTACKS */
     attack: string;
     /** The props the judgment of this premise needs */
     reads?: string[];
@@ -1878,7 +1878,7 @@ export type Framework = {
   status?: "draft" | "stable";
 };
 
-/** One line of a venture's freshness log (<venture>/knowledge/freshness.jsonl, Revalidating V-1, V-2, V-5, V-7): an on-demand revalidation (a tag, a folder path or a package marked stale, like revalidateTag and revalidatePath), a check that a record is still right without changing it (verify), or a phase change. Append-only; each append is also a line in the provenance log. packages/naive/src/engine/freshness.mjs writes and reads it. */
+/** One line of a venture's freshness log (<venture>/knowledge/freshness.jsonl, Revalidating V-1, V-2, V-5, V-7): an on-demand revalidation (a tag, a folder path or a package marked stale, like revalidateTag and revalidatePath), a check that a record is still right without changing it (verify), or a phase change. Append-only; each append is also a line in the provenance log. packages/naive/src/engine/freshness.ts writes and reads it. */
 export type FreshnessLog = {
   /**
    * @format date-time
@@ -1910,7 +1910,7 @@ export type FreshnessLog = {
   };
 };
 
-/** How long records stay fresh (Revalidating, V-1 to V-3), after Next.js cacheLife profiles (stale, revalidate, expire) plus two Naive adds: per_phase (stale once the venture changes phase) and live (never frozen into a release; a live hole). The framework's defaults are packages/naive/src/engine/freshness.json; a venture overrides profiles and record assignments under freshness in its naive.config.json. packages/naive/src/engine/freshness.mjs reads both. */
+/** How long records stay fresh (Revalidating, V-1 to V-3), after Next.js cacheLife profiles (stale, revalidate, expire) plus two Naive adds: per_phase (stale once the venture changes phase) and live (never frozen into a release; a live hole). The framework's defaults are packages/naive/src/engine/freshness.json; a venture overrides profiles and record assignments under freshness in its naive.config.json. packages/naive/src/engine/freshness.ts reads both. */
 export type FreshnessProfiles = {
   $schema?: string;
   note?: string;
@@ -2605,7 +2605,7 @@ export type Judgment = {
   asked_at?: string;
 };
 
-/** A Mentura kit (EE-071): an enhanced package, at platform/kits/<name>/kit.json. It extends one Naive package (automations, agent workflows, skills, connectors on top of it) or one framework command (an agent-run upgrade), and never replaces it. The framework reads this manifest as data and runs the kit's entry as its own process; it never imports platform code (packages/naive/src/engine/kits.mjs). Automations are triggers a venture turns on by listing the kit in naive.config.json kits; each runs only once the package it needs is complete (packages/naive/src/router/orchestration/triggers.mjs). */
+/** A Mentura kit (EE-071): an enhanced package, at platform/kits/<name>/kit.json. It extends one Naive package (automations, agent workflows, skills, connectors on top of it) or one framework command (an agent-run upgrade), and never replaces it. The framework reads this manifest as data and runs the kit's entry as its own process; it never imports platform code (packages/naive/src/engine/kits.ts). Automations are triggers a venture turns on by listing the kit in naive.config.json kits; each runs only once the package it needs is complete (packages/naive/src/router/orchestration/triggers.mjs). */
 export type Kit = {
   name: string;
   title: string;
@@ -2845,7 +2845,7 @@ export type Lease = {
   note?: string;
 };
 
-/** An ordering of the venture development lifecycle, at packages/naive/src/functions/products/frameworks/product-anatomy/playbooks/<id>.json. The five phases, their questions and their gates are fixed in the phase modules (packages/naive/src/phases/<id>/phase.json); a playbook varies the order of decisions, which decisions gate which phase, and the evidence that clears each gate. A venture names its playbook in venture.json lifecycle_playbook (default product-first); packages/naive/src/engine/lifecycle.mjs reads the gate and its evidence from it. The founder chooses the playbook. */
+/** An ordering of the venture development lifecycle, at packages/naive/src/functions/products/frameworks/product-anatomy/playbooks/<id>.json. The five phases, their questions and their gates are fixed in the phase modules (packages/naive/src/phases/<id>/phase.json); a playbook varies the order of decisions, which decisions gate which phase, and the evidence that clears each gate. A venture names its playbook in venture.json lifecycle_playbook (default product-first); packages/naive/src/engine/lifecycle.ts reads the gate and its evidence from it. The founder chooses the playbook. */
 export type LifecyclePlaybook = {
   id: string;
   title: string;
@@ -3199,7 +3199,7 @@ export type MoneySummary = {
   note?: string;
 };
 
-/** A venture's overrides to Naive's defaults, at the venture root (P-2, like next.config.js): the gate (fail-closed routes, rules over the router's path patterns, which package rules it imports), function owners, check settings (P-7, like eslint.config.mjs), thresholds, which System 1 questions run, pinned package versions (U-4) and how strictly the acting role is checked (M-18). Every field is optional; a missing one keeps the default in packages/naive/src/engine/naive-config.mjs. node packages/naive/src/checks/check-config.ts <venture dir> checks it. */
+/** A venture's overrides to Naive's defaults, at the venture root (P-2, like next.config.js): the gate (fail-closed routes, rules over the router's path patterns, which package rules it imports), function owners, check settings (P-7, like eslint.config.mjs), thresholds, which System 1 questions run, pinned package versions (U-4) and how strictly the acting role is checked (M-18). Every field is optional; a missing one keeps the default in packages/naive/src/engine/naive-config.ts. node packages/naive/src/checks/check-config.ts <venture dir> checks it. */
 export type NaiveConfig = {
   $schema?: string;
   /** Autoresearch over the venture's recipes (everything-ecosystem docs/design/AUTORESEARCH_RECORDS_2026-11-06.md). */
@@ -3960,7 +3960,7 @@ export type Opportunity = {
   note?: string;
 };
 
-/** Who owns the venture and on what terms, at <venture>/governance/ownership.json (EE-022): share classes and the rights each carries, holders, grants with vesting, the option pool, and unpriced instruments such as SAFEs. It is a record of what was agreed, not the legal document: the signed documents are the truth, and decisions to change this file are founder decisions made with counsel (decision class ownership-or-control). packages/naive/src/checks/check-governance.ts checks it; packages/naive/src/engine/payouts.mjs computes payouts from it. */
+/** Who owns the venture and on what terms, at <venture>/governance/ownership.json (EE-022): share classes and the rights each carries, holders, grants with vesting, the option pool, and unpriced instruments such as SAFEs. It is a record of what was agreed, not the legal document: the signed documents are the truth, and decisions to change this file are founder decisions made with counsel (decision class ownership-or-control). packages/naive/src/checks/check-governance.ts checks it; packages/naive/src/engine/payouts.ts computes payouts from it. */
 export type Ownership = {
   /**
    * @format date
@@ -4103,7 +4103,7 @@ export type PhaseGatePoliciesLevel = "very low" | "low" | "moderate" | "high";
 
 export type PhaseGatePoliciesId = string;
 
-/** The manifest of one lifecycle phase as a module (EE-126), at packages/naive/src/phases/<id>/phase.json: the phase's question, its stage gate (what the gate asks, after Cooper's stage-gate) and the exit evidence the gate requires, the function workflows active in the phase and the weights that rank decisions across the 13 functions. A phase module has no agent and owns no records. It is the one place a phase's name, question and gate are defined: packages/naive/src/engine/lifecycle.mjs, the route table and Product Anatomy read them from here. Its need-now priors are not held here: packages/naive/src/phases/phases.mjs derives them from packages/naive/src/engine/need-now.json and packages/naive/src/functions/departments.json. packages/naive/src/checks/check-phases.ts checks every module. */
+/** The manifest of one lifecycle phase as a module (EE-126), at packages/naive/src/phases/<id>/phase.json: the phase's question, its stage gate (what the gate asks, after Cooper's stage-gate) and the exit evidence the gate requires, the function workflows active in the phase and the weights that rank decisions across the 13 functions. A phase module has no agent and owns no records. It is the one place a phase's name, question and gate are defined: packages/naive/src/engine/lifecycle.ts, the route table and Product Anatomy read them from here. Its need-now priors are not held here: packages/naive/src/phases/phases.mjs derives them from packages/naive/src/engine/need-now.json and packages/naive/src/functions/departments.json. packages/naive/src/checks/check-phases.ts checks every module. */
 export type PhaseModule = {
   /** The phase (EE-012), the same as the folder's name. */
   id: "discovery" | "validation" | "beachhead" | "scale" | "platform";

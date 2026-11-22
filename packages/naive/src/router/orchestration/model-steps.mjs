@@ -46,7 +46,7 @@ import { dirname, join, resolve as resolvePath } from "node:path";
 import { call as routerCall, files as ventureFiles, glob, routes } from "../router.mjs";
 import { agentFromEnv, entries as provEntries, record as prov } from "../../core/provenance.ts";
 import { decisions as decisionsOf, propose } from "../../engine/decisions.ts";
-import { loadPackages } from "../../engine/load-packages.mjs";
+import { loadPackages } from "../../engine/load-packages.ts";
 import { ventureFile } from "../../core/venture-paths.ts";
 import { envCommand } from "../../core/runtime.ts";
 
@@ -682,7 +682,7 @@ export async function waterfall(dir, { graph } = {}) {
   }
   let status = new Map();
   if (dir) {
-    const { packages } = await import("../../engine/packages.mjs");
+    const { packages } = await import("../../engine/packages.ts");
     const p = packages(dir);
     status = new Map(p.core.flatMap((c) => c.records.map((r) => [r.record, r.status])));
   }

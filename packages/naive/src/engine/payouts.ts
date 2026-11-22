@@ -3,9 +3,9 @@
 // legal, tax or financial advice: the signed documents decide, and real deals add debt,
 // fees, escrow and earn-outs that this leaves out.
 //
-//   node packages/naive/src/engine/payouts.mjs <venture dir>              every scenario in exit.json
-//   node packages/naive/src/engine/payouts.mjs <venture dir> <value>      one sale value
-//   node packages/naive/src/engine/payouts.mjs <venture dir> --json       as data
+//   node packages/naive/src/engine/payouts.ts <venture dir>              every scenario in exit.json
+//   node packages/naive/src/engine/payouts.ts <venture dir> <value>      one sale value
+//   node packages/naive/src/engine/payouts.ts <venture dir> --json       as data
 //
 // Rules, from standard terms (NVCA model documents; Feld and Mendelson, Venture Deals):
 // preferred classes are paid first, highest seniority first, equal ranks pro rata; a
@@ -74,7 +74,7 @@ export function payouts(own, value) {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const [dir, arg] = process.argv.slice(2);
-  if (!dir) { console.error("usage: node packages/naive/src/engine/payouts.mjs <venture dir> [value] [--json]"); process.exit(2); }
+  if (!dir) { console.error("usage: node packages/naive/src/engine/payouts.ts <venture dir> [value] [--json]"); process.exit(2); }
   const own = JSON.parse(readFileSync(join(ventureFile(dir, "governance/ownership.json")), "utf8"));
   const exitFile = join(ventureFile(dir, "governance/exit.json"));
   const scenarios = arg && !arg.startsWith("--") ? [{ id: "given", value: Number(arg) }]

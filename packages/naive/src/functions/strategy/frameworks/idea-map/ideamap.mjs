@@ -19,7 +19,7 @@
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { answersFor, configFor, questionsFor, threshold } from "../../../../engine/naive-config.mjs";
+import { answersFor, configFor, questionsFor, threshold } from "../../../../engine/naive-config.ts";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repo = join(here, "../../../../../../..");

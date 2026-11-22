@@ -71,7 +71,7 @@ export const steps = [
   [/^a new venture "([a-z-]+)"$/, (w, id) => {
     const d = mkdtempSync(join(tmpdir(), "decisions-"));
     w.ws = join(d, "workspace"); w.venture = id; w.dir = join(w.ws, "ventures", id); w.cleanup = () => rmSync(d, { recursive: true, force: true });
-    const p = spawnSync("node", [join(repo, "packages/naive/src/engine/init-venture.mjs"), w.dir, id], { encoding: "utf8" });
+    const p = spawnSync("node", [join(repo, "packages/naive/src/engine/init-venture.ts"), w.dir, id], { encoding: "utf8" });
     ok(p.status === 0, `init: ${p.stderr}`);
   }],
   [/^an open decision "([a-z-]+)" about the problem record$/, (w, id) => put(w, `purpose/validation/decisions/problem.${id.replace(/^problem-/, "")}.decision.json`, { id, question: `What about ${id}?`, status: "open" })],
@@ -79,9 +79,9 @@ export const steps = [
   [/^"([a-z-]+)" says to "([^"]+)"$/, (w, id, cmd) => ok(find(w, id)?.action?.command?.startsWith(cmd), `${id}: ${JSON.stringify(find(w, id)?.action)}`)],
   [/^"([A-Za-z]+)" answers "([a-z-]+)" with "([^"]+)"$/, (w, by, id, answer) => { const p = cli(w, "decide", id, "--venture", w.venture, "--by", by, "--answer", answer, "--confirm", id); ok(p.status === 0, `decide: ${p.stdout}${p.stderr}`); w.report = null; }],
   [/^"([a-z-]+)" was worded by the founder$/, (w, id) => ok(find(w, id)?.provenance?.wording === "own", `${id}: ${JSON.stringify(find(w, id)?.provenance)}`)],
-  [/^need-now suggests "([a-z-]+)" at ([0-9.]+)$/, (w, type, at) => { const r = JSON.parse(node(w, "packages/naive/src/engine/need-now.mjs", w.dir, "--json").stdout).rows.find((x) => x.type === type); ok(r?.status === "suggest now" && r.now === Number(at), `${type}: ${JSON.stringify(r)}`); }],
-  [/^need-now holds back "([a-z-]+)"$/, (w, type) => { const r = JSON.parse(node(w, "packages/naive/src/engine/need-now.mjs", w.dir, "--json").stdout).rows.find((x) => x.type === type); ok(r?.status === "hold back", `${type}: ${JSON.stringify(r)}`); }],
+  [/^need-now suggests "([a-z-]+)" at ([0-9.]+)$/, (w, type, at) => { const r = JSON.parse(node(w, "packages/naive/src/engine/need-now.ts", w.dir, "--json").stdout).rows.find((x) => x.type === type); ok(r?.status === "suggest now" && r.now === Number(at), `${type}: ${JSON.stringify(r)}`); }],
+  [/^need-now holds back "([a-z-]+)"$/, (w, type) => { const r = JSON.parse(node(w, "packages/naive/src/engine/need-now.ts", w.dir, "--json").stdout).rows.find((x) => x.type === type); ok(r?.status === "hold back", `${type}: ${JSON.stringify(r)}`); }],
   [/^"([a-z-]+)" can move on its own$/, (w, id) => ok(find(w, id)?.lane === "async", `${id}: ${find(w, id)?.lane}`)],
   [/^"([a-z-]+)" moves in order$/, (w, id) => ok(find(w, id)?.lane === "sync", `${id}: ${find(w, id)?.lane}`)],
-  [/^need-now rates "([a-z-]+)" at ([0-9.]+)$/, (w, type, at) => { const r = JSON.parse(node(w, "packages/naive/src/engine/need-now.mjs", w.dir, "--json").stdout).rows.find((x) => x.type === type); ok(r?.now === Number(at), `${type}: ${JSON.stringify(r)}`); }],
+  [/^need-now rates "([a-z-]+)" at ([0-9.]+)$/, (w, type, at) => { const r = JSON.parse(node(w, "packages/naive/src/engine/need-now.ts", w.dir, "--json").stdout).rows.find((x) => x.type === type); ok(r?.now === Number(at), `${type}: ${JSON.stringify(r)}`); }],
 ];

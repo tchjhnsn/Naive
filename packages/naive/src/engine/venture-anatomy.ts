@@ -40,8 +40,8 @@ import { ventureFile } from "../core/venture-paths.ts";
 import { globRegExp, readDataModel, readSchema, venturePaths } from "../records/index.ts";
 import { validateValue } from "../records/validate.ts";
 import { pathsAsOf, readAsOf } from "../store/as-of.ts";
-import { agentWrote } from "./foundation.mjs";
-import { CANVAS, leanCanvas } from "./lean-canvas.mjs";
+import { agentWrote } from "./foundation.ts";
+import { CANVAS, leanCanvas } from "./lean-canvas.ts";
 import type { VentureAnatomy } from "../records/types/records.d.ts";
 
 const repo = new URL("../../../..", import.meta.url).pathname;

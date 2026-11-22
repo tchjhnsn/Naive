@@ -6,7 +6,7 @@
 // draft is for <pattern>.plan.json. naive recipes plan (packages/naive/src/engine/recipes/eval-set.ts) draws the windows,
 // calls this draft and freezes the eval set at <venture>/_eval/<sha>/.
 import { createHash } from "node:crypto";
-import { cli, drop, questions, schemaOf, validate } from "./generate.mjs";
+import { cli, drop, questions, schemaOf, validate } from "./generate.ts";
 import { canonicalJson } from "../../core/signal-id.ts";
 import type { EvalPlan } from "../../records/types/records.d.ts";
 

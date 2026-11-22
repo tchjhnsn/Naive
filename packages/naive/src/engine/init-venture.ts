@@ -2,7 +2,7 @@
 // accounts/, the three pillars as stubs pointing to their guides (EE-010), a venture profile and a venture.json to fill in
 // (EE-011). Starting layers come from scaffold/defaults.json, by phase (EE-012).
 //
-//   node packages/naive/src/engine/init-venture.mjs <dir> <id> [--phase discovery] [--parent <id>] [--legal-form llc] [--layers purpose,governance]
+//   node packages/naive/src/engine/init-venture.ts <dir> <id> [--phase discovery] [--parent <id>] [--legal-form llc] [--layers purpose,governance]
 //                                [--type <venture type>] [--layout flat|structured|src]
 //
 // --type (packages/naive/src/engine/venture-types.json, EE-082) decides the package folders, the functions venture.json
@@ -20,7 +20,7 @@ import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { KBASE, ventureFile } from "../core/venture-paths.ts";
-import { primaryAnatomy } from "./generators/anatomy-cells.mjs";
+import { primaryAnatomy } from "./generators/anatomy-cells.ts";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repo = join(here, "../../../..");
@@ -37,7 +37,7 @@ const structured = layout === "structured";
 const vtype = typeId ? JSON.parse(readFileSync(join(here, "venture-types.json"), "utf8")).types.find((t) => t.id === typeId) : null;
 if (typeId && !vtype) { console.error(`unknown venture type ${typeId}: see node packages/naive/src/engine/venture-type.mjs list`); process.exit(2); }
 const [dir, id] = args;
-if (!dir || !id) { console.error("usage: node packages/naive/src/engine/init-venture.mjs <dir> <id> [--phase discovery] [--parent <id>] [--legal-form llc] [--layout flat|structured|src]"); process.exit(2); }
+if (!dir || !id) { console.error("usage: node packages/naive/src/engine/init-venture.ts <dir> <id> [--phase discovery] [--parent <id>] [--legal-form llc] [--layout flat|structured|src]"); process.exit(2); }
 if (!layers[phase]) { console.error(`unknown phase ${phase}: one of ${Object.keys(layers).join(", ")}`); process.exit(2); }
 if (existsSync(dir) && readdirSync(dir).length) { console.error(`${dir} already exists and is not empty: init creates new ventures only, and never writes into an existing project`); process.exit(1); }
 

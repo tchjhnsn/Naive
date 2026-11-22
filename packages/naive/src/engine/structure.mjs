@@ -129,7 +129,7 @@ export async function manifest(dir) {
   let derived = null;
   if (!v.packages) {
     // The packages that fit the phase now, plus every package that already holds a record.
-    const { packages } = await import("./packages.mjs");
+    const { packages } = await import("./packages.ts");
     const p = packages(dir);
     const holding = names.filter((n) => { const k = pkgOf(n); return (k.records ?? []).length && existsSync(ventureFile(dir, n)) && readdirSync(ventureFile(dir, n)).some((f) => /\.(json|md|mdx)$/.test(f)); });
     derived = [...new Set([...p.core.filter((x) => x.in === "now").map((x) => x.id), ...holding])];

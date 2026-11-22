@@ -27,13 +27,13 @@ import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, isAbsolute, join, relative } from "node:path";
-import { FRAME, foundation } from "./foundation.mjs";
+import { FRAME, foundation } from "./foundation.ts";
 import { actingAgent, agentFromEnv, record as prov } from "../core/provenance.ts";
 import { glob as routeFileGlob, routes } from "../records/routes/routes.ts";
 // Caching hook (F-12): the decision list is computed once per router action (packages/naive/src/engine/caching.ts).
 import { memo } from "./caching.ts";
 import { roles as ventureRoles } from "./venture-type.mjs";
-import { impact } from "./impact.mjs";
+import { impact } from "./impact.ts";
 import { mark } from "./stale.mjs";
 import { changedReasons, citesOf, stamp } from "./reasons.mjs";
 import { grantBacked, layoutOf, liveGrant, logicalFiles, readDelegation, scopeWithin, ventureFile } from "../core/venture-paths.ts";
@@ -56,7 +56,7 @@ type Entry = Omit<DecisionRecord, "layer" | "decides" | "boundary" | "parent"> &
   part_of?: "foundation";
   statement_status?: string;
 };
-/** One foundation statement as foundation.mjs reports it, with its status. */
+/** One foundation statement as foundation.ts reports it, with its status. */
 type FoundationStatement = { id: string; record: string | null; status: string; derived_from?: string; agent_wrote?: boolean; path?: string };
 /** A delegation grant. */
 type Grant = Delegation["grants"][number];
@@ -116,7 +116,7 @@ type Draft = Omit<Partial<DecisionRecord>, "needed_in" | "layer" | "status" | "r
 type ServerWritten = "version" | "versions" | "merged" | "rolled_back_from" | "proposed";
 /** What an agent may propose: a draft, the folder beside the record it decides (at) and the file's name. */
 export type ProposeInput = Omit<Draft, ServerWritten> & { [K in ServerWritten]?: unknown } & { at?: string; name?: string };
-/** What impact.mjs returns for a merged version: its map file, how many records it affects, and per function. */
+/** What impact.ts returns for a merged version: its map file, how many records it affects, and per function. */
 export type ImpactSummary = { file: string; affected: number; functions: { function: string; affected: number; proposed: string[] }[] };
 /** What a decision door returns: a refusal with its reason, or what it did. */
 export type DoorResult<T> = { ok: false; error: string; result?: undefined } | { ok: true; result: T; error?: undefined };
@@ -292,7 +292,7 @@ export function actionFor(d: { id: string; question: string; source: DecisionSou
 
 /** A decision's own weight, before anything that waits on it (EE-057): a deadline, a stale parent, what
  *  it unlocks, whether it settles the foundation, a draft ready to approve, outcomes to test. Scored for
- *  every open decision, so a gate can carry the weight of what it holds (packages/naive/src/engine/docket.mjs). */
+ *  every open decision, so a gate can carry the weight of what it holds (packages/naive/src/engine/docket.ts). */
 export function ownScore(d: Scorable, phase: string, now = Date.now()): { score: number; why: string[]; why_cites?: WhyCite[] } {
   const why: string[] = [];
   let s = 0;
@@ -434,7 +434,7 @@ const setField = (o: Fields, path: string, v: unknown) => { const ks = path.spli
 /** Merge: apply a decided version's answer to the records it decides (applies_to). A separate step from
  *  approving, so it can be delegated: only a person may merge unless a delegation grant names merge for
  *  this decision's class (the delegation suite). Logged as a merge in provenance. Ends by building the
- *  decision's impact map (packages/naive/src/engine/impact.mjs) and returns its summary. */
+ *  decision's impact map (packages/naive/src/engine/impact.ts) and returns its summary. */
 export function merge(dir: string, id: string, { by, role, via = "cli", note, today }: { by?: string; role?: string; via?: string; note?: string; today?: string } = {}): DoorResult<{ merged: string; version: number; files: string[]; grant?: string; variants_stale: string[]; provenance: string; impact: ImpactSummary | { error: string } }> {
   const file = fileOf(dir, id);
   if (!file) return { ok: false, error: `no decision ${id}` };

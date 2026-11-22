@@ -13,7 +13,7 @@
 // expected decision before the next, so a miss early does not cascade.
 
 import { readFileSync } from "node:fs";
-import { rankDocket } from "./docket.mjs";
+import { rankDocket } from "./docket.ts";
 
 const FILE = new URL("../records/examples/docket-scenarios.json", import.meta.url).pathname;
 const NOW = Date.parse("2026-10-29T12:00:00Z");

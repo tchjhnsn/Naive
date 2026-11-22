@@ -2,11 +2,11 @@
 // The Lean Canvas as the venture's shared kernel (EE-155). The canvas (packages/naive/src/functions/strategy/lean-canvas.json,
 // after Maurya's Running Lean) has nine boxes, and each box is a reference to a record attribute, never a copy. This
 // module resolves the references for one venture: each box's owner (the function data-model.json gives its record
-// type), its status and value (read the way the identity statements are, through foundation.mjs `statement`), the
+// type), its status and value (read the way the identity statements are, through foundation.ts `statement`), the
 // files it points at, and what filling it unlocks. Then it orders the boxes into a roadmap: first what the current
 // phase's gate asks for, in the gate's own order, then what the next gate asks for, then the rest in canvas order.
 //
-//   node packages/naive/src/engine/lean-canvas.mjs <venture dir> [--box <id>] [--json]
+//   node packages/naive/src/engine/lean-canvas.ts <venture dir> [--box <id>] [--json]
 //
 // What a box unlocks comes from Naive's data, never from a model:
 //   gate      the phase gate whose exit evidence names the box's record type (phase.json gate.evidence)
@@ -17,7 +17,7 @@
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { filesOf, statement } from "./foundation.mjs";
+import { filesOf, statement } from "./foundation.ts";
 import { readDataModel, venturePaths } from "../records/index.ts";
 
 const repo = new URL("../../../..", import.meta.url).pathname;
@@ -144,7 +144,7 @@ export function problems() {
 if (import.meta.url === `file://${process.argv[1]}`) {
   const dir = process.argv[2];
   const flag = (/** @type {string} */ n) => { const i = process.argv.indexOf(n); return i > 0 ? process.argv[i + 1] : undefined; };
-  if (!dir || !existsSync(join(dir, "venture.json"))) { console.error("usage: node packages/naive/src/engine/lean-canvas.mjs <venture dir> [--box <id>] [--json]"); process.exit(2); }
+  if (!dir || !existsSync(join(dir, "venture.json"))) { console.error("usage: node packages/naive/src/engine/lean-canvas.ts <venture dir> [--box <id>] [--json]"); process.exit(2); }
   const errs = problems();
   for (const e of errs) console.error(`FAIL  ${e}`);
   if (errs.length) process.exit(1);

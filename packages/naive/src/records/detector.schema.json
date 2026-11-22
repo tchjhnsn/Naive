@@ -29,7 +29,7 @@
     },
     "call_site": {
       "type": "string",
-      "description": "Where the call is made, such as a module and the setting it reads, for example packages/naive/src/engine/gate.mjs confidence_below."
+      "description": "Where the call is made, such as a module and the setting it reads, for example packages/naive/src/engine/gate.ts confidence_below."
     },
     "assign_to": {
       "type": "string",

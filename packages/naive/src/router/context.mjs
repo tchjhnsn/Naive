@@ -219,7 +219,7 @@ function runJson(script, args, ms) {
 
 /** The template for a route: the need-now ranking and open decisions, computed now. Parts that run past template_ms come back pending. */
 export async function templateFor(r, dir, set = settings(dir)) {
-  const [nn, ds] = await Promise.all([runJson("packages/naive/src/engine/need-now.mjs", [dir, "--json"], set.template_ms), runJson("packages/naive/src/engine/decisions.ts", [dir, "--json"], set.template_ms)]);
+  const [nn, ds] = await Promise.all([runJson("packages/naive/src/engine/need-now.ts", [dir, "--json"], set.template_ms), runJson("packages/naive/src/engine/decisions.ts", [dir, "--json"], set.template_ms)]);
   const out = { computed_at: new Date().toISOString() };
   const pending = [];
   if (nn.ok) {

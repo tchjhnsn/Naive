@@ -8,7 +8,7 @@ import { join } from "node:path";
 const CORE = ["title", "department", "departments", "purpose", "required", "optional", "refs", "planned", "base", "when", "why", "unlocks", "not_modeled"];
 const HANDOFF = ["title", "for", "from", "base", "when", "why", "unlocks", "not_modeled"];
 
-/** The catalog in the shape packages/naive/src/engine/packages.mjs and the idea routes expect. */
+/** The catalog in the shape packages/naive/src/engine/packages.ts and the idea routes expect. */
 export function loadPackages(repo) {
   const catalog = JSON.parse(readFileSync(join(repo, "packages/naive/library/packages/catalog.json"), "utf8"));
   const { order, note_split, ...rest } = catalog;

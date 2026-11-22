@@ -25,7 +25,7 @@ const jsonOf = (p) => { try { return JSON.parse(p.stdout); } catch { return null
 function venture(id) {
   const workspace = mkdtempSync(join(tmpdir(), "lean-replay-"));
   const dir = join(workspace, id);
-  const init = spawnSync("node", [join(repo, "packages/naive/src/engine/init-venture.mjs"), dir, id, "--phase", "discovery"], { encoding: "utf8" });
+  const init = spawnSync("node", [join(repo, "packages/naive/src/engine/init-venture.ts"), dir, id, "--phase", "discovery"], { encoding: "utf8" });
   if (init.status !== 0) throw new Error(init.stderr || init.stdout);
   return { workspace, id, dir, cleanup: () => rmSync(workspace, { recursive: true, force: true }) };
 }

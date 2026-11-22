@@ -33,7 +33,7 @@ async function harnessSuite(a) {
   const ws = mkdtempSync(join(tmpdir(), `naive-adapter-${a.name}-`));
   try {
     const dir = join(ws, "adapted");
-    const init = spawnSync("node", [join(repo, "packages/naive/src/engine/init-venture.mjs"), dir, "adapted"], { encoding: "utf8" });
+    const init = spawnSync("node", [join(repo, "packages/naive/src/engine/init-venture.ts"), dir, "adapted"], { encoding: "utf8" });
     const up = spawnSync("node", [join(repo, "packages/naive/src/engine/upgrade-venture.mjs"), dir], { encoding: "utf8" });
     t("a new venture is created and upgraded to the installed framework", init.status === 0 && up.status === 0, init.stderr + up.stderr);
     const first = await adapt(dir, a.name);
@@ -60,7 +60,7 @@ async function harnessSuite(a) {
       const kept = await adapt(dir, a.name);
       t("a file the founder changed is kept, never overwritten", kept.kept.some((k) => k.path === a.files[0].path) && readFileSync(f, "utf8") === edited, JSON.stringify(kept));
       const other = join(ws, "own");
-      spawnSync("node", [join(repo, "packages/naive/src/engine/init-venture.mjs"), other, "own"], { encoding: "utf8" });
+      spawnSync("node", [join(repo, "packages/naive/src/engine/init-venture.ts"), other, "own"], { encoding: "utf8" });
       mkdirSync(dirname(join(other, a.files[0].path)), { recursive: true });
       writeFileSync(join(other, a.files[0].path), "the founder's own file\n");
       const theirs = await adapt(other, a.name);

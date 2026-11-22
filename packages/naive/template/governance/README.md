@@ -54,7 +54,7 @@ venture-template/
 
 ## Default detectors
 
-`detectors/<id>.json` holds one detector record (`packages/naive/src/records/detector.schema.json`) for each yes or no threshold Naive already had, with today's constant as its line, `set_by: "default"`. A call site reads its line through `packages/naive/src/engine/detectors.ts`: the venture's own `governance/detectors/<id>.json` first, then the default here, then the constant in the code. A venture moves a line by keeping its own copy with the person who set it. `init-venture.mjs` does not copy these files, so a venture without its own copy follows Naive's default.
+`detectors/<id>.json` holds one detector record (`packages/naive/src/records/detector.schema.json`) for each yes or no threshold Naive already had, with today's constant as its line, `set_by: "default"`. A call site reads its line through `packages/naive/src/engine/detectors.ts`: the venture's own `governance/detectors/<id>.json` first, then the default here, then the constant in the code. A venture moves a line by keeping its own copy with the person who set it. `init-venture.ts` does not copy these files, so a venture without its own copy follows Naive's default.
 
 `detectors/triage-accept.json` is new with raw triage (build item 1, `docs/design/RAW_TRIAGE_2026-11-09.md`) rather than a moved constant: the line Jev's labels on a raw entry clear, 0.95 like `feedback-accept`. A label at or above it, or at or below one minus it, files; one between is held for the founder. Its score is Jev's certainty, max(p, 1 - p), with `yes_when: below`, so a yes call is a held label, as at the gate: a held label the founder answers as Jev guessed is a false alarm, and a filed label the founder changes is a miss.
 
@@ -62,8 +62,8 @@ venture-template/
 
 | Detector | Line | yes when | Read at |
 |---|---|---|---|
-| `gate-confidence` | 0.7 | below (strict) | the gate's `confidence_below`, through `configFor` in `naive-config.mjs`; `naive.config.json` `thresholds.confidence` and a number in the rule still win |
-| `feedback-accept` | 0.95 | at or above | `feedback-route.mjs` `route`; an `accept` option still wins |
+| `gate-confidence` | 0.7 | below (strict) | the gate's `confidence_below`, through `configFor` in `naive-config.ts`; `naive.config.json` `thresholds.confidence` and a number in the rule still win |
+| `feedback-accept` | 0.95 | at or above | `feedback-route.ts` `route`; an `accept` option still wins |
 | `idea-map-tag` | 0.8 | at or above | the idea map's tag threshold, through `configFor`; `naive.config.json` `thresholds.idea-map` still wins |
 | `decision-index-note` | 0.25 | at or above | the `threshold` the decision index records |
 | `validation-recommend` | 0.6 | at or above | `check-validation.ts --score` |

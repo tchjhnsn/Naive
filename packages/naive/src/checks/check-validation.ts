@@ -29,7 +29,7 @@ import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import type { Product, ValidationEvidence, ValidationGoToMarket, ValidationOperationsReadiness, ValidationPricing, ValidationProblem, ValidationProductMarketFit, ValidationSolution, ValidationTeam, Venture } from "../records/types/records.d.ts";
 
-import { LEVELS, WEIGHT, START, gradeItem, gradeRecord } from "../engine/evidence-grade.mjs";
+import { LEVELS, WEIGHT, START, gradeItem, gradeRecord } from "../engine/evidence-grade.ts";
 export { LEVELS, WEIGHT, START, gradeItem, gradeRecord };
 
 /** A validation record. Which sub-score it is comes from its file name, so code narrows it by that name. */

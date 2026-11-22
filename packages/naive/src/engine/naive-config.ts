@@ -140,7 +140,7 @@ export function pinsBlocking(config, recordType) {
 }
 
 // A venture's naive.config.json (EE-073): the framework's defaults, overridden for one venture.
-// The gate reads `gate` (packages/naive/src/engine/gate.mjs). Upgrades read and write the pins (EE-076, U-1 to U-5):
+// The gate reads `gate` (packages/naive/src/engine/gate.ts). Upgrades read and write the pins (EE-076, U-1 to U-5):
 //
 //   naive      { version, channel }   the framework version the venture is on, and its channel
 //                                     (stable, or canary for experimental packages)

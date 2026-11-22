@@ -3,7 +3,7 @@
 
 import { readFileSync } from "node:fs";
 import { provenanceOf } from "../../engine/use-model.mjs";
-import { hold, packageGates } from "../../engine/gate.mjs";
+import { hold, packageGates } from "../../engine/gate.ts";
 import { judge } from "../../router/router.mjs";
 
 let failed = 0;
@@ -21,8 +21,8 @@ t("the gate holds a fail-closed write as a draft and makes no model or network c
   ok(hold({ fail_closed: ["foundation"] }, "foundation/problem", "agent")?.hold === "draft");
   ok(hold({ fail_closed: ["foundation"] }, "foundation/problem", "person") === null);
   ok(hold({ fail_closed: ["foundation"] }, "validation/solution", "agent") === null);
-  const src = readFileSync(new URL("../../engine/gate.mjs", import.meta.url), "utf8");
-  ok(!/\bfetch\s*\(|\bhttps?:\/\/|child_process|node:http|node:https/.test(src), "gate.mjs calls out");
+  const src = readFileSync(new URL("../../engine/gate.ts", import.meta.url), "utf8");
+  ok(!/\bfetch\s*\(|\bhttps?:\/\/|child_process|node:http|node:https/.test(src), "gate.ts calls out");
   ok(packageGates().some((g) => g.package === "foundation"));
 });
 

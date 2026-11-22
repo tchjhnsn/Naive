@@ -24,7 +24,7 @@ import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { accept, adopt, check, CONFIRM, draft, drop, guide, plan, registry, reject, setChannel, stage, updateFramework, upgrade } from "./upgrades.mjs";
-import { kitFor } from "./kits.mjs";
+import { kitFor } from "./kits.ts";
 
 const argv = process.argv.slice(2);
 const has = (n) => argv.includes(`--${n}`);

@@ -9,12 +9,12 @@
 // The gate is fast and never calls a model (X-4). Confidence routing reads a score the write already
 // carries; a write without a score is never held for confidence. Access is checked here and again
 // at the record by the router, on every read and write (F-5). The gate decides; storing a held
-// write, and keeping differing drafts side by side, is packages/naive/src/engine/gate-drafts.mjs.
+// write, and keeping differing drafts side by side, is packages/naive/src/engine/gate-drafts.ts.
 
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { may } from "./access.ts";
-import { configFor, functionOf, packageDefs, packagesOf, pinsBlocking, threshold } from "./naive-config.mjs";
+import { configFor, functionOf, packageDefs, packagesOf, pinsBlocking, threshold } from "./naive-config.ts";
 
 const repo = new URL("../../../..", import.meta.url).pathname;
 

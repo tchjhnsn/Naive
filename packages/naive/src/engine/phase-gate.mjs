@@ -4,7 +4,7 @@
 // on the levels very low, low, moderate and high, the way a password meter has one, and the policy gives each item a
 // minimum level and a boundary: fail-closed refuses the phase change, fail-open lets it pass and reports the
 // shortfall as an open risk. Interviews are the strongest common proof but not the only one: a record's own evidence
-// is graded by packages/naive/src/engine/evidence-grade.mjs (adapted from GRADE), so desk research from three
+// is graded by packages/naive/src/engine/evidence-grade.ts (adapted from GRADE), so desk research from three
 // independent sources can reach moderate.
 //
 //   node packages/naive/src/engine/phase-gate.mjs <venture dir> [--preset <name>] [--json]
@@ -20,7 +20,7 @@
 // phase_gates.items.<phase>.<item>; phase_gates.count_levels replaces the interview counts per level and
 // phase_gates.staleness_months how old evidence may be before it drops a level (both proposed by gate-calibration.ts, EE-157). Scoring is pure; reading the venture is an Effect over VentureFs (EE-125), and
 // phaseGate runs it with runSync. Exit 0 for a report, 2 on a bad call.
-// A .mjs file because packages/naive/src/engine/lifecycle.mjs imports it and the router runs it as a command route.
+// A .mjs file because packages/naive/src/engine/lifecycle.ts imports it and the router runs it as a command route.
 
 import { Effect } from "effect";
 import { join } from "node:path";
@@ -29,8 +29,8 @@ import { runSync } from "../core/effect/run.ts";
 import { ventureFile } from "../core/venture-paths.ts";
 import { ROOT } from "../phases/phases.mjs";
 import { readDataModel, venturePaths } from "../records/index.ts";
-import { gradeRecord, LEVELS } from "./evidence-grade.mjs";
-import { CONFIG } from "./naive-config.mjs";
+import { gradeRecord, LEVELS } from "./evidence-grade.ts";
+import { CONFIG } from "./naive-config.ts";
 
 /**
  * @typedef {"very low" | "low" | "moderate" | "high"} Level
@@ -81,7 +81,7 @@ export function levelFromCount(n, countLevels) {
   return "very low";
 }
 
-/** What reaches each next level under the GRADE rules (evidence-grade.mjs), for a graded record. */
+/** What reaches each next level under the GRADE rules (evidence-grade.ts), for a graded record. */
 export const GRADE_NEXT = Object.freeze({
   low: "add desk research about the target audience, or specific stated answers from 5 or more of the target audience (one such source reaches low)",
   moderate: "add commitment from the target audience with a sample of 5 or more (a deposit, a pre-order, a letter of intent), or three distinct sources that each grade low or better",

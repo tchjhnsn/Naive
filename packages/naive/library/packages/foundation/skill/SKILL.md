@@ -48,7 +48,7 @@ Open decisions for this function come from `mentura_decisions`. Propose with `me
 
 ## Checks
 
-`naive check` runs every check that applies to the venture. For this function: `packages/naive/src/checks/check-telos.ts`, `packages/naive/src/checks/check-validation.ts`, `packages/naive/src/engine/foundation.mjs`, `packages/naive/src/checks/lint-foundation.ts` (route `foundation/lint`) and the schema checks (`packages/naive/src/records/validate.ts`). `foundation/lint` warns, and does not fail, unless `naive.config.json` sets `foundation_lint.rules.<id>.mode` to `fail-closed`. Run it after each write, and fix a failure before you report the work done.
+`naive check` runs every check that applies to the venture. For this function: `packages/naive/src/checks/check-telos.ts`, `packages/naive/src/checks/check-validation.ts`, `packages/naive/src/engine/foundation.ts`, `packages/naive/src/checks/lint-foundation.ts` (route `foundation/lint`) and the schema checks (`packages/naive/src/records/validate.ts`). `foundation/lint` warns, and does not fail, unless `naive.config.json` sets `foundation_lint.rules.<id>.mode` to `fail-closed`. Run it after each write, and fix a failure before you report the work done.
 
 ## Actions and artifacts
 

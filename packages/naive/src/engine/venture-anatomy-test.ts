@@ -9,7 +9,7 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { addCounts, type ApplicationDate, cellStatuses, isApplicationDate, confidenceOf, countOf, coverageOf, problems, problemsOf, statusAt, submatrix, ventureAnatomy, viewOf } from "./venture-anatomy.ts";
-import { leanCanvas } from "./lean-canvas.mjs";
+import { leanCanvas } from "./lean-canvas.ts";
 import { CannotRun } from "../core/effect/errors.ts";
 import { draft as draftMarket } from "./generators/market-anatomy.ts";
 import type { VentureAnatomy } from "../records/types/records.d.ts";
@@ -24,7 +24,7 @@ const repo = new URL("../../../..", import.meta.url).pathname;
 const node = (args: string[], env: Record<string, string> = {}) => spawnSync("node", args, { cwd: repo, encoding: "utf8", env: { ...process.env, ...env } });
 const ws = mkdtempSync(join(tmpdir(), "venture-anatomy-"));
 const dir = join(ws, "acme");
-const made = node(["packages/naive/src/engine/init-venture.mjs", dir, "acme", "--type", "software-startup"]);
+const made = node(["packages/naive/src/engine/init-venture.ts", dir, "acme", "--type", "software-startup"]);
 expect("a software startup venture starts", made.status === 0, made.stderr);
 
 // ---- The definition ----

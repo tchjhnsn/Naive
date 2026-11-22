@@ -1,12 +1,12 @@
 // Research programs (autoresearch design, everything-ecosystem docs/design/AUTORESEARCH_RECORDS_2026-11-06.md, "program.md
 // per function"). A function's research program is programs/<function>.md in the venture: the person-edited
 // instructions its researcher (the <function>-researcher role) reads, one section per pattern it works. Only a person
-// writes it (writer person in the data model; writerRule in packages/naive/src/engine/gate.mjs).
+// writes it (writer person in the data model; writerRule in packages/naive/src/engine/gate.ts).
 //
 // Each function module ships a starter at packages/naive/src/functions/<function>/templates/research-program.md. It is
 // copied into a venture once, when the venture lists the function in venture.json departments (EE-047) and the
 // venture has no programs/<function>.md yet: packages/naive/src/engine/add-department.ts copies it when a function is
-// imported (init-venture.mjs imports a typed venture's functions through it), and naive upgrade copies any that are
+// imported (init-venture.ts imports a typed venture's functions through it), and naive upgrade copies any that are
 // missing. A file that exists is never touched, so the venture's copy is the founder's from then on.
 //
 // This module is plain JavaScript because naive upgrade and init run it from an installed copy, where Node does

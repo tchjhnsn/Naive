@@ -33,7 +33,7 @@ const HOSTED = /is refused in hosted mode \(NAIVE_RUNTIME=hosted\): /;
 
 const ws = mkdtempSync(join(tmpdir(), "hosted-runtime-"));
 const dir = join(ws, "kettle");
-const init = spawnSync("node", [join(repo, "packages/naive/src/engine/init-venture.mjs"), dir, "kettle", "--layers", "purpose"], { encoding: "utf8" });
+const init = spawnSync("node", [join(repo, "packages/naive/src/engine/init-venture.ts"), dir, "kettle", "--layers", "purpose"], { encoding: "utf8" });
 if (init.status !== 0) throw new Error(init.stderr);
 const handoffs = ventureFile(dir, "operations/handoffs");
 mkdirSync(handoffs, { recursive: true });

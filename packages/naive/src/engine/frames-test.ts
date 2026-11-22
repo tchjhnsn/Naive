@@ -1,4 +1,4 @@
-// The decision library (packages/naive/src/engine/frames.mjs): frames are checked to name no answer, a founder's words find
+// The decision library (packages/naive/src/engine/frames.ts): frames are checked to name no answer, a founder's words find
 // their frame, premises are judged against the venture's records (here by a stand-in judge), code settles
 // the verdicts, and the frame's decisions are proposed open for the founder.
 
@@ -19,7 +19,7 @@ if (made.status !== 0) { console.log(`FAIL create-venture: ${made.stderr}`); pro
 for (const k of ["TYPESAFE_API_KEY", "TYPESAFEAI_API_KEY"]) delete process.env[k];
 process.env.NAIVE_JUDGE_CMD = `node ${join(repo, "packages/naive/src/records/examples/frames/judge.ts")}`;
 process.env.MENTURA_WORKSPACE = base;
-const F = await import("./frames.mjs");
+const F = await import("./frames.ts");
 const file = (id) => JSON.parse(readFileSync(ventureFile(dir, `decisions/${id}.decision.json`), "utf8"));
 
 let failed = 0;

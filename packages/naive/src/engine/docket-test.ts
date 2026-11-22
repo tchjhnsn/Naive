@@ -4,7 +4,7 @@
 // replayed day always settles the top decision of the top function.
 import { readdirSync } from "node:fs";
 import { join } from "node:path";
-import { docket, replay } from "./docket.mjs";
+import { docket, replay } from "./docket.ts";
 
 const root = new URL("../records/examples/workspace/ventures/", import.meta.url).pathname;
 const now = Date.parse("2026-10-29T12:00:00Z");

@@ -7,8 +7,8 @@ import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, 
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { context } from "../../engine/upgrades.mjs";
-import * as telosToGoals from "../../engine/migrations/telos-to-goals.mjs";
-import * as structured from "../../engine/migrations/structured-layout.mjs";
+import * as telosToGoals from "../../engine/migrations/telos-to-goals.ts";
+import * as structured from "../../engine/migrations/structured-layout.ts";
 import { physical } from "../../core/venture-paths.ts";
 import { call } from "../../router/router.mjs";
 import { naiveScript } from "../../core/scripts.ts";

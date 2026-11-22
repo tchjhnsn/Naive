@@ -99,7 +99,7 @@ const bet = {
   provenance: { drafted_by: { kind: "agent", id: "replay" } },
 };
 
-const init = spawnSync("node", [join(repo, "packages/naive/src/engine/init-venture.mjs"), dir, venture, "--phase", "validation"], { encoding: "utf8" });
+const init = spawnSync("node", [join(repo, "packages/naive/src/engine/init-venture.ts"), dir, venture, "--phase", "validation"], { encoding: "utf8" });
 if (init.status !== 0) {
   console.error(init.stdout, init.stderr);
   process.exit(1);

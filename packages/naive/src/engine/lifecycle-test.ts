@@ -1,11 +1,11 @@
-// The venture development lifecycle (packages/naive/src/engine/lifecycle.mjs): the gate between phases is the venture's own
+// The venture development lifecycle (packages/naive/src/engine/lifecycle.ts): the gate between phases is the venture's own
 // exit criteria, met by a person; an agent can never move the phase.
 
 import { spawnSync } from "node:child_process";
 import { cpSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { advance, lifecycle, meet } from "./lifecycle.mjs";
+import { advance, lifecycle, meet } from "./lifecycle.ts";
 
 const repo = new URL("../../../..", import.meta.url).pathname;
 const tmp = mkdtempSync(join(tmpdir(), "lifecycle-"));
@@ -31,7 +31,7 @@ r = advance(dir, "beachhead", { by: person });
 expect("the person moves the venture on, and the gate is recorded", r.ok && phaseOf() === "beachhead" && r.result.gate.passed === true, r.error);
 expect("the move is in provenance", readFileSync(join(dir, "provenance.jsonl"), "utf8").includes("validation -> beachhead"));
 expect("going back needs a reason", !advance(dir, "validation", { by: person }).ok && advance(dir, "validation", { reason: "retention fell", by: person }).ok);
-const cli = spawnSync("node", [join(repo, "packages/naive/src/engine/lifecycle.mjs"), dir], { encoding: "utf8" });
+const cli = spawnSync("node", [join(repo, "packages/naive/src/engine/lifecycle.ts"), dir], { encoding: "utf8" });
 expect("the CLI shows where the venture is", cli.status === 0 && /phase 2 of 5/.test(cli.stdout), cli.stderr + cli.stdout);
 rmSync(tmp, { recursive: true, force: true });
 console.log(failed ? `\n${failed} failing` : "\nall passing");

@@ -56,7 +56,7 @@ A person accepts a kept recipe with `mentura accept recipes/<pattern>`, which ru
 | Piece | State |
 |---|---|
 | The read clamp for researcher roles, and `_eval/` refused to every agent | built (`packages/naive/src/router/reads-as-of.mjs`) |
-| Programs are a person's: `operations/research-program/<id>`, writer person | built (`writerRule` in `packages/naive/src/engine/gate.mjs`) |
+| Programs are a person's: `operations/research-program/<id>`, writer person | built (`writerRule` in `packages/naive/src/engine/gate.ts`) |
 | The record types: recipe, eval plan, experiment log, reception | built (`packages/naive/src/records/README.md`) |
 | The sandbox and its lint | built (`packages/naive/src/engine/recipes/README.md`) |
 | Eval sets, scoring, plans and the check command (`naive recipes plan`, `naive recipes check`) | built (build plan item 5) |

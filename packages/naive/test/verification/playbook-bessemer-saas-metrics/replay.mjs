@@ -200,7 +200,7 @@ async function write(workspace, venture, route, input, actor = "person") {
 
 function initVenture(workspace, id, phase) {
   const dir = join(workspace, "ventures", id);
-  const made = spawnSync("node", [join(repo, "packages/naive/src/engine/init-venture.mjs"), dir, id, "--phase", phase], { encoding: "utf8" });
+  const made = spawnSync("node", [join(repo, "packages/naive/src/engine/init-venture.ts"), dir, id, "--phase", phase], { encoding: "utf8" });
   if (made.status !== 0) throw new Error(made.stderr || made.stdout);
   return dir;
 }

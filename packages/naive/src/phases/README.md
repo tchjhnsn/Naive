@@ -31,7 +31,7 @@ flowchart LR
 | [`beachhead/phase.json`](./beachhead/phase.json) | Repeatability. |
 | [`scale/phase.json`](./scale/phase.json) | Market leadership with healthy margins. |
 | [`platform/phase.json`](./platform/phase.json) | Others build on it. |
-| [`gate-policies.json`](./gate-policies.json) | How strict each phase gate is (EE-156): the eight discovery gate items (customer, problem, alternatives, solution-fit, channel, economic-signal, validation-plan, decision), each with what proves it and how its strength is measured on the evidence levels very low to high (adapted from GRADE, through [`evidence-grade.mjs`](../engine/evidence-grade.mjs)), and the presets lenient, standard and strict, which give each item a minimum level and a boundary: fail-closed refuses the phase change, fail-open passes and names the shortfall as an open risk. Its schema is `packages/naive/src/records/phase-gate-policies.schema.json` and its generator [`phase-gate-policies.ts`](../engine/generators/phase-gate-policies.ts). Every threshold is an unvalidated prior. Design: `docs/design/PHASE_GATE_STRENGTH_2026-11-22.md`. |
+| [`gate-policies.json`](./gate-policies.json) | How strict each phase gate is (EE-156): the eight discovery gate items (customer, problem, alternatives, solution-fit, channel, economic-signal, validation-plan, decision), each with what proves it and how its strength is measured on the evidence levels very low to high (adapted from GRADE, through [`evidence-grade.ts`](../engine/evidence-grade.ts)), and the presets lenient, standard and strict, which give each item a minimum level and a boundary: fail-closed refuses the phase change, fail-open passes and names the shortfall as an open risk. Its schema is `packages/naive/src/records/phase-gate-policies.schema.json` and its generator [`phase-gate-policies.ts`](../engine/generators/phase-gate-policies.ts). Every threshold is an unvalidated prior. Design: `docs/design/PHASE_GATE_STRENGTH_2026-11-22.md`. |
 
 ## Run and test
 
@@ -40,7 +40,7 @@ flowchart LR
 
 ## How it connects
 
-- Called by: [`lifecycle.mjs`](../engine/lifecycle.mjs), [`need-now.mjs`](../engine/need-now.mjs), [`anatomy.mjs`](../functions/products/frameworks/product-anatomy/anatomy.mjs) and [`check-phases.ts`](../checks/check-phases.ts). [`routes.ts`](../records/routes/routes.ts) reads the `phase.json` files as data, because the records unit comes before this one.
+- Called by: [`lifecycle.ts`](../engine/lifecycle.ts), [`need-now.ts`](../engine/need-now.ts), [`anatomy.mjs`](../functions/products/frameworks/product-anatomy/anatomy.mjs) and [`check-phases.ts`](../checks/check-phases.ts). [`routes.ts`](../records/routes/routes.ts) reads the `phase.json` files as data, because the records unit comes before this one.
 - Calls: [`core/effect`](../core/effect/README.md) only. It checks each file's shape itself, so it never depends on the record validator, which a host or a test may replace.
 
 ## Not built

@@ -51,7 +51,7 @@ for (const c of ["check-ventures", "check-provenance", "check-people", "check-go
 
 // init-venture --layout src makes a new venture on the src layout from packages/naive/template/.
 const fresh = join(base, "fresh");
-const init = spawnSync("node", [join(repo, "packages/naive/src/engine/init-venture.mjs"), join(fresh, "v"), "fresh", "--type", "software-startup", "--layout", "src"], { encoding: "utf8" });
+const init = spawnSync("node", [join(repo, "packages/naive/src/engine/init-venture.ts"), join(fresh, "v"), "fresh", "--type", "software-startup", "--layout", "src"], { encoding: "utf8" });
 expect("init-venture --layout src copies the template's src/ and public/ and puts package folders under their function",
   init.status === 0 && layoutOf(join(fresh, "v")) === "src" && FUNCTIONS.every((f) => existsSync(join(fresh, "v/src", f))) && existsSync(join(fresh, "v/public"))
   && existsSync(join(fresh, "v/src/strategy/foundation")) && !existsSync(join(fresh, "v/foundation")), init.stderr);

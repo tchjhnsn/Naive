@@ -44,7 +44,7 @@ Counted in `packages/naive/src`, leaving out tests, evals and the contract suite
 Four patterns make up nearly all of it:
 
 1. **The venture's own folder is read and written with `fs`.** The router goes through a connector (`store/connectors/`) only when a record's source is not the venture itself (`remote` in `router/router.mjs`). Engine modules and checks read the folder directly, and their reads are synchronous.
-2. **Checks and engine scripts run as child processes.** For example, the router runs `need-now.mjs`, each gate check and each route script with `spawnSync("node", ...)`.
+2. **Checks and engine scripts run as child processes.** For example, the router runs `need-now.ts`, each gate check and each route script with `spawnSync("node", ...)`.
 3. **Every write is validated by Python.** The router and `router/boundaries.mjs` spawn `python3 packages/naive/src/records/validate.py` for each write.
 4. **A few features reach outside the venture.** `engine/run-handoff.mjs` runs a handoff's done-criteria with `/bin/bash -c`. `NAIVE_JUDGE_CMD`, `NAIVE_SITE_CMD`, `NAIVE_TRACE_CMD` and `NAIVE_MONEY_CMD` run commands named in the environment. `engine/activity.mjs` reads `~/.claude/projects`. `router/boundaries.mjs` and the port and upgrade tools call `git`. Several modules make scratch folders under the OS temp dir.
 

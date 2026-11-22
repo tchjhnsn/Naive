@@ -1,17 +1,17 @@
 #!/usr/bin/env node
-// The venture package with the idea map's routing (EE-067, EE-069, EE-061). packages/naive/src/engine/packages.mjs computes
+// The venture package with the idea map's routing (EE-067, EE-069, EE-061). packages/naive/src/engine/packages.ts computes
 // the package; route() in packages/naive/src/functions/strategy/frameworks/idea-map/route.mjs says where the founder's ideas for each
-// record stand and the one step that moves it. The idea map reads schema/ itself, so packages/naive/src/engine/packages.mjs
+// record stand and the one step that moves it. The idea map reads schema/ itself, so packages/naive/src/engine/packages.ts
 // cannot import it without a cycle; this module composes the two (router inversion, step 4c).
 //
 //   node packages/naive/src/router/orchestration/venture-package.mjs <venture> [--raising] [--hiring] [--answers <jev.json>] [--write] [--json]
 //   node packages/naive/src/router/orchestration/venture-package.mjs request <venture>   the Jev request for the questions the records leave open
 //
-// --write renders the readable view into <venture>/package/ (write() in packages/naive/src/engine/packages.mjs).
+// --write renders the readable view into <venture>/package/ (write() in packages/naive/src/engine/packages.ts).
 
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { packages, request, write } from "../../engine/packages.mjs";
+import { packages, request, write } from "../../engine/packages.ts";
 import { route } from "../../functions/strategy/frameworks/idea-map/route.mjs";
 
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));

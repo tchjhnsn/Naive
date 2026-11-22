@@ -2,7 +2,7 @@
 // a cells object with every one of them present, and the primary market and industry a new venture starts with. A cell
 // the answers do not give starts as { status: "unknown" }, because unknown is a value and never null: a new venture's
 // matrix is whole from the start, and filling it moves cells from unknown to estimated or known.
-// A .mjs file, not .ts, because init-venture.mjs imports it and runs under node_modules when Naive is installed, where
+// A .mjs file, not .ts, because init-venture.ts imports it and runs under node_modules when Naive is installed, where
 // Node does not strip types.
 import { readDataModel, readSchema } from "../../records/index.ts";
 import { validateValue } from "../../records/validate.ts";

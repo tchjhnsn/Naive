@@ -1,21 +1,21 @@
 // The router's hooks into the gate group (X-1 to X-6, P-2, P-7, U-4). Each is called from one
 // marked line in packages/naive/src/router/router.mjs, so the router stays the route table and the logic stays in
-// packages/naive/src/engine/gate.mjs (the verdict), packages/naive/src/engine/gate-drafts.mjs (held drafts) and packages/naive/src/engine/naive-config.mjs
+// packages/naive/src/engine/gate.ts (the verdict), packages/naive/src/engine/gate-drafts.ts (held drafts) and packages/naive/src/engine/naive-config.ts
 // (the venture's overrides).
 
 import { randomUUID } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
-import { confidenceCall, evaluate, writerRule } from "../engine/gate.mjs";
-import { trialOf, writeHeld } from "../engine/gate-drafts.mjs";
+import { confidenceCall, evaluate, writerRule } from "../engine/gate.ts";
+import { trialOf, writeHeld } from "../engine/gate-drafts.ts";
 import { reachRefusal } from "../engine/agents/reach.ts";
 import { entries as provEntries } from "../core/provenance.ts";
-import { checksFor, configFor } from "../engine/naive-config.mjs";
+import { checksFor, configFor } from "../engine/naive-config.ts";
 import { ventureFile } from "../core/venture-paths.ts";
 
 /**
  * One writer per file, checked on every write and append, local or in another source, before anything else is
  * read or checked: a projection record only from the projector, and from the projector only projection records
- * or a missing record a person owns (writerRule in packages/naive/src/engine/gate.mjs). A record in another source
+ * or a missing record a person owns (writerRule in packages/naive/src/engine/gate.ts). A record in another source
  * counts as existing, since only its connector could say otherwise. A record type with writer person (a research
  * program) only from a person: actor is the call's actor and acting says the process names an agent as acting. A
  * record type with writer function (the spend register) only from <function>-agent or a person: role is the acting role.

@@ -23,9 +23,9 @@ import { join } from "node:path";
 import { entries } from "../../core/provenance.ts";
 import { call, glob } from "../router.mjs";
 import { decisions, propose } from "../../engine/decisions.ts";
-import { kit } from "../../engine/kits.mjs";
-import { CONFIG, readConfig, writeConfig } from "../../engine/naive-config.mjs";
-import { packages } from "../../engine/packages.mjs";
+import { kit } from "../../engine/kits.ts";
+import { CONFIG, readConfig, writeConfig } from "../../engine/naive-config.ts";
+import { packages } from "../../engine/packages.ts";
 import { ventureFile } from "../../core/venture-paths.ts";
 
 export const STATE = ".naive/triggers.json";

@@ -241,7 +241,7 @@
     {
       "id": "EE-023",
       "date": "2026-10-27",
-      "decision": "Start with the end. A venture's purpose layer holds purpose/telos.json (telos.schema.json): the end it exists to reach, its end state and horizon, measures with one primary, the owners' intended outcome (hold, acquisition, IPO and so on) and, per Succession Matrix phase, exit criteria that each serve a measure. schema/check-telos.mjs requires every criterion to trace to a measure, governance/exit.json to prefer the telos path and not rule it out, and warns when a venture past Discovery with more than a hobby ambition has none. Other layers read rather than ask: operations/skills/methodology-selection/derive-answers.mjs derives MAD's governance-tier answers (who decides, funding, agent autonomy, success measure) from the telos, ownership, board, form and decision rights, naming each source, and lists what it cannot derive. The payout script is renamed payouts.mjs and the noun liquidation waterfall is retired for preference stack, because waterfall is a delivery methodology in MAD.",
+      "decision": "Start with the end. A venture's purpose layer holds purpose/telos.json (telos.schema.json): the end it exists to reach, its end state and horizon, measures with one primary, the owners' intended outcome (hold, acquisition, IPO and so on) and, per Succession Matrix phase, exit criteria that each serve a measure. schema/check-telos.mjs requires every criterion to trace to a measure, governance/exit.json to prefer the telos path and not rule it out, and warns when a venture past Discovery with more than a hobby ambition has none. Other layers read rather than ask: operations/skills/methodology-selection/derive-answers.mjs derives MAD's governance-tier answers (who decides, funding, agent autonomy, success measure) from the telos, ownership, board, form and decision rights, naming each source, and lists what it cannot derive. The payout script is renamed payouts.ts and the noun liquidation waterfall is retired for preference stack, because waterfall is a delivery methodology in MAD.",
       "why": "The owner: MAD should read the layers instead of asking again; that follows from a start-with-the-end principle, a telos record in purpose, and each phase can develop its exit from it. waterfall.mjs collided with the waterfall method in MAD's delivery tier.",
       "status": "proposed",
       "related": [
@@ -1816,7 +1816,7 @@
       "affects": [
         {
           "kind": "path",
-          "target": "packages/naive/src/engine/lean-canvas.mjs",
+          "target": "packages/naive/src/engine/lean-canvas.ts",
           "root": "repo",
           "expect": "exists"
         },

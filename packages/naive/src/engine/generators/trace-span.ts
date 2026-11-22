@@ -4,7 +4,7 @@
 // draft goes to: naive trace append --venture <dir> (which re-chains it onto the session's file and drops inputs
 // and outputs unless traces.content is on).
 import { randomUUID } from "node:crypto";
-import { cli, drop, questions, schemaOf, validate } from "./generate.mjs";
+import { cli, drop, questions, schemaOf, validate } from "./generate.ts";
 import { spanHash } from "../../core/instrumentation.ts";
 
 export const record = "trace-span";

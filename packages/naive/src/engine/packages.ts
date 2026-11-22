@@ -22,12 +22,12 @@
 
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { factsOf as needFacts, probability } from "./need-now.mjs";
-import { confirmedIn, filesOf, icpProfiles } from "./foundation.mjs";
+import { factsOf as needFacts, probability } from "./need-now.ts";
+import { confirmedIn, filesOf, icpProfiles } from "./foundation.ts";
 
-import { loadPackages } from "./load-packages.mjs";
+import { loadPackages } from "./load-packages.ts";
 // Upgrades hook (U-5): packages a venture adopted early in naive.config.json open now.
-import { adopted } from "./naive-config.mjs";
+import { adopted } from "./naive-config.ts";
 import { ventureFile } from "../core/venture-paths.ts";
 import { scale } from "./canonical.ts";
 import { readDataModel, venturePaths } from "../records/index.ts";

@@ -103,9 +103,9 @@ export const REGISTRY: Registry = {
   "packages/naive/src/checks/check-where-used.ts": plain("each live child shows its parent's value"),
   "packages/naive/src/checks/check-write-scope.ts": plain("each path the tests write lies under an allowed root (a path prefix)"),
   "packages/naive/src/checks/check-write-scope-test.ts": plain("proves the write-scope check fails a write outside the venture"),
-  "packages/naive/src/engine/gate-drafts.mjs": plain("stores held writes and their variants"),
+  "packages/naive/src/engine/gate-drafts.ts": plain("stores held writes and their variants"),
   "packages/naive/src/interfaces/tests/gate-test.mjs": plain("tests the write gate"),
-  "packages/naive/src/engine/gate.mjs": plain("the write gate: route rules, pins and role access decide what happens to a write, not a term"),
+  "packages/naive/src/engine/gate.ts": plain("the write gate: route rules, pins and role access decide what happens to a write, not a term"),
   "packages/naive/src/terms/ontology-gate-test.ts": plain("tests the membership gate, which is registered as symbolic"),
   "packages/naive/src/terms/ontology-gate.ts": symbolic,
 };

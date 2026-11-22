@@ -170,7 +170,7 @@ async function writePerson(workspace, id, route, input) {
 
 async function setup(workspace, id, { ownership }) {
   const dir = join(workspace, "ventures", id);
-  const made = spawnSync("node", [join(repo, "packages/naive/src/engine/init-venture.mjs"), dir, id, "--phase", "discovery"], { encoding: "utf8" });
+  const made = spawnSync("node", [join(repo, "packages/naive/src/engine/init-venture.ts"), dir, id, "--phase", "discovery"], { encoding: "utf8" });
   if (made.status !== 0) throw new Error(made.stderr || made.stdout);
   const evidence = {
     id: "founder-notes",
@@ -216,7 +216,7 @@ async function readRoute(workspace, id, route) {
 const ws = mkdtempSync(join(tmpdir(), "netflix-culture-"));
 try {
   const bare = join(ws, "ventures", "no-team");
-  spawnSync("node", [join(repo, "packages/naive/src/engine/init-venture.mjs"), bare, "no-team", "--phase", "discovery"], { encoding: "utf8" });
+  spawnSync("node", [join(repo, "packages/naive/src/engine/init-venture.ts"), bare, "no-team", "--phase", "discovery"], { encoding: "utf8" });
   const missingTeam = await readRoute(ws, "no-team", "people/team");
   const refused = gapsOf(missingTeam.result);
   let emptyPlanOk = false;

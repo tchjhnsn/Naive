@@ -1,5 +1,5 @@
 // The freshness commands of the mentura CLI (Revalidating, V-1 to V-8). mentura.mjs hands these
-// commands here; the logic is packages/naive/src/engine/freshness.mjs.
+// commands here; the logic is packages/naive/src/engine/freshness.ts.
 //
 //   mentura revalidate <target> --venture <id> [--reason <text>] [--as person] [--json]
 //          target: tag:<route or file> (the record and what depends on it), path:<folder>,
@@ -15,7 +15,7 @@
 import { resolve } from "node:path";
 import { agentFromEnv } from "../../core/provenance.ts";
 import { ventureDir } from "../../router/router.mjs";
-import { freeze, freshness, phase, revalidate, verify } from "../../engine/freshness.mjs";
+import { freeze, freshness, phase, revalidate, verify } from "../../engine/freshness.ts";
 
 export const COMMANDS = ["revalidate", "verify", "phase", "freshness"];
 
@@ -42,8 +42,8 @@ export async function main(cmd, argv, workspace) {
     if (!target) { console.error("usage: mentura phase <phase> --venture <id> --as person"); return 2; }
     // A phase change is the founder's decision: an agent may suggest it, not make it.
     if (opt("as") !== "person") { console.error(`a phase change is a person's: run mentura phase ${target} --venture ${venture} --as person`); return 1; }
-    // Through the lifecycle gate (packages/naive/src/engine/lifecycle.mjs), as naive phase does: exit criteria first.
-    r = (await import("../../engine/lifecycle.mjs")).advance(dir, target, { reason: opt("reason"), override: opt("override"), by, now });
+    // Through the lifecycle gate (packages/naive/src/engine/lifecycle.ts), as naive phase does: exit criteria first.
+    r = (await import("../../engine/lifecycle.ts")).advance(dir, target, { reason: opt("reason"), override: opt("override"), by, now });
   } else if (cmd === "freshness") {
     if (opt("freeze")) r = await freeze(dir, resolve(opt("freeze")), { now });
     else { const f = await /** @type {(dir: string, o: { now?: string }) => Promise<*>} */ (freshness)(dir, { now }); print(flag("json") ? f : [`${f.venture} (${f.phase}): ${f.summary.fresh} fresh, ${f.summary.stale} stale, ${f.summary.expired} expired, ${f.summary.holes} live ${f.summary.holes === 1 ? "hole" : "holes"}, of ${f.summary.records} records.`,

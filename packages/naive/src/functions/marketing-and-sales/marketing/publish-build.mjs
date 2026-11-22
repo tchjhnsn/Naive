@@ -33,7 +33,7 @@ import { check, CONTENT, frontmatter } from "../../../engine/check-public.ts";
 import { leaks } from "../../../engine/check-leaks.ts";
 import { visibilityOf } from "../../../engine/visibility.mjs";
 import { ventureFile } from "../../../core/venture-paths.ts";
-import { configFor } from "../../../engine/naive-config.mjs";
+import { configFor } from "../../../engine/naive-config.ts";
 
 const sha = (s) => createHash("sha256").update(s).digest("hex");
 

@@ -23,8 +23,8 @@ import { fileURLToPath } from "node:url";
 import { decisions } from "../../../../engine/decisions.ts";
 import { CONVENTIONS, MAP, parse } from "./ideamap.mjs";
 import { GRAPH, ORDER } from "./graph.mjs";
-import { confirmedIn } from "../../../../engine/foundation.mjs";
-import { loadPackages } from "../../../../engine/load-packages.mjs";
+import { confirmedIn } from "../../../../engine/foundation.ts";
+import { loadPackages } from "../../../../engine/load-packages.ts";
 import { ventureFile } from "../../../../core/venture-paths.ts";
 import { readDataModel } from "../../../../records/index.ts";
 

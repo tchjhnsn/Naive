@@ -12,13 +12,13 @@
 //
 // merge() runs it at the end and returns the summary.
 //
-//   node packages/naive/src/engine/impact.mjs <venture dir> <decision id> [--json]
+//   node packages/naive/src/engine/impact.ts <venture dir> <decision id> [--json]
 //   mentura impact <decision> --venture <id>
 
 import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { decisionFile, propose, recordOf } from "./decisions.ts";
-import { HOME } from "./packages.mjs";
+import { HOME } from "./packages.ts";
 import { entries as provenance } from "../core/provenance.ts";
 import { mark, notify } from "./stale.mjs";
 import { layoutOf, logicalFiles, ventureFile } from "../core/venture-paths.ts";
@@ -84,7 +84,7 @@ export function impact(dir, id, { via = "framework", proposeFollowUps = true } =
   const file = decisionFile(dir, id);
   if (!file) return { ok: false, error: `no decision ${id}` };
   const d = load(ventureFile(dir, file));
-  if (!d.merged) return { ok: false, error: `${id} was never merged: nothing changed yet (packages/naive/src/engine/impact.mjs structural() shows what a merge would touch)` };
+  if (!d.merged) return { ok: false, error: `${id} was never merged: nothing changed yet (packages/naive/src/engine/impact.ts structural() shows what a merge would touch)` };
   const { version, files: changed = [] } = d.merged;
   if (!changed.length) return { ok: false, error: `${id} names no applies_to: nothing changed` };
   const at = join(dirname(file), `${id}.impact.json`);
@@ -116,7 +116,7 @@ const summary = (file, functions, affected = functions.reduce((n, f) => n + f.af
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const [dir, id] = process.argv.slice(2);
-  if (!dir || !id || !existsSync(join(dir, "venture.json"))) { console.error("usage: node packages/naive/src/engine/impact.mjs <venture dir> <decision id> [--json]"); process.exit(2); }
+  if (!dir || !id || !existsSync(join(dir, "venture.json"))) { console.error("usage: node packages/naive/src/engine/impact.ts <venture dir> <decision id> [--json]"); process.exit(2); }
   const r = impact(dir, id, { via: "cli" });
   if (!r.ok) { console.error(r.error); process.exit(1); }
   if (process.argv.includes("--json")) console.log(JSON.stringify(r.result, null, 2));

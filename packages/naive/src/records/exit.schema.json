@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "exit.schema.json",
   "title": "Exit",
-  "description": "How the venture might end and what each owner would get, at <venture>/governance/exit.json (EE-022): the exit paths it keeps open and the sale values to model. Payouts are never typed here: packages/naive/src/engine/payouts.mjs computes them from ownership.json for each scenario.",
+  "description": "How the venture might end and what each owner would get, at <venture>/governance/exit.json (EE-022): the exit paths it keeps open and the sale values to model. Payouts are never typed here: packages/naive/src/engine/payouts.ts computes them from ownership.json for each scenario.",
   "type": "object",
   "required": [
     "paths"

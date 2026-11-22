@@ -79,12 +79,12 @@ import { join, relative, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
 import { call, draftOf, files, glob, groups, repo, routes, routesMd, ventureDir, ventures } from "../../router/router.mjs";
 import { agentFromEnv, entries, record } from "../../core/provenance.ts";
-import { FRAME, filesOf, statementFiles } from "../../engine/foundation.mjs";
+import { FRAME, filesOf, statementFiles } from "../../engine/foundation.ts";
 import { approve, decisionFile, decisions, merge, propose, rollback } from "../../engine/decisions.ts";
 import { reasonsFromArgs, whyLines } from "../../engine/reasons.mjs";
-import { impact } from "../../engine/impact.mjs";
+import { impact } from "../../engine/impact.ts";
 // Gate group hook (X-2): held drafts kept side by side.
-import { pick as pickDraft, settle as settleDraft } from "../../engine/gate-drafts.mjs";
+import { pick as pickDraft, settle as settleDraft } from "../../engine/gate-drafts.ts";
 import { asRouted, findVenture } from "./find-venture.mjs";
 import { ventureFile } from "../../core/venture-paths.ts";
 import { setPublic, visibilityOf } from "../../engine/visibility.mjs";
@@ -203,11 +203,11 @@ if (cmd === "steps") {
 }
 
 if (cmd === "init") {
-  // The venture scaffold lives in packages/naive/src/engine/init-venture.mjs; this passes the options through.
+  // The venture scaffold lives in packages/naive/src/engine/init-venture.ts; this passes the options through.
   const id = opt("id");
   if (!action || !id) usage();
   const pass = ["phase", "parent", "legal-form", "layers"].flatMap((k) => opt(k) !== undefined ? [`--${k}`, opt(k)] : []);
-  const p = spawnSync("node", [join(repo, "packages/naive/src/engine/init-venture.mjs"), resolve(action), id, ...pass], { stdio: "inherit" });
+  const p = spawnSync("node", [join(repo, "packages/naive/src/engine/init-venture.ts"), resolve(action), id, ...pass], { stdio: "inherit" });
   process.exit(p.status ?? 1);
 }
 

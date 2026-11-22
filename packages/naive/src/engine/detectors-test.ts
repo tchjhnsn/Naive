@@ -9,9 +9,9 @@ import { cpSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writ
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { TEMPLATE, criterionFor, detectorFor, line } from "./detectors.ts";
-import { DEFAULTS, configFor } from "./naive-config.mjs";
-import { evaluate } from "./gate.mjs";
-import { ACCEPT, route } from "./feedback-route.mjs";
+import { DEFAULTS, configFor } from "./naive-config.ts";
+import { evaluate } from "./gate.ts";
+import { ACCEPT, route } from "./feedback-route.ts";
 import { THRESHOLD as INDEX_THRESHOLD, rebuild } from "./decision-index.ts";
 import { call } from "./generators/detector-trial.ts";
 import { TIER_COSTS } from "./generators/detector.ts";

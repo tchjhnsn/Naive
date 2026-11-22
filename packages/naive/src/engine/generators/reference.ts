@@ -3,7 +3,7 @@
 // unique in the file; checked only alongside a url. Written by a person or the find-reference skill as a
 // change to the framework (a pull request), not through a venture route.
 import { join } from "node:path";
-import { cli, drop, questions, readJson, repo, schemaOf, slug, validate } from "./generate.mjs";
+import { cli, drop, questions, readJson, repo, schemaOf, slug, validate } from "./generate.ts";
 
 export const record = "reference";
 export const describe = () => ({ record, ask: [{ field: "layer", required: true, type: "choice", choices: schemaOf(record).properties.layer.enum },

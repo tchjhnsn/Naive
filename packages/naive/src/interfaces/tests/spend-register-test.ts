@@ -14,7 +14,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { call, routes } from "../../router/router.mjs";
 import { entries } from "../../core/provenance.ts";
-import { writerRule } from "../../engine/gate.mjs";
+import { writerRule } from "../../engine/gate.ts";
 import { resolve as resolveRule } from "../../store/connectors/resolve.ts";
 import { draft, describe } from "../../engine/generators/spend-register.ts";
 import { readSchema } from "../../records/index.ts";
@@ -62,7 +62,7 @@ try {
     writerRule({ route: "finance/spend/figma", writer: "function", fn: "finance", role: "finance-agent", projector: true })?.rule === "function-only");
 
   // Through the router.
-  const made = node("packages/naive/src/engine/init-venture.mjs", join(ws, "ventures/lab"), "lab");
+  const made = node("packages/naive/src/engine/init-venture.ts", join(ws, "ventures/lab"), "lab");
   if (made.status !== 0) throw new Error(made.stderr || made.stdout);
   const dir = join(ws, "ventures/lab");
   const file = join(dir, "finance/spend/figma.json");

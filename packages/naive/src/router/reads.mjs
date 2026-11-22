@@ -46,7 +46,7 @@ export function frontmatter(text) {
 
 /** A record's state from the log and the drafts folder (O-2). */
 export async function stateOf(dir, file) {
-  const { confirmedIn } = await import("../engine/foundation.mjs");
+  const { confirmedIn } = await import("../engine/foundation.ts");
   if (existsSync(join(ventureFile(dir, "_drafts"), `${file.replace(/\//g, "__")}.draft`))) return "draft";
   const es = entries(dir).filter((e) => e.entity === file);
   if (!es.length) return "unlogged";

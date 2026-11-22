@@ -28,7 +28,7 @@ const json = (o: unknown): string => JSON.stringify(o, null, 2) + "\n";
 // Each record names the venture it is written to (the router refuses another, naive#71).
 const solution = (statement: string, venture = "x") => ({ venture, statement, alternatives: ["a receptionist"], evidence: [] });
 const DETECTOR = {
-  id: "gate-confidence", tier: "low", call_site: "packages/naive/src/engine/gate.mjs confidence_below",
+  id: "gate-confidence", tier: "low", call_site: "packages/naive/src/engine/gate.ts confidence_below",
   question: { verb: "hold", noun: "write", asking_function: "governance", text: "Does this write need a person?" },
   evidence: { kind: "founder-agent", sensor: "the writing agent", scale: { min: 0, max: 1, meaning: "the agent's confidence in its write" }, sources: [{ source: "venture", records: "system/provenance" }] },
   criterion: { yes: { value: 0.7, set_by: "test" } },

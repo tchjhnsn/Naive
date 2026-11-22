@@ -6,8 +6,8 @@ import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, write
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { context } from "../../engine/upgrades.mjs";
-import * as mig from "../../engine/migrations/telos-to-goals.mjs";
-import { lifecycle, meet } from "../../engine/lifecycle.mjs";
+import * as mig from "../../engine/migrations/telos-to-goals.ts";
+import { lifecycle, meet } from "../../engine/lifecycle.ts";
 import { exitCriteria, scale } from "../../engine/canonical.ts";
 import { check } from "../../engine/check-frameworks.ts";
 import { telosView } from "../../../../../frameworks/telos/adapter.mjs";

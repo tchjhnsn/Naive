@@ -191,7 +191,7 @@ for (const r of types.values()) {
   // The type requires function, but a record type in the file may leave it out: that is what this finds.
   if (!("function" in (r as object))) { errors.push(`${r.id}: names no function; give an id in ${DEPARTMENTS}, or null when several functions share it`); continue; }
   if (r.function !== null && !functionIds.has(r.function)) { errors.push(`${r.id}: function ${r.function} is not an id in ${DEPARTMENTS}`); continue; }
-  // writer function: only <function>-agent or a person writes it (writerRule in packages/naive/src/engine/gate.mjs), so it needs a function.
+  // writer function: only <function>-agent or a person writes it (writerRule in packages/naive/src/engine/gate.ts), so it needs a function.
   if (r.writer === "function" && r.function === null) errors.push(`${r.id}: writer function needs a function, since only <function>-agent or a person writes it`);
   // The first venture path is where records are written; later ones are older places still read.
   const folder = venturePaths(r)[0]?.split("/")[0], pf = folder && (PACKAGE_FUNCTION as Readonly<Record<string, string>>)[folder];

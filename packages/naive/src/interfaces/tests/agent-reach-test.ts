@@ -40,7 +40,7 @@ try {
   expect("reachRefusal leaves a lead unchecked", reachRefusal({ role: "finance-lead", route: "customers/acme" }) === null);
 
   // Through the router.
-  const made = spawnSync(process.execPath, [join(repo, "packages/naive/src/engine/init-venture.mjs"), join(ws, "ventures/lab"), "lab", "--type", "software-startup"], { encoding: "utf8", env });
+  const made = spawnSync(process.execPath, [join(repo, "packages/naive/src/engine/init-venture.ts"), join(ws, "ventures/lab"), "lab", "--type", "software-startup"], { encoding: "utf8", env });
   if (made.status !== 0) throw new Error(made.stderr || made.stdout);
   const dir = join(ws, "ventures/lab");
   const customer = { id: "acme", name: "Acme" };

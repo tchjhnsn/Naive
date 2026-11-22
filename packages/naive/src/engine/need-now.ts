@@ -10,7 +10,7 @@
 // listed as layer off, not suggested. Jev re-scores the priors per venture once the
 // scorer runs; until then the priors are the default.
 //
-//   node packages/naive/src/engine/need-now.mjs <venture dir> [--json]
+//   node packages/naive/src/engine/need-now.ts <venture dir> [--json]
 
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
@@ -100,7 +100,7 @@ export function needNow(dir) {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const dir = process.argv[2];
-  if (!dir || !existsSync(join(dir, "venture.json"))) { console.error("usage: node packages/naive/src/engine/need-now.mjs <venture dir> [--json]"); process.exit(2); }
+  if (!dir || !existsSync(join(dir, "venture.json"))) { console.error("usage: node packages/naive/src/engine/need-now.ts <venture dir> [--json]"); process.exit(2); }
   const r = needNow(dir);
   if (process.argv.includes("--json")) { console.log(JSON.stringify(r, null, 2)); process.exit(0); }
   console.log(`Phase ${r.phase}${r.next ? `, next ${r.next}` : ""}. Work on what is needed now; the rest waits until it is.`);

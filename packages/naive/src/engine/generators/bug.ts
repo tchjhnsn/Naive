@@ -2,7 +2,7 @@
 // steps; the generator derives the id from the title (unique among the venture's bugs), opens it, and leaves
 // fixed_in empty until a release fixes it. The draft goes to: mentura product/bugs/<id> write --venture <id> --input -
 import { existsSync, readdirSync } from "node:fs";
-import { cli, drop, questions, schemaOf, slug, validate } from "./generate.mjs";
+import { cli, drop, questions, schemaOf, slug, validate } from "./generate.ts";
 import { ventureFile } from "../../core/venture-paths.ts";
 
 export const record = "bug";

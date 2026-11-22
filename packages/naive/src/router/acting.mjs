@@ -13,7 +13,7 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 import { createHash } from "node:crypto";
 import { globsOf, mayReadItem, mayReadSome, roleOf, teamPlan } from "../engine/access.ts";
-import { configFor } from "../engine/naive-config.mjs";
+import { configFor } from "../engine/naive-config.ts";
 
 export { mayReadItem, mayReadSome };
 

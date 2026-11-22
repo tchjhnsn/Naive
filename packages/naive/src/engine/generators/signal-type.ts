@@ -3,7 +3,7 @@
 // parts it composes, its projects and at least one worked case. The generator fills nothing it could get wrong: it
 // slugs the id and defaults projects to none. The draft is for types/<id>/<version>.signal.json in a library, or
 // signals/types/<id>/<version>.signal.json in a Naive package.
-import { cli, drop, questions, schemaOf, slug, validate } from "./generate.mjs";
+import { cli, drop, questions, schemaOf, slug, validate } from "./generate.ts";
 import type { SignalType } from "../../records/types/records.d.ts";
 
 export const record = "signal-type";

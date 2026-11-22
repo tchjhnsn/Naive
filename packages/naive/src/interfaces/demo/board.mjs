@@ -22,7 +22,7 @@ import { route } from "../../functions/strategy/frameworks/idea-map/route.mjs";
 import { scan } from "../harness/site.mjs";
 import { MATRIX } from "../../functions/marketing-and-sales/marketing/site/presence.mjs";
 import { plan } from "../../functions/marketing-and-sales/marketing/site/plan.mjs";
-import { write as writePackage, OUT as PACKAGE } from "../../engine/packages.mjs";
+import { write as writePackage, OUT as PACKAGE } from "../../engine/packages.ts";
 import { venturePackage } from "../../router/orchestration/venture-package.mjs";
 import { ventureFile } from "../../core/venture-paths.ts";
 
@@ -35,7 +35,7 @@ function state(id) {
   if (!dir) return { error: `no venture ${id}` };
   const log = existsSync(join(ventureFile(dir, "provenance.jsonl"))) ? readFileSync(join(ventureFile(dir, "provenance.jsonl")), "utf8").trim().split("\n").filter(Boolean).slice(-8).map((l) => JSON.parse(l)).reverse() : [];
   // The kit for now (EE-028): what need-now says this venture needs in its phase, and which kit holds it.
-  const nn = spawnSync("node", [new URL("../../engine/need-now.mjs", import.meta.url).pathname, dir, "--json"], { encoding: "utf8" });
+  const nn = spawnSync("node", [new URL("../../engine/need-now.ts", import.meta.url).pathname, dir, "--json"], { encoding: "utf8" });
   const kitOf = new Map(routes().filter((r) => r.record).map((r) => [r.record, { kit: r.kit, route: r.route.replace(/\/\[id\]$/, "") }]));
   const rows = nn.status === 0 ? JSON.parse(nn.stdout).rows : [];
   const kit = rows.filter((r) => r.now >= 0.5 || r.status === "coming soon").map((r) => ({ type: r.type, status: r.status, now: r.now, next: r.next, why: r.why, ...(kitOf.get(r.type) ?? {}) }));

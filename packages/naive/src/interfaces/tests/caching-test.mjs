@@ -21,7 +21,7 @@ const expect = (name, ok, detail = "") => { console.log(`${ok ? "pass" : "FAIL"}
 const throws = (f, re) => { try { f(); return false; } catch (e) { return re.test(e.message); } };
 
 const ws = mkdtempSync(join(tmpdir(), "caching-test-"));
-const init = (id) => { const r = spawnSync("node", [join(repo, "packages/naive/src/engine/init-venture.mjs"), join(ws, id), id, "--layers", "purpose"], { encoding: "utf8" }); if (r.status !== 0) throw new Error(r.stderr); return join(ws, id); };
+const init = (id) => { const r = spawnSync("node", [join(repo, "packages/naive/src/engine/init-venture.ts"), join(ws, id), id, "--layers", "purpose"], { encoding: "utf8" }); if (r.status !== 0) throw new Error(r.stderr); return join(ws, id); };
 const dir = init("kettle");
 process.env.MENTURA_WORKSPACE = ws;
 delete process.env.NAIVE_CACHE;
@@ -156,7 +156,7 @@ expect("C-8: value a,b names the routes too", agentWrite.ok && agentWrite.result
 
 // F-2, F-12, O-5: within one action, reads and computed values are shared
 const st = await actionScope(async () => { const ov = await call({ venture: "kettle", route: "system/overview", action: "run", workspace: ws }); return { ok: ov.ok, ...actionStats() }; });
-const nnKey = Object.keys(st.computed).find((k) => k.startsWith("cmd:packages/naive/src/engine/need-now.mjs"));
+const nnKey = Object.keys(st.computed).find((k) => k.startsWith("cmd:packages/naive/src/engine/need-now.ts"));
 expect("O-5: need-now runs once for the overview, shared by the layouts and the command", st.ok && nnKey && st.computed[nnKey] === 1 && (st.shared[nnKey] ?? 0) >= 1, JSON.stringify({ c: st.computed[nnKey], s: st.shared[nnKey] }));
 expect("F-12: the route table is built once per action and shared", st.computed.routes === 1 && st.shared.routes >= 5, JSON.stringify(st));
 const dl = await actionScope(async () => { const first = decisions(dir); holding(dir, "foundation/problem.json"); return { same: decisions(dir) === first, ...actionStats() }; });

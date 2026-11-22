@@ -1,6 +1,6 @@
 {
   "version": "0.1.0",
-  "note": "The Lean Canvas (Maurya, Running Lean, 2012; adapted from Osterwalder's Business Model Canvas) as the venture's shared kernel (Evans, Domain-Driven Design): one page every function reads. Each box is a reference to a record attribute its owning function writes, never a copy, so a box cannot drift from its record. The strategy function owns the canvas itself, which only assembles and orders the boxes. packages/naive/src/engine/lean-canvas.mjs resolves it for a venture (EE-155).",
+  "note": "The Lean Canvas (Maurya, Running Lean, 2012; adapted from Osterwalder's Business Model Canvas) as the venture's shared kernel (Evans, Domain-Driven Design): one page every function reads. Each box is a reference to a record attribute its owning function writes, never a copy, so a box cannot drift from its record. The strategy function owns the canvas itself, which only assembles and orders the boxes. packages/naive/src/engine/lean-canvas.ts resolves it for a venture (EE-155).",
   "standard": {
     "name": "Lean Canvas",
     "source": "Ash Maurya, Running Lean: Iterate from Plan A to a Plan That Works, O'Reilly, 2012",

@@ -1,13 +1,13 @@
 // Record generators (EE-099): each pilot describes its questions and drafts a record that passes its schema.
-//   node packages/naive/src/engine/generators/generators-test.mjs
+//   node packages/naive/src/engine/generators/generators-test.ts
 import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import * as bug from "./bug.mjs";
-import { validate } from "./generate.mjs";
-import * as glossary from "./glossary.mjs";
-import * as reference from "./reference.mjs";
-import * as traceSpan from "./trace-span.mjs";
+import * as bug from "./bug.ts";
+import { validate } from "./generate.ts";
+import * as glossary from "./glossary.ts";
+import * as reference from "./reference.ts";
+import * as traceSpan from "./trace-span.ts";
 import * as detector from "./detector.ts";
 import * as detectorTrial from "./detector-trial.ts";
 import * as connection from "./connection.ts";

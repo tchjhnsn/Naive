@@ -26,7 +26,7 @@ node packages/naive/test/verification/playbook-basecamp-shape-up/replay.mjs
 
 ## Rules
 
-TLC reported no broken rule. Replay ran the named routes and checkers on a venture created with `packages/naive/src/engine/init-venture.mjs`. 27/27 replay checks passed.
+TLC reported no broken rule. Replay ran the named routes and checkers on a venture created with `packages/naive/src/engine/init-venture.ts`. 27/27 replay checks passed.
 
 | Rule | TLC | Replay |
 |---|---|---|

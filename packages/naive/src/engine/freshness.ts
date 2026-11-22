@@ -24,10 +24,10 @@
 //
 // "Now" is an input (C-9): --now <iso> or --now +<duration> (from the clock), else NAIVE_NOW, else the clock.
 //
-//   node packages/naive/src/engine/freshness.mjs <venture dir> [--json] [--now <iso>]       what is fresh, stale, expired or a hole
-//   node packages/naive/src/engine/freshness.mjs <venture dir> --revalidate <target> [--reason <text>] [--json]
+//   node packages/naive/src/engine/freshness.ts <venture dir> [--json] [--now <iso>]       what is fresh, stale, expired or a hole
+//   node packages/naive/src/engine/freshness.ts <venture dir> --revalidate <target> [--reason <text>] [--json]
 //          target: tag:<route or file>, path:<folder>, package:<name>, pivot, or a plain route or file
-//   node packages/naive/src/engine/freshness.mjs <venture dir> --freeze <out dir> [--json]  freeze the fresh records into a
+//   node packages/naive/src/engine/freshness.ts <venture dir> --freeze <out dir> [--json]  freeze the fresh records into a
 //          static shell at <out dir>, leaving live records as holes; exit 1 if any record has expired
 
 import { spawnSync } from "node:child_process";
@@ -427,7 +427,7 @@ export function phase(dir, to, { reason, by, now } = {}) {
   const v = load(file);
   if (v.phase === to) return { ok: false, error: `${v.id} is already in ${to}` };
   const from = v.phase;
-  // Leaving Discovery needs the core product, as packages/naive/src/engine/init-venture.mjs scaffolds it for a later phase.
+  // Leaving Discovery needs the core product, as packages/naive/src/engine/init-venture.ts scaffolds it for a later phase.
   const next = { ...v, phase: to, ...(to !== "discovery" && !v.core ? { core: { promise: "", promised_to: "", must_not: "", competence: "" } } : {}) };
   const scratch = mkdtempSync(join(tmpdir(), "freshness-"));
   writeFileSync(join(scratch, "venture.json"), JSON.stringify(next));
@@ -486,7 +486,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const opt = (n) => { const i = argv.indexOf(`--${n}`); return i >= 0 ? argv[i + 1] : undefined; };
   const json = argv.includes("--json");
   const dir = argv[0] && !argv[0].startsWith("--") ? resolvePath(argv[0]) : null;
-  if (!dir || !existsSync(join(dir, "venture.json"))) { console.error("usage: node packages/naive/src/engine/freshness.mjs <venture dir> [--json] [--now <iso>] | --revalidate <target> [--reason <text>] | --freeze <out dir>"); process.exit(2); }
+  if (!dir || !existsSync(join(dir, "venture.json"))) { console.error("usage: node packages/naive/src/engine/freshness.ts <venture dir> [--json] [--now <iso>] | --revalidate <target> [--reason <text>] | --freeze <out dir>"); process.exit(2); }
   try {
     const now = opt("now");
     let r;

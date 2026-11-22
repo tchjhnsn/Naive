@@ -2,7 +2,7 @@
 // generator adds one term to what the file holds now and refuses a term the package already defines differently.
 // Every new term also runs the term engine (glossary skill); this generator only shapes the record.
 // The draft goes to: mentura glossary/<package> write --venture <id> --input -
-import { cli, drop, questions, readJson, schemaOf, validate } from "./generate.mjs";
+import { cli, drop, questions, readJson, schemaOf, validate } from "./generate.ts";
 import { ventureFile } from "../../core/venture-paths.ts";
 
 export const record = "glossary";

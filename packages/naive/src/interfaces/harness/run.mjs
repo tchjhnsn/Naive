@@ -42,7 +42,7 @@ import { tmpdir } from "node:os";
 import { basename, join, resolve } from "node:path";
 import { judgeCommand } from "../../engine/caching.ts";
 import { decisions } from "../../engine/decisions.ts";
-import { docket } from "../../engine/docket.mjs";
+import { docket } from "../../engine/docket.ts";
 import { CONVENTIONS, DUMP, MAP, parse, render, split, summary, clean, request, fromAnswers } from "../../functions/strategy/frameworks/idea-map/ideamap.mjs";
 import { GRAPH, build as buildGraph, request as graphRequest } from "../../functions/strategy/frameworks/idea-map/graph.mjs";
 import { understood } from "../../functions/strategy/frameworks/idea-map/route.mjs";
@@ -84,7 +84,7 @@ const cli = (...args) => spawnSync("node", [join(repo, "packages/naive/src/inter
 
 // The venture, scaffolded by Naive, and the founder's dump, kept as they wrote it.
 if (!existsSync(join(dir, "venture.json"))) {
-  const p = spawnSync("node", [join(repo, "packages/naive/src/engine/init-venture.mjs"), dir, id, "--phase", phase], { encoding: "utf8" });
+  const p = spawnSync("node", [join(repo, "packages/naive/src/engine/init-venture.ts"), dir, id, "--phase", phase], { encoding: "utf8" });
   if (p.status !== 0) { console.error(p.stderr || p.stdout); process.exit(1); }
   if (opt("name")) { const v = JSON.parse(readFileSync(join(dir, "venture.json"), "utf8")); v.name = opt("name"); writeFileSync(join(dir, "venture.json"), JSON.stringify(v, null, 2) + "\n"); }
 }

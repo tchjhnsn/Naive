@@ -14,11 +14,11 @@
 // Judgments go through the judgment cache (packages/naive/src/engine/caching.ts) with the command in NAIVE_JUDGE_CMD
 // (the app that hosts Naive names its judge there). Lookups are a kit's job: run reads one from --lookup.
 //
-//   node packages/naive/src/engine/frames.mjs list
-//   node packages/naive/src/engine/frames.mjs match "<the founder's words>"
-//   node packages/naive/src/engine/frames.mjs check
-//   node packages/naive/src/engine/frames.mjs run <venture dir> [<frame id>] [--text "<the founder's words>"] [--lookup <file>]
-//   node packages/naive/src/engine/frames.mjs eval <frame id>
+//   node packages/naive/src/engine/frames.ts list
+//   node packages/naive/src/engine/frames.ts match "<the founder's words>"
+//   node packages/naive/src/engine/frames.ts check
+//   node packages/naive/src/engine/frames.ts run <venture dir> [<frame id>] [--text "<the founder's words>"] [--lookup <file>]
+//   node packages/naive/src/engine/frames.ts eval <frame id>
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -167,7 +167,7 @@ export function fresh(f, lookup, now = Date.now()) {
  */
 export async function run(dir, { id, text, lookup, now = Date.now(), agentId = "frames", harness, model, via = "mcp" } = {}) {
   const f = id ? frameOf(id) : (text ? frameOf(match(text)[0]?.id) : null);
-  if (!f) return { ok: false, error: id ? `no frame ${id}` : `no frame fits "${text ?? ""}"; node packages/naive/src/engine/frames.mjs list shows them` };
+  if (!f) return { ok: false, error: id ? `no frame ${id}` : `no frame fits "${text ?? ""}"; node packages/naive/src/engine/frames.ts list shows them` };
   const bad = check(f);
   if (bad.length) return { ok: false, error: bad.join("\n") };
   const { facts, sources } = await props(dir);
@@ -225,8 +225,8 @@ if (process.argv[1] && resolve(process.argv[1]) === new URL(import.meta.url).pat
   } else if (cmd === "run") {
     const text = flag("text"), lk = flag("lookup");
     const [dirArg, id] = rest;
-    if (!dirArg || !existsSync(join(dirArg, "venture.json"))) { console.error("usage: node packages/naive/src/engine/frames.mjs run <venture dir> [<frame id>] [--text ...] [--lookup <file>]"); process.exit(2); }
+    if (!dirArg || !existsSync(join(dirArg, "venture.json"))) { console.error("usage: node packages/naive/src/engine/frames.ts run <venture dir> [<frame id>] [--text ...] [--lookup <file>]"); process.exit(2); }
     show(await run(resolve(dirArg), { id, text, lookup: lk ? load(lk) : null }));
   } else if (cmd === "eval") show(await evaluate(rest[0]));
-  else { console.error("usage: node packages/naive/src/engine/frames.mjs list|match|check|run|eval"); process.exit(2); }
+  else { console.error("usage: node packages/naive/src/engine/frames.ts list|match|check|run|eval"); process.exit(2); }
 }

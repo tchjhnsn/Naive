@@ -12,9 +12,9 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { call } from "../../router/router.mjs";
 import { handle } from "../mcp/server.mjs";
-import { DEFAULTS, configFor, installed, packagesOf } from "../../engine/naive-config.mjs";
-import { evaluate, matches, packageRules, patternRe, rulesFor } from "../../engine/gate.mjs";
-import { inbox, variantsDecision } from "../../engine/gate-drafts.mjs";
+import { DEFAULTS, configFor, installed, packagesOf } from "../../engine/naive-config.ts";
+import { evaluate, matches, packageRules, patternRe, rulesFor } from "../../engine/gate.ts";
+import { inbox, variantsDecision } from "../../engine/gate-drafts.ts";
 import { decisions } from "../../engine/decisions.ts";
 import { entries } from "../../core/provenance.ts";
 
@@ -153,8 +153,8 @@ const validRecord = (file, schema) => spawnSync(process.execPath, [join(repo, "p
   expect("X-2: an agent's write goes to the function owner from naive.config.json owners", a.ok && a.result.draft && a.result.owner === "product-lead" && /function owner, product-lead/.test(a.result.note), JSON.stringify(a));
   const box = inbox(dir, "product-lead");
   expect("X-2: the owner's inbox lists the draft, its rule and its route", box.length === 1 && box[0].route === "product/lamp" && box[0].rule === "products-to-owner");
-  const cliBox = node("packages/naive/src/engine/gate-drafts.mjs", dir, "--owner", "product-lead", "--json");
-  expect("X-2: node packages/naive/src/engine/gate-drafts.mjs lists the drafts waiting for an owner", cliBox.status === 0 && JSON.parse(cliBox.stdout)[0].owner === "product-lead");
+  const cliBox = node("packages/naive/src/engine/gate-drafts.ts", dir, "--owner", "product-lead", "--json");
+  expect("X-2: node packages/naive/src/engine/gate-drafts.ts lists the drafts waiting for an owner", cliBox.status === 0 && JSON.parse(cliBox.stdout)[0].owner === "product-lead");
   const b = await write("product/lamp", product("lamp", "Desk lamp"), { actor_id: "builder" });
   expect("X-2: a differing second draft is kept beside the first, not over it", b.ok && b.result.variant === "b" && b.result.written.endsWith(".draft.b") && read(join(dir, "_drafts/product__lamp.json.draft")).name === "Lamp", JSON.stringify(b));
   const again = await write("product/lamp", product("lamp", "Desk lamp"), { actor_id: "builder" });
@@ -177,7 +177,7 @@ const validRecord = (file, schema) => spawnSync(process.execPath, [join(repo, "p
 
 // X-4: the gate is fast and never calls a model; confidence routing reads a score already computed.
 {
-  for (const f of ["packages/naive/src/engine/gate.mjs", "packages/naive/src/engine/access.ts", "packages/naive/src/engine/naive-config.mjs"]) {
+  for (const f of ["packages/naive/src/engine/gate.ts", "packages/naive/src/engine/access.ts", "packages/naive/src/engine/naive-config.ts"]) {
     const src = readFileSync(join(repo, f), "utf8");
     expect(`X-4: ${f} has no network, process or model call`, !/\bfetch\s*\(|https?:\/\/|child_process|node:http|node:https|node:net|use-model|spawn/.test(src));
   }

@@ -101,7 +101,7 @@ function jobsCheck(profiles, productJobs) {
 }
 
 function foundation(dir) {
-  return spawnSync("node", [join(repo, "packages/naive/src/engine/foundation.mjs"), dir], { encoding: "utf8" });
+  return spawnSync("node", [join(repo, "packages/naive/src/engine/foundation.ts"), dir], { encoding: "utf8" });
 }
 
 function icpStatus(report) {
@@ -178,7 +178,7 @@ report("EveryRouteReal", routesOk, routeNotes.join("; "));
   report(
     "CheckMatchesJobs",
     decisive,
-    `empty=${emptyFail.join(",") || "pass"}; blank=${blankFail.join(",") || "pass"}; copy-who=${copyWho.join(",") || "pass"}; copy-trait=${copyTrait.join(",") || "pass"}; copy-product=${copyProduct.join(",") || "pass"}; progress=${pass.join(",") || "pass"}; foundation.mjs with a bad form only in a draft exit=${formsPass.status}; bad form live exit=${formsFail.status}`,
+    `empty=${emptyFail.join(",") || "pass"}; blank=${blankFail.join(",") || "pass"}; copy-who=${copyWho.join(",") || "pass"}; copy-trait=${copyTrait.join(",") || "pass"}; copy-product=${copyProduct.join(",") || "pass"}; progress=${pass.join(",") || "pass"}; foundation.ts with a bad form only in a draft exit=${formsPass.status}; bad form live exit=${formsFail.status}`,
   );
 }
 

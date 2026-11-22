@@ -9,7 +9,7 @@ import { join } from "node:path";
 import { hash, variantOf, visibilityOf } from "../../engine/visibility.mjs";
 import { refusals } from "../../checks/check-visibility.ts";
 import { context } from "../../engine/upgrades.mjs";
-import * as telosToGoals from "../../engine/migrations/telos-to-goals.mjs";
+import * as telosToGoals from "../../engine/migrations/telos-to-goals.ts";
 
 const repo = new URL("../../../../..", import.meta.url).pathname;
 let failed = 0;

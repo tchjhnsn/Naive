@@ -5,7 +5,7 @@
 // keeps in front of them; a platform renders it always visible. Behaviors:
 // packages/naive/src/functions/strategy/kits/validation/features/strategic-foundation.feature.
 //
-//   node packages/naive/src/engine/foundation.mjs <venture dir> [--json]
+//   node packages/naive/src/engine/foundation.ts <venture dir> [--json]
 //
 // Status: confirmed (the last write was a person's, or a person accepted it), agent (an agent
 //   wrote it and no person has confirmed it), draft (a draft waits in _drafts/), missing, planned
@@ -93,7 +93,7 @@ export function confirmedIn(dir, file, id, seen = new Set()) {
 }
 
 /** One statement's status and value: a record attribute, confirmed by a person, written by an agent, waiting as a
- *  draft or missing. The Lean Canvas (lean-canvas.mjs) reads its boxes through this too.
+ *  draft or missing. The Lean Canvas (lean-canvas.ts) reads its boxes through this too.
  * @param {string} dir
  * @param {{ id: string, record?: string | null, attribute?: string | null, note?: string }} s */
 export function statement(dir, s) {
@@ -157,7 +157,7 @@ export function problems(dir) {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const arg = process.argv[2];
-  if (!arg) { console.error("usage: node packages/naive/src/engine/foundation.mjs <venture or workspace dir> [--json]"); process.exit(2); }
+  if (!arg) { console.error("usage: node packages/naive/src/engine/foundation.ts <venture or workspace dir> [--json]"); process.exit(2); }
   const walk = (d) => existsSync(join(d, "venture.json")) ? [d] : readdirSync(d, { withFileTypes: true }).filter((e) => e.isDirectory() && !e.name.startsWith(".") && !e.name.startsWith("_")).flatMap((e) => walk(join(d, e.name)));
   const dirs = walk(arg);
   const errs = dirs.flatMap((d) => problems(d).map((p) => `${d}: ${p}`));

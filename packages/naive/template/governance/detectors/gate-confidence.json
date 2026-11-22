@@ -2,7 +2,7 @@
   "id": "gate-confidence",
   "title": "Hold a write for a person",
   "description": "The gate holds an agent's write as a draft for a person when the confidence the write carries is below the line. A yes is a held write. A write without a confidence is never held for confidence and is not a trial.",
-  "call_site": "packages/naive/src/engine/gate.mjs when.confidence_below, read through naive.config.json thresholds.confidence (packages/naive/src/engine/naive-config.mjs configFor)",
+  "call_site": "packages/naive/src/engine/gate.ts when.confidence_below, read through naive.config.json thresholds.confidence (packages/naive/src/engine/naive-config.ts configFor)",
   "tier": "costly",
   "question": {
     "verb": "hold",
