@@ -14,16 +14,16 @@ const eq = (a: unknown, b: unknown): void => { if (JSON.stringify(a) !== JSON.st
 
 t("code is .ts and .mjs outside fixtures, less declarations and recipes, which Naive reads as data", () => {
   eq(["a/x.ts", "a/x.mjs", "a/x.d.ts", "a/p.recipe.ts", "a/fixtures/f.ts", "a/x.json", "a/x.md"].filter(isCode), ["a/x.ts", "a/x.mjs"]);
-  eq([outPath("a/x.ts"), outPath("a/x.mjs")], ["a/x.js", "a/x.mjs"]);
+  eq([outPath("a/x.ts"), outPath("a/x.mjs")], ["a/x.mjs", "a/x.mjs"]);
 });
 
 const compiled = new Set(["packages/naive/src/engine/trace-cli.ts", "packages/naive/src/terms/admit.ts"]);
-const outputs = new Set(["packages/naive/src/engine/trace-cli.js", "packages/naive/src/terms/admit.js", "packages/naive/src/terms/engine.mjs"]);
+const outputs = new Set(["packages/naive/src/engine/trace-cli.mjs", "packages/naive/src/terms/admit.mjs", "packages/naive/src/terms/engine.mjs"]);
 const file = "packages/naive/src/terms/run.mjs";
 
-t("a string that names a compiled .ts file, from the package root or from the file, is renamed to .js", () => {
+t("a string that names a compiled .ts file, from the package root or from the file, is renamed to .mjs", () => {
   const r = rewrite(file, `run("packages/naive/src/engine/trace-cli.ts"); spawn(new URL('./admit.ts', import.meta.url));\n`, compiled, outputs);
-  eq(r.text, `run("packages/naive/src/engine/trace-cli.js"); spawn(new URL('./admit.js', import.meta.url));\n`);
+  eq(r.text, `run("packages/naive/src/engine/trace-cli.mjs"); spawn(new URL('./admit.mjs', import.meta.url));\n`);
   eq(r.missing, []);
 });
 
@@ -35,6 +35,10 @@ t("a .ts string that names no compiled file is left: a suffix, a recipe, a decla
 t("a relative import, export, import() or require() that names no file in the output is reported", () => {
   const text = `import a from "./engine.mjs"; export * from "./gone.mjs"; await import("./admit.ts"); require("../nope.js"); import "node:fs";\n`;
   eq(rewrite(file, text, compiled, outputs).missing, [`${file}: ./gone.mjs`, `${file}: ../nope.js`]);
+});
+
+t("an import of a compiled .ts module is renamed to .mjs, the name every compiled file has", () => {
+  eq(rewrite(file, `import { run } from "./admit.ts";\nexport * from "../engine/trace-cli.ts";\n`, compiled, outputs).text, `import { run } from "./admit.mjs";\nexport * from "../engine/trace-cli.mjs";\n`);
 });
 
 process.exit(failed ? 1 : 0);

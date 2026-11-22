@@ -1,6 +1,6 @@
 // The compiled package (EE-159). Node does not strip types under node_modules, where a venture installs Naive, so
 // the package ships dist/: a mirror of the source files npm ships, at the same relative paths, with every code file
-// compiled to JavaScript (.ts to .js, .mjs stays .mjs) and every other file copied unchanged. A module that finds a
+// compiled to JavaScript (.ts to .mjs, .mjs stays .mjs) and every other file copied unchanged. A module that finds a
 // JSON file, a template or a script by its place in the tree (new URL("../../../..", import.meta.url)) finds it in
 // dist/ too. The package's exports and bin point into dist/; the repository's own tests and CLIs run the source.
 //
@@ -10,10 +10,11 @@
 // (verification fixtures, not runtime). Code is every .ts and .mjs outside fixtures/, except declaration files and
 // recipes (*.recipe.ts), which are data that Naive reads as text.
 //
-// Compiling: tsc with noCheck (type checking is check-types.ts's job) and rewriteRelativeImportExtensions, so
-// import "./x.ts" becomes import "./x.js". After it, a string literal that names a compiled .ts file by its path
-// from the file or from the package root ("packages/naive/src/engine/trace-cli.ts", a script to spawn) is renamed
-// to .js, found by parsing each output file, never by a text search. The build then fails if a relative import in
+// Compiling: tsc with noCheck (type checking is check-types.ts's job). Every compiled file is .mjs, so a module
+// converted from .mjs to .ts keeps the path an app already imports it by. After tsc, a string literal that names a
+// compiled .ts file by its path from the file or from the package root (import "./x.ts", or
+// "packages/naive/src/engine/trace-cli.ts", a script to spawn) is renamed to .mjs, found by parsing each output
+// file, never by a text search. The build then fails if a relative import in
 // dist/ names a file that is not there.
 //
 // It is safe to rerun: a build whose inputs match dist/.build-stamp does nothing, and a new build is written beside
@@ -36,8 +37,11 @@ type Entry = { path: string; kind: "compile" | "copy" };
 export const isCode = (path: string): boolean =>
   /\.(ts|mjs)$/.test(path) && !path.endsWith(".d.ts") && !path.endsWith(".recipe.ts") && !path.split("/").includes("fixtures");
 
-/** The compiled file's path: .ts becomes .js, .mjs stays. */
-export const outPath = (path: string): string => path.replace(/\.ts$/, ".js");
+/**
+ * The compiled file's path: .ts becomes .mjs, .mjs stays. Every compiled file is .mjs, so a module converted from
+ * .mjs to .ts keeps the path an app imports it by, and a .ts name resolves through exports to the same file.
+ */
+export const outPath = (path: string): string => path.replace(/\.ts$/, ".mjs");
 
 /** Set in the listing's environment: npm 10 runs prepare even for `npm pack --dry-run --ignore-scripts`. */
 const LISTING = "NAIVE_BUILD_LISTING";
@@ -77,7 +81,7 @@ function moduleSpecifier(node: ts.Node): ts.StringLiteralLike | null {
 }
 
 /**
- * Renames string literals that name a compiled .ts file to .js, and lists relative module specifiers that name
+ * Renames string literals that name a compiled .ts file to .mjs, and lists relative module specifiers that name
  * no file in the output. `file` is the output path from the package root; `compiled` holds source .ts paths and
  * `outputs` every path in the output.
  */
@@ -116,7 +120,6 @@ function compile(root: string, out: string, code: Entry[]): void {
     noCheck: true,
     noResolve: true,
     types: [],
-    rewriteRelativeImportExtensions: true,
     erasableSyntaxOnly: true,
     verbatimModuleSyntax: true,
     resolveJsonModule: true,
@@ -151,7 +154,14 @@ export function build(root: string = ROOT): { built: boolean; files: number } {
   rmSync(tmp, { recursive: true, force: true });
   try {
     const code = entries.filter((e) => e.kind === "compile");
+    const clash = code.filter((e) => e.path.endsWith(".ts") && code.some((o) => o.path === outPath(e.path)));
+    if (clash.length) throw new Error(`a .ts and a .mjs file share a name, so both would compile to one file:\n${clash.map((e) => e.path).join("\n")}`);
     compile(root, tmp, code);
+    // tsc writes x.ts as x.js; the compiled package names it x.mjs (outPath).
+    for (const e of code.filter((x) => x.path.endsWith(".ts"))) {
+      const js = join(tmp, e.path.replace(/\.ts$/, ".js"));
+      if (existsSync(js)) renameSync(js, join(tmp, outPath(e.path)));
+    }
     // Data after code: tsc also writes the JSON files that code imports, and the copy keeps their bytes exact.
     for (const e of entries.filter((x) => x.kind === "copy")) {
       mkdirSync(dirname(join(tmp, e.path)), { recursive: true });

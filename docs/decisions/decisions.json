@@ -1957,6 +1957,26 @@
           "expect": "exists"
         }
       ]
+    },
+    {
+      "id": "EE-160",
+      "date": "2026-11-22",
+      "status": "in-force",
+      "decision": "Every compiled file in dist/ is .mjs: a .ts module compiles to .mjs, not .js, and its imports and string paths are renamed to match, so a module converted from .mjs to .ts keeps the path apps and scripts already use (naive-framework/src/<file>.mjs and node <path>.mjs both keep working), and a naive-framework/src/<file>.ts subpath resolves to the same .mjs file. naiveScript finds a converted module by either name. This amends EE-159's .ts to .js. scripts/to-ts.ts converts modules by name: it renames each with git mv and rewrites every reference in the repository, so the rest of the migration runs unit by unit without breaking imports.",
+      "why": "Torian, 2026-11-22: continue the TypeScript migration with a swarm. With .js output, every rename of an .mjs module an app imports (everything-ecosystem imports router.mjs, provenance.mjs, contract.mjs and others by name) would break that app, and a re-export shim would break scripts that check whether they are the main module and could load one module twice.",
+      "related": [
+        "EE-159",
+        "EE-087",
+        "EE-119"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "scripts/to-ts.ts",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
     }
   ]
 }
