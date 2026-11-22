@@ -1,0 +1,22 @@
+{
+  "venture": "relay",
+  "id": "primary",
+  "segment": "Small teams who publish developer tools",
+  "icp": "maintainers",
+  "primary": true,
+  "industry": "naics-513210",
+  "updated": "2026-11-20",
+  "cells": {
+    "customer_type": { "status": "known", "value": "business", "valid_from": "2026-09-01" },
+    "reachable_buyers": { "status": "estimated", "value": 4000, "low": 2500, "high": 6000, "valid_from": "2026-11-01", "note": "Teams with a public command-line tool and a release workflow, counted by hand from a sample" },
+    "serviceable_market_usd": { "status": "unknown" },
+    "deal_size_usd": { "status": "estimated", "value": 1200, "valid_from": "2026-11-01", "note": "A guess at a yearly team plan, before any price test" },
+    "sales_cycle_days": { "status": "estimated", "value": 21, "valid_from": "2026-11-01" },
+    "buying_roles": { "status": "known", "value": 1, "valid_from": "2026-09-01", "note": "The maintainer decides and pays" },
+    "purchase_frequency": { "status": "known", "value": "yearly", "valid_from": "2026-09-01" },
+    "switching_cost": { "status": "estimated", "value": "medium", "valid_from": "2026-11-01" },
+    "network_effects": { "status": "known", "value": "none", "valid_from": "2026-09-01" },
+    "maturity": { "status": "unknown" },
+    "concentration": { "status": "unknown" }
+  }
+}

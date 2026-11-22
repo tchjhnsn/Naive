@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "market-anatomy.schema.json",
+  "title": "Market anatomy matrix",
+  "description": "One market a venture sells into, described on standard dimensions so that what counts as enough evidence can be derived from it rather than fixed (EE-157). Each cell holds a value with its status (known, estimated or unknown, and unknown is never null), its cited evidence graded like any validation evidence, and when it was true (valid_from, valid_to). The calibration in packages/naive/src/engine/gate-calibration.ts reads it to propose the venture's phase gate thresholds.",
+  "type": "object",
+  "required": [
+    "venture",
+    "id",
+    "segment",
+    "cells"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "venture": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "segment": {
+      "type": "string",
+      "description": "Who buys, in the venture's words; the ICP it serves when one exists"
+    },
+    "icp": {
+      "type": "string",
+      "description": "The ideal customer profile id this market is for"
+    },
+    "primary": {
+      "type": "boolean",
+      "default": false,
+      "description": "The market the current phase's gate is calibrated against"
+    },
+    "industry": {
+      "type": "string",
+      "description": "The industry anatomy id (often a NAICS code) this market sits in"
+    },
+    "updated": {
+      "type": "string",
+      "format": "date"
+    },
+    "cells": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "customer_type": {
+          "$ref": "anatomy-cell.schema.json#/$defs/enumCell",
+          "description": "business, consumer, government or mixed"
+        },
+        "reachable_buyers": {
+          "$ref": "anatomy-cell.schema.json#/$defs/numberCell",
+          "description": "How many buying organizations or people the venture can actually reach now (serviceable obtainable market as a head count, not dollars)"
+        },
+        "serviceable_market_usd": {
+          "$ref": "anatomy-cell.schema.json#/$defs/numberCell",
+          "description": "Serviceable available market per year in US dollars (Blank and Dorf; Steve Blank's TAM, SAM, SOM)"
+        },
+        "deal_size_usd": {
+          "$ref": "anatomy-cell.schema.json#/$defs/numberCell",
+          "description": "Expected annual contract value or yearly spend per buyer, in US dollars"
+        },
+        "sales_cycle_days": {
+          "$ref": "anatomy-cell.schema.json#/$defs/numberCell",
+          "description": "Days from first conversation to a signed purchase"
+        },
+        "buying_roles": {
+          "$ref": "anatomy-cell.schema.json#/$defs/numberCell",
+          "description": "How many roles must agree to a purchase (the buying center, Webster and Wind 1972)"
+        },
+        "purchase_frequency": {
+          "$ref": "anatomy-cell.schema.json#/$defs/enumCell",
+          "description": "once, yearly, monthly, weekly or daily"
+        },
+        "switching_cost": {
+          "$ref": "anatomy-cell.schema.json#/$defs/enumCell",
+          "description": "low, medium or high (Porter 1980)"
+        },
+        "network_effects": {
+          "$ref": "anatomy-cell.schema.json#/$defs/enumCell",
+          "description": "none, indirect or direct"
+        },
+        "maturity": {
+          "$ref": "anatomy-cell.schema.json#/$defs/enumCell",
+          "description": "emerging, growth, mature or declining (market life cycle)"
+        },
+        "concentration": {
+          "$ref": "anatomy-cell.schema.json#/$defs/enumCell",
+          "description": "fragmented, moderate or concentrated (by HHI bands of the 2023 Merger Guidelines: under 1000, 1000 to 1800, over 1800)"
+        }
+      }
+    }
+  }
+}
