@@ -1,0 +1,107 @@
+{
+  "id": "scale",
+  "step": 4,
+  "name": "Scale",
+  "question": "How fast can we take the mass market?",
+  "binding_constraint": "scale, revenue and margin",
+  "references": [
+    "moore-1995-inside-the-tornado"
+  ],
+  "gate": {
+    "name": "Market leadership with healthy margins",
+    "asks": [
+      "Is the venture taking the mass market faster than its rivals?",
+      "Do margins hold as it grows?",
+      "Do operations hold quality at volume?"
+    ],
+    "evidence": [
+      {
+        "id": "money",
+        "statement": "A money summary showing revenue and margin over time",
+        "source": "money-summary"
+      },
+      {
+        "id": "budget",
+        "statement": "A budget the venture runs to",
+        "source": "budget"
+      },
+      {
+        "id": "operations-readiness",
+        "statement": "An operations readiness record for volume",
+        "source": "validation-operations-readiness"
+      }
+    ]
+  },
+  "workflows": [
+    "marketing-and-sales/weekly-pipeline-review",
+    "products/weekly-product-review",
+    "customer-service/case-triage",
+    "service-delivery/weekly-engagement-review",
+    "finance/monthly-spend-review",
+    "human-capital/quarterly-team-review",
+    "it/quarterly-access-review",
+    "risk-and-compliance/quarterly-risk-review",
+    "supply-chain/monthly-supply-review",
+    "capabilities/weekly-process-review",
+    "capabilities/postmortem",
+    "assets/intake"
+  ],
+  "weights": {
+    "version": "0.1.0",
+    "note": "Unvalidated priors, ours: how much each function's open decisions count when decisions are ranked across functions in this phase. They sum to 1. Nothing ranks with them yet.",
+    "functions": {
+      "strategy": {
+        "weight": 0.05,
+        "why": "The direction is set; strategy reviews it on a cadence"
+      },
+      "products": {
+        "weight": 0.12,
+        "why": "Breadth for the mass market"
+      },
+      "marketing-and-sales": {
+        "weight": 0.16,
+        "why": "Taking share while the market forms"
+      },
+      "supply-chain": {
+        "weight": 0.04,
+        "why": "Supply at volume"
+      },
+      "service-delivery": {
+        "weight": 0.08,
+        "why": "Delivery at volume without losing quality"
+      },
+      "customer-service": {
+        "weight": 0.08,
+        "why": "Service at volume"
+      },
+      "human-capital": {
+        "weight": 0.12,
+        "why": "The team grows fastest here"
+      },
+      "it": {
+        "weight": 0.06,
+        "why": "Systems and access at a size that needs control"
+      },
+      "finance": {
+        "weight": 0.12,
+        "why": "Margins, cash and the cost of growth"
+      },
+      "assets": {
+        "weight": 0.02,
+        "why": "Owned and leased assets start to accumulate"
+      },
+      "risk-and-compliance": {
+        "weight": 0.06,
+        "why": "More obligations and more exposure"
+      },
+      "external-relationships": {
+        "weight": 0.02,
+        "why": "Funding for growth, mostly arranged before"
+      },
+      "capabilities": {
+        "weight": 0.07,
+        "why": "Processes and postmortems keep quality as the team grows"
+      }
+    }
+  }
+}

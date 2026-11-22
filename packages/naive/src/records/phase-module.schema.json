@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "phase-module.schema.json",
+  "title": "Phase module manifest",
+  "description": "The manifest of one lifecycle phase as a module (EE-126), at packages/naive/src/phases/<id>/phase.json: the phase's question, its stage gate (what the gate asks, after Cooper's stage-gate) and the exit evidence the gate requires, the function workflows active in the phase and the weights that rank decisions across the 13 functions. A phase module has no agent and owns no records. It is the one place a phase's name, question and gate are defined: packages/naive/src/engine/lifecycle.mjs, the route table and Product Anatomy read them from here. Its need-now priors are not held here: packages/naive/src/phases/phases.mjs derives them from packages/naive/src/engine/need-now.json and packages/naive/src/functions/departments.json. packages/naive/src/checks/check-phases.ts checks every module.",
+  "type": "object",
+  "required": ["id", "step", "name", "question", "references", "gate", "workflows", "weights"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "enum": ["discovery", "validation", "beachhead", "scale", "platform"], "description": "The phase (EE-012), the same as the folder's name." },
+    "step": { "type": "integer", "minimum": 1, "maximum": 5, "description": "The phase's place in the lifecycle, from 1 (discovery) to 5 (platform)." },
+    "name": { "type": "string", "minLength": 1 },
+    "question": { "type": "string", "minLength": 1, "description": "The question the phase answers." },
+    "binding_constraint": { "type": "string", "minLength": 1, "description": "What limits the venture most in this phase. Discovery has none, because no product is ranked before the core product exists." },
+    "references": {
+      "type": "array",
+      "description": "Source ids in packages/naive/src/records/layers/purpose/references/references.json.",
+      "items": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+      "uniqueItems": true
+    },
+    "gate": {
+      "type": "object",
+      "description": "The stage gate at the end of the phase: its name, the questions a person answers at the gate, and the exit evidence the gate requires whatever lifecycle playbook the venture follows. A playbook may rename the gate and add the evidence its own ordering needs.",
+      "required": ["name", "asks", "evidence"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "description": "The gate's name, such as Problem-solution fit." },
+        "asks": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 }, "description": "The questions the gate asks, each answered from the evidence." },
+        "evidence": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["id", "statement", "source"],
+            "additionalProperties": false,
+            "properties": {
+              "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+              "statement": { "type": "string", "minLength": 1 },
+              "source": { "type": "string", "pattern": "^[a-z0-9-]+$", "description": "The venture record type (an id in data-model.json) the evidence is kept in." }
+            }
+          }
+        }
+      }
+    },
+    "workflows": {
+      "type": "array",
+      "minItems": 1,
+      "description": "The function workflows active in the phase, as <function>/<workflow> (packages/naive/src/functions/<function>/workflows/<workflow>.json).",
+      "items": { "type": "string", "pattern": "^[a-z][a-z-]*/[a-z0-9-]+$" },
+      "uniqueItems": true
+    },
+    "weights": {
+      "type": "object",
+      "description": "How much each function's open decisions count when decisions are ranked across functions in this phase. One entry per departments.json id, summing to 1.",
+      "required": ["version", "note", "functions"],
+      "additionalProperties": false,
+      "properties": {
+        "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$", "description": "0.x while the weights are unvalidated priors." },
+        "note": { "type": "string" },
+        "functions": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "required": ["weight", "why"],
+            "additionalProperties": false,
+            "properties": {
+              "weight": { "type": "number", "minimum": 0, "maximum": 1 },
+              "why": { "type": "string", "minLength": 1 }
+            }
+          }
+        }
+      }
+    },
+    "note": { "type": "string" }
+  }
+}

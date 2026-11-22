@@ -1,0 +1,98 @@
+{
+  "id": "discovery",
+  "step": 1,
+  "name": "Discovery",
+  "question": "Does a real problem exist, and who has it?",
+  "references": [
+    "blank-2005-four-steps"
+  ],
+  "gate": {
+    "name": "Problem-solution fit",
+    "asks": [
+      "Is the problem real, and frequent or painful enough that people already try to solve it?",
+      "Who has it, named well enough to find more of them?",
+      "Does a solution fit the problem well enough to test it with those people?"
+    ],
+    "evidence": [
+      {
+        "id": "problem",
+        "statement": "A problem record with evidence from the people who have it",
+        "source": "validation-problem"
+      },
+      {
+        "id": "customer-profile",
+        "statement": "An ideal customer profile that names who has the problem",
+        "source": "icp"
+      },
+      {
+        "id": "interviews",
+        "statement": "Interviews with people who have the problem",
+        "source": "validation-interview"
+      }
+    ]
+  },
+  "workflows": [
+    "strategy/intake",
+    "products/intake",
+    "marketing-and-sales/intake",
+    "strategy/strategy-review"
+  ],
+  "weights": {
+    "version": "0.1.0",
+    "note": "Unvalidated priors, ours: how much each function's open decisions count when decisions are ranked across functions in this phase. They sum to 1. Nothing ranks with them yet.",
+    "functions": {
+      "strategy": {
+        "weight": 0.25,
+        "why": "The problem and who has it is a strategic question before it is a product one"
+      },
+      "products": {
+        "weight": 0.25,
+        "why": "The solution hypothesis is shaped alongside the problem"
+      },
+      "marketing-and-sales": {
+        "weight": 0.15,
+        "why": "Talking to the people who have the problem is the main source of evidence"
+      },
+      "supply-chain": {
+        "weight": 0.01,
+        "why": "Nothing is bought or made yet"
+      },
+      "service-delivery": {
+        "weight": 0.02,
+        "why": "Concierge delivery may test a solution, rarely"
+      },
+      "customer-service": {
+        "weight": 0.05,
+        "why": "Early contacts are kept, but there are no customers to serve"
+      },
+      "human-capital": {
+        "weight": 0.03,
+        "why": "The founding team is set; hiring waits"
+      },
+      "it": {
+        "weight": 0.02,
+        "why": "A few tools, chosen cheaply and reversibly"
+      },
+      "finance": {
+        "weight": 0.06,
+        "why": "Runway bounds how long discovery can last"
+      },
+      "assets": {
+        "weight": 0.01,
+        "why": "Little is owned"
+      },
+      "risk-and-compliance": {
+        "weight": 0.04,
+        "why": "Only blocking legal questions matter now"
+      },
+      "external-relationships": {
+        "weight": 0.06,
+        "why": "Advisers and early backers can open doors to people with the problem"
+      },
+      "capabilities": {
+        "weight": 0.05,
+        "why": "How the founder learns and records what was learned"
+      }
+    }
+  }
+}
