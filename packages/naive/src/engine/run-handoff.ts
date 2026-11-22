@@ -9,8 +9,13 @@
 // the handoff's `evidence`; nothing else in the handoff changes, so its status stays the
 // holder's call (and check-execution.ts holds them to it).
 //
+// A criterion with `runs: "effect"` names a venture program (a path in the venture) as its `check`, and it runs on the
+// venture runtime (venture-program.ts, EE-161): it passes when the program succeeds and returns neither false nor
+// { passed: false }.
+//
 // Hosted (NAIVE_RUNTIME=hosted, packages/naive/src/core/runtime.ts), Naive never runs a tenant's shell on the
-// host: each check goes to the host's sandbox hook, and with none registered the run is refused.
+// host: each bash check goes to the host's sandbox hook, and with none registered the run is refused. An effect
+// criterion needs no sandbox: it runs on the venture runtime with the host's services.
 
 import { execSync, spawnSync } from "node:child_process";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -18,6 +23,7 @@ import { join, relative } from "node:path";
 import { ventureFile } from "../core/venture-paths.ts";
 import { HostedRefusal, git, hostHook, isHosted, missingHook } from "../core/runtime.ts";
 import type { Evidence, Handoff } from "../records/types/records.d.ts";
+import { outputOf, passes, runProgram } from "./venture-program.ts";
 
 const root = new URL("../../../..", import.meta.url).pathname;
 const trim = (s: string) => s.trim().split("\n").slice(-12).join("\n");
@@ -37,14 +43,15 @@ function naiveVersion() {
 
 /**
  * Runs one handoff's done-criteria and writes the evidence. Throws a HostedRefusal when hosted with bash
- * criteria and no sandbox hook, and an Error when a review verdict lacks its reviewer or note.
+ * criteria and no sandbox hook (effect criteria need none), and an Error when a review verdict lacks its reviewer or note.
  */
 export async function runHandoff(dir: string, id: string, { runner = "local", review, by, note, log = console.log }: { runner?: string, review?: string, by?: string, note?: string, log?: (_line: string) => void } = {}) {
   const [reviewId, verdict] = (review ?? "").split("=");
   const hPath = join(ventureFile(dir, "operations/handoffs"), `${id}.json`);
   const h: Handoff = JSON.parse(readFileSync(hPath, "utf8"));
   const sandbox = hostHook("sandbox");
-  if (isHosted() && !sandbox && h.done_criteria.some((d) => d.kind !== "review")) {
+  const bash = (d: Handoff["done_criteria"][number]) => d.kind !== "review" && d.runs !== "effect";
+  if (isHosted() && !sandbox && h.done_criteria.some(bash)) {
     throw missingHook("running a handoff's bash done-criteria", "sandbox", "Naive never runs a tenant's shell on the host");
   }
   const version = naiveVersion();
@@ -55,7 +62,13 @@ export async function runHandoff(dir: string, id: string, { runner = "local", re
     results.push({ criterion: c.id, kind: "review", passed: verdict === "pass", by, command: c.check, output: note });
     log(`${verdict === "pass" ? "pass" : "FAIL"} ${c.id} (review by ${by})`);
   }
-  for (const c of h.done_criteria.filter((d) => d.kind !== "review")) {
+  for (const c of h.done_criteria.filter((d) => d.kind !== "review" && d.runs === "effect")) {
+    const result = await runProgram(dir, c.check);
+    const passed = passes(result);
+    results.push({ criterion: c.id, kind: c.kind, passed, command: c.check, output: trim(outputOf(result)) });
+    log(`${passed ? "pass" : "FAIL"} ${c.id}`);
+  }
+  for (const c of h.done_criteria.filter(bash)) {
     const run = sandbox ? await sandbox(c.check, { cwd: root }) : spawnSync("/bin/bash", ["-c", c.check], { cwd: root, encoding: "utf8" });
     const passed = run.status === 0, output = `${run.stdout}${run.stderr}`;
     results.push({ criterion: c.id, kind: c.kind, passed, command: c.check, output: trim(output) });

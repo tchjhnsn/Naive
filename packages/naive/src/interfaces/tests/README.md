@@ -54,3 +54,5 @@ Tests that run a module in `packages/naive/src/engine/` through the router: its 
 Tests that check a record against its schema run `node packages/naive/src/records/validate.ts`, not Python.
 
 `decision-index-test.ts` also checks `ownScore` on fail-closed decisions due in five and fourteen days: a nearer due date scores higher, and failing closed adds weight (naive#72).
+
+`hosted-runtime-test.ts` also runs an effect done-criterion (`runs: "effect"`) hosted with no sandbox hook: it runs on the venture runtime, so it needs none (EE-161).

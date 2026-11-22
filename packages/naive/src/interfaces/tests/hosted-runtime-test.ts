@@ -79,6 +79,12 @@ ok("hosted: reading a site refuses without a site hook", HOSTED.test(read) && re
 const ran = await refusal(() => runHandoff(dir, "h1", { log: () => {} }));
 ok("hosted: run-handoff refuses bash done-criteria without a sandbox", HOSTED.test(ran) && ran.startsWith("running a handoff's bash done-criteria") && ran.includes("Naive never runs a tenant's shell on the host") && ran.includes('registerHook("sandbox", fn)'), ran);
 
+// An effect criterion runs on the venture runtime, so hosted it needs no sandbox (EE-161).
+writeFileSync(join(dir, "done-check.ts"), "export default async () => ({ passed: true, output: 'ran on the venture runtime' });\n");
+writeFileSync(join(handoffs, "h2.json"), JSON.stringify({ id: "h2", done_criteria: [{ id: "e1", kind: "conformance", runs: "effect", check: "done-check.ts" }] }, null, 2) + "\n");
+const effectRun = await runHandoff(dir, "h2", { log: () => {} });
+ok("hosted: an effect done-criterion runs with no sandbox", effectRun.evidence.passed && effectRun.evidence.results[0]?.output === "ran on the venture runtime", JSON.stringify(effectRun.evidence.results));
+
 const cli = spawnSync("node", [join(repo, "packages/naive/src/engine/run-handoff.ts"), dir, "h1"], { encoding: "utf8", env: { ...process.env } });
 ok("hosted: the run-handoff command exits 2 with the refusal", cli.status === 2 && HOSTED.test(cli.stderr), `${cli.status} ${cli.stderr}`);
 
