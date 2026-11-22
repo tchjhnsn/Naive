@@ -89,7 +89,7 @@ import { logical } from "../../core/venture-paths.mjs";
 import { ventureFile } from "../../core/venture-paths.mjs";
 import { checkWorkspace, ensureWorkspace, findWorkspace } from "../../engine/workspace.mjs";
 import { schemaNameOf } from "../../records/index.mjs";
-import { naiveScript } from "../../core/scripts.mjs";
+import { naiveScript, PACKAGE_ROOT } from "../../core/scripts.mjs";
 import { validateFile } from "../../records/validate.mjs";
 
 const repo = new URL("../../../../..", import.meta.url).pathname;
@@ -207,16 +207,17 @@ function upgradeFramework(dir) {
   if (!name) { console.error("this venture does not install the framework from its package.json, so there is nothing to update; upgrading its layout only"); return 0; }
   const pm = existsSync(join(dir, "pnpm-lock.yaml")) ? "pnpm" : existsSync(join(dir, "yarn.lock")) ? "yarn" : existsSync(join(dir, "bun.lockb")) || existsSync(join(dir, "bun.lock")) ? "bun" : "npm";
   // A git pin (naive#70) moves to the commit of the Naive running this command when that is a clone, and installs from
-  // the clone, so the update needs no network; the new pin is what another machine installs.
+  // the clone, so the update needs no network; the new pin is what another machine installs. The clone is the
+  // package root, above dist/ when this runs compiled (EE-159).
   const gitPin = /^(git\+|github:)/.test(deps[name]) && deps[name].includes("#");
-  const head = gitPin && existsSync(join(repo, "test.mjs")) ? spawnSync("git", ["rev-parse", "HEAD"], { cwd: repo, encoding: "utf8" }).stdout?.trim() : "";
+  const head = gitPin && existsSync(join(PACKAGE_ROOT, "test.mjs")) ? spawnSync("git", ["rev-parse", "HEAD"], { cwd: PACKAGE_ROOT, encoding: "utf8" }).stdout?.trim() : "";
   if (pm === "npm" && /^[0-9a-f]{40}$/.test(head ?? "")) {
     const pin = deps[name].replace(/#.*$/, `#${head}`);
     const j = JSON.parse(readFileSync(pkg, "utf8"));
     for (const k of ["devDependencies", "dependencies"]) if (j[k]?.[name]) j[k][name] = pin;
     writeFileSync(pkg, JSON.stringify(j, null, 2) + "\n");
-    console.log(`updating the framework: pinned ${pin}; npm install --no-save ${repo}`);
-    return spawnSync("npm", ["install", "--no-save", repo], { cwd: dir, stdio: "inherit" }).status ?? 1;
+    console.log(`updating the framework: pinned ${pin}; npm install --no-save ${PACKAGE_ROOT}`);
+    return spawnSync("npm", ["install", "--no-save", PACKAGE_ROOT], { cwd: dir, stdio: "inherit" }).status ?? 1;
   }
   const spec = deps[name].startsWith("file:") || gitPin ? deps[name] : `${name}@latest`;
   const args = pm === "npm" ? ["install", "--save-dev", spec] : pm === "yarn" ? ["add", "--dev", spec] : ["add", "-D", spec];

@@ -43,6 +43,7 @@ const steps = [
   ["the setup page (people, sources of truth, the docket, a discovery goal)", "node", ["packages/naive/src/interfaces/dev/test.mjs"]],
   ["naive workspace init and rename, the clock and the calendar (derived events, .ics)", "node", ["packages/naive/src/engine/workspace-init-test.mjs"]],
   ["the Claude Code plugin (manifest, skills, MCP server outside a venture, marketplaces)", "node", ["packages/naive/src/interfaces/plugin-test.mjs"]],
+  ["the compiled package's build: what is compiled, .ts paths renamed to .js, a relative import that names no file refused (EE-159)", "node", ["scripts/build-test.ts"]],
   ["create-venture and the naive commands (Chapter 1: generator, dev, check, info, upgrade)", "node", ["packages/create-venture/test.mjs"]],
   ["setup in the model's harness (state and artifact over MCP, relayed answers the founder confirms)", "node", ["packages/naive/src/interfaces/tests/setup-test.mjs"]],
   ["writes, reads and boundaries: the call wrapper, containment, private folders", "node", ["packages/naive/src/router/writes-test.mjs"]],
@@ -202,6 +203,8 @@ const cheap = [
   // ESLint is not skipped when missing: that hid real lint errors while the suite said "all passing" (02d5581).
   ["eslint (npm run lint)", "npm", ["run", "lint", "--silent"]],
   ["types (tsc checkJs, every file)", "node", ["packages/naive/src/checks/check-types.ts"]],
+  // The packed install tests run npm pack, whose prepare builds dist/; building it here first lets them find it current.
+  ["the compiled package: dist/ builds (npm run build, EE-159)", "node", ["scripts/build.ts"]],
   ["packages/naive/src/terms/ontology.md matches packages/naive/src/terms/ontology.json (regenerate with node packages/naive/src/checks/check-nouns.mjs --md)", "node", ["packages/naive/src/checks/check-nouns.mjs", "--md"], rendered("packages/naive/src/terms/ontology.md", "\n### System")],
   ["layer relationships in docs/design/LAYERS_AND_KITS_2026-10-27.md match the kits (regenerate with node packages/naive/src/checks/check-data-model.mjs --md)", "node", ["packages/naive/src/checks/check-data-model.mjs", "--md"], rendered("docs/design/LAYERS_AND_KITS_2026-10-27.md", "### Layer relationships")],
   ["docs/reference/ROUTES.md matches the kits (regenerate with node packages/naive/src/router/router.mjs --md)", "node", ["packages/naive/src/router/router.mjs", "--md"], rendered("docs/reference/ROUTES.md", "## Routes")],
