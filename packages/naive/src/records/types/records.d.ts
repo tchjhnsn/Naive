@@ -3206,6 +3206,22 @@ export type NaiveConfig = {
       };
     };
   };
+  /** How strict each phase gate is (EE-156, packages/naive/src/engine/phase-gate.mjs, route system/phase-gate): a preset from packages/naive/src/phases/gate-policies.json, per-item overrides, and whether lifecycle advance refuses a fail-closed shortfall. Without enforce the gate is reported only. */
+  phase_gates?: {
+    /** The policy preset; default standard */
+    preset?: "lenient" | "standard" | "strict";
+    /** When true, each fail-closed shortfall blocks lifecycle advance unless a person overrides it with a reason */
+    enforce?: boolean;
+    /** Per phase, per gate item: the minimum evidence level and the boundary */
+    items?: {
+      [key: string]: {
+        [key: string]: {
+          min?: "very low" | "low" | "moderate" | "high";
+          boundary?: "fail-open" | "fail-closed";
+        };
+      };
+    };
+  };
 };
 
 export type NaiveConfigRule = {
@@ -3823,6 +3839,51 @@ export type People = {
    */
   updated?: string;
 };
+
+/** How strict each phase gate is (EE-156): per phase, the gate items with what proves each and how its strength is measured on the evidence levels (adapted from GRADE), and named presets that set each item's minimum level and boundary (fail-closed refuses the phase change, fail-open passes and names the shortfall as an open risk). Every threshold is an unvalidated prior. */
+export type PhaseGatePolicies = {
+  version: string;
+  note?: string;
+  /** The evidence levels from weakest to strongest */
+  levels: PhaseGatePoliciesLevel[];
+  /** For counted evidence, the minimum count that reaches each level above very low */
+  count_levels?: { [K in "low" | "moderate" | "high"]?: number };
+  count_note?: string;
+  /** Keyed by phase id, as in packages/naive/src/phases/<id>/phase.json */
+  phases: {
+    [key: string]: {
+      items: {
+        id: PhaseGatePoliciesId;
+        label: string;
+        /** The question the item answers */
+        ask: string;
+        /** The record type that proves it, or null when a person's act proves it */
+        record: string | null;
+        measure: {
+          /** count: counted evidence mapped by count_levels; grade: the GRADE level of the record's cited evidence; coverage: share of open items a plan names; authority: a person's act */
+          kind: "count" | "grade" | "coverage" | "authority";
+          /** What is counted, for kind count */
+          of?: string;
+        };
+        /** Fields the record must fill before its evidence is scored */
+        requires: string[];
+      }[];
+      /** Named policies, keyed by preset id; each maps every item id to its minimum level and boundary */
+      presets: {
+        [key: string]: {
+          [key: string]: {
+            min: PhaseGatePoliciesLevel;
+            boundary: "fail-closed" | "fail-open";
+          };
+        };
+      };
+    };
+  };
+};
+
+export type PhaseGatePoliciesLevel = "very low" | "low" | "moderate" | "high";
+
+export type PhaseGatePoliciesId = string;
 
 /** The manifest of one lifecycle phase as a module (EE-126), at packages/naive/src/phases/<id>/phase.json: the phase's question, its stage gate (what the gate asks, after Cooper's stage-gate) and the exit evidence the gate requires, the function workflows active in the phase and the weights that rank decisions across the 13 functions. A phase module has no agent and owns no records. It is the one place a phase's name, question and gate are defined: packages/naive/src/engine/lifecycle.mjs, the route table and Product Anatomy read them from here. Its need-now priors are not held here: packages/naive/src/phases/phases.mjs derives them from packages/naive/src/engine/need-now.json and packages/naive/src/functions/departments.json. packages/naive/src/checks/check-phases.ts checks every module. */
 export type PhaseModule = {
@@ -5730,6 +5791,31 @@ export type ValidationOperationsReadiness = {
     scored: string;
     note?: string;
   };
+};
+
+/** The assumptions a venture has not yet demonstrated, each with the test that would settle it, the result that counts as passing and a date (EE-156). The discovery gate's validation-plan item reads it: every gate item below high must be named by an assumption. */
+export type ValidationPlan = {
+  venture: string;
+  /**
+   * @format date
+   */
+  updated?: string;
+  assumptions: {
+    id: string;
+    /** What must be true, stated so a test can show it false */
+    statement: string;
+    /** The gate item it bears on, such as problem or economic-signal */
+    item: string;
+    /** How it will be tested */
+    test: string;
+    /** The result that counts as passing, decided before the test */
+    pass: string;
+    /**
+     * @format date
+     */
+    by: string;
+    status?: "open" | "passed" | "failed" | "dropped";
+  }[];
 };
 
 /** The pricing sub-score (EE-026), at <venture>/purpose/validation/pricing.json: the price model and points, who pays, and cited evidence that the buyer pays it. */

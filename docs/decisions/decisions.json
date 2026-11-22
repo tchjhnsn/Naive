@@ -1829,6 +1829,45 @@
       ]
     },
     {
+      "id": "EE-156",
+      "date": "2026-11-22",
+      "status": "in-force",
+      "decision": "Each phase gate item gets an evidence ladder and a policy, the way a password meter rates strength. The ladder is the evidence levels adapted from GRADE (very low, low, moderate, high), measured per item by counted evidence, the grade of the record's cited evidence, the plan's coverage of open items, or a person's act. Interviews are the strongest common proof but not the only one: desk research from three distinct sources reaches moderate, and behavior evidence from the target audience with five or more cases reaches high. A policy gives each item a minimum level and a boundary: fail-closed refuses the phase change when the item falls short, fail-open lets it pass and names the shortfall as an open risk. packages/naive/src/phases/gate-policies.json holds the eight discovery items (customer, problem, alternatives, solution-fit, channel, economic-signal, validation-plan, decision) and three presets, lenient, standard and strict, ranked by a strictness score from 0 to 100 (each item's minimum level index over 3, weighted 1 fail-closed and 0.25 fail-open, averaged). A venture picks a preset and may tune items under phase_gates in naive.config.json. The gate is report-only by default; it refuses a phase change only when phase_gates.enforce is true, and then only for fail-closed items. The decision item is satisfied by a person's phase change and never by an agent. The validation plan (validation/plan.json) names each open assumption with its test, passing result and date. Every threshold is an unvalidated prior, ours.",
+      "why": "A gate that only asks whether records exist lets a venture leave discovery on a guess, and a gate that demands ten interviews for every item stops a founder whose best proof is behavior or desk research. Grading each item's evidence on one ladder and letting the venture choose how strict to be, with enforcement opted in, shows the founder how strong the case is without blocking work by default.",
+      "related": [
+        "EE-155",
+        "EE-126",
+        "EE-050",
+        "EE-071"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/phases/gate-policies.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/records/phase-gate-policies.schema.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/records/validation-plan.schema.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "docs/design/PHASE_GATE_STRENGTH_2026-11-22.md",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
       "id": "EE-152",
       "date": "2026-11-19",
       "status": "in-force",

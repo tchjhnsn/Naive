@@ -54,7 +54,7 @@ import { readFlag as freshnessFlag } from "../engine/freshness.mjs";
 // the gate's verdict, where held drafts wait, and check settings. The logic lives in these modules.
 import { actingCall, isProjector, itemId, mayReadItem, mayReadSome } from "./acting.mjs";
 import { asOfStore, cutFor, inEval, observedBy, refusal as asOfRefusal } from "./reads-as-of.mjs";
-import { checkPlan, gateWrite, heldDraft, ledgerHook, ownerOfWrite } from "./gate-hooks.mjs";
+import { checkPlan, gateWrite, heldDraft, ledgerHook, ownerOfWrite, reachOfWrite } from "./gate-hooks.mjs";
 // Appends (packages/naive/src/router/appends.mjs): one hash-chained line added to a log route, such as the detection ledger.
 import { appendLine } from "./appends.mjs";
 import { claimHandoff, handoffWriteRule } from "./handoff-claim.mjs";
@@ -425,13 +425,19 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
     // Handoff claim hook (packages/naive/src/router/handoff-claim.mjs): a handoff that names its requester is edited by
     // the requester before a claim; after one, the claimant writes progress and evidence and the requester the
     // verification and acceptance. claimBase is the version that rule read, which the write below names.
-    let claimBase;
+    let claimBase, claimed = false;
     if (r.record === "handoff" && input && typeof input === "object") {
       const person = actor === "person" && !actingAgent(provenance.agent?.id);
       const rule = await handoffWriteRule({ store, file, input, person, actorId: actor_id, agent: agentFromEnv(person ? "person" : "agent", via, { ...(actor_id && !person ? { id: actor_id } : {}), ...provenance.agent }) });
       if (!rule.ok) return { ...rule, ...deprecated };
       claimBase = rule.base;
+      claimed = !!rule.stored?.requested_by && !!rule.stored?.claimed_by && rule.stored.role === actor_id;
     }
+    // Function agent reach (reachOfWrite in packages/naive/src/router/gate-hooks.mjs): <function>-agent writes only
+    // decisions and its function's record routes, refused before the schema. A handoff addressed to its role that it
+    // has claimed is the exception: the claim rule above already limits the claimant to progress and evidence.
+    const outOfReach = claimed ? null : reachOfWrite({ r, route, projector, actor, acting: !!actingAgent(provenance.agent?.id), role: actor_id });
+    if (outOfReach) return { ...outOfReach, ...deprecated };
     if (prose) return { ...(await writeProse({ dir, r, route, requested, file, input, actor, actor_id, via, provenance, store, remote, src, params, projector })), ...deprecated };
     // A migrated venture's telos is a view of its canonical records; a telos.json written now would be a second record the lifecycle never reads.
     if (r.record === "telos" && !remote && migrated(dir)) return { ok: false, error: `${venture} keeps its goals and exit criteria as canonical records, so a telos.json is not written: write foundation/goals/telos (measures), foundation/goals/owner-outcome and foundation/exit-criteria/<phase> instead` };
