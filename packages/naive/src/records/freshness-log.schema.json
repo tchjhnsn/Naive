@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "freshness-log.schema.json",
   "title": "Freshness log entry",
-  "description": "One line of a venture's freshness log (<venture>/knowledge/freshness.jsonl, Revalidating V-1, V-2, V-5, V-7): an on-demand revalidation (a tag, a folder path or a package marked stale, like revalidateTag and revalidatePath), a check that a record is still right without changing it (verify), or a phase change. Append-only; each append is also a line in the provenance log. packages/naive/src/engine/freshness.mjs writes and reads it.",
+  "description": "One line of a venture's freshness log (<venture>/knowledge/freshness.jsonl, Revalidating V-1, V-2, V-5, V-7): an on-demand revalidation (a tag, a folder path or a package marked stale, like revalidateTag and revalidatePath), a check that a record is still right without changing it (verify), or a phase change. Append-only; each append is also a line in the provenance log. packages/naive/src/engine/freshness.ts writes and reads it.",
   "type": "object",
   "required": ["at", "event", "by"],
   "additionalProperties": false,

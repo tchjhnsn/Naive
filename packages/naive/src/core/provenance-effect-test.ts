@@ -4,10 +4,10 @@
 // cross-process lock and the router are covered by as-of-test, ontology-gate-test and handoff-claim-test.
 import assert from "node:assert/strict";
 import { Effect } from "effect";
-import { blobFile, blobHash, hasBlobEffect, readBlobEffect, writeBlobEffect } from "./blobs.mjs";
+import { blobFile, blobHash, hasBlobEffect, readBlobEffect, writeBlobEffect } from "./blobs.ts";
 import { IoError } from "./effect/errors.ts";
 import { memoryFs, VentureFs } from "./effect/fs.ts";
-import { lineHash, recordGateEffect, stealDeadLockEffect, withLockFileEffect } from "./provenance.mjs";
+import { lineHash, recordGateEffect, stealDeadLockEffect, withLockFileEffect } from "./provenance.ts";
 
 const results: [string, boolean][] = [];
 const test = async (name: string, fn: () => void | Promise<void>) => {

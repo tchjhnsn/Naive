@@ -59,7 +59,7 @@
   "checks": [
     "packages/naive/src/checks/check-brand.ts",
     "packages/naive/src/checks/check-assets.ts",
-    "packages/naive/src/engine/design-system.mjs"
+    "packages/naive/src/engine/design-system.ts"
   ],
   "skill": {
     "id": "marketing-function",

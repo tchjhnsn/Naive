@@ -2,7 +2,7 @@
   "id": "decision-index-note",
   "title": "Write a note on a decision",
   "description": "The decision index records this line. Decisions whose score reaches it get a qualitative note from an agent.",
-  "call_site": "packages/naive/src/engine/decision-index.mjs THRESHOLD, written to the index as threshold",
+  "call_site": "packages/naive/src/engine/decision-index.ts THRESHOLD, written to the index as threshold",
   "tier": "low",
   "question": {
     "verb": "note",
@@ -12,7 +12,7 @@
   },
   "evidence": {
     "kind": "check",
-    "sensor": "packages/naive/src/engine/decision-index.mjs",
+    "sensor": "packages/naive/src/engine/decision-index.ts",
     "sources": [
       {
         "source": "venture",

@@ -17,7 +17,7 @@
 
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { logicalFiles, ventureFile } from "../core/venture-paths.mjs";
+import { logicalFiles, ventureFile } from "../core/venture-paths.ts";
 
 // The fields this lint reads from a decision, an account or naive.config.json. A record may be malformed, so every
 // leaf is unknown until checked: the generated record types describe valid records, and this lint reads any.
@@ -116,7 +116,7 @@ export function lint(dir: string) {
   return { ok: !failed, rules, findings };
 }
 
-export { moneyCommands } from "../records/routes/commands.mjs";
+export { moneyCommands } from "../records/routes/commands.ts";
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const dir = process.argv[2];

@@ -12,15 +12,15 @@ import { spawnSync } from "node:child_process";
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { call, routes } from "../../router/router.mjs";
+import { call, routes } from "../../router/router.ts";
 import { write as agentWrite } from "../../router/agent-files.ts";
-import { entries } from "../../core/provenance.mjs";
-import { blobHash, hasBlob } from "../../core/blobs.mjs";
-import { readAsOf } from "../../store/as-of.mjs";
-import { writerRule } from "../../engine/gate.mjs";
-import { catalog } from "../../engine/departments.mjs";
-import { functionsOf, seedPrograms, templateOf } from "../../engine/research-programs.mjs";
-import { upgrade } from "../../engine/upgrades.mjs";
+import { entries } from "../../core/provenance.ts";
+import { blobHash, hasBlob } from "../../core/blobs.ts";
+import { readAsOf } from "../../store/as-of.ts";
+import { writerRule } from "../../engine/gate.ts";
+import { catalog } from "../../engine/departments.ts";
+import { functionsOf, seedPrograms, templateOf } from "../../engine/research-programs.ts";
+import { upgrade } from "../../engine/upgrades.ts";
 import { draft as draftProgram } from "../../engine/generators/research-program.ts";
 
 const repo = new URL("../../../../../", import.meta.url).pathname;
@@ -56,7 +56,7 @@ try {
   expect("operations/research-program/[id] is a writable route with writer person", !!item && item.actions.includes("write") && item.writer === "person", JSON.stringify(item));
 
   // init through add-department: a typed venture gets the starter of each function its type lists.
-  const made = node("packages/naive/src/engine/init-venture.mjs", join(ws, "ventures/lab"), "lab", "--type", "side-project");
+  const made = node("packages/naive/src/engine/init-venture.ts", join(ws, "ventures/lab"), "lab", "--type", "side-project");
   if (made.status !== 0) throw new Error(made.stderr || made.stdout);
   const dir = join(ws, "ventures/lab");
   expect("init copies the starter of each function the venture lists", JSON.stringify(functionsOf(dir)) === '["strategy","products"]'
@@ -123,7 +123,7 @@ try {
   expect("upgrade logs each copy in provenance", ["programs/products.md", "programs/finance.md"].every((p) => entries(dir).some((e: { entity?: string, activity?: string }) => e.entity === p && e.activity === "write")));
   const again = await upgrade(dir, { git: false }) as { release: { programs: unknown[] } };
   expect("a second upgrade copies nothing", again.release.programs.length === 0 && seedPrograms(dir).length === 0);
-  const added = node("packages/naive/src/engine/add-department.mjs", dir, "strategy");
+  const added = node("packages/naive/src/engine/add-department.ts", dir, "strategy");
   expect("importing a function again never copies over its program", added.status === 0 && unchanged(), added.stderr);
 
   // The research skill is listed for the interface layer and shipped in the plugin.

@@ -241,7 +241,7 @@
     {
       "id": "EE-023",
       "date": "2026-10-27",
-      "decision": "Start with the end. A venture's purpose layer holds purpose/telos.json (telos.schema.json): the end it exists to reach, its end state and horizon, measures with one primary, the owners' intended outcome (hold, acquisition, IPO and so on) and, per Succession Matrix phase, exit criteria that each serve a measure. schema/check-telos.mjs requires every criterion to trace to a measure, governance/exit.json to prefer the telos path and not rule it out, and warns when a venture past Discovery with more than a hobby ambition has none. Other layers read rather than ask: operations/skills/methodology-selection/derive-answers.mjs derives MAD's governance-tier answers (who decides, funding, agent autonomy, success measure) from the telos, ownership, board, form and decision rights, naming each source, and lists what it cannot derive. The payout script is renamed payouts.mjs and the noun liquidation waterfall is retired for preference stack, because waterfall is a delivery methodology in MAD.",
+      "decision": "Start with the end. A venture's purpose layer holds purpose/telos.json (telos.schema.json): the end it exists to reach, its end state and horizon, measures with one primary, the owners' intended outcome (hold, acquisition, IPO and so on) and, per Succession Matrix phase, exit criteria that each serve a measure. schema/check-telos.mjs requires every criterion to trace to a measure, governance/exit.json to prefer the telos path and not rule it out, and warns when a venture past Discovery with more than a hobby ambition has none. Other layers read rather than ask: operations/skills/methodology-selection/derive-answers.mjs derives MAD's governance-tier answers (who decides, funding, agent autonomy, success measure) from the telos, ownership, board, form and decision rights, naming each source, and lists what it cannot derive. The payout script is renamed payouts.ts and the noun liquidation waterfall is retired for preference stack, because waterfall is a delivery methodology in MAD.",
       "why": "The owner: MAD should read the layers instead of asking again; that follows from a start-with-the-end principle, a telos record in purpose, and each phase can develop its exit from it. waterfall.mjs collided with the waterfall method in MAD's delivery tier.",
       "status": "proposed",
       "related": [
@@ -1795,7 +1795,7 @@
       "affects": [
         {
           "kind": "path",
-          "target": "packages/naive/src/engine/decision-queue.mjs",
+          "target": "packages/naive/src/engine/decision-queue.ts",
           "root": "repo",
           "expect": "exists"
         }
@@ -1816,7 +1816,7 @@
       "affects": [
         {
           "kind": "path",
-          "target": "packages/naive/src/engine/lean-canvas.mjs",
+          "target": "packages/naive/src/engine/lean-canvas.ts",
           "root": "repo",
           "expect": "exists"
         },
@@ -1963,7 +1963,7 @@
       "date": "2026-11-22",
       "status": "in-force",
       "decision": "Every compiled file in dist/ is .mjs: a .ts module compiles to .mjs, not .js, and its imports and string paths are renamed to match, so a module converted from .mjs to .ts keeps the path apps and scripts already use (naive-framework/src/<file>.mjs and node <path>.mjs both keep working), and a naive-framework/src/<file>.ts subpath resolves to the same .mjs file. naiveScript finds a converted module by either name. This amends EE-159's .ts to .js. scripts/to-ts.ts converts modules by name: it renames each with git mv and rewrites every reference in the repository, so the rest of the migration runs unit by unit without breaking imports.",
-      "why": "Torian, 2026-11-22: continue the TypeScript migration with a swarm. With .js output, every rename of an .mjs module an app imports (everything-ecosystem imports router.mjs, provenance.mjs, contract.mjs and others by name) would break that app, and a re-export shim would break scripts that check whether they are the main module and could load one module twice.",
+      "why": "Torian, 2026-11-22: continue the TypeScript migration with a swarm. With .js output, every rename of an .mjs module an app imports (everything-ecosystem imports router.ts, provenance.ts, contract.ts and others by name) would break that app, and a re-export shim would break scripts that check whether they are the main module and could load one module twice.",
       "related": [
         "EE-159",
         "EE-087",
@@ -2002,7 +2002,7 @@
       "id": "EE-129",
       "date": "2026-11-19",
       "status": "proposed",
-      "decision": "Each content rule in a venture's publication policy may say who the venture speaks as on that channel (role, such as founder, company or maintainer) and what publishing that content there is for (end). Both fields are optional. check-publication.mjs warns, and does not fail, when a rule has no end, so a policy written before this decision still passes. role names a voice, not a role id: drafters and approvers keep naming roles from the role registry. The fields come from Aristotle's circumstances of action (Nicomachean Ethics III.1, 1111a3: who acts, and for what end), which Reflect's presentation gate adopted first.",
+      "decision": "Each content rule in a venture's publication policy may say who the venture speaks as on that channel (role, such as founder, company or maintainer) and what publishing that content there is for (end). Both fields are optional. check-publication.ts warns, and does not fail, when a rule has no end, so a policy written before this decision still passes. role names a voice, not a role id: drafters and approvers keep naming roles from the role registry. The fields come from Aristotle's circumstances of action (Nicomachean Ethics III.1, 1111a3: who acts, and for what end), which Reflect's presentation gate adopted first.",
       "why": "Torian, 2026-11-19: Reflect's presentation gate is the personal form of Naive's publication gate. Reflect added who acts and for what end to each of its rules (tchjhnsn/reflect docs/design/REFLECT_FRAMEWORK_2026-11-19.md, step 6), and the same fields are proposed here. Where content lands already decides its guidelines (EE-025); the voice it speaks in and what it is for decide whether an approver should let it out, and an approver can judge that only when the policy says it. A warning, not a failure, keeps every existing policy valid while the decision is proposed.",
       "related": [
         "EE-025"
@@ -2016,7 +2016,7 @@
         },
         {
           "kind": "path",
-          "target": "packages/naive/src/checks/check-publication.mjs",
+          "target": "packages/naive/src/checks/check-publication.ts",
           "root": "repo",
           "expect": "exists"
         }

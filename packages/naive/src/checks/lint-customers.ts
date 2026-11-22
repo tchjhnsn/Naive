@@ -16,7 +16,7 @@
 
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
-import { ventureFile } from "../core/venture-paths.mjs";
+import { ventureFile } from "../core/venture-paths.ts";
 
 const PRODUCT_ID = /^[a-z0-9-]+$/;
 
@@ -167,7 +167,7 @@ export function lint(dir: string) {
   return { ok: !failed, rules, findings };
 }
 
-export { customersLintCommands } from "../records/routes/commands.mjs";
+export { customersLintCommands } from "../records/routes/commands.ts";
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const dir = process.argv[2];

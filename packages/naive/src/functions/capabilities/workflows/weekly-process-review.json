@@ -50,7 +50,7 @@
     {
       "id": "records-valid",
       "kind": "conformance",
-      "check": "node packages/naive/src/records/validate.mjs"
+      "check": "node packages/naive/src/records/validate.ts"
     },
     {
       "id": "one-change-proposed",

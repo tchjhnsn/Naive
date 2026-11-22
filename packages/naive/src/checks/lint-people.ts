@@ -9,8 +9,8 @@
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join, relative } from "node:path";
-import { logical, ventureFile } from "../core/venture-paths.mjs";
-import { roles as roleRegistry } from "../engine/venture-type.mjs";
+import { logical, ventureFile } from "../core/venture-paths.ts";
+import { roles as roleRegistry } from "../engine/venture-type.ts";
 import type { VentureRole } from "../records/types/records.d.ts";
 
 // A JSON object from a record that may be malformed: every field is unknown until checked. The generated record
@@ -125,7 +125,7 @@ function decisionHasPerson(d: DecisionFields, names: Set<unknown>, checkRoster: 
   });
 }
 
-export { peopleLintCommands } from "../records/routes/commands.mjs";
+export { peopleLintCommands } from "../records/routes/commands.ts";
 
 export function lint(dir: string) {
   const reg = registry();

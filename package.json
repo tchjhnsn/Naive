@@ -51,7 +51,7 @@
   "scripts": {
     "build": "node scripts/build.ts",
     "prepare": "node scripts/build.ts",
-    "test": "node test.mjs",
+    "test": "node test.ts",
     "lint": "eslint .",
     "typecheck": "node packages/naive/src/checks/check-types.ts"
   },
@@ -63,7 +63,7 @@
     "!dist/.build-stamp",
     ".claude-plugin/plugin.json",
     "schema/",
-    "scripts/diagnose-transcripts.mjs",
+    "scripts/diagnose-transcripts.ts",
     "packages/",
     "governance/",
     "frameworks/",
@@ -84,6 +84,7 @@
     "!**/*-test.ts",
     "!**/test.ts",
     "!**/*.steps.mjs",
+    "!**/*.steps.ts",
     "!**/*.feature",
     "!packages/create-venture/package.json",
     "!**/.env*",

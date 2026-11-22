@@ -16,10 +16,10 @@
 //
 //   node packages/naive/src/checks/check-governance.ts <workspace or venture dir>
 
-import { ventureFile } from "../core/venture-paths.mjs";
+import { ventureFile } from "../core/venture-paths.ts";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
-import { payouts } from "../engine/payouts.mjs";
+import { payouts } from "../engine/payouts.ts";
 import type { Board, Exit, FounderAgreement, Ownership, Venture } from "../records/types/records.d.ts";
 
 const dir = process.argv[2];

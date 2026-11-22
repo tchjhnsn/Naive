@@ -1,6 +1,6 @@
 // What the three function-module generators share: the decision classes no function may loosen, and the helpers.
 import { join } from "node:path";
-import { cli, questions, readJson, repo, schemaOf, slug, validate } from "./generate.mjs";
+import { cli, questions, readJson, repo, schemaOf, slug, validate } from "./generate.ts";
 
 export { cli, slug, validate };
 export const describeFrom = (record: string, extra: Record<string, string>) => ({ record, ask: questions(schemaOf(record)), ...extra });

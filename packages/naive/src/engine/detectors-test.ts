@@ -1,4 +1,4 @@
-// Tests the thresholds as detectors (packages/naive/src/engine/detectors.mjs, signal detection build item 5): Naive's
+// Tests the thresholds as detectors (packages/naive/src/engine/detectors.ts, signal detection build item 5): Naive's
 // shipped detectors hold today's constants, a venture's own detector file moves the line at each call site, the
 // overrides a call site already had keep precedence, and yes_when below matches the gate's strict comparison.
 //
@@ -8,11 +8,11 @@ import { spawnSync } from "node:child_process";
 import { cpSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
-import { TEMPLATE, criterionFor, detectorFor, line } from "./detectors.mjs";
-import { DEFAULTS, configFor } from "./naive-config.mjs";
-import { evaluate } from "./gate.mjs";
-import { ACCEPT, route } from "./feedback-route.mjs";
-import { THRESHOLD as INDEX_THRESHOLD, rebuild } from "./decision-index.mjs";
+import { TEMPLATE, criterionFor, detectorFor, line } from "./detectors.ts";
+import { DEFAULTS, configFor } from "./naive-config.ts";
+import { evaluate } from "./gate.ts";
+import { ACCEPT, route } from "./feedback-route.ts";
+import { THRESHOLD as INDEX_THRESHOLD, rebuild } from "./decision-index.ts";
 import { call } from "./generators/detector-trial.ts";
 import { TIER_COSTS } from "./generators/detector.ts";
 
@@ -26,6 +26,7 @@ const ws = mkdtempSync(join(tmpdir(), "detectors-test-"));
 // A venture's own copy of a shipped detector with its yes line moved, set by a person.
 const own = (dir: string, id: string, yes: number): void => {
   const d = structuredClone(detectorFor(undefined, id)?.detector);
+  if (!d) throw new Error(`no shipped detector ${id}`);
   d.criterion.yes = { value: yes, set_by: "founder" };
   put(join(dir, "governance/detectors", `${id}.json`), d);
 };
@@ -56,7 +57,7 @@ for (const [id, yes, no] of today) {
 const shipped = readdirSync(TEMPLATE).filter((f) => f.endsWith(".json")).map((f) => load(join(TEMPLATE, f)) as { id: string; tier: "low" | "costly"; costs: unknown; criterion: Record<string, { set_by: string }> });
 expect("every shipped detector is listed here with its line", shipped.length === today.length && shipped.every((d) => today.some(([id]) => id === d.id)), shipped.map((d) => d.id).join(", "));
 expect("every shipped line is set_by default and its costs are its tier's", shipped.every((d) => Object.values(d.criterion).every((l) => l.set_by === "default") && JSON.stringify(d.costs) === JSON.stringify(TIER_COSTS[d.tier])));
-const validate = spawnSync(process.execPath, [join(repo, "packages/naive/src/records/validate.mjs")], { encoding: "utf8" });
+const validate = spawnSync(process.execPath, [join(repo, "packages/naive/src/records/validate.ts")], { encoding: "utf8" });
 expect("the shipped detectors pass the schema", validate.status === 0 && !/template\/governance\/detectors/.test(validate.stdout + validate.stderr), validate.stdout + validate.stderr);
 const bare = join(ws, "bare");
 mkdirSync(bare);

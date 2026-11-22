@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "route-aliases.schema.json",
   "title": "Route aliases",
-  "description": "Renamed routes (EE-032). Routes are an API that agents and scripts depend on, so a renamed record keeps its old route as an alias: the router follows it and answers with a deprecation note. Remove an alias only after the version it was deprecated in has been out for a release. packages/naive/src/interfaces/test.mjs checks that every alias points at a route that exists.",
+  "description": "Renamed routes (EE-032). Routes are an API that agents and scripts depend on, so a renamed record keeps its old route as an alias: the router follows it and answers with a deprecation note. Remove an alias only after the version it was deprecated in has been out for a release. packages/naive/src/interfaces/test.ts checks that every alias points at a route that exists.",
   "type": "object",
   "required": ["aliases"],
   "additionalProperties": false,

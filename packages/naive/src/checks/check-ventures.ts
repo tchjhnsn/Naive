@@ -10,7 +10,7 @@
 // folder; several markets mark one primary. Warns on a business model outside the vocabulary. Warns when a formalized venture
 // (a legal form, or other members) has no governance layer.
 
-import { ventureFile } from "../core/venture-paths.mjs";
+import { ventureFile } from "../core/venture-paths.ts";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import type { Account, Product, Venture } from "../records/types/records.d.ts";

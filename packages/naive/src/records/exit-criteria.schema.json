@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "exit-criteria.schema.json",
   "title": "Exit criteria",
-  "description": "A phase's canonical exit criteria, at <venture>/foundation/exit-criteria/<phase>.json: what must be true to leave the phase, each serving a goal measure. The lifecycle gate (packages/naive/src/engine/lifecycle.mjs) reads these; a criterion is met when a person says so.",
+  "description": "A phase's canonical exit criteria, at <venture>/foundation/exit-criteria/<phase>.json: what must be true to leave the phase, each serving a goal measure. The lifecycle gate (packages/naive/src/engine/lifecycle.ts) reads these; a criterion is met when a person says so.",
   "type": "object",
   "required": ["phase", "criteria"],
   "additionalProperties": false,

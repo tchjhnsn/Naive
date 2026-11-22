@@ -12,7 +12,7 @@ From the repo root, with `mise` on `PATH` (the statechart script installs TLC an
 rm -rf /tmp/legal-lint-chart && mkdir /tmp/legal-lint-chart
 /path/to/pstack/skills/statechart/scripts/statechart packages/naive/test/verification/lint-legal/LegalLint.tla \
   --config packages/naive/test/verification/lint-legal/LegalLint.cfg \
-  --view packages/naive/test/verification/lint-legal/view.mjs \
+  --view packages/naive/test/verification/lint-legal/view.ts \
   --out /tmp/legal-lint-chart
 cp /tmp/legal-lint-chart/chart.mmd packages/naive/test/verification/lint-legal/out/chart.mmd
 ```
@@ -23,7 +23,7 @@ The chart hides `SeeAgreement` and `ApplyModes` (they stay on "Reading records")
 
 ## Rules
 
-TLC reported no broken rule, including `NoDeadlock`. Replays are `node packages/naive/src/interfaces/tests/lint-legal-test.mjs` on temp ventures, plus the example venture and the instance venture. A rule is a bug in the lint only when the replay does the same thing. None did.
+TLC reported no broken rule, including `NoDeadlock`. Replays are `node packages/naive/src/interfaces/tests/lint-legal-test.ts` on temp ventures, plus the example venture and the instance venture. A rule is a bug in the lint only when the replay does the same thing. None did.
 
 | Rule | TLC | Replay |
 |---|---|---|
@@ -35,7 +35,7 @@ TLC reported no broken rule, including `NoDeadlock`. Replays are `node packages/
 | `ReadsUseVentureFile`: every read uses `ventureFile` | PASS | PASS. On a `layout: "structured"` venture the lint reads `k-base/marketing/content/hours.mdx` and `meta/naive.config.json`, reports that logical path, and ignores a decoy at the flat `marketing/content/` path and a decoy `naive.config.json` at the venture root. |
 | `TypeOK`, `NoDeadlock` | PASS | The state set is the five claim values, four agreement values, and two modes per rule (266 states). Every path reaches `Done`. |
 
-Removing the fail-closed exit (`ok` forced true) fails the exit tests. Skipping the claim finding fails the fixture test. Both edits were restored. The committed lint passes `node packages/naive/src/interfaces/tests/lint-legal-test.mjs`.
+Removing the fail-closed exit (`ok` forced true) fails the exit tests. Skipping the claim finding fails the fixture test. Both edits were restored. The committed lint passes `node packages/naive/src/interfaces/tests/lint-legal-test.ts`.
 
 ## What the chart marks
 

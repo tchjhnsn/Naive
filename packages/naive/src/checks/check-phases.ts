@@ -20,9 +20,9 @@ import { join } from "node:path";
 import { CannotRun, SchemaInvalid } from "../core/effect/errors.ts";
 import { readJson, VentureFs } from "../core/effect/fs.ts";
 import { runMain } from "../core/effect/run.ts";
-import { phaseFile, phasesDir } from "../phases/phases.mjs";
-import { recordsIn } from "../records/index.mjs";
-import { validateValue } from "../records/validate.mjs";
+import { phaseFile, phasesDir } from "../phases/phases.ts";
+import { recordsIn } from "../records/index.ts";
+import { validateValue } from "../records/validate.ts";
 
 const args = process.argv.slice(2);
 const at = args.indexOf("--root");

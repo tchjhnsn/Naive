@@ -7,8 +7,8 @@ import { spawnSync } from "node:child_process";
 import { cpSync, mkdirSync, mkdtempSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { readDataModel, recordsIn } from "../records/index.mjs";
-import { naiveScript } from "../core/scripts.mjs";
+import { readDataModel, recordsIn } from "../records/index.ts";
+import { naiveScript } from "../core/scripts.ts";
 import type { Board, DataModel, DecisionRights, Department, DepartmentCatalog, Evidence, Exit, FounderAgreement, Handoff, Integration, KnowledgeSources, Layer, LeadPlan, Ownership, Product, PublicationPolicy, TeamPlan, Telos, ValidationProblem, ValidationProductMarketFit, Venture, WhereUsed } from "../records/types/records.d.ts";
 
 // A library package's package.json has no schema: the fields these tests change.
@@ -104,7 +104,7 @@ govBroken("an S corporation with preferred stock fails", (d) => edit(join(d, "ve
 govBroken("an investor seat without a board-seat right fails", (d) => edit(gov(d, "ownership.json"), (o: Ownership) => { o.classes[1].rights = ["information"]; }), /holds no board-seat right/);
 govBroken("reserved matters on an advisory board fail", (d) => edit(gov(d, "board.json"), (b: Board) => { b.boards[1].reserved_matters = ["approve the budget"]; }), /advisory board advisors has reserved matters/);
 {
-  const { payouts } = await import(join(root, "packages/naive/src/engine/payouts.mjs"));
+  const { payouts } = await import(join(root, "packages/naive/src/engine/payouts.ts"));
   const own = JSON.parse(readFileSync(gov(tandem, "ownership.json"), "utf8"));
   const pay = (v: number, h: string) => payouts(own, v).payouts.find((p: { holder: string }) => p.holder === h).amount;
   expect("payouts: at a soft landing preferred takes its 1x preference", pay(3000000, "lark-ventures") === 2000000);
@@ -197,7 +197,7 @@ valBroken("duplicate evidence ids fail", (d) => edit(problemOf(d), (p: Validatio
 
 // need-now: what a venture needs at this moment (EE-028).
 {
-  const { needNow } = await import(join(root, "packages/naive/src/engine/need-now.mjs"));
+  const { needNow } = await import(join(root, "packages/naive/src/engine/need-now.ts"));
   const N = JSON.parse(readFileSync(join(root, "packages/naive/src/engine/need-now.json"), "utf8"));
   const model = readDataModel() as DataModel;
   const venture = new Set(model.records.filter((r) => r.level === "venture" && r.id !== "venture").map((r) => r.id));
@@ -214,7 +214,7 @@ valBroken("duplicate evidence ids fail", (d) => edit(problemOf(d), (p: Validatio
 
 // time-to-ready: running, and ready per layer and tier (the telos's Option B measure).
 {
-  const { timeToReady } = await import(join(root, "packages/naive/src/engine/time-to-ready.mjs"));
+  const { timeToReady } = await import(join(root, "packages/naive/src/engine/time-to-ready.ts"));
   const r = timeToReady(tandem);
   expect("time-to-ready: a venture with no live product is not running yet", !r.running.on && r.running.missing.includes("product_offered"));
   expect("time-to-ready: layers the venture turned off are not asked for", !r.layers.some((l: { layer: string }) => l.layer === "interface"));
@@ -347,7 +347,7 @@ for (const [name, text, pattern] of ([
 writeFileSync(join(repo, "packages/naive/src/store/connectors/leak.mjs"), `// a comment may name ${appFolder}/connectors/github.mjs\nexport default 1;\n`);
 expect("a comment that names an app module passes", run("check-boundary.ts", [], { EE_ROOT: repo }).status === 0);
 rmSync(join(repo, "packages/naive/src/store/connectors/leak.mjs"));
-edit(join(repo, "packages/naive/src/records/layers/knowledge/tooling/integrations.json"), (list: Integration[]) => { const g = must(list.find((t) => t.id === "github")); g.connector = { module: "packages/naive/src/store/connectors/filesystem.mjs", writes: ["direct"] }; g.credentials = ["GITHUB_TOKEN"]; });
+edit(join(repo, "packages/naive/src/records/layers/knowledge/tooling/integrations.json"), (list: Integration[]) => { const g = must(list.find((t) => t.id === "github")); g.connector = { module: "packages/naive/src/store/connectors/filesystem.ts", writes: ["direct"] }; g.credentials = ["GITHUB_TOKEN"]; });
 { const r = run("check-boundary.ts", [], { EE_ROOT: repo }); expect("a Naive connector with credentials fails", r.status !== 0 && /needs no credentials/.test(r.stderr)); }
 
 // check-data-model reads a whole repository too: each case breaks a fresh copy.

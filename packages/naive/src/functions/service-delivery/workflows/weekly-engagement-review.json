@@ -12,7 +12,7 @@
     { "id": "close-and-review", "do": "For each engagement whose deliverables are all accepted, write the close review (what went well, why anything overran, what can be reused) and close it; on the third delivery of the same request, propose a fixed-scope offer.", "skill": "engagement-delivery", "writes": ["service-delivery/engagements/[id]", "service-delivery/offers/[id]"], "raises": ["strategy-or-constitution"] }
   ],
   "done_criteria": [
-    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/records/validate.mjs" },
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/records/validate.ts" },
     { "id": "no-unapproved-scope", "kind": "review", "check": "Is every scope change on an active engagement either approved or open as a decision for the founder, with no work started on an unapproved one?", "reviewer": "product-lead" }
   ]
 }

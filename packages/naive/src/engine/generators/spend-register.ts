@@ -4,7 +4,7 @@
 // one is given, starts the status at active, and gives a one-time charge no renewal date. It never takes a card or
 // account number: the account is a money record id. The draft goes to the write chain for finance/spend/<id>.json,
 // which only the finance agent (finance-agent) or a person may write.
-import { cli, drop, questions, schemaOf, slug, validate } from "./generate.mjs";
+import { cli, drop, questions, schemaOf, slug, validate } from "./generate.ts";
 import type { SpendRegister } from "../../records/types/records.d.ts";
 
 export const record = "spend-register";

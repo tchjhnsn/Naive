@@ -8,7 +8,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { readSchema } from "../records/index.mjs";
+import { readSchema } from "../records/index.ts";
 
 type Mapping = { skos: string; owl: string; note?: string; fields?: Record<string, Mapping> };
 type Def = { properties?: Record<string, unknown>; allOf?: { if?: { properties?: { verb?: { const?: string } } }; then?: { properties?: { kind?: { enum?: string[] } } } }[]; enum?: string[] };
@@ -25,7 +25,7 @@ const expect = (name: string, ok: boolean, detail = "") => {
 };
 
 const run = (args: string[]) => new Promise<Ran>((resolve) => {
-  const child = spawn(process.execPath, [join(root, "packages/naive/src/records/validate.mjs"), ...args], { cwd: root });
+  const child = spawn(process.execPath, [join(root, "packages/naive/src/records/validate.ts"), ...args], { cwd: root });
   let out = "";
   child.stdout.on("data", (d: Buffer) => { out += d.toString(); });
   child.stderr.on("data", (d: Buffer) => { out += d.toString(); });

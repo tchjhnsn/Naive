@@ -4,8 +4,8 @@
 // naics-<code> when a code is given, else primary unless given, and the name is "unknown" until someone names it. Init
 // writes industries/primary.json through it. The draft goes to the write chain at industries/<id>.
 import { join } from "node:path";
-import { cli, drop, questions, readJson, schemaOf, slug, validate } from "./generate.mjs";
-import { allCells } from "./anatomy-cells.mjs";
+import { cli, drop, questions, readJson, schemaOf, slug, validate } from "./generate.ts";
+import { allCells } from "./anatomy-cells.ts";
 import type { AnatomyCellEnumCell, AnatomyCellNumberCell } from "../../records/types/records.d.ts";
 
 type Cell = AnatomyCellNumberCell | AnatomyCellEnumCell;

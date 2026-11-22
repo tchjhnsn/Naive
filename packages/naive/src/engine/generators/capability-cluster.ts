@@ -3,7 +3,7 @@
 // generator adds one cluster to what the file holds now, with an id unique in the file. It is a change to the
 // framework (a pull request), not a venture route, and the catalog names no vendor: the schema allows no field for one.
 import { join } from "node:path";
-import { cli, drop, questions, readJson, repo, schemaOf, slug, validate } from "./generate.mjs";
+import { cli, drop, questions, readJson, repo, schemaOf, slug, validate } from "./generate.ts";
 import type { CapabilityCluster } from "../../records/types/records.d.ts";
 
 export const record = "capability-cluster";

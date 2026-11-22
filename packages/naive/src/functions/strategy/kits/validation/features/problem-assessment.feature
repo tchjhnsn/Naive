@@ -1,6 +1,6 @@
 # The behaviors the lean problem assessment must keep (EE-050). Each scenario runs as a test:
-# node packages/naive/src/engine/bdd.mjs packages/naive/src/functions/strategy/kits/validation/features/problem-assessment.feature
-# Step definitions: problem-assessment.steps.mjs beside this file.
+# node packages/naive/src/engine/bdd.ts packages/naive/src/functions/strategy/kits/validation/features/problem-assessment.feature
+# Step definitions: problem-assessment.steps.ts beside this file.
 
 Feature: Problem assessment
   A founder learns what their evidence is strong enough for, without being told a good idea is

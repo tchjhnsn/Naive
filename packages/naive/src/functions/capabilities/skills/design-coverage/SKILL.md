@@ -25,7 +25,7 @@ Method: [[DOMAIN_AND_SYSTEMS_DESIGN_METHOD]]. Registry: `packages/naive/src/func
 **At every session opening on a project (SAD v3.0.13, PART 4 step 4b), quick, free:**
 
 ```bash
-node packages/naive/src/functions/capabilities/skills/design-coverage/check.mjs --entity <vault>/projects/<entity> --quick
+node packages/naive/src/functions/capabilities/skills/design-coverage/check.ts --entity <vault>/projects/<entity> --quick
 ```
 
 Read `<entity>/_meta/design-coverage/latest-quick.md`. Tell the owner, in one or two lines, which required documents bearing on today's task have no candidate (✗), and if the entity has no `design-profile`, say that first: it's the gap that hides the others. Don't start design work that depends on a missing document without writing it first or recording why not.
@@ -33,10 +33,10 @@ Read `<entity>/_meta/design-coverage/latest-quick.md`. Tell the owner, in one or
 **Deep (TypeSafe) at phase gates, before ratification, or when candidates need judging:**
 
 ```bash
-node --env-file=<env file that sets TYPESAFE_API_KEY> packages/naive/src/functions/capabilities/skills/design-coverage/check.mjs --entity <vault>/projects/<entity>
+node --env-file=<env file that sets TYPESAFE_API_KEY> packages/naive/src/functions/capabilities/skills/design-coverage/check.ts --entity <vault>/projects/<entity>
 ```
 
-**Vault-wide** (campaign start): `node packages/naive/src/functions/capabilities/skills/design-coverage/scan.mjs` writes `<vault>/_meta/design-coverage/STATUS.md`.
+**Vault-wide** (campaign start): `node packages/naive/src/functions/capabilities/skills/design-coverage/scan.ts` writes `<vault>/_meta/design-coverage/STATUS.md`.
 
 **Explicit mode** (a scope that isn't one entity): `--root <dir> [--root …] [--include '<regex>'] --characteristics … --obligations … [--entity-class business] [--layer domain|product|system|all] --out <prefix>`.
 

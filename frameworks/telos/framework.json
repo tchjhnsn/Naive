@@ -21,7 +21,7 @@
   ],
   "template": "packages/naive/src/functions/strategy/templates/telos-based-smart.md",
   "skill": "packages/naive/src/functions/strategy/skills/telos/SKILL.md",
-  "adapter": "frameworks/telos/adapter.mjs",
+  "adapter": "frameworks/telos/adapter.ts",
   "checks": ["packages/naive/src/checks/check-telos.ts"],
   "maps_to": [
     { "framework_field": "statement", "canonical_route": "foundation/goals/[id]", "canonical_field": "statement", "note": "goal id telos, kind venture" },
