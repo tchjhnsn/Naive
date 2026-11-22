@@ -44,12 +44,14 @@ const framework = (() => {
 })();
 if (!framework) { console.error("create-venture could not find the Naive framework (naive-framework) to create the venture with"); process.exit(1); }
 const fw = JSON.parse(readFileSync(join(framework, "package.json"), "utf8"));
+// A framework module by its source path. The compiled copy names a .ts module .mjs (outPath in scripts/build.ts).
+const fwModule = (path) => join(framework, existsSync(join(framework, path)) ? path : path.replace(/\.ts$/, ".mjs"));
 const { layers: PHASE_LAYERS } = JSON.parse(readFileSync(join(framework, "packages/naive/src/engine/scaffold/defaults.json"), "utf8"));
 const PHASES = Object.keys(PHASE_LAYERS);
 const LAYERS = ["purpose", "knowledge", "operations", "evidence", "governance", "interface"];
 // The legal forms venture.json accepts, from its schema, so the question can only offer valid answers. The schema is
 // found through the framework's record types resolver, which knows where the record types sit in that version.
-const { readSchema } = await import(join(framework, "packages/naive/src/records/index.ts"));
+const { readSchema } = await import(fwModule("packages/naive/src/records/index.ts"));
 const FORMS = readSchema("venture").properties.form.properties.legal_form.enum;
 
 const argv = process.argv.slice(2);
@@ -245,10 +247,10 @@ if (mode === "team") venture.members = people.slice(1).map((p) => ({ role: p.rol
 if (structured) for (const f of Object.keys(venture.functions ?? {})) venture.functions[f].owner = ownerOf[f] ?? null;
 writeFileSync(vfile, JSON.stringify(venture, null, 2) + "\n");
 // Where each logical file sits in this venture's layout (packages/naive/src/core/venture-paths.ts).
-const { ventureFile: vf, physical } = await import(join(framework, "packages/naive/src/core/venture-paths.ts"));
+const { ventureFile: vf, physical } = await import(fwModule("packages/naive/src/core/venture-paths.ts"));
 
 // people/: the roster and one file per founder, the venture.json of human capital (EE-082).
-const { agentFromEnv, record } = await import(join(framework, "packages/naive/src/core/provenance.ts"));
+const { agentFromEnv, record } = await import(fwModule("packages/naive/src/core/provenance.ts"));
 const today = new Date().toISOString().slice(0, 10);
 mkdirSync(vf(dir, "people/founders"), { recursive: true });
 const door = opt("door") ?? "cli";
@@ -270,7 +272,7 @@ if (answers.dump) {
 
 // knowledge/sources.json: each function's systems of record, as pointers (EE-083). A system whose sync command
 // the app names (packages/naive/src/core/sync.ts) is synced now; an older framework without that module syncs nothing.
-const syncModule = join(framework, "packages/naive/src/core/sync.ts");
+const syncModule = fwModule("packages/naive/src/core/sync.ts");
 const { sync } = existsSync(syncModule) ? await import(syncModule) : { sync: () => ({ ran: false }) };
 const syncNotes = [];
 for (const f of Object.values(functions)) for (const s of f.systems) {
