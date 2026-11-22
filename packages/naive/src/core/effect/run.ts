@@ -5,11 +5,12 @@
 //   - runMain runs a CLI's Effect, prints a failure in one line and sets process.exitCode.
 // All three run through one venture runtime for the process (EE-161), with the default layer (NodeFs). Older
 // callers pass absolute paths, so it serves the working directory (".") and is never disposed.
-import { Cause, type Effect, Exit } from "effect";
+import { Cause, type Effect, Exit, Tracer } from "effect";
 import type { NaiveError } from "./errors.ts";
 import { ventureRuntime, type VentureServices } from "./runtime.ts";
 
-const runtime = ventureRuntime(".");
+// Effect's own in-memory tracer: these callers pass absolute paths, so "." is no venture to write spans to.
+const runtime = ventureRuntime(".", { tracer: Tracer.nativeTracer });
 
 /** Throws the tagged error itself (not a wrapper), so old try/catch callers see `_tag` and the message. */
 const unwrap = <A, E>(exit: Exit.Exit<A, E>): A => {

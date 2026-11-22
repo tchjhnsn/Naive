@@ -79,6 +79,7 @@ const steps: Step[] = [
   ["effect base: tagged errors, VentureFs on memory and on disk, and the runners (EE-125)", "node", ["packages/naive/src/core/effect/effect-test.ts"]],
   ["naive.config.json as an Effect service: the file layer, fixed configs, the runtime override", "node", ["packages/naive/src/core/effect/config-test.ts"]],
   ["HostRuntime and Judge as layers: laptop, hosted with its hooks, the live layer reading registerHook at each call, the judge on each", "node", ["packages/naive/src/core/effect/host-test.ts"]],
+  ["NaiveTracer: an Effect.fn run writes chained spans that check-traces accepts, nested under withSpan, errors as status error, nothing with traces off", "node", ["packages/naive/src/checks/effect-tracer-test.ts"]],
   ["the engine reads naive.config.json through NaiveConfig with its old shapes and messages", "node", ["packages/naive/src/engine/naive-config-test.ts"]],
   ["agent specs: one function agent per function with its module's files and a reach that covers its workflows, four leads covering the 13 functions, and routing", "node", ["packages/naive/src/engine/agents/agents-test.ts"]],
   ["provenance and blobs as Effects: the lock resource, the gate chain and the blob store on memory (EE-125)", "node", ["packages/naive/src/core/provenance-effect-test.ts"]],
