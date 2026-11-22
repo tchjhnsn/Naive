@@ -248,6 +248,18 @@ await t("from a packed npm install: naive workspace init makes the workspace and
   ok(r.status === 0, r.stderr + r.stdout);
   ok(load(join(app, "ws1/naive-workspace.json")).ventures.join() === "kettle" && existsSync(join(app, "ws1/kettle/venture.json")), "the venture is made and listed");
   ok(!existsSync(join(app, "node_modules/naive-framework/packages/create-venture/test.mjs")), "tests stay out of the package");
+
+  // The compiled package (EE-159): Node refuses to strip types under node_modules, so the installed source of a .ts
+  // module does not load, and the same module through the package's exports does, with type stripping off entirely.
+  const noStrip = { ...env, NODE_OPTIONS: "--no-experimental-strip-types" };
+  const importIn = (spec) => spawnSync(process.execPath, ["--input-type=module", "-e", `const m = await import(${JSON.stringify(spec)}); console.log(typeof m.run);`], { cwd: app, env: noStrip, encoding: "utf8" });
+  const source = importIn(join(app, "node_modules/naive-framework/packages/naive/src/terms/engine.ts"));
+  ok(source.status !== 0 && /ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING|ERR_UNKNOWN_FILE_EXTENSION/.test(source.stderr), `the installed source loads: ${source.stderr}`);
+  const compiled = importIn("naive-framework/src/terms/engine.ts");
+  ok(compiled.status === 0 && compiled.stdout.trim() === "function", compiled.stderr + compiled.stdout);
+  // naive check runs the installed CLI, router and checks from node_modules with no type stripping.
+  const c = spawnSync(bin, ["check"], { cwd: join(app, "ws1/kettle"), env: noStrip, encoding: "utf8" });
+  ok(c.status === 0 && /all passing/.test(c.stdout), c.stdout + c.stderr);
 });
 
 rmSync(base, { recursive: true, force: true });
