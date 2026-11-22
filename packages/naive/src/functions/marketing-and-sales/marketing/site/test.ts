@@ -78,7 +78,7 @@ t("the ICP is read from the site: what it says outright first, and the records' 
   const v = mkdtempSync(join(tmpdir(), "icp-"));
   writeFileSync(join(v, "venture.json"), "{}"); mkdirSync(join(v, "purpose")); writeFileSync(join(v, "purpose/icp.json"), JSON.stringify({ profiles: [{ who: "billing partners" }] }));
   const i = icpOf(v, s2);
-  ok(i.source === "site" && i.says.some((x) => /built for solo physical therapy clinics/.test(x)) && i.says.some((x) => /Used by clinics/.test(x)) && i.stated?.[0] === "billing partners", JSON.stringify(i));
+  ok(i.source === "site" && (i.says ?? []).some((x) => /built for solo physical therapy clinics/.test(x)) && (i.says ?? []).some((x) => /Used by clinics/.test(x)) && i.stated?.[0] === "billing partners", JSON.stringify(i));
 });
 
 // The planner (EE-064): a partner-led venture whose product is offered to clinics' billing partners.
