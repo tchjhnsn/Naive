@@ -438,6 +438,13 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
     if (["idea-dump", "raw-source", "raw-text", "raw-dump", "triage"].includes(r.record) && existsSync(ventureFile(dir, file))) return { ok: false, error: `${route} is raw and immutable: add a new capture, do not edit this one` };
     // Agent drafts are refused here because accepting one moves the whole file into place, and this draft holds only a view of it.
     if (r.view_of && (actor !== "person" || actingAgent(provenance.agent?.id) || remote || attrs.length)) return { ok: false, error: `only a person writes ${route}, in the venture's own folder; it holds part of ${file}` };
+    // A record that names its venture names the one it is written to (naive#71): a record carried over from another
+    // venture is refused, not filed under the wrong name.
+    if (input && typeof input === "object" && typeof input.venture === "string") {
+      let own = null;
+      try { own = JSON.parse(readFileSync(join(dir, "venture.json"), "utf8")).id ?? null; } catch { own = null; }
+      if (own && input.venture !== own) return { ok: false, error: `the record names venture ${input.venture}, but it is being written to ${own}: set its venture field to ${own}, or write it to ${input.venture}`, fix: fix(r) };
+    }
     const gate = gateOf(r, dir);
     const text = JSON.stringify(input, null, 2) + "\n";
     // The schema first, on a scratch copy, so nothing reaches any source unless it matches.
