@@ -1,0 +1,98 @@
+{
+  "version": "0.1.0",
+  "note": "How a venture's phase gate thresholds follow from its market and industry (EE-157). The rules read cells of the venture's primary market (markets/<id>.json) and the industry it names (industries/<id>.json) and propose adjustments to the gate policy preset in packages/naive/src/phases/gate-policies.json. A cell counts only while it is valid: valid_to absent or not past, and valid_from not in the future. A cell that is unknown, missing or no longer valid adjusts nothing and becomes an assumption for the validation plan. Read by packages/naive/src/engine/gate-calibration.ts. Every number here is an unvalidated prior, ours.",
+  "prior": "unvalidated",
+  "count_levels": {
+    "id": "count-levels-by-reach",
+    "reads": ["market.customer_type", "market.reachable_buyers"],
+    "prior": "unvalidated",
+    "share": 0.05,
+    "moderate_min": 3,
+    "moderate_max": 10,
+    "high_factor": 2,
+    "low": 1,
+    "default": { "low": 1, "moderate": 5, "high": 10 },
+    "keep_default_for": ["consumer"],
+    "reason": "A small business market runs out of people to interview: moderate is 5% of the buyers the venture can reach, at least 3 and at most 10, and high is twice that. Consumer markets, and markets whose reach is unknown, keep the defaults of 5 and 10."
+  },
+  "staleness": {
+    "default_months": 18,
+    "prior": "unvalidated"
+  },
+  "rules": [
+    {
+      "id": "high-cost-of-error",
+      "reads": ["industry.cost_of_error", "industry.regulation"],
+      "when": [
+        { "cell": "industry.cost_of_error", "in": ["harmful", "safety-critical"] },
+        { "cell": "industry.regulation", "in": ["licensed", "heavy"] }
+      ],
+      "raise": { "items": ["problem", "solution-fit"], "levels": 1, "boundary": "fail-closed" },
+      "prior": "unvalidated",
+      "reason": "When a wrong product harms its user, or the industry is licensed or heavily regulated, being wrong about the problem or the fit costs more than being slow, so both need one level more evidence and refuse the phase change when short."
+    },
+    {
+      "id": "big-deal-or-long-cycle",
+      "reads": ["market.deal_size_usd", "market.sales_cycle_days"],
+      "when": [
+        { "cell": "market.deal_size_usd", "gt": 25000 },
+        { "cell": "market.sales_cycle_days", "gt": 90 }
+      ],
+      "floor": { "items": ["economic-signal"], "min": "moderate", "boundary": "fail-closed" },
+      "prior": "unvalidated",
+      "reason": "A deal over 25000 US dollars a year, or a sales cycle over 90 days, needs commitment evidence before the venture builds for it, such as a letter of intent, so the economic signal needs moderate and fails closed."
+    },
+    {
+      "id": "direct-network-effects",
+      "reads": ["market.network_effects"],
+      "when": [
+        { "cell": "market.network_effects", "in": ["direct"] }
+      ],
+      "floor": { "items": ["channel"], "boundary": "fail-closed" },
+      "prior": "unvalidated",
+      "reason": "With direct network effects the product is worth little until enough of the same people join, so a channel that reaches them is part of whether it works at all and fails closed."
+    },
+    {
+      "id": "several-buying-roles",
+      "reads": ["market.buying_roles"],
+      "when": [
+        { "cell": "market.buying_roles", "gte": 3 }
+      ],
+      "notes": ["Interviews must span the buying roles: with 3 or more roles agreeing to a purchase, one role saying yes is not the buyer saying yes. Counting interviews by role is not built."],
+      "prior": "unvalidated",
+      "reason": "A purchase that 3 or more roles must agree to is decided by the buying center, not one person (Webster and Wind 1972)."
+    },
+    {
+      "id": "fast-moving-market",
+      "reads": ["industry.clockspeed", "market.maturity"],
+      "when": [
+        { "cell": "industry.clockspeed", "in": ["fast"] },
+        { "cell": "market.maturity", "in": ["emerging"] }
+      ],
+      "staleness_months": 9,
+      "prior": "unvalidated",
+      "reason": "In a fast industry or an emerging market evidence goes out of date sooner, so evidence older than 9 months, not 18, drops one level."
+    }
+  ],
+  "override": {
+    "id": "override-policy",
+    "reads": ["industry.cost_of_error"],
+    "reason_required": true,
+    "second_person_when": [
+      { "cell": "industry.cost_of_error", "in": ["harmful", "safety-critical"] }
+    ],
+    "prior": "unvalidated",
+    "reason": "Overriding a gate always needs a reason. When a wrong product harms its user, a second named person must also agree, so one person's optimism cannot pass the gate alone."
+  },
+  "problem_confirmation": {
+    "id": "problem-confirmation",
+    "reads": ["market.customer_type"],
+    "business": "Business buyers confirm the problem in their own words, with a cost they put a number on (hours, money or risk).",
+    "consumer": "Consumers confirm the problem through behavior someone observed: a workaround they already use, pay for or put effort into.",
+    "unknown": "Until the customer type is known, confirm the problem both ways: in the buyer's own words with a quantified cost, and through an observed workaround.",
+    "business_types": ["business", "government"],
+    "consumer_types": ["consumer"],
+    "prior": "unvalidated",
+    "reason": "Business buyers can name what a problem costs them; consumers often cannot, but what they already do about it shows it."
+  }
+}

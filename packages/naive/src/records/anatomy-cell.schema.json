@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "anatomy-cell.schema.json",
+  "title": "Anatomy matrix cell",
+  "description": "One cell of a Venture Anatomy Matrix sub-matrix (EE-157). Every sub-matrix uses this shape so one calibration and one visualization serve them all. status is known, estimated or unknown, and unknown is a value, never null. valid_from and valid_to are application time (SQL:2011): when the value was true in the world. When the record knew it is system time, kept by the provenance log and the blob store (readAsOf).",
+  "$defs": {
+    "status": {
+      "enum": [
+        "known",
+        "estimated",
+        "unknown"
+      ]
+    },
+    "numberCell": {
+      "type": "object",
+      "required": [
+        "status"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "$ref": "#/$defs/status"
+        },
+        "value": {
+          "type": "number",
+          "minimum": 0
+        },
+        "low": {
+          "type": "number",
+          "minimum": 0
+        },
+        "high": {
+          "type": "number",
+          "minimum": 0
+        },
+        "valid_from": {
+          "type": "string",
+          "format": "date"
+        },
+        "valid_to": {
+          "type": "string",
+          "format": "date"
+        },
+        "note": {
+          "type": "string"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "validation-evidence.schema.json"
+          }
+        }
+      }
+    },
+    "enumCell": {
+      "type": "object",
+      "required": [
+        "status"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "$ref": "#/$defs/status"
+        },
+        "value": {
+          "type": "string"
+        },
+        "valid_from": {
+          "type": "string",
+          "format": "date"
+        },
+        "valid_to": {
+          "type": "string",
+          "format": "date"
+        },
+        "note": {
+          "type": "string"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "validation-evidence.schema.json"
+          }
+        }
+      }
+    }
+  }
+}

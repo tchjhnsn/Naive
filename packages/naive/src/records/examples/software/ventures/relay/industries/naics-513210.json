@@ -1,0 +1,35 @@
+{
+  "venture": "relay",
+  "id": "naics-513210",
+  "name": "Software Publishers",
+  "naics": "513210",
+  "updated": "2026-11-20",
+  "cells": {
+    "regulation": {
+      "status": "estimated",
+      "value": "none",
+      "valid_from": "2026-09-01",
+      "evidence": [
+        {
+          "id": "naics-513210-definition",
+          "kind": "desk-research",
+          "summary": "The Census Bureau classifies establishments that publish and sell software as NAICS 513210, Software Publishers; the industry definition names no licensing requirement.",
+          "source": { "title": "North American Industry Classification System, 2022: 513210 Software Publishers", "url": "https://www.census.gov/naics/?input=513210&year=2022", "checked": "2026-11-20" },
+          "audience": "unknown",
+          "specificity": "specific",
+          "collected": "2026-11-20",
+          "origin": "reported"
+        }
+      ]
+    },
+    "cost_of_error": { "status": "estimated", "value": "costly", "valid_from": "2026-09-01", "note": "A broken release blocks a team's users until it is fixed" },
+    "capital_intensity": { "status": "known", "value": "low", "valid_from": "2026-09-01" },
+    "time_to_revenue_days": { "status": "unknown" },
+    "clockspeed": { "status": "estimated", "value": "fast", "valid_from": "2026-09-01" },
+    "supplier_power": { "status": "estimated", "value": "medium", "valid_from": "2026-09-01", "note": "Package registries and code hosts set the terms" },
+    "buyer_power": { "status": "unknown" },
+    "threat_of_entrants": { "status": "estimated", "value": "high", "valid_from": "2026-09-01" },
+    "threat_of_substitutes": { "status": "estimated", "value": "high", "valid_from": "2026-09-01", "note": "Hand-written release scripts" },
+    "rivalry": { "status": "unknown" }
+  }
+}

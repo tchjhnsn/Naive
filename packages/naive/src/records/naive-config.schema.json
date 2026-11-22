@@ -698,6 +698,21 @@
           "type": "boolean",
           "description": "When true, each fail-closed shortfall blocks lifecycle advance unless a person overrides it with a reason"
         },
+        "count_levels": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "The minimum count of consenting interviews that reaches each level, in place of count_levels in packages/naive/src/phases/gate-policies.json (5 for moderate, 10 for high). packages/naive/src/engine/gate-calibration.ts proposes them from the venture's market (EE-157)",
+          "properties": {
+            "low": { "type": "integer", "minimum": 1 },
+            "moderate": { "type": "integer", "minimum": 1 },
+            "high": { "type": "integer", "minimum": 1 }
+          }
+        },
+        "staleness_months": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Evidence collected more than this many months ago drops one level when the gate grades it; default 18. packages/naive/src/engine/gate-calibration.ts proposes 9 for a fast industry or an emerging market (EE-157)"
+        },
         "items": {
           "type": "object",
           "description": "Per phase, per gate item: the minimum evidence level and the boundary",

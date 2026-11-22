@@ -1,0 +1,44 @@
+{
+  "version": "0.1.0",
+  "note": "The Venture Anatomy Matrix (EE-157), sibling of the Product Anatomy Matrix: the venture's architecture description in the sense of ISO/IEC/IEEE 42010:2022. Each sub-matrix is a model that names the record types holding it, so the matrix copies nothing; each viewpoint frames a reader's concerns and selects the sub-matrices its view reads. Regulation S-K items are the coverage check: every item a company would disclose maps to at least one sub-matrix. The strategy function owns the matrix itself; each sub-matrix is owned by the function the data model gives its record type. packages/naive/src/engine/venture-anatomy.ts resolves it for a venture.",
+  "standard": {
+    "name": "ISO/IEC/IEEE 42010:2022 Architecture description",
+    "source": "iso-42010-2022-architecture-description",
+    "time": "Bitemporal: application time on each cell (valid_from, valid_to), system time from the provenance log and the blob store (readAsOf)",
+    "time_source": "sql-2011-temporal"
+  },
+  "coverage": {
+    "source": "sec-regulation-s-k",
+    "items": [
+      { "id": "101", "label": "Description of business", "source": "sec-2020-s-k-modernization" },
+      { "id": "105", "label": "Risk factors", "source": "sec-2020-s-k-modernization" },
+      { "id": "303", "label": "Management's discussion and analysis", "source": "sec-regulation-s-k" },
+      { "id": "401", "label": "Directors, executive officers and control persons", "source": "sec-regulation-s-k" },
+      { "id": "403", "label": "Security ownership of owners and management", "source": "sec-regulation-s-k" },
+      { "id": "S-X", "label": "Financial statements (Regulation S-X)", "source": "sec-form-s-1" }
+    ]
+  },
+  "submatrices": [
+    { "id": "identity", "label": "Identity", "concern": "What problem the venture solves, how, why it is different and what cannot be copied", "record": "lean-canvas", "boxes": ["problem", "unique-value-proposition", "solution", "unfair-advantage"], "status": "built", "owner": "strategy", "covers": ["101"], "from_phase": "discovery",
+      "note": "Read through the Lean Canvas boxes that no other sub-matrix holds; each box is a cell, known when confirmed, estimated when an agent wrote it" },
+    { "id": "customer", "label": "Customer", "concern": "Who has the problem, who buys, and how the venture reaches them", "record": "icp", "also": ["validation-go-to-market"], "status": "built", "owner": "strategy", "covers": ["101"], "from_phase": "discovery" },
+    { "id": "market", "label": "Market", "concern": "How many buyers the venture can reach, what they pay, how long they take and how many must agree", "record": "market-anatomy", "status": "built", "owner": "marketing-and-sales", "covers": ["101", "303"], "from_phase": "discovery",
+      "nesting": { "in": "industry", "field": "industry" } },
+    { "id": "industry", "label": "Industry", "concern": "The forces, regulation, cost of error, capital intensity and clockspeed of the industry the market sits in", "record": "industry-anatomy", "status": "built", "owner": "strategy", "covers": ["101", "105"], "from_phase": "discovery" },
+    { "id": "product", "label": "Product", "concern": "What the venture offers, its parts and how they serve the core promise", "record": "product", "also": ["anatomy-input"], "status": "built", "owner": "products", "covers": ["101"], "from_phase": "validation",
+      "nesting": { "holds": "parts and features, judged by the Product Anatomy Matrix", "record": "anatomy-input" } },
+    { "id": "competition", "label": "Competition", "concern": "Who else serves the same buyers and what is known about them", "record": "competitor", "status": "built", "owner": "strategy", "covers": ["101"], "from_phase": "discovery" },
+    { "id": "business-model", "label": "Business model", "concern": "How the venture makes money and what it costs to run", "record": "validation-pricing", "also": ["budget", "spend-register"], "status": "built", "owner": "strategy", "covers": ["101", "303", "S-X"], "from_phase": "validation",
+      "note": "The budget and spend register stand in for financial statements until a financial statements record type exists (not built)" },
+    { "id": "team", "label": "Team", "concern": "Who leads the venture and who it still needs", "record": "team-plan", "also": ["founder"], "status": "built", "owner": "human-capital", "covers": ["401"], "from_phase": "validation" },
+    { "id": "capital", "label": "Capital", "concern": "Who owns the venture and what money it raises on what terms", "record": "raise", "also": ["ownership"], "status": "built", "owner": "external-relationships", "covers": ["403", "S-X"], "from_phase": "beachhead" },
+    { "id": "risk", "label": "Risk", "concern": "The material factors that could make the venture fail, under headings", "record": "risk", "status": "built", "owner": "risk-and-compliance", "covers": ["105"], "from_phase": "validation" },
+    { "id": "traction", "label": "Traction", "concern": "Which numbers show the venture is working, and where they stand", "record": "goal", "status": "built", "owner": "strategy", "covers": ["303"], "from_phase": "beachhead",
+      "note": "Goal measures are the key performance indicators MD&A discusses" }
+  ],
+  "viewpoints": [
+    { "id": "lean-canvas", "label": "Lean Canvas", "concerns": "A founder's: the nine boxes of an early venture on one page", "source": "Ash Maurya, Running Lean, O'Reilly, 2012", "definition": "packages/naive/src/functions/strategy/lean-canvas.json", "kind": "canvas", "reads": ["identity", "customer", "business-model", "traction"] },
+    { "id": "business-model-canvas", "label": "Business Model Canvas", "concerns": "A strategist's: how the venture creates, delivers and captures value", "source": "osterwalder-2004-business-model-ontology", "kind": "submatrices", "reads": ["identity", "customer", "product", "business-model", "team"] },
+    { "id": "s1-outline", "label": "S-1 outline", "concerns": "An investor's or counsel's: what a registration statement would disclose, item by item", "source": "sec-form-s-1", "reads": ["identity", "customer", "market", "industry", "product", "competition", "business-model", "team", "capital", "risk", "traction"], "kind": "outline" }
+  ]
+}

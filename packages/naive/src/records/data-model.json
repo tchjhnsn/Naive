@@ -557,6 +557,36 @@
       "note": "The assumptions not yet demonstrated, each with its test, the result that counts as passing and a date; the discovery gate's validation-plan item reads it (EE-156)"
     },
     {
+      "id": "market-anatomy",
+      "layer": "purpose",
+      "function": "marketing-and-sales",
+      "level": "venture",
+      "schema": "packages/naive/src/records/market-anatomy.schema.json",
+      "generator": "packages/naive/src/engine/generators/market-anatomy.ts",
+      "paths": [
+        "instance/**/markets/*.json",
+        "packages/naive/src/records/examples/**/markets/*.json"
+      ],
+      "refs": [
+        { "field": "industry", "to": "industry-anatomy", "checked_by": "packages/naive/src/engine/venture-anatomy.ts" },
+        { "field": "icp", "to": "icp", "checked_by": "packages/naive/src/engine/venture-anatomy.ts" }
+      ],
+      "note": "The Venture Anatomy Matrix's market sub-matrix (EE-157): one market a venture sells into, on standard dimensions (reachable buyers, deal size, sales cycle, buying roles and the rest), each cell known, estimated or unknown with its evidence and application time. Init writes markets/primary.json with every cell unknown"
+    },
+    {
+      "id": "industry-anatomy",
+      "layer": "purpose",
+      "function": "strategy",
+      "level": "venture",
+      "schema": "packages/naive/src/records/industry-anatomy.schema.json",
+      "generator": "packages/naive/src/engine/generators/industry-anatomy.ts",
+      "paths": [
+        "instance/**/industries/*.json",
+        "packages/naive/src/records/examples/**/industries/*.json"
+      ],
+      "note": "The Venture Anatomy Matrix's industry sub-matrix (EE-157): the industry a market sits in, on Porter's five forces, regulation, cost of error, capital intensity and clockspeed, each cell known, estimated or unknown with its evidence and application time. Kept per venture for now. Init writes industries/primary.json with every cell unknown"
+    },
+    {
       "id": "validation-go-to-market",
       "layer": "purpose",
       "function": "strategy",
@@ -1953,6 +1983,21 @@
       "note": "The Lean Canvas (Maurya 2012) as the venture's shared kernel: nine boxes, each a reference to a record attribute its owning function writes (EE-155)"
     },
     {
+      "id": "venture-anatomy",
+      "layer": "purpose",
+      "function": "strategy",
+      "level": "method",
+      "schema": "packages/naive/src/records/venture-anatomy.schema.json",
+      "generator": "packages/naive/src/engine/generators/venture-anatomy.ts",
+      "paths": [
+        "packages/naive/src/functions/strategy/venture-anatomy.json"
+      ],
+      "refs": [
+        { "field": "submatrices.record", "to": "(record types)", "checked_by": "packages/naive/src/engine/venture-anatomy.ts" }
+      ],
+      "note": "The Venture Anatomy Matrix (EE-157), the venture's architecture description after ISO/IEC/IEEE 42010:2022: eleven sub-matrices (models), each naming its record types, owning function, the Regulation S-K items it covers, the phase it is expected from and how it nests, and the viewpoints (Lean Canvas, Business Model Canvas, S-1 outline) that select views over them"
+    },
+    {
       "id": "customer",
       "layer": "purpose",
       "function": "marketing-and-sales",
@@ -2578,6 +2623,18 @@
         { "field": "gate.evidence[].source", "to": "data-model", "checked_by": "packages/naive/src/checks/check-phases.ts" }
       ],
       "note": "A lifecycle phase as a module (EE-126): its question, stage gate and exit evidence, the function workflows active in it and the weights that rank decisions across functions. No agent and no records owned; need-now priors are derived from need-now.json and departments.json"
+    },
+    {
+      "id": "gate-calibration",
+      "layer": "operations",
+      "function": "strategy",
+      "level": "method",
+      "schema": "packages/naive/src/records/gate-calibration.schema.json",
+      "generator": "packages/naive/src/engine/generators/gate-calibration.ts",
+      "paths": [
+        "packages/naive/src/phases/gate-calibration.json"
+      ],
+      "note": "How a venture's phase gate thresholds are derived from its market and industry anatomy cells (EE-157): count levels relative to reachable buyers, rules that raise items or make them fail closed, staleness, the override policy and what confirms a problem. Every rule is an unvalidated prior"
     },
     {
       "id": "phase-gate-policies",
