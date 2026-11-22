@@ -154,6 +154,8 @@ function buildRoutes() {
     cmd("knowledge/search", "packages/naive/src/store/connectors/catalog.mjs", "Find items across every source through the catalog; input value is the query (EE-037)", { value_flag: "--search" }),
     // The live decision index: packages/naive/src/engine/decision-index.mjs, a cache in .naive/ updated from provenance.
     cmd("system/decision-index", "packages/naive/src/engine/decision-index.mjs", "The live decision index: every open decision scored by the docket, its structural impact (functions, records, linked decisions), its phase weight and requirement lift, and requirement violations flagged now; each run re-scores every active decision, so an update equals a rebuild, and appends rank history for what moved; adds the decision queue across functions (by_function, themes, queue: the score weighted by the function's weight in the phase, one item per theme, with its lead). Input value update (default), rebuild or read", { venture_arg: "id" }),
+    // Gate strength (EE-156): packages/naive/src/engine/phase-gate.mjs, policies in packages/naive/src/phases/gate-policies.json.
+    cmd("system/phase-gate", "packages/naive/src/engine/phase-gate.mjs", "Gate strength (EE-156): each item of the current phase gate on its evidence ladder (very low, low, moderate, high), the minimum the venture's policy sets and its boundary (fail-closed refuses the phase change, fail-open reports an open risk), what reaches the next level, the policy's strictness, and whether the gate is ready"),
     // Freshness (Revalidating, V-1 to V-8): packages/naive/src/engine/freshness.mjs.
     cmd("system/freshness", "packages/naive/src/engine/freshness.mjs", "What is fresh, stale or expired, and which records are live holes: by time (freshness profiles, per phase too) and on demand (a dependency changed, a where-used parent drifted, a tag, path or package was revalidated)"),
     // The signal pull (signal library design, build item 5): packages/naive/src/router/orchestration/signals.ts commits, as the
@@ -266,7 +268,7 @@ export function allowed(dir, actorId, action, route) {
 const PACKAGE_ROUTE = {
   "validation-problem": "foundation/problem", icp: "foundation/icp", telos: "foundation/telos", alignment: "foundation/alignment",
   goal: "foundation/goals", requirement: "foundation/requirements", "exit-criteria": "foundation/exit-criteria", constraints: "foundation/constraints", "venture-core": "foundation/core",
-  "validation-solution": "validation/solution", "validation-pricing": "validation/pricing", "validation-go-to-market": "validation/go-to-market",
+  "validation-solution": "validation/solution", "validation-pricing": "validation/pricing", "validation-plan": "validation/plan", "validation-go-to-market": "validation/go-to-market",
   "validation-product-market-fit": "validation/product-market-fit", "validation-operations-readiness": "validation/operations-readiness",
   "validation-team": "people/team", "team-plan": "people/team-plan", "marketing-sitemap": "marketing/sitemap", "marketing-content": "marketing/content",
   "idea-dump": "raw/dump", "idea-map": "ideas/map", "idea-graph": "ideas/graph", product: "product", evidence: "evidence",

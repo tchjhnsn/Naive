@@ -45,3 +45,5 @@ The ontology has seven top categories, each mapped to a BFO class: information a
 The operating-rules loader and the ontology gate check a module or a handoff against its schema with `validateFile` from [`packages/naive/src/records/validate.mjs`](../records/README.md). A checker that cannot run is still a tool error, never a verdict; the tests prove it with a validator that has no schemas (`useValidator`).
 
 `bypass-guard-test.ts` registers `check-functions.ts` and its test as plain checks: they compare ids and apply a fixed rule (one-way doors and never-redelegated classes are escalate), so nothing symbolic needs the engine. It registers `check-phases.ts` and its test as plain checks for the same reason: they compare ids and add up weights.
+
+`bypass-guard-test.ts` registers `packages/naive/src/engine/phase-gate.mjs` (gate strength, EE-156) and its test as plain checks: they grade evidence by GRADE arithmetic, count interviews and compare levels with a policy's minimums, so no term is decided.
