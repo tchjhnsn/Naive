@@ -28,6 +28,8 @@ const env: NodeJS.ProcessEnv = { ...process.env, MENTURA_WORKSPACE: ws };
 for (const k of ["MENTURA_READS_AS_OF", "MENTURA_ACTOR_ID", "MENTURA_ACTOR", "MENTURA_MODEL"]) { delete process.env[k]; delete env[k]; }
 const node = (script: string, ...a: string[]) => spawnSync(process.execPath, [join(repo, script), ...a], { encoding: "utf8", env });
 const load = (p: string) => JSON.parse(readFileSync(p, "utf8"));
+/** The value at a key path of parsed JSON, or undefined where a step is not an object. */
+const at = (v: unknown, ...keys: string[]): unknown => keys.reduce<unknown>((o, k) => (typeof o === "object" && o !== null ? Reflect.get(o, k) : undefined), v);
 
 interface Reply { ok: boolean, error?: string, gate_rule?: string, result?: unknown }
 const ask = async (a: { route: string, action?: string, input?: unknown, actor?: string, actor_id?: string }): Promise<Reply> =>
@@ -41,7 +43,7 @@ try {
   expect("finance/spend/[id] is a writable route for spend-register with writer function and function finance",
     !!item && item.record === "spend-register" && item.actions.includes("write") && item.writer === "function" && item.function === "finance", JSON.stringify(item));
   const departments = load(join(repo, "packages/naive/src/functions/departments.json")).departments.map((d: { id: string }) => d.id);
-  expect("the schema's function list is departments.json's", JSON.stringify(readSchema("spend-register").properties.function.enum) === JSON.stringify(departments));
+  expect("the schema's function list is departments.json's", JSON.stringify(at(readSchema("spend-register"), "properties", "function", "enum")) === JSON.stringify(departments));
   const gen = draft({ vendor: "Linear", purpose: "Issue tracking", amount: 8, currency: "USD", cadence: "monthly", renewal_date: "2026-12-05", account: "ops-checking", function: "products" });
   expect("the generator drafts a line with an id from the vendor and status active", gen.ok && gen.draft?.id === "linear" && gen.draft.status === "active" && gen.route === "finance/spend/linear", JSON.stringify(gen));
   expect("the generator gives a one-time charge no renewal date", draft({ ...line(), cadence: "one-time" }).draft?.renewal_date === null);

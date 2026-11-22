@@ -89,7 +89,7 @@ delete process.env.NAIVE_TRACES; delete process.env.MENTURA_TRACE_ID; delete pro
   const dir = venture({ traces: { spans: true, content: true } });
   span(dir, { name: "chat claude", kind: "model", attributes: { "gen_ai.input.messages": "kept" } });
   const [s] = sessions(dir);
-  ok("traces.content keeps inputs", spans(dir, s)[0].attributes["gen_ai.input.messages"] === "kept");
+  ok("traces.content keeps inputs", spans(dir, s)[0]?.attributes?.["gen_ai.input.messages"] === "kept");
   ok("check-traces accepts content when it is on", checkVenture(dir).errors.length === 0);
 }
 

@@ -99,7 +99,7 @@ const at = (i: number): Level => { const l = LEVELS[Math.max(0, Math.min(LEVELS.
  * switch to the data model's once it lists the record types; until then the paths are the ones the schemas name.
  */
 export function anatomyGlobs(): Record<Anatomy, string[]> {
-  const model: { records: { id: string, schema?: string, paths?: string[] }[] } = readDataModel();
+  const model: { records: { id: string, schema?: string | null, paths?: string[] }[] } = readDataModel();
   const of = (schema: string, fallback: string): string[] => {
     const r = model.records.find((x) => typeof x.schema === "string" && x.schema.endsWith(`/${schema}`));
     const g: string[] = r ? venturePaths(r) : [];

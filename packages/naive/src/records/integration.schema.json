@@ -109,7 +109,7 @@
       "properties": {
         "module": {
           "type": "string",
-          "pattern": "^packages/naive/src/store/connectors/[a-z0-9-]+\\.mjs$",
+          "pattern": "^packages/naive/src/store/connectors/[a-z0-9-]+\\.ts$",
           "description": "Path from the repository root; it exports connect(options). Naive ships only connectors that work offline and name no vendor (packages/naive/src/store/connectors/); an app that hosts Naive registers any other with registerConnector in packages/naive/src/store/connectors/index.ts (EE-041)"
         },
         "writes": {
