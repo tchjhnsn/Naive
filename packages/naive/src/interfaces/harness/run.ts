@@ -66,7 +66,7 @@ type Action = { kind: string, command: string, confirm: string, route: string, s
 type DocketDecision = { id: string, question: string, value: number, dominant: boolean, why: string[], function: string, action?: Action };
 type Docket = { functions: { function: string, attention: unknown, decisions: DocketDecision[] }[] };
 type Listed = { id: string, question: string, answer?: string, why?: string[], action: Action, status?: string, source?: string, rank?: number | null, provenance?: { approved_by?: string, wording?: string } };
-/** The venture package as venture-package.mjs prints it: only the fields the harness reads. */
+/** The venture package as venture-package.ts prints it: only the fields the harness reads. */
 type Pkg = { phase: string, progress: number, core: { id: string, in: string, title: string, state: string, progress: number, moving: unknown, missing: unknown }[], situation: { questions: { id: string, value: unknown }[] } };
 // The harness drives a local claude agent, the app's commands and a local board: a laptop tool.
 if (isHosted()) { console.error(new HostedRefusal("the discovery harness", "it runs the claude agent, NAIVE_*_CMD commands and git on this machine").message); process.exit(2); }
@@ -325,19 +325,19 @@ The founder settled: ${settled.join(", ")}. mentura_decisions shows what that un
 //    what waits. The sitemap is a marketing record: it is planned only once the marketing package is open.
 let pkgArgs: string[] = [];
 if (jev) {
-  const rq = spawnSync("node", [join(repo, "packages/naive/src/router/orchestration/venture-package.mjs"), "request", dir], { encoding: "utf8" });
+  const rq = spawnSync("node", [join(repo, "packages/naive/src/router/orchestration/venture-package.ts"), "request", dir], { encoding: "utf8" });
   const q = rq.status === 0 ? JSON.parse(rq.stdout) : null;
   if (q && Object.keys(q.questions).length) {
     const p = judgeRun(q);
     if (p.status === 0) { writeFileSync(join(ws, "package-answers.json"), p.stdout); pkgArgs = ["--answers", join(ws, "package-answers.json")]; console.log(`   Jev answered ${Object.keys(q.questions).length} of the question matrix's questions`); }
   }
 }
-let pk = spawnSync("node", [join(repo, "packages/naive/src/router/orchestration/venture-package.mjs"), dir, ...pkgArgs, "--json"], { encoding: "utf8" });
+let pk = spawnSync("node", [join(repo, "packages/naive/src/router/orchestration/venture-package.ts"), dir, ...pkgArgs, "--json"], { encoding: "utf8" });
 if (pk.status === 0 && (JSON.parse(pk.stdout) as Pkg).core.some((x) => x.id === "marketing" && x.in === "now")) {
   const sp = spawnSync("node", [join(repo, "packages/naive/src/functions/marketing-and-sales/marketing/site/plan.ts"), dir, "--write"], { encoding: "utf8" });
   if (sp.status === 0) prov(dir, { entity: "operations/marketing/sitemap.json", route: "operations/marketing/sitemap", activity: "create", derived_from: ["purpose/icp.json", "products/"], agent: agentFromEnv("agent", "harness", { id: "naive-planner" }), note: "the site planned from the venture's records: the marketing package is open" });
 }
-pk = spawnSync("node", [join(repo, "packages/naive/src/router/orchestration/venture-package.mjs"), dir, ...pkgArgs, "--write", "--json"], { encoding: "utf8" });
+pk = spawnSync("node", [join(repo, "packages/naive/src/router/orchestration/venture-package.ts"), dir, ...pkgArgs, "--write", "--json"], { encoding: "utf8" });
 if (pk.status === 0) {
   const r = JSON.parse(pk.stdout) as Pkg;
   const open = r.core.filter((x) => x.in === "now");

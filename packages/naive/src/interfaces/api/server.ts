@@ -22,7 +22,7 @@
 // <venture> is an id or, for a nested venture, its folder path (studio/print).
 
 import { createServer, type IncomingHttpHeaders } from "node:http";
-import { call, groups, resolve, routes, ventureDir, ventures } from "../../router/router.mjs";
+import { call, groups, resolve, routes, ventureDir, ventures } from "../../router/router.ts";
 
 const status = (r: { ok: boolean, error?: string }): number => r.ok ? 200 : /^no (route|venture)/.test(r.error ?? "") ? 404 : /has no action/.test(r.error ?? "") ? 405 : / may not /.test(r.error ?? "") ? 403 : 422;
 const VERBS: Record<string, string> = { check: "POST", run: "POST", view: "GET", layout: "GET" };

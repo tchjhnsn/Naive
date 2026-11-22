@@ -8,7 +8,7 @@ import { spawnSync } from "node:child_process";
 import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { call, routes } from "../../router/router.mjs";
+import { call, routes } from "../../router/router.ts";
 import { ventureFile } from "../../core/venture-paths.ts";
 import { lint } from "../../checks/lint-investors.ts";
 

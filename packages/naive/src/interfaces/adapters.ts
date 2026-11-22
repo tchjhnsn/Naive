@@ -46,7 +46,7 @@ async function harnessSuite(a: Listed): Promise<Result[]> {
     t("every entry file is written with the adapter's text", a.files.every((f) => existsSync(ventureFile(dir, f.path)) && readFileSync(ventureFile(dir, f.path), "utf8") === f.text), JSON.stringify(first.written));
     t("the harness reaches the venture's AGENTS.md (it reads it, or an entry file imports or names it)", a.reads.includes("AGENTS.md") || a.files.some((f) => /(^|\s)@AGENTS\.md\b|AGENTS\.md/.test(f.text)));
     t("no entry file is private or outside the venture", a.files.every((f) => !f.path.startsWith("_private/") && !f.path.includes("..") && !f.path.startsWith("/")));
-    const { call } = await import("../router/router.mjs");
+    const { call } = await import("../router/router.ts");
     const lay = await call({ venture: "adapted", workspace: ws, route: "foundation/problem", action: "layout" });
     t("the layout an agent gets starts with the venture's AGENTS.md and its instructions", lay.ok && lay.result.chain[0]?.path === "AGENTS.md" && lay.result.instructions.private === "_private/", lay.error ?? "");
     const skills = a.skills;

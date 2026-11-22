@@ -10,7 +10,7 @@ import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { call } from "../../router/router.mjs";
+import { call } from "../../router/router.ts";
 import { handle } from "../mcp/server.ts";
 import { DEFAULTS, configFor, installed, packagesOf } from "../../engine/naive-config.ts";
 import { evaluate, matches, packageRules, patternRe, rulesFor } from "../../engine/gate.ts";

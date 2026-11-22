@@ -36,14 +36,14 @@
 // A scoped instruction applies only under its routes: a line "[purpose/validation/**] key: value" in
 // any AGENTS.md (the router's plain layout ignores it, so other routes do not pay for it).
 //
-//   node packages/naive/src/router/context.mjs <venture dir> budget [--check] [--json]
+//   node packages/naive/src/router/context.ts <venture dir> budget [--check] [--json]
 
 import { execFile, spawn } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, relative } from "node:path";
-import { call, draftOf, gateOf, glob, layout as routerLayout, resolve, routes, ventureDir } from "./router.mjs";
+import { call, draftOf, gateOf, glob, layout as routerLayout, resolve, routes, ventureDir } from "./router.ts";
 import { entries as provEntries } from "../core/provenance.ts";
 import { tokens } from "../core/instrumentation.ts";
 import { ventureFile } from "../core/venture-paths.ts";
@@ -537,7 +537,7 @@ export async function cli(argv, { workspace } = {}) {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const [dir, what] = process.argv.slice(2);
-  if (!dir || !existsSync(join(dir, "venture.json")) || what !== "budget") { console.error("usage: node packages/naive/src/router/context.mjs <venture dir> budget [--check] [--json]"); process.exit(2); }
+  if (!dir || !existsSync(join(dir, "venture.json")) || what !== "budget") { console.error("usage: node packages/naive/src/router/context.ts <venture dir> budget [--check] [--json]"); process.exit(2); }
   const r = await budget(dir);
   if (process.argv.includes("--json")) console.log(JSON.stringify(r, null, 2));
   else {

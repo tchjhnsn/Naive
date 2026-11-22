@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Draws a release card (P-25, O-7). The card's data is assembled by code from the release's records
-// (packages/naive/src/router/orchestration/releases.mjs cardOf, written to <venture>/.release/card.json). The picture
+// (packages/naive/src/router/orchestration/releases.ts cardOf, written to <venture>/.release/card.json). The picture
 // lives here and never in the release. It sits beside release-read.ts so that start-release.ts can
 // draw it without importing the interface (router inversion, step 4). It is a 1200 by 630 SVG, the size link
 // previews use, with the venture's name, phase, headline numbers with their dates, and who confirmed them.
@@ -42,6 +42,6 @@ export function svg(card: Card) {
 if (import.meta.url === `file://${process.argv[1]}`) {
   const dir = process.argv[2];
   const f = dir && join(ventureFile(dir, ".release/card.json"));
-  if (!f || !existsSync(f)) { console.error("usage: node packages/naive/src/engine/release-card.ts <venture dir> (after node packages/naive/src/router/orchestration/build-release.mjs)"); process.exit(2); }
+  if (!f || !existsSync(f)) { console.error("usage: node packages/naive/src/engine/release-card.ts <venture dir> (after node packages/naive/src/router/orchestration/build-release.ts)"); process.exit(2); }
   process.stdout.write(svg(JSON.parse(readFileSync(f, "utf8"))));
 }

@@ -82,7 +82,7 @@ try {
 
   const INTERNAL_KEYS = ["metadata", "hierarchy", "pending_draft", "stale"];
   const internalKeys = (a: object): string[] => INTERNAL_KEYS.filter((k) => k in a);
-  const direct = await import("../../router/router.mjs");
+  const direct = await import("../../router/router.ts");
   const read = (route: string, input: unknown, actor: string = "public") => direct.call({ venture: "vis", route, action: "read", actor, input, workspace: ws });
   for (const [route, input] of [["foundation/problem", undefined], ["foundation/problem", { hierarchy: true }], ["evidence", undefined], ["customers/nope", { hierarchy: true }]] as [string, unknown][]) {
     const a = await read(route, input);

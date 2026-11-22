@@ -1,5 +1,5 @@
 // The router's hooks into the gate group (X-1 to X-6, P-2, P-7, U-4). Each is called from one
-// marked line in packages/naive/src/router/router.mjs, so the router stays the route table and the logic stays in
+// marked line in packages/naive/src/router/router.ts, so the router stays the route table and the logic stays in
 // packages/naive/src/engine/gate.ts (the verdict), packages/naive/src/engine/gate-drafts.ts (held drafts) and packages/naive/src/engine/naive-config.ts
 // (the venture's overrides).
 
@@ -87,7 +87,7 @@ export function ledgerHook({ dir, venture, workspace, r, route, file, draftFile,
   const detFile = ventureFile(dir, `governance/detectors/${GATE_DETECTOR}.json`);
   if (!existsSync(detFile)) return null;
   const ctx = { venture, workspace, actor_id, via };
-  const ledger = () => import("./detection-ledger.mjs");
+  const ledger = () => import("./detection-ledger.ts");
   const answer = (res, what) => res.ok ? { id: GATE_DETECTOR, appended: what.kind, line: res.result.line.id, ...(what.call ? { call: what.call } : { outcome: what.outcome }) } : { id: GATE_DETECTOR, error: res.error };
   const guard = (fn) => async (hash) => { try { return await fn(hash); } catch (e) { return { id: GATE_DETECTOR, error: String(e?.message ?? e) }; } };
   if (actor === "person") {

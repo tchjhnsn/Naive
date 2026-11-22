@@ -2,7 +2,7 @@
 // The signal pull (signal library design, build item 5; everything-ecosystem docs/design/SIGNAL_LIBRARY_2026-11-06.md,
 // "Derivation, deterministic and replayable"). The signal engine (packages/naive/src/engine/signals.ts) reads and
 // decides; this commits, at router level, because only router code may act as the signal projector (asProjector in
-// packages/naive/src/router/acting.mjs).
+// packages/naive/src/router/acting.ts).
 //
 //   pull      touched records from new log lines and the provenance log; render; diff; commit each new or changed
 //             record through the router as the projector, with derived_from set to the cited signal addresses and
@@ -43,8 +43,8 @@ import { recipeExports } from "../../engine/recipes/sandbox.ts";
 import { durationMs } from "../../engine/recipes/scoring.ts";
 import type { Known } from "../../engine/recipes/outcomes.ts";
 import type { Reception as Receptions, SignalType } from "../../records/types/records.d.ts";
-import { asProjector } from "../acting.mjs";
-import { call } from "../router.mjs";
+import { asProjector } from "../acting.ts";
+import { call } from "../router.ts";
 
 type Reply = { ok: boolean; error?: string; result?: unknown };
 type Venture = { id: string; phase?: string };

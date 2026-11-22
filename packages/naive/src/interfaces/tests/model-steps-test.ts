@@ -11,14 +11,14 @@ import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { call } from "../../router/router.mjs";
+import { call } from "../../router/router.ts";
 import { entries } from "../../core/provenance.ts";
-import { checkKit, wrap } from "../../router/kit-boundary.mjs";
+import { checkKit, wrap } from "../../router/kit-boundary.ts";
 import { approve } from "../../engine/decisions.ts";
 import {
   KINDS, Uncaught, answersModel, assertJson, checkRequest, checkStep, checkSteps, commandModel, confirm, expectDeterministic,
   keepComputed, outcomeOf, payload, provenanceOf, run as runSteps, settle, stepsOf, typed, waterfall, waves,
-} from "../../router/orchestration/model-steps.mjs";
+} from "../../router/orchestration/model-steps.ts";
 
 const repo = new URL("../../../../..", import.meta.url).pathname;
 let failed = 0;
@@ -290,8 +290,8 @@ const v7 = await venture("kit-venture", { bo: { private_fields: ["notes"] } });
   const c = await checkSteps(stepsOf({ kit }), { dir: v7 });
   expect("private fields never reach a model: the check names them", c.some((x) => /input item.notes of bo is a private field/.test(x)), c.join("; "));
   writeFileSync(join(ws, "follow-up.kit.json"), JSON.stringify(kit));
-  const k = spawnSync("node", [join(repo, "packages/naive/src/router/kit-boundary.mjs"), join(ws, "follow-up.kit.json")], { encoding: "utf8" });
-  expect("S-15 node packages/naive/src/router/kit-boundary.mjs checks a kit.json", k.status === 0 && /inside its boundary/.test(k.stdout), k.stderr);
+  const k = spawnSync("node", [join(repo, "packages/naive/src/router/kit-boundary.ts"), join(ws, "follow-up.kit.json")], { encoding: "utf8" });
+  expect("S-15 node packages/naive/src/router/kit-boundary.ts checks a kit.json", k.status === 0 && /inside its boundary/.test(k.stdout), k.stderr);
 }
 
 // The model behind a command (the Jev protocol) and an answers file, through mentura steps.

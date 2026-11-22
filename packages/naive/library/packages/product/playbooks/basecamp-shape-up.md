@@ -36,7 +36,7 @@ The book allows a rare extension of a couple of weeks, and prefers not to use it
 
 ## Template
 
-Fill this in for one product. Each step names the Naive route it reads or writes. Routes are the ones `node packages/naive/src/router/router.mjs` lists. Specs and a roadmap are not records yet (`packages/naive/library/packages/product/package.json` lists them under `planned`). The cycle and the pitch are handoffs. The bet is a decision record.
+Fill this in for one product. Each step names the Naive route it reads or writes. Routes are the ones `node packages/naive/src/router/router.ts` lists. Specs and a roadmap are not records yet (`packages/naive/library/packages/product/package.json` lists them under `planned`). The cycle and the pitch are handoffs. The bet is a decision record.
 
 The product function reads `foundation/icp`. It does not copy that profile onto the product card. `packages/naive/src/engine/design-system.ts` `inputs()` is the pattern: read the other function's record by its route, and leave it there.
 
@@ -118,9 +118,9 @@ Write `decisions/[id]`.
 
 Use an id such as `bet-<slug>`. Status is `open`. Boundary is `fail-closed`. Set `decides.path` to `operations/handoffs/cycle-<slug>.json` and `decides.record` to `handoff`. Question: "Do we bet one six-week cycle on this pitch?" Options: `bet` and `decline`. Leave `answer` null for the founder to supply, or draft one of those two words. Set `provenance.drafted_by.kind` to `agent`.
 
-Do not set status to `decided`. Only a person settles a decision (EE-058): the router saves an agent's write of `status: decided` as a draft, and the record stays open (`packages/naive/src/router/router.mjs` write). The founder decides in the next step.
+Do not set status to `decided`. Only a person settles a decision (EE-058): the router saves an agent's write of `status: decided` as a draft, and the record stays open (`packages/naive/src/router/router.ts` write). The founder decides in the next step.
 
-While that decision is open and fail-closed, `packages/naive/src/engine/decisions.ts` `holding()` matches `decides.path` to the cycle handoff file. An agent's later write of that file comes back as a draft (`packages/naive/src/router/router.mjs` write).
+While that decision is open and fail-closed, `packages/naive/src/engine/decisions.ts` `holding()` matches `decides.path` to the cycle handoff file. An agent's later write of that file comes back as a draft (`packages/naive/src/router/router.ts` write).
 
 ### 6. The founder bets or declines
 
@@ -196,7 +196,7 @@ Each of these can pass and can fail. The replay is `node packages/naive/test/ver
 | Read `decisions/<bet id>` and `system/provenance` | The cycle handoff is `draft`, or the bet is `decided` with `answer` exactly `bet` and provenance shows `approve()` (`activity` accept, agent kind person, `approved_by` set) | The cycle handoff is past `draft` while the bet is missing, still open, answered anything other than `bet`, or `decided` with no person accept in the provenance log |
 | Read `operations/handoff/cooldown-<slug>` and the cycle handoff | The cool-down record is absent, or it exists and the cycle status is `done` or `escalated` | The cool-down record exists while the cycle is `draft`, `ready`, or `in-progress` |
 
-Run the ready and execution commands with the venture directory and, for ready, the handoff id. The `check` action on `operations/handoff/[id]` spawns each of the handoff's checkers with only the venture directory (`packages/naive/src/router/router.mjs`). `packages/naive/src/checks/check-ready.ts` then exits 2, because it requires the handoff id. Use the commands in the table.
+Run the ready and execution commands with the venture directory and, for ready, the handoff id. The `check` action on `operations/handoff/[id]` spawns each of the handoff's checkers with only the venture directory (`packages/naive/src/router/router.ts`). `packages/naive/src/checks/check-ready.ts` then exits 2, because it requires the handoff id. Use the commands in the table.
 
 ## Trademark
 

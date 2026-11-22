@@ -9,7 +9,7 @@ import { join } from "node:path";
 import { decisions, ownScore, propose } from "../../engine/decisions.ts";
 import { phaseWeight, rankHistory, read, rebuild, update } from "../../engine/decision-index.ts";
 import { record } from "../../core/provenance.ts";
-import { call } from "../../router/router.mjs";
+import { call } from "../../router/router.ts";
 
 let failed = 0;
 const expect = (name: string, ok: unknown, detail?: unknown): void => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${JSON.stringify(detail)}`}`); if (!ok) failed++; };

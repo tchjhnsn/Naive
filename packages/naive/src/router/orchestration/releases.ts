@@ -37,7 +37,7 @@ import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve as resolvePath } from "node:path";
-import { call, glob, routes } from "../router.mjs";
+import { call, glob, routes } from "../router.ts";
 import { agentFromEnv, entries as provEntries, record as prov } from "../../core/provenance.ts";
 import { attributeSources, connect } from "../../store/connectors/index.ts";
 import { FRAME, confirmedIn } from "../../engine/foundation.ts";

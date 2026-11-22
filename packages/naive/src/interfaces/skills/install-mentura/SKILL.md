@@ -16,7 +16,7 @@ description: >
 
 # Install Mentura
 
-Interface layer (EE-030). Mentura is a set of records, checks and kits in a git repository. This skill connects an agent harness to it. Every interface (CLI, MCP server, HTTP API) goes through `packages/naive/src/router/router.mjs`, so each one has the same routes and gates. The routes are listed in `docs/reference/ROUTES.md`.
+Interface layer (EE-030). Mentura is a set of records, checks and kits in a git repository. This skill connects an agent harness to it. Every interface (CLI, MCP server, HTTP API) goes through `packages/naive/src/router/router.ts`, so each one has the same routes and gates. The routes are listed in `docs/reference/ROUTES.md`.
 
 ## 1. Ask what the builder wants to adopt
 

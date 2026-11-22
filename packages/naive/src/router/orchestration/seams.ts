@@ -30,8 +30,8 @@ import { call as callAt } from "../../engine/generators/detector-trial.ts";
 import { SEAMS } from "../../checks/check-seams.ts";
 import type { Seam, Subject } from "../../checks/check-seams.ts";
 import type { DecisionRecord, DetectorTrial } from "../../records/types/records.d.ts";
-import { appendTrial, read as readLedger, resolveTrial } from "../detection-ledger.mjs";
-import { call } from "../router.mjs";
+import { appendTrial, read as readLedger, resolveTrial } from "../detection-ledger.ts";
+import { call } from "../router.ts";
 
 /** The two answers a lead gives. An answer that starts with DISMISS settles the call as a false alarm. */
 export const ACT = "Act on it: fix the records or the tool";

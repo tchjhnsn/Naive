@@ -20,12 +20,12 @@ Coverage, confirmed at commit `f6ac8f3` (`cursor/lint-legal`):
 | SeeAgreement | `packages/naive/src/checks/lint-legal.ts` `partiesOf` |
 | ApplyModes | `packages/naive/src/checks/lint-legal.ts` `modesOf` (`naive.config.json` key `legal_lint.rules.<id>.mode`) |
 | Judge | the two `add` calls in `lint` |
-| Exit | `process.exit` from `ok`, and `packages/naive/src/router/router.mjs` when it runs `legal/lint` |
+| Exit | `process.exit` from `ok`, and `packages/naive/src/router/router.ts` when it runs `legal/lint` |
 | channel `ventureFile` | every read goes through `ventureFile` in `packages/naive/src/core/venture-paths.ts` |
 
 `naive check` runs `packages/naive/src/checks/lint-legal.ts` because `packages/naive/src/interfaces/cli/naive.ts` lists `lint-legal`.
 
-If `git diff <sync> -- packages/naive/src/checks/lint-legal.ts packages/naive/src/router/router.mjs packages/naive/src/interfaces/cli/naive.ts` is empty, the model still describes the code. Move the sync commit forward only after you confirm, file by file, that each action above still matches.
+If `git diff <sync> -- packages/naive/src/checks/lint-legal.ts packages/naive/src/router/router.ts packages/naive/src/interfaces/cli/naive.ts` is empty, the model still describes the code. Move the sync commit forward only after you confirm, file by file, that each action above still matches.
 
 ## Run it
 

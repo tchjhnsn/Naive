@@ -13,7 +13,7 @@
 //
 // A record carries its route (where the founder's ideas for it stand and the one step that moves it,
 // purpose/ideas/routes, EE-061) when the idea map's routing is passed in. The command line, which
-// passes it, is packages/naive/src/router/orchestration/venture-package.mjs (route system/package).
+// passes it, is packages/naive/src/router/orchestration/venture-package.ts (route system/package).
 //
 // write() renders a readable view of the venture package into <venture>/package/: venture-package.json
 // (the manifest, with its versions), README.md (the index) and one Markdown document per open package.
@@ -130,7 +130,7 @@ export const HOME: Record<string, string | undefined> = Object.fromEntries(Objec
 
 /**
  * The venture package. `routes` is the idea map's routing for the venture (route() in
- * packages/naive/src/functions/strategy/frameworks/idea-map/route.ts), passed in by packages/naive/src/router/orchestration/venture-package.mjs:
+ * packages/naive/src/functions/strategy/frameworks/idea-map/route.ts), passed in by packages/naive/src/router/orchestration/venture-package.ts:
  * with it, each record gets the idea map's title and where the founder's ideas for it stand. This
  * module does not import the idea map, because the idea map reads schema/ itself (router inversion,
  * step 4c).

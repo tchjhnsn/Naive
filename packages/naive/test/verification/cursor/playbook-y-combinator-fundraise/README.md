@@ -27,7 +27,7 @@ TLC on 29 October 2026: 12 distinct states, 15 steps, no error (`out/tlc.out`). 
 
 | Rule | TLC | Replay |
 | --- | --- | --- |
-| RoutesExist. Every step uses a route the router serves. | PASS | PASS. 18 routes from the model are in `node packages/naive/src/router/router.mjs`, and they are the routes the playbook names. `fundraising/plan` is rejected with `no route fundraising/plan`. |
+| RoutesExist. Every step uses a route the router serves. | PASS | PASS. 18 routes from the model are in `node packages/naive/src/router/router.ts`, and they are the routes the playbook names. `fundraising/plan` is rejected with `no route fundraising/plan`. |
 | Accounted. A step only touches a record the venture already has, or a route the template writes. | PASS | PASS. The template does not write `purpose/data-stream/[id]`. A write of `purpose/data-stream/meetings` stored `customers/_streams/meetings/stream.json`, because that glob is first on the route. |
 | NoUnreadSource. A later step does not read a record nothing earlier provided. | PASS | PASS. `foundation/problem` is `not_found` on a new venture. The raise plan's `inputs` are written only after those records exist, and the check fails an input that is still missing. |
 | PassMeansReady. A passing check is a filled plan, investor records, and a checklist. | PASS | PASS. Checks 1 to 3 pass only after the filled plan, one named investor, the checklist, and cited evidence on `foundation/problem`. |

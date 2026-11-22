@@ -13,8 +13,8 @@
 // decision latency is measured even with instrumentation off. Thresholds are the defaults below,
 // overridden by "vitals" in the venture's naive.config.json.
 //
-//   node packages/naive/src/router/vitals.mjs <venture dir> [--json] [--check]     --check exits 1 when a vital fails
-//   node packages/naive/src/router/vitals.mjs <venture dir> --trace [--session <id>] the events as a trace, for
+//   node packages/naive/src/router/vitals.ts <venture dir> [--json] [--check]     --check exits 1 when a vital fails
+//   node packages/naive/src/router/vitals.ts <venture dir> --trace [--session <id>] the events as a trace, for
 //                                                                   an exporter in the app that hosts Naive
 
 import { existsSync, readFileSync } from "node:fs";
@@ -103,7 +103,7 @@ export function trace(dir, session) {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const dir = process.argv[2];
-  if (!dir || !existsSync(join(dir, "venture.json"))) { console.error("usage: node packages/naive/src/router/vitals.mjs <venture dir> [--json] [--check] [--trace [--session <id>]]"); process.exit(2); }
+  if (!dir || !existsSync(join(dir, "venture.json"))) { console.error("usage: node packages/naive/src/router/vitals.ts <venture dir> [--json] [--check] [--trace [--session <id>]]"); process.exit(2); }
   const arg = (n) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 ? process.argv[i + 1] : undefined; };
   if (process.argv.includes("--trace")) { console.log(JSON.stringify(trace(dir, arg("session")), null, 2)); process.exit(0); }
   const r = vitals(dir);

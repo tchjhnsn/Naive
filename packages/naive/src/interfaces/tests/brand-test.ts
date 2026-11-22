@@ -11,8 +11,8 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { deflateSync } from "node:zlib";
-import { call } from "../../router/router.mjs";
-import { addAsset, addRemote } from "../../router/brand.mjs";
+import { call } from "../../router/router.ts";
+import { addAsset, addRemote } from "../../router/brand.ts";
 import { entries } from "../../core/provenance.ts";
 import { allowsCopy, checkAssets, factsOf, hostAllowed } from "../../engine/assets.ts";
 import { checkBrand, resolveBrand, sitemapXml, termsFor, tokens, voiceCheck } from "../../engine/brand.ts";

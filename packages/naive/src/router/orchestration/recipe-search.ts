@@ -20,7 +20,7 @@ import { knobsIn, setKnob, stepsOf } from "../../engine/recipes/knobs.ts";
 import type { KnobValue } from "../../engine/recipes/knobs.ts";
 import { recipeExports } from "../../engine/recipes/sandbox.ts";
 import { logLines } from "../recipes.ts";
-import { call } from "../router.mjs";
+import { call } from "../router.ts";
 
 type Reply = { ok: boolean; error?: string; verdict?: string; retried?: boolean; result?: Record<string, unknown>; line?: { dev?: Dev; reason?: string } };
 type Dev = { score: number; tip_score: number | null; margin: number };

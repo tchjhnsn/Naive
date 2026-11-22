@@ -8,12 +8,12 @@
 // check and the append are one step: the append names the version the check read, and a ledger that moved in between
 // is read and checked again. Silence is no data: nothing here resolves a trial because time passed.
 //
-// The gate is the first caller (packages/naive/src/router/gate-hooks.mjs ledgerHook). Rates, sensitivity and ROC
+// The gate is the first caller (packages/naive/src/router/gate-hooks.ts ledgerHook). Rates, sensitivity and ROC
 // area over a ledger are packages/naive/src/engine/detection.ts.
 
 import { randomUUID } from "node:crypto";
 import { lineHash } from "../core/provenance.ts";
-import { call } from "./router.mjs";
+import { call } from "./router.ts";
 
 const RETRIES = 200;
 const pause = () => new Promise((ok) => setTimeout(ok, 1 + Math.random() * 10));

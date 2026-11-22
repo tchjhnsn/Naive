@@ -4,8 +4,8 @@
 // record stand and the one step that moves it. The idea map reads schema/ itself, so packages/naive/src/engine/packages.ts
 // cannot import it without a cycle; this module composes the two (router inversion, step 4c).
 //
-//   node packages/naive/src/router/orchestration/venture-package.mjs <venture> [--raising] [--hiring] [--answers <jev.json>] [--write] [--json]
-//   node packages/naive/src/router/orchestration/venture-package.mjs request <venture>   the Jev request for the questions the records leave open
+//   node packages/naive/src/router/orchestration/venture-package.ts <venture> [--raising] [--hiring] [--answers <jev.json>] [--write] [--json]
+//   node packages/naive/src/router/orchestration/venture-package.ts request <venture>   the Jev request for the questions the records leave open
 //
 // --write renders the readable view into <venture>/package/ (write() in packages/naive/src/engine/packages.ts).
 
@@ -36,7 +36,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const has = (n) => args.includes(`--${n}`);
   if (args[0] === "request") { console.log(JSON.stringify(request(args[1]))); process.exit(0); }
   const dir = args[0];
-  if (!dir || !existsSync(join(dir, "venture.json"))) { console.error("usage: node packages/naive/src/router/orchestration/venture-package.mjs <venture> [--raising] [--hiring] [--answers <jev.json>] [--write] [--json] | request <venture>"); process.exit(2); }
+  if (!dir || !existsSync(join(dir, "venture.json"))) { console.error("usage: node packages/naive/src/router/orchestration/venture-package.ts <venture> [--raising] [--hiring] [--answers <jev.json>] [--write] [--json] | request <venture>"); process.exit(2); }
   const answers = opt("answers") ? load(opt("answers")).answers : null;
   const r = venturePackage(dir, { flags: Object.fromEntries(["raising", "hiring"].filter(has).map((k) => [k, true])), answers });
   if (has("write")) console.error(`wrote ${write(dir, r)}`);

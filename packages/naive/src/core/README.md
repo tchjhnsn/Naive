@@ -33,8 +33,8 @@ The old path `schema/venture-paths.mjs` re-exports `venture-paths.mjs` for one r
 
 ## How it connects
 
-- Called by: [`packages/naive/src/router/router.mjs`](../router/router.mjs), the CLI, the checkers in [`schema/`](../engine/README.md), the console bridge and the store kernel.
-- Calls: only Node built-ins and the `effect` package (in `effect/`, `provenance.ts` and `blobs.ts`), and `provenance.ts` starts `packages/naive/src/router/orchestration/triggers.mjs` as a child process after a write.
+- Called by: [`packages/naive/src/router/router.ts`](../router/router.ts), the CLI, the checkers in [`schema/`](../engine/README.md), the console bridge and the store kernel.
+- Calls: only Node built-ins and the `effect` package (in `effect/`, `provenance.ts` and `blobs.ts`), and `provenance.ts` starts `packages/naive/src/router/orchestration/triggers.ts` as a child process after a write.
 
 ## Not built
 

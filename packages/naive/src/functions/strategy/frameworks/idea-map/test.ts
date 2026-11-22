@@ -173,7 +173,7 @@ t("importing the router does not load the term engine; checking a stated relatio
 const seen = new Set();
 registerHooks({ resolve(s, c, next) { const r = next(s, c); seen.add(r.url); return r; } });
 const engine = () => [...seen].some((u) => u.endsWith("/packages/naive/src/terms/engine.ts"));
-await import(${JSON.stringify(repoFile("packages/naive/src/router/router.mjs"))});
+await import(${JSON.stringify(repoFile("packages/naive/src/router/router.ts"))});
 const router = engine();
 const { checkRelations } = await import(${JSON.stringify(graphCli)});
 const problems = checkRelations([{ id: "a", relations: [{ relation: "related", to: "b" }] }, { id: "b" }]);

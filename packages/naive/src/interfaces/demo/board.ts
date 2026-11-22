@@ -14,7 +14,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
-import { routes, ventureDir, ventures } from "../../router/router.mjs";
+import { routes, ventureDir, ventures } from "../../router/router.ts";
 import { decisions } from "../../engine/decisions.ts";
 import { CONVENTIONS, MAP, parse, summary } from "../../functions/strategy/frameworks/idea-map/ideamap.ts";
 import { GRAPH } from "../../functions/strategy/frameworks/idea-map/graph.ts";
@@ -23,7 +23,7 @@ import { scan } from "../harness/site.ts";
 import { MATRIX } from "../../functions/marketing-and-sales/marketing/site/presence.ts";
 import { plan } from "../../functions/marketing-and-sales/marketing/site/plan.ts";
 import { write as writePackage, OUT as PACKAGE } from "../../engine/packages.ts";
-import { venturePackage } from "../../router/orchestration/venture-package.mjs";
+import { venturePackage } from "../../router/orchestration/venture-package.ts";
 import { ventureFile } from "../../core/venture-paths.ts";
 
 const arg = <T>(n: string, d: T): string | T => { const i = process.argv.indexOf(`--${n}`); return i >= 0 ? process.argv[i + 1] : d; };

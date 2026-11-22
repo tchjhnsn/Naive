@@ -1725,7 +1725,7 @@
         "instance/**/.release/release.json",
         "instance/**/.release/card.json"
       ],
-      "note": "A release (C-11, I-17): the venture's static shell, written by node packages/naive/src/router/orchestration/build-release.mjs. release.json is the manifest (confirmed records frozen in with their sha256, date and who confirmed them; named live holes; the route table as the release holds it; frozen command answers); card.json is the release card's data (P-25, O-7). The frozen copies under .release/records/ keep their own record types. Read without the router by node packages/naive/src/engine/start-release.ts"
+      "note": "A release (C-11, I-17): the venture's static shell, written by node packages/naive/src/router/orchestration/build-release.ts. release.json is the manifest (confirmed records frozen in with their sha256, date and who confirmed them; named live holes; the route table as the release holds it; frozen command answers); card.json is the release card's data (P-25, O-7). The frozen copies under .release/records/ keep their own record types. Read without the router by node packages/naive/src/engine/start-release.ts"
     },
     {
       "id": "team-plan",
@@ -2364,15 +2364,15 @@
         {
           "field": "package",
           "to": "(packages and kits)",
-          "checked_by": "packages/naive/src/router/orchestration/model-steps.mjs"
+          "checked_by": "packages/naive/src/router/orchestration/model-steps.ts"
         },
         {
           "field": "decision",
           "to": "decision-record",
-          "checked_by": "packages/naive/src/router/orchestration/model-steps.mjs"
+          "checked_by": "packages/naive/src/router/orchestration/model-steps.ts"
         }
       ],
-      "note": "The typed output of one model step (use model, EE-073): what it read, its answer and confidence, and whether code accepted, overruled or routed it to a person as uncertain. The agent's until a person confirms it (packages/naive/src/router/orchestration/model-steps.mjs)"
+      "note": "The typed output of one model step (use model, EE-073): what it read, its answer and confidence, and whether code accepted, overruled or routed it to a person as uncertain. The agent's until a person confirms it (packages/naive/src/router/orchestration/model-steps.ts)"
     },
     {
       "id": "venture-types",
@@ -3377,7 +3377,7 @@
     {"path": "instance/**/.naive/upgrade/**/*", "kind": "derived", "reason": "A staged upgrade's copy of the venture (packages/naive/src/engine/upgrades.ts), discarded or landed"},
     {"path": "instance/**/.naive/publish/**/*", "kind": "derived", "reason": "Published frameworks built from the venture's folder (packages/naive/src/engine/user-frameworks.ts)"},
     {"path": "instance/**/.naive/decision-index-history.jsonl", "kind": "log", "reason": "Rank history of the decision index, one line per re-score"},
-    {"path": "instance/**/.naive/trigger-errors.jsonl", "kind": "log", "reason": "Failed trigger runs, one line each (packages/naive/src/router/orchestration/triggers.mjs)"},
+    {"path": "instance/**/.naive/trigger-errors.jsonl", "kind": "log", "reason": "Failed trigger runs, one line each (packages/naive/src/router/orchestration/triggers.ts)"},
     {"path": "instance/**/.naive/lint-findings.jsonl", "kind": "log", "reason": "Each publish lint run's findings (packages/naive/src/engine/publish-lint.ts)"},
     {"path": "instance/**/.naive/events.jsonl", "kind": "log", "reason": "Instrumentation events when instrumentation is on (packages/naive/src/core/instrumentation.ts)"},
     {"path": "instance/**/.naive/blobs/**/*", "kind": "record", "reason": "The blob store: the bytes each provenance line names, under their SHA-256 (packages/naive/src/core/blobs.ts). Content-addressed and never changed, so it is committed like a record; an as-of read (packages/naive/src/store/as-of.ts) needs it and cannot rebuild it"},

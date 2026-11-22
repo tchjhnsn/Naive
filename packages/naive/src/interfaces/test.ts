@@ -7,7 +7,7 @@ import { spawnSync } from "node:child_process";
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
-import { call, capture, groups, judge, routes } from "../router/router.mjs";
+import { call, capture, groups, judge, routes } from "../router/router.ts";
 import { handle, TOOLS } from "./mcp/server.ts";
 import { route } from "./api/server.ts";
 import type { Message } from "./mcp/server.ts";

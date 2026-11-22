@@ -9,7 +9,7 @@ import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "nod
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { call, routes } from "../../../src/router/router.mjs";
+import { call, routes } from "../../../src/router/router.ts";
 import type { MarketingBrand, MarketingSitemap, Product, ValidationPricing } from "../../../src/records/types/records.d.ts";
 
 /** What a router action answers, with the result this replay expects of the route. */

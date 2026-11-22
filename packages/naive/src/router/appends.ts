@@ -19,7 +19,7 @@ import { lineHash, record as prov } from "../core/provenance.ts";
 import { address } from "../store/connectors/contract.ts";
 import { schemaNameOf } from "../records/index.ts";
 import { validateValue } from "../records/validate.ts";
-import { gateWrite } from "./gate-hooks.mjs";
+import { gateWrite } from "./gate-hooks.ts";
 
 const RETRIES = 200;
 const sha = (s) => createHash("sha256").update(s).digest("hex");

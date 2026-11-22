@@ -13,7 +13,7 @@
 // workspace rename). <dir> defaults to a folder named after the workspace in the current directory.
 // The venture is made by create-venture (packages/create-venture/index.mjs), so both ways in match; a
 // port or migrate then plans the move or the rewrite into that venture (packages/naive/src/engine/port-venture.ts,
-// packages/naive/src/router/orchestration/migrate-venture.mjs). A port moves files only with --apply --confirm port. If the venture cannot be
+// packages/naive/src/router/orchestration/migrate-venture.ts). A port moves files only with --apply --confirm port. If the venture cannot be
 // made, its half-made folder is removed and the workspace kept; the same command run again finishes it.
 // A folder that was already there is left alone, and the message names it. What can be refused from the
 // flags alone is refused before anything is written, so those mistakes leave nothing to finish.
@@ -94,6 +94,6 @@ if (mode === "port" && source) {
     if (run("packages/naive/src/engine/port-venture.ts", ["--venture", vdir, "--apply", "--confirm", "port"]) !== 0) process.exit(1);
   } else console.log(`\nNothing moved yet. Review the plan, then: naive port --venture ${vdir} --apply --confirm port`);
 } else if (mode === "migrate" && source) {
-  if (run("packages/naive/src/router/orchestration/migrate-venture.mjs", ["--from", source, "--venture", vdir]) !== 0) fail("the migration plan failed; the workspace and venture are kept");
+  if (run("packages/naive/src/router/orchestration/migrate-venture.ts", ["--from", source, "--venture", vdir]) !== 0) fail("the migration plan failed; the workspace and venture are kept");
   console.log(`\nDecide the proposed decisions, then: naive migrate --venture ${vdir} --apply`);
 }

@@ -1,5 +1,5 @@
 // What a read answers besides the record (Next.js translation L-9, L-10, O-1, O-2, O-3, P-28). The
-// router's wrapper (packages/naive/src/router/writes.mjs) adds these to every read and layout. Code computes all of
+// router's wrapper (packages/naive/src/router/writes.ts) adds these to every read and layout. Code computes all of
 // it from the files and the provenance log; no model writes any of it.
 //
 //   params     L-9   the dynamic segment's value ({ id: "kettle" } for product/kettle), given to the
@@ -69,7 +69,7 @@ const countsOf = (v) => v && typeof v === "object" && !Array.isArray(v) ? Object
 
 /** The function owning a record and its owner (O-2), from the package that holds it and venture.json's functions. */
 export async function ownerOf(dir, type) {
-  const { packageOfRecord, packageDef } = await import("./package-routes.mjs");
+  const { packageOfRecord, packageDef } = await import("./package-routes.ts");
   const pkg = packageOfRecord(type);
   const def = pkg ? packageDef(pkg) : null;
   const fn = def?.function ?? def?.department ?? null;

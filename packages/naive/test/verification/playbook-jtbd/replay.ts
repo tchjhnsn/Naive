@@ -11,7 +11,7 @@ import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "nod
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { call, resolve } from "../../../src/router/router.mjs";
+import { call, resolve } from "../../../src/router/router.ts";
 import type { IcpProfile, Product, ValidationProblem } from "../../../src/records/types/records.d.ts";
 
 /** What a router action answers, with the result this replay expects of the route. */

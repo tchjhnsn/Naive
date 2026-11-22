@@ -18,8 +18,8 @@ import { planOne } from "../../engine/port-venture.ts";
 import { runHandoff } from "../../engine/run-handoff.ts";
 import { updateFramework } from "../../engine/upgrades.ts";
 import { canClassify, classify } from "../../engine/venture-type.ts";
-import { ventureHealth } from "../../router/boundaries.mjs";
-import { runAgent } from "../../router/orchestration/migrate-venture.mjs";
+import { ventureHealth } from "../../router/boundaries.ts";
+import { runAgent } from "../../router/orchestration/migrate-venture.ts";
 import { connect } from "../../store/connectors/filesystem.ts";
 import { scan } from "../harness/site.ts";
 

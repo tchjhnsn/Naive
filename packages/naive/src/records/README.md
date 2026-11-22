@@ -54,7 +54,7 @@ It is `.mjs`, like [`packages/naive/src/core`](../core/README.md), until its uni
 
 ## How it connects
 
-- Called by: the checkers and modules in [`schema/`](../engine/README.md) that read the data model or a schema, [`packages/naive/src/router/router.mjs`](../router/router.mjs), [`packages/naive/src/router/boundaries.mjs`](../router/boundaries.mjs), [`packages/naive/src/router/context.mjs`](../router/context.mjs), the CLI, [`packages/naive/src/router/orchestration/`](../router/orchestration/README.md), [`packages/naive/src/records/routes`](routes/README.md), the idea map, the console bridge (through the framework it is pointed at), create-venture and the ontology scripts in `scripts/`.
+- Called by: the checkers and modules in [`schema/`](../engine/README.md) that read the data model or a schema, [`packages/naive/src/router/router.ts`](../router/router.ts), [`packages/naive/src/router/boundaries.ts`](../router/boundaries.ts), [`packages/naive/src/router/context.ts`](../router/context.ts), the CLI, [`packages/naive/src/router/orchestration/`](../router/orchestration/README.md), [`packages/naive/src/records/routes`](routes/README.md), the idea map, the console bridge (through the framework it is pointed at), create-venture and the ontology scripts in `scripts/`.
 - Calls: only Node built-ins.
 
 ## Not built

@@ -68,7 +68,7 @@ const menturaCmds = literals(menturaSrc);
 const { routes, resolve } = await import(join(repo, "packages/naive/src/records/routes/routes.ts"));
 const table: { route: string }[] = routes();
 const routeTop = new Set(table.map((r) => r.route.split("/")[0]));
-// packages/<name> is a route alias for a venture package (packages/naive/src/router/package-routes.mjs), not a folder: the
+// packages/<name> is a route alias for a venture package (packages/naive/src/router/package-routes.ts), not a folder: the
 // packages live at packages/naive/library/packages/<name> (EE-116).
 const packageAlias = (c: string) => /^packages\/[a-z0-9-]+$/.test(c) && existsSync(join(repo, "packages/naive/library", c, "package.json"));
 const isRoute = (c: string) => !!resolve(c.replace(/<[^>]+>/g, "x")).r || table.some((r) => r.route === c.replace(/<[^>]+>/g, "[id]")) || packageAlias(c);

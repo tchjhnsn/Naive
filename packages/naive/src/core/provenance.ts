@@ -277,7 +277,7 @@ export const recordEffect = (dir: string, { entity, route, activity, agent, deri
 export const record = (dir: string, input: RecordInput): Entry => runSync(recordEffect(dir, input));
 
 // Triggers hook (M-12, E-7): every entry is an event. A venture whose naive.config.json has triggers or
-// kits runs them (packages/naive/src/router/orchestration/triggers.mjs) in a separate process after the write; the runs themselves do
+// kits runs them (packages/naive/src/router/orchestration/triggers.ts) in a separate process after the write; the runs themselves do
 // not fire this again. A crash of that process is kept for the next run to raise, never lost.
 // The write has landed, so this Effect never fails: nothing here may undo it or throw past it.
 const fireTriggersEffect = (dir: string): Effect.Effect<void, never, "naive/VentureFs"> => Effect.gen(function* () {
@@ -289,7 +289,7 @@ const fireTriggersEffect = (dir: string): Effect.Effect<void, never, "naive/Vent
   try { cfg = JSON.parse(text); } catch { return; }
   if (!cfg?.triggers?.length && !cfg?.kits?.length) return;
   const ran = yield* Effect.exit(Effect.try({
-    try: () => spawnSync(process.execPath, [new URL("../router/orchestration/triggers.mjs", import.meta.url).pathname, dir, "--fire", "--quiet"], { encoding: "utf8", env: { ...process.env, NAIVE_TRIGGERS_ACTIVE: "hook" } }),
+    try: () => spawnSync(process.execPath, [new URL("../router/orchestration/triggers.ts", import.meta.url).pathname, dir, "--fire", "--quiet"], { encoding: "utf8", env: { ...process.env, NAIVE_TRIGGERS_ACTIVE: "hook" } }),
     catch: (cause) => cause,
   }));
   if (ran._tag === "Failure") {

@@ -14,7 +14,7 @@ import { createHash } from "node:crypto";
 import { appendFileSync, cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, relative } from "node:path";
-import { call } from "../../router/router.mjs";
+import { call } from "../../router/router.ts";
 import { emit, explainSignal, pull, replay } from "../../router/orchestration/signals.ts";
 import type { PullResult } from "../../router/orchestration/signals.ts";
 import { CURSOR, libraries, listenersOf, routerRoute } from "../../engine/signals.ts";

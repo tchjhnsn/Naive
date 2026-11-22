@@ -2,7 +2,7 @@
 // (C-11): the confirmed records frozen in, and named holes for what stays live. Everything here
 // reads <venture>/.release/ and nothing else, so a release can be read after the venture's records
 // change, on a machine with no router, or handed to an investor as files. It never imports
-// packages/naive/src/router/router.mjs; packages/naive/src/engine/releases-test.ts checks that.
+// packages/naive/src/router/router.ts; packages/naive/src/engine/releases-test.ts checks that.
 //
 // The answer to a path is { status, type, body }:
 //   /                    the release index: venture, phase, release id, routes in the release, holes
@@ -94,7 +94,7 @@ export function resolveRoute(dir: string, m: ReleaseManifest, route: string) {
     const hit = recs.find((r) => r.id === id);
     if (own) return { status: 200, body: { route, hole: true, kind: own.kind, why: own.why, live: own.live ?? null } };
     if (!hit) return { status: 404, body: { route, not_in_release: true, release: m.release, items: recs.map((r) => r.id), ...(holes.length ? { live_items: holes.filter((h) => h.kind !== "attribute").map((h) => h.name) } : {}),
-      note: `${route} was not known when release ${m.release} was built`, add: `node packages/naive/src/router/orchestration/build-release.mjs <venture dir> --add ${route}` } };
+      note: `${route} was not known when release ${m.release} was built`, add: `node packages/naive/src/router/orchestration/build-release.ts <venture dir> --add ${route}` } };
     return { status: 200, body: { route, ...one(hit) } };
   }
   if (!recs.length) return { status: 404, body: { route, empty: true, why: entry.why ?? "no confirmed record when the release was built" } };
@@ -111,7 +111,7 @@ export type Answer = { status: number, type: string, body: string, allow?: strin
 export function answer(dir: string, method: string, path: string, { draw }: { draw?: (_card: Card) => string } = {}): Answer {
   if (method !== "GET" && method !== "HEAD") return { ...json(405, { error: "a release is read-only: only GET and HEAD" }), allow: "GET, HEAD" };
   const m = readRelease(dir);
-  if (!m) return json(503, { error: `no release in ${dir}: run node packages/naive/src/router/orchestration/build-release.mjs ${dir} first` });
+  if (!m) return json(503, { error: `no release in ${dir}: run node packages/naive/src/router/orchestration/build-release.ts ${dir} first` });
   const p = decodeURIComponent(path.split("?")[0]);
   if (p.split("/").includes("..")) return json(400, { error: "no .. in a release path" });
   if (p === "/" || p === "") return json(200, index(m));

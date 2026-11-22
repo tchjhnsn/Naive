@@ -13,7 +13,7 @@
 //                                                   alias of naive migrate: an agent rewrites a project as Naive records (EE-076)
 //   mentura typegen                                 alias of naive typegen (EE-073)
 //   mentura steps <payload|run|check|waterfall|provenance|confirm> --venture <id> [--answers <file>] [--speculate] [--stream]
-//                                                   model steps (use model, EE-073): packages/naive/src/router/orchestration/model-steps.mjs
+//                                                   model steps (use model, EE-073): packages/naive/src/router/orchestration/model-steps.ts
 //   mentura accept <route> --venture <id> [--confirm <route>]
 //                                                   a person accepts an agent's draft of a gated record;
 //                                                   one holding a foundation statement asks you to type the route;
@@ -77,7 +77,7 @@ import "./guard.ts"; // wf/writes hook: a broken framework file answers with rec
 import { existsSync, readFileSync, rmSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
-import { call, draftOf, files, glob, groups, repo, routes, routesMd, ventureDir, ventures } from "../../router/router.mjs";
+import { call, draftOf, files, glob, groups, repo, routes, routesMd, ventureDir, ventures } from "../../router/router.ts";
 import { agentFromEnv, entries, record } from "../../core/provenance.ts";
 import { FRAME, filesOf, statementFiles } from "../../engine/foundation.ts";
 import { approve, decisionFile, decisions, merge, propose, rollback } from "../../engine/decisions.ts";
@@ -150,8 +150,8 @@ if (cmd === "ventures") {
   process.exit(0);
 }
 
-// Brand hook: mentura brand ... and mentura assets ... (Y-2..Y-4, J-2..J-4, T-1, T-2, P-24, P-26) live in packages/naive/src/router/brand.mjs.
-if (cmd === "brand" || cmd === "assets") process.exit(await (await import("../../router/brand.mjs")).main(argv, { workspace }));
+// Brand hook: mentura brand ... and mentura assets ... (Y-2..Y-4, J-2..J-4, T-1, T-2, P-24, P-26) live in packages/naive/src/router/brand.ts.
+if (cmd === "brand" || cmd === "assets") process.exit(await (await import("../../router/brand.ts")).main(argv, { workspace }));
 
 if (cmd === "add") {
   // Imports one function into a venture (EE-047, EE-048, EE-071). department is the alias for function for one release.
@@ -179,7 +179,7 @@ if (["triggers", "stale", "notify", "adapt", "adapters"].includes(cmd)) {
   const d = ["triggers", "stale", "notify", "adapt"].includes(cmd) ? (v ? ventureDir(v, workspace) : null) : null;
   if (cmd !== "adapters" && !d) { console.error(v ? `no venture ${v}` : `mentura ${cmd} needs --venture <id>`); process.exit(2); }
   const pass = (...names: string[]): string[] => names.flatMap((n) => argv.flatMap((a, i) => (a === `--${n}` ? [a, ...(argv[i + 1] && !argv[i + 1].startsWith("--") ? [argv[i + 1]] : [])] : [])));
-  const args = cmd === "triggers" ? ["packages/naive/src/router/orchestration/triggers.mjs", d, ...pass("fire", "json")]
+  const args = cmd === "triggers" ? ["packages/naive/src/router/orchestration/triggers.ts", d, ...pass("fire", "json")]
     : cmd === "stale" ? ["packages/naive/src/engine/stale.ts", d, ...pass("json")]
     : cmd === "notify" ? ["packages/naive/src/engine/stale.ts", d, "--notify", ...pass("source", "path", "version", "json")]
     : cmd === "adapt" ? ["packages/naive/src/interfaces/adapters.ts", "adapt", action ?? "", d, ...pass("json")]
@@ -194,7 +194,7 @@ if (cmd === "migrate" && (opt("from") || flag("apply"))) {
   const d = v && (existsSync(join(resolve(v), "venture.json")) ? resolve(v) : ventureDir(v, workspace));
   if (!d) usage();
   const from = opt("from");
-  const p = spawnSync("node", [join(repo, "packages/naive/src/router/orchestration/migrate-venture.mjs"), "--venture", d, ...(from ? ["--from", from] : ["--apply"])], { stdio: "inherit" });
+  const p = spawnSync("node", [join(repo, "packages/naive/src/router/orchestration/migrate-venture.ts"), "--venture", d, ...(from ? ["--from", from] : ["--apply"])], { stdio: "inherit" });
   process.exit(p.status ?? 1);
 }
 
@@ -209,12 +209,12 @@ if (cmd === "upgrade" || cmd === "migrate") {
 }
 
 // Model steps hook (use model, EE-073): mentura steps <payload|run|check|waterfall|provenance|confirm> --venture <id> [...].
-// The logic is packages/naive/src/router/orchestration/model-steps.mjs; this passes the venture folder and the other arguments through.
+// The logic is packages/naive/src/router/orchestration/model-steps.ts; this passes the venture folder and the other arguments through.
 if (cmd === "steps") {
   const v = opt("venture"), d = v && ventureDir(v, workspace);
   if (!d || !action) usage();
   const pass = argv.slice(argv.indexOf("steps") + 1).filter((a, i, all) => !["--venture", "--workspace"].includes(a) && !["--venture", "--workspace"].includes(all[i - 1]));
-  const p = spawnSync("node", [join(repo, "packages/naive/src/router/orchestration/model-steps.mjs"), d, ...pass], { stdio: "inherit" });
+  const p = spawnSync("node", [join(repo, "packages/naive/src/router/orchestration/model-steps.ts"), d, ...pass], { stdio: "inherit" });
   process.exit(p.status ?? 1);
 }
 
@@ -444,10 +444,10 @@ if (cmd === "baseline") {
 // Freshness (Revalidating, V-1 to V-8): revalidate, verify, phase and freshness live in ./freshness.ts.
 if (["revalidate", "verify", "phase", "freshness"].includes(cmd)) process.exit(await (await import("./freshness.ts")).main(cmd, argv, workspace));
 
-// Context hook (packages/naive/src/router/context.mjs): navigate and head read a route header first, with its layout once per
+// Context hook (packages/naive/src/router/context.ts): navigate and head read a route header first, with its layout once per
 // session (--session), its template and prefetched refs (--task, --prefetch, --no-prefetch, --stream); batch runs
 // a list of calls with progress.
-if (["navigate", "head"].includes(action) || cmd === "batch") { const { cli } = await import("../../router/context.mjs"); process.exit(await cli(argv, { workspace })); }
+if (["navigate", "head"].includes(action) || cmd === "batch") { const { cli } = await import("../../router/context.ts"); process.exit(await cli(argv, { workspace })); }
 if (!action) usage();
 const venture = opt("venture");
 if (!venture && !["template", "layout"].includes(action)) usage();

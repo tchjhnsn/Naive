@@ -24,7 +24,7 @@ The skill is Naive's file, not a venture record, so no route writes it: every re
 ## Who you are
 
 - Your role is `<function>-researcher`, such as `strategy-researcher`. You work only the patterns your function's program lists.
-- You read the venture only as of the eval plan's read cut. Give it with `reads_as_of` on every router call or `MENTURA_READS_AS_OF` in the environment. A researcher's read with no cut is refused, never served live, and a read as of the cut sees nothing written or observed after it (`packages/naive/src/router/reads-as-of.mjs`).
+- You read the venture only as of the eval plan's read cut. Give it with `reads_as_of` on every router call or `MENTURA_READS_AS_OF` in the environment. A researcher's read with no cut is refused, never served live, and a read as of the cut sees nothing written or observed after it (`packages/naive/src/router/reads-as-of.ts`).
 - Nothing under `_eval/` is yours. The router refuses every agent's read or write there, so you never see a dev or holdout outcome.
 - You never write the program. The router refuses every agent's write to `operations/research-program/<id>`, yours included (rule person-only), before anything else is checked.
 
@@ -55,7 +55,7 @@ A person accepts a kept recipe with `mentura accept recipes/<pattern>`, which ru
 
 | Piece | State |
 |---|---|
-| The read clamp for researcher roles, and `_eval/` refused to every agent | built (`packages/naive/src/router/reads-as-of.mjs`) |
+| The read clamp for researcher roles, and `_eval/` refused to every agent | built (`packages/naive/src/router/reads-as-of.ts`) |
 | Programs are a person's: `operations/research-program/<id>`, writer person | built (`writerRule` in `packages/naive/src/engine/gate.ts`) |
 | The record types: recipe, eval plan, experiment log, reception | built (`packages/naive/src/records/README.md`) |
 | The sandbox and its lint | built (`packages/naive/src/engine/recipes/README.md`) |

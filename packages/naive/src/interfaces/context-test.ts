@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-// Tests for context (packages/naive/src/router/context.mjs), instrumentation (packages/naive/src/core/instrumentation.ts) and agent
-// vitals (packages/naive/src/router/vitals.mjs): header first, layout once per session, sibling navigation, the
+// Tests for context (packages/naive/src/router/context.ts), instrumentation (packages/naive/src/core/instrumentation.ts) and agent
+// vitals (packages/naive/src/router/vitals.ts): header first, layout once per session, sibling navigation, the
 // template, prefetch and its budget, the context budget, scoped instructions, streaming, events,
 // vitals and their check, and the trace a platform exporter ships. They run on a copy of the example
 // workspace in a temp folder and never write into the repository.
@@ -23,10 +23,10 @@ const tandem = join(ws, "ventures/tandem");
 const config = (c: unknown) => writeFileSync(join(tandem, "naive.config.json"), JSON.stringify(c, null, 2));
 config({ instrumentation: { events: true } });
 
-const { call, judge } = await import("../router/router.mjs");
-const ctx = await import("../router/context.mjs");
+const { call, judge } = await import("../router/router.ts");
+const ctx = await import("../router/context.ts");
 const { events, register } = await import("../core/instrumentation.ts");
-const { vitals } = await import("../router/vitals.mjs");
+const { vitals } = await import("../router/vitals.ts");
 const { handle } = await import("./mcp/server.ts");
 const { propose, approve } = await import("../engine/decisions.ts");
 
@@ -121,7 +121,7 @@ config({ instrumentation: { events: true }, context: { routes: { "foundation/**"
 const over = await nav("purpose/validation/problem");
 expect("N-13 an answer reports its size by part against the route's budget", over.result.budget.limit === 300 && over.result.budget.over === true && over.result.budget.parts.result > 0);
 expect("N-13 over budget, prefetch is given back first", over.result.prefetch.entries.length === 0 && over.result.prefetch.dropped.length > 0);
-const report = spawnSync("node", [join(repo, "packages/naive/src/router/context.mjs"), tandem, "budget", "--check", "--json"], { encoding: "utf8" });
+const report = spawnSync("node", [join(repo, "packages/naive/src/router/context.ts"), tandem, "budget", "--check", "--json"], { encoding: "utf8" });
 const rep = JSON.parse(report.stdout);
 expect("N-13 the budget report lists every route, flags the ones over, and --check exits 1", report.status === 1 && rep.over.includes("foundation/problem") && rep.routes.length > 20
   && rep.routes.find((x: { route: string }) => x.route === "foundation/problem").advice, report.stderr);
@@ -209,10 +209,10 @@ expect("N-6 vitals measure time from a decision opening to a person deciding it"
 expect("N-6 each vital is assessed at p75 against its threshold", ["calls_per_task", "tokens_per_call", "time_to_useful_ms", "decision_hours"].every((k) => { const vital = (v.vitals as Record<string, { threshold: number, status?: string }>)[k]; return vital.threshold > 0 && "p75" in vital && vital.status; }));
 
 // C-15: vitals are checked, not only measured.
-const good = spawnSync("node", [join(repo, "packages/naive/src/router/vitals.mjs"), tandem, "--check"], { encoding: "utf8" });
+const good = spawnSync("node", [join(repo, "packages/naive/src/router/vitals.ts"), tandem, "--check"], { encoding: "utf8" });
 expect("C-15 vitals within their thresholds pass the check", good.status === 0, good.stdout + good.stderr);
 config({ instrumentation: { events: true }, vitals: { calls_per_task: 1 } });
-const bad = spawnSync("node", [join(repo, "packages/naive/src/router/vitals.mjs"), tandem, "--check"], { encoding: "utf8" });
+const bad = spawnSync("node", [join(repo, "packages/naive/src/router/vitals.ts"), tandem, "--check"], { encoding: "utf8" });
 expect("C-15 a vital over its threshold fails the check", bad.status === 1 && /calls_per_task/.test(bad.stderr), bad.stdout + bad.stderr);
 const vr = await call({ venture: "tandem", route: "system/vitals", action: "run" });
 expect("C-15 system/vitals reports the failing vital", vr.ok && vr.result.passed === false && vr.result.failing.includes("calls_per_task"));
@@ -220,7 +220,7 @@ config({ instrumentation: { events: true } });
 
 // P-4: the events as a trace, the shape an exporter ships. The exporter itself (LangSmith) belongs to the app
 // that hosts Naive and is tested there.
-const tr = spawnSync("node", [join(repo, "packages/naive/src/router/vitals.mjs"), tandem, "--trace", "--session", "s1"], { encoding: "utf8" });
+const tr = spawnSync("node", [join(repo, "packages/naive/src/router/vitals.ts"), tandem, "--trace", "--session", "s1"], { encoding: "utf8" });
 writeFileSync(join(tmp, "trace.json"), tr.stdout);
 const trace = JSON.parse(tr.stdout);
 expect("P-4 the trace has a run per call, nested calls under their parent, and the vitals as feedback", trace.children.length === s1?.calls && trace.feedback.length >= 3);

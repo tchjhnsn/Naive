@@ -4,11 +4,11 @@
 // (packages/naive/src/interfaces/skills/naive-setup) renders it in the model's harness, as a Claude artifact where there is one;
 // packages/naive/src/interfaces/dev/setup.ts serves the same state to a browser.
 //
-//   node packages/naive/src/router/orchestration/setup.mjs <venture dir> state                     the state, as JSON
-//   node packages/naive/src/router/orchestration/setup.mjs <venture dir> artifact                  the state rendered into the skill's artifact template
-//   node packages/naive/src/router/orchestration/setup.mjs <venture dir> answer <decision id> <the founder's words> [--via mcp]
-//   node packages/naive/src/router/orchestration/setup.mjs <venture dir> point <function> <system> [address] [--via mcp]
-//   node packages/naive/src/router/orchestration/setup.mjs <venture dir> confirm [--yes]          confirm the answers the model relayed, as the founder
+//   node packages/naive/src/router/orchestration/setup.ts <venture dir> state                     the state, as JSON
+//   node packages/naive/src/router/orchestration/setup.ts <venture dir> artifact                  the state rendered into the skill's artifact template
+//   node packages/naive/src/router/orchestration/setup.ts <venture dir> answer <decision id> <the founder's words> [--via mcp]
+//   node packages/naive/src/router/orchestration/setup.ts <venture dir> point <function> <system> [address] [--via mcp]
+//   node packages/naive/src/router/orchestration/setup.ts <venture dir> confirm [--yes]          confirm the answers the model relayed, as the founder
 
 import { existsSync, readFileSync } from "node:fs";
 import { basename, dirname, join, resolve } from "node:path";
@@ -90,7 +90,7 @@ export async function point(dir, { fn, system, address, via = "api", actor = "pe
   const synced = sync(system, dir);
   if (synced.ran && synced.ok) Object.assign(entry, { status: "connected", synced: new Date().toISOString().replace(/\.\d+Z$/, "Z"), ...(synced.fixture ? { fixture: true } : {}), ...(address || synced.address ? { address: address || synced.address } : {}) });
   f.systems = [...f.systems.filter((s) => s.system !== system), entry];
-  const { call } = await import("../router.mjs");
+  const { call } = await import("../router.ts");
   const r = await call({ workspace: dirname(dir), venture: basename(dir), route: "knowledge/knowledge-sources", action: "write", input: map, actor, ...(agentId ? { actor_id: agentId } : {}), via, provenance: { note: `${fn}: ${system}${address ? ` at ${address}` : ""} (${entry.status})` } });
   return r.ok ? { ok: true, result: entry } : r;
 }
@@ -140,7 +140,7 @@ if (process.argv[1] && resolve(process.argv[1]) === new URL(import.meta.url).pat
   const flag = (n) => { const i = rest.indexOf(`--${n}`); if (i < 0) return undefined; const v = rest[i + 1]; rest.splice(i, 2); return v; };
   const via = flag("via") ?? "cli";
   if (!["cli", "mcp", "api"].includes(via)) { console.error(`--via is cli, mcp or api, not ${via}`); process.exit(2); }
-  if (!dirArg || !existsSync(join(dirArg, "venture.json"))) { console.error("usage: node packages/naive/src/router/orchestration/setup.mjs <venture dir> state|artifact|answer|point|confirm ..."); process.exit(2); }
+  if (!dirArg || !existsSync(join(dirArg, "venture.json"))) { console.error("usage: node packages/naive/src/router/orchestration/setup.ts <venture dir> state|artifact|answer|point|confirm ..."); process.exit(2); }
   const dir = resolve(dirArg);
   let r;
   if (cmd === "state") r = { ok: true, result: await state(dir) };

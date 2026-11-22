@@ -8,8 +8,8 @@ import { spawn, spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { call } from "./router.mjs";
-import { appendTrial, ledgerPath, read, resolveTrial, verify } from "./detection-ledger.mjs";
+import { call } from "./router.ts";
+import { appendTrial, ledgerPath, read, resolveTrial, verify } from "./detection-ledger.ts";
 import { entries } from "../core/provenance.ts";
 import { validateValue } from "../records/validate.ts";
 
@@ -114,7 +114,7 @@ const ctx = (v: string) => ({ venture: v, workspace: ws });
 {
   const dir = venture("parallel", true);
   const writers = 6, each = 5;
-  const mod = new URL("./detection-ledger.mjs", import.meta.url).href;
+  const mod = new URL("./detection-ledger.ts", import.meta.url).href;
   const code = `const { appendTrial } = await import(${JSON.stringify(mod)});
 for (let i = 0; i < ${each}; i++) { const r = await appendTrial({ venture: "parallel", workspace: ${JSON.stringify(ws)} }, { detector: "gate-confidence", score: Math.random(), criterion: { yes: 0.7 }, call: "no" }); if (!r.ok) { console.error(r.error); process.exit(1); } }`;
   const runs = await Promise.all(Array.from({ length: writers }, () => new Promise<number>((done) => {

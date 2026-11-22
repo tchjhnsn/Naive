@@ -5,9 +5,9 @@
 // record is written through the router, so its schema, gates and provenance all apply. Port (files
 // kept as they are) is the other way in: packages/naive/src/engine/port-venture.ts.
 //
-//   node packages/naive/src/router/orchestration/migrate-venture.mjs --from <project> --venture <new venture dir>
+//   node packages/naive/src/router/orchestration/migrate-venture.ts --from <project> --venture <new venture dir>
 //        the agent writes the plan to <venture>/.release/migrate-plan.json and proposes the decisions
-//   node packages/naive/src/router/orchestration/migrate-venture.mjs --venture <dir> --apply
+//   node packages/naive/src/router/orchestration/migrate-venture.ts --venture <dir> --apply
 //        writes what a person decided ("bring in", "point to them" or "leave them"); open decisions wait
 //
 // The project is only ever read, and the agent gets its text and no tools. Files that look like
@@ -17,7 +17,7 @@
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { basename, dirname, join, relative, resolve, sep } from "node:path";
-import { call, routes } from "../router.mjs";
+import { call, routes } from "../router.ts";
 import { agentFromEnv, record as prov } from "../../core/provenance.ts";
 import { propose } from "../../engine/decisions.ts";
 import { ventureFile } from "../../core/venture-paths.ts";
@@ -176,7 +176,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const args = process.argv.slice(2);
   const opt = (k) => { const i = args.indexOf(`--${k}`); return i < 0 ? undefined : args[i + 1]; };
   const dir = opt("venture");
-  if (!dir || !existsSync(join(dir, "venture.json"))) { console.error("usage: node packages/naive/src/router/orchestration/migrate-venture.mjs --from <project> --venture <dir> | --venture <dir> --apply"); process.exit(2); }
+  if (!dir || !existsSync(join(dir, "venture.json"))) { console.error("usage: node packages/naive/src/router/orchestration/migrate-venture.ts --from <project> --venture <dir> | --venture <dir> --apply"); process.exit(2); }
   try {
     if (args.includes("--apply")) {
       if (!existsSync(ventureFile(dir, PLAN))) { console.error(`no plan at ${ventureFile(dir, PLAN)}: run with --from first`); process.exit(1); }

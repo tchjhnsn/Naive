@@ -4,7 +4,7 @@
 import { readFileSync } from "node:fs";
 import { provenanceOf } from "../../engine/use-model.ts";
 import { hold, packageGates } from "../../engine/gate.ts";
-import { judge } from "../../router/router.mjs";
+import { judge } from "../../router/router.ts";
 
 let failed = 0;
 const t = (name: string, fn: () => void): void => { try { fn(); console.log(`ok   ${name}`); } catch (e) { failed++; console.log(`FAIL ${name}: ${(e as Error).message}`); } };

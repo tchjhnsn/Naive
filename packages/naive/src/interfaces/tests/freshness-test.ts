@@ -14,7 +14,7 @@ const repo = new URL("../../../../..", import.meta.url).pathname;
 const ws = mkdtempSync(join(tmpdir(), "freshness-test-"));
 process.env.MENTURA_WORKSPACE = ws;
 delete process.env.NAIVE_NOW;
-const { call, routes } = await import("../../router/router.mjs");
+const { call, routes } = await import("../../router/router.ts");
 const F = await import("../../engine/freshness.ts");
 
 let failed = 0;

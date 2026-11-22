@@ -9,7 +9,7 @@
 //   handle(req, res, dir) -> true when it answered a /setup request
 
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { decide, point, state } from "../../router/orchestration/setup.mjs";
+import { decide, point, state } from "../../router/orchestration/setup.ts";
 
 const json = (res: ServerResponse, code: number, body: unknown): void => { res.writeHead(code, { "content-type": "application/json" }); res.end(JSON.stringify(body)); };
 const body = (req: IncomingMessage): Promise<unknown> => new Promise((ok) => { let b = ""; req.on("data", (c: Buffer) => (b += c)); req.on("end", () => { try { ok(JSON.parse(b || "{}")); } catch { ok({}); } }); });

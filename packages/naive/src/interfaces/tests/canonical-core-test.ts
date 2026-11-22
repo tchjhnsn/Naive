@@ -11,7 +11,7 @@ import { lifecycle, meet } from "../../engine/lifecycle.ts";
 import { exitCriteria, scale } from "../../engine/canonical.ts";
 import { check } from "../../engine/check-frameworks.ts";
 import { telosView } from "../../../../../frameworks/telos/adapter.ts";
-import { call } from "../../router/router.mjs";
+import { call } from "../../router/router.ts";
 
 const repo = new URL("../../../../..", import.meta.url).pathname;
 const tmp = mkdtempSync(join(tmpdir(), "canonical-"));

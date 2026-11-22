@@ -43,7 +43,7 @@ const example = (w: World, id: string) => {
   process.env.MENTURA_WORKSPACE = join(d, "workspace");
   w.venture = id; w.cleanup = () => { process.env.MENTURA_WORKSPACE = was; if (was === undefined) delete process.env.MENTURA_WORKSPACE; rmSync(d, { recursive: true, force: true }); };
 };
-const router = () => import(join(repo, "packages/naive/src/router/router.mjs"));
+const router = () => import(join(repo, "packages/naive/src/router/router.ts"));
 const cli = (w: World, ...a: string[]) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.ts"), ...a, "--venture", w.venture], { encoding: "utf8", env: process.env, input: "" });
 
 export const steps: Step[] = [

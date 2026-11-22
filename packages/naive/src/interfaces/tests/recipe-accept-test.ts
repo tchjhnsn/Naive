@@ -19,7 +19,7 @@ import { record } from "../../core/provenance.ts";
 import { planRecipe } from "../../engine/recipes/eval-set.ts";
 import { decisionFile } from "../../engine/decisions.ts";
 import { checkRecipes } from "../../checks/check-recipes.ts";
-import { call } from "../../router/router.mjs";
+import { call } from "../../router/router.ts";
 
 let failed = 0;
 const expect = (name: string, ok: boolean, detail: unknown = ""): void => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${JSON.stringify(detail).slice(0, 700)}`}`); if (!ok) failed++; };

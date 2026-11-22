@@ -7,7 +7,7 @@ import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { call } from "../../router/router.mjs";
+import { call } from "../../router/router.ts";
 import { ventureFile } from "../../core/venture-paths.ts";
 
 const repo = new URL("../../../../..", import.meta.url).pathname;

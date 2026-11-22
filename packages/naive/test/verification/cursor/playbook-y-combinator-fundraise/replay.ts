@@ -36,7 +36,7 @@ const modelRoutes = new Set([
   ...[...routeLine[0].matchAll(/"([^"]+)"/g)].map((x) => x[1]),
 ]);
 
-const listed = spawnSync("node", [join(repo, "packages/naive/src/router/router.mjs")], { encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
+const listed = spawnSync("node", [join(repo, "packages/naive/src/router/router.ts")], { encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
 if (listed.status !== 0) { console.error(listed.stderr); process.exit(1); }
 const table = new Map<string, unknown>(JSON.parse(listed.stdout).map((r: { route: string }) => [r.route, r]));
 

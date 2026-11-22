@@ -12,7 +12,7 @@ import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { call, routes } from "../../router/router.mjs";
+import { call, routes } from "../../router/router.ts";
 import { entries } from "../../core/provenance.ts";
 import { writerRule } from "../../engine/gate.ts";
 import { resolve as resolveRule } from "../../store/connectors/resolve.ts";

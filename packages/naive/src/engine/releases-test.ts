@@ -24,7 +24,7 @@ delete env.MENTURA_MODEL; delete env.MENTURA_ACTOR; delete env.MENTURA_ACTOR_ID;
 writeFileSync(join(ws, "agent-called.mjs"), `import { writeFileSync } from "node:fs"; writeFileSync(${JSON.stringify(join(ws, "AGENT_CALLED"))}, "1"); console.log("{}");\n`);
 const run = (args: string[], extra: Record<string, string> = {}, input?: string) => spawnSync("node", args, { cwd: repo, env: { ...env, ...extra }, encoding: "utf8", input });
 const mentura = (...a: string[]) => run([join(repo, "packages/naive/src/interfaces/cli/mentura.ts"), ...a]);
-const build = (dir: string, ...a: string[]) => run([join(repo, "packages/naive/src/router/orchestration/build-release.mjs"), dir, ...a]);
+const build = (dir: string, ...a: string[]) => run([join(repo, "packages/naive/src/router/orchestration/build-release.ts"), dir, ...a]);
 const start = (dir: string, ...a: string[]) => run([join(repo, "packages/naive/src/engine/start-release.ts"), dir, ...a]);
 const get = (dir: string, path: string) => { const r = start(dir, "--get", path); let body = null; try { body = JSON.parse(r.stdout); } catch { body = r.stdout; } return { status: r.status, body }; };
 const writeJson = (f: string, o: unknown) => { mkdirSync(dirname(f), { recursive: true }); writeFileSync(f, JSON.stringify(o, null, 2) + "\n"); };
@@ -36,7 +36,7 @@ expect("init a venture", mentura("init", dir, "--id", "kettle", "--layers", "pur
 
 // ---- I-17, C-10: a fresh venture builds; the same records give the same release, whatever "now" is ----
 let b = build(dir, "--now", "2026-10-29T00:00:00Z", "--port", "9");
-expect("I-17: node packages/naive/src/router/orchestration/build-release.mjs <venture dir> runs (and takes --port)", b.status === 0, b.stderr);
+expect("I-17: node packages/naive/src/router/orchestration/build-release.ts <venture dir> runs (and takes --port)", b.status === 0, b.stderr);
 const first = manifest(dir);
 expect("C-11: an empty venture's release is a shell of named holes (its four open framework decisions)", first.records.length === 0 && first.holes.filter((h: Hole) => h.kind === "decision").length === 4, JSON.stringify(first.holes.map((h: Hole) => h.name)));
 b = build(dir, "--now", "2026-12-01T00:00:00Z");
@@ -141,7 +141,7 @@ expect("C-17: the cache lives in .naive/, ignored by git, never in the release",
 expect("C-17: the release and cache key holds the framework version, the package definitions and the model", m.key.framework === readFileSync(join(repo, "packages/naive/src/records/VERSION"), "utf8").trim() && /^[0-9a-f]{16}$/.test(m.key.packages) && m.key.model === null);
 const again = (b = build(dir, "--now", "2026-10-30T00:00:00Z"), manifest(dir));
 expect("C-17: a rebuild with nothing changed reuses the cache and gives the same release", again.release === m.release && again.cache.fresh === false && again.cache.misses === 0, JSON.stringify(again.cache));
-b = run([join(repo, "packages/naive/src/router/orchestration/build-release.mjs"), dir, "--now", "2026-10-30T00:00:00Z"], { MENTURA_MODEL: "claude-opus-5-5" });
+b = run([join(repo, "packages/naive/src/router/orchestration/build-release.ts"), dir, "--now", "2026-10-30T00:00:00Z"], { MENTURA_MODEL: "claude-opus-5-5" });
 const modelled = manifest(dir);
 expect("C-17: changing the model starts the cache fresh (and changes the release key)", b.status === 0 && modelled.cache.fresh === true && modelled.cache.previous_key?.model === null && modelled.key.model === "claude-opus-5-5" && modelled.release !== m.release, JSON.stringify(modelled.cache));
 build(dir, "--now", "2026-10-30T00:00:00Z");
@@ -155,7 +155,7 @@ expect("the log still checks after building", provCheck.status === 0, provCheck.
 // ---- C-12: read without the router ----
 const imports = (f: string, seen = new Set<string>()): Set<string> => { if (seen.has(f)) return seen; seen.add(f); for (const x of readFileSync(f, "utf8").matchAll(/(?:from|import\()\s*["'](\.{1,2}\/[^"']+)["']/g)) imports(resolve(dirname(f), x[1]), seen); return seen; };
 const served = [...imports(join(repo, "packages/naive/src/engine/start-release.ts"))].map((f) => f.slice(repo.length));
-expect("C-12: start-release reads the release without the router (no import reaches packages/naive/src/router/router.mjs)", !served.includes("packages/naive/src/router/router.mjs") && served.includes("packages/naive/src/engine/release-read.ts"), served.join(", "));
+expect("C-12: start-release reads the release without the router (no import reaches packages/naive/src/router/router.ts)", !served.includes("packages/naive/src/router/router.ts") && served.includes("packages/naive/src/engine/release-read.ts"), served.join(", "));
 let g = get(dir, "/");
 expect("C-12: the index names the release, its routes and its holes", g.status === 0 && g.body.release === base.release && g.body.routes.includes("foundation/problem") && g.body.holes.length === base.holes.length, JSON.stringify(g.body).slice(0, 300));
 g = get(dir, "/foundation/problem");

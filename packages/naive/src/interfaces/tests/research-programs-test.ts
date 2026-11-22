@@ -12,7 +12,7 @@ import { spawnSync } from "node:child_process";
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { call, routes } from "../../router/router.mjs";
+import { call, routes } from "../../router/router.ts";
 import { write as agentWrite } from "../../router/agent-files.ts";
 import { entries } from "../../core/provenance.ts";
 import { blobHash, hasBlob } from "../../core/blobs.ts";

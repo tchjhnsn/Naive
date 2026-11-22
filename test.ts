@@ -49,7 +49,7 @@ const steps: Step[] = [
   ["the compiled package's build: what is compiled, .ts paths renamed to .js, a relative import that names no file refused (EE-159)", "node", ["scripts/build-test.ts"]],
   ["create-venture and the naive commands (Chapter 1: generator, dev, check, info, upgrade)", "node", ["packages/create-venture/test.ts"]],
   ["setup in the model's harness (state and artifact over MCP, relayed answers the founder confirms)", "node", ["packages/naive/src/interfaces/tests/setup-test.ts"]],
-  ["writes, reads and boundaries: the call wrapper, containment, private folders", "node", ["packages/naive/src/router/writes-test.mjs"]],
+  ["writes, reads and boundaries: the call wrapper, containment, private folders", "node", ["packages/naive/src/router/writes-test.ts"]],
   ["blob store and as-of reads: each write's blob, the content at t and nothing later, null before the first write, one blob for the same content", "node", ["packages/naive/src/interfaces/tests/as-of-test.ts"]],
   ["researcher read clamp: reads, lists, views and agent files as of the cut and nothing later, no late signal, no read without a cut, no live action, writes not clamped, nothing under _eval/", "node", ["packages/naive/src/interfaces/tests/reads-as-of-test.ts"]],
   ["spend register: finance/spend/[id] is written only by finance-agent or a person (any other role is refused, one the team plan widens included), the template's access matrix masters each field once and check-sources refuses a tie on a register field, and founder-to-finance-agent holds the register's classes", "node", ["packages/naive/src/interfaces/tests/spend-register-test.ts"]],
@@ -210,7 +210,7 @@ const cheap: Step[] = [
   ["the compiled package: dist/ builds (npm run build, EE-159)", "node", ["scripts/build.ts"]],
   ["packages/naive/src/terms/ontology.md matches packages/naive/src/terms/ontology.json (regenerate with node packages/naive/src/checks/check-nouns.ts --md)", "node", ["packages/naive/src/checks/check-nouns.ts", "--md"], rendered("packages/naive/src/terms/ontology.md", "\n### System")],
   ["layer relationships in docs/design/LAYERS_AND_KITS_2026-10-27.md match the kits (regenerate with node packages/naive/src/checks/check-data-model.ts --md)", "node", ["packages/naive/src/checks/check-data-model.ts", "--md"], rendered("docs/design/LAYERS_AND_KITS_2026-10-27.md", "### Layer relationships")],
-  ["docs/reference/ROUTES.md matches the kits (regenerate with node packages/naive/src/router/router.mjs --md)", "node", ["packages/naive/src/router/router.mjs", "--md"], rendered("docs/reference/ROUTES.md", "## Routes")],
+  ["docs/reference/ROUTES.md matches the kits (regenerate with node packages/naive/src/router/router.ts --md)", "node", ["packages/naive/src/router/router.ts", "--md"], rendered("docs/reference/ROUTES.md", "## Routes")],
   ["packages/naive/lean/Naive/Generated/Ontology.lean matches packages/naive/src/terms/ontology.json (regenerate with node packages/naive/src/terms/gen-concepts.ts)", "node", ["packages/naive/src/terms/gen-concepts.ts", "--check"]],
 ];
 

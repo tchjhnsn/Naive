@@ -30,7 +30,7 @@ TLC reported no broken rule. Replay ran the named routes and checkers on a ventu
 
 | Rule | TLC | Replay |
 |---|---|---|
-| RouteIsReal. Every template step uses a route `packages/naive/src/router/router.mjs` `resolve()` knows. | PASS | PASS. `product/offering`, `foundation/icp`, `foundation/icp/operators`, `governance/decision-rights`, `operations/handoff/cycle-one`, `decisions/bet-cycle-one`, `evidence/cycle-one-shipped`, and `system/provenance` each resolve. `shapeup/cycle` returns `no route shapeup/cycle`. |
+| RouteIsReal. Every template step uses a route `packages/naive/src/router/router.ts` `resolve()` knows. | PASS | PASS. `product/offering`, `foundation/icp`, `foundation/icp/operators`, `governance/decision-rights`, `operations/handoff/cycle-one`, `decisions/bet-cycle-one`, `evidence/cycle-one-shipped`, and `system/provenance` each resolve. `shapeup/cycle` returns `no route shapeup/cycle`. |
 | ReadsWereProvided. A step does not read a record nothing earlier, and not the venture, has provided. | PASS | PASS. Reading `operations/handoff/cycle-one` before the write returns `not_found` (`no handoff record yet`). Before any profile, `foundation/icp` reads `ok: true`, `result: null`, with `not_found`, which is the stop in step 2. After a person writes `product/offering` and `foundation/icp/operators`, both reads return those records. `governance/decision-rights` is `not_found` on a new venture; the playbook then uses the framework template, which the model treats as already provided. |
 | PitchCheckHonest. The pitch check passes for a full brief and fails when a section is blank. | PASS | PASS. `pitch-check.ts` exits 0 on a full six-week brief, exits 1 with `missing No-gos` on a blank section, and exits 1 with `appetite does not name six weeks` on a one-week appetite. |
 | BetOnlyAfterAPass. A bet is proposed only after that pitch check passes. | PASS | PASS. The replay writes the bet after the full brief passes. |
@@ -42,7 +42,7 @@ TLC reported no broken rule. Replay ran the named routes and checkers on a ventu
 
 ## What replay showed that the model leaves out
 
-An agent write of `decisions/bet-cycle-one` with `status: decided` is saved as a draft (`draft=true`), and the record stays open. `packages/naive/src/router/router.mjs` lets only a person settle a decision (EE-058). The model has `YouBet` and `YouDecline` for that person, and no action for an agent marking the bet decided. The replay asserts the draft.
+An agent write of `decisions/bet-cycle-one` with `status: decided` is saved as a draft (`draft=true`), and the record stays open. `packages/naive/src/router/router.ts` lets only a person settle a decision (EE-058). The model has `YouBet` and `YouDecline` for that person, and no action for an agent marking the bet decided. The replay asserts the draft.
 
 `approve()` accepts any answer wording, and a decline lifts the hold on the handoff just as a bet does. The router does not stop a declined pitch from moving past `draft`. The playbook's bet check does, and the replay runs that check on a declined bet. The model reaches the same end through `YouDecline`, with no later write of the handoff.
 

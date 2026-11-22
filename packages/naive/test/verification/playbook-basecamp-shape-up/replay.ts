@@ -10,7 +10,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, existsSync
 import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { call, resolve } from "../../../src/router/router.mjs";
+import { call, resolve } from "../../../src/router/router.ts";
 import { approve } from "../../../src/engine/decisions.ts";
 import type { DecisionRecord, DecisionRights, Handoff, IcpProfile, Product, ProvenanceEntry } from "../../../src/records/types/records.d.ts";
 

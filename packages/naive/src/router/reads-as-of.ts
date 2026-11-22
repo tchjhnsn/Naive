@@ -17,7 +17,7 @@
 //     written before it. A log written by append stores no blob, so an as-of read finds no version of it; the
 //     signal library's day index is such a log, and a pull applies the same cut when it reads it (not built).
 //
-// A .mjs file, not .ts, because router.mjs imports it, and Node does not strip types under node_modules, where an
+// A .mjs file, not .ts, because router.ts imports it, and Node does not strip types under node_modules, where an
 // app that installs Naive keeps it.
 
 import { pathsAsOf, readAsOf } from "../store/as-of.ts";

@@ -14,7 +14,7 @@
 
 import { resolve } from "node:path";
 import { agentFromEnv } from "../../core/provenance.ts";
-import { ventureDir } from "../../router/router.mjs";
+import { ventureDir } from "../../router/router.ts";
 import { freeze, freshness, phase, revalidate, verify } from "../../engine/freshness.ts";
 
 export const COMMANDS = ["revalidate", "verify", "phase", "freshness"];

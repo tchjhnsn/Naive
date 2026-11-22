@@ -1,6 +1,6 @@
 // What a write answers, what a layout offers, and the wrapper the router puts around every call
-// (Next.js translation M-3, M-9, M-17; it also wires in packages/naive/src/router/reads.mjs, packages/naive/src/router/boundaries.mjs
-// and packages/naive/src/router/package-routes.mjs).
+// (Next.js translation M-3, M-9, M-17; it also wires in packages/naive/src/router/reads.ts, packages/naive/src/router/boundaries.ts
+// and packages/naive/src/router/package-routes.ts).
 //
 //   changed   M-3   one round trip: a write answers with the new state and what it changed: the
 //                   record's state before and after, each package whose progress or state moved,
@@ -19,15 +19,15 @@
 // reads and layouts add (L-9, L-10, O-1 to O-3, P-28) and what writes answer (M-3, M-17). It never
 // calls a model.
 
-import { allowed, draftOf, gateOf, resolve, routes, ventureDir } from "./router.mjs";
-import { frameworkHealth, globalError, ventureHealth } from "./boundaries.mjs";
-import { groupLayout, packageOfRecord, routeOfType, specialCall } from "./package-routes.mjs";
-import { filterRead, hierarchy, metadataFor, resolvedBy, withParams } from "./reads.mjs";
+import { allowed, draftOf, gateOf, resolve, routes, ventureDir } from "./router.ts";
+import { frameworkHealth, globalError, ventureHealth } from "./boundaries.ts";
+import { groupLayout, packageOfRecord, routeOfType, specialCall } from "./package-routes.ts";
+import { filterRead, hierarchy, metadataFor, resolvedBy, withParams } from "./reads.ts";
 
 /** The state a write can change, taken before and after it. */
 export async function snapshot(dir) {
   const safe = async (f) => { try { return await f(); } catch { return null; } };
-  const { venturePackage } = await import("./orchestration/venture-package.mjs");
+  const { venturePackage } = await import("./orchestration/venture-package.ts");
   const { needNow } = await import("../engine/need-now.ts");
   const { decisions } = await import("../engine/decisions.ts");
   return { packages: await safe(() => venturePackage(dir)), need: await safe(() => needNow(dir)), decisions: await safe(() => decisions(dir)) };
@@ -163,13 +163,13 @@ export async function around(inner, args) {
       const items = r.collection === "list" ? Object.fromEntries(Object.entries(out.sources ?? {}).map(([id, s]) => [id, fileOfAddress(s.address)]).filter(([, f]) => f))
         : out.source && fileOfAddress(out.source.address) ? { [params.id ?? r.record]: fileOfAddress(out.source.address) } : {};
       // Metadata is built from the unprojected record, so a public reader gets none of it. It is computed from the live
-      // provenance log, so an as-of read (packages/naive/src/router/reads-as-of.mjs) gets none of it either.
+      // provenance log, so an as-of read (packages/naive/src/router/reads-as-of.ts) gets none of it either.
       out = { ...out, params, ...(actor === "public" || out.as_of ? {} : { metadata: await metadataFor({ dir, r, route: concrete, params, result: out.result, items }) }) };
       out = filterRead(out, input?.where, r);
     }
     out.resolved_by = resolvedBy(out);
     if (input?.hierarchy && actor !== "public" && !out.as_of) {
-      const { layout } = await import("./router.mjs");
+      const { layout } = await import("./router.ts");
       const pkg = packageOfRecord(r.record);
       const lay = withParams(layout(r, dir), { dir, params, file: draftOf(concrete, venture, workspace)?.file, group: pkg ? groupLayout(pkg, dir) : null });
       out.hierarchy = hierarchy({ answer: out, layout: lay }).levels;

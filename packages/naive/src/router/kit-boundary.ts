@@ -11,12 +11,12 @@
 // acts as the kit's agent, never as a person. A kit that uses a model writes judgments, so it declares
 // knowledge/judgment/** in writes. This module reads kit.json as data and never imports the app's code.
 //
-//   node packages/naive/src/router/kit-boundary.mjs <kit.json>      check one kit's boundary
+//   node packages/naive/src/router/kit-boundary.ts <kit.json>      check one kit's boundary
 
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { call as routerCall, glob, repo, routes } from "./router.mjs";
-// packages/naive/src/router/orchestration/model-steps.mjs is imported inside checkKit, not here, because it imports wrap from this module.
+import { call as routerCall, glob, repo, routes } from "./router.ts";
+// packages/naive/src/router/orchestration/model-steps.ts is imported inside checkKit, not here, because it imports wrap from this module.
 
 const ID = /^[a-z0-9][a-z0-9-]*$/;
 export const actorOf = (kit) => `kit-${kit.name}`;
@@ -25,7 +25,7 @@ const reachable = (b, route) => any(b.reads, route) || any(b.writes, route);
 
 /** Errors in a kit's declared boundary, its model steps included. */
 export async function checkKit(kit) {
-  const { checkSteps, inputOf } = await import("./orchestration/model-steps.mjs");
+  const { checkSteps, inputOf } = await import("./orchestration/model-steps.ts");
   const e = [];
   if (!kit || typeof kit !== "object") return ["a kit.json is an object"];
   if (typeof kit.name !== "string" || !ID.test(kit.name)) e.push("a kit has a name of lowercase letters, digits and hyphens");
@@ -65,7 +65,7 @@ export function wrap(kit, call = routerCall) {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const f = process.argv[2];
-  if (!f) { console.error("usage: node packages/naive/src/router/kit-boundary.mjs <kit.json>"); process.exit(2); }
+  if (!f) { console.error("usage: node packages/naive/src/router/kit-boundary.ts <kit.json>"); process.exit(2); }
   const kit = JSON.parse(readFileSync(f, "utf8"));
   const e = await checkKit(kit);
   if (e.length) { console.error(e.join("\n")); process.exit(1); }

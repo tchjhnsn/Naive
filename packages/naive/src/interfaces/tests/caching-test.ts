@@ -11,7 +11,7 @@ import { existsSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } fro
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { actionScope, actionStats, cached, clear, command, configOf, declarationFor, entries, judge, keyOf, LIFE, lifeOf, lookup, memo, prune, stats, versionsOf } from "../../engine/caching.ts";
-import { call } from "../../router/router.mjs";
+import { call } from "../../router/router.ts";
 import { decisions, holding } from "../../engine/decisions.ts";
 import { route } from "../api/server.ts";
 

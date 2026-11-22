@@ -26,9 +26,9 @@ const put = (dir, rel, x) => { mkdirSync(join(dir, rel, ".."), { recursive: true
 
 const acme = init("acme");
 const other = init("other");
-const { call, ventures } = await import("./router.mjs");
+const { call, ventures } = await import("./router.ts");
 const { structure, manifest, checkManifest, routable } = await import("../engine/structure.ts");
-const { boundaries, recover, ventureHealth, frameworkHealth } = await import("./boundaries.mjs");
+const { boundaries, recover, ventureHealth, frameworkHealth } = await import("./boundaries.ts");
 const c = (route, action, extra = {}) => call({ venture: "acme", route, action, workspace: ws, ...extra });
 
 // M-3 and M-17: a write answers with what it changed and the next route.
@@ -240,10 +240,10 @@ writeFileSync(join(other, "venture.json"), JSON.stringify({ id: "other", name: "
 expect("E-8: a venture.json that parses but has a bad phase is a global error too", /phase "nowhere"/.test(ventureHealth(other)?.problem ?? ""), ventureHealth(other));
 writeFileSync(join(other, "venture.json"), "not json");
 const rec = cli("venture", "read", "--venture", "other");
-const rv = spawnSync("node", [join(repo, "packages/naive/src/router/boundaries.mjs"), "recover", other, "--confirm", "recover"], { encoding: "utf8" });
+const rv = spawnSync("node", [join(repo, "packages/naive/src/router/boundaries.ts"), "recover", other, "--confirm", "recover"], { encoding: "utf8" });
 expect("E-8: recover rebuilds a minimal venture.json and keeps the broken one in _private/", rec.status === 1 && rv.status === 0 && ventureHealth(other) === null && readdirSync(join(other, "_private")).some((f) => f.startsWith("venture.json.broken-")), rv.stdout + rv.stderr);
 expect("E-8: after recover the venture reads again", (await call({ venture: "other", route: "venture", action: "read", workspace: ws })).ok);
-expect("E-8: recover refuses without --confirm recover", spawnSync("node", [join(repo, "packages/naive/src/router/boundaries.mjs"), "recover", other], { encoding: "utf8" }).status === 1);
+expect("E-8: recover refuses without --confirm recover", spawnSync("node", [join(repo, "packages/naive/src/router/boundaries.ts"), "recover", other], { encoding: "utf8" }).status === 1);
 expect("E-8: the framework is sound in this repository", frameworkHealth() === null, frameworkHealth());
 // A broken data model, in a copy of the framework so the repository is never touched.
 const copy = mkdtempSync(join(tmpdir(), "writes-framework-"));

@@ -10,7 +10,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { call, routes } from "../../../src/router/router.mjs";
+import { call, routes } from "../../../src/router/router.ts";
 import type { Alignment, DecisionRecord, Founder, Ownership, People, TeamPlan, ValidationProblem, ValidationTeam } from "../../../src/records/types/records.d.ts";
 
 /** What a router action answers, with the result this replay expects of the route (null when the record is missing). */

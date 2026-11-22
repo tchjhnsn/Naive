@@ -16,7 +16,7 @@ type Decision = DecisionRecord | null | undefined;
 const here = dirname(fileURLToPath(import.meta.url));
 const repo = join(here, "../../../../../..");
 const cli = join(repo, "packages/naive/src/interfaces/cli/mentura.ts");
-const router = join(repo, "packages/naive/src/router/router.mjs");
+const router = join(repo, "packages/naive/src/router/router.ts");
 const init = join(repo, "packages/naive/src/engine/init-venture.ts");
 
 const rows: { rule: string, ok: unknown, detail: string }[] = [];
@@ -142,7 +142,7 @@ try {
   const names = new Set(table.map((r: { route: string }) => r.route));
   const wanted = ["foundation/icp", "product", "product/[id]", "decisions", "decisions/[id]", "glossary/[id]"];
   const missing = wanted.filter((r) => !names.has(r));
-  note("RouteReal", missing.length === 0, missing.length ? `missing from node packages/naive/src/router/router.mjs: ${missing.join(", ")}` : `all ${wanted.length} template routes are in the route table (${table.length} routes)`);
+  note("RouteReal", missing.length === 0, missing.length ? `missing from node packages/naive/src/router/router.ts: ${missing.join(", ")}` : `all ${wanted.length} template routes are in the route table (${table.length} routes)`);
 
   const made = node(init, [venture, "docs-probe", "--phase", "validation"]);
   if (made.status !== 0) throw new Error(made.stderr || made.stdout || "init failed");

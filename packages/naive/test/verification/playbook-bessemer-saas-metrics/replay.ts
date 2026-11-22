@@ -9,7 +9,7 @@ import { mkdtempSync, readFileSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { call, routes } from "../../../src/router/router.mjs";
+import { call, routes } from "../../../src/router/router.ts";
 import { propose } from "../../../src/engine/decisions.ts";
 import type { DecisionRecord, MoneySummary, Product, ValidationPricing } from "../../../src/records/types/records.d.ts";
 
@@ -284,7 +284,7 @@ async function main() {
   initVenture(workspace, passId, "beachhead");
   const ventureRead = await read<{ phase: string }>(workspace, passId, "venture");
   assert(ventureRead.ok && ventureRead.result?.phase === "beachhead", `venture read: ${JSON.stringify(ventureRead).slice(0, 400)}`);
-  record("venture route answers phase", true, `venture read phase=${ventureRead.result.phase} via packages/naive/src/router/package-routes.mjs specialCall`);
+  record("venture route answers phase", true, `venture read phase=${ventureRead.result.phase} via packages/naive/src/router/package-routes.ts specialCall`);
 
   const product = { id: "ledger", name: "Ledger", description: "Fixture product for the Bessemer replay.", business_model: ["subscription"] };
   const productWrite = await write(workspace, passId, "product/ledger", product);

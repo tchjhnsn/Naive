@@ -7,7 +7,7 @@
 import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { call, routes } from "../../../../src/router/router.mjs";
+import { call, routes } from "../../../../src/router/router.ts";
 
 /** A route's result, as far as this replay reads it: the content route's result is text or text by path, which contentFiles reads. */
 type Result = {

@@ -115,7 +115,7 @@ const free = (p: number): Promise<number> => new Promise((ok) => { const s = cre
 
 // The schema a venture file is checked against, from the route table (records only).
 async function schemaFor(file: string): Promise<string | null> {
-  const { glob, routes } = await import("../../router/router.mjs");
+  const { glob, routes } = await import("../../router/router.ts");
   return routes().find((r: { kind: string, schema?: string, files?: string[] }) => r.kind === "record" && r.schema && (r.files ?? []).some((g) => glob(g).test(file)))?.schema ?? null;
 }
 
@@ -246,8 +246,8 @@ else if (cmd === "mcp") {
 }
 else if (cmd === "info") { const named = opt("venture"); info(findVenture() ?? (named && existsSync(join(resolve(named), "venture.json")) ? resolve(named) : null)); }
 else if (cmd === "build" || cmd === "start") {
-  // The release itself is written and served by packages/naive/src/router/orchestration/build-release.mjs and packages/naive/src/engine/start-release.ts.
-  const script = cmd === "build" ? "packages/naive/src/router/orchestration/build-release.mjs" : "packages/naive/src/engine/start-release.ts";
+  // The release itself is written and served by packages/naive/src/router/orchestration/build-release.ts and packages/naive/src/engine/start-release.ts.
+  const script = cmd === "build" ? "packages/naive/src/router/orchestration/build-release.ts" : "packages/naive/src/engine/start-release.ts";
   if (!existsSync(join(repo, script))) { console.error(`naive ${cmd} runs ${script}, which this version of Naive does not have yet`); process.exit(1); }
   process.exit(run(script, [here(), ...rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture")]));
 } else if (cmd === "upgrade") {
@@ -295,7 +295,7 @@ else if (cmd === "build" || cmd === "start") {
   process.exit(run("packages/naive/src/engine/lifecycle.ts", [here(), ...(meet ? ["meet", meet] : target ? ["advance", target] : []), ...pass, ...(rest.includes("--json") ? ["--json"] : [])]));
 } else if (cmd === "setup") {
   // Setup in the model's harness (EE-083): the state, the artifact, and the founder confirming relayed answers.
-  process.exit(run("packages/naive/src/router/orchestration/setup.mjs", [here(), ...(rest.length ? rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture") : ["state"])]));
+  process.exit(run("packages/naive/src/router/orchestration/setup.ts", [here(), ...(rest.length ? rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture") : ["state"])]));
 } else if (cmd === "publish") {
   const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
   if (args[0] === "check") {
@@ -309,7 +309,7 @@ else if (cmd === "build" || cmd === "start") {
 } else if (cmd === "port" || cmd === "migrate") {
   // Inside a venture, --venture defaults to it.
   const args = rest.includes("--venture") ? rest : [...rest, "--venture", here()];
-  process.exit(run(cmd === "migrate" ? "packages/naive/src/router/orchestration/migrate-venture.mjs" : "packages/naive/src/engine/port-venture.ts", args));
+  process.exit(run(cmd === "migrate" ? "packages/naive/src/router/orchestration/migrate-venture.ts" : "packages/naive/src/engine/port-venture.ts", args));
 } else if (cmd === "capture" || cmd === "inbox" || cmd === "read") {
   // The workspace (packages/naive/src/engine/workspace.ts): the one above the venture this runs in, else above this folder.
   const venture = opt("venture") ? here() : findVenture();
@@ -373,7 +373,7 @@ else if (cmd === "build" || cmd === "start") {
   process.exit(run("packages/naive/src/checks/premise-lint.ts", [here(), ...args]));
 } else if (cmd === "typegen") {
   const { TOOLS } = await import("../mcp/server.ts");
-  const { routes } = await import("../../router/router.mjs");
+  const { routes } = await import("../../router/router.ts");
   const out = join(repo, ".naive/types");
   mkdirSync(out, { recursive: true });
   writeFileSync(join(out, "tools.json"), JSON.stringify(TOOLS, null, 2) + "\n");

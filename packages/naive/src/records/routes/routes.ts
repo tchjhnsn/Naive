@@ -1,7 +1,7 @@
 // The route table (EE-030, EE-032): every route a venture has, generated from packages/naive/src/records/data-model.json,
 // the layer and package manifests and packages/naive/src/engine/need-now.json, never written by hand. Also the pure
 // helpers that read it: glob, files, resolve, the venture folders, the gate on a record and a role's
-// allowed routes. It moved here from packages/naive/src/router/router.mjs, which re-exports all of it, so that
+// allowed routes. It moved here from packages/naive/src/router/router.ts, which re-exports all of it, so that
 // schema/ and knowledge/ can read the route table without importing the router (the router imports
 // them). It imports only Node built-ins and packages/naive/src/core; the command routes the function modules
 // add are data in ./commands.ts.
@@ -116,10 +116,10 @@ const FUNCTION_TEMPLATES_OF = () => load<DepartmentCatalog>(join(repo, "packages
 /** The first segment of a recipe route: recipes/<pattern>. */
 export const RECIPES = "recipes";
 
-// Logs the router appends to, one hash-chained line per call (packages/naive/src/router/router.mjs append). Every other
+// Logs the router appends to, one hash-chained line per call (packages/naive/src/router/router.ts append). Every other
 // log is written by its own module and only read through the router.
 const APPENDS = new Set(["detector-trial"]);
-// Records the router claims for the acting role, once (packages/naive/src/router/handoff-claim.mjs, the handoff claim of
+// Records the router claims for the acting role, once (packages/naive/src/router/handoff-claim.ts, the handoff claim of
 // docs/design/LEAD_AGENTS_2026-11-08.md).
 const CLAIMS = new Set(["handoff"]);
 
@@ -183,11 +183,11 @@ function buildRoutes(): Route[] {
     actions: ["read", "write", "accept", "monitor", "layout"] });
   const cmd: Cmd = (route, script, note, extra = {}) => ({ route, kind: "command", actions: ["run", "view", "layout"], script, groups: [], note, ...extra });
   out.push(
-    cmd("system/package", "packages/naive/src/router/orchestration/venture-package.mjs", "The venture package (EE-067, EE-069): the core packages open now and the handoffs, each record confirmed, to review or to write, what moves on its own and what waits, and what completion unlocks; --write renders the view and records a version. Assumes a solo founder or small founding team in Discovery and Validation; agents are a package enhancement"),
+    cmd("system/package", "packages/naive/src/router/orchestration/venture-package.ts", "The venture package (EE-067, EE-069): the core packages open now and the handoffs, each record confirmed, to review or to write, what moves on its own and what waits, and what completion unlocks; --write renders the view and records a version. Assumes a solo founder or small founding team in Discovery and Validation; agents are a package enhancement"),
     cmd("system/need-now", "packages/naive/src/engine/need-now.ts", "What the venture needs now, soon, or should hold back (EE-028)"),
     cmd("system/time-to-ready", "packages/naive/src/engine/time-to-ready.ts", "Time to running, and to ready per layer and MAD tier"),
-    // Model steps hook (use model, EE-073): the logic is packages/naive/src/router/orchestration/model-steps.mjs; this route only shows the payload.
-    cmd("system/steps", "packages/naive/src/router/orchestration/model-steps.mjs", "The model steps' payload (use model, EE-073): what code computed, a placeholder for each judgment a model has yet to give, and the only fields each one receives; asks no model. mentura steps run asks one", { args: ["payload"] }),
+    // Model steps hook (use model, EE-073): the logic is packages/naive/src/router/orchestration/model-steps.ts; this route only shows the payload.
+    cmd("system/steps", "packages/naive/src/router/orchestration/model-steps.ts", "The model steps' payload (use model, EE-073): what code computed, a placeholder for each judgment a model has yet to give, and the only fields each one receives; asks no model. mentura steps run asks one", { args: ["payload"] }),
     cmd("purpose/validation/assess", "packages/naive/src/engine/assess-problem.ts", "What the problem's evidence is strong enough for: each assumption labelled demonstrated, inferred, assumed, unknown or contradicted, the commitment it supports and the next test (EE-050). Asks first when the record is incomplete; input as_is runs it anyway", { as_is: true }),
     cmd("governance/analytics", "packages/naive/src/engine/decision-analytics.ts", "Decision analytics (EE-072): how many decisions of each type each function has made, open against decided, in whose words, in which phase, and their outcomes. Data only; a view is the platform's, or a visualization skill's", { actions: ["run", "layout"] }),
     cmd("governance/decisions", "packages/naive/src/engine/decisions.ts", "The decision matrix: every decision the venture owes by layer and phase, with its parent and boundary, and whether it renders now, waits, comes later, is stale or deferred (EE-054, EE-057)"),
@@ -210,11 +210,11 @@ function buildRoutes(): Route[] {
     cmd("governance/payouts", "packages/naive/src/engine/payouts.ts", "Who gets what at a sale value, from the cap table (EE-022); input value, else the scenarios in exit.json", { needs: ["governance/ownership.json"], venture_arg: "id" }),
     cmd("system/overview", null, "The venture at a glance: telos, validation, need-now, time to ready, team and recent provenance, rendered as parallel slots", { internal: "overview" }),
     cmd("system/robots", null, "Which roles may read and write which routes, from the team plan", { internal: "robots" }),
-    // Context hook (packages/naive/src/router/vitals.mjs, packages/naive/src/router/context.mjs): agent vitals and the context budget (N-6, C-15, N-13).
-    cmd("system/vitals", "packages/naive/src/router/vitals.mjs", "Agent vitals (N-6): calls per task, tokens of context per call, time to a useful answer and time from a decision opening to a person deciding it, at the 75th percentile, each checked against its threshold (C-15). Reads the events log that instrumentation writes"),
+    // Context hook (packages/naive/src/router/vitals.ts, packages/naive/src/router/context.ts): agent vitals and the context budget (N-6, C-15, N-13).
+    cmd("system/vitals", "packages/naive/src/router/vitals.ts", "Agent vitals (N-6): calls per task, tokens of context per call, time to a useful answer and time from a decision opening to a person deciding it, at the 75th percentile, each checked against its threshold (C-15). Reads the events log that instrumentation writes"),
     // Traces (EE-121): packages/naive/src/core/instrumentation.ts writes them, packages/naive/src/engine/trace-cli.ts reads them.
     cmd("system/traces", "packages/naive/src/engine/trace-cli.ts", "The venture's trace sessions in traces/, one span per step of an agent run after the OpenTelemetry GenAI conventions, hash-chained and linked from provenance; read offline. naive trace show <session> prints one as a tree", { args: ["show"], actions: ["run", "layout"] }),
-    cmd("system/context", "packages/naive/src/router/context.mjs", "The context budget (N-13): what every route sends an agent, in tokens, against its budget, with the largest part and where to move it (S-14, F-6)", { args: ["budget"] }),
+    cmd("system/context", "packages/naive/src/router/context.ts", "The context budget (N-13): what every route sends an agent, in tokens, against its budget, with the largest part and where to move it (S-14, F-6)", { args: ["budget"] }),
     cmd("knowledge/catalog", "packages/naive/src/store/connectors/catalog.ts", "Build or refresh the catalog: every item in every source the venture keeps records in, with its address and version, no content (EE-037)"),
     cmd("knowledge/search", "packages/naive/src/store/connectors/catalog.ts", "Find items across every source through the catalog; input value is the query (EE-037)", { value_flag: "--search" }),
     // The live decision index: packages/naive/src/engine/decision-index.ts, a cache in .naive/ updated from provenance.
@@ -293,7 +293,7 @@ export function ventureDir(id: string | null | undefined, workspace: string = de
     }
     return null;
   }
-  // A broken venture.json is found by its folder name, so its global error can answer (E-8, packages/naive/src/router/boundaries.mjs).
+  // A broken venture.json is found by its folder name, so its global error can answer (E-8, packages/naive/src/router/boundaries.ts).
   for (const d of walkVentures(workspace)) { let vid; try { vid = load<Venture>(join(d, "venture.json")).id; } catch { vid = basename(d); } if (vid === id) return d; }
   return null;
 }

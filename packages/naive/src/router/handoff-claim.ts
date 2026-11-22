@@ -13,14 +13,14 @@
 //           may write any handoff.
 //
 // This file is .mjs, not .ts, because every handoff write passes through it, and an app that installs Naive keeps it
-// under node_modules, where Node strips no types (router.mjs imports recipes.ts lazily for the same reason).
+// under node_modules, where Node strips no types (router.ts imports recipes.ts lazily for the same reason).
 // It never calls a model.
 
 import { record as prov } from "../core/provenance.ts";
 import { address } from "../store/connectors/contract.ts";
 import { schemaNameOf } from "../records/index.ts";
 import { validateValue } from "../records/validate.ts";
-import { gateWrite } from "./gate-hooks.mjs";
+import { gateWrite } from "./gate-hooks.ts";
 
 /** Fields the claimant writes after a claim: progress and evidence. */
 export const PROGRESS = ["status", "evidence", "pr", "escalations", "lesson", "attempts"];

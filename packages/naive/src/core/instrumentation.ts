@@ -2,7 +2,7 @@
 // where every router call, every judgment and every provenance entry (write, draft, accept,
 // confirm, decision) emits an event. Listeners registered in-process get every event. When a venture
 // turns instrumentation on, events are also appended to <venture>/.naive/events.jsonl, which agent
-// vitals read (packages/naive/src/router/vitals.mjs, N-6). Provenance stays the record of what changed; events are
+// vitals read (packages/naive/src/router/vitals.ts, N-6). Provenance stays the record of what changed; events are
 // what it cost. An exporter in the app that hosts Naive (such as a LangSmith one) can ship a trace made from
 // the events; the framework names no vendor.
 //

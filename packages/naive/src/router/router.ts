@@ -26,10 +26,10 @@
 //   robots        a team-plan role may list the routes it may read and write; system/robots shows them
 //   aliases       packages/naive/src/router/route-aliases.json maps a renamed route to its new one, with a note
 //   hierarchy     a read resolves layout, template, error, loading, not-found, then page (P-28);
-//                 resolved_by names the level that answered (packages/naive/src/router/reads.mjs)
+//                 resolved_by names the level that answered (packages/naive/src/router/reads.ts)
 //   writes        a write answers with what it changed and the next route to act on; a layout lists
 //                 the actions open to the actor; package, group and venture routes; global errors
-//                 (packages/naive/src/router/writes.mjs wraps call)
+//                 (packages/naive/src/router/writes.ts wraps call)
 //   storage       a record is read and written through the connector for the source its record
 //                 type lives in (packages/naive/src/store/connectors, EE-037): the venture's own folder unless its
 //                 knowledge/sources.json names another, such as a GitHub repository, where a write
@@ -52,12 +52,12 @@ import { blocked as betaBlocked } from "../engine/beta-gate.ts";
 import { readFlag as freshnessFlag } from "../engine/freshness.ts";
 // Gate group hooks (M-18, F-5, X-2, X-4 to X-6, P-2, P-7, U-4): who is acting, access at the record,
 // the gate's verdict, where held drafts wait, and check settings. The logic lives in these modules.
-import { actingCall, isProjector, itemId, mayReadItem, mayReadSome } from "./acting.mjs";
-import { asOfStore, cutFor, inEval, observedBy, refusal as asOfRefusal } from "./reads-as-of.mjs";
-import { checkPlan, gateWrite, heldDraft, ledgerHook, ownerOfWrite, reachOfWrite } from "./gate-hooks.mjs";
-// Appends (packages/naive/src/router/appends.mjs): one hash-chained line added to a log route, such as the detection ledger.
-import { appendLine } from "./appends.mjs";
-import { claimHandoff, handoffWriteRule } from "./handoff-claim.mjs";
+import { actingCall, isProjector, itemId, mayReadItem, mayReadSome } from "./acting.ts";
+import { asOfStore, cutFor, inEval, observedBy, refusal as asOfRefusal } from "./reads-as-of.ts";
+import { checkPlan, gateWrite, heldDraft, ledgerHook, ownerOfWrite, reachOfWrite } from "./gate-hooks.ts";
+// Appends (packages/naive/src/router/appends.ts): one hash-chained line added to a log route, such as the detection ledger.
+import { appendLine } from "./appends.ts";
+import { claimHandoff, handoffWriteRule } from "./handoff-claim.ts";
 import { LOCAL, attributeSources, connect, sourceFor } from "../store/connectors/index.ts";
 // Caching (packages/naive/src/engine/caching.ts): per-action memo, the record-level cache for command routes, and system/cache, system/judge, system/answer.
 import { command as cachedCommand, forget, internal as cacheInternal } from "../engine/caching.ts";
@@ -65,9 +65,9 @@ import { actionScope, memo } from "../core/action-scope.ts";
 // Context hook: instrumentation of every call and judgment (packages/naive/src/core/instrumentation.ts, P-4, F-4).
 import { instrumented, judgment } from "../core/instrumentation.ts";
 // Hooks for writes, reads and boundaries (wf/writes): the wrapper around call, per-record containment and private folders.
-import { around } from "./writes.mjs";
-import { contain } from "./boundaries.mjs";
-import { packageSlots } from "./package-routes.mjs";
+import { around } from "./writes.ts";
+import { contain } from "./boundaries.ts";
+import { packageSlots } from "./package-routes.ts";
 import { routable } from "../engine/structure.ts";
 // Brand hook (Y-2..Y-4, J-2..J-4, T-1, T-2, P-24, P-26): routes, commands and layout context from packages/naive/src/engine/brand.ts.
 import { brandLayout } from "../engine/brand.ts";
@@ -197,9 +197,9 @@ const fix = (r) => ({ skills: r.kit_path ? skillsOf(kits().find((k) => k.path ==
 // Caching hook (F-2): one top-level call is one action; the calls it makes join it and share its memo.
 // Context hook: every call is timed and measured for agent vitals (packages/naive/src/core/instrumentation.ts).
 // Gate group hook (M-18): who is acting is checked on every call and carried on the answer.
-// Writes hook (packages/naive/src/router/writes.mjs): adds what reads, layouts and writes answer.
-// The projector hook (packages/naive/src/router/acting.mjs): whether the call carries the projector's symbol is read here and passed on.
-// As-of hook (packages/naive/src/router/reads-as-of.mjs): a researcher reads only as of its cut (reads_as_of, by default
+// Writes hook (packages/naive/src/router/writes.ts): adds what reads, layouts and writes answer.
+// The projector hook (packages/naive/src/router/acting.ts): whether the call carries the projector's symbol is read here and passed on.
+// As-of hook (packages/naive/src/router/reads-as-of.ts): a researcher reads only as of its cut (reads_as_of, by default
 // MENTURA_READS_AS_OF), and an as-of call is refused every action that reads the venture live, before anything runs.
 export const call = (args) => actionScope(() => instrumented(args, (a) => actingCall(a, (b) => {
   const c = { ...b, reads_as_of: b.reads_as_of ?? process.env.MENTURA_READS_AS_OF, actor_id: b.actor_id ?? process.env.MENTURA_ACTOR_ID };
@@ -217,9 +217,9 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
   const requested = route;
   const { r, params, alias } = resolve(route);
   if (!r) return { ok: false, outcome: "error", error: `no route ${route}` };
-  // Context hook (packages/naive/src/router/context.mjs): navigate reads a route header first, with its layout once per
+  // Context hook (packages/naive/src/router/context.ts): navigate reads a route header first, with its layout once per
   // session, its template and prefetched refs; head stops after the header (N-3, L-2, O-4).
-  if (action === "navigate" || action === "head") return (await import("./context.mjs")).navigate({ ...(input ?? {}), venture, route: requested, workspace, actor, actor_id, via, header_only: action === "head" || !!input?.header_only });
+  if (action === "navigate" || action === "head") return (await import("./context.ts")).navigate({ ...(input ?? {}), venture, route: requested, workspace, actor, actor_id, via, header_only: action === "head" || !!input?.header_only });
   const deprecated = alias ? { deprecated: `${alias.from} is now ${alias.to}${alias.note ? `: ${alias.note}` : ""}` } : {};
   route = r.recipe ? `recipes/${params.pattern ?? ""}` : r.collection === "item" ? r.route.replace("[id]", params.id) : r.route;
   if (!r.recipe && r.record === "recipe" && (action === "write" || action === "append")) return { ...recipeRefusal(route, r.collection === "item" ? fileFor(r, params, null) : null), ...deprecated };
@@ -401,7 +401,7 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
 
   if (action === "claim") {
     forget(dir); // Caching hook (H-3): what this action memoized for the venture is read again after a claim.
-    // Handoff claim (packages/naive/src/router/handoff-claim.mjs): ready, unclaimed and addressed to the acting role, or refused.
+    // Handoff claim (packages/naive/src/router/handoff-claim.ts): ready, unclaimed and addressed to the acting role, or refused.
     const file = fileFor(r, params, dir);
     const owned = ownerOfWrite({ dir, r, route, file, projector, remote, actor, acting: !!actingAgent(provenance.agent?.id) });
     if (owned) return { ...owned, ...deprecated };
@@ -422,7 +422,7 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
     // agent is refused, a researcher included. Refused here, before the schema, the gate or any source is touched.
     const owned = ownerOfWrite({ dir, r, route, file, projector, remote, actor, acting: !!actingAgent(provenance.agent?.id), role: actor_id });
     if (owned) return { ...owned, ...deprecated };
-    // Handoff claim hook (packages/naive/src/router/handoff-claim.mjs): a handoff that names its requester is edited by
+    // Handoff claim hook (packages/naive/src/router/handoff-claim.ts): a handoff that names its requester is edited by
     // the requester before a claim; after one, the claimant writes progress and evidence and the requester the
     // verification and acceptance. claimBase is the version that rule read, which the write below names.
     let claimBase, claimed = false;
@@ -433,7 +433,7 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
       claimBase = rule.base;
       claimed = !!rule.stored?.requested_by && !!rule.stored?.claimed_by && rule.stored.role === actor_id;
     }
-    // Function agent reach (reachOfWrite in packages/naive/src/router/gate-hooks.mjs): <function>-agent writes only
+    // Function agent reach (reachOfWrite in packages/naive/src/router/gate-hooks.ts): <function>-agent writes only
     // decisions and its function's record routes, refused before the schema. A handoff addressed to its role that it
     // has claimed is the exception: the claim rule above already limits the claimant to progress and evidence.
     const outOfReach = claimed ? null : reachOfWrite({ r, route, projector, actor, acting: !!actingAgent(provenance.agent?.id), role: actor_id });
@@ -538,7 +538,7 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
     }
 
     const draft = gatedDraft;
-    // Detection ledger hook (packages/naive/src/router/gate-hooks.mjs): only when the venture keeps the gate detector, the gate's
+    // Detection ledger hook (packages/naive/src/router/gate-hooks.ts): only when the venture keeps the gate detector, the gate's
     // confidence call becomes a trial, a person accepting a held draft resolves it as a false alarm, and a person's
     // revert of an accepted write resolves it as a miss. Without the detector file it is null and nothing changes.
     const ledger = ledgerHook({ dir, venture, workspace, r, route, file, draftFile: draftPath(file), actor, actor_id, via, provenance, draft });
@@ -646,7 +646,7 @@ export function routesMd() {
   const rows = routes().map((r) => `| \`${r.route}\` | ${r.kind}${r.collection ? ` (${r.collection})` : ""} | ${r.actions.join(", ")} | ${r.kind === "record" ? `\`${r.files.join("`, `")}\`` : r.script ? `\`${r.script}\`` : "router"} | ${r.decision_class ?? ""} | ${r.groups.join(" ")} | ${r.note.replace(/\|/g, "/")} |`);
   const gs = groups().map((g) => `| \`${g.group}\` | ${g.question} | ${g.routes.length ? g.routes.map((x) => `\`${x}\``).join(", ") : "none"} |`);
   return [
-    "## Routes (generated by `node packages/naive/src/router/router.mjs --md`)",
+    "## Routes (generated by `node packages/naive/src/router/router.ts --md`)",
     "",
     "Every route works on one venture, named in front of it: its id, or its folder path for a nested venture (`studio/print`). Record routes read, write, check, view, lay out or show the template of one record type; a collection has a list route and an `[id]` item route; command routes run a venture-wide tool and can be viewed. A write is checked against the record's schema first; a record whose decision class escalates is written as a draft when an agent writes it, for a person to accept.",
     "",

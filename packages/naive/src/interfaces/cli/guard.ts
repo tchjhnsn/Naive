@@ -1,6 +1,6 @@
-// The framework's global error for the command line (E-8, packages/naive/src/router/boundaries.mjs). Imported first, so a
+// The framework's global error for the command line (E-8, packages/naive/src/router/boundaries.ts). Imported first, so a
 // broken data model or manifest answers with recovery steps before any module that reads it loads.
-import { frameworkHealth, globalError } from "../../router/boundaries.mjs";
+import { frameworkHealth, globalError } from "../../router/boundaries.ts";
 
 const fw = frameworkHealth();
 if (fw) { console.error(globalError(fw).error); process.exit(1); }

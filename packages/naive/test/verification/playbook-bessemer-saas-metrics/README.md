@@ -4,7 +4,7 @@ Model of `packages/naive/library/packages/finance/playbooks/bessemer-saas-metric
 
 The chart hides two kinds of step. `CiteTarget` stays on "Metrics record proposed" (a later phase may cite a published number only after the Bessemer pages are filed, and discovery and validation never do). `Done` is the stutter on the end states: checks failed, you decided with no telos on file, and targets drafted on the telos. The earlier TLC run counted 88 of those model steps. The drawn chart is the path a reader follows.
 
-`venture` is not a row in `node packages/naive/src/router/router.mjs`. `call()` still answers it: `packages/naive/src/router/writes.mjs` hands an unknown route to `specialCall` in `packages/naive/src/router/package-routes.mjs`. The replay reads `phase` from it. `finance/metrics` is not a route. The playbook does not use it. <!-- claim-ok: this line says the route does not exist -->
+`venture` is not a row in `node packages/naive/src/router/router.ts`. `call()` still answers it: `packages/naive/src/router/writes.ts` hands an unknown route to `specialCall` in `packages/naive/src/router/package-routes.ts`. The replay reads `phase` from it. `finance/metrics` is not a route. The playbook does not use it. <!-- claim-ok: this line says the route does not exist -->
 
 ## Regenerate
 

@@ -44,7 +44,7 @@ import { validateValue } from "../records/validate.ts";
 import { forwardSet, loadEvalSet, loadPlan, scoreExperiment, scoreForward, scoreHoldout } from "../engine/recipes/eval-set.ts";
 import type { Scored } from "../engine/recipes/eval-set.ts";
 import { chainOnto } from "../engine/generators/experiment.ts";
-import { gateWrite, heldDraft } from "./gate-hooks.mjs";
+import { gateWrite, heldDraft } from "./gate-hooks.ts";
 import type { EvalPlan, Experiment } from "../records/types/records.d.ts";
 
 type Obj = Record<string, unknown>;
@@ -67,7 +67,7 @@ export const EVALUATOR = Object.freeze({ kind: "agent", id: "evaluator", via: "r
 const sha = (s: string | Buffer): string => createHash("sha256").update(s).digest("hex");
 export const liveFile = (pattern: string) => `${pattern}.recipe.ts`;
 export const logFile = (pattern: string) => `${pattern}.experiments.jsonl`;
-// The router's own draft path (router.mjs draftPath): _drafts/<file with / as __>.draft.
+// The router's own draft path (router.ts draftPath): _drafts/<file with / as __>.draft.
 export const draftFile = (file: string) => `_drafts/${file.replace(/\//g, "__")}.draft`;
 
 /** The experiment log's lines, oldest first. */

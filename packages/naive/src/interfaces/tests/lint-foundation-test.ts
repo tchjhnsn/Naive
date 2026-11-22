@@ -8,7 +8,7 @@ import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { call } from "../../router/router.mjs";
+import { call } from "../../router/router.ts";
 
 const repo = new URL("../../../../..", import.meta.url).pathname;
 const root = mkdtempSync(join(tmpdir(), "lint-foundation-"));

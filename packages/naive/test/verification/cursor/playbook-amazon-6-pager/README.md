@@ -6,7 +6,7 @@ The replay runs against the router on this branch, where each ICP profile is its
 
 | Action | Code the replay called |
 | --- | --- |
-| ReadInputs, WriteNarrative | `call` read of `foundation/problem`, `foundation/icp`, `foundation/alignment`, `governance/decision-rights` (`packages/naive/src/router/router.mjs`). The fixture writes those records first. Its profile goes to `foundation/icp/shop-owners`, because `foundation/icp` has no write action. |
+| ReadInputs, WriteNarrative | `call` read of `foundation/problem`, `foundation/icp`, `foundation/alignment`, `governance/decision-rights` (`packages/naive/src/router/router.ts`). The fixture writes those records first. Its profile goes to `foundation/icp/shop-owners`, because `foundation/icp` has no write action. |
 | DraftGap, DraftFull, WriteFaq, Propose | `propose()` in `packages/naive/src/engine/decisions.ts` (what `mentura propose` calls), which writes `decisions/<id>.decision.json` |
 | RecordFinding | `call` write then read of `evidence/[id]` |
 | RunMatrix | `call` run of `governance/decisions` |
@@ -45,7 +45,7 @@ TLC reached 10 distinct states and found no broken rule (`out/tlc.out`, `out/rep
 | Rule | TLC | Replay |
 | --- | --- | --- |
 | TypeOK | PASS | The ten states use only `none`, `open`, and `decided`, and the founder is the only decider. |
-| RoutesReal | PASS | `resolve()` in `packages/naive/src/router/router.mjs` finds `foundation/problem`, `foundation/icp`, `foundation/alignment`, `governance/decision-rights`, `decisions/[id]`, `evidence/[id]`, and `governance/decisions`. A write to `decisions/bad.id` is refused: `bad.id is not a valid id (lowercase letters, digits and hyphens)`. |
+| RoutesReal | PASS | `resolve()` in `packages/naive/src/router/router.ts` finds `foundation/problem`, `foundation/icp`, `foundation/alignment`, `governance/decision-rights`, `decisions/[id]`, `evidence/[id]`, and `governance/decisions`. A write to `decisions/bad.id` is refused: `bad.id is not a valid id (lowercase letters, digits and hyphens)`. |
 | NoReadBeforeProvided | PASS | The fixture writes the four input records, then reads them, then drafts. `foundation/icp` returns the profiles keyed by id, and the replay takes the primary one from that read. On a second venture with no problem record, `foundation/problem` reads as not found (`no validation-problem record yet`) and the replay writes no memo. A finding with no `ran_at` or `runner` is refused. `evidence/faq-finding` with both is written, then read, before the FAQ cites it. |
 | MemoNeverDecides | PASS | `propose()` with `status: "decided"` returns `an agent may only propose an open decision; a person approves it` and writes nothing. After propose, `decisions/full-memo` is `open`, `drafted_by.kind` is `agent`, and `approved_by` is absent. `approve()` by Avery Founder sets `status` to `decided` and `approved_by` to that name. A second approve returns `full-memo is already decided`. |
 | ChecksCanPassAndFail | PASS | `decisions/gap-memo` fails customer, problem, solution, principle, faq, and still-open. `decisions/full-memo` after propose passes those, and passes person-decided. After approve, still-open no longer passes, and person-decided does. No replay row builds a decided record with no approver, because the router refuses one (see below). |

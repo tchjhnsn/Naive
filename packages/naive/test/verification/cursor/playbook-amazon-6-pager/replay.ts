@@ -8,7 +8,7 @@ import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { approve, propose } from "../../../../src/engine/decisions.ts";
-import { call, resolve } from "../../../../src/router/router.mjs";
+import { call, resolve } from "../../../../src/router/router.ts";
 import type { DecisionRecord, IcpProfile } from "../../../../src/records/types/records.d.ts";
 
 /** What a router action answers, with the result this replay expects of the route (null when the record is missing). */

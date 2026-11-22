@@ -16,7 +16,7 @@ import { fileURLToPath } from "node:url";
 import { signalId } from "../../core/signal-id.ts";
 import { record } from "../../core/provenance.ts";
 import { planRecipe } from "../../engine/recipes/eval-set.ts";
-import { call, resolve } from "../../router/router.mjs";
+import { call, resolve } from "../../router/router.ts";
 import { checkRecipes } from "../../checks/check-recipes.ts";
 import { edit as fileEdit, readRaw as fileRead, write as fileWrite } from "../../router/agent-files.ts";
 

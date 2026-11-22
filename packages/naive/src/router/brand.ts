@@ -21,7 +21,7 @@
 
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { dirname, join, resolve as resolvePath } from "node:path";
-import { call, ventureDir } from "./router.mjs";
+import { call, ventureDir } from "./router.ts";
 import { agentFromEnv, record as prov } from "../core/provenance.ts";
 import { altStatement, checkAssets, facts as allFacts, factsOf, REGISTER, registerOf } from "../engine/assets.ts";
 import { brandOf, checkBrand, resolveBrand, sitemapOf, sitemapXml, termsFor, tokens, voice } from "../engine/brand.ts";

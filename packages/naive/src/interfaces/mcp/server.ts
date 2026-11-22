@@ -9,8 +9,8 @@
 //   MENTURA_WORKSPACE=<dir> sets the workspace; the default is the current directory.
 
 import { createInterface } from "node:readline";
-import { call, routes, routesMd, ventureDir, ventures } from "../../router/router.mjs";
-import { runStreaming } from "../../router/context.mjs";
+import { call, routes, routesMd, ventureDir, ventures } from "../../router/router.ts";
+import { runStreaming } from "../../router/context.ts";
 import { propose } from "../../engine/decisions.ts";
 
 const PROTOCOL = "2025-06-18";
@@ -117,16 +117,16 @@ export async function handle(msg: Message, notify: (m: unknown) => void = () => 
         case "mentura_ventures": r = { ok: true, result: ventures().map(({ id, name, phase, path }: { id: string, name: string, phase: string, path: string }) => ({ id, name, phase, path })) }; break;
         case "mentura_layout": r = await call({ venture: a.venture, route: a.route, action: "layout" }); break;
         case "mentura_view": r = await call({ venture: a.venture, route: a.route, action: "view" }); break;
-        // Context hook (packages/naive/src/router/context.mjs): a read is a navigation, header first, its parts streamed as progress.
-        // A filtered list (where) is a plain read (packages/naive/src/router/writes.mjs); anything else is a navigation.
+        // Context hook (packages/naive/src/router/context.ts): a read is a navigation, header first, its parts streamed as progress.
+        // A filtered list (where) is a plain read (packages/naive/src/router/writes.ts); anything else is a navigation.
         case "mentura_read": r = a.where ? await call({ venture: a.venture, route: a.route, action: "read", actor_id: a.agent_id, via: "mcp", input: { where: a.where } }) : await call({ venture: a.venture, route: a.route, action: "navigate", actor_id: a.agent_id, via: "mcp",
           input: { session: a.session, task: a.task, prefetch: a.prefetch, header_only: a.header_only, ...(progress ? { onPart: ({ part, data }: { part: string, data: unknown }) => progress({ message: `${part}: ${JSON.stringify(data)}` }) } : {}) } }); break;
         case "mentura_write": r = await call({ venture: a.venture, route: a.route, action: "write", input: a.record, actor: "agent", actor_id: a.agent_id, via: "mcp",
           provenance: { derived_from: a.derived_from, decision: a.decision, note: a.note, confidence: a.confidence, agent: Object.fromEntries(Object.entries({ harness: client, model: a.model }).filter(([, v]) => v)) } }); break;
-        // Setup (EE-083): packages/naive/src/router/orchestration/setup.mjs holds the questions; answers are proposals the founder confirms.
-        case "mentura_setup": { const m = await import("../../router/orchestration/setup.mjs"); const dir = ventureDir(a.venture); r = { ok: true, result: { state: await m.state(dir), artifact: await m.artifact(dir) } }; break; }
-        case "mentura_setup_answer": r = await (await import("../../router/orchestration/setup.mjs")).relay(ventureDir(a.venture), { id: a.id, answer: a.answer, agentId: a.agent_id, harness: client, model: a.model }); break;
-        case "mentura_setup_point": r = await (await import("../../router/orchestration/setup.mjs")).point(ventureDir(a.venture), { fn: a.function, system: a.system, address: a.address, via: "mcp", actor: "agent", agentId: a.agent_id } as Parameters<typeof import("../../router/orchestration/setup.mjs").point>[1]); break;
+        // Setup (EE-083): packages/naive/src/router/orchestration/setup.ts holds the questions; answers are proposals the founder confirms.
+        case "mentura_setup": { const m = await import("../../router/orchestration/setup.ts"); const dir = ventureDir(a.venture); r = { ok: true, result: { state: await m.state(dir), artifact: await m.artifact(dir) } }; break; }
+        case "mentura_setup_answer": r = await (await import("../../router/orchestration/setup.ts")).relay(ventureDir(a.venture), { id: a.id, answer: a.answer, agentId: a.agent_id, harness: client, model: a.model }); break;
+        case "mentura_setup_point": r = await (await import("../../router/orchestration/setup.ts")).point(ventureDir(a.venture), { fn: a.function, system: a.system, address: a.address, via: "mcp", actor: "agent", agentId: a.agent_id } as Parameters<typeof import("../../router/orchestration/setup.ts").point>[1]); break;
         case "mentura_frame": r = await (await import("../../engine/frames.ts")).run(ventureDir(a.venture), { id: a.frame, text: a.text, lookup: a.lookup, agentId: a.agent_id ?? "frames", harness: client ?? undefined, model: a.model }); break;
         case "mentura_decisions": {
           r = await call({ venture: a.venture, route: "governance/decisions", action: "run", actor_id: a.agent_id });

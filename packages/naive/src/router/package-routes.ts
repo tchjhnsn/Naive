@@ -70,7 +70,7 @@ export function special(route) {
 
 /** The route of a record type: its item or single route, else its list route. */
 export const routeOfType = async (type) => {
-  const { routes } = await import("./router.mjs");
+  const { routes } = await import("./router.ts");
   const rs = routes().filter((r) => r.record === type);
   return (rs.find((r) => r.collection !== "list") ?? rs[0])?.route ?? null;
 };
@@ -98,7 +98,7 @@ async function pendingIn(dir, types, venture) {
 /** A package's own route read (L-6, P-37): its records and their state, what moves now, what waits, what is pending. */
 export async function packageState(dir, name, venture) {
   const def = packageDef(name);
-  const { venturePackage } = await import("./orchestration/venture-package.mjs");
+  const { venturePackage } = await import("./orchestration/venture-package.ts");
   const all = venturePackage(dir);
   const p = [...all.core, ...all.handoff].find((x) => x.id === name);
   if (p?.kind === "core") {
@@ -110,8 +110,8 @@ export async function packageState(dir, name, venture) {
   }
   if (p?.kind === "handoff") return { package: name, kind: "handoff", title: p.title, for: p.for, from: p.from, fit: p.fit, in: p.in, state: p.state, progress: p.progress, waits_on: p.waits_on, unlocks: p.unlocks, loading: null };
   // Data, folder and raw packages: never complete; their state is what they hold.
-  const { routes, glob } = await import("./router.mjs");
-  const { files } = await import("./router.mjs");
+  const { routes, glob } = await import("./router.ts");
+  const { files } = await import("./router.ts");
   const here = files(dir);
   const records = await Promise.all((def.records ?? []).map(async (t) => {
     const r = routes().find((x) => x.record === t);
@@ -137,7 +137,7 @@ export async function packageSlots(dir, venture) {
     const first = s.kind === "core" ? s.records.find((r) => r.role === "required" && r.moves === "now") ?? s.records.find((r) => r.role !== "reads") : s.records[0];
     const route = first?.route ?? null;
     const concrete = route?.endsWith("[id]") ? route.replace("[id]", "<id>") : route;
-    const { routes } = await import("./router.mjs");
+    const { routes } = await import("./router.ts");
     const acts = routes().find((x) => x.route === route)?.actions ?? [];
     const write = acts.includes("write") ? `mentura ${concrete} write --venture ${venture} --input <file>` : null;
     const start = !concrete ? null : acts.includes("template") ? `mentura ${concrete} template${write ? `, then ${write}` : ""}` : write ?? `mentura ${concrete} layout --venture ${venture}`;
@@ -161,14 +161,14 @@ const pageOf = (s) => {
 export async function specialCall({ venture, route, action, workspace }) {
   const sp = special(route);
   if (!sp) return null;
-  const { ventureDir } = await import("./router.mjs");
+  const { ventureDir } = await import("./router.ts");
   const actions = sp.kind === "group" ? ["read", "view", "layout"] : ["read", "view", "check", "layout"];
   if (!actions.includes(action)) return { ok: false, error: `${route} has no action ${action} (it has ${actions.join(", ")})` };
   const dir = venture ? ventureDir(venture, workspace) : null;
   if (!dir && !(action === "layout" && sp.kind !== "venture")) return { ok: false, error: `no venture ${venture}` };
   if (sp.kind === "venture") {
     const { manifest } = await import("../engine/structure.ts");
-    const { boundaries } = await import("./boundaries.mjs");
+    const { boundaries } = await import("./boundaries.ts");
     if (action === "check") { const b = await boundaries(dir); return { ok: b.ok, result: b }; }
     const m = await manifest(dir);
     if (action === "view") return { ok: true, result: `# ${m.identity.name}\n\nPhase: ${m.phase}. Packages: ${m.packages.list.map((p) => p.name).join(", ")}.\n\n| Function | Owner | Packages |\n| --- | --- | --- |\n${m.functions.map((f) => `| ${f.function} | ${f.owner ?? "nobody yet"} | ${f.packages.join(", ")} |`).join("\n")}\n` };
@@ -191,7 +191,7 @@ export async function specialCall({ venture, route, action, workspace }) {
     const def = packageDef(name);
     return { ok: true, result: { route: name, package: { name, title: def.title, purpose: def.purpose, function: def.function ?? def.department ?? null, skill: def.skill?.path ?? null, gates: def.gates ?? [] }, group: groupLayout(name, dir) } };
   }
-  if (action === "check") { const { boundaries } = await import("./boundaries.mjs"); const b = await boundaries(dir, { only: [name] }); return { ok: b.packages.every((p) => p.ok), result: b.packages[0] ?? { package: name, ok: true, note: "not in use by this venture" } }; }
+  if (action === "check") { const { boundaries } = await import("./boundaries.ts"); const b = await boundaries(dir, { only: [name] }); return { ok: b.packages.every((p) => p.ok), result: b.packages[0] ?? { package: name, ok: true, note: "not in use by this venture" } }; }
   const s = await packageState(dir, name, venture);
   return action === "view" ? { ok: true, result: pageOf(s) } : { ok: true, result: s, ...(s.loading ? { pending_drafts: s.loading.drafts } : {}) };
 }

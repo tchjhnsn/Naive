@@ -10,7 +10,7 @@ import { context } from "../../engine/upgrades.ts";
 import * as telosToGoals from "../../engine/migrations/telos-to-goals.ts";
 import * as structured from "../../engine/migrations/structured-layout.ts";
 import { physical } from "../../core/venture-paths.ts";
-import { call } from "../../router/router.mjs";
+import { call } from "../../router/router.ts";
 import { naiveScript } from "../../core/scripts.ts";
 
 const repo = new URL("../../../../..", import.meta.url).pathname;

@@ -28,7 +28,7 @@ let failed = 0, n = 0;
 const ok = (c: unknown, m?: string): void => { if (!c) throw new Error(m ?? "assertion failed"); };
 const t = async (name: string, fn: () => Promise<void> | void): Promise<void> => { try { await fn(); console.log(`ok   ${name}`); } catch (e) { failed++; console.log(`FAIL ${name}: ${(e as Error).message}`); } };
 const tool = async (name: string, args: Record<string, unknown>) => { const r = await handle({ jsonrpc: "2.0", id: ++n, method: "tools/call", params: { name, arguments: args } }); const res = r?.result as ToolResult; const text = res.content[0].text; let result; try { result = JSON.parse(text); } catch { result = text; } return { ok: !res.isError, result }; };
-const setup = (...a: string[]) => spawnSync("node", [join(repo, "packages/naive/src/router/orchestration/setup.mjs"), dir, ...a], { env, encoding: "utf8" });
+const setup = (...a: string[]) => spawnSync("node", [join(repo, "packages/naive/src/router/orchestration/setup.ts"), dir, ...a], { env, encoding: "utf8" });
 const find = (id: string): Listed | undefined => (decisions(dir).decisions as Listed[]).find((x) => x.id === id);
 // A decision the case reads directly: missing, it throws, as reading a field of undefined did.
 const need = (id: string): Listed => { const d = find(id); if (!d) throw new Error(`no decision ${id}`); return d; };
@@ -72,7 +72,7 @@ await t("pointing a function through MCP writes knowledge/sources.json as the ag
 });
 
 await t("confirming needs the founder: without yes nothing is decided; with it, each relayed answer is theirs", async () => {
-  const no = spawnSync("node", [join(repo, "packages/naive/src/router/orchestration/setup.mjs"), dir, "confirm"], { env, encoding: "utf8", input: "no\n" });
+  const no = spawnSync("node", [join(repo, "packages/naive/src/router/orchestration/setup.ts"), dir, "confirm"], { env, encoding: "utf8", input: "no\n" });
   ok(no.status === 1 && need("product-exists").status === "open", no.stdout + no.stderr);
   const yes = setup("confirm", "--yes");
   ok(yes.status === 0, yes.stdout + yes.stderr);

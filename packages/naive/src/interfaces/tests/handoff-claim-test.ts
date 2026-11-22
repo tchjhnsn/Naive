@@ -12,7 +12,7 @@ import { spawn, spawnSync } from "node:child_process";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { call } from "../../router/router.mjs";
+import { call } from "../../router/router.ts";
 import { routes } from "../../records/routes/routes.ts";
 import { ventureFile } from "../../core/venture-paths.ts";
 
@@ -60,7 +60,7 @@ const stored = (id: string): Handoff => JSON.parse(readFileSync(ventureFile(dir,
 
 // Claims race from separate processes and exactly one wins, in each of several rounds.
 {
-  const mod = new URL("../../router/router.mjs", import.meta.url).href;
+  const mod = new URL("../../router/router.ts", import.meta.url).href;
   const rounds = 5, racers = 6;
   const code = (id: string, i: number) => `const { call } = await import(${JSON.stringify(mod)});
 const r = await call({ venture: ${JSON.stringify(V)}, workspace: ${JSON.stringify(ws)}, route: "operations/handoff/${id}", action: "claim", actor: "agent", actor_id: ${JSON.stringify(ROLE)} });

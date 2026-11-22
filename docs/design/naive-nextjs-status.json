@@ -44,7 +44,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/engine/init-venture.ts",
-    "packages/naive/src/router/router.mjs"
+    "packages/naive/src/router/router.ts"
    ],
    "page": "get-started/install",
    "note": "init writes a root AGENTS.md; the layout chain reads it"
@@ -161,12 +161,12 @@
    "chapter": "Chapter 1: Installation",
    "status": "partial",
    "evidence": [
-    "packages/naive/src/router/orchestration/build-release.mjs",
+    "packages/naive/src/router/orchestration/build-release.ts",
     "packages/naive/src/engine/start-release.ts",
     "packages/naive/src/engine/releases-test.ts"
    ],
    "page": "get-started/releases",
-   "note": "The release scripts are built: node packages/naive/src/router/orchestration/build-release.mjs <venture dir> [--port n] (--port is accepted and ignored) and node packages/naive/src/engine/start-release.ts <venture dir> [--port n] [--get <path>]. Wiring the naive build and naive start commands to them is another session's job, as are naive dev and naive check, so the row as a whole is partial from this group."
+   "note": "The release scripts are built: node packages/naive/src/router/orchestration/build-release.ts <venture dir> [--port n] (--port is accepted and ignored) and node packages/naive/src/engine/start-release.ts <venture dir> [--port n] [--get <path>]. Wiring the naive build and naive start commands to them is another session's job, as are naive dev and naive check, so the row as a whole is partial from this group."
   },
   {
    "id": "I-18",
@@ -291,7 +291,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/checks/check-ventures.ts",
-    "packages/naive/src/router/router.mjs"
+    "packages/naive/src/router/router.ts"
    ],
    "page": "get-started/project-structure"
   },
@@ -317,8 +317,8 @@
    "evidence": [
     "packages/naive/src/engine/structure.ts",
     "packages/naive/src/records/venture.schema.json",
-    "packages/naive/src/router/package-routes.mjs",
-    "packages/naive/src/router/writes-test.mjs"
+    "packages/naive/src/router/package-routes.ts",
+    "packages/naive/src/router/writes-test.ts"
    ],
    "page": "get-started/project-structure",
    "note": "venture.schema.json gains optional packages, kits ({id, extends}) and functions ({<function>: {owner}}). manifest() fills in packages and owners when they are left out. checkManifest refuses unknown packages or functions, functions without an owner, and kits on packages not in use. 'mentura venture read' returns the manifest. Kits are only named here; the kit code stays on the platform."
@@ -330,7 +330,7 @@
    "evidence": [
     "packages/naive/src/core/instrumentation.ts",
     "packages/naive/src/core/provenance.ts",
-    "packages/naive/src/router/vitals.mjs",
+    "packages/naive/src/router/vitals.ts",
     "packages/naive/src/interfaces/context-test.ts"
    ],
    "evidence_elsewhere": [
@@ -344,7 +344,7 @@
    "chapter": "Chapter 2: Project Structure",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/router.mjs",
+    "packages/naive/src/router/router.ts",
     "packages/naive/src/engine/decisions.ts",
     "packages/naive/src/engine/gate.ts"
    ],
@@ -356,7 +356,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/checks/check-ventures.ts",
-    "packages/naive/src/router/router.mjs"
+    "packages/naive/src/router/router.ts"
    ],
    "page": "get-started/project-structure"
   },
@@ -366,8 +366,8 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/engine/naive-config.ts",
-    "packages/naive/src/router/gate-hooks.mjs",
-    "packages/naive/src/router/router.mjs",
+    "packages/naive/src/router/gate-hooks.ts",
+    "packages/naive/src/router/router.ts",
     "packages/naive/src/interfaces/tests/gate-test.ts"
    ],
    "page": "get-started/the-gate",
@@ -379,7 +379,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/checks/check-ventures.ts",
-    "packages/naive/src/router/router.mjs"
+    "packages/naive/src/router/router.ts"
    ],
    "page": "get-started/project-structure"
   },
@@ -394,7 +394,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/checks/check-ventures.ts",
-    "packages/naive/src/router/router.mjs"
+    "packages/naive/src/router/router.ts"
    ],
    "page": "get-started/project-structure"
   },
@@ -404,7 +404,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/checks/check-ventures.ts",
-    "packages/naive/src/router/router.mjs"
+    "packages/naive/src/router/router.ts"
    ],
    "page": "get-started/layouts"
   },
@@ -414,7 +414,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/checks/check-ventures.ts",
-    "packages/naive/src/router/router.mjs"
+    "packages/naive/src/router/router.ts"
    ],
    "page": "get-started/project-structure"
   },
@@ -424,7 +424,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/checks/check-ventures.ts",
-    "packages/naive/src/router/router.mjs"
+    "packages/naive/src/router/router.ts"
    ],
    "page": "get-started/routes-and-records"
   },
@@ -434,7 +434,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/checks/check-ventures.ts",
-    "packages/naive/src/router/router.mjs"
+    "packages/naive/src/router/router.ts"
    ],
    "page": "get-started/routes-and-records"
   },
@@ -443,9 +443,9 @@
    "chapter": "Chapter 2: Project Structure",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/router.mjs",
-    "packages/naive/src/router/boundaries.mjs",
-    "packages/naive/src/router/writes-test.mjs"
+    "packages/naive/src/router/router.ts",
+    "packages/naive/src/router/boundaries.ts",
+    "packages/naive/src/router/writes-test.ts"
    ],
    "page": "get-started/errors",
    "note": "error: a failed check or write already answered with the package's skills and template (kept and tested). global-error: E-8 above."
@@ -456,7 +456,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/checks/check-ventures.ts",
-    "packages/naive/src/router/router.mjs"
+    "packages/naive/src/router/router.ts"
    ],
    "page": "get-started/routes-and-records"
   },
@@ -465,9 +465,9 @@
    "chapter": "Chapter 2: Project Structure",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/package-routes.mjs",
-    "packages/naive/src/router/router.mjs",
-    "packages/naive/src/router/writes-test.mjs"
+    "packages/naive/src/router/package-routes.ts",
+    "packages/naive/src/router/router.ts",
+    "packages/naive/src/router/writes-test.ts"
    ],
    "page": "get-started/project-structure",
    "note": "A new @packages slot in system/overview. A package with records shows its state, progress and what moves. An empty package shows default:true, 'nothing written yet' and the start command (with template only when the route has one). packages/naive/src/interfaces/test.ts now expects eight slots."
@@ -478,7 +478,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/checks/check-ventures.ts",
-    "packages/naive/src/router/router.mjs"
+    "packages/naive/src/router/router.ts"
    ],
    "page": "get-started/project-structure"
   },
@@ -488,7 +488,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/checks/check-ventures.ts",
-    "packages/naive/src/router/router.mjs"
+    "packages/naive/src/router/router.ts"
    ],
    "page": "get-started/project-structure"
   },
@@ -498,7 +498,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/checks/check-ventures.ts",
-    "packages/naive/src/router/router.mjs"
+    "packages/naive/src/router/router.ts"
    ],
    "page": "get-started/project-structure"
   },
@@ -508,7 +508,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/checks/check-ventures.ts",
-    "packages/naive/src/router/router.mjs"
+    "packages/naive/src/router/router.ts"
    ],
    "page": "get-started/project-structure"
   },
@@ -518,8 +518,8 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/engine/structure.ts",
-    "packages/naive/src/router/router.mjs",
-    "packages/naive/src/router/writes-test.mjs"
+    "packages/naive/src/router/router.ts",
+    "packages/naive/src/router/writes-test.ts"
    ],
    "page": "get-started/project-structure",
    "note": "routable(): no route reaches a file under a _folder, or a _file, at any depth unless the data-model pattern names that segment (customers/_streams/*/stream.json is still routed). ** routes never go into _notes/. The structure check lists private folders: _drafts, _private, _notes, _streams."
@@ -546,7 +546,7 @@
    "chapter": "Chapter 2: Project Structure",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/orchestration/releases.mjs",
+    "packages/naive/src/router/orchestration/releases.ts",
     "packages/naive/src/engine/release-card.ts",
     "packages/naive/src/engine/start-release.ts",
     "packages/naive/src/engine/releases-test.ts"
@@ -561,7 +561,7 @@
    "evidence": [
     "packages/naive/src/engine/brand.ts",
     "packages/naive/src/functions/marketing-and-sales/marketing/site/plan.ts",
-    "packages/naive/src/router/router.mjs",
+    "packages/naive/src/router/router.ts",
     "packages/naive/src/interfaces/tests/brand-test.ts"
    ],
    "page": "get-started/brand-and-assets",
@@ -573,7 +573,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/checks/check-ventures.ts",
-    "packages/naive/src/router/router.mjs"
+    "packages/naive/src/router/router.ts"
    ],
    "page": "get-started/project-structure"
   },
@@ -582,10 +582,10 @@
    "chapter": "Chapter 2: Project Structure",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/reads.mjs",
-    "packages/naive/src/router/writes.mjs",
-    "packages/naive/src/router/router.mjs",
-    "packages/naive/src/router/writes-test.mjs"
+    "packages/naive/src/router/reads.ts",
+    "packages/naive/src/router/writes.ts",
+    "packages/naive/src/router/router.ts",
+    "packages/naive/src/router/writes-test.ts"
    ],
    "page": "get-started/routes-and-records",
    "note": "Every read has resolved_by (error, loading, not-found, page). input.hierarchy or --hierarchy returns the six levels in order with what each holds. The order is written into the router's header spec."
@@ -596,7 +596,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/checks/check-ventures.ts",
-    "packages/naive/src/router/router.mjs"
+    "packages/naive/src/router/router.ts"
    ],
    "page": "get-started/layouts"
   },
@@ -606,7 +606,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/checks/check-ventures.ts",
-    "packages/naive/src/router/router.mjs"
+    "packages/naive/src/router/router.ts"
    ],
    "page": "get-started/project-structure"
   },
@@ -615,7 +615,7 @@
    "chapter": "Chapter 2: Project Structure",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/orchestration/releases.mjs",
+    "packages/naive/src/router/orchestration/releases.ts",
     "packages/naive/src/engine/releases-test.ts"
    ],
    "page": "get-started/releases",
@@ -627,7 +627,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/engine/structure.ts",
-    "packages/naive/src/router/writes-test.mjs"
+    "packages/naive/src/router/writes-test.ts"
    ],
    "page": "get-started/project-structure",
    "note": "RESERVED has in-use names and future names (layout.md, template.md, error.md, loading.md, not-found.md, default.md, page.md, .naive, @slot, [param]). node packages/naive/src/engine/structure.ts <venture> errors on misuse of in-use names (_drafts/.release/naive.config.json/provenance.jsonl away from the root, _streams outside a data package, a (group) folder holding records) and warns on future names."
@@ -643,7 +643,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/checks/check-ventures.ts",
-    "packages/naive/src/router/router.mjs"
+    "packages/naive/src/router/router.ts"
    ],
    "page": "get-started/project-structure"
   },
@@ -653,7 +653,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/checks/check-ventures.ts",
-    "packages/naive/src/router/router.mjs"
+    "packages/naive/src/router/router.ts"
    ],
    "page": "get-started/project-structure"
   },
@@ -662,10 +662,10 @@
    "chapter": "Chapter 2: Project Structure",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/package-routes.mjs",
-    "packages/naive/src/router/reads.mjs",
-    "packages/naive/src/router/writes.mjs",
-    "packages/naive/src/router/writes-test.mjs"
+    "packages/naive/src/router/package-routes.ts",
+    "packages/naive/src/router/reads.ts",
+    "packages/naive/src/router/writes.ts",
+    "packages/naive/src/router/writes-test.ts"
    ],
    "page": "get-started/project-structure",
    "note": "The framework defines (go-to-market) for marketing, relationships and customers. A venture adds groups in naive.config.json 'groups', and its own (group)/AGENTS.md sits after the root in the chain. Only member packages get the group layout (opt-in). The (group) route reads the member packages' states and their layout."
@@ -675,8 +675,8 @@
    "chapter": "Chapter 2: Project Structure",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/package-routes.mjs",
-    "packages/naive/src/router/writes-test.mjs"
+    "packages/naive/src/router/package-routes.ts",
+    "packages/naive/src/router/writes-test.ts"
    ],
    "page": "get-started/routes-and-records",
    "note": "A package route's loading lists the drafts waiting in that package's own records (not in records it only reads), with when each was drafted and its accept command. It is null when nothing is pending."
@@ -687,7 +687,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/checks/check-ventures.ts",
-    "packages/naive/src/router/router.mjs"
+    "packages/naive/src/router/router.ts"
    ],
    "page": "get-started/project-structure"
   },
@@ -696,7 +696,7 @@
    "chapter": "Chapter 3: Layouts and Pages",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/router.mjs",
+    "packages/naive/src/router/router.ts",
     "packages/naive/src/engine/decisions.ts"
    ],
    "page": "get-started/routes-and-records"
@@ -706,7 +706,7 @@
    "chapter": "Chapter 3: Layouts and Pages",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/router.mjs",
+    "packages/naive/src/router/router.ts",
     "packages/naive/src/engine/decisions.ts"
    ],
    "page": "get-started/routes-and-records"
@@ -716,7 +716,7 @@
    "chapter": "Chapter 3: Layouts and Pages",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/router.mjs"
+    "packages/naive/src/router/router.ts"
    ],
    "page": "get-started/layouts"
   },
@@ -725,7 +725,7 @@
    "chapter": "Chapter 3: Layouts and Pages",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/context.mjs",
+    "packages/naive/src/router/context.ts",
     "packages/naive/src/interfaces/context-test.ts"
    ],
    "page": "get-started/prefetching-and-vitals",
@@ -747,7 +747,7 @@
    "chapter": "Chapter 3: Layouts and Pages",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/router.mjs"
+    "packages/naive/src/router/router.ts"
    ],
    "page": "get-started/layouts"
   },
@@ -756,7 +756,7 @@
    "chapter": "Chapter 3: Layouts and Pages",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/router.mjs"
+    "packages/naive/src/router/router.ts"
    ],
    "page": "get-started/layouts"
   },
@@ -765,9 +765,9 @@
    "chapter": "Chapter 3: Layouts and Pages",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/package-routes.mjs",
-    "packages/naive/src/router/writes.mjs",
-    "packages/naive/src/router/writes-test.mjs"
+    "packages/naive/src/router/package-routes.ts",
+    "packages/naive/src/router/writes.ts",
+    "packages/naive/src/router/writes-test.ts"
    ],
    "page": "get-started/routes-and-records",
    "note": "A package's own route (validation, foundation, or packages/<name> for names that collide with record routes, such as product). read returns records with route, status and moves, plus progress, moves_now, waits, loading, unlocks; view, check and layout also work. Data, folder and raw packages report their items. These routes are resolved outside the generated route table, so ROUTES.md is unchanged."
@@ -777,7 +777,7 @@
    "chapter": "Chapter 3: Layouts and Pages",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/router.mjs"
+    "packages/naive/src/router/router.ts"
    ],
    "page": "get-started/layouts"
   },
@@ -786,7 +786,7 @@
    "chapter": "Chapter 3: Layouts and Pages",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/router.mjs"
+    "packages/naive/src/router/router.ts"
    ],
    "page": "get-started/layouts"
   },
@@ -795,9 +795,9 @@
    "chapter": "Chapter 3: Layouts and Pages",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/reads.mjs",
-    "packages/naive/src/router/writes.mjs",
-    "packages/naive/src/router/writes-test.mjs"
+    "packages/naive/src/router/reads.ts",
+    "packages/naive/src/router/writes.ts",
+    "packages/naive/src/router/writes-test.ts"
    ],
    "page": "get-started/layouts",
    "note": "Item reads and layouts carry params. The AGENTS.md files in the item's own file folders join the chain (accounts/ada/AGENTS.md for purpose/account/ada), and [id] in an instruction value becomes the id."
@@ -807,10 +807,10 @@
    "chapter": "Chapter 3: Layouts and Pages",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/reads.mjs",
+    "packages/naive/src/router/reads.ts",
     "packages/naive/src/interfaces/cli/mentura.ts",
     "packages/naive/src/interfaces/mcp/server.ts",
-    "packages/naive/src/router/writes-test.mjs"
+    "packages/naive/src/router/writes-test.ts"
    ],
    "page": "get-started/routes-and-records",
    "note": "input.where filters by a field or dot path, or by derived state, function, owner or phase. Values can be lists. The CLI takes --where k=v[,k=v] with | for alternatives. MCP mentura_read takes where. Lists report filtered.matched/of. A single record that does not match returns null with filtered_out. Dynamic rendering stays deferred to its chapter, as the ledger says."
@@ -825,7 +825,7 @@
    "chapter": "Chapter 3: Layouts and Pages",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/context.mjs",
+    "packages/naive/src/router/context.ts",
     "packages/naive/src/interfaces/context-test.ts"
    ],
    "page": "get-started/prefetching-and-vitals",
@@ -836,7 +836,7 @@
    "chapter": "Chapter 3: Layouts and Pages",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/router.mjs"
+    "packages/naive/src/router/router.ts"
    ],
    "page": "get-started/layouts"
   },
@@ -845,7 +845,7 @@
    "chapter": "Chapter 3: Layouts and Pages",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/router.mjs",
+    "packages/naive/src/router/router.ts",
     "packages/naive/src/interfaces/cli/naive.ts"
    ],
    "page": "get-started/layouts"
@@ -855,7 +855,7 @@
    "chapter": "Chapter 3: Layouts and Pages",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/router.mjs"
+    "packages/naive/src/router/router.ts"
    ],
    "page": "get-started/layouts"
   },
@@ -864,7 +864,7 @@
    "chapter": "Chapter 4: Linking and Navigating",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/router.mjs",
+    "packages/naive/src/router/router.ts",
     "packages/naive/src/core/provenance.ts"
    ],
    "page": "get-started/routes-and-records"
@@ -874,7 +874,7 @@
    "chapter": "Chapter 4: Linking and Navigating",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/router.mjs",
+    "packages/naive/src/router/router.ts",
     "packages/naive/src/engine/decisions.ts"
    ],
    "page": "get-started/routes-and-records"
@@ -884,7 +884,7 @@
    "chapter": "Chapter 4: Linking and Navigating",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/router.mjs",
+    "packages/naive/src/router/router.ts",
     "packages/naive/src/core/provenance.ts"
    ],
    "page": "get-started/routes-and-records"
@@ -894,8 +894,8 @@
    "chapter": "Chapter 4: Linking and Navigating",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/context.mjs",
-    "packages/naive/src/router/router.mjs",
+    "packages/naive/src/router/context.ts",
+    "packages/naive/src/router/router.ts",
     "packages/naive/src/interfaces/context-test.ts"
    ],
    "page": "get-started/prefetching-and-vitals",
@@ -906,7 +906,7 @@
    "chapter": "Chapter 4: Linking and Navigating",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/context.mjs",
+    "packages/naive/src/router/context.ts",
     "packages/naive/src/interfaces/context-test.ts"
    ],
    "page": "get-started/prefetching-and-vitals",
@@ -917,7 +917,7 @@
    "chapter": "Chapter 4: Linking and Navigating",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/context.mjs",
+    "packages/naive/src/router/context.ts",
     "packages/naive/src/interfaces/mcp/server.ts",
     "packages/naive/src/interfaces/context-test.ts"
    ],
@@ -929,7 +929,7 @@
    "chapter": "Chapter 4: Linking and Navigating",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/router.mjs",
+    "packages/naive/src/router/router.ts",
     "packages/naive/src/engine/decisions.ts"
    ],
    "page": "get-started/decisions"
@@ -939,7 +939,7 @@
    "chapter": "Chapter 4: Linking and Navigating",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/vitals.mjs",
+    "packages/naive/src/router/vitals.ts",
     "packages/naive/src/core/instrumentation.ts",
     "packages/naive/src/interfaces/context-test.ts"
    ],
@@ -951,7 +951,7 @@
    "chapter": "Chapter 4: Linking and Navigating",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/context.mjs",
+    "packages/naive/src/router/context.ts",
     "packages/naive/src/interfaces/context-test.ts"
    ],
    "page": "get-started/prefetching-and-vitals",
@@ -967,7 +967,7 @@
    "chapter": "Chapter 4: Linking and Navigating",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/context.mjs",
+    "packages/naive/src/router/context.ts",
     "packages/naive/src/interfaces/context-test.ts"
    ],
    "page": "get-started/prefetching-and-vitals",
@@ -978,7 +978,7 @@
    "chapter": "Chapter 4: Linking and Navigating",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/orchestration/releases.mjs",
+    "packages/naive/src/router/orchestration/releases.ts",
     "packages/naive/src/engine/release-read.ts",
     "packages/naive/src/engine/releases-test.ts"
    ],
@@ -995,7 +995,7 @@
    "chapter": "Chapter 4: Linking and Navigating",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/context.mjs",
+    "packages/naive/src/router/context.ts",
     "packages/naive/src/interfaces/context-test.ts"
    ],
    "page": "get-started/prefetching-and-vitals",
@@ -1006,19 +1006,19 @@
    "chapter": "Chapter 4: Linking and Navigating",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/context.mjs",
-    "packages/naive/src/router/router.mjs",
+    "packages/naive/src/router/context.ts",
+    "packages/naive/src/router/router.ts",
     "packages/naive/src/interfaces/context-test.ts"
    ],
    "page": "get-started/prefetching-and-vitals",
-   "note": "Per-route context budget in tokens (naive.config.json context.budget and context.routes globs); every navigation reports used tokens by part; route system/context and node packages/naive/src/router/context.mjs <dir> budget --check report every route with its largest part and advice, and flag AGENTS.md files over a quarter of the budget."
+   "note": "Per-route context budget in tokens (naive.config.json context.budget and context.routes globs); every navigation reports used tokens by part; route system/context and node packages/naive/src/router/context.ts <dir> budget --check report every route with its largest part and advice, and flag AGENTS.md files over a quarter of the budget."
   },
   {
    "id": "N-14",
    "chapter": "Chapter 4: Linking and Navigating",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/router.mjs",
+    "packages/naive/src/router/router.ts",
     "packages/naive/src/core/provenance.ts"
    ],
    "page": "get-started/routes-and-records"
@@ -1038,7 +1038,7 @@
    "chapter": "Chapter 5: Server and Client Components",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/orchestration/model-steps.mjs",
+    "packages/naive/src/router/orchestration/model-steps.ts",
     "packages/naive/src/interfaces/tests/model-steps-test.ts",
     "packages/naive/library/packages/customers/package.json"
    ],
@@ -1060,7 +1060,7 @@
    "chapter": "Chapter 5: Server and Client Components",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/orchestration/model-steps.mjs",
+    "packages/naive/src/router/orchestration/model-steps.ts",
     "packages/naive/src/interfaces/tests/model-steps-test.ts"
    ],
    "page": "get-started/agents-and-people",
@@ -1071,7 +1071,7 @@
    "chapter": "Chapter 5: Server and Client Components",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/orchestration/model-steps.mjs",
+    "packages/naive/src/router/orchestration/model-steps.ts",
     "packages/naive/src/interfaces/tests/model-steps-test.ts"
    ],
    "page": "get-started/agents-and-people",
@@ -1082,8 +1082,8 @@
    "chapter": "Chapter 5: Server and Client Components",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/orchestration/model-steps.mjs",
-    "packages/naive/src/router/router.mjs",
+    "packages/naive/src/router/orchestration/model-steps.ts",
+    "packages/naive/src/router/router.ts",
     "packages/naive/src/interfaces/tests/model-steps-test.ts"
    ],
    "page": "get-started/agents-and-people",
@@ -1094,7 +1094,7 @@
    "chapter": "Chapter 5: Server and Client Components",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/orchestration/model-steps.mjs",
+    "packages/naive/src/router/orchestration/model-steps.ts",
     "packages/naive/src/interfaces/tests/model-steps-test.ts"
    ],
    "page": "get-started/agents-and-people",
@@ -1106,7 +1106,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/engine/caching.ts",
-    "packages/naive/src/router/router.mjs",
+    "packages/naive/src/router/router.ts",
     "packages/naive/src/interfaces/tests/caching-test.ts"
    ],
    "page": "get-started/caching",
@@ -1117,7 +1117,7 @@
    "chapter": "Chapter 5: Server and Client Components",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/orchestration/model-steps.mjs",
+    "packages/naive/src/router/orchestration/model-steps.ts",
     "packages/naive/src/records/judgment.schema.json",
     "packages/naive/src/interfaces/tests/model-steps-test.ts"
    ],
@@ -1129,7 +1129,7 @@
    "chapter": "Chapter 5: Server and Client Components",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/orchestration/model-steps.mjs",
+    "packages/naive/src/router/orchestration/model-steps.ts",
     "packages/naive/src/interfaces/tests/model-steps-test.ts"
    ],
    "page": "get-started/agents-and-people",
@@ -1140,7 +1140,7 @@
    "chapter": "Chapter 5: Server and Client Components",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/orchestration/model-steps.mjs",
+    "packages/naive/src/router/orchestration/model-steps.ts",
     "packages/naive/src/interfaces/tests/model-steps-test.ts"
    ],
    "page": "get-started/agents-and-people",
@@ -1151,7 +1151,7 @@
    "chapter": "Chapter 5: Server and Client Components",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/orchestration/model-steps.mjs",
+    "packages/naive/src/router/orchestration/model-steps.ts",
     "packages/naive/src/interfaces/tests/model-steps-test.ts"
    ],
    "page": "get-started/agents-and-people",
@@ -1162,7 +1162,7 @@
    "chapter": "Chapter 5: Server and Client Components",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/orchestration/model-steps.mjs",
+    "packages/naive/src/router/orchestration/model-steps.ts",
     "packages/naive/library/packages/customers/package.json",
     "packages/naive/src/interfaces/tests/model-steps-test.ts"
    ],
@@ -1174,7 +1174,7 @@
    "chapter": "Chapter 5: Server and Client Components",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/router.mjs",
+    "packages/naive/src/router/router.ts",
     "packages/naive/src/engine/decisions.ts"
    ],
    "page": "get-started/routes-and-records"
@@ -1184,7 +1184,7 @@
    "chapter": "Chapter 5: Server and Client Components",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/context.mjs",
+    "packages/naive/src/router/context.ts",
     "packages/naive/src/interfaces/context-test.ts"
    ],
    "page": "get-started/prefetching-and-vitals",
@@ -1195,8 +1195,8 @@
    "chapter": "Chapter 5: Server and Client Components",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/kit-boundary.mjs",
-    "packages/naive/src/router/orchestration/model-steps.mjs",
+    "packages/naive/src/router/kit-boundary.ts",
+    "packages/naive/src/router/orchestration/model-steps.ts",
     "packages/naive/src/interfaces/tests/model-steps-test.ts"
    ],
    "page": "get-started/agents-and-people",
@@ -1216,7 +1216,7 @@
    "chapter": "Chapter 5: Server and Client Components",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/orchestration/model-steps.mjs",
+    "packages/naive/src/router/orchestration/model-steps.ts",
     "packages/naive/src/interfaces/tests/model-steps-test.ts"
    ],
    "page": "get-started/agents-and-people",
@@ -1228,7 +1228,7 @@
    "status": "built",
    "note": "Covered by N-5: runStreaming (child process through the CLI, so gates apply) and batch report progress; the MCP server sends notifications/progress for mentura_run and mentura_read when _meta.progressToken is set; CL",
    "evidence": [
-    "packages/naive/src/router/context.mjs",
+    "packages/naive/src/router/context.ts",
     "packages/naive/src/interfaces/mcp/server.ts",
     "packages/naive/src/interfaces/context-test.ts"
    ],
@@ -1239,7 +1239,7 @@
    "chapter": "Chapter 6: Fetching Data",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/router.mjs",
+    "packages/naive/src/router/router.ts",
     "packages/naive/src/store/connectors/index.ts"
    ],
    "page": "get-started/routes-and-records"
@@ -1250,7 +1250,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/engine/caching.ts",
-    "packages/naive/src/router/router.mjs",
+    "packages/naive/src/router/router.ts",
     "packages/naive/src/interfaces/tests/caching-test.ts"
    ],
    "page": "get-started/caching",
@@ -1261,7 +1261,7 @@
    "chapter": "Chapter 6: Fetching Data",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/router.mjs",
+    "packages/naive/src/router/router.ts",
     "packages/naive/src/store/connectors/index.ts"
    ],
    "page": "get-started/routes-and-records"
@@ -1272,7 +1272,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/core/instrumentation.ts",
-    "packages/naive/src/router/router.mjs",
+    "packages/naive/src/router/router.ts",
     "packages/naive/src/interfaces/context-test.ts"
    ],
    "page": "get-started/prefetching-and-vitals",
@@ -1284,8 +1284,8 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/engine/access.ts",
-    "packages/naive/src/router/acting.mjs",
-    "packages/naive/src/router/router.mjs",
+    "packages/naive/src/router/acting.ts",
+    "packages/naive/src/router/router.ts",
     "packages/naive/src/interfaces/mcp/server.ts",
     "packages/naive/src/interfaces/tests/gate-test.ts"
    ],
@@ -1297,7 +1297,7 @@
    "chapter": "Chapter 6: Fetching Data",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/context.mjs",
+    "packages/naive/src/router/context.ts",
     "packages/naive/src/interfaces/context-test.ts"
    ],
    "page": "get-started/prefetching-and-vitals",
@@ -1308,7 +1308,7 @@
    "chapter": "Chapter 6: Fetching Data",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/router.mjs",
+    "packages/naive/src/router/router.ts",
     "packages/naive/src/store/connectors/index.ts"
    ],
    "page": "get-started/routes-and-records"
@@ -1318,7 +1318,7 @@
    "chapter": "Chapter 6: Fetching Data",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/router.mjs",
+    "packages/naive/src/router/router.ts",
     "packages/naive/src/store/connectors/index.ts"
    ],
    "page": "get-started/routes-and-records"
@@ -1333,7 +1333,7 @@
    "chapter": "Chapter 6: Fetching Data",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/orchestration/model-steps.mjs",
+    "packages/naive/src/router/orchestration/model-steps.ts",
     "packages/naive/src/interfaces/tests/model-steps-test.ts"
    ],
    "page": "get-started/agents-and-people",
@@ -1344,7 +1344,7 @@
    "chapter": "Chapter 6: Fetching Data",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/orchestration/model-steps.mjs",
+    "packages/naive/src/router/orchestration/model-steps.ts",
     "packages/naive/src/interfaces/tests/model-steps-test.ts"
    ],
    "page": "get-started/agents-and-people",
@@ -1356,7 +1356,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/engine/caching.ts",
-    "packages/naive/src/router/router.mjs",
+    "packages/naive/src/router/router.ts",
     "packages/naive/src/engine/decisions.ts",
     "packages/naive/src/interfaces/tests/caching-test.ts"
    ],
@@ -1368,7 +1368,7 @@
    "chapter": "Chapter 6: Fetching Data",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/orchestration/model-steps.mjs",
+    "packages/naive/src/router/orchestration/model-steps.ts",
     "packages/naive/src/interfaces/tests/model-steps-test.ts"
    ],
    "page": "get-started/agents-and-people",
@@ -1388,7 +1388,7 @@
    "chapter": "Chapter 7: Mutating Data",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/router.mjs",
+    "packages/naive/src/router/router.ts",
     "packages/naive/src/core/provenance.ts",
     "packages/naive/src/engine/decisions.ts"
    ],
@@ -1410,9 +1410,9 @@
    "chapter": "Chapter 7: Mutating Data",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/writes.mjs",
-    "packages/naive/src/router/router.mjs",
-    "packages/naive/src/router/writes-test.mjs"
+    "packages/naive/src/router/writes.ts",
+    "packages/naive/src/router/router.ts",
+    "packages/naive/src/router/writes-test.ts"
    ],
    "page": "get-started/writing-records",
    "note": "Every write answers result.changed: the record's state before and after, the packages whose progress or state moved, the records that move now, what it unlocked (completed packages and their unlocks, decisions that stopped waiting) and the need-now rows it settled. It comes from snapshots taken before and after the write."
@@ -1422,7 +1422,7 @@
    "chapter": "Chapter 7: Mutating Data",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/router.mjs",
+    "packages/naive/src/router/router.ts",
     "packages/naive/src/core/provenance.ts",
     "packages/naive/src/engine/decisions.ts"
    ],
@@ -1433,7 +1433,7 @@
    "chapter": "Chapter 7: Mutating Data",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/router.mjs",
+    "packages/naive/src/router/router.ts",
     "packages/naive/src/core/provenance.ts",
     "packages/naive/src/engine/decisions.ts"
    ],
@@ -1444,7 +1444,7 @@
    "chapter": "Chapter 7: Mutating Data",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/router.mjs",
+    "packages/naive/src/router/router.ts",
     "packages/naive/src/core/provenance.ts",
     "packages/naive/src/engine/decisions.ts"
    ],
@@ -1455,7 +1455,7 @@
    "chapter": "Chapter 7: Mutating Data",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/router.mjs",
+    "packages/naive/src/router/router.ts",
     "packages/naive/src/core/provenance.ts",
     "packages/naive/src/engine/decisions.ts"
    ],
@@ -1466,7 +1466,7 @@
    "chapter": "Chapter 7: Mutating Data",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/router.mjs",
+    "packages/naive/src/router/router.ts",
     "packages/naive/src/core/provenance.ts",
     "packages/naive/src/engine/decisions.ts"
    ],
@@ -1477,9 +1477,9 @@
    "chapter": "Chapter 7: Mutating Data",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/writes.mjs",
-    "packages/naive/src/router/router.mjs",
-    "packages/naive/src/router/writes-test.mjs"
+    "packages/naive/src/router/writes.ts",
+    "packages/naive/src/router/router.ts",
+    "packages/naive/src/router/writes-test.ts"
    ],
    "page": "get-started/writing-records",
    "note": "layout.actions lists every route in the folder with its declared actions, the ones this actor may take now, and how a write lands: record, draft (with the gate, decision or naive.config rule that holds it), or null when a decision locks it or the team plan refuses it."
@@ -1489,7 +1489,7 @@
    "chapter": "Chapter 7: Mutating Data",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/router.mjs",
+    "packages/naive/src/router/router.ts",
     "packages/naive/src/core/provenance.ts",
     "packages/naive/src/engine/decisions.ts"
    ],
@@ -1500,7 +1500,7 @@
    "chapter": "Chapter 7: Mutating Data",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/router.mjs",
+    "packages/naive/src/router/router.ts",
     "packages/naive/src/core/provenance.ts",
     "packages/naive/src/engine/decisions.ts"
    ],
@@ -1511,7 +1511,7 @@
    "chapter": "Chapter 7: Mutating Data",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/orchestration/triggers.mjs",
+    "packages/naive/src/router/orchestration/triggers.ts",
     "packages/naive/src/records/trigger.schema.json",
     "packages/naive/src/records/kit.schema.json",
     "packages/naive/src/core/provenance.ts",
@@ -1529,7 +1529,7 @@
    "chapter": "Chapter 7: Mutating Data",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/router.mjs",
+    "packages/naive/src/router/router.ts",
     "packages/naive/src/core/provenance.ts",
     "packages/naive/src/engine/decisions.ts"
    ],
@@ -1545,7 +1545,7 @@
    "chapter": "Chapter 7: Mutating Data",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/router.mjs",
+    "packages/naive/src/router/router.ts",
     "packages/naive/src/core/provenance.ts",
     "packages/naive/src/engine/decisions.ts"
    ],
@@ -1556,7 +1556,7 @@
    "chapter": "Chapter 7: Mutating Data",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/router.mjs",
+    "packages/naive/src/router/router.ts",
     "packages/naive/src/core/provenance.ts",
     "packages/naive/src/engine/decisions.ts"
    ],
@@ -1567,8 +1567,8 @@
    "chapter": "Chapter 7: Mutating Data",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/writes.mjs",
-    "packages/naive/src/router/writes-test.mjs"
+    "packages/naive/src/router/writes.ts",
+    "packages/naive/src/router/writes-test.ts"
    ],
    "page": "get-started/writing-records",
    "note": "result.next on every write. The order: accept the draft it made, the next required record in the package that moves now, review an agent-written record, a record the write freed, an optional record, the top need-now suggestion, then the top decision."
@@ -1578,8 +1578,8 @@
    "chapter": "Chapter 7: Mutating Data",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/acting.mjs",
-    "packages/naive/src/router/router.mjs",
+    "packages/naive/src/router/acting.ts",
+    "packages/naive/src/router/router.ts",
     "packages/naive/src/engine/access.ts",
     "packages/naive/src/interfaces/tests/gate-test.ts"
    ],
@@ -1592,7 +1592,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/engine/caching.ts",
-    "packages/naive/src/router/router.mjs",
+    "packages/naive/src/router/router.ts",
     "packages/naive/src/interfaces/tests/caching-test.ts"
    ],
    "page": "get-started/caching",
@@ -1650,7 +1650,7 @@
    "chapter": "Chapter 8: Caching",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/router.mjs",
+    "packages/naive/src/router/router.ts",
     "packages/naive/src/engine/decisions.ts"
    ],
    "page": "get-started/errors"
@@ -1672,7 +1672,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/engine/caching.ts",
-    "packages/naive/src/router/router.mjs",
+    "packages/naive/src/router/router.ts",
     "packages/naive/src/interfaces/tests/caching-test.ts"
    ],
    "page": "get-started/caching",
@@ -1692,8 +1692,8 @@
    "chapter": "Chapter 8: Caching",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/orchestration/releases.mjs",
-    "packages/naive/src/router/orchestration/build-release.mjs",
+    "packages/naive/src/router/orchestration/releases.ts",
+    "packages/naive/src/router/orchestration/build-release.ts",
     "packages/naive/src/engine/releases-test.ts"
    ],
    "page": "get-started/releases",
@@ -1704,7 +1704,7 @@
    "chapter": "Chapter 8: Caching",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/orchestration/releases.mjs",
+    "packages/naive/src/router/orchestration/releases.ts",
     "packages/naive/src/engine/release-read.ts",
     "packages/naive/src/engine/releases-test.ts"
    ],
@@ -1721,15 +1721,15 @@
     "packages/naive/src/engine/releases-test.ts"
    ],
    "page": "get-started/releases",
-   "note": "start-release reads only .release/. The test follows its imports to check none of them reaches packages/naive/src/router/router.mjs. It still serves as built after the venture's records change. The investor handoff is the --export output (Z-3)."
+   "note": "start-release reads only .release/. The test follows its imports to check none of them reaches packages/naive/src/router/router.ts. It still serves as built after the venture's records change. The investor handoff is the --export output (Z-3)."
   },
   {
    "id": "C-13",
    "chapter": "Chapter 8: Caching",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/orchestration/releases.mjs",
-    "packages/naive/src/router/orchestration/build-release.mjs",
+    "packages/naive/src/router/orchestration/releases.ts",
+    "packages/naive/src/router/orchestration/build-release.ts",
     "packages/naive/src/engine/releases-test.ts"
    ],
    "page": "get-started/releases",
@@ -1740,7 +1740,7 @@
    "chapter": "Chapter 8: Caching",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/orchestration/releases.mjs",
+    "packages/naive/src/router/orchestration/releases.ts",
     "packages/naive/src/engine/release-read.ts",
     "packages/naive/src/engine/releases-test.ts"
    ],
@@ -1752,18 +1752,18 @@
    "chapter": "Chapter 8: Caching",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/vitals.mjs",
+    "packages/naive/src/router/vitals.ts",
     "packages/naive/src/interfaces/context-test.ts"
    ],
    "page": "get-started/prefetching-and-vitals",
-   "note": "node packages/naive/src/router/vitals.mjs <dir> --check exits 1 when a vital's p75 exceeds its threshold (defaults overridable by naive.config.json vitals); system/vitals reports passed and failing."
+   "note": "node packages/naive/src/router/vitals.ts <dir> --check exits 1 when a vital's p75 exceeds its threshold (defaults overridable by naive.config.json vitals); system/vitals reports passed and failing."
   },
   {
    "id": "C-16",
    "chapter": "Chapter 8: Caching",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/context.mjs",
+    "packages/naive/src/router/context.ts",
     "packages/naive/src/interfaces/context-test.ts"
    ],
    "page": "get-started/prefetching-and-vitals",
@@ -1774,7 +1774,7 @@
    "chapter": "Chapter 8: Caching",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/orchestration/releases.mjs",
+    "packages/naive/src/router/orchestration/releases.ts",
     "packages/naive/src/engine/releases-test.ts"
    ],
    "page": "get-started/releases",
@@ -1785,9 +1785,9 @@
    "chapter": "Chapter 8: Caching",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/orchestration/releases.mjs",
+    "packages/naive/src/router/orchestration/releases.ts",
     "packages/naive/src/engine/release-read.ts",
-    "packages/naive/src/router/orchestration/build-release.mjs",
+    "packages/naive/src/router/orchestration/build-release.ts",
     "packages/naive/src/engine/releases-test.ts"
    ],
    "page": "get-started/releases",
@@ -1799,7 +1799,7 @@
    "status": "built",
    "note": "Covered by F-7: ",
    "evidence": [
-    "packages/naive/src/router/router.mjs",
+    "packages/naive/src/router/router.ts",
     "packages/naive/src/store/connectors/index.ts"
    ],
    "page": "get-started/routes-and-records"
@@ -1857,7 +1857,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/engine/freshness.ts",
-    "packages/naive/src/router/router.mjs",
+    "packages/naive/src/router/router.ts",
     "packages/naive/src/interfaces/tests/freshness-test.ts"
    ],
    "page": "get-started/revalidating",
@@ -1903,7 +1903,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/engine/stale.ts",
-    "packages/naive/src/router/router.mjs",
+    "packages/naive/src/router/router.ts",
     "packages/naive/src/engine/upgrades-test.ts"
    ],
    "evidence_elsewhere": [
@@ -1918,7 +1918,7 @@
    "chapter": "Chapter 10: Error Handling",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/orchestration/model-steps.mjs",
+    "packages/naive/src/router/orchestration/model-steps.ts",
     "packages/naive/src/interfaces/tests/model-steps-test.ts"
    ],
    "page": "get-started/agents-and-people",
@@ -1929,7 +1929,7 @@
    "chapter": "Chapter 10: Error Handling",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/router.mjs"
+    "packages/naive/src/router/router.ts"
    ],
    "page": "get-started/errors"
   },
@@ -1938,7 +1938,7 @@
    "chapter": "Chapter 10: Error Handling",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/router.mjs"
+    "packages/naive/src/router/router.ts"
    ],
    "page": "get-started/errors"
   },
@@ -1949,7 +1949,7 @@
    "note": "Covered by P-14: ",
    "evidence": [
     "packages/naive/src/checks/check-ventures.ts",
-    "packages/naive/src/router/router.mjs"
+    "packages/naive/src/router/router.ts"
    ],
    "page": "get-started/routes-and-records"
   },
@@ -1958,22 +1958,22 @@
    "chapter": "Chapter 10: Error Handling",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/boundaries.mjs",
-    "packages/naive/src/router/package-routes.mjs",
-    "packages/naive/src/router/writes-test.mjs"
+    "packages/naive/src/router/boundaries.ts",
+    "packages/naive/src/router/package-routes.ts",
+    "packages/naive/src/router/writes-test.ts"
    ],
    "page": "get-started/errors",
-   "note": "boundaries() checks the venture level first (venture.json, structure, manifest), then each package in use, each contained. Output: reached package or venture, contained, proceeds. Reached by mentura venture check, mentura <package> check and node packages/naive/src/router/boundaries.mjs check."
+   "note": "boundaries() checks the venture level first (venture.json, structure, manifest), then each package in use, each contained. Output: reached package or venture, contained, proceeds. Reached by mentura venture check, mentura <package> check and node packages/naive/src/router/boundaries.ts check."
   },
   {
    "id": "E-6",
    "chapter": "Chapter 10: Error Handling",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/boundaries.mjs",
-    "packages/naive/src/router/router.mjs",
-    "packages/naive/src/router/writes.mjs",
-    "packages/naive/src/router/writes-test.mjs"
+    "packages/naive/src/router/boundaries.ts",
+    "packages/naive/src/router/router.ts",
+    "packages/naive/src/router/writes.ts",
+    "packages/naive/src/router/writes-test.ts"
    ],
    "page": "get-started/errors",
    "note": "A list read parses each item on its own: a bad one goes into errors and the others are returned. A single bad record answers an error with its fix instead of a stack trace. Package boundaries also validate each record against its schema one by one."
@@ -1983,7 +1983,7 @@
    "chapter": "Chapter 10: Error Handling",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/orchestration/triggers.mjs",
+    "packages/naive/src/router/orchestration/triggers.ts",
     "packages/naive/src/engine/upgrades-test.ts"
    ],
    "page": "get-started/bringing-a-project-in",
@@ -1994,20 +1994,20 @@
    "chapter": "Chapter 10: Error Handling",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/boundaries.mjs",
+    "packages/naive/src/router/boundaries.ts",
     "packages/naive/src/interfaces/cli/guard.ts",
-    "packages/naive/src/router/router.mjs",
-    "packages/naive/src/router/writes-test.mjs"
+    "packages/naive/src/router/router.ts",
+    "packages/naive/src/router/writes-test.ts"
    ],
    "page": "get-started/errors",
-   "note": "A broken venture.json (does not parse, missing required fields, bad id or phase) answers with the problem (line and column where known), recovery steps and a minimal template. 'boundaries.mjs recover --confirm recover' rebuilds it and keeps the broken file in _private/. One broken venture no longer stops ventureDir/ventures for the others. A broken data model or manifest is caught by the CLI guard before any module loads, and by the call wrapper. Limit: the MCP server and the API import the router directly, so a data model broken at startup still fails at import there. Only the CLI has the guard."
+   "note": "A broken venture.json (does not parse, missing required fields, bad id or phase) answers with the problem (line and column where known), recovery steps and a minimal template. 'boundaries.ts recover --confirm recover' rebuilds it and keeps the broken file in _private/. One broken venture no longer stops ventureDir/ventures for the others. A broken data model or manifest is caught by the CLI guard before any module loads, and by the call wrapper. Limit: the MCP server and the API import the router directly, so a data model broken at startup still fails at import there. Only the CLI has the guard."
   },
   {
    "id": "E-9",
    "chapter": "Chapter 10: Error Handling",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/orchestration/model-steps.mjs",
+    "packages/naive/src/router/orchestration/model-steps.ts",
     "packages/naive/src/interfaces/tests/model-steps-test.ts"
    ],
    "page": "get-started/agents-and-people",
@@ -2026,7 +2026,7 @@
     "packages/naive/src/engine/brand.ts",
     "packages/naive/src/records/glossary.schema.json",
     "packages/naive/src/checks/check-brand.ts",
-    "packages/naive/src/router/router.mjs",
+    "packages/naive/src/router/router.ts",
     "packages/naive/src/interfaces/tests/brand-test.ts"
    ],
    "page": "get-started/brand-and-assets",
@@ -2039,8 +2039,8 @@
    "evidence": [
     "packages/naive/src/engine/brand.ts",
     "packages/naive/src/records/marketing-brand.schema.json",
-    "packages/naive/src/router/router.mjs",
-    "packages/naive/src/router/brand.mjs",
+    "packages/naive/src/router/router.ts",
+    "packages/naive/src/router/brand.ts",
     "packages/naive/src/interfaces/tests/brand-test.ts"
    ],
    "page": "get-started/brand-and-assets",
@@ -2063,7 +2063,7 @@
    "chapter": "Chapter 11: CSS",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/router.mjs"
+    "packages/naive/src/router/router.ts"
    ],
    "page": "get-started/layouts"
   },
@@ -2085,7 +2085,7 @@
     "packages/naive/src/engine/assets.ts",
     "packages/naive/src/records/public-assets.schema.json",
     "packages/naive/src/checks/check-assets.ts",
-    "packages/naive/src/router/brand.mjs",
+    "packages/naive/src/router/brand.ts",
     "packages/naive/src/interfaces/tests/brand-test.ts"
    ],
    "page": "get-started/brand-and-assets",
@@ -2096,7 +2096,7 @@
    "chapter": "Chapter 12: Images",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/brand.mjs",
+    "packages/naive/src/router/brand.ts",
     "packages/naive/src/engine/assets.ts",
     "packages/naive/src/interfaces/tests/brand-test.ts"
    ],
@@ -2112,7 +2112,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/engine/assets.ts",
-    "packages/naive/src/router/brand.mjs",
+    "packages/naive/src/router/brand.ts",
     "packages/naive/src/checks/check-assets.ts",
     "packages/naive/src/interfaces/tests/brand-test.ts"
    ],
@@ -2157,8 +2157,8 @@
    "chapter": "Chapter 14: Metadata and OG images",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/reads.mjs",
-    "packages/naive/src/router/writes-test.mjs"
+    "packages/naive/src/router/reads.ts",
+    "packages/naive/src/router/writes-test.ts"
    ],
    "page": "get-started/routes-and-records",
    "note": "Every record read has metadata.venture (identity from venture.json) and metadata.record (type, route, schema, form), plus the frontmatter of Markdown records or the title or name of JSON records."
@@ -2168,8 +2168,8 @@
    "chapter": "Chapter 14: Metadata and OG images",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/reads.mjs",
-    "packages/naive/src/router/writes-test.mjs"
+    "packages/naive/src/router/reads.ts",
+    "packages/naive/src/router/writes-test.ts"
    ],
    "page": "get-started/routes-and-records",
    "note": "metadata.derived is computed by code: phase, function, owner (from venture.json functions, else the founder for a solo venture), package, state (confirmed, agent, draft, unlogged) and counts of top-level lists. Lists also get a count. by: code."
@@ -2179,8 +2179,8 @@
    "chapter": "Chapter 14: Metadata and OG images",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/reads.mjs",
-    "packages/naive/src/router/writes-test.mjs"
+    "packages/naive/src/router/reads.ts",
+    "packages/naive/src/router/writes-test.ts"
    ],
    "page": "get-started/routes-and-records",
    "note": "id, created, updated, by (person or agent, id, via), activity and writes come from the provenance log for every record and every list item. Without log entries they come from the file (from: file) with a note pointing to mentura baseline. Added to the read answer, never written into the record, so record schemas are untouched."
@@ -2190,8 +2190,8 @@
    "chapter": "Chapter 14: Metadata and OG images",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/context.mjs",
-    "packages/naive/src/router/router.mjs",
+    "packages/naive/src/router/context.ts",
+    "packages/naive/src/router/router.ts",
     "packages/naive/src/interfaces/mcp/server.ts",
     "packages/naive/src/interfaces/context-test.ts"
    ],
@@ -2203,7 +2203,7 @@
    "chapter": "Chapter 14: Metadata and OG images",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/router.mjs",
+    "packages/naive/src/router/router.ts",
     "packages/naive/src/engine/caching.ts",
     "packages/naive/src/interfaces/tests/caching-test.ts"
    ],
@@ -2227,7 +2227,7 @@
    "chapter": "Chapter 14: Metadata and OG images",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/orchestration/releases.mjs",
+    "packages/naive/src/router/orchestration/releases.ts",
     "packages/naive/src/engine/release-card.ts",
     "packages/naive/src/engine/releases-test.ts"
    ],
@@ -2239,7 +2239,7 @@
    "chapter": "Chapter 15: Route Handlers",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/router.mjs",
+    "packages/naive/src/router/router.ts",
     "packages/naive/src/interfaces/mcp/server.ts",
     "packages/naive/src/interfaces/cli/naive.ts"
    ],
@@ -2250,7 +2250,7 @@
    "chapter": "Chapter 15: Route Handlers",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/router.mjs",
+    "packages/naive/src/router/router.ts",
     "packages/naive/src/interfaces/mcp/server.ts",
     "packages/naive/src/interfaces/cli/naive.ts"
    ],
@@ -2261,7 +2261,7 @@
    "chapter": "Chapter 15: Route Handlers",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/router.mjs",
+    "packages/naive/src/router/router.ts",
     "packages/naive/src/engine/caching.ts",
     "packages/naive/src/interfaces/api/server.ts",
     "packages/naive/src/interfaces/tests/caching-test.ts"
@@ -2274,7 +2274,7 @@
    "chapter": "Chapter 15: Route Handlers",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/orchestration/releases.mjs",
+    "packages/naive/src/router/orchestration/releases.ts",
     "packages/naive/src/engine/releases-test.ts"
    ],
    "page": "get-started/releases",
@@ -2286,7 +2286,7 @@
    "status": "built",
    "note": "Covered by O-7: cardOf builds the card from the release's records: name, phase, and headline numbers, each with its as_of and who confirmed it. The numbers are confirmed records, products, customers, evidence, decisi",
    "evidence": [
-    "packages/naive/src/router/orchestration/releases.mjs",
+    "packages/naive/src/router/orchestration/releases.ts",
     "packages/naive/src/engine/release-card.ts",
     "packages/naive/src/engine/releases-test.ts"
    ],
@@ -2321,7 +2321,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/engine/gate.ts",
-    "packages/naive/src/router/router.mjs"
+    "packages/naive/src/router/router.ts"
    ],
    "page": "get-started/the-gate"
   },
@@ -2332,7 +2332,7 @@
    "evidence": [
     "packages/naive/src/engine/gate.ts",
     "packages/naive/src/engine/gate-drafts.ts",
-    "packages/naive/src/router/gate-hooks.mjs",
+    "packages/naive/src/router/gate-hooks.ts",
     "packages/naive/src/interfaces/cli/mentura.ts",
     "packages/naive/src/interfaces/tests/gate-test.ts"
    ],
@@ -2345,7 +2345,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/engine/gate.ts",
-    "packages/naive/src/router/router.mjs"
+    "packages/naive/src/router/router.ts"
    ],
    "page": "get-started/the-gate",
    "note": "naive.config.json gate.fail_closed is read on every write"
@@ -2358,7 +2358,7 @@
     "packages/naive/src/engine/gate.ts",
     "packages/naive/src/engine/access.ts",
     "packages/naive/src/engine/naive-config.ts",
-    "packages/naive/src/router/gate-hooks.mjs",
+    "packages/naive/src/router/gate-hooks.ts",
     "packages/naive/src/interfaces/tests/gate-test.ts"
    ],
    "page": "get-started/the-gate",
@@ -2409,8 +2409,8 @@
    "chapter": "Chapter 17: Deploying",
    "status": "built",
    "evidence": [
-    "packages/naive/src/router/orchestration/releases.mjs",
-    "packages/naive/src/router/orchestration/build-release.mjs",
+    "packages/naive/src/router/orchestration/releases.ts",
+    "packages/naive/src/router/orchestration/build-release.ts",
     "packages/naive/src/engine/releases-test.ts"
    ],
    "page": "get-started/releases",

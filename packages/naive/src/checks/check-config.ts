@@ -49,7 +49,7 @@ export function check(dir: string): { errors: string[], warnings: string[], note
     if (ids.has(r.id)) errors.push(`gate rule ${r.id}: duplicate id`);
     ids.add(r.id);
   }
-  for (const p of config.gate.fail_closed ?? []) if (!known(p) && !known(`${p}/**`)) errors.push(`gate.fail_closed ${p}: matches no route (see node packages/naive/src/router/router.mjs --md)`);
+  for (const p of config.gate.fail_closed ?? []) if (!known(p) && !known(`${p}/**`)) errors.push(`gate.fail_closed ${p}: matches no route (see node packages/naive/src/router/router.ts --md)`);
   for (const r of config.gate.rules ?? []) for (const p of r.routes ?? []) if (!known(p)) errors.push(`gate rule ${r.id}: ${p} matches no route`);
   for (const c of [...(config.checks.off ?? []), ...(config.checks.warn ?? [])]) if (!existsSync(join(repo, c))) errors.push(`checks: ${c} does not exist`);
   for (const p of pinProblems(config)) errors.push(p.installed ? `packages: ${p.package} is pinned to ${p.pinned} but ${p.installed} is installed` : `packages: ${p.package} is not an installed package`);

@@ -6,7 +6,7 @@ import { spawnSync } from "node:child_process";
 import { mkdtempSync, mkdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { call } from "../../../src/router/router.mjs";
+import { call } from "../../../src/router/router.ts";
 import type { ValidationPricing } from "../../../src/records/types/records.d.ts";
 
 /** What a router action answers, with the result this replay expects of the route (null when the record is missing). */

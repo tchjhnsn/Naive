@@ -2557,7 +2557,7 @@ export type InternalTerms = {
   }[];
 };
 
-/** The output of one model step ("use model", EE-073), at <venture>/knowledge/judgments/<id>.json: the package and step that asked, the item it was asked about, the paths the model was given, its typed answer and confidence, the computed values it had to keep, and what code did with it. A judgment is the agent's until a person confirms it; the records it read stay their authors'. Written by packages/naive/src/router/orchestration/model-steps.mjs through the router. */
+/** The output of one model step ("use model", EE-073), at <venture>/knowledge/judgments/<id>.json: the package and step that asked, the item it was asked about, the paths the model was given, its typed answer and confidence, the computed values it had to keep, and what code did with it. A judgment is the agent's until a person confirms it; the records it read stay their authors'. Written by packages/naive/src/router/orchestration/model-steps.ts through the router. */
 export type Judgment = {
   /** <package>-<step>-<item>, or <package>-<step> for a step asked once */
   id: string;
@@ -2605,7 +2605,7 @@ export type Judgment = {
   asked_at?: string;
 };
 
-/** A Mentura kit (EE-071): an enhanced package, at platform/kits/<name>/kit.json. It extends one Naive package (automations, agent workflows, skills, connectors on top of it) or one framework command (an agent-run upgrade), and never replaces it. The framework reads this manifest as data and runs the kit's entry as its own process; it never imports platform code (packages/naive/src/engine/kits.ts). Automations are triggers a venture turns on by listing the kit in naive.config.json kits; each runs only once the package it needs is complete (packages/naive/src/router/orchestration/triggers.mjs). */
+/** A Mentura kit (EE-071): an enhanced package, at platform/kits/<name>/kit.json. It extends one Naive package (automations, agent workflows, skills, connectors on top of it) or one framework command (an agent-run upgrade), and never replaces it. The framework reads this manifest as data and runs the kit's entry as its own process; it never imports platform code (packages/naive/src/engine/kits.ts). Automations are triggers a venture turns on by listing the kit in naive.config.json kits; each runs only once the package it needs is complete (packages/naive/src/router/orchestration/triggers.ts). */
 export type Kit = {
   name: string;
   title: string;
@@ -3326,7 +3326,7 @@ export type NaiveConfig = {
       };
     };
   };
-  /** What starts the next step on an event (packages/naive/src/router/orchestration/triggers.mjs) */
+  /** What starts the next step on an event (packages/naive/src/router/orchestration/triggers.ts) */
   triggers?: unknown[];
   /** The venture's own signal listeners (signal library design): each joins a signal type to one consumer with that consumer's criterion. A listener here replaces any listener of the same id from a package, a frame or a kit. packages/naive/src/engine/signals.ts merges them and naive signals pull evaluates them */
   listeners?: (Listener & {
@@ -5730,7 +5730,7 @@ export type Triage = {
   note?: string;
 };
 
-/** What starts the next step when something happens in a venture (M-12), as React's event handlers and effects trigger actions. An event is a line of the venture's provenance log: a record written, drafted, accepted, confirmed or moved. A trigger lives in naive.config.json triggers, or in a Mentura kit's automations; a kit's automation also names the package it needs, and runs only once that package is complete. A run that fails is recorded and raised as a decision for the founder, never lost (E-7). packages/naive/src/router/orchestration/triggers.mjs runs them. */
+/** What starts the next step when something happens in a venture (M-12), as React's event handlers and effects trigger actions. An event is a line of the venture's provenance log: a record written, drafted, accepted, confirmed or moved. A trigger lives in naive.config.json triggers, or in a Mentura kit's automations; a kit's automation also names the package it needs, and runs only once that package is complete. A run that fails is recorded and raised as a decision for the founder, never lost (E-7). packages/naive/src/router/orchestration/triggers.ts runs them. */
 export type Trigger = {
   id: string;
   /** Which provenance entries start it; every field given must match */

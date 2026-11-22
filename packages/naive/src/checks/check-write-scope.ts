@@ -23,7 +23,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 // The tests run under the check: the router's writes and boundaries, the interfaces over it, and the
 // engine's steps that write records. Each makes its venture under the temp dir.
 export const TESTS = [
-  "packages/naive/src/router/writes-test.mjs",
+  "packages/naive/src/router/writes-test.ts",
   "packages/naive/src/interfaces/test.ts",
   "packages/naive/src/interfaces/tests/agent-files-test.ts",
   "packages/naive/src/interfaces/tests/gate-test.ts",

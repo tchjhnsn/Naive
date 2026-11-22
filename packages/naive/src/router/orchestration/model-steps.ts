@@ -32,18 +32,18 @@
 // and prints {model, answers} (the same protocol as Jev). With none, run refuses and payload shows what
 // would be asked. This module never names a vendor or a credential.
 //
-//   node packages/naive/src/router/orchestration/model-steps.mjs <venture dir> payload [--package <name>] [--kit <kit.json>] [--json]
-//   node packages/naive/src/router/orchestration/model-steps.mjs <venture dir> run [--package <name>] [--kit <kit.json>] [--answers <file>] [--speculate] [--stream] [--fresh] [--json]
-//   node packages/naive/src/router/orchestration/model-steps.mjs <venture dir> check [--package <name>] [--kit <kit.json>]
-//   node packages/naive/src/router/orchestration/model-steps.mjs <venture dir> waterfall [--json]
-//   node packages/naive/src/router/orchestration/model-steps.mjs <venture dir> provenance <file> [--checks] [--json]
-//   node packages/naive/src/router/orchestration/model-steps.mjs <venture dir> confirm <judgment id> --by <name>
+//   node packages/naive/src/router/orchestration/model-steps.ts <venture dir> payload [--package <name>] [--kit <kit.json>] [--json]
+//   node packages/naive/src/router/orchestration/model-steps.ts <venture dir> run [--package <name>] [--kit <kit.json>] [--answers <file>] [--speculate] [--stream] [--fresh] [--json]
+//   node packages/naive/src/router/orchestration/model-steps.ts <venture dir> check [--package <name>] [--kit <kit.json>]
+//   node packages/naive/src/router/orchestration/model-steps.ts <venture dir> waterfall [--json]
+//   node packages/naive/src/router/orchestration/model-steps.ts <venture dir> provenance <file> [--checks] [--json]
+//   node packages/naive/src/router/orchestration/model-steps.ts <venture dir> confirm <judgment id> --by <name>
 
 import { spawn } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, join, resolve as resolvePath } from "node:path";
-import { call as routerCall, files as ventureFiles, glob, routes } from "../router.mjs";
+import { call as routerCall, files as ventureFiles, glob, routes } from "../router.ts";
 import { agentFromEnv, entries as provEntries, record as prov } from "../../core/provenance.ts";
 import { decisions as decisionsOf, propose } from "../../engine/decisions.ts";
 import { loadPackages } from "../../engine/load-packages.ts";
@@ -709,7 +709,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const pick = () => stepsOf({ packages: opt("package") ? [opt("package")] : undefined, kit: opt("kit") ? resolvePath(opt("kit")) : undefined });
   const kitCall = async () => {
     if (!opt("kit")) return routerCall;
-    const { wrap } = await import("../kit-boundary.mjs");
+    const { wrap } = await import("../kit-boundary.ts");
     return wrap(load(resolvePath(opt("kit"))));
   };
   try {

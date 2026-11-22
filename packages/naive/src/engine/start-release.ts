@@ -19,7 +19,7 @@ const opt = (n: string) => { const i = args.indexOf(`--${n}`); return i >= 0 ? a
 const values = new Set(["port", "get", "now"].flatMap((n) => { const v = opt(n); return v !== undefined ? [v] : []; }));
 const dir = args.find((a) => !a.startsWith("--") && !values.has(a));
 if (!dir || !existsSync(join(dir, "venture.json"))) { console.error("usage: node packages/naive/src/engine/start-release.ts <venture dir> [--port n] | --get <path>"); process.exit(2); }
-if (!readRelease(dir)) { console.error(`no release in ${dir}: run node packages/naive/src/router/orchestration/build-release.mjs ${dir} first`); process.exit(1); }
+if (!readRelease(dir)) { console.error(`no release in ${dir}: run node packages/naive/src/router/orchestration/build-release.ts ${dir} first`); process.exit(1); }
 
 const get = opt("get");
 if (get !== undefined) {

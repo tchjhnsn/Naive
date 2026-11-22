@@ -42,7 +42,7 @@
     "packages/naive/src/interfaces/test.ts",
     "packages/naive/src/interfaces/adapters.ts",
     "packages/naive/src/interfaces/tests/gate-test.ts",
-    "packages/naive/src/router/orchestration/triggers.mjs"
+    "packages/naive/src/router/orchestration/triggers.ts"
   ],
   "gaps": [
     "The operator console is a folder, not part of the layer yet",

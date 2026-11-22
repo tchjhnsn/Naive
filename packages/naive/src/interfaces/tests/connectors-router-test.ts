@@ -30,7 +30,7 @@ cpSync(join(repo, "packages/naive/src/records/examples/workspace"), ws, { recurs
 process.env.MENTURA_WORKSPACE = ws;
 const tandem = join(ws, "ventures/tandem");
 const shared = join(ws, "shared");
-const { call } = await import("../../router/router.mjs");
+const { call } = await import("../../router/router.ts");
 const { entries } = await import("../../core/provenance.ts");
 const kettle: Record<string, unknown> = { ...Object.values((await call({ venture: "tandem", route: "purpose/product", action: "read" })).result)[0] as Record<string, unknown>, id: "kettle", name: "Kettle (in the shared folder)" };
 write(shared, { "products/kettle.json": JSON.stringify(kettle, null, 2) + "\n", "notes/launch.md": "# Launch plan\n\nShip the kettle subscription in spring.\n" });

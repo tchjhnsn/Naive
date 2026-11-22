@@ -9,10 +9,10 @@
 //   per record    one bad record (a file that does not parse or does not match its schema) does not fail
 //                 its package's read or check: the others come back, and the bad one is named with its fix.
 //
-//   node packages/naive/src/router/boundaries.mjs check <venture dir> [--package <name>] [--json]   the boundaries, exit 1 on a failure
-//   node packages/naive/src/router/boundaries.mjs recover <venture dir> --confirm recover           rebuild a broken venture.json
+//   node packages/naive/src/router/boundaries.ts check <venture dir> [--package <name>] [--json]   the boundaries, exit 1 on a failure
+//   node packages/naive/src/router/boundaries.ts recover <venture dir> --confirm recover           rebuild a broken venture.json
 //
-// The router calls these through packages/naive/src/router/writes.mjs; `mentura venture check` and `mentura <package> check`
+// The router calls these through packages/naive/src/router/writes.ts; `mentura venture check` and `mentura <package> check`
 // run them. Never calls a model.
 
 import { spawnSync } from "node:child_process";
@@ -78,7 +78,7 @@ export function ventureHealth(dir) {
       ...(git ? [`Restore the last committed version: git -C ${dir} checkout -- venture.json`] : []),
       ...(refused ? [refused.message] : []),
       `Fix it by hand: it must be a JSON object with ${VENTURE_SCHEMA().required.join(", ")}`,
-      `Or rebuild a minimal one, keeping the broken file in _private/: node packages/naive/src/router/boundaries.mjs recover ${dir} --confirm recover`,
+      `Or rebuild a minimal one, keeping the broken file in _private/: node packages/naive/src/router/boundaries.ts recover ${dir} --confirm recover`,
       `Then check it: node packages/naive/src/records/validate.ts --schema venture.schema.json --file ${file}`,
     ],
     template: minimalVenture(dir),
@@ -139,7 +139,7 @@ function validateFile(file, schema) {
  */
 export async function boundaries(dir, { only = null } = {}) {
   const { structure, checkManifest, manifest } = await import("../engine/structure.ts");
-  const { routes, glob } = await import("./router.mjs");
+  const { routes, glob } = await import("./router.ts");
   const { routable } = await import("../engine/structure.ts");
   const h = ventureHealth(dir);
   if (h) return { ok: false, reached: "venture", venture: { ok: false, error: h.problem, recovery: h.recovery }, packages: [], proceeds: [] };
@@ -209,7 +209,7 @@ export function recover(dir) {
 if (import.meta.url === `file://${process.argv[1]}`) {
   const [cmd, dir] = process.argv.slice(2);
   const opt = (n) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 ? process.argv[i + 1] : undefined; };
-  if (!["check", "recover"].includes(cmd) || !dir || !existsSync(dir)) { console.error("usage: node packages/naive/src/router/boundaries.mjs check <venture dir> [--package <name>] [--json] | recover <venture dir> --confirm recover"); process.exit(2); }
+  if (!["check", "recover"].includes(cmd) || !dir || !existsSync(dir)) { console.error("usage: node packages/naive/src/router/boundaries.ts check <venture dir> [--package <name>] [--json] | recover <venture dir> --confirm recover"); process.exit(2); }
   if (cmd === "recover") {
     if (opt("confirm") !== "recover") { console.error("recover rewrites venture.json: pass --confirm recover"); process.exit(1); }
     const r = recover(dir);

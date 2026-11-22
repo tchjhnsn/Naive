@@ -40,7 +40,7 @@ const own = (rel: string) => { const p = venture && join(venture, "governance", 
 type Grant = Delegation["grants"][number];
 let d: Delegation;
 try { d = readDelegation(file) as Delegation; } catch (e) { console.log(`FAIL  ${(e as Error).message}`); process.exit(1); }
-// A venture's own classes and roles overlay the template's, by id, as check-ready.ts and router.mjs do.
+// A venture's own classes and roles overlay the template's, by id, as check-ready.ts and router.ts do.
 const classes = new Set(load<DecisionRights>(join(template, "decision-rights.json")).classes.map((c) => c.id));
 const ownRights = own("decision-rights.json");
 if (ownRights) for (const c of load<DecisionRights>(ownRights).classes) classes.add(c.id);
