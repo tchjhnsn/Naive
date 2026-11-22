@@ -1,0 +1,14 @@
+{
+  "function": "it",
+  "rows": [
+    { "class": "domain-fact", "level": "decide", "examples": ["Record that the code host connection was last synced on the 3rd", "Record which scopes the email connection holds"] },
+    { "class": "security-tightening", "level": "decide", "examples": ["Remove write scope the support agent never used", "Turn on MFA for the domain registrar"] },
+    { "class": "security-loosening", "level": "escalate", "examples": ["Give the marketing agent send rights on the email system", "Grant a contractor admin access to the hosting account"] },
+    { "class": "new-dependency-free", "level": "recommend", "approver": "product-lead", "examples": ["Adopt an open-source password manager", "Connect a free uptime monitor"] },
+    { "class": "set-priorities", "level": "recommend", "approver": "product-lead", "examples": ["Fix shared admin keys before connecting the CRM"] },
+    { "class": "spend-money", "level": "escalate", "examples": ["Move to the paid plan of the hosting provider", "Buy single sign-on for the team"] },
+    { "class": "cancel-or-downgrade", "level": "escalate", "examples": ["Cancel the second analytics tool nobody opens", "Drop two unused seats"] },
+    { "class": "legal-or-terms", "level": "escalate", "examples": ["Accept a vendor's data processing terms", "Agree to an API's usage terms"] },
+    { "class": "irreversible-data-change", "level": "escalate", "examples": ["Delete the old CRM and its records after migrating", "Disconnect a system and drop its synced data"] }
+  ]
+}

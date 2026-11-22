@@ -1,0 +1,58 @@
+{
+  "id": "weekly-raise-review",
+  "function": "external-relationships",
+  "title": "Review an open raise each week",
+  "trigger": {
+    "kind": "schedule",
+    "cadence": "weekly"
+  },
+  "reads": [
+    "investor-relations/raises",
+    "investors",
+    "purpose/money/summary"
+  ],
+  "steps": [
+    {
+      "id": "check-open",
+      "do": "Stop here unless a raise is open."
+    },
+    {
+      "id": "chase-follow-ups",
+      "do": "List overdue follow-ups and targets with no touch in two weeks, and change their status only on evidence.",
+      "skill": "fundraise",
+      "writes": [
+        "investor-relations/raises/[id]"
+      ]
+    },
+    {
+      "id": "propose-next",
+      "do": "Propose the next investors to approach in order, raising it to the strategy lead.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    },
+    {
+      "id": "stop-date",
+      "do": "When the stop date has passed, propose closing or abandoning the raise as a decision for the founder.",
+      "raises": [
+        "strategy-or-constitution"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/records/validate.mjs"
+    },
+    {
+      "id": "follow-ups-current",
+      "kind": "review",
+      "check": "Does every meeting have a follow-up that is done or has a future due date, and is the stop date respected?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "function": "supply-chain",
+  "rows": [
+    { "class": "domain-fact", "level": "decide", "examples": ["Record a quoted lead time of 35 days", "Record that 480 of 500 units arrived", "Classify the battery cell as a bottleneck item"] },
+    { "class": "set-priorities", "level": "recommend", "approver": "product-lead", "examples": ["Find a second source for the enclosure before negotiating unit price", "Chase the late PCB order before reordering packaging"] },
+    { "class": "spend-money", "level": "escalate", "examples": ["Place the first 1,000-unit production order", "Pay a tooling deposit", "Reorder packaging"] },
+    { "class": "legal-or-terms", "level": "escalate", "examples": ["Approve a contract manufacturer and accept its quality agreement", "Agree FOB Shenzhen with 30% deposit and 70% before shipment"] },
+    { "class": "public-commitment", "level": "escalate", "examples": ["Send a purchase order to a supplier", "Send a request for quotation to three factories"] }
+  ]
+}

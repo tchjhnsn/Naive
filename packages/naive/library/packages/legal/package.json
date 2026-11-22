@@ -53,12 +53,19 @@
   "gates": [
     "a person has confirmed every required record and every record this package reads"
   ],
+  "layer": "governance",
+  "records": [
+    "risk",
+    "obligation"
+  ],
   "schemas": [
     "packages/naive/src/records/ownership.schema.json",
     "packages/naive/src/records/decision-rights.schema.json",
     "packages/naive/src/records/board.schema.json",
     "packages/naive/src/records/exit.schema.json",
-    "packages/naive/src/records/publication-policy.schema.json"
+    "packages/naive/src/records/publication-policy.schema.json",
+    "packages/naive/src/records/risk.schema.json",
+    "packages/naive/src/records/obligation.schema.json"
   ],
   "templates": [],
   "checks": [

@@ -6,6 +6,18 @@ Up: [naive](../../../../README.md)
 
 One module per function of a venture, the 13 in [`departments.json`](./departments.json) (APQC's cross-industry categories, EE-047). Each module holds the skills, templates, frameworks and kits Naive ships for that function. They came out of the six layer folders (purpose, knowledge, operations, evidence, governance, interface) in EE-118 step 7: each item went to the function that owns it. The layers' own manifests, tooling lists and references moved to [`../records/layers/`](../records/layers/), because a layer still organizes record types in the data model. The interface layer's skills went to [`../interfaces/skills/`](../interfaces/skills/), because they are about using Naive, not about a venture function.
 
+## A complete module
+
+A module is complete when it has every piece below; `node packages/naive/src/checks/check-functions.ts --complete` lists what each one still lacks, and all 13 modules are complete, and `check-functions.ts` without the flag checks every piece a module has (`node packages/naive/src/checks/check-functions-test.ts`). [`finance/`](./finance/README.md) was the first.
+
+| File | Holds |
+|---|---|
+| `function.json` | Purpose, intake workflow, telos measure kinds, capability clusters (`packages/naive/src/records/function-module.schema.json`). Records owned, lead and write reach are derived from the data model, the lead role templates and the route table |
+| `agent.md` | The function agent's instructions, harness-neutral, with frontmatter `role: <id>-agent` and `function: <id>` |
+| `workflows/<id>.json` | At least two: the intake and the recurring work, each with a trigger, steps, the routes each writes, the classes it raises and done criteria (`packages/naive/src/records/function-workflow.schema.json`) |
+| `decisions.json` | The decision matrix: decide, recommend or escalate per decision class; one-way doors and never-redelegated classes are always escalate (`packages/naive/src/records/function-decisions.schema.json`) |
+| `skills/` | At least one skill a workflow step loads |
+
 ## Where things are
 
 | Path | Holds |

@@ -1,0 +1,13 @@
+{
+  "function": "risk-and-compliance",
+  "rows": [
+    { "class": "domain-fact", "level": "decide", "examples": ["Record that the Delaware franchise tax was paid on 2 February", "Add the annual report to the compliance calendar", "Narrow a risk's likelihood range after new evidence"] },
+    { "class": "legal-or-terms", "level": "escalate", "examples": ["Sign a customer's data processing agreement", "Accept a platform's new terms of service", "File the annual report", "Accept a contract with uncapped liability"] },
+    { "class": "ownership-or-control", "level": "escalate", "examples": ["Mail an 83(b) election for founder stock", "Issue shares before an IP assignment is signed"] },
+    { "class": "public-commitment", "level": "escalate", "examples": ["Notify a regulator or affected people of a data breach", "Publish a new privacy notice", "Answer a prospect's security questionnaire"] },
+    { "class": "spend-money", "level": "escalate", "examples": ["Pay a filing fee", "Buy cyber insurance", "Engage outside counsel for a financing"] },
+    { "class": "security-tightening", "level": "decide", "examples": ["Require two-factor sign-in on the shared admin account", "Remove a departed contractor's access"] },
+    { "class": "irreversible-data-change", "level": "escalate", "examples": ["Delete a customer's personal data on their request", "Delete records under a retention rule"] },
+    { "class": "set-priorities", "level": "recommend", "approver": "finance-lead", "examples": ["Which of the top risks to treat this quarter", "Whether to start a SOC 2 audit now or wait for a named deal"] }
+  ]
+}

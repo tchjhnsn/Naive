@@ -1,0 +1,16 @@
+{
+  "id": "quarterly-risk-review",
+  "function": "risk-and-compliance",
+  "title": "Review the risk register each quarter",
+  "trigger": { "kind": "schedule", "cadence": "quarterly" },
+  "reads": ["legal/risks", "legal/obligations", "foundation/telos", "purpose/money/summary", "finance/budget"],
+  "steps": [
+    { "id": "rerank", "do": "Recompute each open risk's expected loss from its ranges, update any range new evidence moves, and rank the register by expected loss.", "skill": "risk-register", "writes": ["legal/risks/[id]"] },
+    { "id": "prune", "do": "Close risks that no longer apply, keep about fifteen live risks at most, and flag any with no person owner or a review date in the past.", "skill": "risk-register", "writes": ["legal/risks/[id]"] },
+    { "id": "propose-treatments", "do": "For the top risks, propose a treatment (avoid first, then reduce, transfer or accept) with its cost against the budget, and raise which to treat this quarter to the finance lead.", "skill": "risk-register", "raises": ["set-priorities", "spend-money"] }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/records/validate.mjs" },
+    { "id": "owned-and-dated", "kind": "review", "check": "Does every open risk have a person owner, 90% ranges for likelihood and impact, and a review date in the future?", "reviewer": "finance-lead" }
+  ]
+}

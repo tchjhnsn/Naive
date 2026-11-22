@@ -1,0 +1,91 @@
+{
+  "id": "intake",
+  "function": "strategy",
+  "title": "Learn the venture's strategy",
+  "trigger": {
+    "kind": "intake"
+  },
+  "reads": [
+    "venture",
+    "foundation/telos",
+    "foundation/problem",
+    "foundation/icp",
+    "foundation/goals",
+    "foundation/constraints",
+    "foundation/exit-criteria",
+    "purpose/competitor"
+  ],
+  "steps": [
+    {
+      "id": "read-what-exists",
+      "do": "Read the telos, problem, customer profiles, goals, constraints and exit criteria, and list what is missing, most needed first."
+    },
+    {
+      "id": "ask-telos",
+      "do": "Ask what the venture is for when it has done its job and how anyone would know, and draft the telos for the founder to confirm.",
+      "skill": "telos",
+      "ask": true,
+      "writes": [
+        "foundation/telos"
+      ],
+      "raises": [
+        "strategy-or-constitution"
+      ]
+    },
+    {
+      "id": "ask-problem-and-customer",
+      "do": "Ask which problem the venture solves and for whom, and draft the problem and one primary customer profile.",
+      "ask": true,
+      "writes": [
+        "foundation/problem",
+        "foundation/icp/[id]"
+      ],
+      "raises": [
+        "strategy-or-constitution"
+      ]
+    },
+    {
+      "id": "ask-limits",
+      "do": "Ask for the hard limits on money, time and values, and record them as constraints.",
+      "ask": true,
+      "writes": [
+        "foundation/constraints"
+      ]
+    },
+    {
+      "id": "ask-goals-and-kill-criteria",
+      "do": "Ask for this quarter's goal and the state and date that would end the current bet, and draft a goal and an exit criterion.",
+      "ask": true,
+      "writes": [
+        "foundation/goals/[id]",
+        "foundation/exit-criteria/[id]"
+      ],
+      "raises": [
+        "strategy-or-constitution"
+      ]
+    },
+    {
+      "id": "summarize",
+      "do": "Summarize the foundation in a decision for the founder: what is confirmed, what is drafted, and the first assumption to test, each citing its record.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/records/validate.mjs"
+    },
+    {
+      "id": "foundation-cites",
+      "kind": "review",
+      "check": "Does each drafted foundation record name its source, and is the first assumption to test the one the founder is least sure of?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

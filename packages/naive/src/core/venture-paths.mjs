@@ -76,13 +76,18 @@ export const FUNCTIONS = ["strategy", "products", "marketing-and-sales", "supply
 export const PACKAGE_FUNCTION = Object.freeze({
   foundation: "strategy", validation: "strategy",
   product: "products", engineering: "products",
-  marketing: "marketing-and-sales", customers: "marketing-and-sales", deals: "marketing-and-sales",
+  marketing: "marketing-and-sales", customers: "marketing-and-sales", deals: "marketing-and-sales", sales: "marketing-and-sales",
+  support: "customer-service",
   operations: "service-delivery",
   people: "human-capital", cofounder: "human-capital",
   finance: "finance", fund: "finance", money: "finance",
   legal: "risk-and-compliance", counsel: "risk-and-compliance",
   relationships: "external-relationships", investor: "external-relationships", investors: "external-relationships", partner: "external-relationships",
+  "investor-relations": "external-relationships",
   it: "it",
+  "supply-chain": "supply-chain", "service-delivery": "service-delivery",
+  capabilities: "capabilities",
+  assets: "assets",
 });
 export const CODEBASE = "codebase";
 

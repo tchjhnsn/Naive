@@ -10,6 +10,12 @@ The finance and accounting function (APQC 9.0, Manage Financial Resources). Its 
 
 | Path | Holds |
 |---|---|
+| [function.json](./function.json) | The manifest: purpose, intake, measures, capability clusters |
+| [agent.md](./agent.md) | The finance agent's instructions |
+| [decisions.json](./decisions.json) | The decision matrix |
+| [workflows/intake.json](./workflows/intake.json) | Workflow: learn the venture's money |
+| [workflows/monthly-spend-review.json](./workflows/monthly-spend-review.json) | Workflow: review spend against the budget and runway each month |
+| [skills/budget-and-runway](./skills/budget-and-runway) | Skill: draft and keep the budget (`finance/budget/[id]`), each line citing its source, and project runway from it |
 | [skills/equity-and-share-classes](./skills/equity-and-share-classes) | Skill: Help a founder decide how ownership is counted and which share types to have, and when: common, preferred, super-voting (dual-class), non-voting, LLC units, the employee  |
 | [skills/exit-planning](./skills/exit-planning) | Skill: Help a founder decide which ways the venture might end it should keep open (acquisition, IPO, secondary sales, merger, management buyout, wind-down, or hold) and see what |
 | [skills/financing-and-investor-rights](./skills/financing-and-investor-rights) | Skill: Help a founder decide whether and how to take outside money and what rights investors get in return: bootstrapping, grants, debt, SAFEs, convertible notes and priced roun |

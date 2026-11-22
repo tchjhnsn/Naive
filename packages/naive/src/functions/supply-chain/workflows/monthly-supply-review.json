@@ -1,0 +1,17 @@
+{
+  "id": "monthly-supply-review",
+  "function": "supply-chain",
+  "title": "Review suppliers, orders and supply risk each month",
+  "trigger": { "kind": "schedule", "cadence": "monthly" },
+  "reads": ["supply-chain/suppliers", "supply-chain/purchase-orders", "product", "finance/spend", "money"],
+  "steps": [
+    { "id": "update-orders", "do": "Update each purchase order's status and delivery date from the supplier's confirmations and what arrived, and flag any order that is late or short.", "writes": ["supply-chain/purchase-orders/[id]"] },
+    { "id": "review-suppliers", "do": "List suppliers whose re-evaluation is due or whose deliveries were late or defective, and prepare a keep, condition or suspend decision for each.", "skill": "supplier-and-purchasing", "writes": ["supply-chain/suppliers/[id]"], "raises": ["legal-or-terms"] },
+    { "id": "check-supply-risk", "do": "For each bottleneck or strategic item with a single source, propose a second source, buffer stock or accepting the risk, and bring the order of that work to the product lead.", "skill": "supplier-and-purchasing", "raises": ["set-priorities"] },
+    { "id": "propose-reorders", "do": "Where stock on hand will not cover demand over the supplier's lead time, draft a reorder as a purchase order with its total, for the founder to approve and send.", "skill": "supplier-and-purchasing", "writes": ["supply-chain/purchase-orders/[id]"], "raises": ["spend-money", "public-commitment"] }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/records/validate.mjs" },
+    { "id": "orders-decided-or-open", "kind": "review", "check": "Is every drafted order either approved by a person or open as a spend decision, and every late order flagged?", "reviewer": "product-lead" }
+  ]
+}
