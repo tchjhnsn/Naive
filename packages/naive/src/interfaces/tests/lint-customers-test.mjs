@@ -21,7 +21,7 @@ const write = (dir, rel, body) => {
   mkdirSync(join(path, ".."), { recursive: true });
   writeFileSync(path, typeof body === "string" ? body : JSON.stringify(body, null, 2) + "\n");
 };
-const cli = (dir, args = []) => spawnSync("node", [join(repo, "packages/naive/src/checks/lint-customers.mjs"), dir, ...args], { encoding: "utf8" });
+const cli = (dir, args = []) => spawnSync("node", [join(repo, "packages/naive/src/checks/lint-customers.ts"), dir, ...args], { encoding: "utf8" });
 const run = (dir) => {
   const r = cli(dir, ["--json"]);
   let body = null;
@@ -221,11 +221,11 @@ function venture(layout = "flat") {
 }
 
 {
-  const usage = spawnSync("node", [join(repo, "packages/naive/src/checks/lint-customers.mjs")], { encoding: "utf8" });
+  const usage = spawnSync("node", [join(repo, "packages/naive/src/checks/lint-customers.ts")], { encoding: "utf8" });
   const missing = run(join(tmpdir(), "lint-customers-no-such-venture"));
   expect("no venture directory exits 2", usage.status === 2 && missing.status === 2);
   const table = routes().find((r) => r.route === "customers/lint");
-  expect("customers/lint is a command route on packages/naive/src/checks/lint-customers.mjs", table?.kind === "command" && table.script === "packages/naive/src/checks/lint-customers.mjs" && table.actions.includes("run"));
+  expect("customers/lint is a command route on packages/naive/src/checks/lint-customers.ts", table?.kind === "command" && table.script === "packages/naive/src/checks/lint-customers.ts" && table.actions.includes("run"));
 }
 
 {

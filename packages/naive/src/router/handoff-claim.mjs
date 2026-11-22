@@ -121,7 +121,7 @@ export async function claimHandoff({ dir, r, id, route, requested, file, actor, 
     let h;
     try { h = JSON.parse(cur.content); } catch (e) { return { ok: false, error: `${file} does not parse: ${message(e)}` }; }
     if (h.claimed_by) return { ok: false, error: `${id} is already claimed by ${h.claimed_by}`, claimed_by: h.claimed_by };
-    if (h.status !== "ready") return { ok: false, error: `${id} is ${h.status}: only a ready handoff is claimed (node packages/naive/src/checks/check-ready.mjs --record makes it ready)` };
+    if (h.status !== "ready") return { ok: false, error: `${id} is ${h.status}: only a ready handoff is claimed (node packages/naive/src/checks/check-ready.ts --record makes it ready)` };
     if (h.role !== actor_id) return { ok: false, error: `${id} is addressed to ${h.role}, not ${actor_id}: only its role claims it` };
     const next = { ...h, claimed_by: who, status: "in-progress" };
     const v = validateValue(schemaNameOf(r.schema), next);

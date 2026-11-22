@@ -25,5 +25,5 @@
     { "record": "spend-register", "attribute": "renewal_date", "phase": "*", "product": "*", "account": "*", "actor": "*", "system_of_record": "bank-statement-sync", "owner": "finance-agent", "note": "The bank statement is the system of record for renewal dates" },
     { "record": "spend-register", "attribute": "approval", "phase": "*", "product": "*", "account": "*", "actor": "*", "system_of_record": "it-tools", "owner": "it-agent", "note": "IT's tool record is the system of record for approval; the register cites it by id and never copies it" }
   ],
-  "note": "The template's source-of-truth matrix (EE-042). Its rules are the access matrix for the spend register, field by field (lead agents design, \"The spend register and the access matrix\"). A venture copies it to knowledge/sources.json and points each source at its own connector; packages/naive/src/checks/check-sources.mjs refuses two rules that tie."
+  "note": "The template's source-of-truth matrix (EE-042). Its rules are the access matrix for the spend register, field by field (lead agents design, \"The spend register and the access matrix\"). A venture copies it to knowledge/sources.json and points each source at its own connector; packages/naive/src/checks/check-sources.ts refuses two rules that tie."
 }

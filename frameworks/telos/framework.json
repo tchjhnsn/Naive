@@ -22,7 +22,7 @@
   "template": "packages/naive/src/functions/strategy/templates/telos-based-smart.md",
   "skill": "packages/naive/src/functions/strategy/skills/telos/SKILL.md",
   "adapter": "frameworks/telos/adapter.mjs",
-  "checks": ["packages/naive/src/checks/check-telos.mjs"],
+  "checks": ["packages/naive/src/checks/check-telos.ts"],
   "maps_to": [
     { "framework_field": "statement", "canonical_route": "foundation/goals/[id]", "canonical_field": "statement", "note": "goal id telos, kind venture" },
     { "framework_field": "end_state", "canonical_route": "foundation/goals/[id]", "canonical_field": "end_state" },

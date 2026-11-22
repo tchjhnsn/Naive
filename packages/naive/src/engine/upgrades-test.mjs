@@ -55,7 +55,7 @@ expect("kit-to-package rewrites the where-used parent route", json(join(a, "know
 const rel = json(join(a, `.release/upgrade-${reg.framework}.json`));
 expect("the release record lists each migration, the packages pinned and the guides", rel.from === "0.1.0" && rel.migrations.map((m) => m.id).join() === "package-layout,kit-to-package,icp-profiles,telos-to-goals" && rel.guides.length === 2 && rel.packages.length > 5);
 const log = entries(a);
-expect("each move, rewrite and pin is a provenance line, and the chain holds", log.some((e) => e.activity === "move" && e.entity === "people/team-plan.json") && log.some((e) => e.activity === "write" && e.entity === "people/team-plan.json" && e.agent.id === "naive-upgrade") && log.some((e) => e.entity === "naive.config.json") && run("packages/naive/src/checks/check-provenance.mjs", [a]).status === 0);
+expect("each move, rewrite and pin is a provenance line, and the chain holds", log.some((e) => e.activity === "move" && e.entity === "people/team-plan.json") && log.some((e) => e.activity === "write" && e.entity === "people/team-plan.json" && e.agent.id === "naive-upgrade") && log.some((e) => e.entity === "naive.config.json") && run("packages/naive/src/checks/check-provenance.ts", [a]).status === 0);
 const read = mentura(["purpose/validation/problem", "read", "--venture", "alpha"]);
 expect("an old route still resolves through its alias, with a deprecation note", read.status === 0 && /purpose\/validation\/problem is now foundation\/problem/.test(read.stderr), read.stderr);
 const again = naive(["upgrade", a]);
@@ -128,7 +128,7 @@ const st = naive(["upgrade", s, "--stage"]);
 expect("--stage upgrades a copy and runs the checks; the venture is untouched", st.status === 0 && /: ready/.test(st.stdout) && JSON.stringify(snapshot(s)) === JSON.stringify(sBefore), st.stdout + st.stderr);
 expect("accepting needs the typed confirmation", naive(["upgrade", s, "--accept", "--confirm", "yes"]).status === 1 && JSON.stringify(snapshot(s)) === JSON.stringify(sBefore));
 const acc = naive(["upgrade", s, "--accept", "--confirm", "upgrade"]);
-expect("a confirmed staged upgrade lands, and the chain holds", acc.status === 0 && json(join(s, "naive.config.json")).naive.version === reg.framework && run("packages/naive/src/checks/check-provenance.mjs", [s]).status === 0, acc.stdout + acc.stderr);
+expect("a confirmed staged upgrade lands, and the chain holds", acc.status === 0 && json(join(s, "naive.config.json")).naive.version === reg.framework && run("packages/naive/src/checks/check-provenance.ts", [s]).status === 0, acc.stdout + acc.stderr);
 expect("--stage on a venture with nothing to upgrade is refused", naive(["upgrade", s, "--stage"]).status === 1);
 
 // U-1: updating the installed framework is a fast-forward of its checkout.

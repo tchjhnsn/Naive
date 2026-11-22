@@ -108,7 +108,7 @@ Signal detection theory splits a call into a sensory stage, which turns the worl
 
 | Sensor | Example | Score |
 |---|---|---|
-| A deterministic check | `check-validation.mjs`, `premise-lint.mjs`, `decision-index.mjs` | the number the check already computes |
+| A deterministic check | `check-validation.ts`, `premise-lint.ts`, `decision-index.mjs` | the number the check already computes |
 | The founder's own agent | the answers file a model step reads (`model-steps.mjs run --answers <file>`, written by Claude Code, Cursor or Codex) | the confidence in that answer |
 | A person | a founder or teammate rating a draft on a scale | the rating |
 | Accumulated outcomes | the standing rule's override history | the SPRT statistic |

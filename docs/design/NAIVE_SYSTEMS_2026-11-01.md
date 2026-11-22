@@ -303,7 +303,7 @@ The record types themselves are registered in `schema/data-model.json`: 117 type
 | Move package folders under `knowledge/` (EE-086), with route aliases | `naive check` finds no package folder at the venture root |
 | Rename `validation` to `research` (pending confirmation of R-11's reading) | `check-nouns` |
 | Decide whether schemas live in packages or in the registry | Decision with `affects` |
-| Record generators for the 114 types in `gaps.json` | `check-data-model.mjs`; the gap list shrinks to zero |
+| Record generators for the 114 types in `gaps.json` | `check-data-model.ts`; the gap list shrinks to zero |
 
 ### Sources
 
@@ -595,7 +595,7 @@ A finding from the ontology run on 2026-11-01: provenance is per record version,
 
 | Item | Check that proves it |
 | --- | --- |
-| `record` (id) on every line, with `entity` (path) kept as where | `check-provenance.mjs`: every line resolves to a record id |
+| `record` (id) on every line, with `entity` (path) kept as where | `check-provenance.ts`: every line resolves to a record id |
 | `decision` as a decision id, with free text moved to `note` | Check: every decision id resolves |
 | The who of a write holds the role that owns the record's function | Cross-scale check (venture-scale who against record-scale who) |
 | The generated index (R-19) | Rebuilt from files gives the same index |

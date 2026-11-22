@@ -1,5 +1,5 @@
 {
- "note": "EE-099: record types that do not yet name a record generator. packages/naive/src/checks/check-data-model.mjs fails a type that names none and is not listed here, and fails a listed type that has one. Shrinks only.",
+ "note": "EE-099: record types that do not yet name a record generator. packages/naive/src/checks/check-data-model.ts fails a type that names none and is not listed here, and fails a listed type that has one. Shrinks only.",
  "gaps": [
   "account",
   "activity",

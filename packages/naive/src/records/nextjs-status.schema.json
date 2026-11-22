@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "nextjs-status.schema.json",
   "title": "Next.js translation status",
-  "description": "Whether each concept of the Next.js translation ledger is built, and the docs page that explains it. Checked by packages/naive/src/checks/check-nextjs-status.mjs.",
+  "description": "Whether each concept of the Next.js translation ledger is built, and the docs page that explains it. Checked by packages/naive/src/checks/check-nextjs-status.ts.",
   "type": "object",
   "required": ["about", "checked", "rows"],
   "additionalProperties": false,

@@ -318,7 +318,7 @@ export async function stage(dir, { reg = registry(), by = "naive" } = {}) {
 
 // The checks a staged upgrade must pass before it lands: the venture-wide checkers, every routed JSON
 // record against its schema, and nothing left to upgrade.
-export const CHECKS = ["packages/naive/src/checks/check-ventures.mjs", "packages/naive/src/checks/check-provenance.mjs", "packages/naive/src/engine/decisions.mjs", "packages/naive/src/checks/check-data-packages.mjs", "packages/naive/src/checks/check-private.mjs", "packages/naive/src/checks/check-sources.mjs", "packages/naive/src/checks/check-where-used.mjs", "packages/naive/src/checks/check-governance.mjs"];
+export const CHECKS = ["packages/naive/src/checks/check-ventures.ts", "packages/naive/src/checks/check-provenance.ts", "packages/naive/src/engine/decisions.mjs", "packages/naive/src/checks/check-data-packages.ts", "packages/naive/src/checks/check-private.ts", "packages/naive/src/checks/check-sources.ts", "packages/naive/src/checks/check-where-used.ts", "packages/naive/src/checks/check-governance.ts"];
 
 /** Runs the checks on any venture folder: [{ check, passed, output }]. */
 export function runChecks(vdir, { reg = registry() } = {}) {

@@ -145,7 +145,7 @@ t("structured layout: the org chart in venture.json names each function's owner,
   ok(roster.people.every((p) => !("hats" in p)), JSON.stringify(roster));
   const top = readdirSync(join(base, "duo")).filter((f) => !f.startsWith(".")).sort().join(" ");
   ok(top === "AGENTS.md README.md k-base meta package.json venture.json", top);
-  const r = spawnSync("node", [join(repo, "packages/naive/src/checks/check-people.mjs"), join(base, "duo")], { encoding: "utf8" });
+  const r = spawnSync("node", [join(repo, "packages/naive/src/checks/check-people.ts"), join(base, "duo")], { encoding: "utf8" });
   ok(r.status === 0, r.stdout);
 });
 
@@ -181,7 +181,7 @@ t("a VC fund with a team: an investor role, one file per founder, each function 
   const people = load(ventureFile(join(base, "northstar"), "people/people.json"));
   ok(people.mode === "team" && people.people.every((p) => p.role === "general-partner"), JSON.stringify(people));
   ok(JSON.stringify(load(ventureFile(join(base, "northstar"), "people/founders/ada-lovelace.json")).hats) === JSON.stringify(["finance", "external-relationships"]));
-  const check = spawnSync("node", [join(repo, "packages/naive/src/checks/check-people.mjs"), base], { encoding: "utf8" });
+  const check = spawnSync("node", [join(repo, "packages/naive/src/checks/check-people.ts"), base], { encoding: "utf8" });
   ok(check.status === 0, check.stdout);
 });
 
@@ -207,7 +207,7 @@ t("--source points functions at systems; a system with a sync command syncs and 
   ok(fns.finance.systems[0].status === "connected" && fns.finance.systems[0].fixture && existsSync(ventureFile(join(base, "shop"), "money/_summary.json")), JSON.stringify(fns));
   ok(fns["marketing-and-sales"].systems[0].status === "pointed");
   // The transactions the sync wrote are sensitive: git must ignore them.
-  const packs = spawnSync("node", [join(repo, "packages/naive/src/checks/check-data-packages.mjs"), join(base, "shop")], { encoding: "utf8" });
+  const packs = spawnSync("node", [join(repo, "packages/naive/src/checks/check-data-packages.ts"), join(base, "shop")], { encoding: "utf8" });
   ok(!/sensitive stream/.test(packs.stdout + packs.stderr), `the synced transactions stay out of git: ${packs.stdout}${packs.stderr}`);
   const bad = create(["shop2", "--type", "ecommerce", "--source", "finance=vercel", "--yes", "--skip-install", "--no-git"]);
   ok(bad.status === 1 && /vercel is not offered for finance/.test(bad.stderr) && !existsSync(join(base, "shop2")), bad.stderr);

@@ -37,7 +37,7 @@ const put = (dir, rel, obj) => {
   writeFileSync(f, typeof obj === "string" ? obj : JSON.stringify(obj, null, 2) + "\n");
   return f;
 };
-const run = (dir, ...extra) => spawnSync("node", [join(repo, "packages/naive/src/checks/lint-product.mjs"), dir, ...extra], { encoding: "utf8" });
+const run = (dir, ...extra) => spawnSync("node", [join(repo, "packages/naive/src/checks/lint-product.ts"), dir, ...extra], { encoding: "utf8" });
 const json = (r) => { try { return JSON.parse(r.stdout); } catch { return null; } };
 const rules = (r) => new Set((json(r)?.findings ?? []).map((x) => x.rule));
 
