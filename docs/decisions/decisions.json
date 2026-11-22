@@ -1718,6 +1718,32 @@
       ]
     },
     {
+      "id": "EE-124",
+      "date": "2026-11-21",
+      "status": "in-force",
+      "decision": "Function agents and lead agents are defined in Naive, not in Mentura. Each function module (packages/naive/src/functions/<id>/) carries its agent's instructions (agent.md), workflows, decision matrix and skills, and packages/naive/src/engine/agents/ derives each agent's spec from Naive's data: its role, charter, module files and write reach (decisions plus the routes of the record types the data model gives its function, never the team plan), and each lead's portfolio, reach and routing. The specs import no agent framework. Any harness gets the same agents from the installed package; Mentura builds its deepagents from these specs (EE-123 stays: one function agent per function, with sole write reach over its records).",
+      "why": "Torian, 2026-11-21 23:50Z, decision card in the thread \"Prove Naive's 13 functions work as a plugin\": move the function and lead agents from Mentura into Naive. Naive has to be proven working on its own, as a plugin any agent harness can run, before the Venture Studio is built on top of it.",
+      "related": [
+        "EE-123",
+        "EE-041",
+        "EE-122"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/agents/function-spec.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/agents/lead-spec.ts",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
       "id": "EE-125",
       "date": "2026-11-22",
       "status": "in-force",

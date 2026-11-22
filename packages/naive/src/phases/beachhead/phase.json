@@ -1,0 +1,104 @@
+{
+  "id": "beachhead",
+  "step": 3,
+  "name": "Beachhead",
+  "question": "Can we win one segment repeatably, at a profitable cost?",
+  "binding_constraint": "winning one mainstream segment outright",
+  "references": [
+    "moore-1991-crossing-the-chasm",
+    "zook-allen-2012-repeatability"
+  ],
+  "gate": {
+    "name": "Repeatability",
+    "asks": [
+      "Can the venture win accounts in one segment the same way, again and again?",
+      "Does each account cost less to win and serve than it brings in?",
+      "Can people other than the founder run the motion?"
+    ],
+    "evidence": [
+      {
+        "id": "go-to-market",
+        "statement": "A go-to-market record for the chosen segment",
+        "source": "validation-go-to-market"
+      },
+      {
+        "id": "accounts",
+        "statement": "Accounts won in the segment",
+        "source": "account"
+      },
+      {
+        "id": "processes",
+        "statement": "The repeatable motion written down as processes",
+        "source": "process"
+      }
+    ]
+  },
+  "workflows": [
+    "marketing-and-sales/weekly-pipeline-review",
+    "products/weekly-product-review",
+    "customer-service/case-triage",
+    "service-delivery/weekly-engagement-review",
+    "finance/monthly-spend-review",
+    "human-capital/intake",
+    "risk-and-compliance/weekly-compliance-check",
+    "capabilities/weekly-process-review"
+  ],
+  "weights": {
+    "version": "0.1.0",
+    "note": "Unvalidated priors, ours: how much each function's open decisions count when decisions are ranked across functions in this phase. They sum to 1. Nothing ranks with them yet.",
+    "functions": {
+      "strategy": {
+        "weight": 0.08,
+        "why": "The segment is chosen; strategy guards the focus"
+      },
+      "products": {
+        "weight": 0.18,
+        "why": "The whole product for one segment"
+      },
+      "marketing-and-sales": {
+        "weight": 0.22,
+        "why": "Winning the segment repeatably is a go-to-market problem first"
+      },
+      "supply-chain": {
+        "weight": 0.02,
+        "why": "Suppliers start to matter at repeat volume"
+      },
+      "service-delivery": {
+        "weight": 0.08,
+        "why": "Delivering the same result to every account in the segment"
+      },
+      "customer-service": {
+        "weight": 0.1,
+        "why": "Keeping the accounts the segment is won with"
+      },
+      "human-capital": {
+        "weight": 0.06,
+        "why": "The first hires make the motion repeatable"
+      },
+      "it": {
+        "weight": 0.03,
+        "why": "Tools that carry the repeatable motion"
+      },
+      "finance": {
+        "weight": 0.1,
+        "why": "Unit economics decide whether the segment is profitable"
+      },
+      "assets": {
+        "weight": 0.01,
+        "why": "Little is owned"
+      },
+      "risk-and-compliance": {
+        "weight": 0.04,
+        "why": "Contracts and obligations of real accounts"
+      },
+      "external-relationships": {
+        "weight": 0.03,
+        "why": "Investors and partners for the segment"
+      },
+      "capabilities": {
+        "weight": 0.05,
+        "why": "Processes written down so others can repeat them"
+      }
+    }
+  }
+}
