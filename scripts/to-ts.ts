@@ -38,8 +38,8 @@ export function plan(files: string[], tracked: Set<string>): Rename[] {
 
 /** The repository paths that `path`, written in `file`, may name. */
 function resolveFrom(file: string, path: string): string[] {
+  if (path.startsWith("./") || path.startsWith("../")) return [posix.normalize(posix.join(posix.dirname(file), path))];
   const out: string[] = [];
-  if (path.startsWith("./") || path.startsWith("../")) out.push(posix.normalize(posix.join(posix.dirname(file), path)));
   const pkg = /^naive-framework\/(src|template|lean|library)\/(.*)$/.exec(path);
   if (pkg) out.push({ src: "packages/naive/src/", template: "packages/naive/template/", lean: "packages/naive/lean/", library: "packages/naive/library/" }[pkg[1] as "src"] + pkg[2]);
   else if (path.startsWith("naive-framework/packages/")) out.push(path.slice("naive-framework/".length));
