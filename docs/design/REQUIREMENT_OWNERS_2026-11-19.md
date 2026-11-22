@@ -7,7 +7,7 @@ ai-model: claude
 authority: advisory
 status: DRAFT
 tags: [naive, requirements, deletion, premise-lint, decision-index, ee-126]
-description: "A requirement names one owner and is never removed: deleting one leaves a record of who, when and why, and readers skip it (EE-130)."
+description: "A requirement names one owner and is never removed: deleting one leaves a record of who, when and why, and readers skip it (EE-152)."
 ---
 
 # Requirement owners and deletion records
