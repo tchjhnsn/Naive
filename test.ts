@@ -50,6 +50,7 @@ const steps: Step[] = [
   ["the compiled package's build: what is compiled, .ts paths renamed to .js, a relative import that names no file refused (EE-159)", "node", ["scripts/build-test.ts"]],
   ["create-venture and the naive commands (Chapter 1: generator, dev, check, info, upgrade)", "node", ["packages/create-venture/test.ts"]],
   ["the Effect pin a venture shares with Naive (EE-161)", "node", ["packages/naive/src/engine/effect-pin-test.ts"]],
+  ["durable handoffs: a run killed inside a criterion resumes without rerunning the ones before (EE-161)", "node", ["packages/naive/src/interfaces/tests/durable-handoff-test.ts"]],
   ["venture program behaviors: naive run and effect done-criteria (EE-161, Gherkin scenarios)", "node", ["packages/naive/src/engine/bdd.ts", "packages/naive/src/engine/features/venture-programs.feature"]],
   ["setup in the model's harness (state and artifact over MCP, relayed answers the founder confirms)", "node", ["packages/naive/src/interfaces/tests/setup-test.ts"]],
   ["writes, reads and boundaries: the call wrapper, containment, private folders", "node", ["packages/naive/src/router/writes-test.ts"]],

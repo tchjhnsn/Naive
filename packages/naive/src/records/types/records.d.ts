@@ -3209,6 +3209,10 @@ export type NaiveConfig = {
     /** The share of noise receptions surfaced anyway and marked as probes, so a recipe can be scored on signals the current one never surfaced (packages/naive/src/engine/recipes/probes.ts). 0 by default, because probes cost attention. Marking probes in reception files is build plan item 9 (not built). */
     probe_rate?: number;
   };
+  /** Durable work (EE-161, Effect runtime plan phase 11). engine memory (the default) keeps no state across processes; sqlite runs each handoff as an Effect workflow stored in .naive/durable.sqlite, so a run that dies resumes without rerunning a finished done-criterion; postgres waits on a host that provides the SQL client (not built). */
+  durable?: {
+    engine?: "memory" | "sqlite" | "postgres";
+  };
   /** Traces in the venture's files (EE-121): true writes one span per step of an agent run to traces/<session>.jsonl, hash-chained and linked from provenance. content keeps inputs and outputs too, redacted; off by default because a trace is internal. Off by default. */
   traces?: boolean | {
     spans?: boolean;
