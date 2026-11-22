@@ -41,4 +41,10 @@ t("a bare name only one file has is rewritten, and a longer name is left", () =>
   assert.equal(rewrite("AGENTS.md", text, renames, tracked), "`phase-gate.ts` grades items; phase-gate.mjsx and my-phase-gate.mjs are other names.\n");
 });
 
+t("a glob is a pattern, not a reference, and is left", () => {
+  const r = plan(["packages/naive/src/router/routes.mjs"], tracked);
+  const text = `"!**/routes.mjs", "!**/*-routes.mjs"`;
+  assert.equal(rewrite("package.json", text, r, tracked), text);
+});
+
 process.exit(failed ? 1 : 0);

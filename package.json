@@ -81,6 +81,8 @@
     "!**/*test.mjs",
     "!**/*-test.mjs",
     "!**/test.mjs",
+    "!**/*-test.ts",
+    "!**/test.ts",
     "!**/*.steps.mjs",
     "!**/*.feature",
     "!packages/create-venture/package.json",
