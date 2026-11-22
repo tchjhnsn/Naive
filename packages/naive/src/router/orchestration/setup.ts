@@ -22,7 +22,7 @@ type Functions = NonNullable<KnowledgeSources["functions"]>;
 type FunctionTruth = NonNullable<Functions[keyof Functions]>;
 type SystemPointer = FunctionTruth["systems"][number];
 /** A decision as decisions() lists it, with only the fields setup reads. */
-type Dec = RankedDecision & { options?: string[]; statement?: string | null };
+type Dec = RankedDecision;
 /** An answer from the decision engine or the router. */
 type Answer = { ok: boolean; result?: unknown; error?: unknown; [k: string]: unknown };
 
