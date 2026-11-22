@@ -2,7 +2,7 @@
 //
 //   node test.mjs
 //
-// Needs Node 22.18 or later, npm install (typescript), and python3 with the jsonschema package. Exit code 1 if any fails.
+// Needs Node 22.19 or later (EE-158), npm install (typescript), and python3 with the jsonschema package. Exit code 1 if any fails.
 // Generated files are checked for staleness by regenerating them into memory and comparing.
 //
 // Steps run in parallel, one worker per core (TEST_WORKERS overrides), and report in the order listed here.

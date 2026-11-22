@@ -1917,6 +1917,26 @@
           "expect": "exists"
         }
       ]
+    },
+    {
+      "id": "EE-158",
+      "date": "2026-11-22",
+      "status": "in-force",
+      "decision": "Node 22.19 or later is the floor for Naive and for every venture. The root package.json and create-venture declare engines.node >=22.19.0, create-venture writes the same floor into each new venture's package.json, and CI runs on Node 22.19. This amends EE-087's sentence that ventures need no newer Node: ventures still need no TypeScript, but they need Node 22.19, because Effect is a runtime dependency (EE-125) and Effect 4 requires Node 22.19.",
+      "why": "Torian, 2026-11-22, agreeing to the TypeScript and Effect runtime plan (docs/design/TYPESCRIPT_AND_EFFECT_RUNTIME_2026-11-22.md): ventures run on Effect, and Effect 4.x declares Node 22.19 or later, so the Node 20 promise was already broken once effect became a runtime dependency.",
+      "related": [
+        "EE-087",
+        "EE-125",
+        "EE-126"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "package.json",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
     }
   ]
 }
