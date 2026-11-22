@@ -18,9 +18,15 @@
 // The command prints each subject that disagrees and exits 0: drift is a call for a lead, not a failure. It exits 1
 // only when a record cannot be read as JSON with a string id, and 2 on a bad argument. The calls, trials and decisions
 // are packages/naive/src/router/orchestration/seams.ts.
+//
+// Records are read through VentureFs (EE-125): readRecords is the Effect, and recordsIn and sense run it for callers
+// that are not Effect yet.
 
-import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { Effect } from "effect";
 import { ventureFile } from "../core/venture-paths.mjs";
+import { CannotRun } from "../core/effect/errors.mjs";
+import { readJson, VentureFs } from "../core/effect/fs.mjs";
+import { runMain, runSync } from "../core/effect/run.mjs";
 import type { Connection, SpendRegister } from "../records/types/records.d.ts";
 
 export type FindingCode = "unpaid-connection" | "missing-connection" | "disconnected-connection" | "unapproved-spend";
@@ -74,18 +80,29 @@ export function toolsAgainstSpend(connections: readonly ConnectionFacts[], spend
 }
 
 /** Every record in one venture folder (<folder>/<id>.json), read through ventureFile so a structured venture works. */
-export function recordsIn(dir: string, folder: string): { records: Record<string, unknown>[]; problems: string[] } {
+export const readRecords = (dir: string, folder: string) => Effect.gen(function* () {
+  const fs = yield* VentureFs;
   const at = ventureFile(dir, folder);
-  if (!existsSync(at)) return { records: [], problems: [] };
   const records: Record<string, unknown>[] = [], problems: string[] = [];
-  for (const f of readdirSync(at).filter((n) => n.endsWith(".json")).sort()) {
-    try {
-      const r: unknown = JSON.parse(readFileSync(`${at}/${f}`, "utf8"));
-      if (isObj(r) && typeof r.id === "string") records.push(r);
-      else problems.push(`${folder}/${f}: not a record with a string id`);
-    } catch (e) { problems.push(`${folder}/${f}: not JSON (${e instanceof Error ? e.message : String(e)})`); }
+  if (!(yield* fs.exists(at))) return { records, problems };
+  for (const f of (yield* fs.list(at)).filter((n) => n.endsWith(".json"))) {
+    const read = yield* readJson(`${at}/${f}`).pipe(Effect.result);
+    if (read._tag === "Failure") {
+      const e = read.failure;
+      const why = e._tag === "ParseError" && e.cause instanceof Error ? e.cause.message : e._tag === "IoError" ? `cannot ${e.op}` : e._tag;
+      problems.push(`${folder}/${f}: not JSON (${why})`);
+      continue;
+    }
+    const r = read.success;
+    if (isObj(r) && typeof r.id === "string") records.push(r);
+    else problems.push(`${folder}/${f}: not a record with a string id`);
   }
   return { records, problems };
+});
+
+/** readRecords run on the disk, for callers that are not Effect yet. */
+export function recordsIn(dir: string, folder: string): { records: Record<string, unknown>[]; problems: string[] } {
+  return runSync(readRecords(dir, folder));
 }
 
 const str = (x: unknown): string | undefined => (typeof x === "string" ? x : undefined);
@@ -123,22 +140,26 @@ export function sense(dir: string): { seam: Seam; subjects: Subject[]; problems:
 if (import.meta.url === `file://${process.argv[1]}`) {
   const args = process.argv.slice(2);
   const dir = args.find((a) => !a.startsWith("--"));
-  if (!dir || !existsSync(`${dir}/venture.json`)) {
-    console.error("usage: node packages/naive/src/checks/check-seams.ts <venture dir> [--json]");
-    process.exit(2);
-  }
-  const out = sense(dir);
-  const problems = out.flatMap((s) => s.problems);
-  if (args.includes("--json")) {
-    console.log(JSON.stringify({ seams: out.map((s) => ({ detector: s.seam.detector, functions: s.seam.functions, subjects: s.subjects.filter((x) => x.score > 0), clean: s.subjects.filter((x) => x.score === 0).length, problems: s.problems })), not_built: NOT_BUILT }, null, 2));
-  } else {
-    for (const s of out) {
-      const drift = s.subjects.filter((x) => x.score > 0);
-      console.log(`${s.seam.detector} (${s.seam.functions.join(" and ")}): ${drift.length} disagree, ${s.subjects.length - drift.length} clean`);
-      for (const x of drift) for (const f of x.findings) console.log(`  ${x.path}: ${f.text}`);
-      for (const p of s.problems) console.log(`  problem: ${p}`);
+  const main = Effect.gen(function* () {
+    const fs = yield* VentureFs;
+    if (!dir || !(yield* fs.exists(`${dir}/venture.json`))) {
+      return yield* Effect.fail(new CannotRun({ message: "usage: node packages/naive/src/checks/check-seams.ts <venture dir> [--json]" }));
     }
-    for (const n of NOT_BUILT) console.log(`not built: ${n.seam} (${n.functions.join(" and ")}): missing ${n.missing}`);
-  }
-  process.exit(problems.length ? 1 : 0);
+    return sense(dir);
+  });
+  await runMain(Effect.map(main, (out) => {
+    const problems = out.flatMap((s) => s.problems);
+    if (args.includes("--json")) {
+      console.log(JSON.stringify({ seams: out.map((s) => ({ detector: s.seam.detector, functions: s.seam.functions, subjects: s.subjects.filter((x) => x.score > 0), clean: s.subjects.filter((x) => x.score === 0).length, problems: s.problems })), not_built: NOT_BUILT }, null, 2));
+    } else {
+      for (const s of out) {
+        const drift = s.subjects.filter((x) => x.score > 0);
+        console.log(`${s.seam.detector} (${s.seam.functions.join(" and ")}): ${drift.length} disagree, ${s.subjects.length - drift.length} clean`);
+        for (const x of drift) for (const f of x.findings) console.log(`  ${x.path}: ${f.text}`);
+        for (const p of s.problems) console.log(`  problem: ${p}`);
+      }
+      for (const n of NOT_BUILT) console.log(`not built: ${n.seam} (${n.functions.join(" and ")}): missing ${n.missing}`);
+    }
+    process.exitCode = problems.length ? 1 : 0;
+  }));
 }

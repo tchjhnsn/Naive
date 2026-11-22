@@ -71,6 +71,7 @@
     "activity-summary",
     "research-program",
     "function-module",
+    "phase-module",
     "function-workflow"
   ],
   "reads": [

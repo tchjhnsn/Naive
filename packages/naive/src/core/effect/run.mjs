@@ -47,6 +47,7 @@ export const describe = (error) => {
     case "SchemaInvalid": return `${error.schema}: ${error.errors.join("; ")}`;
     case "Refused": return `refused (${error.rule}): ${error.message}${error.hint ? ` ${error.hint}` : ""}`;
     case "CannotRun": return `cannot run: ${error.message}`;
+    case "VersionConflict": return error.message;
   }
 };
 

@@ -18,10 +18,12 @@ import { catalog } from "./departments.mjs";
 import { ventureFile } from "../core/venture-paths.mjs";
 import { scale } from "./canonical.mjs";
 import { readDataModel, venturePaths } from "../records/index.mjs";
+import { runSync } from "../core/effect/run.mjs";
+import { loadPhases } from "../phases/phases.mjs";
 
 const root = new URL("../../../..", import.meta.url).pathname;
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
-const PHASES = load(join(root, "packages/naive/src/functions/products/frameworks/product-anatomy/phases.json")).phases.map((p) => p.id);
+const PHASES = runSync(loadPhases()).map((p) => p.id);
 
 const files = (d, base = d) => existsSync(d) ? readdirSync(d, { withFileTypes: true }).flatMap((e) =>
   e.isDirectory() ? files(join(d, e.name), base) : [join(d, e.name).slice(base.length + 1)]) : [];
