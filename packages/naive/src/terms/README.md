@@ -44,4 +44,6 @@ The operating-rules loader and the ontology gate check a module or a handoff aga
 
 `bypass-guard-test.ts` registers `check-functions.ts` and its test as plain checks: they compare ids and apply a fixed rule (one-way doors and never-redelegated classes are escalate), so nothing symbolic needs the engine. It registers `check-phases.ts` and its test as plain checks for the same reason: they compare ids and add up weights.
 
+It registers `engine/gate-service.ts` as plain too: the gate as an Effect service, whose default runs `gate.ts`'s route rules, pins and role access, so it decides no term.
+
 `bypass-guard-test.ts` registers `packages/naive/src/engine/phase-gate.ts` (gate strength, EE-156) and its test as plain checks: they grade evidence by GRADE arithmetic, count interviews and compare levels with a policy's minimums, so no term is decided. It registers `packages/naive/src/engine/gate-calibration.ts` (EE-157) and its test as plain checks for the same reason: they compare anatomy cell values with listed values and numeric thresholds and raise levels by rule.

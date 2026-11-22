@@ -51,6 +51,7 @@ const steps: Step[] = [
   ["create-venture and the naive commands (Chapter 1: generator, dev, check, info, upgrade)", "node", ["packages/create-venture/test.ts"]],
   ["setup in the model's harness (state and artifact over MCP, relayed answers the founder confirms)", "node", ["packages/naive/src/interfaces/tests/setup-test.ts"]],
   ["writes, reads and boundaries: the call wrapper, containment, private folders", "node", ["packages/naive/src/router/writes-test.ts"]],
+  ["router write steps as Effects: the schema check through RecordValidator, the gate through Gate, each replaced by a provided service", "node", ["packages/naive/src/router/write-effects-test.ts"]],
   ["blob store and as-of reads: each write's blob, the content at t and nothing later, null before the first write, one blob for the same content", "node", ["packages/naive/src/interfaces/tests/as-of-test.ts"]],
   ["researcher read clamp: reads, lists, views and agent files as of the cut and nothing later, no late signal, no read without a cut, no live action, writes not clamped, nothing under _eval/", "node", ["packages/naive/src/interfaces/tests/reads-as-of-test.ts"]],
   ["spend register: finance/spend/[id] is written only by finance-agent or a person (any other role is refused, one the team plan widens included), the template's access matrix masters each field once and check-sources refuses a tie on a register field, and founder-to-finance-agent holds the register's classes", "node", ["packages/naive/src/interfaces/tests/spend-register-test.ts"]],
