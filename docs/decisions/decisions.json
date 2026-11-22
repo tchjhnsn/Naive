@@ -1937,6 +1937,26 @@
           "expect": "exists"
         }
       ]
+    },
+    {
+      "id": "EE-159",
+      "date": "2026-11-22",
+      "status": "in-force",
+      "decision": "Naive compiles on publish. The package ships dist/, a mirror of the files it ships at the same relative paths, in which every .ts and .mjs outside fixtures/ is compiled by tsc (.ts to .js, .mjs stays .mjs, relative .ts imports and string paths to compiled .ts files renamed to .js) and every other file is copied, so a module still finds its JSON, templates and scripts by its place in the tree. The package's exports and bin point into dist/, with a naive-framework/src/<file>.ts subpath resolving to the compiled .js; each code export's types condition names the source file, which the package still ships, so Naive emits no .d.ts files. npm runs the build (scripts/build.ts) as prepare, so a git dependency builds on install. Inside the repository, tests and CLIs run the source under Node's type stripping, and an installed create-venture runs the compiled copy. This is EE-087's fourth phase, done before the renaming instead of after it, and it amends EE-087's .d.ts files to a types condition. With it, the exception that modules an app or a venture reaches from node_modules stay .mjs ends: every new file is .ts.",
+      "why": "Torian, 2026-11-22, agreeing to the TypeScript and Effect runtime plan (docs/design/TYPESCRIPT_AND_EFFECT_RUNTIME_2026-11-22.md, \"The fix: compile on publish\"): Node does not strip types under node_modules, so every module a venture reached from an installed copy had to stay JavaScript, and new work kept adding .mjs files. A mirror of the shipped tree was chosen over emitting next to the sources, because tsc cannot emit an .mjs input over itself and .mjs files that import .ts would stay broken.",
+      "related": [
+        "EE-087",
+        "EE-158",
+        "EE-118"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "scripts/build.ts",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
     }
   ]
 }
