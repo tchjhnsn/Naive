@@ -42,7 +42,7 @@ await test("alignPin writes the pin, moves one out of devDependencies, and leave
   for (const d of [a, b]) rmSync(d, { recursive: true });
 });
 
-await test("the one-copy check passes a pinned venture, fails a wrong pin, and fails two copies", () => {
+await test("the one-copy check passes a pinned venture, fails a wrong pin, fails a second version and passes a second install at the same version", () => {
   const none = venture();
   assert.ok(checkCopies(none).ok);
   const wrong = venture({ dependencies: { effect: "4.0.0" } });
@@ -54,7 +54,10 @@ await test("the one-copy check passes a pinned venture, fails a wrong pin, and f
   mkdirSync(join(pinned, "node_modules/effect"), { recursive: true });
   writeFileSync(join(pinned, "node_modules/effect/package.json"), JSON.stringify({ name: "effect", version: want }));
   const two = checkCopies(pinned);
-  assert.ok(!two.ok && /two copies of effect/.test(two.message), two.message);
+  assert.ok(two.ok && /installed twice at the same version/.test(two.message), two.message);
+  writeFileSync(join(pinned, "node_modules/effect/package.json"), JSON.stringify({ name: "effect", version: "4.0.0" }));
+  const other = checkCopies(pinned);
+  assert.ok(!other.ok && /two versions of effect/.test(other.message), other.message);
   // The same copy, linked: one copy resolves.
   rmSync(join(pinned, "node_modules/effect"), { recursive: true });
   symlinkSync(join(PACKAGE_ROOT, "node_modules/effect"), join(pinned, "node_modules/effect"));

@@ -59,7 +59,7 @@ function resolved(from: string): { path: string; version: string } | null {
 
 /**
  * The one-copy check: the venture pins Effect at Naive's exact peer version, and when the venture has installed it,
- * the copy it loads is the one Naive loads. A venture with no package.json runs on Naive's copy and passes.
+ * the copy it loads is at the version Naive loads. A venture with no package.json runs on Naive's copy and passes.
  */
 export function checkCopies(dir: string, { root = PACKAGE_ROOT }: { root?: string } = {}): { ok: boolean; message: string } {
   const want = wantedPin(root);
@@ -68,7 +68,10 @@ export function checkCopies(dir: string, { root = PACKAGE_ROOT }: { root?: strin
   if (pin !== want) return { ok: false, message: `package.json ${pin === null ? "does not pin effect" : `pins effect ${pin}`}, but Naive needs exactly ${want}: run naive upgrade` };
   const mine = resolved(dir), naive = resolved(root);
   if (!mine) return { ok: true, message: `package.json pins effect ${want}; not installed yet` };
-  if (naive && mine.path !== naive.path) return { ok: false, message: `two copies of effect: the venture loads ${mine.path} (${mine.version}) and Naive loads ${naive.path} (${naive.version}); reinstall so one copy resolves` };
+  // Two installs at Naive's version still agree: Effect keys services and its own type ids by string, so a program
+  // using the venture's copy runs on Naive's runtime. Only a different version splits them.
+  if (naive && mine.version !== naive.version) return { ok: false, message: `two versions of effect: the venture loads ${mine.version} from ${mine.path} and Naive loads ${naive.version} from ${naive.path}; reinstall so both load ${want}` };
+  if (naive && mine.path !== naive.path) return { ok: true, message: `effect ${want}, installed twice at the same version (the venture's and Naive's, as from a linked clone); they interoperate` };
   if (mine.version !== want) return { ok: false, message: `the installed effect is ${mine.version}, but package.json pins ${want}: reinstall` };
   return { ok: true, message: `one copy of effect ${want}, shared by Naive and the venture` };
 }
