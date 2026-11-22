@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "venture-anatomy.schema.json",
+  "title": "Venture Anatomy Matrix",
+  "description": "The framework's Venture Anatomy Matrix (EE-157), packages/naive/src/functions/strategy/venture-anatomy.json: the venture's architecture description after ISO/IEC/IEEE 42010:2022. Each sub-matrix is a model naming the record types it reads, its owning function, the Regulation S-K items it covers, the phase from which it is expected and how it nests. Each viewpoint frames concerns and selects the sub-matrices a view of the venture reads. It holds no venture data.",
+  "type": "object",
+  "required": ["version", "submatrices", "viewpoints", "coverage"],
+  "additionalProperties": false,
+  "properties": {
+    "version": { "type": "string" },
+    "note": { "type": "string" },
+    "standard": {
+      "type": "object",
+      "required": ["name", "source"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "source": { "type": "string", "description": "A reference id in packages/naive/src/records/layers/purpose/references/references.json" },
+        "time": { "type": "string", "description": "How application time and system time are kept" },
+        "time_source": { "type": "string" }
+      }
+    },
+    "coverage": {
+      "type": "object",
+      "required": ["source", "items"],
+      "additionalProperties": false,
+      "properties": {
+        "source": { "type": "string", "description": "The reference id of the disclosure standard the coverage check follows" },
+        "items": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["id", "label"],
+            "additionalProperties": false,
+            "properties": {
+              "id": { "type": "string", "pattern": "^[A-Za-z0-9-]+$", "description": "The S-K item number, or S-X for the financial statements" },
+              "label": { "type": "string" },
+              "source": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "submatrices": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "label", "concern", "record", "status", "owner", "covers", "from_phase"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+          "label": { "type": "string" },
+          "concern": { "type": "string", "description": "The question this model answers about the venture (a concern, ISO 42010)" },
+          "record": { "type": ["string", "null"], "description": "The record type that holds this model; null when none exists yet (status not built)" },
+          "also": { "type": "array", "items": { "type": "string" }, "description": "Further record types this model reads" },
+          "boxes": { "type": "array", "items": { "type": "string" }, "description": "When record is lean-canvas: the canvas boxes that are this model's cells" },
+          "status": { "enum": ["built", "not built"] },
+          "owner": { "type": ["string", "null"], "description": "The function data-model.json gives the record type" },
+          "covers": { "type": "array", "items": { "type": "string" }, "description": "The coverage items (S-K item ids) this model answers" },
+          "from_phase": { "enum": ["discovery", "validation", "beachhead", "scale", "platform"] },
+          "nesting": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "in": { "type": "string", "description": "The sub-matrix each record of this one sits in" },
+              "field": { "type": "string", "description": "The field that names the record it sits in" },
+              "holds": { "type": "string", "description": "What each record of this one holds" },
+              "record": { "type": "string", "description": "The record type that holds the nested parts" }
+            }
+          },
+          "note": { "type": "string" }
+        }
+      }
+    },
+    "viewpoints": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "label", "concerns", "reads", "kind"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+          "label": { "type": "string" },
+          "concerns": { "type": "string", "description": "Whose concerns the viewpoint frames, and which" },
+          "source": { "type": "string", "description": "A reference id or citation for the viewpoint's convention" },
+          "definition": { "type": "string", "description": "A repository file that defines the view in full, such as the Lean Canvas" },
+          "reads": { "type": "array", "minItems": 1, "items": { "type": "string" }, "description": "The sub-matrix ids the view reads" },
+          "kind": { "enum": ["canvas", "outline", "submatrices"], "description": "How the view is drawn: canvas renders the definition file (the Lean Canvas), outline orders the sub-matrices by coverage item (an S-1 outline), submatrices lists them in matrix order" }
+        }
+      }
+    }
+  }
+}
