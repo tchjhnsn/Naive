@@ -17,6 +17,7 @@ import { dirname, join } from "node:path";
 import { type Context, Effect, Layer, ManagedRuntime, Schema } from "effect";
 import type { WorkflowEngine, WorkflowInstance } from "effect/workflow/WorkflowEngine";
 import { NodeSqlite } from "./node-sqlite.ts";
+import { crashSeam } from "../crash-seam.ts";
 import { hostHook, missingHook } from "../runtime.ts";
 
 /** The durable engines naive.config.json may name. */
@@ -81,23 +82,8 @@ export async function activityStep(): Promise<(_context: Context.Context<Workflo
   const Activity = await import("effect/workflow/Activity");
   return (context) => (name, run) => Effect.runPromiseWith(context)(Activity.make({
     name, success: Schema.String,
-    execute: Effect.promise(async () => { const v = await run(); killSeam(name); return JSON.stringify(v ?? null); }),
+    execute: Effect.promise(async () => { const v = await run(); crashSeam(name); return JSON.stringify(v ?? null); }),
   })).then((s) => JSON.parse(s));
-}
-
-/**
- * A test seam for crash-and-resume tests: NAIVE_DURABLE_KILL=<step name prefix>:<marker file> kills the process once,
- * right after a step whose name starts with the prefix has run and before its result is stored, as a crash would.
- * The marker file makes it once. Unset, it does nothing.
- */
-function killSeam(name: string): void {
-  const seam = process.env.NAIVE_DURABLE_KILL;
-  if (!seam) return;
-  const at = seam.indexOf(":");
-  const prefix = seam.slice(0, at), marker = seam.slice(at + 1);
-  if (!name.startsWith(prefix) || !marker || existsSync(marker)) return;
-  writeFileSync(marker, name);
-  process.kill(process.pid, "SIGKILL");
 }
 
 /**

@@ -60,3 +60,5 @@ Tests that check a record against its schema run `node packages/naive/src/record
 `durable-handoff-test.ts` kills a durable handoff run inside its second criterion (the criterion kills its own process) and checks that the next run resumes without rerunning the first, writes one evidence file through the router with provenance, and that `naive handoff run` uses run-handoff.ts with the memory engine (EE-161). It also runs a handoff hosted on `durable.engine` postgres through a `sql` hook, and checks the refusal without one.
 
 `recipe-search-test.ts` also kills a durable search right after its first experiment write lands and checks that the next run resumes, writes no step twice and ends at the plain search's tip (EE-161).
+
+`durable-triggers-test.ts` kills the trigger runner right after a trigger's route call lands and before the run is saved, and checks that the next run finds the call in provenance by its key (trigger and event), records the run as ran without calling the route again, and that the chain holds (EE-161, phase 12d).
