@@ -31,7 +31,7 @@ const VERBS: Record<string, string> = { check: "POST", run: "POST", view: "GET",
 export async function route(method: string | undefined, url: string | undefined, body?: unknown, headers: IncomingHttpHeaders = {}): Promise<[number, unknown]> {
   const path = decodeURIComponent(new URL(url ?? "", "http://x").pathname).replace(/\/+$/, "");
   if (method === "GET" && path === "/routes") return [200, routes()];
-  if (method === "GET" && path === "/ventures") return [200, ventures().map(({ id, name, phase }: { id: string, name: string, phase: string }) => ({ id, name, phase }))];
+  if (method === "GET" && path === "/ventures") return [200, ventures().map(({ id, name, phase }) => ({ id, name, phase }))];
   let m = path.match(/^\/templates\/(.+)$/);
   if (method === "GET" && m) { const r = await call({ route: m[1], action: "template" }); return [status(r), r]; }
   if (method === "GET" && path === "/groups") return [200, groups()];

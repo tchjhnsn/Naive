@@ -18,6 +18,7 @@ import { join } from "node:path";
 import { blobSha } from "../../store/connectors/contract.ts";
 import { harness } from "../../store/connectors/suite.ts";
 import { build, FILE, load, search } from "../../store/connectors/catalog.ts";
+import type { SourceRule } from "../../store/connectors/resolve.ts";
 
 const repo = new URL("../../../../..", import.meta.url).pathname;
 const h = harness("connectors-router");
@@ -30,7 +31,12 @@ cpSync(join(repo, "packages/naive/src/records/examples/workspace"), ws, { recurs
 process.env.MENTURA_WORKSPACE = ws;
 const tandem = join(ws, "ventures/tandem");
 const shared = join(ws, "shared");
-const { call } = await import("../../router/router.ts");
+const { call: routerCall } = await import("../../router/router.ts");
+const { typed } = await import("./answer.ts");
+/** What this test reads off the router's answers: a product, where it came from, and where its attributes went. */
+type Got = { name: string, description: string, attributes: { written: string }[], "shop-app"?: { description: string } };
+type Extra = { source: { source: string, address: string, version: string, attributes?: Record<string, { address?: string, missing?: boolean }> } };
+const call = typed<Got, Extra>(routerCall);
 const { entries } = await import("../../core/provenance.ts");
 const kettle: Record<string, unknown> = { ...Object.values((await call({ venture: "tandem", route: "purpose/product", action: "read" })).result)[0] as Record<string, unknown>, id: "kettle", name: "Kettle (in the shared folder)" };
 write(shared, { "products/kettle.json": JSON.stringify(kettle, null, 2) + "\n", "notes/launch.md": "# Launch plan\n\nShip the kettle subscription in spring.\n" });
@@ -51,6 +57,7 @@ expect("router: a write that does not match the schema never reaches the source"
 const w = await call({ venture: "tandem", route: "purpose/product/teapot", action: "write", input: teapot, actor: "person", via: "cli", provenance: { note: "add the teapot" } });
 expect("router: a write lands in the mapped source, not the venture folder", w.ok && JSON.parse(readFileSync(join(shared, "products/teapot.json"), "utf8")).name === "Teapot" && !existsSync(join(tandem, "products/teapot.json")), JSON.stringify(w));
 const e = entries(tandem).at(-1);
+if (!e) throw new Error("the write logged no provenance entry");
 expect("router: the write is logged by address, with the source's version", e.entity === "shared://products/teapot.json" && e.source?.connector === "filesystem" && e.source.version === blobSha(readFileSync(join(shared, "products/teapot.json"))), JSON.stringify(e));
 const { readAsOf } = await import("../../store/as-of.ts");
 expect("router: a write to another source keeps its bytes in the venture's blob store, so an as-of read by address returns them",
@@ -75,27 +82,28 @@ write(tandem, { "knowledge/sources.json": JSON.stringify(map, null, 2) + "\n" })
 console.log("\n# catalog");
 const { stats } = await build(tandem);
 const cat = load(tandem);
-expect("catalog: indexes every item in both sources", cat?.items.some((x) => x.source === "shared" && x.path === "notes/launch.md") && cat?.items.some((x) => x.source === "venture" && x.path === "purpose/validation/problem.json") && stats.errors.length === 0, JSON.stringify(stats));
-expect("catalog: every item has an address and its version", cat?.items.every((x) => x.address === `${x.source}://${x.path}` && /^[0-9a-f]{40}$/.test(x.version)));
+expect("catalog: indexes every item in both sources", Boolean(cat?.items.some((x) => x.source === "shared" && x.path === "notes/launch.md") && cat?.items.some((x) => x.source === "venture" && x.path === "purpose/validation/problem.json") && stats.errors.length === 0), JSON.stringify(stats));
+expect("catalog: every item has an address and its version", Boolean(cat?.items.every((x) => x.address === `${x.source}://${x.path}` && /^[0-9a-f]{40}$/.test(x.version))));
 expect("catalog: records are tied to their routes, wherever they live", cat?.items.find((x) => x.address === "shared://products/kettle.json")?.route === "product/kettle" && cat?.items.find((x) => x.path === "purpose/validation/problem.json")?.route === "foundation/problem");
+if (!cat) throw new Error("the catalog was not built");
 const s1 = search(cat, "kettle subscription spring");
 expect("catalog: search finds an item in the mapped source", s1[0]?.address === "shared://notes/launch.md" && s1[0].title === "Launch plan", JSON.stringify(s1.slice(0, 2)));
 const research = readFileSync(join(tandem, "knowledge/research/pilot-2026-10.md"), "utf8");
 expect("catalog: search finds an item in the venture folder", search(cat, "pilot").some((x: { address: string }) => x.address === "venture://knowledge/research/pilot-2026-10.md"));
 const raw = readFileSync(join(tandem, FILE), "utf8");
 const phrase = research.split("\n").find((l) => l.split(" ").length > 6)?.slice(0, 40);
-expect("catalog: keeps no content (no sentence of an item appears in it)", phrase && !raw.includes(phrase) && !raw.includes("Ship the kettle subscription"), phrase);
+expect("catalog: keeps no content (no sentence of an item appears in it)", Boolean(phrase && !raw.includes(phrase) && !raw.includes("Ship the kettle subscription")), phrase ?? "");
 const again = (await build(tandem)).stats;
 expect("catalog: a rebuild with nothing changed reads nothing", again.read === 0 && again.reused === stats.items, JSON.stringify(again));
 write(shared, { "notes/later.md": "# Later\n\nAdded after the first build.\n" });
 const changed = (await build(tandem)).stats;
-expect("catalog: after a change, a rebuild reads only the new item", changed.read === 1 && load(tandem)?.items.some((x) => x.address === "shared://notes/later.md"), JSON.stringify(changed));
+expect("catalog: after a change, a rebuild reads only the new item", changed.read === 1 && Boolean(load(tandem)?.items.some((x) => x.address === "shared://notes/later.md")), JSON.stringify(changed));
 
 // ---- Matrix (EE-042) ------------------------------------------------------------------------------
 console.log("\n# source-of-truth matrix");
 const { resolve: resolveRule } = await import("../../store/connectors/resolve.ts");
 const { sourceFor } = await import("../../store/connectors/index.ts");
-const rule = (o: Record<string, unknown>) => ({ record: "product", attribute: "*", phase: "*", product: "*", account: "*", actor: "*", owner: "founder", ...o });
+const rule = (o: Partial<SourceRule> & { system_of_record: string }): SourceRule => ({ record: "product", attribute: "*", phase: "*", product: "*", account: "*", actor: "*", owner: "founder", ...o });
 const matrix = { sources: map.sources, records: {}, rules: [
   rule({ system_of_record: "venture" }),
   rule({ phase: "validation", system_of_record: "shared" }),

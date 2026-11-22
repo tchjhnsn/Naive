@@ -9,6 +9,7 @@ import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { call } from "../../router/router.ts";
+import { read } from "./answer.ts";
 
 const repo = new URL("../../../../..", import.meta.url).pathname;
 const root = mkdtempSync(join(tmpdir(), "lint-foundation-"));
@@ -61,7 +62,7 @@ const problem = (forms: unknown[] = [{ id: "next-step", statement: "The next ste
   const r = cli(dir, "--json");
   const body = jsonOf(r);
   expect("a clean venture exits 0 with no findings", r.status === 0 && body?.ok === true && body?.findings.length === 0, r.stdout + r.stderr);
-  const route = await call({ venture: dir.split("/").at(-1), workspace: root, route: "foundation/lint", action: "run" });
+  const route = read<{ findings: unknown[] }>(await call({ venture: dir.split("/").at(-1), workspace: root, route: "foundation/lint", action: "run" }));
   expect("foundation/lint on a clean venture returns no findings", route.ok && route.result?.findings?.length === 0, JSON.stringify(route));
 }
 

@@ -9,6 +9,7 @@ import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { call, routes } from "../../router/router.ts";
+import { read } from "./answer.ts";
 import { ventureFile } from "../../core/venture-paths.ts";
 import { lint } from "../../checks/lint-investors.ts";
 
@@ -233,7 +234,7 @@ const investor = (extra: Record<string, unknown>) => ({ id: "north", name: "Nort
     layers: { purpose: false, knowledge: false, operations: false, evidence: false },
   }));
   put(dir, "investors/north.json", investor({ updates: [{ id: "october", status: "sent", numbers: [{ name: "arr", value: 120000, confirmed: false }] }] }));
-  const open = await call({ venture: "acme", route: "investors/lint", action: "run", workspace: ws, via: "cli" });
+  const open = read<{ findings: Finding[] }>(await call({ venture: "acme", route: "investors/lint", action: "run", workspace: ws, via: "cli" }));
   expect("the route returns the finding while the rule is fail-open", open.ok && open.result.findings.some((f: Finding) => f.rule === "update-unconfirmed-numbers"), open.error ?? open.result);
   put(dir, "naive.config.json", { investors_lint: { rules: { "update-unconfirmed-numbers": { mode: "fail-closed" } } } });
   const shut = await call({ venture: "acme", route: "investors/lint", action: "run", workspace: ws, via: "cli" });

@@ -17,7 +17,7 @@ import { checkKit, wrap } from "../../router/kit-boundary.ts";
 import { approve } from "../../engine/decisions.ts";
 import {
   KINDS, Uncaught, answersModel, assertJson, checkRequest, checkStep, checkSteps, commandModel, confirm, expectDeterministic,
-  keepComputed, outcomeOf, payload, provenanceOf, run as runSteps, settle, stepsOf, typed, waterfall, waves,
+  keepComputed, outcomeOf, payload, provenanceOf, run as runSteps, settle, stepsOf, typed, waterfall, waves, type Ask,
 } from "../../router/orchestration/model-steps.ts";
 
 const repo = new URL("../../../../..", import.meta.url).pathname;
@@ -47,7 +47,6 @@ type Judged = { key: string, outcome?: string, answer?: unknown, why?: string, e
 type RunOut = { judgments: Judged[], reused: Judged[], uncertain: Judged[], discarded: Judged[], skipped: Judged[], waiting: Judged[], withheld: Judged[], errors: Judged[], uncaught: Judged[], ms?: number };
 const run = async (...a: Parameters<typeof runSteps>): Promise<RunOut> => (await runSteps(...a)) as RunOut;
 const must = <T>(x: T | undefined): T => { if (x === undefined) throw new Error("not found"); return x; };
-type Step = { step: string, kind: string };
 const customers = stepsOf({ packages: ["customers"] });
 const goodAnswers = {
   "customers/stage/ada": { value: "paying", confidence: 0.92 },
@@ -55,11 +54,13 @@ const goodAnswers = {
   "customers/summary/ada": { value: "Ada Clinic pays for {{seats}} seats and just added two rooms." },
   "customers/summary/bo": { value: "Bo Physio is trying it on {{seats}} seats and has gone quiet." },
 };
+/** The model request as this test reads it: the state each question receives holds the earlier steps' answers. */
 type Req = { questions: Record<string, unknown>, state: Record<string, { steps: Record<string, unknown> }> };
 type Call = { keys: string[], req: Req, start: number, end: number };
 const recorder = (answers: Record<string, unknown>, { delay = 0, fail }: { delay?: number, fail?: (key: string) => boolean } = {}) => {
   const calls: Call[] = [];
-  const ask = async (req: Req) => {
+  const ask = async (asked: Parameters<Ask>[0]) => {
+    const req = asked as Req;
     // end is NaN until the call returns, so comparisons with it stay false, as they were with undefined.
     const c: Call = { keys: Object.keys(req.questions), req, start: Date.now(), end: NaN };
     calls.push(c);
@@ -80,7 +81,7 @@ const recorder = (answers: Record<string, unknown>, { delay = 0, fail }: { delay
   expect("S-2 an unknown kind is refused", checkStep({ ...base, kind: "chat" }).some((e) => /kind is one of/.test(e)));
   expect("S-2 each kind's answer is typed", typed({ kind: "noul" }, { value: "yes", confidence: 0.9 }).value === true && typed({ kind: "score", scale: [1, 5] }, { value: "4", confidence: 0.9 }).value === 4
     && typed({ kind: "classify", options: ["a", "b"] }, { value: "b", confidence: 1 }).ok && typed({ kind: "draft" }, { value: "text" }).ok);
-  expect("S-2 the customers package declares its model steps", customers.map((s: Step) => `${s.step}:${s.kind}`).join(",") === "stage:choice,summary:draft");
+  expect("S-2 the customers package declares its model steps", customers.map((s) => `${s.step}:${s.kind}`).join(",") === "stage:choice,summary:draft");
 }
 
 // S-6, S-4, S-12: the payload, decomposed, in plain JSON; no model is asked and nothing is written.
@@ -90,7 +91,7 @@ const v1 = await venture("payload-venture");
   const stage = p.pending.find((x) => x.placeholder === "customers/stage/ada");
   const summary = p.pending.find((x) => x.placeholder === "customers/summary/ada");
   expect("S-6 the payload has what code computed, a placeholder per judgment and the state each receives",
-    (p.computed as Record<string, { seats?: number } | undefined>)["customers/summary/ada"]?.seats === 12 && p.pending.length === 4 && stage && summary?.state.steps.stage.pending === "customers/stage/ada", JSON.stringify(p).slice(0, 300));
+    (p.computed as Record<string, { seats?: number } | undefined>)["customers/summary/ada"]?.seats === 12 && p.pending.length === 4 && stage && (summary?.state.steps as Record<string, { pending?: string }> | undefined)?.stage?.pending === "customers/stage/ada", JSON.stringify(p).slice(0, 300));
   expect("S-4 a model gets only the fields its question needs", JSON.stringify(stage?.state) === JSON.stringify({ item: { notes: "Signed the annual plan last week and added two more rooms." } }) && !JSON.stringify(p.pending).includes("Ada Clinic"));
   expect("S-6 the payload asks no model and writes nothing", !existsSync(join(v1, "knowledge/judgments")));
   expect("S-12 the question points at a path in the state", stage?.question.includes('`state["customers/stage/ada"].item.notes`'));
@@ -114,7 +115,7 @@ const v2 = await venture("run-venture");
 {
   const before = sha(join(v2, "customers/ada.json"));
   const { ask, calls } = recorder(goodAnswers, { delay: 30 });
-  const events: { event: string }[] = [];
+  const events: Record<string, unknown>[] = [];
   const r = await run(v2, customers, { ask, onEvent: (e) => events.push(e) });
   expect("S-5 one request per package per wave, asking every item at once", calls.length === 2 && calls[0].keys.length === 2 && calls[1].keys.length === 2, JSON.stringify(calls.map((c) => c.keys)));
   expect("F-10 a step waits on the step it reads first: summary after stage", calls[0].keys.every((k) => k.includes("/stage/")) && calls[1].keys.every((k) => k.includes("/summary/")) && calls[1].start >= calls[0].end);
@@ -127,7 +128,7 @@ const v2 = await venture("run-venture");
   const pc = await provenanceOf(v2, "customers/ada.json");
   expect("S-10 the person's record passed into the step stays the person's, unchanged", pc.status === "person" && sha(join(v2, "customers/ada.json")) === before, JSON.stringify(pc));
   const e = entries(v2).filter((x) => x.entity === "knowledge/judgments/customers-stage-ada.json").at(-1);
-  expect("S-9 the judgment's log entry is the agent's and names what it was derived from", e.agent.kind === "agent" && e.agent.id === "model-step" && e.agent.model === "stand-in" && e.derived_from.includes("customers/ada.json"));
+  expect("S-9 the judgment's log entry is the agent's and names what it was derived from", e?.agent?.kind === "agent" && e.agent.id === "model-step" && e.agent.model === "stand-in" && e.derived_from?.includes("customers/ada.json"));
   // Downstream: an agent's record derived from the judgment is the agent's until a person confirms the judgment.
   const w = await call({ venture: "run-venture", workspace: ws, route: "knowledge/where-used", action: "write", input: { facts: [] }, actor: "agent", provenance: { derived_from: ["knowledge/judgments/customers-stage-ada.json"] } });
   const down = await provenanceOf(v2, "knowledge/where-used.json");
@@ -175,7 +176,7 @@ const v3 = await venture("failure-venture");
   expect("F-10 a step whose earlier step is uncertain waits", r.skipped.some((s) => s.key === "customers/summary/bo" && /waits on customers\/stage\/bo/.test(s.why ?? "")));
   expect("E-9 a low-confidence answer is uncertain", settle({ kind: "choice", options: ["a", "b"] }, { value: "a", confidence: 0.4 }).outcome === "uncertain");
   const code = settle({ kind: "choice", options: ["paying", "trying"], check: { equals: "stage" } }, { value: "trying", confidence: 0.95 }, { stage: "paying" });
-  expect("E-9 when a judgment and a code check disagree, the code wins", code.outcome === "overruled" && code.answer === "paying" && code.overruled.judgment === "trying", JSON.stringify(code));
+  expect("E-9 when a judgment and a code check disagree, the code wins", code.outcome === "overruled" && code.answer === "paying" && code.overruled?.judgment === "trying", JSON.stringify(code));
   expect("S-13 keep fills {{name}} and finds a stray placeholder", keepComputed("{{seats}} seats", { seats: 4 }).value === "4 seats" && !keepComputed("{{price}}", { seats: 4 }).ok);
   expect("E-1 uncertain judgments go to the founder as open decisions", existsSync(join(v3, "knowledge/decisions/judge-customers-stage-bo.decision.json"))
     && load(join(v3, "knowledge/decisions/judge-customers-stage-bo.decision.json")).status === "open" && r.uncertain.length === 2);
@@ -184,15 +185,15 @@ const v3 = await venture("failure-venture");
   const next = recorder(goodAnswers);
   const r2 = await run(v3, customers, { ask: next.ask });
   const jb = load(join(v3, "knowledge/judgments/customers-stage-bo.json"));
-  expect("E-1 the founder's answer becomes the judgment, written as theirs", a.ok && jb.by.kind === "person" && jb.by.name === "Ana" && jb.answer === "trying" && entries(v3).filter((e) => e.entity === "knowledge/judgments/customers-stage-bo.json").at(-1).agent.kind === "person");
+  expect("E-1 the founder's answer becomes the judgment, written as theirs", a.ok && jb.by.kind === "person" && jb.by.name === "Ana" && jb.answer === "trying" && entries(v3).filter((e) => e.entity === "knowledge/judgments/customers-stage-bo.json").at(-1)?.agent?.kind === "person");
   expect("F-10 ...and the step that waited on it is asked", next.calls.some((c) => c.keys.includes("customers/summary/bo")) && r2.waiting.some((w) => w.key === "customers/summary/ada"), JSON.stringify(r2.waiting));
 }
 
 // S-17: drafting is model-only.
 {
   let threw = false;
-  try { expectDeterministic(customers.find((s: Step) => s.kind === "draft")); } catch (e) { threw = e instanceof Uncaught; }
-  expect("S-17 code cannot expect a deterministic answer from a draft", threw && expectDeterministic(customers.find((s: Step) => s.kind === "choice")));
+  try { expectDeterministic(must(customers.find((s) => s.kind === "draft"))); } catch (e) { threw = e instanceof Uncaught; }
+  expect("S-17 code cannot expect a deterministic answer from a draft", threw && expectDeterministic(must(customers.find((s) => s.kind === "choice"))));
   const d = { package: "p", step: "d", kind: "draft", for_each: "customers", question: "Write about {item.notes}", inputs: ["item.notes"] };
   expect("S-17 a draft has no threshold and no code check", checkStep({ ...d, threshold: 0.5 }).some((e) => /no threshold/.test(e)) && checkStep({ ...d, computed: { s: { item: "seats" } }, check: { equals: "s" } }).some((e) => /model-only/.test(e)));
   const p = await payload(v1, customers);
@@ -229,7 +230,7 @@ const v4 = await venture("outcome-venture");
   const w = await waterfall(v1);
   const wave = (t: string) => must(w.records.find((r) => r.record === t)).wave;
   expect("F-10 a record waits on the records it reads first", wave("telos") > wave("validation-problem") && wave("validation-go-to-market") > wave("validation-pricing")
-    && must(w.records.find((r) => r.record === "telos")).waits_on.includes("validation-problem"), JSON.stringify(w.order));
+    && must(w.records.find((r) => r.record === "telos")).waits_on?.includes("validation-problem"), JSON.stringify(w.order));
   let cyc: Error | null = null;
   // The graph replaces the venture's packages, so the folder is never read.
   try { await waterfall(v1, { graph: { a: ["b"], b: ["c"], c: ["a"] } }); } catch (e) { cyc = e as Error; }
@@ -257,7 +258,7 @@ const v6 = await venture("speculate-venture");
   const ans = { "spec/more-seats/ada": { value: true, confidence: 0.9 }, "spec/more-seats/bo": { value: false, confidence: 0.9 } };
   // When code finished computing, so speculation is judged by order, not by a wall-clock bound a loaded machine misses.
   let computed = 0;
-  const slow = { compute: async (f: () => unknown) => { await sleep(300); computed = Date.now(); return f(); } };
+  const slow = { compute: async <T>(f: () => Promise<T>) => { await sleep(300); computed = Date.now(); return f(); } };
   const a = recorder(ans, { delay: 300 });
   const plain = await run(v6, [step], { ask: a.ask, hooks: slow, write: false });
   const plainComputed = computed;
@@ -281,11 +282,11 @@ const v7 = await venture("kit-venture", { bo: { private_fields: ["notes"] } });
   const guarded = wrap(kit);
   const refused = await guarded({ venture: "kit-venture", workspace: ws, route: "customers/ada", action: "write", input: { id: "ada" }, actor: "person" });
   const read = await guarded({ venture: "kit-venture", workspace: ws, route: "foundation/problem", action: "read" });
-  expect("S-15 the wrapped call refuses a write and a read outside the boundary", !refused.ok && /declares no write/.test(refused.error) && !read.ok && /declares no read/.test(read.error));
+  expect("S-15 the wrapped call refuses a write and a read outside the boundary", !refused.ok && /declares no write/.test(String(refused.error)) && !read.ok && /declares no read/.test(String(read.error)));
   const { ask } = recorder({ "follow-up/call/ada": { value: false, confidence: 0.9 } });
   const r = await run(v7, stepsOf({ kit }), { ask, call: guarded });
   const e = entries(v7).filter((x) => x.entity === "knowledge/judgments/follow-up-call-ada.json").at(-1);
-  expect("S-15 the kit's workflow runs inside its boundary as the kit's agent", r.judgments.length === 1 && e.agent.kind === "agent" && e.agent.id === "kit-follow-up", JSON.stringify(e?.agent));
+  expect("S-15 the kit's workflow runs inside its boundary as the kit's agent", r.judgments.length === 1 && e?.agent?.kind === "agent" && e.agent.id === "kit-follow-up", JSON.stringify(e?.agent));
   expect("private fields never reach a model: withheld at run time", r.withheld.some((w) => w.key === "follow-up/call/bo" && /private field/.test(w.why ?? "")));
   const c = await checkSteps(stepsOf({ kit }), { dir: v7 });
   expect("private fields never reach a model: the check names them", c.some((x) => /input item.notes of bo is a private field/.test(x)), c.join("; "));
@@ -311,7 +312,7 @@ console.log(JSON.stringify({ model: "command-stand-in", answers }));\n`);
   expect("S-7 --stream prints computed values first and each judgment as a line as it arrives", s.status === 0 && lines[0].event === "computed" && lines.at(-1).event === "done" && lines.filter((l) => l.event === "judgment").length === 4, s.stderr);
   const am = await answersModel({ answers: { a: 1 } })({ questions: { a: {}, b: {} } });
   const cm = await commandModel(`node ${model}`)({ state: {}, questions: { k: { type: "choice", options: ["x"] } } });
-  expect("answersModel and commandModel answer only what was asked", JSON.stringify(am.answers) === '{"a":1}' && cm.answers.k.value === "x");
+  expect("answersModel and commandModel answer only what was asked", JSON.stringify(am?.answers) === '{"a":1}' && (cm?.answers?.k as { value?: string } | undefined)?.value === "x");
   const chk = mentura(["steps", "check", "--venture", "cli-venture"], { MENTURA_WORKSPACE: ws });
   expect("mentura steps check passes on the repository's packages", chk.status === 0, chk.stderr);
 }

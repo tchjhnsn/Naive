@@ -7,7 +7,8 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "nod
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { decisions, ownScore, propose } from "../../engine/decisions.ts";
-import { phaseWeight, rankHistory, read, rebuild, update } from "../../engine/decision-index.ts";
+import { phaseWeight, rankHistory, read, rebuild, update, type DecisionIndex, type IndexEntry } from "../../engine/decision-index.ts";
+import { read as readAnswer } from "./answer.ts";
 import { record } from "../../core/provenance.ts";
 import { call } from "../../router/router.ts";
 
@@ -19,8 +20,8 @@ const v = join(ws, "idx");
 const put = (rel: string, o: unknown): void => { mkdirSync(join(v, rel, ".."), { recursive: true }); writeFileSync(join(v, rel), JSON.stringify(o, null, 2) + "\n"); };
 const agent = { kind: "person", id: "Founder", via: "cli" };
 /** An index entry and a listed decision: only the fields this test reads. */
-type Entry = { id: string, score: number, render: string, rank: number, docket_rank: number, impact: { records: string[], functions: string[], decisions: { id: string }[] }, weight: { phase: number, lifted_by: string | null }, flags: { requirement: string, holds_in: string }[] };
-type Listed = { id: string, rank: number };
+type Entry = IndexEntry;
+type Listed = { id: string, rank: number | null };
 const listed = (dir: string): Listed[] => decisions(dir).decisions;
 const entryOf = (idx: { entries: Entry[] }, id: string): Entry => { const e = idx.entries.find((x) => x.id === id); if (!e) throw new Error(`no index entry ${id}`); return e; };
 
@@ -97,7 +98,7 @@ try {
 
   // (e) the route and the command
   const r = await call({ venture: "idx", route: "system/decision-index", action: "run", input: { value: "read" }, workspace: ws, actor: "person", actor_id: "Founder" });
-  expect("route system/decision-index runs", r.ok && r.result.entries[0].id === "shop-scale", r);
+  expect("route system/decision-index runs", r.ok && readAnswer<DecisionIndex>(r).result.entries[0].id === "shop-scale", r);
   const vw = await call({ venture: "idx", route: "system/decision-index", action: "view", workspace: ws, actor: "person", actor_id: "Founder" });
   expect("route system/decision-index has a view", vw.ok, vw);
   const c = spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.ts"), "index", "--venture", "idx", "--workspace", ws], { encoding: "utf8", env: { ...process.env, MENTURA_WORKSPACE: ws } });

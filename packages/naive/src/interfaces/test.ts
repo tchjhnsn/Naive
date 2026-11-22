@@ -7,7 +7,8 @@ import { spawnSync } from "node:child_process";
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
-import { call, capture, groups, judge, routes } from "../router/router.ts";
+import { call as routerCall, capture, groups, judge, routes } from "../router/router.ts";
+import { read, typed } from "./tests/answer.ts";
 import { handle, TOOLS } from "./mcp/server.ts";
 import { route } from "./api/server.ts";
 import type { Message } from "./mcp/server.ts";
@@ -22,7 +23,18 @@ const tandem = join(ws, "ventures/tandem");
 let failed = 0;
 const expect = (name: string, ok: unknown): void => { console.log(`${ok ? "ok  " : "FAIL"} ${name}`); if (!ok) failed++; };
 /** Routes, MCP replies and API bodies: only the fields this test reads. */
-type Route = { route: string, actions: string[], decision_class?: string, template?: string, files?: string[] };
+type Route = ReturnType<typeof routes>[number];
+/** Router answers: the record and run fields this test reads, and what an answer adds beside its result. */
+type Rec = {
+  evidence: unknown[], draft: boolean, written: string, gate_rule: string, note: string, tagline: string, venture: string, name: string,
+  rows: { type: string, status: string }[], roles: { write: string }[], gate: { class: string, drafts: boolean }, isError?: boolean,
+};
+type Extra = {
+  not_found: { template: string, need_now?: { status: string }, skills: string[] }, pending_draft?: { file: string },
+  fix: { skills: string[], template: string, schema: string }, outcome: string, deprecated: string,
+};
+type Layout = { stack: { name: string, skills: unknown[] }[], chain: { path: string }[], instructions: Record<string, string>, package: { gates: unknown[] }, template: string, need_now?: { status: string } };
+const call = typed<Rec, Extra>(routerCall);
 type Slot = { slot: string, data?: { assumptions?: string }, error?: string };
 type RpcResult = { serverInfo: { name: string }, capabilities: { tools?: unknown }, tools: unknown[], contents: { text: string }[], isError?: boolean, content: { text: string }[] };
 type RpcReply = { result: RpcResult, error: { code: number } };
@@ -86,24 +98,25 @@ expect("a person's write to a gated record is written in place", (await call({ v
 expect("check runs the record's checks", (await call({ venture: "tandem", route: "purpose/validation/problem", action: "check" })).ok);
 expect("need-now runs", (await call({ venture: "tandem", route: "system/need-now", action: "run" })).result?.rows?.length > 0);
 expect("time-to-ready runs", (await call({ venture: "tandem", route: "system/time-to-ready", action: "run" })).result?.venture === "tandem");
-expect("payouts at a given value", (await call({ venture: "tandem", route: "governance/payouts", action: "run", input: { value: 5e6 } })).result?.[0]?.value === 5e6);
+expect("payouts at a given value", read<{ value: number }[]>(await routerCall({ venture: "tandem", route: "governance/payouts", action: "run", input: { value: 5e6 } })).result?.[0]?.value === 5e6);
 expect("a command missing its record says which", /needs governance\/ownership.json/.test((await call({ venture: "woodworking", route: "governance/payouts", action: "run" })).error));
 
 // Route types (EE-032).
-const kettle = { ...(await call({ venture: "tandem", route: "purpose/product", action: "read" })).result[Object.keys((await call({ venture: "tandem", route: "purpose/product", action: "read" })).result)[0]], id: "kettle", name: "Kettle" };
-expect("[id]: a collection lists its items by id", Object.keys((await call({ venture: "tandem", route: "purpose/product", action: "read" })).result).length > 0);
+const products = async () => read<Record<string, object>>(await routerCall({ venture: "tandem", route: "purpose/product", action: "read" })).result;
+const kettle = { ...(await products())[Object.keys(await products())[0]], id: "kettle", name: "Kettle" };
+expect("[id]: a collection lists its items by id", Object.keys(await products()).length > 0);
 expect("[id]: an item route writes one item", (await call({ venture: "tandem", route: "purpose/product/kettle", action: "write", input: kettle, actor: "person" })).result?.written === "products/kettle.json");
 expect("[id]: an item route reads one item", (await call({ venture: "tandem", route: "purpose/product/kettle", action: "read" })).result?.name === "Kettle");
 expect("[id]: an id with a path in it is refused", !(await call({ venture: "tandem", route: "purpose/product/a/b", action: "read" })).ok
   && !(await call({ venture: "tandem", route: "purpose/product/..", action: "write", input: kettle, actor: "person" })).ok);
 expect("[...venture]: a nested venture is reached by its folder path", (await call({ venture: "studio/print", route: "system/need-now", action: "run" })).ok
   && !(await call({ venture: "studio/nothing", route: "system/need-now", action: "run" })).ok);
-const lay = (await call({ venture: "tandem", route: "purpose/validation/problem", action: "layout" })).result;
+const lay = read<Layout>(await routerCall({ venture: "tandem", route: "purpose/validation/problem", action: "layout" })).result;
 expect("layout: the system layer, the record's layer and its package, in that order", lay.stack.map((k: { name: string }) => k.name).join() === "system,purpose,validation" && lay.stack[2].skills.length > 0);
 writeFileSync(join(tandem, "AGENTS.md"), "tone: plain\n");
 mkdirSync(join(tandem, "foundation"), { recursive: true });
 writeFileSync(join(tandem, "foundation/AGENTS.md"), "tone: warm\n");
-const nested = (await call({ venture: "tandem", route: "foundation/problem", action: "layout" })).result;
+const nested = read<Layout>(await routerCall({ venture: "tandem", route: "foundation/problem", action: "layout" })).result;
 expect("layout: AGENTS.md chain, nearest last, and the nearer file wins", nested.chain.map((f: { path: string }) => f.path).join() === "AGENTS.md,foundation/AGENTS.md" && nested.instructions.tone === "warm" && nested.package.gates.length > 0);
 expect("three outcomes: expected error, uncaught error, uncertain", (await call({ route: "no/such", action: "read" })).outcome === "error" && capture(() => { throw new Error("boom"); }).outcome === "uncaught" && judge(0.2, 0.7, "founder").outcome === "uncertain" && judge(0.2, 0.7, "founder").result === null);
 expect("layout: names the template and need-now status", lay.template === "packages/naive/src/functions/strategy/kits/validation/templates/problem.md" && lay.need_now?.status === "held");
@@ -112,16 +125,16 @@ expect("loading: a read says when an agent's draft is waiting", (await call({ ve
 const badCheck = await (async () => { const d = join(ws, "ventures/tandem/purpose/validation/problem.json"); const keep = readFileSync(d, "utf8"); const j = JSON.parse(keep); j.evidence[0].source = { url: "https://example.com" }; writeFileSync(d, JSON.stringify(j)); const r = (await call({ venture: "tandem", route: "purpose/validation/problem", action: "check" })); writeFileSync(d, keep); return r; })();
 expect("error: a failed check answers with the kit's skills and the template", !badCheck.ok && badCheck.fix?.skills.length > 0 && badCheck.fix.template);
 expect("error: a write that does not match answers with how to fix it", (await call({ venture: "tandem", route: "purpose/validation/problem", action: "write", input: { nope: 1 } })).fix?.schema === "packages/naive/src/records/validation-problem.schema.json");
-expect("view: a record renders as a Markdown page", /^# foundation\/problem\n/.test((await call({ venture: "tandem", route: "purpose/validation/problem", action: "view" })).result));
-const ov = (await call({ venture: "tandem", route: "system/overview", action: "run" })).result;
+expect("view: a record renders as a Markdown page", /^# foundation\/problem\n/.test(read<string>(await routerCall({ venture: "tandem", route: "purpose/validation/problem", action: "view" })).result));
+const ov = read<{ slots: Slot[] }>(await routerCall({ venture: "tandem", route: "system/overview", action: "run" })).result;
 expect("@slot: the overview has its eight slots", ov.slots.map((x: Slot) => x.slot).join() === "@venture,@telos,@validation,@need-now,@ready,@team,@packages,@provenance"); // @packages: P-17 (wf/writes)
-const woodOk = (await call({ venture: "woodworking", route: "system/overview", action: "run" })).result;
-expect("@validation: a venture with no problem record shows every assumption unknown, not an error (EE-050)", /exists: unknown/.test(woodOk.slots.find((x: Slot) => x.slot === "@validation").data?.assumptions ?? ""));
+const woodOk = read<{ slots: Slot[] }>(await routerCall({ venture: "woodworking", route: "system/overview", action: "run" })).result;
+expect("@validation: a venture with no problem record shows every assumption unknown, not an error (EE-050)", /exists: unknown/.test(woodOk.slots.find((x: Slot) => x.slot === "@validation")?.data?.assumptions ?? ""));
 const woodProblem = join(ws, "ventures/woodworking/purpose/validation/problem.json");
 mkdirSync(dirname(woodProblem), { recursive: true }); writeFileSync(woodProblem, "not json");
-const wood = (await call({ venture: "woodworking", route: "system/overview", action: "run" })).result;
+const wood = read<{ slots: Slot[] }>(await routerCall({ venture: "woodworking", route: "system/overview", action: "run" })).result;
 rmSync(dirname(woodProblem), { recursive: true });
-expect("@slot: a slot that cannot render shows its error and the rest still render", wood.slots.find((x: Slot) => x.slot === "@validation").error && wood.slots.find((x: Slot) => x.slot === "@need-now").data);
+expect("@slot: a slot that cannot render shows its error and the rest still render", wood.slots.find((x: Slot) => x.slot === "@validation")?.error && wood.slots.find((x: Slot) => x.slot === "@need-now")?.data);
 expect("(group): each phase groups the routes need-now suggests in it", must(groups().find((g) => g.group === "(discovery)")).routes.includes("foundation/problem")
   && !must(groups().find((g) => g.group === "(discovery)")).routes.includes("governance/ownership"));
 const planPath = join(tandem, "operations/team-plan.json");
@@ -187,21 +200,21 @@ expect("CLI accept without a draft fails", cli("accept", "governance/ownership",
 const fresh = join(ws, "ventures/fresh");
 expect("CLI init with --layers turns on only those layers", cli("init", fresh, "--id", "fresh", "--layers", "purpose").status === 0
   && JSON.parse(readFileSync(join(fresh, "venture.json"), "utf8")).layers.governance === false);
-expect("a part-adopted venture's need-now marks other layers off", (await call({ venture: "fresh", route: "system/need-now", action: "run" })).result.rows.find((r: { type: string }) => r.type === "ownership").status === "layer off");
+expect("a part-adopted venture's need-now marks other layers off", (await call({ venture: "fresh", route: "system/need-now", action: "run" })).result.rows.find((r: { type: string }) => r.type === "ownership")?.status === "layer off");
 
 // Provenance (EE-031).
 const log = entries(tandem);
 const by = (pred: (e: ReturnType<typeof entries>[number]) => boolean) => log.filter(pred).at(-1);
 expect("the log route reads and checks the log, and has no write", !table.find((r) => r.route === "system/provenance")?.actions.includes("write")
   && Array.isArray((await call({ venture: "tandem", route: "system/provenance", action: "read" })).result));
-expect("a router write is logged with its gate as the decision", by((e) => e.activity === "draft" && e.agent.via === "router" && /ownership/.test(e.entity))?.decision === "ownership-or-control");
+expect("a router write is logged with its gate as the decision", by((e) => e.activity === "draft" && e.agent?.via === "router" && /ownership/.test(e.entity))?.decision === "ownership-or-control");
 expect("an MCP write logs the harness that connected", (await handle({ jsonrpc: "2.0", id: 9, method: "initialize", params: { clientInfo: { name: "test-harness", version: "1" } } }))
   && !(await rpc({ jsonrpc: "2.0", id: 10, method: "tools/call", params: { name: "mentura_write", arguments: { venture: "tandem", route: "purpose/validation/problem",
     record: (await call({ venture: "tandem", route: "purpose/validation/problem", action: "read" })).result, derived_from: ["purpose/validation/problem.json"], decision: "EE-026", model: "m" } } })).result.isError
-  && (() => { const e = entries(tandem).at(-1); return e.agent.harness === "test-harness 1" && e.agent.model === "m" && e.decision === "EE-026" && e.derived_from[0] === "purpose/validation/problem.json"; })());
+  && (() => { const e = entries(tandem).at(-1); return e?.agent?.harness === "test-harness 1" && e.agent.model === "m" && e.decision === "EE-026" && e.derived_from?.[0] === "purpose/validation/problem.json"; })());
 (await http("PUT", "/ventures/tandem/purpose/validation/problem", (await call({ venture: "tandem", route: "purpose/validation/problem", action: "read" })).result, { "x-mentura-derived-from": "https://example.com/a, EE-026" }));
-expect("an API write logs derived_from from its header", entries(tandem).at(-1).derived_from?.join() === "https://example.com/a,EE-026" && entries(tandem).at(-1).agent.via === "api");
-expect("an accepted draft is logged as a person's accept", log.some((e) => e.activity === "accept" && e.agent.kind === "person" && e.entity === "governance/ownership.json"));
+expect("an API write logs derived_from from its header", entries(tandem).at(-1)?.derived_from?.join() === "https://example.com/a,EE-026" && entries(tandem).at(-1)?.agent?.via === "api");
+expect("an accepted draft is logged as a person's accept", log.some((e) => e.activity === "accept" && e.agent?.kind === "person" && e.entity === "governance/ownership.json"));
 const check = () => spawnSync("node", [join(root, "packages/naive/src/checks/check-provenance.ts"), ws], { encoding: "utf8" });
 expect("check-provenance passes on the logs the tests wrote", check().status === 0);
 const lf = join(tandem, "provenance.jsonl"), logLines = readFileSync(lf, "utf8").split("\n");

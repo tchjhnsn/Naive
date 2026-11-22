@@ -33,7 +33,7 @@ const broken = run("check-telos.ts", tel);
 expect("check-telos fails a migrated exit criterion that serves no known measure", broken.status === 1 && /validation\/\S+ serves unknown measure no-such-measure/.test(broken.stderr), broken.stdout + broken.stderr);
 
 const w = await call({ venture: "tandem", route: "foundation/telos", action: "write", actor: "person", input: load(join(tel, "_private/archive/telos.json")), workspace: join(tmp, "telos") });
-expect("a telos write after migration is refused", !w.ok && /foundation\/exit-criteria/.test(w.error), JSON.stringify(w));
+expect("a telos write after migration is refused", !w.ok && /foundation\/exit-criteria/.test(String(w.error)), JSON.stringify(w));
 expect("the refused write leaves no second telos record", !existsSync(join(tel, "foundation/telos.json")) && !existsSync(join(tel, "purpose/telos.json")));
 
 // Canonical records with no venture goal are no telos yet: the lifecycle gate asks for exit criteria in Discovery.

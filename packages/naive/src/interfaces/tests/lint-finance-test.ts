@@ -10,6 +10,7 @@ import { mkdirSync, mkdtempSync, readdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { call } from "../../router/router.ts";
+import { read } from "./answer.ts";
 
 const root = new URL("../../../../..", import.meta.url).pathname;
 const tmp = mkdtempSync(join(tmpdir(), "lint-finance-"));
@@ -169,7 +170,7 @@ write(ws, "ventures/kettle/venture.json", {
   layers: { purpose: false, knowledge: false, operations: false, evidence: false, governance: false, interface: false },
 });
 write(ws, "ventures/kettle/validation/pricing.json", price(40, 55));
-const routed = await call({ venture: "kettle", route: "finance/lint", action: "run", workspace: ws });
+const routed = read<{ findings: Finding[] }>(await call({ venture: "kettle", route: "finance/lint", action: "run", workspace: ws }));
 expect("route finance/lint returns the findings", routed.ok && routed.result?.findings?.some((f: Finding) => f.rule === "price-below-cost"));
 
 function venturesUnder(dir: string): string[] {

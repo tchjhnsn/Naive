@@ -94,10 +94,10 @@ import type { StrategicFoundation } from "../../records/types/records.d.ts";
 type Statement = StrategicFoundation["questions"][number]["statements"][number];
 const frame = FRAME as StrategicFoundation;
 /** A route in the route table: only the fields this CLI reads. */
-type Route = { route: string, actions: string[], groups: string[], kind: string, record?: string, collection?: string, form?: string, files: string[], view_of?: string };
+type Route = { route: string, actions: string[], groups: string[], kind: string, record?: string, collection?: string, form?: string, files?: string[], view_of?: string };
 const table = (): Route[] => routes();
 /** A decision as decisions() lists it: only the fields this CLI reads. */
-type Listed = { id: string, source: string, version?: number, question?: string, answer?: string, applies_to?: { file: string, field: string }[], rank?: number | null, render: string, why?: string[], reasons_changed?: unknown[] };
+type Listed = { id: string, source: string, version?: number, question?: string, answer?: string | null, applies_to?: { file: string, field: string }[], rank?: number | null, render: string, why?: string[], reasons_changed?: unknown[] };
 const listed = (dir: string): Listed[] => decisions(dir).decisions;
 /** The value at a dotted path of a record; "." is the record itself. A missing path throws, as it did before the types. */
 const get = (o: unknown, p: string | null | undefined): unknown => { if (p == null) throw new TypeError("a statement with no attribute path"); return p === "." ? o : p.split(".").reduce<unknown>((x, k) => (x == null ? undefined : (x as Record<string, unknown>)[k]), o); };
@@ -157,7 +157,8 @@ if (cmd === "add") {
   // Imports one function into a venture (EE-047, EE-048, EE-071). department is the alias for function for one release.
   const v = opt("venture");
   if (!action || !v) usage();
-  const p = spawnSync("node", [join(repo, "packages/naive/src/engine/add-department.ts"), ventureDir(v, workspace), action, ...(flag("group") ? ["--group"] : [])], { stdio: "inherit" });
+  // An unknown venture reaches spawnSync as null and throws there, as it did before the types; the cast keeps that.
+  const p = spawnSync("node", [join(repo, "packages/naive/src/engine/add-department.ts"), ventureDir(v, workspace) as string, action, ...(flag("group") ? ["--group"] : [])], { stdio: "inherit" });
   process.exit(p.status ?? 1);
 }
 
@@ -179,10 +180,10 @@ if (["triggers", "stale", "notify", "adapt", "adapters"].includes(cmd)) {
   const d = ["triggers", "stale", "notify", "adapt"].includes(cmd) ? (v ? ventureDir(v, workspace) : null) : null;
   if (cmd !== "adapters" && !d) { console.error(v ? `no venture ${v}` : `mentura ${cmd} needs --venture <id>`); process.exit(2); }
   const pass = (...names: string[]): string[] => names.flatMap((n) => argv.flatMap((a, i) => (a === `--${n}` ? [a, ...(argv[i + 1] && !argv[i + 1].startsWith("--") ? [argv[i + 1]] : [])] : [])));
-  const args = cmd === "triggers" ? ["packages/naive/src/router/orchestration/triggers.ts", d, ...pass("fire", "json")]
-    : cmd === "stale" ? ["packages/naive/src/engine/stale.ts", d, ...pass("json")]
-    : cmd === "notify" ? ["packages/naive/src/engine/stale.ts", d, "--notify", ...pass("source", "path", "version", "json")]
-    : cmd === "adapt" ? ["packages/naive/src/interfaces/adapters.ts", "adapt", action ?? "", d, ...pass("json")]
+  const args = cmd === "triggers" ? ["packages/naive/src/router/orchestration/triggers.ts", d ?? "", ...pass("fire", "json")]
+    : cmd === "stale" ? ["packages/naive/src/engine/stale.ts", d ?? "", ...pass("json")]
+    : cmd === "notify" ? ["packages/naive/src/engine/stale.ts", d ?? "", "--notify", ...pass("source", "path", "version", "json")]
+    : cmd === "adapt" ? ["packages/naive/src/interfaces/adapters.ts", "adapt", action ?? "", d ?? "", ...pass("json")]
     : ["packages/naive/src/interfaces/adapters.ts", ...positional.slice(1), ...pass("json")];
   const p = spawnSync("node", [join(repo, args[0]), ...args.slice(1)], { stdio: "inherit" });
   process.exit(p.status ?? 1);
@@ -238,7 +239,9 @@ if (cmd === "accept") {
   if (rt.startsWith("recipes/")) {
     const a = await call({ venture, route: rt, action: "accept", input: { over_holdout: flag("over-holdout") }, actor: "person", actor_id: opt("by"), workspace, via: "cli" });
     if (!a.ok) { console.error(`not accepted: ${a.error}`); process.exit(1); }
-    out(`accepted: ${a.result.written} (holdout ${a.result.result}${a.result.over_holdout ? ", accepted over it" : ""})`);
+    // The recipe route's accept answer (packages/naive/src/router/recipes.ts), as this line reads it.
+    const acc = a.result as { written: string, result: unknown, over_holdout?: boolean };
+    out(`accepted: ${acc.written} (holdout ${acc.result}${acc.over_holdout ? ", accepted over it" : ""})`);
     process.exit(0);
   }
   const d = draftOf(rt, venture, workspace);
@@ -252,13 +255,13 @@ if (cmd === "accept") {
   try { chosen = pickDraft(d.dir, d.draft, opt("pick")); } catch (e) { console.error((e as Error).message); process.exit(1); }
   const chosenFile = ventureFile(d.dir, chosen);
   const recType = table().find((x) => x.route === d.route || x.route === d.route.replace(/[^/]+$/, "[id]"))?.record;
-  const touched: { id: string, attribute?: string | null }[] = frame.questions.flatMap((q) => q.statements).filter((s) => s.record && !s.derived_from).map((s) => ({ ...s, ...statementFiles(d.dir, s) as { files: string[], attribute: string | null } })).filter((s) => s.files.includes(d.file) || (s.id === "exit-criteria" && d.file.startsWith("foundation/exit-criteria/")));
+  const touched: { id: string, attribute?: string | null }[] = frame.questions.flatMap((q) => q.statements).filter((s): s is Statement & { record: string } => Boolean(s.record) && !s.derived_from).map((s) => ({ ...s, ...statementFiles(d.dir, s) as { files: string[], attribute: string | null } })).filter((s) => s.files.includes(d.file) || (s.id === "exit-criteria" && d.file.startsWith("foundation/exit-criteria/")));
   touched.push(...foundationOf(recType).filter((s) => !touched.some((t) => t.id === s.id)));
   if (touched.length) {
     const now = existsSync(ventureFile(d.dir, d.file)) ? JSON.parse(readFileSync(ventureFile(d.dir, d.file), "utf8")) : {};
     const next = JSON.parse(readFileSync(chosenFile, "utf8"));
     const diff = touched.map((s) => `  ${s.id}:\n    now:   ${JSON.stringify(get(now, s.attribute) ?? null)}\n    draft: ${JSON.stringify(get(next, s.attribute) ?? null)}`).join("\n");
-    const names = new Set([d.route, rt]);
+    const names = new Set<string | undefined>([d.route, rt]);
     const confirmed = opt("confirm") !== undefined ? names.has(opt("confirm")) : await typed(d.route, `Accepting ${d.route} changes these foundation statements:\n${diff}`);
     if (!confirmed) { console.error("not accepted: the confirmation did not match"); process.exit(1); }
   }
@@ -267,7 +270,7 @@ if (cmd === "accept") {
   if (!w.ok) { console.error(w.error); process.exit(1); }
   // Gate group hook (X-2): removes the draft, its variants and sidecar, and decides the variants decision.
   const settled = settleDraft(d.dir, d.draft, { picked: opt("pick") ?? "a", by: opt("by") });
-  out(`accepted: ${w.result.written}${settled.decision ? ` (draft ${settled.picked}; decision ${settled.decision} ${settled.decided ? "decided" : `not decided: ${settled.error}`})` : ""}`);
+  out(`accepted: ${(w.result as { written: string }).written}${settled.decision ? ` (draft ${settled.picked}; decision ${settled.decision} ${settled.decided ? "decided" : `not decided: ${settled.error}`})` : ""}`);
   process.exit(0);
 }
 
@@ -411,7 +414,7 @@ if (cmd === "confirm") {
   const s = frame.questions.flatMap((q) => q.statements).find((x) => x.id === id);
   if (!s?.record) { console.error(`${id} is not a foundation statement with a record (see mentura purpose/foundation run)`); process.exit(1); }
   const rt = table().find((x) => x.record === s.record && x.collection !== "list")?.route ?? s.record;
-  const { files: home, attribute } = statementFiles(dir, s);
+  const { files: home, attribute } = statementFiles(dir, { ...s, record: s.record });
   const hits = home.filter((f) => existsSync(ventureFile(dir, f)));
   if (!hits.length) { console.error(`${venture} has no ${s.record} record to confirm`); process.exit(1); }
   const shown = hits.map((f) => `  ${f}: ${JSON.stringify(get(JSON.parse(readFileSync(ventureFile(dir, f), "utf8")), attribute) ?? null)}`).join("\n");
@@ -428,7 +431,7 @@ if (cmd === "baseline") {
   const dir = venture && ventureDir(venture, workspace);
   if (!dir) usage();
   const logged = new Set(entries(dir).map((e) => e.entity));
-  const globs = table().filter((r) => r.kind === "record" && r.form === "json" && r.collection !== "list").flatMap((r) => r.files.map((g): [string, string] => [r.route, g]));
+  const globs = table().filter((r) => r.kind === "record" && r.form === "json" && r.collection !== "list").flatMap((r) => (r.files ?? []).map((g): [string, string] => [r.route, g]));
   const routeOf = (rt: string, g: string, f: string): string => rt.endsWith("/[id]") ? rt.replace("[id]", (f.match(new RegExp("^" + g.split("*").map((x) => x.replace(/[.+^${}()|[\]\\]/g, "\\$&")).join("([^/]*)") + "$")) as RegExpMatchArray)[1]) : rt;
   let n = 0;
   for (const f of (files(dir) as string[]).filter((f) => !f.startsWith("_drafts/"))) {
@@ -472,7 +475,8 @@ const actor = as === "person" || as === "public" ? as : "agent";
 let r = await call({ venture, route: cmd, action, input, actor, workspace, via: "cli", provenance });
 // Asks before running (EE-050): at a terminal, the person chooses; otherwise it prints both choices.
 if (r.ok && r.needs_input && !flag("json")) {
-  const n = r.needs_input;
+  // A run that needs the person first says what is missing and how to fill it in or run as is (packages/naive/src/router/context.ts).
+  const n = r.needs_input as { ask: string, missing: { field: string, items?: string[], why: string, as_is: string }[], options: { how: string }[] };
   console.log(`${n.ask}\n${n.missing.map((m: { field: string, items?: string[], why: string, as_is: string }) => `  - ${m.field}${m.items ? ` (${m.items.join(", ")})` : ""}: ${m.why}. As is: ${m.as_is}`).join("\n")}`);
   if (!process.stdin.isTTY) { console.log(`Fill in: ${n.options[0].how}\nRun as is: ${n.options[1].how}`); process.exit(0); }
   const { createInterface } = await import("node:readline/promises");

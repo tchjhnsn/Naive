@@ -44,7 +44,7 @@ import { basename, join, resolve } from "node:path";
 import { judgeCommand } from "../../engine/caching.ts";
 import { decisions } from "../../engine/decisions.ts";
 import { docket } from "../../engine/docket.ts";
-import { CONVENTIONS, DUMP, MAP, parse, render, split, summary, clean, request, fromAnswers } from "../../functions/strategy/frameworks/idea-map/ideamap.ts";
+import { CONVENTIONS, DUMP, MAP, parse, render, split, summary, clean, request, fromAnswers, type JevAnswers, type Tag } from "../../functions/strategy/frameworks/idea-map/ideamap.ts";
 import { GRAPH, build as buildGraph, request as graphRequest } from "../../functions/strategy/frameworks/idea-map/graph.ts";
 import { understood } from "../../functions/strategy/frameworks/idea-map/route.ts";
 import { createHash } from "node:crypto";
@@ -61,11 +61,10 @@ type Run = { name: string, run_type: string, start: string, end?: string, inputs
 type Block = { type: string, name: string, id: string, input?: { route?: string, queries?: unknown, id?: string }, tool_use_id: string, content?: unknown, is_error?: boolean };
 /** The agent's final result event. */
 type Result = { type: "result", result: string, is_error?: boolean, total_cost_usd?: number, num_turns?: number, usage?: unknown };
-/** A docket decision and a listed decision: only the fields the harness reads. */
+/** A listed decision: only the fields the harness reads. The docket is typed by docket() itself. */
 type Action = { kind: string, command: string, confirm: string, route: string, statement: string };
-type DocketDecision = { id: string, question: string, value: number, dominant: boolean, why: string[], function: string, action?: Action };
-type Docket = { functions: { function: string, attention: unknown, decisions: DocketDecision[] }[] };
-type Listed = { id: string, question: string, answer?: string, why?: string[], action: Action, status?: string, source?: string, rank?: number | null, provenance?: { approved_by?: string, wording?: string } };
+type Docket = ReturnType<typeof docket>;
+type Listed = { id: string, question: string, answer?: string | null, why?: string[], action: Action, status?: string, source?: string, rank?: number | null, provenance?: { approved_by?: string, wording?: string } };
 /** The venture package as venture-package.ts prints it: only the fields the harness reads. */
 type Pkg = { phase: string, progress: number, core: { id: string, in: string, title: string, state: string, progress: number, moving: unknown, missing: unknown }[], situation: { questions: { id: string, value: unknown }[] } };
 // The harness drives a local claude agent, the app's commands and a local board: a laptop tool.
@@ -218,7 +217,8 @@ const compact = (k: Docket) => ({ leading: k.functions[0]?.function ?? null, fun
 //    same vocabulary. Either way the ideas stay verbatim and unknown tags are dropped.
 const ideas = split(readFileSync(ventureFile(dir, DUMP), "utf8"));
 const venture = JSON.parse(readFileSync(join(dir, "venture.json"), "utf8"));
-let tags: unknown, tagger: string;
+// Tags from Jev, or the model's JSON, which clean() checks field by field.
+let tags: Record<string, Partial<Tag>>, tagger: string;
 const mapNode: Run = { name: "idea map", run_type: "tool", start: iso(), inputs: { ideas: ideas.length }, children: [] };
 if (jev) {
   const p = judgeRun(request(ideas, venture));
@@ -246,7 +246,7 @@ lap(`idea map: ${sum.ideas} ideas; ${Object.entries(sum.by_pillar).map(([k, v]) 
 //     Naive's record order does. Signal, lanes and layout follow in code.
 const graphNode: Run = { name: "idea graph", run_type: "tool", start: iso(), inputs: { ideas: ideas.length }, children: [] };
 const mapIdeas = parse(readFileSync(ventureFile(dir, MAP), "utf8")).ideas;
-let graphAnswers: Record<string, unknown> | null = null;
+let graphAnswers: JevAnswers | null = null;
 if (jev) {
   const p = judgeRun(graphRequest(mapIdeas, venture));
   if (p.status === 0) { const out = JSON.parse(p.stdout); graphAnswers = out.answers; console.log(`   Jev answered ${Object.keys(out.answers).length} dependency and concreteness questions in ${out.ms} ms`); }
@@ -289,7 +289,7 @@ The founder has just submitted an idea dump. Naive mapped it onto its convention
 //    goes in the trace, so a judge can check that the ranking was the right next step.
 for (let n = 0; n < steps; n++) {
   const r = decisions(dir);
-  const listed: Listed[] = r.decisions;
+  const listed = r.decisions as Listed[];
   const k: Docket = docket(dir);
   const pick = k.functions.flatMap((f) => f.decisions).find((d) => d.action && ["decide", "accept", "confirm"].includes(d.action.kind) && !settled.includes(d.id));
   const next = pick && listed.find((d) => d.id === pick.id);
@@ -346,6 +346,6 @@ if (pk.status === 0) {
 } else console.log(`   the venture package failed: ${pk.stderr.trim().slice(0, 300)}`);
 
 const end = decisions(dir);
-const ended: Listed[] = end.decisions;
+const ended = end.decisions as Listed[];
 lap(`done. ${ended.filter((d) => d.source === "file").length} decision records, ${ended.filter((d) => d.rank != null).length} ranked for the founder, ${settled.length} settled; workspace ${ws}`);
 finish(0);

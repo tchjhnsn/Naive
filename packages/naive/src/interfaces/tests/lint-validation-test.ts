@@ -7,6 +7,7 @@ import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { call } from "../../router/router.ts";
+import { read } from "./answer.ts";
 
 const repo = new URL("../../../../..", import.meta.url).pathname;
 const NOW = "2026-10-29T00:00:00Z";
@@ -211,7 +212,7 @@ const decision = (phase: string) => ({
     layers: { purpose: false, knowledge: false, operations: false, evidence: false },
   });
   put(dir, "foundation/problem.json", { ...problem([]), evidence: [] });
-  const open = await call({ venture: "lintv", route: "validation/lint", action: "run", workspace: ws });
+  const open = read<Report | null>(await call({ venture: "lintv", route: "validation/lint", action: "run", workspace: ws }));
   expect("route validation/lint returns the finding", open.ok && ids(open.result).includes("claim-no-evidence"), open.error ?? open.result);
   put(dir, "naive.config.json", { validation_lint: { rules: { "claim-no-evidence": { mode: "fail-closed" } } } });
   const shut = await call({ venture: "lintv", route: "validation/lint", action: "run", workspace: ws });

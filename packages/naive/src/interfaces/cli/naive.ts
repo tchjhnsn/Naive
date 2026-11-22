@@ -116,7 +116,7 @@ const free = (p: number): Promise<number> => new Promise((ok) => { const s = cre
 // The schema a venture file is checked against, from the route table (records only).
 async function schemaFor(file: string): Promise<string | null> {
   const { glob, routes } = await import("../../router/router.ts");
-  return routes().find((r: { kind: string, schema?: string, files?: string[] }) => r.kind === "record" && r.schema && (r.files ?? []).some((g) => glob(g).test(file)))?.schema ?? null;
+  return routes().find((r) => r.kind === "record" && r.schema && (r.files ?? []).some((g) => glob(g).test(file)))?.schema ?? null;
 }
 
 async function dev(dir: string): Promise<void> {

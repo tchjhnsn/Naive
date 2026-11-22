@@ -199,7 +199,7 @@ propose(pv, { id: "d-b", question: "B?", answer: "b" }, { agentId: "cos" });
 expect("approve refuses a name not on the venture's list", /Mallory is not a person/.test(approve(pv, "d-b", { by: "Mallory" }).error ?? ""));
 expect("approve refuses a role named as a person", /role, not a person/.test(approve(pv, "d-b", { by: "chief-of-staff" }).error ?? ""));
 expect("approve refuses an agent naming the founder", /is acting/.test(asActor({ MENTURA_ACTOR: "agent" }, () => approve(pv, "d-b", { by: "Torian" })).error ?? ""));
-expect("the refused approvals leave the decision open", decisions(pv).decisions.find((x: { id: string }) => x.id === "d-b").status === "open");
+expect("the refused approvals leave the decision open", decisions(pv).decisions.find((x: { id: string }) => x.id === "d-b")?.status === "open");
 expect("approve accepts a person on the list", approve(pv, "d-b", { by: "Ana" }).ok);
 
 // Founding roles count from the roles register, and a venture created as a fund has someone who can merge a door.
@@ -224,7 +224,7 @@ approve(pv, "d-r", { by: "Torian", answer: "two" });
 expect("rollback refuses a name not on the venture's list", /Mallory is not a person/.test(rollback(pv, "d-r", 1, { by: "Mallory" }).error ?? ""));
 expect("rollback refuses a role named as a person", /role, not a person/.test(rollback(pv, "d-r", 1, { by: "chief-of-staff" }).error ?? ""));
 expect("rollback refuses an agent naming the founder", /is acting/.test(asActor({ MENTURA_ACTOR: "agent" }, () => rollback(pv, "d-r", 1, { by: "Torian" })).error ?? ""));
-expect("the refused rollbacks leave the answer", decisions(pv).decisions.find((x: { id: string }) => x.id === "d-r").answer === "two");
+expect("the refused rollbacks leave the answer", decisions(pv).decisions.find((x: { id: string }) => x.id === "d-r")?.answer === "two");
 expect("rollback accepts a person on the list", rollback(pv, "d-r", 1, { by: "Torian" }).ok);
 
 // The verification substrate.

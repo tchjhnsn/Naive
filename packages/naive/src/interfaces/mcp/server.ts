@@ -9,9 +9,9 @@
 //   MENTURA_WORKSPACE=<dir> sets the workspace; the default is the current directory.
 
 import { createInterface } from "node:readline";
-import { call, routes, routesMd, ventureDir, ventures } from "../../router/router.ts";
+import { call, routes, routesMd, ventureDir, ventures, type CallArgs } from "../../router/router.ts";
 import { runStreaming } from "../../router/context.ts";
-import { propose } from "../../engine/decisions.ts";
+import { propose, type ProposeInput } from "../../engine/decisions.ts";
 
 const PROTOCOL = "2025-06-18";
 const venture = { type: "string", description: "The venture's id, or its folder path for a nested venture (see mentura_ventures)" };
@@ -87,7 +87,14 @@ export type Message = {
   params?: { clientInfo?: { name?: string, version?: string }, arguments?: Args, _meta?: { progressToken?: number | string }, name?: string, uri?: string },
 };
 /** What a tool call returns before it is sent back: the router's answer or one made here. */
-type Reply = { ok: boolean, result?: unknown, error?: string, fix?: unknown, needs_input?: { ask: string }, [k: string]: unknown };
+type Reply = { ok: boolean, result?: unknown, error?: unknown, fix?: unknown, [k: string]: unknown };
+/** A call made from a tool's arguments as the client sent them. The router checks them, so a missing route or an odd
+ * provenance field reaches it unchanged, as it did before the types: the one cast is here, at the client boundary. */
+type ToolCall = Omit<CallArgs, "route" | "provenance"> & { route?: string, provenance?: Record<string, unknown> };
+const ask = (args: ToolCall) => call(args as CallArgs);
+/** A venture's folder for an engine call. An unknown venture passes null on to the engine, as the JavaScript did; the
+ * engine's own reads refuse it. The cast is at the client boundary. */
+const dirArg = (venture: string | undefined) => ventureDir(venture) as string;
 type Progress = (p: { progress?: number, total?: number, message: string }) => void;
 
 // notify sends a notification to the client; progress for a call that carries _meta.progressToken (N-5).
@@ -114,35 +121,35 @@ export async function handle(msg: Message, notify: (m: unknown) => void = () => 
       let r: Reply;
       switch (params.name) {
         case "mentura_routes": r = { ok: true, result: a.group ? routes().filter((x: { groups: string[] }) => x.groups.includes(`(${a.group})`)) : routes() }; break;
-        case "mentura_ventures": r = { ok: true, result: ventures().map(({ id, name, phase, path }: { id: string, name: string, phase: string, path: string }) => ({ id, name, phase, path })) }; break;
-        case "mentura_layout": r = await call({ venture: a.venture, route: a.route, action: "layout" }); break;
-        case "mentura_view": r = await call({ venture: a.venture, route: a.route, action: "view" }); break;
+        case "mentura_ventures": r = { ok: true, result: ventures().map(({ id, name, phase, path }) => ({ id, name, phase, path })) }; break;
+        case "mentura_layout": r = await ask({ venture: a.venture, route: a.route, action: "layout" }); break;
+        case "mentura_view": r = await ask({ venture: a.venture, route: a.route, action: "view" }); break;
         // Context hook (packages/naive/src/router/context.ts): a read is a navigation, header first, its parts streamed as progress.
         // A filtered list (where) is a plain read (packages/naive/src/router/writes.ts); anything else is a navigation.
-        case "mentura_read": r = a.where ? await call({ venture: a.venture, route: a.route, action: "read", actor_id: a.agent_id, via: "mcp", input: { where: a.where } }) : await call({ venture: a.venture, route: a.route, action: "navigate", actor_id: a.agent_id, via: "mcp",
+        case "mentura_read": r = a.where ? await ask({ venture: a.venture, route: a.route, action: "read", actor_id: a.agent_id, via: "mcp", input: { where: a.where } }) : await ask({ venture: a.venture, route: a.route, action: "navigate", actor_id: a.agent_id, via: "mcp",
           input: { session: a.session, task: a.task, prefetch: a.prefetch, header_only: a.header_only, ...(progress ? { onPart: ({ part, data }: { part: string, data: unknown }) => progress({ message: `${part}: ${JSON.stringify(data)}` }) } : {}) } }); break;
-        case "mentura_write": r = await call({ venture: a.venture, route: a.route, action: "write", input: a.record, actor: "agent", actor_id: a.agent_id, via: "mcp",
+        case "mentura_write": r = await ask({ venture: a.venture, route: a.route, action: "write", input: a.record, actor: "agent", actor_id: a.agent_id, via: "mcp",
           provenance: { derived_from: a.derived_from, decision: a.decision, note: a.note, confidence: a.confidence, agent: Object.fromEntries(Object.entries({ harness: client, model: a.model }).filter(([, v]) => v)) } }); break;
         // Setup (EE-083): packages/naive/src/router/orchestration/setup.ts holds the questions; answers are proposals the founder confirms.
-        case "mentura_setup": { const m = await import("../../router/orchestration/setup.ts"); const dir = ventureDir(a.venture); r = { ok: true, result: { state: await m.state(dir), artifact: await m.artifact(dir) } }; break; }
-        case "mentura_setup_answer": r = await (await import("../../router/orchestration/setup.ts")).relay(ventureDir(a.venture), { id: a.id, answer: a.answer, agentId: a.agent_id, harness: client, model: a.model }); break;
-        case "mentura_setup_point": r = await (await import("../../router/orchestration/setup.ts")).point(ventureDir(a.venture), { fn: a.function, system: a.system, address: a.address, via: "mcp", actor: "agent", agentId: a.agent_id } as Parameters<typeof import("../../router/orchestration/setup.ts").point>[1]); break;
-        case "mentura_frame": r = await (await import("../../engine/frames.ts")).run(ventureDir(a.venture), { id: a.frame, text: a.text, lookup: a.lookup, agentId: a.agent_id ?? "frames", harness: client ?? undefined, model: a.model }); break;
+        case "mentura_setup": { const m = await import("../../router/orchestration/setup.ts"); const dir = dirArg(a.venture); r = { ok: true, result: { state: await m.state(dir), artifact: await m.artifact(dir) } }; break; }
+        case "mentura_setup_answer": r = await (await import("../../router/orchestration/setup.ts")).relay(dirArg(a.venture), { id: a.id, answer: a.answer, agentId: a.agent_id, harness: client, model: a.model } as Parameters<typeof import("../../router/orchestration/setup.ts").relay>[1]); break;
+        case "mentura_setup_point": r = await (await import("../../router/orchestration/setup.ts")).point(dirArg(a.venture), { fn: a.function, system: a.system, address: a.address, via: "mcp", actor: "agent", agentId: a.agent_id } as Parameters<typeof import("../../router/orchestration/setup.ts").point>[1]); break;
+        case "mentura_frame": r = await (await import("../../engine/frames.ts")).run(dirArg(a.venture), { id: a.frame, text: a.text, lookup: a.lookup, agentId: a.agent_id ?? "frames", harness: client ?? undefined, model: a.model } as Parameters<typeof import("../../engine/frames.ts").run>[1]); break;
         case "mentura_decisions": {
-          r = await call({ venture: a.venture, route: "governance/decisions", action: "run", actor_id: a.agent_id });
+          r = await ask({ venture: a.venture, route: "governance/decisions", action: "run", actor_id: a.agent_id });
           if (r.ok && a.render?.length) { const render = a.render, res = r.result as { decisions: { render: string }[] }; r.result = { ...res, decisions: res.decisions.filter((d) => render.includes(d.render)) }; }
           break;
         }
         case "mentura_propose_decision": {
           const dir = ventureDir(a.venture);
-          r = dir ? propose(dir, a.decision, { agentId: a.agent_id, via: "mcp", harness: client ?? undefined, model: a.model }) : { ok: false, error: `no venture ${a.venture}` };
+          r = dir ? propose(dir, a.decision as ProposeInput, { agentId: a.agent_id, via: "mcp", harness: client ?? undefined, model: a.model }) : { ok: false, error: `no venture ${a.venture}` };
           break;
         }
-        case "mentura_check": r = await call({ venture: a.venture, route: a.route, action: "check" }); break;
-        case "mentura_template": r = await call({ route: a.route, action: "template" }); break;
+        case "mentura_check": r = await ask({ venture: a.venture, route: a.route, action: "check" }); break;
+        case "mentura_template": r = await ask({ route: a.route, action: "template" }); break;
         case "mentura_run": r = progress && a.route !== "system/overview" && a.route !== "system/robots"
           ? await runStreaming({ venture: a.venture, route: a.route, input: { value: a.value, as_is: a.as_is }, actor_id: a.agent_id } as Parameters<typeof runStreaming>[0], progress)
-          : await call({ venture: a.venture, route: a.route, action: "run", actor_id: a.agent_id, input: a.value !== undefined || a.as_is ? { ...(a.value !== undefined ? { value: a.value } : {}), ...(a.as_is ? { as_is: true } : {}) } : undefined }); break;
+          : await ask({ venture: a.venture, route: a.route, action: "run", actor_id: a.agent_id, input: a.value !== undefined || a.as_is ? { ...(a.value !== undefined ? { value: a.value } : {}), ...(a.as_is ? { as_is: true } : {}) } : undefined }); break;
         // The agent specs are TypeScript; Node strips their types here as it does for the router's recipes.ts.
         case "mentura_agent_brief": {
           const dir = a.venture ? ventureDir(a.venture) : null;
@@ -160,7 +167,9 @@ export async function handle(msg: Message, notify: (m: unknown) => void = () => 
         }
         default: return fail(-32602, `unknown tool ${params.name}`);
       }
-      if (r.ok && r.needs_input) return reply({ content: [{ type: "text", text: `Ask the person before running. ${r.needs_input.ask}\n${JSON.stringify(r.needs_input, null, 2)}` }], isError: false });
+      // A run that needs the person first answers needs_input with the question to ask (packages/naive/src/router/context.ts).
+      const needs = r.needs_input as { ask: string } | undefined;
+      if (r.ok && needs) return reply({ content: [{ type: "text", text: `Ask the person before running. ${needs.ask}\n${JSON.stringify(r.needs_input, null, 2)}` }], isError: false });
       const extra = ["not_found", "pending_draft", "fix", "deprecated"].some((k) => r[k]);
       const text = r.ok ? (typeof r.result === "string" && !extra ? r.result : JSON.stringify(extra ? r : r.result, null, 2)) : JSON.stringify({ error: r.error, ...(r.fix ? { fix: r.fix } : {}), ...(r.result ? { result: r.result } : {}) }, null, 2);
       return reply({ content: [{ type: "text", text }], isError: !r.ok });

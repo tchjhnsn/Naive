@@ -9,6 +9,7 @@ import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { call, routes } from "../../router/router.ts";
+import { read } from "./answer.ts";
 
 const repo = new URL("../../../../..", import.meta.url).pathname;
 let failed = 0;
@@ -236,7 +237,7 @@ function venture(layout = "flat") {
   write(v.dir, "foundation/icp.json", icp);
   write(v.dir, "product/desk.json", product);
   write(v.dir, "customers/bev.json", { id: "bev", name: "Bev", icp: "clinics" });
-  const answered = await call({ venture: "shop", route: "customers/lint", action: "run", workspace: v.root, via: "cli" });
+  const answered = read<{ findings: Finding[] }>(await call({ venture: "shop", route: "customers/lint", action: "run", workspace: v.root, via: "cli" }));
   expect("the route runs the lint and returns the finding", answered.ok === true && answered.result.findings.some((x: Finding) => x.rule === "no-icp-match" && x.mode === "fail-open"), answered.error ?? answered.result);
   v.drop();
 }

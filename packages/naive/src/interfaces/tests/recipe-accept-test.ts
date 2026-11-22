@@ -19,10 +19,17 @@ import { record } from "../../core/provenance.ts";
 import { planRecipe } from "../../engine/recipes/eval-set.ts";
 import { decisionFile } from "../../engine/decisions.ts";
 import { checkRecipes } from "../../checks/check-recipes.ts";
-import { call } from "../../router/router.ts";
+import { call as routerCall } from "../../router/router.ts";
+import { read, typed } from "./answer.ts";
 
 let failed = 0;
 const expect = (name: string, ok: boolean, detail: unknown = ""): void => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${JSON.stringify(detail).slice(0, 700)}`}`); if (!ok) failed++; };
+/** What this test reads off the recipe route's answers: a write's verdict, an accept, and the monitor. */
+type Got = {
+  kept_as: string, draft: boolean, result: string, over_holdout: boolean, status: string, live: string, previous: string,
+  previous_score: number, live_score: number, rows: number, decision: string, proposed: boolean, kept: boolean,
+};
+const call = typed<Got>(routerCall);
 const repo = fileURLToPath(new URL("../../../../../", import.meta.url));
 const examples = join(repo, "packages/naive/src/records/examples/signals");
 const PATTERN = "competitors/[id]/signals", ROUTE = `recipes/${PATTERN}`;
@@ -126,7 +133,7 @@ try {
   expect("setup: the overfit recipe is kept as better on dev and held", overKept.ok && overKept.result.kept_as === "better" && overKept.result.draft === true, overKept);
   process.env.NAIVE_NOW = "2026-06-04T00:00:00Z";
   const failedCheck = await accept();
-  expect("fail: the holdout check fails, the accept is refused with only the bit, and the draft and live recipe stay", !failedCheck.ok && failedCheck.result === "fail" && !/score|loss|margin/.test(String(failedCheck.error))
+  expect("fail: the holdout check fails, the accept is refused with only the bit, and the draft and live recipe stay", !failedCheck.ok && read<string>(failedCheck).result === "fail" && !/score|loss|margin/.test(String(failedCheck.error))
     && readFileSync(draft, "utf8") === overfit && liveNow() === smaller, failedCheck);
   expect("fail: logged as a holdout line with result fail", holdouts().length === 2 && holdouts()[1].result === "fail" && holdouts()[1].over_holdout === false && holdouts()[1].candidate === sha(overfit));
   const retried = await accept();

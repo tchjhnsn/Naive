@@ -8,6 +8,7 @@ import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { call } from "../../router/router.ts";
+import { read } from "./answer.ts";
 import { ventureFile } from "../../core/venture-paths.ts";
 
 const repo = new URL("../../../../..", import.meta.url).pathname;
@@ -134,7 +135,7 @@ const rules = (r: { stdout: string }): Set<string> => new Set((json(r)?.findings
   const { root, dir } = venture();
   put(dir, "foundation/icp.json", icp());
   put(dir, "product/shop.json", card({ business_model: [] }));
-  const ok = await call({ venture: "acme", route: "product/lint", action: "run", workspace: root });
+  const ok = read<{ findings: unknown[] }>(await call({ venture: "acme", route: "product/lint", action: "run", workspace: root }));
   expect("route product/lint returns no findings when the venture is clean", ok.ok && ok.result.findings.length === 0, ok);
   put(dir, "naive.config.json", { product_lint: { rules: { "product-no-icp": { mode: "fail-closed" } } } });
   put(dir, "product/shop.json", card({ offered_to: [], business_model: [], features: [] }));

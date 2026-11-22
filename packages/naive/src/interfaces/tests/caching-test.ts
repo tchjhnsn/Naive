@@ -11,7 +11,8 @@ import { existsSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } fro
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { actionScope, actionStats, cached, clear, command, configOf, declarationFor, entries, judge, keyOf, LIFE, lifeOf, lookup, memo, prune, stats, versionsOf } from "../../engine/caching.ts";
-import { call } from "../../router/router.ts";
+import { call as routerCall } from "../../router/router.ts";
+import { read, typed } from "./answer.ts";
 import { decisions, holding } from "../../engine/decisions.ts";
 import { route } from "../api/server.ts";
 
@@ -20,6 +21,12 @@ let failed = 0;
 const expect = (name: string, ok: unknown, detail: unknown = ""): void => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${detail}`}`); if (!ok) failed++; };
 const throws = (f: () => unknown, re: RegExp): boolean => { try { f(); return false; } catch (e) { return re.test((e as Error).message); } };
 type Api = { ok?: boolean, cache?: { status?: string } };
+/** What this test reads off the router's answers: the cache's verdict, the record, and an answer's parts. */
+type Cache = { status: string, key: string, by: string, life: string, private?: boolean };
+type Got = { statement: string, cache: Cache, parts: { route: string, kind: string, level: string }[], mix: { confirmed: number, cached: number, fresh: number } };
+const call = typed<Got, { cache: Cache }>(routerCall);
+/** The action's shared-value counts: inside actionScope there always are some. */
+const statsNow = () => { const s = actionStats(); if (!s) throw new Error("no action in scope"); return s; };
 const http = async (method: string, url: string, body?: unknown): Promise<[number, Api]> => (await route(method, url, body)) as [number, Api];
 
 const ws = mkdtempSync(join(tmpdir(), "caching-test-"));
@@ -151,21 +158,21 @@ const kinds = Object.fromEntries((ans.result?.parts ?? []).map((p: { route: stri
 expect("C-8: a record a person wrote is confirmed", kinds["foundation/problem"] === "confirmed", JSON.stringify(kinds));
 expect("C-8: a record not written yet is missing", kinds["foundation/telos"] === "missing");
 expect("C-8: a cached command result is cached, a new one fresh", kinds["system/time-to-ready"] === "cached" && kinds["purpose/foundation"] === "fresh", JSON.stringify(kinds));
-expect("C-8: a judgment part says it came from the cache", kinds["system/judge"] === "cached" && ans.result.parts.find((p: { route: string }) => p.route === "system/judge").level === "judgment");
+expect("C-8: a judgment part says it came from the cache", kinds["system/judge"] === "cached" && ans.result.parts.find((p: { route: string }) => p.route === "system/judge")?.level === "judgment");
 expect("C-8: the answer counts its mix", ans.result.mix.confirmed === 1 && ans.result.mix.cached === 2 && ans.result.mix.fresh === 1, JSON.stringify(ans.result?.mix));
 const agentWrite = await call({ venture: "kettle", route: "system/answer", action: "run", workspace: ws, input: { value: "foundation/problem" } });
 expect("C-8: value a,b names the routes too", agentWrite.ok && agentWrite.result.parts.length === 1);
 
 // F-2, F-12, O-5: within one action, reads and computed values are shared
-const st = await actionScope(async () => { const ov = await call({ venture: "kettle", route: "system/overview", action: "run", workspace: ws }); return { ok: ov.ok, ...actionStats() }; });
+const st = await actionScope(async () => { const ov = await call({ venture: "kettle", route: "system/overview", action: "run", workspace: ws }); return { ok: ov.ok, ...statsNow() }; });
 const nnKey = Object.keys(st.computed).find((k) => k.startsWith("cmd:packages/naive/src/engine/need-now.ts"));
 expect("O-5: need-now runs once for the overview, shared by the layouts and the command", st.ok && nnKey !== undefined && st.computed[nnKey] === 1 && (st.shared[nnKey] ?? 0) >= 1, JSON.stringify({ c: nnKey && st.computed[nnKey], s: nnKey && st.shared[nnKey] }));
 expect("F-12: the route table is built once per action and shared", st.computed.routes === 1 && st.shared.routes >= 5, JSON.stringify(st));
-const dl = await actionScope(async () => { const first = decisions(dir); holding(dir, "foundation/problem.json"); return { same: decisions(dir) === first, ...actionStats() }; });
+const dl = await actionScope(async () => { const first = decisions(dir); holding(dir, "foundation/problem.json"); return { same: decisions(dir) === first, ...statsNow() }; });
 expect("F-12: the decision list is computed once per action and shared", dl.same && dl.computed.decisions === 1 && dl.shared.decisions === 2, JSON.stringify(dl));
 expect("F-12: an explicit now is computed, not shared", decisions(dir, Date.now()) !== decisions(dir, Date.now()));
 expect("F-2: the venture state is hashed once per action", st.computed.state === 1);
-const twice = await actionScope(async () => { await Promise.all([1, 2].map(() => call({ venture: "kettle", route: "foundation/problem", action: "read", workspace: ws }))); return actionStats(); });
+const twice = await actionScope(async () => { await Promise.all([1, 2].map(() => call({ venture: "kettle", route: "foundation/problem", action: "read", workspace: ws }))); return statsNow(); });
 const readKey = Object.keys(twice.computed).find((k) => k.startsWith("read:") && k.endsWith("foundation/problem.json"));
 expect("F-2: the same record asked for twice in one action is read once", readKey && twice.computed[readKey] === 1 && twice.shared[readKey] === 1, JSON.stringify(twice));
 const after = await actionScope(async () => {
@@ -190,7 +197,7 @@ expect("H-3: an API write never does, and the next read is computed again", put[
 const sts = stats(dir);
 expect("C-17: the store is the venture's .naive/cache, which the router never routes", sts.store === ".naive/cache" && sts.entries > 3 && existsSync(join(dir, ".naive/cache/shared")));
 const listed = await call({ venture: "kettle", route: "system/cache", action: "run", input: { value: "list" }, workspace: ws });
-expect("C-1: system/cache lists the entries", listed.ok && listed.result.length === entries(dir).length);
+expect("C-1: system/cache lists the entries", listed.ok && read<unknown[]>(listed).result.length === entries(dir).length);
 expect("C-4: prune removes only expired entries", prune(dir, { now: Date.now() }) >= 0 && prune(dir, { now: Date.now() + 2 * 365 * 864e5 }) > 0 && entries(dir).every((e) => e.expires_at === null));
 expect("C-1: clear empties the store", clear(dir) >= 0 && entries(dir).length === 0 && readdirSync(join(dir, ".naive/cache")).length >= 0);
 expect("C-17: nothing was written into the repository", !existsSync(join(repo, ".naive/cache")));

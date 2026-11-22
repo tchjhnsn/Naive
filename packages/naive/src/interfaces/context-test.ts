@@ -23,7 +23,8 @@ const tandem = join(ws, "ventures/tandem");
 const config = (c: unknown) => writeFileSync(join(tandem, "naive.config.json"), JSON.stringify(c, null, 2));
 config({ instrumentation: { events: true } });
 
-const { call, judge } = await import("../router/router.ts");
+const { call: routerCall, judge } = await import("../router/router.ts");
+const { read, typed } = await import("./tests/answer.ts");
 const ctx = await import("../router/context.ts");
 const { events, register } = await import("../core/instrumentation.ts");
 const { vitals } = await import("../router/vitals.ts");
@@ -38,6 +39,18 @@ type Part = { part: string, data: { state?: string, as_of?: string } };
 type Progress = { message: string, progress: number, total?: number };
 type Note = { method: string, params: { progressToken?: unknown, progress: number, message: string } };
 type ToolResult = { isError?: boolean, content: { text: string }[] };
+/** What this test reads off the router's answers: navigate's parts, the layout action, and the reports' results. */
+type Got = {
+  header: { record: string, tokens: number, state: string, owner: string, title: string, last_at: string },
+  budget: { limit: number, over: boolean, parts: { layout: number, result: number } },
+  layout: { first: boolean, session?: string, parts: Record<string, unknown> & { instructions: { evidence?: string } }, kept: string[] },
+  template: { need_now?: { phase: string }, decisions?: { open: number }, computed_at: string, pending?: unknown[] },
+  result: { evidence: unknown[], rows: unknown[] },
+  prefetch: { entries: Prefetched[], spent: number, dropped: unknown[] },
+  instructions: { evidence?: string },
+  routes: unknown[], over: unknown[], rows: unknown[], passed: boolean, failing: string[],
+};
+const call = typed<Got>(routerCall);
 const nav = async (route: string, input: Record<string, unknown> = {}) => call({ venture: "tandem", route, action: "navigate", input });
 const cli = (...a: string[]) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.ts"), ...a], { encoding: "utf8", env: { ...process.env } });
 
@@ -151,7 +164,7 @@ expect("N-9 the next time, the last result comes at once, marked with its time, 
 
 // N-5: long runs and batches report progress; the MCP server sends it as notifications.
 const prog: Progress[] = [];
-const streamed = await ctx.runStreaming({ venture: "tandem", route: "system/need-now", workspace: ws }, (p) => { prog.push(p); }, 20);
+const streamed = read<Got>(await ctx.runStreaming({ venture: "tandem", route: "system/need-now", workspace: ws }, (p) => { prog.push(p); }, 20));
 expect("N-5 a long run reports progress while it runs, then its result", streamed.ok && streamed.result.rows?.length > 0 && prog.length >= 3 && /^started/.test(prog[0].message) && /^finished/.test(prog.at(-1)?.message ?? ""), JSON.stringify(prog.slice(0, 3)));
 const bprog: Progress[] = [];
 const b = await ctx.batch({ venture: "tandem", calls: [{ route: "purpose/telos", action: "read" }, { route: "product", action: "read" }, { route: "system/time-to-ready", action: "run" }] }, (p) => { bprog.push(p); });
@@ -183,14 +196,14 @@ await call({ venture: "tandem", route: "purpose/telos", action: "read" });
 judge(0.4, 0.7, "founder", { dir: tandem, question: "is the problem real?", model: "stand-in" });
 off1();
 const ev = events(tandem);
-expect("F-4 every read is logged with its time and size", ev.some((e) => e.kind === "call" && e.action === "read" && e.route === "purpose/telos" && typeof e.ms === "number" && e.tokens > 0));
+expect("F-4 every read is logged with its time and size", ev.some((e) => e.kind === "call" && e.action === "read" && e.route === "purpose/telos" && typeof e.ms === "number" && (e.tokens ?? 0) > 0));
 expect("F-4 a call made inside another names its parent", ev.some((e) => e.kind === "call" && e.parent && ev.some((p) => p.id === e.parent)));
 expect("F-4 a judgment is logged with its score and outcome", ev.some((e) => e.kind === "judgment" && e.outcome === "uncertain" && e.score === 0.4 && e.question === "is the problem real?"));
 expect("P-4 a registered listener gets every event", seen.some((e) => e.kind === "call") && seen.some((e) => e.kind === "judgment"));
 expect("P-4 every provenance entry is an event", ev.some((e) => e.kind === "provenance" && e.activity === "write" && e.entity === "products/shop-lite.json"));
 const p1 = propose(tandem, { id: "pricing-tier", question: "Charge per shop or per seat?", answer: "Per shop", at: "purpose" }, { agentId: "builder" });
 const a1 = approve(tandem, "pricing-tier", { by: "Torian" });
-expect("P-4 a decision proposed and decided emits draft and accept events", p1.ok && a1.ok && events(tandem).some((e) => e.kind === "provenance" && e.activity === "accept" && /pricing-tier/.test(e.entity)), p1.error ?? a1.error);
+expect("P-4 a decision proposed and decided emits draft and accept events", p1.ok && a1.ok && events(tandem).some((e) => e.kind === "provenance" && e.activity === "accept" && /pricing-tier/.test(String(e.entity))), p1.error ?? a1.error);
 const before = events(tandem).length;
 process.env.NAIVE_INSTRUMENT = "0";
 await call({ venture: "tandem", route: "purpose/telos", action: "read" });

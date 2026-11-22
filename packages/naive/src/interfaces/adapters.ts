@@ -48,7 +48,9 @@ async function harnessSuite(a: Listed): Promise<Result[]> {
     t("no entry file is private or outside the venture", a.files.every((f) => !f.path.startsWith("_private/") && !f.path.includes("..") && !f.path.startsWith("/")));
     const { call } = await import("../router/router.ts");
     const lay = await call({ venture: "adapted", workspace: ws, route: "foundation/problem", action: "layout" });
-    t("the layout an agent gets starts with the venture's AGENTS.md and its instructions", lay.ok && lay.result.chain[0]?.path === "AGENTS.md" && lay.result.instructions.private === "_private/", lay.error ?? "");
+    // The layout answer, as this check reads it (packages/naive/src/router/router.ts layout()).
+    const layout = lay.result as { chain: { path: string }[], instructions: { private: string } };
+    t("the layout an agent gets starts with the venture's AGENTS.md and its instructions", lay.ok && layout.chain[0]?.path === "AGENTS.md" && layout.instructions.private === "_private/", lay.error ?? "");
     const skills = a.skills;
     if (skills) {
       const want = await skillsFor(dir);

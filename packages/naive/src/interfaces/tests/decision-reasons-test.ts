@@ -7,6 +7,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { call } from "../../router/router.ts";
+import { read } from "./answer.ts";
 import { approve, decisions, propose } from "../../engine/decisions.ts";
 import { changedReasons, reasonsFromArgs, shaOf } from "../../engine/reasons.ts";
 
@@ -18,7 +19,8 @@ const v = join(ws, "rsn");
 /** A decision as decisions() lists it, and a frozen reason: only the fields this test reads. */
 type Listed = { id: string, render: string, stale_because?: string, rank: number, why: string[], why_cites?: { why: string, cites: string[] }[] };
 type Reason = { claim: string, kind: string, citations: { version?: string }[] };
-const listed = (dir: string): Listed[] => decisions(dir, Date.now()).decisions;
+// The decisions this test lists are ranked and carry their why, so it reads them as Listed.
+const listed = (dir: string): Listed[] => decisions(dir, Date.now()).decisions as Listed[];
 const json = (rel: string) => JSON.parse(readFileSync(join(v, rel), "utf8"));
 mkdirSync(join(v, "marketing/decisions"), { recursive: true });
 mkdirSync(join(v, "evidence"), { recursive: true });
@@ -106,7 +108,7 @@ try {
   expect("a name that is no person cannot clear staleness by restating the claim", !stranger.ok && rendered() === "stale", stranger);
   const recordPath = join(o, "decisions/pick.decision.json");
   const before = readFileSync(recordPath, "utf8");
-  const raw = await call({ venture: "rop", route: "decisions/pick", action: "write", actor: "agent", actor_id: "builder", workspace: ws, input: { id: "pick", question: "Which?", answer: "this", status: "open", reasons: cited } });
+  const raw = read<{ draft: boolean }>(await call({ venture: "rop", route: "decisions/pick", action: "write", actor: "agent", actor_id: "builder", workspace: ws, input: { id: "pick", question: "Which?", answer: "this", status: "open", reasons: cited } }));
   expect("an agent's raw write that reopens a decided decision is only a draft", raw.ok && raw.result.draft === true && readFileSync(recordPath, "utf8") === before, raw);
   expect("so the decision stays stale and nothing re-freezes", rendered() === "stale", rendered());
 
@@ -124,7 +126,7 @@ try {
   expect("a shipped record whose id predates the rule stays writable under its own id", named.ok, named);
 
   // The roster grants founder authority, so an agent's write to it waits for a person, as delegation's does.
-  const roster = await call({ venture: "rop", route: "people", action: "write", actor: "agent", actor_id: "builder", workspace: ws, input: { venture: "rop", mode: "solo", people: [{ id: "claude", name: "claude", role: "founder" }], updated: "2026-10-30" } });
+  const roster = read<{ draft: boolean }>(await call({ venture: "rop", route: "people", action: "write", actor: "agent", actor_id: "builder", workspace: ws, input: { venture: "rop", mode: "solo", people: [{ id: "claude", name: "claude", role: "founder" }], updated: "2026-10-30" } }));
   expect("an agent's write to the roster is only a draft", roster.ok && roster.result.draft === true && !existsSync(join(o, "people/people.json")), roster);
 } finally {
   rmSync(ws, { recursive: true, force: true });

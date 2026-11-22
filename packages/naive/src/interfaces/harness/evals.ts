@@ -20,7 +20,7 @@ export type Eval = { key: string, score: number, comment: string };
 type Idea = { id: string, text: string, departments?: string[] };
 type Graph = { root: string, nodes: { id: string, text: string, hash: string, builds_on: string[] }[] };
 type Line = { activity: string, entity: string, agent?: { kind?: string } };
-type Listed = { id: string, file?: string, status?: string, source?: string, answer?: string, outcomes?: { total?: number }, unlocks?: unknown[], provenance?: { approved_by?: string, drafted_by?: { kind?: string } } };
+type Listed = { id: string, file?: string, status?: string, source?: string, answer?: string | null, outcomes?: { total?: number }, unlocks?: unknown[], provenance?: { approved_by?: string, drafted_by?: { kind?: string } } };
 type Evidence = { url?: string, source?: unknown };
 
 const load = <T>(f: string): T => JSON.parse(readFileSync(f, "utf8")) as T;

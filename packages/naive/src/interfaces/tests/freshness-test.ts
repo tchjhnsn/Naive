@@ -14,7 +14,12 @@ const repo = new URL("../../../../..", import.meta.url).pathname;
 const ws = mkdtempSync(join(tmpdir(), "freshness-test-"));
 process.env.MENTURA_WORKSPACE = ws;
 delete process.env.NAIVE_NOW;
-const { call, routes } = await import("../../router/router.ts");
+const { call: routerCall, routes } = await import("../../router/router.ts");
+const { read: readAnswer, typed } = await import("./answer.ts");
+/** A read's freshness flag, and what this test reads off the router's answers. */
+type Flag = { state: string, fix: string, reasons?: { kind: string }[], hole?: boolean };
+type Got = { name: string, alternatives: unknown[], venture: string, summary: { records: number }, records: string[] };
+const call = typed<Got, { freshness?: Flag }>(routerCall);
 const F = await import("../../engine/freshness.ts");
 
 let failed = 0;
@@ -89,7 +94,7 @@ expect("V-5: the solution is stale by its tag; the card by depending on it", ite
 let read = await call({ venture: "clinic", route: "product/booking", action: "read" });
 expect("V-5 stale-while-revalidate: the card is still read, with a stale flag and the fix", read.ok && read.result?.name === "Clinic booking" && read.freshness?.state === "stale" && /mentura verify/.test(read.freshness.fix), read);
 const list = await call({ venture: "clinic", route: "product", action: "read" });
-expect("V-5: a list read flags its stale items by file", list.ok && list.freshness?.[cardPath]?.state === "stale", list.freshness);
+expect("V-5: a list read flags its stale items by file", list.ok && readAnswer<unknown, { freshness?: Record<string, Flag | undefined> }>(list).freshness?.[cardPath]?.state === "stale", list.freshness);
 const viaMcpShape = await call({ venture: "clinic", route: "validation/solution", action: "read", via: "mcp" });
 expect("V-5: every interface gets the flag (it is the router's)", viaMcpShape.freshness?.reasons?.[0]?.kind === "tag");
 // V-6: the founder's own write is fresh at once.

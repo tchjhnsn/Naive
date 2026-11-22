@@ -12,6 +12,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { deflateSync } from "node:zlib";
 import { call } from "../../router/router.ts";
+import { read } from "./answer.ts";
+import type { MarketingBrand } from "../../records/types/records.d.ts";
 import { addAsset, addRemote } from "../../router/brand.ts";
 import { entries } from "../../core/provenance.ts";
 import { allowsCopy, checkAssets, factsOf, hostAllowed } from "../../engine/assets.ts";
@@ -27,6 +29,14 @@ type Entry = { path: string };
 type Remote = { id: string };
 type Violation = { file: string, rule: string, found: string };
 type Term = { term: string, from?: string };
+/** What this test reads off the router's answers: the asset, brand, voice, glossary and sitemap routes. */
+type Got = {
+  facts: { path: string, width: number }[], draft: boolean, gate: string, written: string, css: string, head: unknown[], xml: string,
+  tokens: { color: { accent: { $value: string } }, font: { body: { $value: string[] } } },
+  colors: Record<string, string>, set_by: Record<string, string>, fonts: { body: { id: string }, heading: { id: string } }, voice: { tone: string[] },
+  brand: { voice: { id: string }[], tone: string[], fonts: { body: string }, scopes: string[], terms: Term[] },
+  violations: (Violation & { use: string })[], terms: Term[], pages: unknown[],
+};
 
 // ---- Image bytes, built here so the parser is tested against real encodings.
 const CRC = Array.from({ length: 256 }, (_, n) => { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; return c >>> 0; });
@@ -83,7 +93,7 @@ const init = mentura("init", join(W, "acme"), "--id", "acme", "--layers", "purpo
 expect("a venture to brand", init.status === 0, init.stderr);
 const dir = join(W, "acme");
 const put = (rel: string, buf: Buffer | string) => { mkdirSync(join(dir, rel, ".."), { recursive: true }); writeFileSync(join(dir, rel), buf); };
-const R = (route: string, action: string, input?: unknown, extra: Record<string, unknown> = {}) => call({ venture: "acme", route, action, input, workspace: W, via: "cli", ...extra });
+const R = async (route: string, action: string, input?: unknown, extra: Record<string, unknown> = {}) => read<Got>(await call({ venture: "acme", route, action, input, workspace: W, via: "cli", ...extra }));
 const reg = () => JSON.parse(readFileSync(join(dir, "public/assets.json"), "utf8"));
 
 // ---- J-2: every file in public/ has a source and license.
@@ -96,7 +106,7 @@ expect("J-2: a file in public/ with no register entry fails", has(checkAssets(di
 let r = mentura("assets", "add", "public/logo.svg", "--venture", "acme", "--source", "Acme design", "--license", "owned", "--credit", "Acme", "--alt", "Acme wordmark");
 expect("J-2: mentura assets add registers a file through the router", r.status === 0 && reg().assets[0].path === "public/logo.svg", r.stderr);
 expect("J-4: code filled the facts on add", reg().assets[0].facts.width === 200 && reg().assets[0].facts.type === "svg");
-expect("J-4: the write is in provenance, attributed to an agent", entries(dir).some((e) => e.entity === "public/assets.json" && e.agent.kind === "agent" && e.route === "public/assets"));
+expect("J-4: the write is in provenance, attributed to an agent", entries(dir).some((e) => e.entity === "public/assets.json" && e.agent?.kind === "agent" && e.route === "public/assets"));
 for (const [p, extra] of [["public/icon.png", []], ["public/apple-icon.png", []], ["public/favicon.ico", ["--decorative"]], ["public/fonts/inter.woff2", []]] as [string, string[]][])
   mentura("assets", "add", p, "--venture", "acme", "--source", p.includes("fonts") ? "https://rsms.me/inter/" : "Acme design", "--license", p.includes("fonts") ? "OFL-1.1" : "owned", "--credit", p.includes("fonts") ? "Rasmus Andersson" : "Acme", ...(p.endsWith(".png") ? ["--alt", "Acme mark"] : []), ...extra);
 const a = checkAssets(dir);
@@ -105,7 +115,7 @@ expect("J-4: an agent's alt text is pending until a person confirms it", a.pendi
 r = mentura("assets", "confirm", "public/logo.svg", "--venture", "acme", "--by", "Torian");
 expect("J-4: confirming needs the path typed", r.status === 1 && /--confirm public\/logo\.svg/.test(r.stderr));
 r = mentura("assets", "confirm", "public/logo.svg", "--venture", "acme", "--by", "Torian", "--confirm", "public/logo.svg");
-expect("J-4: a person confirms the alt text; provenance records it", r.status === 0 && entries(dir).some((e) => e.activity === "confirm" && e.agent.kind === "person" && e.agent.id === "Torian" && /^alt-/.test(e.statement)), r.stderr);
+expect("J-4: a person confirms the alt text; provenance records it", r.status === 0 && entries(dir).some((e) => e.activity === "confirm" && e.agent?.kind === "person" && e.agent.id === "Torian" && /^alt-/.test(String(e.statement))), r.stderr);
 expect("J-4: the confirmed alt is no longer pending", !checkAssets(dir).pending.some((p) => p.path === "public/logo.svg"));
 mentura("assets", "alt", "public/logo.svg", "--text", "Acme wordmark in blue", "--venture", "acme");
 expect("J-4: changing the text makes it pending again (the confirmation is bound to the text)", checkAssets(dir).pending.some((p) => p.path === "public/logo.svg" && p.alt === "Acme wordmark in blue"));
@@ -137,7 +147,7 @@ expect("J-4: alt text a person writes is confirmed as written", r.status === 0 &
   expect("J-2: an unknown license fails", has(e, /apple-icon\.png: the license is unknown/));
   expect("J-4: an image with no alt text fails unless decorative", has(e, /icon\.png: an image with no alt text/) && !has(e, /favicon\.ico: an image with no alt/));
   const c = await R("public/assets", "check");
-  expect("J-2: the public/assets route's check runs packages/naive/src/checks/check-assets.ts and fails", !c.ok && c.result[0].check === "packages/naive/src/checks/check-assets.ts");
+  expect("J-2: the public/assets route's check runs packages/naive/src/checks/check-assets.ts and fails", !c.ok && read<{ check: string }[]>(c).result[0].check === "packages/naive/src/checks/check-assets.ts");
   y.assets.find((z: Entry) => z.path === "public/logo.svg").credit = "Acme"; y.assets.find((z: Entry) => z.path === "public/apple-icon.png").license = "owned";
   y.assets.find((z: Entry) => z.path === "public/icon.png").alt = { text: "Acme mark, square", by: "agent" };
   await R("public/assets", "write", y);
@@ -146,7 +156,7 @@ expect("J-4: alt text a person writes is confirmed as written", r.status === 0 &
   expect("J-2: a stray file fails until registered", has(checkAssets(dir).errors, /stray\.txt: no entry/));
   mentura("assets", "add", "public/stray.txt", "--venture", "acme", "--source", "Acme", "--license", "owned", "--credit", "Acme");
   const f = await R("public/assets/facts", "run");
-  expect("J-4: public/assets/facts gives agents the facts to copy", f.ok && f.result.facts.find((q: Entry) => q.path === "public/apple-icon.png").width === 180, f.error);
+  expect("J-4: public/assets/facts gives agents the facts to copy", f.ok && f.result.facts.find((q: Entry) => q.path === "public/apple-icon.png")?.width === 180, f.error);
 }
 
 // ---- Y-3, T-1, T-2, Y-5, P-24, Y-4: the brand.
@@ -166,7 +176,7 @@ const brand = {
     { for: "investors/deck", colors: { accent: "#ff0000" } },
     { for: "marketing/content/press", voice: { rules: [{ id: "press-terms", avoid: "cheap", use: "affordable" }] } },
   ],
-};
+} satisfies MarketingBrand;
 {
   const held = await R("marketing/brand", "write", brand, { actor: "agent" });
   expect("an agent's brand is a draft for a person: the brand is a public commitment", held.ok && held.result.draft && held.result.gate === "public-commitment", JSON.stringify(held.result ?? held.error));
@@ -189,7 +199,7 @@ const brand = {
   expect("Y-3: every agent's layout carries the brand voice and fonts", lay.ok && lay.result.brand.voice[0].id === "no-jargon" && lay.result.brand.tone.join() === "plain,warm" && lay.result.brand.fonts.body === "Inter", lay.result.brand);
   const lay2 = await R("investors", "layout");
   expect("Y-5: an investors route's layout gets the investors scope", lay2.ok && lay2.result.brand.scopes.includes("investors") && lay2.result.brand.fonts.body === "ui-monospace", lay2.result?.brand);
-  const v = await R("marketing/brand", "view");
+  const v = read<string>(await R("marketing/brand", "view"));
   expect("Y-3: the brand has a view", v.ok && /^# marketing\/brand/.test(v.result) && /accent/.test(v.result));
 }
 // Y-3 voice: the global stylesheet for words.
@@ -264,7 +274,7 @@ const brand = {
   await g("marketing", [{ term: "hero", meaning: "the first section of a page" }, { term: "runway", meaning: "the strip models walk on" }]);
   const m = termsFor(dir, "marketing");
   expect("Y-2: a package sees its own terms and exported ones, not other packages' local terms", m.terms.some((t) => t.term === "hero") && !m.terms.some((t) => t.term === "burn multiple") && m.hidden === 1);
-  expect("Y-2: its own term wins over an exported one of the same name", m.terms.find((t) => t.term === "runway").from === "marketing" && m.shadows[0].from === "finance");
+  expect("Y-2: its own term wins over an exported one of the same name", m.terms.find((t) => t.term === "runway")?.from === "marketing" && m.shadows[0].from === "finance");
   const t = await R("glossary/terms", "run", { value: "investors" });
   expect("Y-2: glossary/terms shows what another package sees", t.ok && t.result.terms.map((x: Term) => x.term).join() === "runway", t.result);
   await g("investors", [{ term: "pro rata", meaning: "an investor's right to keep their share in the next round" }]);

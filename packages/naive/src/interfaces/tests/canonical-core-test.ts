@@ -12,6 +12,7 @@ import { exitCriteria, scale } from "../../engine/canonical.ts";
 import { check } from "../../engine/check-frameworks.ts";
 import { telosView } from "../../../../../frameworks/telos/adapter.ts";
 import { call } from "../../router/router.ts";
+import { read } from "./answer.ts";
 
 const repo = new URL("../../../../..", import.meta.url).pathname;
 const tmp = mkdtempSync(join(tmpdir(), "canonical-"));
@@ -60,9 +61,9 @@ expect("migrated: with every canonical criterion met the gate is ready", lifecyc
 expect("exitCriteria for a phase with none is empty, not the archived telos", exitCriteria(dir, "scale").criteria.length === 0);
 
 // The telos route still reads, as a view.
-const r = await call({ venture: "tandem", route: "foundation/telos", action: "read", workspace: join(tmp, "migrated") });
+const r = read<{ statement: string }, { view?: { framework: string } }>(await call({ venture: "tandem", route: "foundation/telos", action: "read", workspace: join(tmp, "migrated") }));
 expect("the foundation/telos route reads after migration, rendered from canonical records", r.ok && r.result?.statement === telosBefore.statement && r.view?.framework === "telos", JSON.stringify(r).slice(0, 300));
-const g = await call({ venture: "tandem", route: "foundation/goals/telos", action: "read", workspace: join(tmp, "migrated") });
+const g = read<{ kind: string }>(await call({ venture: "tandem", route: "foundation/goals/telos", action: "read", workspace: join(tmp, "migrated") }));
 expect("canonical goals are routes", g.ok && g.result?.kind === "venture", JSON.stringify(g).slice(0, 300));
 
 // check-frameworks.

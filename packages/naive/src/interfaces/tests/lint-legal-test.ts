@@ -8,6 +8,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { call, routes } from "../../router/router.ts";
+import { read } from "./answer.ts";
 
 const repo = new URL("../../../../..", import.meta.url).pathname;
 const bin = join(repo, "packages/naive/src/checks/lint-legal.ts");
@@ -239,7 +240,7 @@ const founder = (id: string) => JSON.stringify({ id, name: id, role: "founder", 
   expect("a venture the route can open", init.status === 0, init.stderr);
   const dir = join(ws, "acme");
   put(dir, "marketing/content/hours.mdx", claim("Customers save 10 hours a week"));
-  const open = await call({ venture: "acme", route: "legal/lint", action: "run", workspace: ws, via: "cli" });
+  const open = read<{ findings: Finding[], notice: string }>(await call({ venture: "acme", route: "legal/lint", action: "run", workspace: ws, via: "cli" }));
   expect("the route returns the findings when the rule is fail-open", open.ok === true && open.result?.findings?.some((f: Finding) => f.rule === "unsourced-public-claim") && open.result.notice === "This is a lint, not legal advice.", open.error ?? open.result);
 
   put(dir, "naive.config.json", JSON.stringify({ legal_lint: { rules: { "unsourced-public-claim": { mode: "fail-closed" } } } }) + "\n");

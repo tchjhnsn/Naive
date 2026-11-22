@@ -10,7 +10,8 @@ import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { call } from "../../router/router.ts";
+import { call as routerCall } from "../../router/router.ts";
+import { read as readAnswer, typed } from "./answer.ts";
 import { handle } from "../mcp/server.ts";
 import { DEFAULTS, configFor, installed, packagesOf } from "../../engine/naive-config.ts";
 import { evaluate, matches, packageRules, patternRe, rulesFor } from "../../engine/gate.ts";
@@ -29,6 +30,14 @@ const cli = (...a: string[]) => spawnSync("node", [join(repo, "packages/naive/sr
 const node = (script: string, ...a: string[]) => spawnSync("node", [join(repo, script), ...a], { encoding: "utf8", env });
 const json = (o: unknown): string => JSON.stringify(o, null, 2) + "\n";
 const read = (f: string) => JSON.parse(readFileSync(f, "utf8"));
+/** What this test reads off the router's answers: a write's gate, a check's rows, and who is acting. */
+type Got = { draft: boolean, note: string, gate_rule: string, owner: string, variant: string, variants: unknown[], written: string };
+type Extra = {
+  gate_rule: string, acting: { kind: string, role: string }, source: Record<string, unknown>,
+  acting_changed?: { from: { role: string }, to: { kind: string }, may: { write: string[] } },
+};
+type Check = { check: string, passed: boolean | null, warn_only?: boolean, off?: boolean };
+const call = typed<Got, Extra>(routerCall);
 
 // A venture to work in.
 const init = cli("init", join(ws, "ventures/gt"), "--id", "gt", "--layers", "purpose");
@@ -76,13 +85,13 @@ const validRecord = (file: string, schema: string) => spawnSync(process.execPath
 // P-7: check settings live in naive.config.json.
 {
   setConfig({ gate: { fail_closed: ["nowhere"] } });
-  const failing = await call({ venture: "gt", route: "system/naive-config", action: "check", workspace: ws });
+  const failing = readAnswer<Check[]>(await routerCall({ venture: "gt", route: "system/naive-config", action: "check", workspace: ws }));
   expect("P-7: a route's check runs and fails as written", !failing.ok && failing.result[0].check === "packages/naive/src/checks/check-config.ts" && failing.result[0].passed === false, JSON.stringify(failing.result));
   setConfig({ gate: { fail_closed: ["nowhere"] }, checks: { warn: ["packages/naive/src/checks/check-config.ts"] } });
-  const warned = await call({ venture: "gt", route: "system/naive-config", action: "check", workspace: ws });
+  const warned = readAnswer<Check[]>(await routerCall({ venture: "gt", route: "system/naive-config", action: "check", workspace: ws }));
   expect("P-7: checks.warn runs the check but does not fail the route", warned.ok && warned.result[0].passed === false && warned.result[0].warn_only === true);
   setConfig({ gate: { fail_closed: ["nowhere"] }, checks: { off: ["packages/naive/src/checks/check-config.ts"] } });
-  const off = await call({ venture: "gt", route: "system/naive-config", action: "check", workspace: ws });
+  const off = readAnswer<Check[]>(await routerCall({ venture: "gt", route: "system/naive-config", action: "check", workspace: ws }));
   expect("P-7: checks.off does not run the check and says so", off.ok && off.result[0].off === true && off.result[0].passed === null);
   setConfig({ checks: { off: ["schema/check-nothing.mjs"] } });
   expect("P-7: check-config refuses a check that does not exist", /check-nothing.mjs does not exist/.test(node("packages/naive/src/checks/check-config.ts", dir).stdout));
@@ -102,7 +111,7 @@ const validRecord = (file: string, schema: string) => spawnSync(process.execPath
   expect("U-4: a write to a package pinned to another version is refused, for agents and people", !agent.ok && agent.gate_rule === "pinned-version" && !person.ok && /pinned to 0.0.1 but/.test(person.error), JSON.stringify(person));
   expect("U-4: a write to a package not pinned is not affected", (await write("product/kettle", product("kettle", "Kettle"), { actor: "person" })).ok);
   const pin = node("packages/naive/src/checks/check-config.ts", dir, "--pin");
-  expect("U-4: --pin re-pins the pinned packages at their installed versions and logs it", pin.status === 0 && read(cfgFile).packages.validation === catalog && entries(dir).some((e) => e.entity === "naive.config.json" && /pinned validation/.test(e.note)), pin.stderr);
+  expect("U-4: --pin re-pins the pinned packages at their installed versions and logs it", pin.status === 0 && read(cfgFile).packages.validation === catalog && entries(dir).some((e) => e.entity === "naive.config.json" && /pinned validation/.test(String(e.note))), pin.stderr);
   expect("U-4: after re-pinning the write goes through", (await write("validation/solution", solution("pinned"), { actor: "person" })).ok);
   setConfig({ packages: { nonesuch: "1.0.0" } });
   expect("U-4: pinning a package that is not installed fails the check", /nonesuch is not an installed package/.test(node("packages/naive/src/checks/check-config.ts", dir).stdout));

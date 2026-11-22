@@ -47,7 +47,7 @@ const cfg = (c: unknown) => writeFileSync(join(dir, "naive.config.json"), json(c
   expect("a feedback record is valid", valid("validation-feedback.schema.json", { id: "f-1", at: "2026-10-30T10:00:00Z", tester: "t", capability: "venture", checkpoint: "venture-created", answers: { ease: 4 }, routed_to: "validation/feedback", routing: { model: "fallback", confidence: 0.5, fallback: true } }));
   const routes = ["validation/interviews/[id]", "validation/feedback/[id]", "product/bugs/[id]"];
   const r = await call({ venture: "vs", route: "validation/interviews", action: "layout", workspace: ws });
-  expect("the router has routes for interviews, feedback and bugs", r.ok && routes.every((x) => resolve(x).r?.route === x && resolve(x).r.actions.includes("write")), JSON.stringify(r).slice(0, 200));
+  expect("the router has routes for interviews, feedback and bugs", r.ok && routes.every((x) => resolve(x).r?.route === x && resolve(x).r?.actions.includes("write")), JSON.stringify(r).slice(0, 200));
   const w = await call({ venture: "vs", route: "validation/interviews/i-01", action: "write", input: interview, actor: "person", workspace: ws });
   expect("a person writes an interview through the router", w.ok && existsSync(join(dir, "validation/interviews/i-01.json")), JSON.stringify(w));
   const problems = check(dir);
@@ -114,20 +114,20 @@ const cfg = (c: unknown) => writeFileSync(join(dir, "naive.config.json"), json(c
   expect("on, the first non-core capability is locked until feedback on foundation", b?.capability === "ideas" && b.needs.capability === "foundation" && /naive beta feedback foundation/.test(b.message), JSON.stringify(b));
   process.env.NAIVE_BETA_TESTER = "t1";
   const refused = await call({ venture: "vs", route: "ideas/map", action: "read", workspace: ws, actor_id: "builder" });
-  expect("the router refuses a locked capability's route, naming the feedback to give", !refused.ok && refused.beta_locked === "ideas" && /feedback on foundation/.test(refused.error), JSON.stringify(refused).slice(0, 300));
+  expect("the router refuses a locked capability's route, naming the feedback to give", !refused.ok && refused.beta_locked === "ideas" && /feedback on foundation/.test(String(refused.error)), JSON.stringify(refused).slice(0, 300));
   expect("unlock before the feedback is refused", !unlock(dir, "t1").ok);
   const missing = await giveFeedback(dir, "foundation", { wrong: "the ICP" }, { tester: "t1", routing: { env: {} } });
   expect("feedback missing a required answer is refused, naming the question", !missing.ok && /sounds_like_you/.test(missing.error ?? ""));
   expect("feedback on a locked capability is refused", !(await giveFeedback(dir, "validation", { next_test: "yes", trust: 3 }, { tester: "t1", routing: { env: {} } })).ok);
   const given = await giveFeedback(dir, "foundation", { sounds_like_you: "4", wrong: "the ICP is too broad" }, { tester: "t1", routing: { env: {} } });
-  expect("checkpoint feedback is recorded as validation/feedback/<id>.json with its routing", given.ok && given.written !== undefined && existsSync(given.written) && given.record?.routing.fallback === true && given.next?.ready, JSON.stringify(given));
+  expect("checkpoint feedback is recorded as validation/feedback/<id>.json with its routing", given.ok && given.written !== undefined && existsSync(given.written) && given.record?.routing?.fallback === true && given.next?.ready, JSON.stringify(given));
   expect("the feedback record is valid", valid("validation-feedback.schema.json", given.record));
   expect("another tester's feedback does not unlock for t2", !unlock(dir, "t2").ok);
   const u = unlock(dir, "t1");
   expect("unlock opens the next capability for that tester, kept in .naive/beta.json", u.ok && u.unlocked === "ideas" && JSON.parse(readFileSync(join(dir, ".naive/beta.json"), "utf8")).testers.t1.unlocked.includes("ideas"));
   expect("the unlocked route is open; the one after stays locked", blocked(dir, "ideas/map", { tester: "t1" }) === null && blocked(dir, "validation/solution", { tester: "t1" })?.needs.capability === "ideas");
   const st = status(dir, "t1");
-  expect("status lists each capability, open or locked, and the next step", st.enabled && st.capabilities.find((c: { id: string }) => c.id === "ideas").unlocked && st.next?.capability === "validation" && !st.next.ready);
+  expect("status lists each capability, open or locked, and the next step", st.enabled && st.capabilities.find((c: { id: string }) => c.id === "ideas")?.unlocked && st.next?.capability === "validation" && !st.next.ready);
   const cliStatus = naive("beta", "status", "--venture", dir);
   expect("naive beta status", cliStatus.status === 0 && /next: validation/.test(cliStatus.stdout), cliStatus.stdout + cliStatus.stderr);
   const form = naive("beta", "feedback", "ideas", "--venture", dir);
@@ -172,7 +172,7 @@ const cfg = (c: unknown) => writeFileSync(join(dir, "naive.config.json"), json(c
   expect("send without a named person sends nothing", sent === 0, String(sent));
   put(join(dir, "naive.config.json"), { ...conf, beta: { ...conf.beta, jev: { send: true, set_by: { person: "torian", at: "2026-10-30T10:00:00Z" } } } });
   const consented = await giveFeedback(dir, q.id, answers, { tester: "t3", routing: { jev, env: key } });
-  expect("send with a named person routes through Jev", sent === 1 && consented.record?.routing.model === "jev", JSON.stringify(consented));
+  expect("send with a named person routes through Jev", sent === 1 && consented.record?.routing?.model === "jev", JSON.stringify(consented));
   for (const person of [{ x: 1 }, 1, true, "", "  "]) {
     put(join(dir, "naive.config.json"), { ...conf, beta: { ...conf.beta, jev: { send: true, set_by: { person, at: "2026-10-30T10:00:00Z" } } } });
     sent = 0;

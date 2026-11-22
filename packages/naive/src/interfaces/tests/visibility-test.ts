@@ -83,7 +83,10 @@ try {
   const INTERNAL_KEYS = ["metadata", "hierarchy", "pending_draft", "stale"];
   const internalKeys = (a: object): string[] => INTERNAL_KEYS.filter((k) => k in a);
   const direct = await import("../../router/router.ts");
-  const read = (route: string, input: unknown, actor: string = "public") => direct.call({ venture: "vis", route, action: "read", actor, input, workspace: ws });
+  const { read: readAnswer } = await import("./answer.ts");
+  /** A read's answer as this test reads it: a missing record's need-now, and the view a read renders. */
+  type Extra = { not_found?: { need_now?: unknown }, view?: { framework: string } };
+  const read = async (route: string, input: unknown, actor: string = "public") => readAnswer<unknown, Extra>(await direct.call({ venture: "vis", route, action: "read", actor, input, workspace: ws }));
   for (const [route, input] of [["foundation/problem", undefined], ["foundation/problem", { hierarchy: true }], ["evidence", undefined], ["customers/nope", { hierarchy: true }]] as [string, unknown][]) {
     const a = await read(route, input);
     expect(`the public read of ${route}${input ? " with hierarchy" : ""} carries no internal metadata`, a.ok && !internalKeys(a).length && a.not_found?.need_now == null, a);
@@ -103,7 +106,7 @@ try {
     const tandem = join(tws, "ventures/tandem");
     cpSync(join(repo, "packages/naive/src/records/examples/workspace/ventures/tandem"), tandem, { recursive: true });
     telosToGoals.apply(tandem, context(tandem, { dry: false, git: false, cfg: {}, at: new Date().toISOString(), onConfig() {} }));
-    const telos = (actor: string) => direct.call({ venture: "tandem", route: "foundation/telos", action: "read", actor, workspace: tws });
+    const telos = async (actor: string) => readAnswer<unknown, Extra>(await direct.call({ venture: "tandem", route: "foundation/telos", action: "read", actor, workspace: tws }));
     const shown = await telos("public");
     expect("the telos view on a migrated venture gives the public reader nothing", shown.ok && shown.result === null && !shown.view, shown);
     expect("the telos view still renders for an agent", (await telos("agent")).view?.framework === "telos");
