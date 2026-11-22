@@ -101,12 +101,12 @@ const id = slug(basename(dir));
 if (!id) fail(`${basename(dir)} has no letters or digits to make a venture id from`);
 if (existsSync(dir) && readdirSync(dir).length) fail(`${dir} already exists and is not empty. create-venture only creates new ventures; to bring an existing project in, create one here and run naive port or naive migrate.`);
 // A workspace file that does not parse stops here, before the venture folder is made.
-const { ensureWorkspace, addVenture, findWorkspace, loadWorkspace } = await import(join(framework, "packages/naive/src/engine/workspace.ts"));
+const { ensureWorkspace, addVenture, findWorkspace, loadWorkspace } = await import(fwModule("packages/naive/src/engine/workspace.ts"));
 let ownWorkspace = null;
 if (!flag("no-workspace")) try { ownWorkspace = findWorkspace(dirname(dir)); if (ownWorkspace) loadWorkspace(ownWorkspace); } catch (e) { fail(e.message); }
 
 // The framework's registries: venture types, roles and functions (EE-082).
-const { types: TYPES, roles: ROLES, classify, canClassify } = await import(join(framework, "packages/naive/src/engine/venture-type.ts")).then((m) => ({ types: m.types(), roles: m.roles(), classify: m.classify, canClassify: m.canClassify }));
+const { types: TYPES, roles: ROLES, classify, canClassify } = await import(fwModule("packages/naive/src/engine/venture-type.ts")).then((m) => ({ types: m.types(), roles: m.roles(), classify: m.classify, canClassify: m.canClassify }));
 const DEPARTMENTS = JSON.parse(readFileSync(join(framework, "packages/naive/src/functions/departments.json"), "utf8")).departments;
 const deptLabel = (d) => DEPARTMENTS.find((x) => x.id === d)?.label ?? d;
 const roleOf = (r) => ROLES.find((x) => x.id === r);
