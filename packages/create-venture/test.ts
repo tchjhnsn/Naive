@@ -112,6 +112,15 @@ t("the venture pins Effect at the framework's exact peer version (EE-161)", () =
   ok(load(join(base, "pinned/package.json")).dependencies?.effect === load(join(repo, "package.json")).peerDependencies.effect);
 });
 
+t("the venture's example program runs on the venture runtime with naive run (EE-161)", () => {
+  const v = join(base, "kettle");
+  ok(existsSync(join(v, "src/naive/hello.ts")) && existsSync(join(v, "src/naive/done/venture-named.ts")));
+  const r = naive(["run", "src/naive/hello.ts"], v);
+  ok(r.status === 0 && /runs on Effect/.test(r.stdout), r.stdout + r.stderr);
+  const d = naive(["run", "src/naive/done/venture-named.ts", "--json"], v);
+  ok(d.status === 0 && JSON.parse(d.stdout).value?.passed === true, d.stdout + d.stderr);
+});
+
 // With network: the registry-installed generator creates a venture and npm installs the published framework.
 if (process.env.NAIVE_REGISTRY_TEST === "1") t("from the registry: create-venture installs naive-framework from npm and naive check passes", () => {
   const proj = join(base, "registry");
@@ -148,7 +157,7 @@ t("structured layout: the org chart in venture.json names each function's owner,
   const roster = load(join(base, "duo/k-base/people/people.json"));
   ok(roster.people.every((p: object) => !("hats" in p)), JSON.stringify(roster));
   const top = readdirSync(join(base, "duo")).filter((f) => !f.startsWith(".")).sort().join(" ");
-  ok(top === "AGENTS.md README.md k-base meta package.json venture.json", top);
+  ok(top === "AGENTS.md README.md k-base meta package.json src venture.json", top);
   const r = spawnSync("node", [join(repo, "packages/naive/src/checks/check-people.ts"), join(base, "duo")], { encoding: "utf8" });
   ok(r.status === 0, r.stdout);
 });

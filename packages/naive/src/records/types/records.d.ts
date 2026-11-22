@@ -2283,8 +2283,10 @@ export type Handoff = {
     id: string;
     /** conformance: an objective check run as a command, with no model and no reviewer. self-proof: the change exercised for real, with evidence attached (EE-006). review: fit to intent, judged by the named role. */
     kind: "conformance" | "self-proof" | "review";
-    /** The command to run, or for review the question the reviewer answers */
+    /** The command to run, the venture program for runs effect, or for review the question the reviewer answers */
     check: string;
+    /** How a conformance or self-proof check runs (EE-161). bash: a shell command from the repository root, sent to the host's sandbox hook when hosted. effect: a venture program (a path in the venture) run on the venture runtime, which passes when it succeeds and returns neither false nor { passed: false }, and needs no sandbox when hosted. */
+    runs?: "bash" | "effect";
     /** Role id, for review criteria */
     reviewer?: string;
   }[];

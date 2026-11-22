@@ -313,6 +313,41 @@ writeFileSync(join(dir, "package.json"), JSON.stringify({
 }, null, 2) + "\n");
 writeFileSync(join(dir, ".gitignore"), "node_modules/\n.naive/\n.DS_Store\n# Founder conversations and what is caught in them stay local, in case a redaction misses something.\n**/raw/sources/conversations-*/\n**/raw/sources/diagnosis-*/\n# Founder-supplied originals stay out of git (EE-070).\n**/raw/**/original.*\n# A data stream's activity (bank transactions, CRM events) stays out of git; only its stream.json and summary.md are versioned.\n/*/_streams/*/*\n!/*/_streams/*/stream.json\n!/*/_streams/*/summary.md\n/k-base/*/_streams/*/*\n!/k-base/*/_streams/*/stream.json\n!/k-base/*/_streams/*/summary.md\n");
 
+// Venture programs (EE-161): one example program and one example done-criterion, run on the venture runtime with
+// `naive run src/naive/hello.ts` and named by a handoff criterion with `runs: "effect"`. A plain async function works too.
+const programs = {
+  "src/naive/hello.ts": `// A venture program: naive run src/naive/hello.ts
+// The default export is an Effect, or a function of { dir } that returns a value, a promise or an Effect. It runs on
+// the venture runtime Naive provides, with the same copy of Effect Naive uses (the pin in package.json).
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import { Effect } from "effect";
+
+export default ({ dir }: { dir: string }) => Effect.gen(function* () {
+  const venture = yield* Effect.try(() => JSON.parse(readFileSync(join(dir, "venture.json"), "utf8")) as { name?: string });
+  return \`\${venture.name ?? "this venture"} runs on Effect\`;
+});
+`,
+  "src/naive/done/venture-named.ts": `// A done-criterion as a venture program. Name it in a handoff:
+//   { "id": "named", "kind": "conformance", "runs": "effect", "check": "src/naive/done/venture-named.ts" }
+// It passes when it succeeds and returns neither false nor { passed: false }; output is what the evidence keeps.
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import { Effect } from "effect";
+
+export default ({ dir }: { dir: string }) => Effect.sync(() => {
+  const venture = JSON.parse(readFileSync(join(dir, "venture.json"), "utf8")) as { name?: string };
+  return { passed: Boolean(venture.name), output: venture.name ? \`named \${venture.name}\` : "venture.json has no name" };
+});
+`,
+};
+for (const [file, text] of Object.entries(programs)) {
+  const path = join(dir, file);
+  if (existsSync(path)) continue;
+  mkdirSync(dirname(path), { recursive: true });
+  writeFileSync(path, text);
+}
+
 // Editor completion for records (I-26): every record file is mapped to its JSON Schema in the installed framework.
 const { routes } = await import(fwModule("packages/naive/src/router/router.ts"));
 const schemas = new Map();
