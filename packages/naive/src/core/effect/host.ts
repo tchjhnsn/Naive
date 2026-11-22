@@ -42,7 +42,8 @@ export const Laptop: Layer.Layer<"naive/HostRuntime"> = Layer.succeed(HostRuntim
 /** A hosted run with these hooks: environment commands ignored, a hook not given is missing. */
 export const Hosted = (hooks: Partial<Hooks> = {}): Layer.Layer<"naive/HostRuntime"> => Layer.succeed(HostRuntime, {
   hosted: Effect.succeed(true),
-  hook: <K extends HookName>(name: K) => Effect.succeed(hooks[name]),
+  // Partial<Hooks>[K] is Hooks[K] | undefined; without strictNullChecks tsc cannot see that, so say it once.
+  hook: <K extends HookName>(name: K) => Effect.succeed(hooks[name] as Hooks[K] | undefined),
   envCommand: () => Effect.succeed(undefined),
 });
 
