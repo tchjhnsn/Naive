@@ -71,9 +71,9 @@ import { packageSlots } from "./package-routes.mjs";
 import { routable } from "../engine/structure.mjs";
 // Brand hook (Y-2..Y-4, J-2..J-4, T-1, T-2, P-24, P-26): routes, commands and layout context from packages/naive/src/engine/brand.mjs.
 import { brandLayout } from "../engine/brand.mjs";
-// Investors lint hook: investors/lint (packages/naive/src/checks/lint-investors.mjs).
+// Investors lint hook: investors/lint (packages/naive/src/checks/lint-investors.ts).
 // Customers lint: a customer that matches no ICP, and a promise the product record does not keep.
-// Legal lint hook: legal/lint (packages/naive/src/checks/lint-legal.mjs). A lint, not legal advice.
+// Legal lint hook: legal/lint (packages/naive/src/checks/lint-legal.ts). A lint, not legal advice.
 // Upgrades hook (V-9): a read says when what the record reads changed in its system of record.
 import { staleOf } from "../engine/stale.mjs";
 import { ventureFile } from "../core/venture-paths.mjs";

@@ -144,7 +144,7 @@ const base = manifest(dir);
 expect("the build is in the provenance log as a release", readFileSync(join(dir, "provenance.jsonl"), "utf8").split("\n").filter(Boolean).map((l) => JSON.parse(l)).some((e) => e.activity === "release" && e.entity === ".release/release.json" && e.note.includes(base.release)));
 const viaRouter = mentura("system/release", "read", "--venture", "kettle", "--json");
 expect("the release is a record the router reads too (system/release), for agents in the venture", viaRouter.status === 0 && JSON.parse(viaRouter.stdout).result[".release/release.json"]?.release === base.release, viaRouter.stdout.slice(0, 300) + viaRouter.stderr);
-const provCheck = run([join(repo, "packages/naive/src/checks/check-provenance.mjs"), dir]);
+const provCheck = run([join(repo, "packages/naive/src/checks/check-provenance.ts"), dir]);
 expect("the log still checks after building", provCheck.status === 0, provCheck.stderr);
 
 // ---- C-12: read without the router ----

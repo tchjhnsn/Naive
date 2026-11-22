@@ -246,7 +246,7 @@ export type BetaCapabilities = {
   always_open?: string[];
 };
 
-/** The venture's boards, at <venture>/governance/board.json (EE-022): at most one formal board of directors (or managers, or trustees), which holds legal authority, and any advisory boards, which advise and decide nothing. A seat says who fills it and who appoints them; reserved matters are what only the formal board may decide. packages/naive/src/checks/check-governance.mjs checks seats against ownership.json. */
+/** The venture's boards, at <venture>/governance/board.json (EE-022): at most one formal board of directors (or managers, or trustees), which holds legal authority, and any advisory boards, which advise and decide nothing. A seat says who fills it and who appoints them; reserved matters are what only the formal board may decide. packages/naive/src/checks/check-governance.ts checks seats against ownership.json. */
 export type Board = {
   /**
    * @format date
@@ -583,7 +583,7 @@ export type DataMaster = {
   [key: string]: unknown;
 };
 
-/** The shape of packages/naive/src/records/data-model.json (EE-018): every record type of the ecosystem, the layer that owns it, its schema, where its records live and what each references. packages/naive/src/checks/check-data-model.mjs checks it against the repository. */
+/** The shape of packages/naive/src/records/data-model.json (EE-018): every record type of the ecosystem, the layer that owns it, its schema, where its records live and what each references. packages/naive/src/checks/check-data-model.ts checks it against the repository. */
 export type DataModel = {
   version: string;
   note?: string;
@@ -594,7 +594,7 @@ export type DataModel = {
     confidential?: boolean;
     /** The owning layer, or system for records every layer shares */
     layer: "system" | "purpose" | "knowledge" | "operations" | "evidence" | "governance" | "interface";
-    /** The function (packages/naive/src/functions/departments.json) that owns the record type, or null for a type several functions share or none owns. packages/naive/src/checks/check-data-model.mjs checks that this list matches departments.json and that a venture record kept in a package folder a function owns (PACKAGE_FUNCTION in packages/naive/src/core/venture-paths.mjs) names that function or null */
+    /** The function (packages/naive/src/functions/departments.json) that owns the record type, or null for a type several functions share or none owns. packages/naive/src/checks/check-data-model.ts checks that this list matches departments.json and that a venture record kept in a package folder a function owns (PACKAGE_FUNCTION in packages/naive/src/core/venture-paths.mjs) names that function or null */
     function: "strategy" | "products" | "marketing-and-sales" | "supply-chain" | "service-delivery" | "customer-service" | "human-capital" | "it" | "finance" | "assets" | "risk-and-compliance" | "external-relationships" | "capabilities" | null;
     /** method: this repo's own records; workspace: one per builder; venture: inside a venture folder */
     level: "method" | "workspace" | "venture";
@@ -640,7 +640,7 @@ export type DataModel = {
   [key: string]: unknown;
 };
 
-/** How a projected record type is scored (autoresearch design, everything-ecosystem docs/design/AUTORESEARCH_RECORDS_2026-11-06.md, "The metric"): only a type with writer projection may carry it. The prediction is the record a recipe renders as of t; the settled record is what people and producers established about valid times up to t once the horizon passed. Settled loss is the weighted mean over (record, as-of point) rows of each field's loss, and a forecast field is scored by Brier against whether its resolving event arrived within its window. A null record loses every field. packages/naive/src/checks/check-data-model.mjs checks that each field named is a top-level property of the type's schema. The scorers are build plan item 5, not built */
+/** How a projected record type is scored (autoresearch design, everything-ecosystem docs/design/AUTORESEARCH_RECORDS_2026-11-06.md, "The metric"): only a type with writer projection may carry it. The prediction is the record a recipe renders as of t; the settled record is what people and producers established about valid times up to t once the horizon passed. Settled loss is the weighted mean over (record, as-of point) rows of each field's loss, and a forecast field is scored by Brier against whether its resolving event arrived within its window. A null record loses every field. packages/naive/src/checks/check-data-model.ts checks that each field named is a top-level property of the type's schema. The scorers are build plan item 5, not built */
 export type DataModelSettles = {
   /** How long after an as-of point its outcome settles */
   horizon: FreshnessProfilesDuration;
@@ -1013,7 +1013,7 @@ export type Decision = {
   }[];
 };
 
-/** Who has handed which decision classes to whom. The founder (the chief delegator) is the root and holds every class; every other role holds only what a grant gives it, and may pass on only what it holds with may_redelegate. Classes listed in never_redelegated may be granted by the founder but not passed on; classes in one_way_doors are never delegated at all. The template lives at packages/naive/template/governance/delegation.json; a venture keeps its own at <venture>/governance/delegation.json. Checked by packages/naive/src/checks/check-delegation.mjs. */
+/** Who has handed which decision classes to whom. The founder (the chief delegator) is the root and holds every class; every other role holds only what a grant gives it, and may pass on only what it holds with may_redelegate. Classes listed in never_redelegated may be granted by the founder but not passed on; classes in one_way_doors are never delegated at all. The template lives at packages/naive/template/governance/delegation.json; a venture keeps its own at <venture>/governance/delegation.json. Checked by packages/naive/src/checks/check-delegation.ts. */
 export type Delegation = {
   register: "delegation";
   updated?: string;
@@ -2151,7 +2151,7 @@ export type GateCalibrationCountLevels = {
   high: number;
 };
 
-/** A package's own terms, at glossary/<package>.json (Y-2, the scoping idea of CSS Modules): each term stays local to the package unless export is true, so an agent working in another package sees only exported terms. Two packages exporting one term with different meanings fail packages/naive/src/checks/check-brand.mjs. Version 0.x, unevaluated. */
+/** A package's own terms, at glossary/<package>.json (Y-2, the scoping idea of CSS Modules): each term stays local to the package unless export is true, so an agent working in another package sees only exported terms. Two packages exporting one term with different meanings fail packages/naive/src/checks/check-brand.ts. Version 0.x, unevaluated. */
 export type Glossary = {
   /** The package whose terms these are; the file is glossary/<package>.json */
   package: string;
@@ -2259,7 +2259,7 @@ export type GoldenRulingScope = {
   via: FounderIdeaAttachment;
 };
 
-/** One unit of delegated work, stored at <venture>/operations/handoffs/<id>.json (EE-017). It is the machine half of handoff contract v2 (packages/naive/src/functions/capabilities/handoff-v2.md): who holds it, which decision rights it carries, how it is checked, and where it stands. The brief (outcome, work, context) is prose in a Markdown file beside it. packages/naive/src/checks/check-ready.mjs checks it is ready before work starts; packages/naive/src/checks/check-execution.mjs checks it against the venture's decision rights and evidence. The optional ontology block is what the membership gate reads (packages/naive/src/checks/check-nouns.mjs --package). The verdict is not stored here; it is a line in the sidecar <id>.provenance.jsonl (R-17). */
+/** One unit of delegated work, stored at <venture>/operations/handoffs/<id>.json (EE-017). It is the machine half of handoff contract v2 (packages/naive/src/functions/capabilities/handoff-v2.md): who holds it, which decision rights it carries, how it is checked, and where it stands. The brief (outcome, work, context) is prose in a Markdown file beside it. packages/naive/src/checks/check-ready.ts checks it is ready before work starts; packages/naive/src/checks/check-execution.ts checks it against the venture's decision rights and evidence. The optional ontology block is what the membership gate reads (packages/naive/src/checks/check-nouns.ts --package). The verdict is not stored here; it is a line in the sidecar <id>.provenance.jsonl (R-17). */
 export type Handoff = {
   id: string;
   title: string;
@@ -2271,7 +2271,7 @@ export type Handoff = {
   governed_by?: string[];
   /** Optional, from MAD before its restart: a build-method assignment such as A-NNN, or none. It is not checked; a handoff names the method it runs under with method (EE-154) */
   assignment?: string;
-  /** The method the work runs under, named in the framework that owns it (EE-154). For software work that is MAD: the project's MAD record, the part of the project the work touches and the templates that govern it. packages/naive/src/checks/check-ready.mjs checks the names resolve in that record (packages/naive/src/checks/method-contract.mjs); Naive reads the record as data and imports nothing from MAD */
+  /** The method the work runs under, named in the framework that owns it (EE-154). For software work that is MAD: the project's MAD record, the part of the project the work touches and the templates that govern it. packages/naive/src/checks/check-ready.ts checks the names resolve in that record (packages/naive/src/checks/method-contract.ts); Naive reads the record as data and imports nothing from MAD */
   method?: {
     /** The member framework that owns the method. Only MAD has a contract today */
     framework: "mad";
@@ -2282,7 +2282,7 @@ export type Handoff = {
     /** The templates, as <id>@<version>, the work follows; each must be adopted for the part or for the whole project */
     templates?: string[];
   };
-  /** Files the work needs before it can start, from the repo root; check-ready.mjs makes sure they exist */
+  /** Files the work needs before it can start, from the repo root; check-ready.ts makes sure they exist */
   inputs?: string[];
   /** Role id from the roles register that holds it (builder, architect and so on) */
   role: string;
@@ -2299,9 +2299,9 @@ export type Handoff = {
     /** Role id, for review criteria */
     reviewer?: string;
   }[];
-  /** draft until packages/naive/src/checks/check-ready.mjs passes and is recorded; then ready, in-progress, escalated or done */
+  /** draft until packages/naive/src/checks/check-ready.ts passes and is recorded; then ready, in-progress, escalated or done */
   status: "draft" | "ready" | "in-progress" | "escalated" | "done";
-  /** Written by check-ready.mjs --record when every readiness item passed, before execution started */
+  /** Written by check-ready.ts --record when every readiness item passed, before execution started */
   ready_check?: {
     /**
      * @format date-time
@@ -2314,7 +2314,7 @@ export type Handoff = {
   };
   /** Run or session id of the holder, or its role when the run carried no id. Set by the router's claim action (operations/handoff/<id> claim), which takes a ready, unclaimed handoff addressed to the acting role, once */
   claimed_by?: string;
-  /** Optional: the lead role or person that wrote the handoff and verifies it. When set, the router lets only the requester edit it before a claim, only the claimant write progress and evidence after one, and only the requester write the verification and acceptance; every review criterion's reviewer is this requester (check-ready.mjs, check-execution.mjs) */
+  /** Optional: the lead role or person that wrote the handoff and verifies it. When set, the router lets only the requester edit it before a claim, only the claimant write progress and evidence after one, and only the requester write the verification and acceptance; every review criterion's reviewer is this requester (check-ready.ts, check-execution.ts) */
   requested_by?: string;
   /** Optional: the requester's verification of done work, after rerunning the conformance criteria and judging the review criterion. Written only by the requester when requested_by is set */
   verification?: {
@@ -2516,7 +2516,7 @@ export type IndustryAnatomy = {
   };
 };
 
-/** One tool or service a layer can use. Each layer lists its integrations in <layer>/tooling/integrations.json. Credentials are named, never stored. Entries under interface/ are interfaces, not integrations: they must reach at least three of the five other layers (EE-038) (packages/naive/src/checks/check-integrations.mjs). Knowledge integrations with a connector are the connector registry (EE-037): a venture's knowledge/sources.json names them by id. */
+/** One tool or service a layer can use. Each layer lists its integrations in <layer>/tooling/integrations.json. Credentials are named, never stored. Entries under interface/ are interfaces, not integrations: they must reach at least three of the five other layers (EE-038) (packages/naive/src/checks/check-integrations.ts). Knowledge integrations with a connector are the connector registry (EE-037): a venture's knowledge/sources.json names them by id. */
 export type Integration = {
   id: string;
   name: string;
@@ -2732,7 +2732,7 @@ export type KnowledgeSources = {
     } };
 };
 
-/** What one layer of the framework repository holds, at <layer>/layer.json and packages/naive/src/records/layer.json for the system layer (EE-018, EE-071). A layer organizes the framework repo. It is not a venture package. Venture packages live at packages/naive/library/packages/<name>/package.json. A kit is Mentura's word, at platform/kits/. packages/naive/src/checks/check-data-model.mjs checks this file. */
+/** What one layer of the framework repository holds, at <layer>/layer.json and packages/naive/src/records/layer.json for the system layer (EE-018, EE-071). A layer organizes the framework repo. It is not a venture package. Venture packages live at packages/naive/library/packages/<name>/package.json. A kit is Mentura's word, at platform/kits/. packages/naive/src/checks/check-data-model.ts checks this file. */
 export type Layer = {
   layer: "system" | "purpose" | "knowledge" | "operations" | "evidence" | "governance" | "interface";
   /** What the layer is for, in one sentence */
@@ -2765,7 +2765,7 @@ export type Layer = {
   name: string;
 };
 
-/** One lead's plan (lead agents design, "Who writes what"), at operations/leads/<lead>.json (route operations/lead/[id]); the file name avoids *.plan.json, which the evidence/eval-plan route matches. A lead is a role with a portfolio (packages/naive/template/governance/roles/<lead>.json). The plan names the lead, the functions of its portfolio it plans for, the telos measures it is bound to (foundation/telos measures[].id), its current bets, each citing measure ids and handoff ids, and how often it reviews them. A lead writes only this plan, decisions/* and operations/handoff/*; packages/naive/src/checks/check-team.mjs refuses a lead in a team plan with no plan binding a measure. */
+/** One lead's plan (lead agents design, "Who writes what"), at operations/leads/<lead>.json (route operations/lead/[id]); the file name avoids *.plan.json, which the evidence/eval-plan route matches. A lead is a role with a portfolio (packages/naive/template/governance/roles/<lead>.json). The plan names the lead, the functions of its portfolio it plans for, the telos measures it is bound to (foundation/telos measures[].id), its current bets, each citing measure ids and handoff ids, and how often it reviews them. A lead writes only this plan, decisions/* and operations/handoff/*; packages/naive/src/checks/check-team.ts refuses a lead in a team plan with no plan binding a measure. */
 export type LeadPlan = {
   /** The lead's role id, a role template with a portfolio; the file name without .json */
   lead: string;
@@ -2978,7 +2978,7 @@ export type MarketAnatomy = {
   };
 };
 
-/** The venture's brand tokens, in the marketing package at marketing/brand.json: colors, typefaces with their licenses, the font each role uses, voice rules (the global stylesheet for words), the logo and marks, outside design systems by reference, and scopes where a route prefix overrides the venture brand (nearer context wins). Read by every agent's layout and every interface; checked by packages/naive/src/checks/check-brand.mjs. Translates Next.js global CSS, next/font and file-based icons (Y-3, Y-4, Y-5, T-1, T-2, P-24). Version 0.x, unevaluated. */
+/** The venture's brand tokens, in the marketing package at marketing/brand.json: colors, typefaces with their licenses, the font each role uses, voice rules (the global stylesheet for words), the logo and marks, outside design systems by reference, and scopes where a route prefix overrides the venture brand (nearer context wins). Read by every agent's layout and every interface; checked by packages/naive/src/checks/check-brand.ts. Translates Next.js global CSS, next/font and file-based icons (Y-3, Y-4, Y-5, T-1, T-2, P-24). Version 0.x, unevaluated. */
 export type MarketingBrand = {
   version: string;
   venture: string;
@@ -3210,7 +3210,7 @@ export type MoneySummary = {
   note?: string;
 };
 
-/** A venture's overrides to Naive's defaults, at the venture root (P-2, like next.config.js): the gate (fail-closed routes, rules over the router's path patterns, which package rules it imports), function owners, check settings (P-7, like eslint.config.mjs), thresholds, which System 1 questions run, pinned package versions (U-4) and how strictly the acting role is checked (M-18). Every field is optional; a missing one keeps the default in packages/naive/src/engine/naive-config.mjs. node packages/naive/src/checks/check-config.mjs <venture dir> checks it. */
+/** A venture's overrides to Naive's defaults, at the venture root (P-2, like next.config.js): the gate (fail-closed routes, rules over the router's path patterns, which package rules it imports), function owners, check settings (P-7, like eslint.config.mjs), thresholds, which System 1 questions run, pinned package versions (U-4) and how strictly the acting role is checked (M-18). Every field is optional; a missing one keeps the default in packages/naive/src/engine/naive-config.mjs. node packages/naive/src/checks/check-config.ts <venture dir> checks it. */
 export type NaiveConfig = {
   $schema?: string;
   /** Autoresearch over the venture's recipes (everything-ecosystem docs/design/AUTORESEARCH_RECORDS_2026-11-06.md). */
@@ -3269,7 +3269,7 @@ export type NaiveConfig = {
   };
   /** Check settings (P-7): which of a route's checks are off, and which only warn */
   checks?: {
-    /** Checks that do not run, by path (packages/naive/src/checks/check-telos.mjs) */
+    /** Checks that do not run, by path (packages/naive/src/checks/check-telos.ts) */
     off?: string[];
     /** Checks that run but do not fail the route's check */
     warn?: string[];
@@ -3345,7 +3345,7 @@ export type NaiveConfig = {
   })[];
   /** Listener ids turned off, from any of the four places listeners come from */
   listeners_off?: string[];
-  /** Per-rule mode for the product lint (packages/naive/src/checks/lint-product.mjs, route product/lint). A rule stays fail-open unless its mode is fail-closed. */
+  /** Per-rule mode for the product lint (packages/naive/src/checks/lint-product.ts, route product/lint). A rule stays fail-open unless its mode is fail-closed. */
   product_lint?: {
     rules?: {
       [key: string]: {
@@ -3358,7 +3358,7 @@ export type NaiveConfig = {
     threshold?: number;
     stale_hours?: number;
   };
-  /** The premise-attack linter (packages/naive/src/checks/premise-lint.mjs): each rule, one per aspect, is off, warn (the default) or error */
+  /** The premise-attack linter (packages/naive/src/checks/premise-lint.ts): each rule, one per aspect, is off, warn (the default) or error */
   premise_lint?: {
     rules?: {
       "undefined-term"?: "off" | "warn" | "error";
@@ -3371,7 +3371,7 @@ export type NaiveConfig = {
       "phase-mismatch"?: "off" | "warn" | "error";
     };
   };
-  /** Per-rule mode for the money lint (packages/naive/src/checks/lint-money.mjs, route money/lint). A rule stays fail-open unless its mode is fail-closed. */
+  /** Per-rule mode for the money lint (packages/naive/src/checks/lint-money.ts, route money/lint). A rule stays fail-open unless its mode is fail-closed. */
   money_lint?: {
     rules?: {
       [key: string]: {
@@ -3387,7 +3387,7 @@ export type NaiveConfig = {
       };
     };
   };
-  /** Per-rule mode for the validation lint (packages/naive/src/checks/lint-validation.mjs, route validation/lint). A rule stays fail-open unless its mode is fail-closed. */
+  /** Per-rule mode for the validation lint (packages/naive/src/checks/lint-validation.ts, route validation/lint). A rule stays fail-open unless its mode is fail-closed. */
   validation_lint?: {
     rules?: {
       [key: string]: {
@@ -3395,7 +3395,7 @@ export type NaiveConfig = {
       };
     };
   };
-  /** finance/lint (packages/naive/src/checks/lint-finance.mjs). Each rule warns and stays fail-open unless its mode is fail-closed, which makes its findings exit 1. */
+  /** finance/lint (packages/naive/src/checks/lint-finance.ts). Each rule warns and stays fail-open unless its mode is fail-closed, which makes its findings exit 1. */
   finance_lint?: {
     rules?: {
       [key: string]: {
@@ -3403,7 +3403,7 @@ export type NaiveConfig = {
       };
     };
   };
-  /** Per-rule mode for the legal lint (packages/naive/src/checks/lint-legal.mjs, route legal/lint). A rule stays fail-open unless its mode is fail-closed. */
+  /** Per-rule mode for the legal lint (packages/naive/src/checks/lint-legal.ts, route legal/lint). A rule stays fail-open unless its mode is fail-closed. */
   legal_lint?: {
     rules?: {
       [key: string]: {
@@ -3419,7 +3419,7 @@ export type NaiveConfig = {
       };
     };
   };
-  /** Per-rule mode for the people lint (packages/naive/src/checks/lint-people.mjs, route people/lint). A rule stays fail-open unless its mode is fail-closed. */
+  /** Per-rule mode for the people lint (packages/naive/src/checks/lint-people.ts, route people/lint). A rule stays fail-open unless its mode is fail-closed. */
   people_lint?: {
     rules?: {
       [key: string]: {
@@ -3476,7 +3476,7 @@ export type NaiveConfigRule = {
   note?: string;
 };
 
-/** Whether each concept of the Next.js translation ledger is built, and the docs page that explains it. Checked by packages/naive/src/checks/check-nextjs-status.mjs. */
+/** Whether each concept of the Next.js translation ledger is built, and the docs page that explains it. Checked by packages/naive/src/checks/check-nextjs-status.ts. */
 export type NextjsStatus = {
   about: string;
   /**
@@ -3559,7 +3559,7 @@ export type OntologyMetamodel = OntologyMetamodelOntology;
 export type OntologyMetamodelOntology = {
   version: string;
   note: string;
-  /** Files and folders packages/naive/src/checks/check-nouns.mjs scans for retired nouns. */
+  /** Files and folders packages/naive/src/checks/check-nouns.ts scans for retired nouns. */
   check: string[];
   top_categories: OntologyMetamodelTopCategory[];
   nouns: OntologyMetamodelNoun[];
@@ -3600,7 +3600,7 @@ export type OntologyMetamodelNoun = {
   properties?: string[];
   /** What replaced a retired noun. */
   replaced_by?: string;
-  /** A regular expression for the retired noun, which packages/naive/src/checks/check-nouns.mjs fails on. */
+  /** A regular expression for the retired noun, which packages/naive/src/checks/check-nouns.ts fails on. */
   retired_pattern?: string;
   /** A JSON Schema of what a record claiming this noun must contain (EE-107 item 7). */
   shape?: {
@@ -3971,7 +3971,7 @@ export type Opportunity = {
   note?: string;
 };
 
-/** Who owns the venture and on what terms, at <venture>/governance/ownership.json (EE-022): share classes and the rights each carries, holders, grants with vesting, the option pool, and unpriced instruments such as SAFEs. It is a record of what was agreed, not the legal document: the signed documents are the truth, and decisions to change this file are founder decisions made with counsel (decision class ownership-or-control). packages/naive/src/checks/check-governance.mjs checks it; packages/naive/src/engine/payouts.mjs computes payouts from it. */
+/** Who owns the venture and on what terms, at <venture>/governance/ownership.json (EE-022): share classes and the rights each carries, holders, grants with vesting, the option pool, and unpriced instruments such as SAFEs. It is a record of what was agreed, not the legal document: the signed documents are the truth, and decisions to change this file are founder decisions made with counsel (decision class ownership-or-control). packages/naive/src/checks/check-governance.ts checks it; packages/naive/src/engine/payouts.mjs computes payouts from it. */
 export type Ownership = {
   /**
    * @format date
@@ -4360,7 +4360,7 @@ export type ProfileAttributes = {
   }[];
 };
 
-/** One line of a venture's provenance log (<venture>/provenance.jsonl, EE-031), after W3C PROV: the entity (a record file) was generated by an activity, attributed to an agent (a person or an AI agent), derived from other entities, under a decision. The log is append-only: each line carries the hash of the line before, so an edited or deleted line breaks the chain. Git history is the implicit provenance for anything written outside the log. packages/naive/src/checks/check-provenance.mjs checks it. */
+/** One line of a venture's provenance log (<venture>/provenance.jsonl, EE-031), after W3C PROV: the entity (a record file) was generated by an activity, attributed to an agent (a person or an AI agent), derived from other entities, under a decision. The log is append-only: each line carries the hash of the line before, so an edited or deleted line breaks the chain. Git history is the implicit provenance for anything written outside the log. packages/naive/src/checks/check-provenance.ts checks it. */
 export type ProvenanceEntry = {
   /**
    * When the activity ended (prov:endedAtTime)
@@ -4461,7 +4461,7 @@ export type ProvenanceEntry = {
   };
 };
 
-/** The register of what the venture ships as it is, at public/assets.json (I-23, J-2, J-3, J-4): each file in public/ with its source, license and credit, facts read by code from its bytes, and alt text with who wrote it; remote images as links with a note in raw/sources/<id>/; and remote_hosts, the hosts an agent may fetch from. Checked by packages/naive/src/checks/check-assets.mjs. Version 0.x, unevaluated. */
+/** The register of what the venture ships as it is, at public/assets.json (I-23, J-2, J-3, J-4): each file in public/ with its source, license and credit, facts read by code from its bytes, and alt text with who wrote it; remote images as links with a note in raw/sources/<id>/; and remote_hosts, the hosts an agent may fetch from. Checked by packages/naive/src/checks/check-assets.ts. Version 0.x, unevaluated. */
 export type PublicAssets = {
   version: string;
   /** Hosts an agent may fetch images from (exact, or *.example.com); a fetcher refuses any other */
@@ -4937,7 +4937,7 @@ export type Risk = {
   note?: string;
 };
 
-/** One role a venture can install, at packages/naive/template/governance/roles/<id>.json. The founder is the chief delegator and holds all authority; every other role holds only what is granted to it in governance/delegation.json, and only from the classes it lists as grantable. Its work is verified by another role (verified_by), never by itself; only the chief delegator has no verifier. Checked by packages/naive/src/checks/check-delegation.mjs. */
+/** One role a venture can install, at packages/naive/template/governance/roles/<id>.json. The founder is the chief delegator and holds all authority; every other role holds only what is granted to it in governance/delegation.json, and only from the classes it lists as grantable. Its work is verified by another role (verified_by), never by itself; only the chief delegator has no verifier. Checked by packages/naive/src/checks/check-delegation.ts. */
 export type RoleTemplate = {
   /** Matches the file name */
   id: string;
@@ -4946,9 +4946,9 @@ export type RoleTemplate = {
   aliases?: string[];
   /** True for the founder only: the root of every delegation chain */
   chief_delegator?: boolean;
-  /** The function the role serves: an id in packages/naive/src/functions/departments.json (such as products, marketing-and-sales or human-capital), or all for the chief delegator and for a lead (a role with a portfolio). packages/naive/src/checks/check-delegation.mjs fails on any other value */
+  /** The function the role serves: an id in packages/naive/src/functions/departments.json (such as products, marketing-and-sales or human-capital), or all for the chief delegator and for a lead (a role with a portfolio). packages/naive/src/checks/check-delegation.ts fails on any other value */
   function: string;
-  /** A lead only (lead agents design, 2026-11-08): the functions, ids in packages/naive/src/functions/departments.json, whose cross-function work this lead plans and verifies. A role with a portfolio is a lead: its function is all, it may be granted no never-redelegated class and no one-way door, and the leads' portfolios cover every function exactly once (packages/naive/src/checks/check-delegation.mjs) */
+  /** A lead only (lead agents design, 2026-11-08): the functions, ids in packages/naive/src/functions/departments.json, whose cross-function work this lead plans and verifies. A role with a portfolio is a lead: its function is all, it may be granted no never-redelegated class and no one-way door, and the leads' portfolios cover every function exactly once (packages/naive/src/checks/check-delegation.ts) */
   portfolio?: string[];
   /** A lead only: the telos measure kinds it is bound to by default (primary means the telos's primary measure). A venture binds the lead to concrete measure ids in its lead plan (operations/lead/[id]); the defaults only route a task whose measure no lead plan binds (packages/naive/src/engine/route-task.ts) */
   default_measure_kinds?: ("primary" | "revenue" | "usage_or_adoption" | "cost_or_time_saved" | "compliance_met" | "learning" | "flow_and_lead_time" | "impact")[];
@@ -5607,7 +5607,7 @@ export type Telemetry = {
   source?: "plugin-beta" | "mentura";
 };
 
-/** The end a venture exists to reach, at <venture>/purpose/telos.json (EE-023): start with the end. It states the end state, how anyone would know it was reached (measures), what the owners intend to happen when it is reached (owner outcome), and, for each phase of the Succession Matrix, the exit criteria that must be true to leave it, each serving at least one measure. Other layers read it instead of asking again: the governance layer's exit.json prefers the owner outcome's path, and MAD's governance tier takes its success measure from the primary measure. packages/naive/src/checks/check-telos.mjs checks it. Written by the owner; an agent may draft it but not settle it. */
+/** The end a venture exists to reach, at <venture>/purpose/telos.json (EE-023): start with the end. It states the end state, how anyone would know it was reached (measures), what the owners intend to happen when it is reached (owner outcome), and, for each phase of the Succession Matrix, the exit criteria that must be true to leave it, each serving at least one measure. Other layers read it instead of asking again: the governance layer's exit.json prefers the owner outcome's path, and MAD's governance tier takes its success measure from the primary measure. packages/naive/src/checks/check-telos.ts checks it. Written by the owner; an agent may draft it but not settle it. */
 export type Telos = {
   /** The end, in one sentence: what the venture is for when it has done its job */
   statement: string;
@@ -5823,7 +5823,7 @@ export type UpgradeRegistry = {
   };
 };
 
-/** One piece of cited evidence behind a validation record (EE-026), shared by every validation sub-score. packages/naive/src/checks/check-validation.mjs grades each item from its kind, audience, sample, specificity and age (adapted from GRADE), and grades the record from its items. A claim with no evidence grades very low. */
+/** One piece of cited evidence behind a validation record (EE-026), shared by every validation sub-score. packages/naive/src/checks/check-validation.ts grades each item from its kind, audience, sample, specificity and age (adapted from GRADE), and grades the record from its items. A claim with no evidence grades very low. */
 export type ValidationEvidence = {
   id: string;
   /** behavior: what people did (retention, payments, repeat use, money or time already spent on workarounds); commitment: what they put at stake (deposit, pre-order, letter of intent, time booked); stated: what they said when asked (interview, survey); desk-research: published data or reports; opinion: unprompted praise, advice or compliments */
@@ -6063,7 +6063,7 @@ export type ValidationPricing = {
   };
 };
 
-/** The problem sub-score (EE-026), at <venture>/purpose/validation/problem.json: the problem, who has it, how they cope today, and the cited evidence that it is real. A statement alone is the weakest form of this record; packages/naive/src/checks/check-validation.mjs grades it from its evidence. */
+/** The problem sub-score (EE-026), at <venture>/purpose/validation/problem.json: the problem, who has it, how they cope today, and the cited evidence that it is real. A statement alone is the weakest form of this record; packages/naive/src/checks/check-validation.ts grades it from its evidence. */
 export type ValidationProblem = {
   venture: string;
   /**
@@ -6103,7 +6103,7 @@ export type ValidationProblem = {
   };
 };
 
-/** The product-market fit sub-score (EE-026), at <venture>/purpose/validation/product-market-fit.json: whether a segment keeps using the product. Retention cohorts and the Sean Ellis survey are recorded as data; packages/naive/src/checks/check-validation.mjs reads them (does retention level off; what share would be very disappointed). */
+/** The product-market fit sub-score (EE-026), at <venture>/purpose/validation/product-market-fit.json: whether a segment keeps using the product. Retention cohorts and the Sean Ellis survey are recorded as data; packages/naive/src/checks/check-validation.ts reads them (does retention level off; what share would be very disappointed). */
 export type ValidationProductMarketFit = {
   venture: string;
   /**
@@ -6174,7 +6174,7 @@ export type ValidationSolution = {
   };
 };
 
-/** The team sub-score (EE-026), at <venture>/purpose/validation/team.json: the skills the coming phases need, the skills held and by whom, and the gaps, including whether a cofounder is sought for them. packages/naive/src/checks/check-validation.mjs lists the gaps. */
+/** The team sub-score (EE-026), at <venture>/purpose/validation/team.json: the skills the coming phases need, the skills held and by whom, and the gaps, including whether a cofounder is sought for them. packages/naive/src/checks/check-validation.ts lists the gaps. */
 export type ValidationTeam = {
   venture: string;
   /**
@@ -6326,7 +6326,7 @@ export type VentureTypes = {
   }[];
 };
 
-/** One venture: anything a builder undertakes, from a hobby to a company (EE-011). Each venture keeps a venture.json at its root, beside its venture profile. Its products are cards in products/, the parties it keeps records for are accounts in accounts/ (optional, EE-021), and ventures can hold ventures. Cross-venture rules are checked by packages/naive/src/checks/check-ventures.mjs. Nouns follow packages/naive/src/terms/ontology.md (EE-014). */
+/** One venture: anything a builder undertakes, from a hobby to a company (EE-011). Each venture keeps a venture.json at its root, beside its venture profile. Its products are cards in products/, the parties it keeps records for are accounts in accounts/ (optional, EE-021), and ventures can hold ventures. Cross-venture rules are checked by packages/naive/src/checks/check-ventures.ts. Nouns follow packages/naive/src/terms/ontology.md (EE-014). */
 export type Venture = {
   id: string;
   name: string;
@@ -6455,7 +6455,7 @@ export type VentureLayer = false | {
   tools?: string[];
 };
 
-/** A venture's where-used list (<venture>/knowledge/where-used.json, EE-042): for each fact kept once in its system of record (a parent, such as a product's price), every place that repeats it (its children: a pricing page, a newsletter, a payment provider, a constant in code). Update the parent once and the children show what must follow. The framework checks live children offline and reports drift (packages/naive/src/checks/check-where-used.mjs); delivering the change into a vendor's system is the platform's (coexistence or centralized style). Written for a fast model to read: every field present. */
+/** A venture's where-used list (<venture>/knowledge/where-used.json, EE-042): for each fact kept once in its system of record (a parent, such as a product's price), every place that repeats it (its children: a pricing page, a newsletter, a payment provider, a constant in code). Update the parent once and the children show what must follow. The framework checks live children offline and reports drift (packages/naive/src/checks/check-where-used.ts); delivering the change into a vendor's system is the platform's (coexistence or centralized style). Written for a fast model to read: every field present. */
 export type WhereUsed = {
   facts: {
     id: string;

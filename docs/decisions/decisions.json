@@ -2011,7 +2011,7 @@
       "affects": [
         {
           "kind": "path",
-          "target": "packages/naive/src/checks/method-contract.mjs",
+          "target": "packages/naive/src/checks/method-contract.ts",
           "root": "repo",
           "expect": "exists"
         }

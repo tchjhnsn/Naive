@@ -26,7 +26,7 @@
 //   node packages/naive/src/engine/brand.mjs <venture dir> voice [--json]             marketing content against the voice rules
 //   node packages/naive/src/engine/brand.mjs <venture dir> --package <id> [--json]    the terms a package sees (its own and exported ones)
 //   node packages/naive/src/engine/brand.mjs <venture dir> --base <url> [--json]      sitemap.xml from the marketing sitemap
-//   node packages/naive/src/engine/brand.mjs <venture dir> check [--json]             the brand check (also packages/naive/src/checks/check-brand.mjs)
+//   node packages/naive/src/engine/brand.mjs <venture dir> check [--json]             the brand check (also packages/naive/src/checks/check-brand.ts)
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";

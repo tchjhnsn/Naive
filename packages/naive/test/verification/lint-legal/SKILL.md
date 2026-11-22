@@ -1,7 +1,7 @@
 ---
 name: verify-legal-lint
 description: >
-  Check a change to the legal lint against its TLA+ model: packages/naive/src/checks/lint-legal.mjs,
+  Check a change to the legal lint against its TLA+ model: packages/naive/src/checks/lint-legal.ts,
   the legal/lint route, and naive check's lint-legal entry. Use before merging a
   change to those, or to packages/naive/library/packages/legal/skill/SKILL.md where it describes the lint.
 ---
@@ -16,16 +16,16 @@ Coverage, confirmed at commit `f6ac8f3` (`cursor/lint-legal`):
 
 | Model action | Code |
 | --- | --- |
-| SeeClaim | `packages/naive/src/checks/lint-legal.mjs` `walkMdx`, `claimOf` |
-| SeeAgreement | `packages/naive/src/checks/lint-legal.mjs` `partiesOf` |
-| ApplyModes | `packages/naive/src/checks/lint-legal.mjs` `modesOf` (`naive.config.json` key `legal_lint.rules.<id>.mode`) |
+| SeeClaim | `packages/naive/src/checks/lint-legal.ts` `walkMdx`, `claimOf` |
+| SeeAgreement | `packages/naive/src/checks/lint-legal.ts` `partiesOf` |
+| ApplyModes | `packages/naive/src/checks/lint-legal.ts` `modesOf` (`naive.config.json` key `legal_lint.rules.<id>.mode`) |
 | Judge | the two `add` calls in `lint` |
 | Exit | `process.exit` from `ok`, and `packages/naive/src/router/router.mjs` when it runs `legal/lint` |
 | channel `ventureFile` | every read goes through `ventureFile` in `packages/naive/src/core/venture-paths.mjs` |
 
-`naive check` runs `packages/naive/src/checks/lint-legal.mjs` because `packages/naive/src/interfaces/cli/naive.mjs` lists `lint-legal`.
+`naive check` runs `packages/naive/src/checks/lint-legal.ts` because `packages/naive/src/interfaces/cli/naive.mjs` lists `lint-legal`.
 
-If `git diff <sync> -- packages/naive/src/checks/lint-legal.mjs packages/naive/src/router/router.mjs packages/naive/src/interfaces/cli/naive.mjs` is empty, the model still describes the code. Move the sync commit forward only after you confirm, file by file, that each action above still matches.
+If `git diff <sync> -- packages/naive/src/checks/lint-legal.ts packages/naive/src/router/router.mjs packages/naive/src/interfaces/cli/naive.mjs` is empty, the model still describes the code. Move the sync commit forward only after you confirm, file by file, that each action above still matches.
 
 ## Run it
 
@@ -34,6 +34,6 @@ If `git diff <sync> -- packages/naive/src/checks/lint-legal.mjs packages/naive/s
 
 ## Real bug or model error?
 
-A rule that breaks in TLC is a real bug only when its replay does the same thing on `node packages/naive/src/checks/lint-legal.mjs`. If the replay does not reproduce it, assume the model is wrong: open the function named in the action's comment, fix the action, and rerun. Never weaken an INVARIANT to make it pass.
+A rule that breaks in TLC is a real bug only when its replay does the same thing on `node packages/naive/src/checks/lint-legal.ts`. If the replay does not reproduce it, assume the model is wrong: open the function named in the action's comment, fix the action, and rerun. Never weaken an INVARIANT to make it pass.
 
 Known at the sync commit: no rule breaks. The chart hides the agreement read, the mode step, and the end self-loop, because those do not change the label a reader sees. See `packages/naive/test/verification/lint-legal/README.md` for the rules table.

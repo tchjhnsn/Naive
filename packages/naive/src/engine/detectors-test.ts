@@ -98,7 +98,7 @@ const idx = rebuild(v) as { threshold: number };
 expect("(a) a venture decision-index-note moves the index's threshold", idx.threshold === 0.4, JSON.stringify(idx.threshold));
 const tandem = join(ws, "ventures/tandem");
 cpSync(join(repo, "packages/naive/src/records/examples/workspace/ventures/tandem"), tandem, { recursive: true });
-const score = (): { threshold: number } => (JSON.parse(spawnSync(process.execPath, [join(repo, "packages/naive/src/checks/check-validation.mjs"), tandem, "--score", "--json"], { encoding: "utf8" }).stdout) as { scores: { threshold: number }[] }).scores[0];
+const score = (): { threshold: number } => (JSON.parse(spawnSync(process.execPath, [join(repo, "packages/naive/src/checks/check-validation.ts"), tandem, "--score", "--json"], { encoding: "utf8" }).stdout) as { scores: { threshold: number }[] }).scores[0];
 expect("(b) check-validation scores against the shipped line", score().threshold === weights.threshold);
 own(tandem, "validation-recommend", 0.5);
 expect("(a) a venture validation-recommend moves check-validation's threshold", score().threshold === 0.5);

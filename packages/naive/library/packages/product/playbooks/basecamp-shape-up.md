@@ -58,25 +58,25 @@ Each profile is its own record at `foundation/icp/<id>`, and the list read retur
 
 Read `governance/decision-rights`.
 
-When the venture has no record, the read is `not_found`, and `packages/naive/src/checks/check-execution.mjs` still loads `packages/naive/template/governance/decision-rights.json`. The template gives the builder role `implementation-detail` and `accept-verified-work`. Use classes whose owner is the handoff's role. A class owned by another role fails the execution check.
+When the venture has no record, the read is `not_found`, and `packages/naive/src/checks/check-execution.ts` still loads `packages/naive/template/governance/decision-rights.json`. The template gives the builder role `implementation-detail` and `accept-verified-work`. Use classes whose owner is the handoff's role. A class owned by another role fails the execution check.
 
 ### 4. Write the pitch as a cycle handoff
 
 Write `operations/handoff/[id]`.
 
-Use an id such as `cycle-<slug>`. The file is `operations/handoffs/<id>.json`. The `brief` field is a markdown path beside that file. The brief is not its own route. The router write is the JSON. Write the brief on disk before `packages/naive/src/checks/check-ready.mjs`, which reads it.
+Use an id such as `cycle-<slug>`. The file is `operations/handoffs/<id>.json`. The `brief` field is a markdown path beside that file. The brief is not its own route. The router write is the JSON. Write the brief on disk before `packages/naive/src/checks/check-ready.ts`, which reads it.
 
 Status stays `draft`. Role is `builder` unless step 3 named another role that owns the classes you carry. Set `products` to the product id from step 1. Set `attempts` to 0, `max_attempts` to at least 1, and `run_cap` to a per-run cap the schema accepts, such as `2h` or `$20`. The schema pattern is minutes, hours, or a dollar cap (`packages/naive/src/records/handoff.schema.json`). It does not accept weeks. The six-week appetite goes in the brief.
 
-`governed_by` has to name a decision `packages/naive/src/checks/check-ready.mjs` can see. That checker reads `docs/decisions/decisions.json` and the venture's `knowledge/decisions.json`. It does not read `decisions/*.decision.json`. EE-017 in `docs/decisions/decisions.json` is in force, and it is the decision that made handoffs machine-checkable. Name EE-017, or name an in-force entry in the venture's own log. The bet in the next step is a separate record. Cite its id in the brief.
+`governed_by` has to name a decision `packages/naive/src/checks/check-ready.ts` can see. That checker reads `docs/decisions/decisions.json` and the venture's `knowledge/decisions.json`. It does not read `decisions/*.decision.json`. EE-017 in `docs/decisions/decisions.json` is in force, and it is the decision that made handoffs machine-checkable. Name EE-017, or name an in-force entry in the venture's own log. The bet in the next step is a separate record. Cite its id in the brief.
 
-`done_criteria` needs one `conformance` and one `self-proof` (`packages/naive/src/checks/check-ready.mjs`, `packages/naive/src/checks/check-execution.mjs`). Use:
+`done_criteria` needs one `conformance` and one `self-proof` (`packages/naive/src/checks/check-ready.ts`, `packages/naive/src/checks/check-execution.ts`). Use:
 
 - conformance: `node packages/naive/test/verification/playbook-basecamp-shape-up/pitch-check.mjs <path to the brief>`
 - self-proof: a command that runs this cycle's work and exits 0 when that work actually happened. Until you have that command, use `node -e "console.error('replace this command with one that runs the cycle work'); process.exit(1)"`. That command fails on purpose.
 - review, optional: a question for a role other than the holder, for example architect: "Does what shipped stay inside the no-gos?"
 
-The brief needs these headings, each with text under it. `packages/naive/src/checks/check-ready.mjs` requires Outcome and Work, and it fails on `TBD`, `TODO`, `FIXME`, `???`, or angle-bracket placeholders. The pitch check requires the rest, and it requires the appetite section to contain the words "six weeks".
+The brief needs these headings, each with text under it. `packages/naive/src/checks/check-ready.ts` requires Outcome and Work, and it fails on `TBD`, `TODO`, `FIXME`, `???`, or angle-bracket placeholders. The pitch check requires the rest, and it requires the appetite section to contain the words "six weeks".
 
 ```markdown
 ## Outcome
@@ -143,16 +143,16 @@ Either way the hold on the handoff file lifts, because the decision is no longer
 After an answer of `bet`, write `operations/handoff/cycle-<slug>` again only to move the same handoff forward. Then run:
 
 ```sh
-node packages/naive/src/checks/check-ready.mjs <venture dir> cycle-<slug>
+node packages/naive/src/checks/check-ready.ts <venture dir> cycle-<slug>
 ```
 
 It fails when the brief is missing a section, a product id does not exist, `governed_by` is not in the decision log, the role or a class is wrong, or a criterion names a script that is not in the repo. When every line passes, record it:
 
 ```sh
-node packages/naive/src/checks/check-ready.mjs <venture dir> cycle-<slug> --record --by <role or session>
+node packages/naive/src/checks/check-ready.ts <venture dir> cycle-<slug> --record --by <role or session>
 ```
 
-That writes `ready_check` and can move a draft to `ready`. The holder then sets `in-progress` and `claimed_by`. `packages/naive/src/checks/check-execution.mjs` refuses `in-progress` without `ready_check`.
+That writes `ready_check` and can move a draft to `ready`. The holder then sets `in-progress` and `claimed_by`. `packages/naive/src/checks/check-execution.ts` refuses `in-progress` without `ready_check`.
 
 During the six weeks the team cuts scope to the appetite. Must-haves are the work the scope is not done without. Nice-to-haves are what gets cut when time runs out. ([Chapter 14](https://basecamp.com/shapeup/3.5-chapter-14)) The handoff is the project. Adding tasks by raising `max_attempts` or rewriting the appetite does not buy a longer bet.
 
@@ -164,7 +164,7 @@ When the six weeks end and the work is not done, write `operations/handoff/cycle
 - `claimed_by`: the holder
 - `escalations`: one open item, `class` set to `attempts`, `answer` omitted, `to` set to `founder`, `question` asking them to shape a new pitch before any further time is bet
 
-`packages/naive/src/checks/check-execution.mjs` fails an escalated handoff that has no open question, and it fails a handoff past `ready` that has no `claimed_by`.
+`packages/naive/src/checks/check-execution.ts` fails an escalated handoff that has no open question, and it fails a handoff past `ready` that has no `claimed_by`.
 
 Do not set `status` to `done`. Do not write a second cycle handoff that continues this pitch. A new six weeks is a new pitch (step 4) and a new open bet (step 5).
 
@@ -182,7 +182,7 @@ This is the handoff between cycles. The next cycle starts again at step 1.
 
 When the work did ship inside the appetite, write `evidence/[id]` with `subject.kind` `handoff`, `subject.id` the cycle id, and one passing result per done-criterion. A review result names `by` as the criterion's reviewer. Set the handoff's `evidence` to those files, set `pr` to the pull request, and set `status` to `done`.
 
-`packages/naive/src/checks/check-execution.mjs` fails `done` without a pull request, and it fails `done` when any criterion has no passing evidence.
+`packages/naive/src/checks/check-execution.ts` fails `done` without a pull request, and it fails `done` when any criterion has no passing evidence.
 
 ## Checks
 
@@ -191,12 +191,12 @@ Each of these can pass and can fail. The replay is `node packages/naive/test/ver
 | Check | Pass | Fail |
 |---|---|---|
 | `node packages/naive/test/verification/playbook-basecamp-shape-up/pitch-check.mjs <brief>` | Outcome, Work, and the five pitch sections all have text, and the appetite says six weeks | Any of those sections is missing or empty, or the appetite does not say six weeks |
-| `node packages/naive/src/checks/check-ready.mjs <venture dir> <handoff id>` | The brief, products, governing log entry, role, classes, and criteria scripts are in place | Any of those is missing. A `governed_by` id that exists only as `decisions/[id]` fails, because this checker reads the decision log |
-| `node packages/naive/src/checks/check-execution.mjs <venture dir>` | A draft cycle handoff with a known role and both kinds of criteria, or a done handoff with a pull request and passing evidence, or an escalated handoff with an open question and `claimed_by` | `done` with no evidence, or `escalated` with no open question, or `in-progress` with no `ready_check` |
+| `node packages/naive/src/checks/check-ready.ts <venture dir> <handoff id>` | The brief, products, governing log entry, role, classes, and criteria scripts are in place | Any of those is missing. A `governed_by` id that exists only as `decisions/[id]` fails, because this checker reads the decision log |
+| `node packages/naive/src/checks/check-execution.ts <venture dir>` | A draft cycle handoff with a known role and both kinds of criteria, or a done handoff with a pull request and passing evidence, or an escalated handoff with an open question and `claimed_by` | `done` with no evidence, or `escalated` with no open question, or `in-progress` with no `ready_check` |
 | Read `decisions/<bet id>` and `system/provenance` | The cycle handoff is `draft`, or the bet is `decided` with `answer` exactly `bet` and provenance shows `approve()` (`activity` accept, agent kind person, `approved_by` set) | The cycle handoff is past `draft` while the bet is missing, still open, answered anything other than `bet`, or `decided` with no person accept in the provenance log |
 | Read `operations/handoff/cooldown-<slug>` and the cycle handoff | The cool-down record is absent, or it exists and the cycle status is `done` or `escalated` | The cool-down record exists while the cycle is `draft`, `ready`, or `in-progress` |
 
-Run the ready and execution commands with the venture directory and, for ready, the handoff id. The `check` action on `operations/handoff/[id]` spawns each of the handoff's checkers with only the venture directory (`packages/naive/src/router/router.mjs`). `packages/naive/src/checks/check-ready.mjs` then exits 2, because it requires the handoff id. Use the commands in the table.
+Run the ready and execution commands with the venture directory and, for ready, the handoff id. The `check` action on `operations/handoff/[id]` spawns each of the handoff's checkers with only the venture directory (`packages/naive/src/router/router.mjs`). `packages/naive/src/checks/check-ready.ts` then exits 2, because it requires the handoff id. Use the commands in the table.
 
 ## Trademark
 

@@ -20,12 +20,12 @@
     {
       "id": "ventures-hold",
       "kind": "conformance",
-      "check": "node packages/naive/src/checks/check-ventures.mjs packages/naive/src/records/examples/software"
+      "check": "node packages/naive/src/checks/check-ventures.ts packages/naive/src/records/examples/software"
     },
     {
       "id": "execution-holds",
       "kind": "self-proof",
-      "check": "node packages/naive/src/checks/check-execution.mjs packages/naive/src/records/examples/software/ventures/relay"
+      "check": "node packages/naive/src/checks/check-execution.ts packages/naive/src/records/examples/software/ventures/relay"
     }
   ],
   "status": "done",

@@ -1,6 +1,6 @@
 # Money lint
 
-`packages/naive/src/checks/lint-money.mjs` (route `money/lint`) checks two records in a venture. A transfer decision with no named approver is a finding in every phase: proposed, approved, and executed. An account with no owner is a finding. Both rules are fail-open unless `naive.config.json` sets `money_lint.rules.<id>.mode` to `fail-closed`. The process exits 1 only when a fail-closed rule has findings. Records are read through `ventureFile`. The lint does not move money, read a transaction stream, or print a balance or an account number.
+`packages/naive/src/checks/lint-money.ts` (route `money/lint`) checks two records in a venture. A transfer decision with no named approver is a finding in every phase: proposed, approved, and executed. An account with no owner is a finding. Both rules are fail-open unless `naive.config.json` sets `money_lint.rules.<id>.mode` to `fail-closed`. The process exits 1 only when a fail-closed rule has findings. Records are read through `ventureFile`. The lint does not move money, read a transaction stream, or print a balance or an account number.
 
 The model is `MoneyLint.tla`. TLC 1.7.4 (`tla2tools.jar`, sha256 `936a262061c914694dfd669a543be24573c45d5aa0ff20a8b96b23d01e050e88`) reached 128 states and 1200 steps. No invariant failed. NoDeadlock holds. The chart draws 12 states and 20 arrows (22 `-->` lines, counting the two start arrows). The view hides 784 steps.
 
@@ -37,7 +37,7 @@ The model has no other input channel, so `ReadsViaVentureFile` is the constant `
 
 ## Rules
 
-TLC reported no counterexample. Replay is `node packages/naive/src/checks/lint-money-test.mjs`. Every row below passed on that run.
+TLC reported no counterexample. Replay is `node packages/naive/src/checks/lint-money-test.ts`. Every row below passed on that run.
 
 | Rule | TLC | Replay |
 | --- | --- | --- |

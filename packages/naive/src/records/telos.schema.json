@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "telos.schema.json",
   "title": "Telos",
-  "description": "The end a venture exists to reach, at <venture>/purpose/telos.json (EE-023): start with the end. It states the end state, how anyone would know it was reached (measures), what the owners intend to happen when it is reached (owner outcome), and, for each phase of the Succession Matrix, the exit criteria that must be true to leave it, each serving at least one measure. Other layers read it instead of asking again: the governance layer's exit.json prefers the owner outcome's path, and MAD's governance tier takes its success measure from the primary measure. packages/naive/src/checks/check-telos.mjs checks it. Written by the owner; an agent may draft it but not settle it.",
+  "description": "The end a venture exists to reach, at <venture>/purpose/telos.json (EE-023): start with the end. It states the end state, how anyone would know it was reached (measures), what the owners intend to happen when it is reached (owner outcome), and, for each phase of the Succession Matrix, the exit criteria that must be true to leave it, each serving at least one measure. Other layers read it instead of asking again: the governance layer's exit.json prefers the owner outcome's path, and MAD's governance tier takes its success measure from the primary measure. packages/naive/src/checks/check-telos.ts checks it. Written by the owner; an agent may draft it but not settle it.",
   "type": "object",
   "required": [
     "statement",

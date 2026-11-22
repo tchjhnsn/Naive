@@ -223,7 +223,7 @@ Read `decisions` to see the habit and the entries in one list. That list returns
 
 A check passes or fails from the records on the routes above. A placeholder line (one that still contains `<` or `>`) fails. Run them after the step that writes the record they read.
 
-`product/<product-id> check` is not one of these checks. That action runs `packages/naive/src/checks/check-ventures.mjs` on the whole venture, not on this card alone, and it does not read the spec or `offered_to`. A repository missing on a different software card fails it. Use the five checks below for this playbook.
+`product/<product-id> check` is not one of these checks. That action runs `packages/naive/src/checks/check-ventures.ts` on the whole venture, not on this card alone, and it does not read the spec or `offered_to`. A repository missing on a different software card fails it. Use the five checks below for this playbook.
 
 ### Check 1. The card names a reader the venture has
 

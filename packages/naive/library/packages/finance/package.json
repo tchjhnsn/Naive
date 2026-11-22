@@ -50,7 +50,7 @@
   ],
   "templates": [],
   "checks": [
-    "packages/naive/src/checks/lint-finance.mjs"
+    "packages/naive/src/checks/lint-finance.ts"
   ],
   "skill": {
     "id": "finance-function",

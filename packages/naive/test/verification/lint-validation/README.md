@@ -1,6 +1,6 @@
 # Validation lint
 
-TLA+ model of `packages/naive/src/checks/lint-validation.mjs` (route `validation/lint`). TLC checks the rules. The chart is how a claim, its evidence, and a decision move. Orange is a finding. Teal is a clean claim. Tan is a missing or unreadable record.
+TLA+ model of `packages/naive/src/checks/lint-validation.ts` (route `validation/lint`). TLC checks the rules. The chart is how a claim, its evidence, and a decision move. Orange is a finding. Teal is a clean claim. Tan is a missing or unreadable record.
 
 Checked with TLC 1.7.4 (`tla2tools.jar` sha256 `936a262061c914694dfd669a543be24573c45d5aa0ff20a8b96b23d01e050e88`) at 365 states. Every rule held. The chart draws 12 states and 24 arrows.
 
@@ -53,7 +53,7 @@ Every chart state still has an arrow out.
 
 The model does not parse arguments. The first route replay did.
 
-`validation/lint` runs the CLI as `node packages/naive/src/checks/lint-validation.mjs <venture dir> --json`, with no `--now`. The parser treated index `indexOf("--now") + 1` as the date. When `--now` is absent that index is 0, so the venture directory was skipped and the CLI exited 2.
+`validation/lint` runs the CLI as `node packages/naive/src/checks/lint-validation.ts <venture dir> --json`, with no `--now`. The parser treated index `indexOf("--now") + 1` as the date. When `--now` is absent that index is 0, so the venture directory was skipped and the CLI exited 2.
 
 The route reproduced it: `call` on `validation/lint` returned the usage line. The fix ignores a `--now` value only when the flag is present. The route then returns the finding, and exit 1 only when the fail-closed rule has one. `node packages/naive/src/interfaces/tests/lint-validation-test.mjs` covers the no-`--now` command as well.
 

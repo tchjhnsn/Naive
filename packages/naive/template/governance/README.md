@@ -58,7 +58,7 @@ venture-template/
 
 `detectors/triage-accept.json` is new with raw triage (build item 1, `docs/design/RAW_TRIAGE_2026-11-09.md`) rather than a moved constant: the line Jev's labels on a raw entry clear, 0.95 like `feedback-accept`. A label at or above it, or at or below one minus it, files; one between is held for the founder. Its score is Jev's certainty, max(p, 1 - p), with `yes_when: below`, so a yes call is a held label, as at the gate: a held label the founder answers as Jev guessed is a false alarm, and a filed label the founder changes is a miss.
 
-`delegation.json` is the default delegation that `node packages/naive/src/checks/check-delegation.mjs` checks. The spend register's classes, `spend-register-upkeep` and `cancel-or-downgrade`, go from the founder straight to the finance agent (`founder-to-finance-agent`, scope `finance/`), because both are never re-delegated (lead agents design, build item 2). The chief of staff grants each lead (growth-lead, product-lead, finance-lead, strategy-lead) `accept-verified-work` and `defer-or-route` over the venture, and `set-priorities` over its own lead plan only (scope `operations/leads/<lead>`), a two-way door; for that the founder's grant to the chief of staff now includes `set-priorities` (lead agents build item 3, defaults 3 and 4). No lead holds a one-way door or a never-redelegated class.
+`delegation.json` is the default delegation that `node packages/naive/src/checks/check-delegation.ts` checks. The spend register's classes, `spend-register-upkeep` and `cancel-or-downgrade`, go from the founder straight to the finance agent (`founder-to-finance-agent`, scope `finance/`), because both are never re-delegated (lead agents design, build item 2). The chief of staff grants each lead (growth-lead, product-lead, finance-lead, strategy-lead) `accept-verified-work` and `defer-or-route` over the venture, and `set-priorities` over its own lead plan only (scope `operations/leads/<lead>`), a two-way door; for that the founder's grant to the chief of staff now includes `set-priorities` (lead agents build item 3, defaults 3 and 4). No lead holds a one-way door or a never-redelegated class.
 
 | Detector | Line | yes when | Read at |
 |---|---|---|---|
@@ -66,7 +66,7 @@ venture-template/
 | `feedback-accept` | 0.95 | at or above | `feedback-route.mjs` `route`; an `accept` option still wins |
 | `idea-map-tag` | 0.8 | at or above | the idea map's tag threshold, through `configFor`; `naive.config.json` `thresholds.idea-map` still wins |
 | `decision-index-note` | 0.25 | at or above | the `threshold` the decision index records |
-| `validation-recommend` | 0.6 | at or above | `check-validation.mjs --score` |
+| `validation-recommend` | 0.6 | at or above | `check-validation.ts --score` |
 | `noul-judgment` | yes 0.7, no 0.3 | at or above | not read yet (`operating-rules.json` `jev` is record-only) |
 | `standing-earn-low`, `standing-earn-costly` | 0.8, 0.9 | at or above | not read yet (`operating-rules.json` `questions.standing` is not enforced) |
 | `standing-loss` | log 19 | at or above | not read yet (`operating-rules.json` `questions.loss` is not enforced) |

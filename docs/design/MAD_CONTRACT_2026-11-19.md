@@ -18,7 +18,7 @@ The Everything Ecosystem joins its member frameworks by contracts. The first is 
 
 ## How each side works today
 
-- Naive: a handoff (`operations/handoffs/<id>.json`) carries its role, decision classes, done-criteria and evidence; `check-ready.mjs` decides it is ready; evidence records prove its done-criteria.
+- Naive: a handoff (`operations/handoffs/<id>.json`) carries its role, decision classes, done-criteria and evidence; `check-ready.ts` decides it is ready; evidence records prove its done-criteria.
 - MAD: a project record (`.mad/record.json`) holds the project's parts, every answer, and the templates adopted per layer and part (several may apply at once).
 
 ## Two shapes
@@ -32,8 +32,8 @@ The second shape is chosen now. Each fact has one owner, there is one way to nam
 sequenceDiagram
   participant V as Naive venture
   participant H as handoff (method block)
-  participant R as check-ready.mjs
-  participant C as method-contract.mjs
+  participant R as check-ready.ts
+  participant C as method-contract.ts
   participant M as MAD record (.mad/record.json)
   participant E as Naive evidence
   V->>H: hand out software work, naming record, part, templates

@@ -31,7 +31,7 @@ function venture(files, { phase = "validation", layout } = {}) {
   for (const [rel, body] of Object.entries(files)) put(dir, rel, body);
   return dir;
 }
-const run = (dir, extra = []) => spawnSync("node", [join(repo, "packages/naive/src/checks/lint-validation.mjs"), dir, "--json", "--now", NOW, ...extra], { encoding: "utf8" });
+const run = (dir, extra = []) => spawnSync("node", [join(repo, "packages/naive/src/checks/lint-validation.ts"), dir, "--json", "--now", NOW, ...extra], { encoding: "utf8" });
 const out = (r) => { try { return JSON.parse(r.stdout); } catch { return null; } };
 const ids = (json) => (json?.findings ?? []).map((f) => f.rule);
 const only = (json, rule) => ids(json).length > 0 && ids(json).every((id) => id === rule);
@@ -220,22 +220,22 @@ const decision = (phase) => ({
 }
 {
   const dir = venture({ "foundation/problem.json": { ...problem([]), evidence: [] } });
-  const plain = spawnSync("node", [join(repo, "packages/naive/src/checks/lint-validation.mjs"), dir, "--json"], { encoding: "utf8" });
+  const plain = spawnSync("node", [join(repo, "packages/naive/src/checks/lint-validation.ts"), dir, "--json"], { encoding: "utf8" });
   expect("the route's arguments, with no --now, still see the venture", plain.status === 0 && ids(out(plain)).includes("claim-no-evidence"), plain.stderr || plain.stdout);
 }
 {
-  const usage = spawnSync("node", [join(repo, "packages/naive/src/checks/lint-validation.mjs")], { encoding: "utf8" });
+  const usage = spawnSync("node", [join(repo, "packages/naive/src/checks/lint-validation.ts")], { encoding: "utf8" });
   expect("no venture dir exits 2", usage.status === 2, usage.stderr);
 }
 {
   const dir = venture({});
-  const bad = spawnSync("node", [join(repo, "packages/naive/src/checks/lint-validation.mjs"), dir, "--json", "--now", "not-a-date"], { encoding: "utf8" });
+  const bad = spawnSync("node", [join(repo, "packages/naive/src/checks/lint-validation.ts"), dir, "--json", "--now", "not-a-date"], { encoding: "utf8" });
   expect("a bad --now does not crash", bad.status === 0 && out(bad)?.findings, bad.stderr);
 }
 
 {
   const dir = venture({ "naive.config.json": { validation_lint: { rules: { "stale-evidence": { mode: "fail-closed" } } } } });
-  const r = spawnSync("node", [join(repo, "packages/naive/src/checks/check-config.mjs"), dir], { encoding: "utf8" });
+  const r = spawnSync("node", [join(repo, "packages/naive/src/checks/check-config.ts"), dir], { encoding: "utf8" });
   expect("naive.config.json accepts validation_lint", r.status === 0, r.stdout + r.stderr);
 }
 

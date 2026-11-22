@@ -14,7 +14,7 @@
   "schemas": ["packages/naive/src/records/raw-source.schema.json", "packages/naive/src/records/triage.schema.json"],
   "templates": [],
   "checks": [
-    "packages/naive/src/checks/check-data-packages.mjs"
+    "packages/naive/src/checks/check-data-packages.ts"
   ],
   "skill": null,
   "use_model": []

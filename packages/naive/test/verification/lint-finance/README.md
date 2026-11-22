@@ -1,6 +1,6 @@
 # Finance lint
 
-A TLA+ model of `packages/naive/src/checks/lint-finance.mjs` (route `finance/lint`). TLC checks every order of loading a fixture, changing the venture's phase, and setting a rule fail-closed. The checker reads records only through `ventureFile`.
+A TLA+ model of `packages/naive/src/checks/lint-finance.ts` (route `finance/lint`). TLC checks every order of loading a fixture, changing the venture's phase, and setting a rule fail-closed. The checker reads records only through `ventureFile`.
 
 The model covers 251 states. It leaves out three details the tests cover instead: a cost in another currency is not compared, a cost written on the price point wins over `finance/costs.json`, and a target of zero counts as a target. A withdrawn spend decision is treated as absent. The word runway in the question does not count as the impact; the answer, the note or an option has to say it.
 
