@@ -1,7 +1,7 @@
 // Mentura kits, as the framework sees them (EE-071): data only. A kit lives in the app that installs it,
 // at <NAIVE_KITS>/<name>/kit.json, and extends one Naive package or one framework command. The framework
 // reads a kit's manifest by path and runs its entry as a separate process, never importing the app's
-// code (packages/naive/src/checks/check-boundary.mjs), the way a Next.js build loads a deployment adapter it was pointed
+// code (packages/naive/src/checks/check-boundary.ts), the way a Next.js build loads a deployment adapter it was pointed
 // at. Without NAIVE_KITS there are no kits, and nothing here fails because of it.
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";

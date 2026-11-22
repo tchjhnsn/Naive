@@ -372,7 +372,7 @@ export function cardOf(dir, m) {
 
 function checks(dir) {
   const fails = [];
-  for (const c of ["packages/naive/src/checks/check-provenance.mjs", "packages/naive/src/checks/check-private.mjs"]) {
+  for (const c of ["packages/naive/src/checks/check-provenance.ts", "packages/naive/src/checks/check-private.ts"]) {
     const p = spawnSync("node", [join(repo, c), dir], { encoding: "utf8" });
     if (p.status !== 0) fails.push({ check: c, output: (p.stderr || p.stdout).trim().split("\n").slice(0, 5).join("\n") });
   }

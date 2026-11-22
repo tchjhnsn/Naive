@@ -42,8 +42,8 @@
   ],
   "templates": [],
   "checks": [
-    "packages/naive/src/checks/check-ventures.mjs",
-    "packages/naive/src/checks/lint-product.mjs"
+    "packages/naive/src/checks/check-ventures.ts",
+    "packages/naive/src/checks/lint-product.ts"
   ],
   "skill": {
     "id": "product-function",

@@ -1,6 +1,6 @@
 {
   "version": "0.5.0",
-  "note": "The data model of the Everything Ecosystem: every record type, the layer that owns it, the function that owns it (a packages/naive/src/functions/departments.json id, or null when several functions share it), its schema, where its records live and what it references. No one schema holds everything; this file names them all and how they connect. packages/naive/src/checks/check-data-model.mjs fails when a JSON file in the repo has no record type here (or no ignore entry), when a schema file is unnamed, or when a kit claims a record of another layer. packages/naive/src/records/validate.mjs reads it to validate every record. Levels: method (this repo, the method's own records), workspace (one per builder), venture (inside a venture folder). Kinds (record, log, derived) tell a host how to commit each file in a venture: a record type's kind defaults to record, and files names the venture files no record type covers.",
+  "note": "The data model of the Everything Ecosystem: every record type, the layer that owns it, the function that owns it (a packages/naive/src/functions/departments.json id, or null when several functions share it), its schema, where its records live and what it references. No one schema holds everything; this file names them all and how they connect. packages/naive/src/checks/check-data-model.ts fails when a JSON file in the repo has no record type here (or no ignore entry), when a schema file is unnamed, or when a kit claims a record of another layer. packages/naive/src/records/validate.mjs reads it to validate every record. Levels: method (this repo, the method's own records), workspace (one per builder), venture (inside a venture folder). Kinds (record, log, derived) tell a host how to commit each file in a venture: a record type's kind defaults to record, and files names the venture files no record type covers.",
   "layers": [
     "purpose",
     "knowledge",
@@ -163,7 +163,7 @@
         {
           "field": "parent",
           "to": "venture",
-          "checked_by": "packages/naive/src/checks/check-ventures.mjs"
+          "checked_by": "packages/naive/src/checks/check-ventures.ts"
         },
         {
           "field": "profile",
@@ -217,17 +217,17 @@
         {
           "field": "part_of",
           "to": "product",
-          "checked_by": "packages/naive/src/checks/check-ventures.mjs"
+          "checked_by": "packages/naive/src/checks/check-ventures.ts"
         },
         {
           "field": "flows_to",
           "to": "product",
-          "checked_by": "packages/naive/src/checks/check-ventures.mjs"
+          "checked_by": "packages/naive/src/checks/check-ventures.ts"
         },
         {
           "field": "business_model",
           "to": "business-models",
-          "checked_by": "packages/naive/src/checks/check-ventures.mjs"
+          "checked_by": "packages/naive/src/checks/check-ventures.ts"
         }
       ]
     },
@@ -245,7 +245,7 @@
         {
           "field": "products",
           "to": "product",
-          "checked_by": "packages/naive/src/checks/check-ventures.mjs"
+          "checked_by": "packages/naive/src/checks/check-ventures.ts"
         }
       ],
       "note": "A named party the venture keeps a record for: client, customer, user, member or partner (EE-021). Optional"
@@ -266,12 +266,12 @@
         {
           "field": "phases.exit_criteria.serves",
           "to": "telos",
-          "checked_by": "packages/naive/src/checks/check-telos.mjs"
+          "checked_by": "packages/naive/src/checks/check-telos.ts"
         },
         {
           "field": "owner_outcome.path",
           "to": "exit",
-          "checked_by": "packages/naive/src/checks/check-telos.mjs"
+          "checked_by": "packages/naive/src/checks/check-telos.ts"
         },
         {
           "field": "phases.phase",
@@ -424,7 +424,7 @@
         {
           "field": "evidence.source.path",
           "to": "(venture files)",
-          "checked_by": "packages/naive/src/checks/check-validation.mjs"
+          "checked_by": "packages/naive/src/checks/check-validation.ts"
         }
       ],
       "note": "The problem sub-score of validation: the claim and its cited evidence, each item graded (EE-026). Shares packages/naive/src/records/validation-evidence.schema.json with every sub-score Gated like the telos (EE-050): the problem statement is a founder-critical record, so an agent's write is a draft the founder accepts.",
@@ -444,17 +444,17 @@
         {
           "field": "icp",
           "to": "icp",
-          "checked_by": "packages/naive/src/checks/check-validation-study.mjs"
+          "checked_by": "packages/naive/src/checks/check-validation-study.ts"
         },
         {
           "field": "transcript.source",
           "to": "raw-source",
-          "checked_by": "packages/naive/src/checks/check-validation-study.mjs"
+          "checked_by": "packages/naive/src/checks/check-validation-study.ts"
         },
         {
           "field": "follow_up.evidence",
           "to": "evidence",
-          "checked_by": "packages/naive/src/checks/check-validation-study.mjs"
+          "checked_by": "packages/naive/src/checks/check-validation-study.ts"
         }
       ],
       "note": "One problem interview in the validation study: an anonymised person, consent, the transcript's raw source, bottlenecks, current solutions, the chosen problem, a prediction with Naive and without, and the follow-up that checks it. Names stay in _private."
@@ -473,7 +473,7 @@
         {
           "field": "capability",
           "to": "beta-capabilities",
-          "checked_by": "packages/naive/src/checks/check-validation-study.mjs"
+          "checked_by": "packages/naive/src/checks/check-validation-study.ts"
         }
       ],
       "note": "A beta tester's answers at one checkpoint, with where the feedback was routed and how (Jev or the fallback). The beta gate unlocks the next capability once it exists (packages/naive/src/engine/beta-gate.mjs)."
@@ -494,7 +494,7 @@
         {
           "field": "evidence.source.path",
           "to": "(venture files)",
-          "checked_by": "packages/naive/src/checks/check-validation.mjs"
+          "checked_by": "packages/naive/src/checks/check-validation.ts"
         }
       ],
       "note": "Validation sub-score: how it solves the problem and the evidence people choose it (EE-026)"
@@ -515,7 +515,7 @@
         {
           "field": "evidence.source.path",
           "to": "(venture files)",
-          "checked_by": "packages/naive/src/checks/check-validation.mjs"
+          "checked_by": "packages/naive/src/checks/check-validation.ts"
         }
       ],
       "note": "Validation sub-score: retention cohorts, Ellis survey and evidence that a segment keeps using it (EE-026)"
@@ -536,7 +536,7 @@
         {
           "field": "evidence.source.path",
           "to": "(venture files)",
-          "checked_by": "packages/naive/src/checks/check-validation.mjs"
+          "checked_by": "packages/naive/src/checks/check-validation.ts"
         }
       ],
       "note": "Validation sub-score: price model, points, buyer and evidence they pay (EE-026)"
@@ -602,7 +602,7 @@
         {
           "field": "evidence.source.path",
           "to": "(venture files)",
-          "checked_by": "packages/naive/src/checks/check-validation.mjs"
+          "checked_by": "packages/naive/src/checks/check-validation.ts"
         }
       ],
       "note": "Validation sub-score: path, motion, channels and evidence a channel works; the path sets the weights (EE-026)"
@@ -623,7 +623,7 @@
         {
           "field": "evidence.source.path",
           "to": "(venture files)",
-          "checked_by": "packages/naive/src/checks/check-validation.mjs"
+          "checked_by": "packages/naive/src/checks/check-validation.ts"
         }
       ],
       "note": "Validation sub-score: skills needed, held and the gaps; cofounder sought (EE-026)"
@@ -644,7 +644,7 @@
         {
           "field": "evidence.source.path",
           "to": "(venture files)",
-          "checked_by": "packages/naive/src/checks/check-validation.mjs"
+          "checked_by": "packages/naive/src/checks/check-validation.ts"
         }
       ],
       "note": "Validation sub-score: per MAD tier evidence; grades as the weakest tier (EE-026)"
@@ -795,7 +795,7 @@
       "paths": [
         "docs/design/naive-nextjs-status.json"
       ],
-      "note": "Whether each concept of the Next.js translation ledger is built, with evidence and the docs page that explains it; checked by packages/naive/src/checks/check-nextjs-status.mjs, which writes the What's built page"
+      "note": "Whether each concept of the Next.js translation ledger is built, with evidence and the docs page that explains it; checked by packages/naive/src/checks/check-nextjs-status.ts, which writes the What's built page"
     },
     {
       "id": "design-document",
@@ -824,12 +824,12 @@
         {
           "field": "sources[].connector",
           "to": "integration",
-          "checked_by": "packages/naive/src/checks/check-sources.mjs"
+          "checked_by": "packages/naive/src/checks/check-sources.ts"
         },
         {
           "field": "records",
           "to": "(record types)",
-          "checked_by": "packages/naive/src/checks/check-sources.mjs"
+          "checked_by": "packages/naive/src/checks/check-sources.ts"
         }
       ],
       "note": "Which source each record type lives in: the venture's own folder by default, or a connected source such as a GitHub repository (EE-037); its rules are the source-of-truth matrix: a system of record and owner per record type, attribute and context (EE-042)"
@@ -848,12 +848,12 @@
         {
           "field": "facts[].parent.route",
           "to": "(record routes)",
-          "checked_by": "packages/naive/src/checks/check-where-used.mjs"
+          "checked_by": "packages/naive/src/checks/check-where-used.ts"
         },
         {
           "field": "facts[].children[].source",
           "to": "knowledge-sources",
-          "checked_by": "packages/naive/src/checks/check-where-used.mjs"
+          "checked_by": "packages/naive/src/checks/check-where-used.ts"
         }
       ],
       "note": "For each fact kept once in its system of record, every place that repeats it; live children must show the parent's value (EE-042)"
@@ -972,7 +972,7 @@
         {
           "field": "department",
           "to": "department-catalog",
-          "checked_by": "packages/naive/src/checks/check-departments.mjs"
+          "checked_by": "packages/naive/src/checks/check-departments.ts"
         }
       ],
       "note": "The tag in each department folder, in the governance or operations layer; an optional primary/ or support/ grouping folder is for looking at only (EE-047)"
@@ -987,7 +987,7 @@
       "paths": [
         "packages/naive/src/terms/ontology.json"
       ],
-      "note": "Canonical nouns; follows the metamodel packages/naive/src/records/ontology-metamodel.schema.json, checked by packages/naive/src/checks/check-nouns.mjs, rendered to packages/naive/src/terms/ontology.md. Each noun names its function (or null) and whether it can type a handoff package"
+      "note": "Canonical nouns; follows the metamodel packages/naive/src/records/ontology-metamodel.schema.json, checked by packages/naive/src/checks/check-nouns.ts, rendered to packages/naive/src/terms/ontology.md. Each noun names its function (or null) and whether it can type a handoff package"
     },
     {
       "id": "ontology-catalog",
@@ -1054,7 +1054,7 @@
         {
           "field": "reach",
           "to": "(layers)",
-          "checked_by": "packages/naive/src/checks/check-integrations.mjs"
+          "checked_by": "packages/naive/src/checks/check-integrations.ts"
         }
       ],
       "note": "Each layer's tools; interfaces must reach at least four layers"
@@ -1107,22 +1107,22 @@
         {
           "field": "records",
           "to": "(record types)",
-          "checked_by": "packages/naive/src/checks/check-data-model.mjs"
+          "checked_by": "packages/naive/src/checks/check-data-model.ts"
         },
         {
           "field": "reads",
           "to": "(record types)",
-          "checked_by": "packages/naive/src/checks/check-data-model.mjs"
+          "checked_by": "packages/naive/src/checks/check-data-model.ts"
         },
         {
           "field": "writes",
           "to": "(record types)",
-          "checked_by": "packages/naive/src/checks/check-data-model.mjs"
+          "checked_by": "packages/naive/src/checks/check-data-model.ts"
         },
         {
           "field": "product",
           "to": "product",
-          "checked_by": "packages/naive/src/checks/check-data-model.mjs"
+          "checked_by": "packages/naive/src/checks/check-data-model.ts"
         }
       ],
       "note": "A layer manifest (was a kit manifest): skills, record types the layer still owns, record types it reads and writes, checks. The file is <layer>/layer.json (EE-071). Venture packages are packages/naive/library/packages/<name>/package.json. A kit is Mentura's and lives in the app that installs it."
@@ -1141,32 +1141,32 @@
         {
           "field": "products",
           "to": "product",
-          "checked_by": "packages/naive/src/checks/check-execution.mjs"
+          "checked_by": "packages/naive/src/checks/check-execution.ts"
         },
         {
           "field": "governed_by",
           "to": "decision",
-          "checked_by": "packages/naive/src/checks/check-ready.mjs"
+          "checked_by": "packages/naive/src/checks/check-ready.ts"
         },
         {
           "field": "role",
           "to": "role",
-          "checked_by": "packages/naive/src/checks/check-execution.mjs"
+          "checked_by": "packages/naive/src/checks/check-execution.ts"
         },
         {
           "field": "decision_classes",
           "to": "decision-rights",
-          "checked_by": "packages/naive/src/checks/check-execution.mjs"
+          "checked_by": "packages/naive/src/checks/check-execution.ts"
         },
         {
           "field": "evidence",
           "to": "evidence",
-          "checked_by": "packages/naive/src/checks/check-execution.mjs"
+          "checked_by": "packages/naive/src/checks/check-execution.ts"
         },
         {
           "field": "publication.channel",
           "to": "publication-policy",
-          "checked_by": "packages/naive/src/checks/check-publication.mjs"
+          "checked_by": "packages/naive/src/checks/check-publication.ts"
         }
       ],
       "note": "Execution folded into operations (EE-038)."
@@ -1186,17 +1186,17 @@
         {
           "field": "lead",
           "to": "role-template",
-          "checked_by": "packages/naive/src/checks/check-team.mjs"
+          "checked_by": "packages/naive/src/checks/check-team.ts"
         },
         {
           "field": "measures",
           "to": "telos",
-          "checked_by": "packages/naive/src/checks/check-team.mjs"
+          "checked_by": "packages/naive/src/checks/check-team.ts"
         },
         {
           "field": "bets[].handoffs",
           "to": "handoff",
-          "checked_by": "packages/naive/src/checks/check-team.mjs"
+          "checked_by": "packages/naive/src/checks/check-team.ts"
         }
       ],
       "note": "One lead's plan (lead agents design, build plan item 3): its portfolio, the telos measures it is bound to, its bets citing measure and handoff ids, and its review cadence. A lead spans functions, so the type names none (function null). Route operations/lead/[id]; the file name avoids *.plan.json, which evidence/eval-plan matches"
@@ -1291,7 +1291,7 @@
         {
           "field": "subject",
           "to": "handoff",
-          "checked_by": "packages/naive/src/checks/check-execution.mjs"
+          "checked_by": "packages/naive/src/checks/check-execution.ts"
         },
         {
           "field": "suite",
@@ -1392,12 +1392,12 @@
         {
           "field": "extends",
           "to": "decision-rights",
-          "checked_by": "packages/naive/src/checks/check-execution.mjs"
+          "checked_by": "packages/naive/src/checks/check-execution.ts"
         },
         {
           "field": "classes.owner",
           "to": "role",
-          "checked_by": "packages/naive/src/checks/check-execution.mjs"
+          "checked_by": "packages/naive/src/checks/check-execution.ts"
         }
       ],
       "decision_class": "strategy-or-constitution"
@@ -1441,12 +1441,12 @@
         {
           "field": "grants.holder",
           "to": "ownership",
-          "checked_by": "packages/naive/src/checks/check-governance.mjs"
+          "checked_by": "packages/naive/src/checks/check-governance.ts"
         },
         {
           "field": "grants.class",
           "to": "ownership",
-          "checked_by": "packages/naive/src/checks/check-governance.mjs"
+          "checked_by": "packages/naive/src/checks/check-governance.ts"
         }
       ],
       "note": "The cap table: share classes and their rights, holders, grants with vesting, option pool, SAFEs and notes (EE-022)",
@@ -1466,7 +1466,7 @@
         {
           "field": "seats.appointed_by",
           "to": "ownership",
-          "checked_by": "packages/naive/src/checks/check-governance.mjs"
+          "checked_by": "packages/naive/src/checks/check-governance.ts"
         }
       ],
       "note": "Formal and advisory boards, their seats and reserved matters",
@@ -1486,12 +1486,12 @@
         {
           "field": "founders.holder",
           "to": "ownership",
-          "checked_by": "packages/naive/src/checks/check-governance.mjs"
+          "checked_by": "packages/naive/src/checks/check-governance.ts"
         },
         {
           "field": "document",
           "to": "(file)",
-          "checked_by": "packages/naive/src/checks/check-governance.mjs"
+          "checked_by": "packages/naive/src/checks/check-governance.ts"
         }
       ],
       "note": "What founders agreed: roles, commitment, IP, departure, deadlock; prose beside it",
@@ -1516,7 +1516,7 @@
         {
           "field": "paths",
           "to": "telos",
-          "checked_by": "packages/naive/src/checks/check-telos.mjs"
+          "checked_by": "packages/naive/src/checks/check-telos.ts"
         }
       ],
       "note": "Exit paths kept open and sale values to model; payouts computed by payouts.mjs",
@@ -1536,12 +1536,12 @@
         {
           "field": "channels.rules.approvers",
           "to": "role",
-          "checked_by": "packages/naive/src/checks/check-publication.mjs"
+          "checked_by": "packages/naive/src/checks/check-publication.ts"
         },
         {
           "field": "channels.guidelines",
           "to": "publication-policy",
-          "checked_by": "packages/naive/src/checks/check-publication.mjs"
+          "checked_by": "packages/naive/src/checks/check-publication.ts"
         }
       ],
       "note": "Where the venture publishes and who may publish what there: channels, guidelines, checks, preview and approvers; every publication passes this gate (EE-025)",
@@ -1668,7 +1668,7 @@
         {
           "field": "records",
           "to": "(record types)",
-          "checked_by": "packages/naive/src/checks/test.mjs"
+          "checked_by": "packages/naive/src/checks/test.ts"
         }
       ],
       "note": "Need-now priors per venture record type and phase, with conditions that raise or lower them (EE-028)"
@@ -1756,17 +1756,17 @@
         {
           "field": "roles.tasks.capability",
           "to": "agent-capability",
-          "checked_by": "packages/naive/src/checks/check-team.mjs"
+          "checked_by": "packages/naive/src/checks/check-team.ts"
         },
         {
           "field": "roles.authority",
           "to": "decision-rights",
-          "checked_by": "packages/naive/src/checks/check-team.mjs"
+          "checked_by": "packages/naive/src/checks/check-team.ts"
         },
         {
           "field": "roles.id",
           "to": "role",
-          "checked_by": "packages/naive/src/checks/check-team.mjs"
+          "checked_by": "packages/naive/src/checks/check-team.ts"
         }
       ],
       "note": "Who the venture needs, agent or person, when, with what authority, and where a human stays in the loop; recruiting briefs for open person roles (EE-029)"
@@ -1784,12 +1784,12 @@
         {
           "field": "capabilities.basis.eval",
           "to": "evidence",
-          "checked_by": "packages/naive/src/checks/check-team.mjs"
+          "checked_by": "packages/naive/src/checks/check-team.ts"
         },
         {
           "field": "capabilities.basis.decision_class",
           "to": "decision-rights",
-          "checked_by": "packages/naive/src/checks/check-team.mjs"
+          "checked_by": "packages/naive/src/checks/check-team.ts"
         }
       ],
       "note": "What agents can, cannot, may not or are not known to do, with sources and dates (EE-029)"
@@ -1810,7 +1810,7 @@
         {
           "field": "entity",
           "to": "(venture file)",
-          "checked_by": "packages/naive/src/checks/check-provenance.mjs"
+          "checked_by": "packages/naive/src/checks/check-provenance.ts"
         }
       ],
       "note": "Who or what wrote each record, how, from what and under which decision: one append-only line per write, hash-chained, after W3C PROV (EE-031). A handoff package's membership gate writes <id>.provenance.jsonl beside the package; the line's sha256 is the package body's, so gates need not run in order, and the same gate on the same body is written once"
@@ -1852,17 +1852,17 @@
         {
           "field": "gate.rules.routes",
           "to": "(routes)",
-          "checked_by": "packages/naive/src/checks/check-config.mjs"
+          "checked_by": "packages/naive/src/checks/check-config.ts"
         },
         {
           "field": "owners",
           "to": "team-plan",
-          "checked_by": "packages/naive/src/checks/check-config.mjs"
+          "checked_by": "packages/naive/src/checks/check-config.ts"
         },
         {
           "field": "packages",
           "to": "venture-packages",
-          "checked_by": "packages/naive/src/checks/check-config.mjs"
+          "checked_by": "packages/naive/src/checks/check-config.ts"
         }
       ],
       "note": "The venture's overrides to Naive's defaults (P-2, like next.config.js): the gate's static rules, function owners, check settings, thresholds, which System 1 questions run, pinned package versions and how strictly the acting role is checked. An agent's write of it is a draft, since it can loosen the gate"
@@ -2435,12 +2435,12 @@
         {
           "field": "verified_by",
           "to": "role-template",
-          "checked_by": "packages/naive/src/checks/check-delegation.mjs"
+          "checked_by": "packages/naive/src/checks/check-delegation.ts"
         },
         {
           "field": "grantable_classes",
           "to": "decision-rights",
-          "checked_by": "packages/naive/src/checks/check-delegation.mjs"
+          "checked_by": "packages/naive/src/checks/check-delegation.ts"
         }
       ],
       "note": "One role a venture can install: function, grantable decision classes, default tier, lint suites, verifier (never itself) and skill"
@@ -2460,17 +2460,17 @@
         {
           "field": "grants.from",
           "to": "role-template",
-          "checked_by": "packages/naive/src/checks/check-delegation.mjs"
+          "checked_by": "packages/naive/src/checks/check-delegation.ts"
         },
         {
           "field": "grants.to",
           "to": "role-template",
-          "checked_by": "packages/naive/src/checks/check-delegation.mjs"
+          "checked_by": "packages/naive/src/checks/check-delegation.ts"
         },
         {
           "field": "grants.classes",
           "to": "decision-rights",
-          "checked_by": "packages/naive/src/checks/check-delegation.mjs"
+          "checked_by": "packages/naive/src/checks/check-delegation.ts"
         }
       ],
       "decision_class": "strategy-or-constitution"
@@ -2745,7 +2745,7 @@
         {
           "field": "terms[].export",
           "to": "glossary",
-          "checked_by": "packages/naive/src/checks/check-brand.mjs"
+          "checked_by": "packages/naive/src/checks/check-brand.ts"
         }
       ],
       "note": "A package's own terms, at glossary/<package>.json (Y-2): local to the package unless exported, so an agent in another package sees only exported terms; glossary/terms shows what one package sees",
@@ -2795,12 +2795,12 @@
         {
           "field": "marks[].asset",
           "to": "public-assets",
-          "checked_by": "packages/naive/src/checks/check-brand.mjs"
+          "checked_by": "packages/naive/src/checks/check-brand.ts"
         },
         {
           "field": "typefaces[].files",
           "to": "public-assets",
-          "checked_by": "packages/naive/src/checks/check-brand.mjs"
+          "checked_by": "packages/naive/src/checks/check-brand.ts"
         }
       ],
       "decision_class": "public-commitment",
@@ -2856,7 +2856,7 @@
         {
           "field": "remote[].id",
           "to": "raw-source",
-          "checked_by": "packages/naive/src/checks/check-assets.mjs"
+          "checked_by": "packages/naive/src/checks/check-assets.ts"
         }
       ],
       "note": "The register of what the venture ships as it is, in public/ (I-23, J-2, J-3, J-4): each file's source, license and credit, facts code reads from its bytes, alt text and who wrote it; remote images as links with a note in raw/; the hosts an agent may fetch from"
@@ -2877,7 +2877,7 @@
         {
           "field": "fixed_in",
           "to": "(release)",
-          "checked_by": "packages/naive/src/checks/check-validation-study.mjs"
+          "checked_by": "packages/naive/src/checks/check-validation-study.ts"
         }
       ]
     },
@@ -3343,7 +3343,7 @@
     },
     {
       "path": "packages/naive/src/engine/generators/gaps.json",
-      "reason": "EE-099: the record types still without a record generator, read by check-data-model.mjs; a ratchet list, not a record"
+      "reason": "EE-099: the record types still without a record generator, read by check-data-model.ts; a ratchet list, not a record"
     },
     {
       "path": "packages/naive/src/terms/fixtures/ontology-gate/pricing-admit.json",
@@ -3379,7 +3379,7 @@
     {"path": "instance/**/AGENTS.md", "kind": "record", "reason": "The venture's map for agents, written whole"},
     {"path": "instance/**/.gitkeep", "kind": "record", "reason": "An empty marker that keeps a folder in git"},
     {"path": "instance/**/.gitignore", "kind": "record", "reason": "A venture folder's git ignore rules, such as money/.gitignore for synced bank streams"},
-    {"path": "instance/**/operations/handoffs/*.md", "kind": "record", "reason": "A handoff's brief beside its handoff record, read by packages/naive/src/checks/check-execution.mjs"},
+    {"path": "instance/**/operations/handoffs/*.md", "kind": "record", "reason": "A handoff's brief beside its handoff record, read by packages/naive/src/checks/check-execution.ts"},
     {"path": "instance/**/governance/departments/**/charter.md", "kind": "record", "reason": "A department's charter in prose beside its department record"},
     {"path": "instance/**/governance/founder-agreement.md", "kind": "record", "reason": "The founder agreement in prose beside governance/founder-agreement.json"},
     {"path": "instance/**/governance/agreements/*.md", "kind": "record", "reason": "A signed agreement in prose"},

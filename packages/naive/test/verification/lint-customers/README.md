@@ -1,6 +1,6 @@
 # Customers lint
 
-TLA+ model of `packages/naive/src/checks/lint-customers.mjs` (route `customers/lint`). One customer, one promise that names one product key, and one lint run after each change. The product variable is the product record read by that key on this run, through `ventureFile`. A later change to the product is what the next run sees. The lint does not copy the product onto the customer.
+TLA+ model of `packages/naive/src/checks/lint-customers.ts` (route `customers/lint`). One customer, one promise that names one product key, and one lint run after each change. The product variable is the product record read by that key on this run, through `ventureFile`. A later change to the product is what the next run sees. The lint does not copy the product onto the customer.
 
 `icp = "gone"` is a missing ICP file and an unreadable one. Both leave no profile ids. The CLI replay below runs those two cases separately. `configMode = "config-bad"` is an unreadable `naive.config.json`: the override is not applied, so both rules stay fail-open.
 

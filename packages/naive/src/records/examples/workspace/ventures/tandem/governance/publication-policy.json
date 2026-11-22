@@ -161,7 +161,7 @@
       "checks": [
         {
           "id": "cap-table-consistent",
-          "check": "node packages/naive/src/checks/check-governance.mjs packages/naive/src/records/examples/workspace/ventures/tandem",
+          "check": "node packages/naive/src/checks/check-governance.ts packages/naive/src/records/examples/workspace/ventures/tandem",
           "kind": "conformance"
         }
       ],

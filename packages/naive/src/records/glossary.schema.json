@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "glossary.schema.json",
   "title": "Package glossary",
-  "description": "A package's own terms, at glossary/<package>.json (Y-2, the scoping idea of CSS Modules): each term stays local to the package unless export is true, so an agent working in another package sees only exported terms. Two packages exporting one term with different meanings fail packages/naive/src/checks/check-brand.mjs. Version 0.x, unevaluated.",
+  "description": "A package's own terms, at glossary/<package>.json (Y-2, the scoping idea of CSS Modules): each term stays local to the package unless export is true, so an agent working in another package sees only exported terms. Two packages exporting one term with different meanings fail packages/naive/src/checks/check-brand.ts. Version 0.x, unevaluated.",
   "type": "object",
   "required": ["package", "terms"],
   "additionalProperties": false,

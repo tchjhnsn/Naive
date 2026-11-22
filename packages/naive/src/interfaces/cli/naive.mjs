@@ -366,7 +366,7 @@ else if (cmd === "build" || cmd === "start") {
 } else if (cmd === "lint") {
   const [what, ...args] = rest.filter((a, i) => !(a === "--venture" || rest[i - 1] === "--venture"));
   if (what !== "premises") { console.error("usage: naive lint premises [<route>] [--drafts] [--json] [--propose]"); process.exit(2); }
-  process.exit(run("packages/naive/src/checks/premise-lint.mjs", [here(), ...args]));
+  process.exit(run("packages/naive/src/checks/premise-lint.ts", [here(), ...args]));
 } else if (cmd === "typegen") {
   const { TOOLS } = await import("../mcp/server.mjs");
   const { routes } = await import("../../router/router.mjs");

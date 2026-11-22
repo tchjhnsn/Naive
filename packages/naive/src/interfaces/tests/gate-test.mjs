@@ -47,9 +47,9 @@ const validRecord = (file, schema) => spawnSync(process.execPath, [join(repo, "p
   setConfig({ thresholds: { confidence: 0.4 }, gate: { fail_closed: ["validation"] } });
   const c = configFor(dir);
   expect("P-2: an override replaces one default and keeps the rest", c.thresholds.confidence === 0.4 && c.thresholds["idea-map"] === DEFAULTS.thresholds["idea-map"] && c.gate.packages === true && c.acting.unknown_roles === "allow");
-  expect("P-2: check-config passes a valid config", node("packages/naive/src/checks/check-config.mjs", dir).status === 0);
+  expect("P-2: check-config passes a valid config", node("packages/naive/src/checks/check-config.ts", dir).status === 0);
   setConfig({ gate: { fail_closed: ["validaton"] }, colour: "blue" });
-  const bad = node("packages/naive/src/checks/check-config.mjs", dir);
+  const bad = node("packages/naive/src/checks/check-config.ts", dir);
   expect("P-2: check-config fails a key the schema does not know and a route that matches nothing", bad.status === 1 && /colour/.test(bad.stdout) && /validaton: matches no route/.test(bad.stdout), bad.stdout);
   writeFileSync(cfgFile, "{ not json");
   const broken = await write("validation/solution", solution("broken config"));
@@ -77,15 +77,15 @@ const validRecord = (file, schema) => spawnSync(process.execPath, [join(repo, "p
 {
   setConfig({ gate: { fail_closed: ["nowhere"] } });
   const failing = await call({ venture: "gt", route: "system/naive-config", action: "check", workspace: ws });
-  expect("P-7: a route's check runs and fails as written", !failing.ok && failing.result[0].check === "packages/naive/src/checks/check-config.mjs" && failing.result[0].passed === false, JSON.stringify(failing.result));
-  setConfig({ gate: { fail_closed: ["nowhere"] }, checks: { warn: ["packages/naive/src/checks/check-config.mjs"] } });
+  expect("P-7: a route's check runs and fails as written", !failing.ok && failing.result[0].check === "packages/naive/src/checks/check-config.ts" && failing.result[0].passed === false, JSON.stringify(failing.result));
+  setConfig({ gate: { fail_closed: ["nowhere"] }, checks: { warn: ["packages/naive/src/checks/check-config.ts"] } });
   const warned = await call({ venture: "gt", route: "system/naive-config", action: "check", workspace: ws });
   expect("P-7: checks.warn runs the check but does not fail the route", warned.ok && warned.result[0].passed === false && warned.result[0].warn_only === true);
-  setConfig({ gate: { fail_closed: ["nowhere"] }, checks: { off: ["packages/naive/src/checks/check-config.mjs"] } });
+  setConfig({ gate: { fail_closed: ["nowhere"] }, checks: { off: ["packages/naive/src/checks/check-config.ts"] } });
   const off = await call({ venture: "gt", route: "system/naive-config", action: "check", workspace: ws });
   expect("P-7: checks.off does not run the check and says so", off.ok && off.result[0].off === true && off.result[0].passed === null);
   setConfig({ checks: { off: ["schema/check-nothing.mjs"] } });
-  expect("P-7: check-config refuses a check that does not exist", /check-nothing.mjs does not exist/.test(node("packages/naive/src/checks/check-config.mjs", dir).stdout));
+  expect("P-7: check-config refuses a check that does not exist", /check-nothing.mjs does not exist/.test(node("packages/naive/src/checks/check-config.ts", dir).stdout));
   rmSync(cfgFile);
 }
 
@@ -95,18 +95,18 @@ const validRecord = (file, schema) => spawnSync(process.execPath, [join(repo, "p
   const catalog = read(join(repo, "packages/naive/library/packages/catalog.json")).version;
   expect("U-4: a package without its own version is versioned with the catalog", have.validation === catalog && have.money === catalog);
   setConfig({ packages: { validation: "0.0.1" } });
-  const fails = node("packages/naive/src/checks/check-config.mjs", dir);
+  const fails = node("packages/naive/src/checks/check-config.ts", dir);
   expect("U-4: check-config fails a pin that differs from what is installed", fails.status === 1 && /validation is pinned to 0.0.1/.test(fails.stdout));
   const agent = await write("validation/solution", solution("pinned"));
   const person = await write("validation/solution", solution("pinned"), { actor: "person" });
   expect("U-4: a write to a package pinned to another version is refused, for agents and people", !agent.ok && agent.gate_rule === "pinned-version" && !person.ok && /pinned to 0.0.1 but/.test(person.error), JSON.stringify(person));
   expect("U-4: a write to a package not pinned is not affected", (await write("product/kettle", product("kettle", "Kettle"), { actor: "person" })).ok);
-  const pin = node("packages/naive/src/checks/check-config.mjs", dir, "--pin");
+  const pin = node("packages/naive/src/checks/check-config.ts", dir, "--pin");
   expect("U-4: --pin re-pins the pinned packages at their installed versions and logs it", pin.status === 0 && read(cfgFile).packages.validation === catalog && entries(dir).some((e) => e.entity === "naive.config.json" && /pinned validation/.test(e.note)), pin.stderr);
   expect("U-4: after re-pinning the write goes through", (await write("validation/solution", solution("pinned"), { actor: "person" })).ok);
   setConfig({ packages: { nonesuch: "1.0.0" } });
-  expect("U-4: pinning a package that is not installed fails the check", /nonesuch is not an installed package/.test(node("packages/naive/src/checks/check-config.mjs", dir).stdout));
-  expect("U-4: --pin of an unknown package fails", node("packages/naive/src/checks/check-config.mjs", dir, "--pin", "nonesuch").status === 1);
+  expect("U-4: pinning a package that is not installed fails the check", /nonesuch is not an installed package/.test(node("packages/naive/src/checks/check-config.ts", dir).stdout));
+  expect("U-4: --pin of an unknown package fails", node("packages/naive/src/checks/check-config.ts", dir, "--pin", "nonesuch").status === 1);
   rmSync(cfgFile);
 }
 
@@ -148,7 +148,7 @@ const validRecord = (file, schema) => spawnSync(process.execPath, [join(repo, "p
     { id: "product-lead", name: "Product lead", occupant: "person", needed_by: "discovery", status: "filled" },
     { id: "builder", name: "Builder", occupant: "agent", needed_by: "discovery", status: "filled" }] }));
   setConfig({ owners: { products: "product-lead" }, gate: { rules: [{ id: "products-to-owner", routes: ["product/[id]"], then: "owner", variants: true }] } });
-  expect("X-2: check-config accepts owners that are roles in the team plan", node("packages/naive/src/checks/check-config.mjs", dir).status === 0, node("packages/naive/src/checks/check-config.mjs", dir).stdout);
+  expect("X-2: check-config accepts owners that are roles in the team plan", node("packages/naive/src/checks/check-config.ts", dir).status === 0, node("packages/naive/src/checks/check-config.ts", dir).stdout);
   const a = await write("product/lamp", product("lamp", "Lamp"), { actor_id: "builder" });
   expect("X-2: an agent's write goes to the function owner from naive.config.json owners", a.ok && a.result.draft && a.result.owner === "product-lead" && /function owner, product-lead/.test(a.result.note), JSON.stringify(a));
   const box = inbox(dir, "product-lead");

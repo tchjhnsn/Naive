@@ -31,7 +31,7 @@ export const RESOLVER = "packages/naive/src/records/index.mjs";
 /** Files that name the folder on purpose, each with its reason. A fixture or a venture's own file belongs here. */
 export const ALLOW: Readonly<Record<string, string>> = {
   "packages/naive/src/checks/check-record-paths-test.ts": "the check's test: it writes copies whose code builds record paths, to prove the check fails on them",
-  "packages/naive/src/checks/docs-claims-test.mjs": "a test of the docs-claims checker: it passes packages/naive/src/records/playbook.schema.json as a changed file name, not to read it",
+  "packages/naive/src/checks/docs-claims-test.ts": "a test of the docs-claims checker: it passes packages/naive/src/records/playbook.schema.json as a changed file name, not to read it",
 };
 
 const CODE = /\.(mjs|cjs|js|ts|tsx|py)$/;

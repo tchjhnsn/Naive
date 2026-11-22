@@ -20,7 +20,7 @@ Operations layer, governance tier (EE-029). Reads `operations/team-plan.json`; w
 
 ## Steps
 
-1. **Only roles needed now.** `check-team.mjs` lists them ("recruit now"). A role for a later phase waits.
+1. **Only roles needed now.** `check-team.ts` lists them ("recruit now"). A role for a later phase waits.
 2. **Write the brief.** It says why a person is needed (the capability register), what they bring (the validation team record's gaps), and what they get (ownership and the option pool).
 3. **Agent's part:** search public profiles and communities, draft outreach, schedule, screen against the must-haves, and keep notes. The register lists sourcing candidates as `unknown`, so a person reviews every shortlist.
 4. **Person's part:** contact, interviews, the decision, and any offer. Offers of equity are `ownership-or-control`; offers of pay are `spend-money`. Both escalate.

@@ -2,7 +2,7 @@
 // access matrix", build plan item 2). A spend line (finance/spend/[id]) is written only by the finance agent
 // (finance-agent) or a person: writer function in the data model, checked by writerRule before the team plan, so a
 // role the team plan gives finance/** is refused too. The template's source map holds the register's access matrix
-// field by field, and check-sources.mjs refuses a rule that ties with it.
+// field by field, and check-sources.ts refuses a rule that ties with it.
 // A connection (it/connections/[id]) follows the same rule for it-agent. The finance agent holds spend-register-upkeep and cancel-or-downgrade straight from the founder. Every venture
 // lives in a temporary workspace.
 //
@@ -119,7 +119,7 @@ try {
     const m = load(join(repo, "packages/naive/template/knowledge/sources.json"));
     change(m);
     writeFileSync(join(v, "knowledge/sources.json"), JSON.stringify(m, null, 2));
-    return node("packages/naive/src/checks/check-sources.mjs", v);
+    return node("packages/naive/src/checks/check-sources.ts", v);
   };
   const clean = copy("clean", () => {});
   expect("check-sources passes the template's source map", clean.status === 0, clean.stderr + clean.stdout);
@@ -132,7 +132,7 @@ try {
   expect("founder-to-finance-agent grants spend-register-upkeep and cancel-or-downgrade over finance/, not re-delegable",
     g?.from === "founder" && g.to === "finance-agent" && g.scope === "finance/" && g.may_redelegate === false && ["spend-register-upkeep", "cancel-or-downgrade"].every((c) => g.classes.includes(c)), JSON.stringify(g));
   expect("no other grant holds the register's classes", d.grants.filter((x: { classes: string[] }) => x.classes.some((c) => ["spend-register-upkeep", "cancel-or-downgrade"].includes(c))).length === 1);
-  const del = node("packages/naive/src/checks/check-delegation.mjs");
+  const del = node("packages/naive/src/checks/check-delegation.ts");
   expect("check-delegation passes the template", del.status === 0, del.stdout);
 } finally {
   rmSync(ws, { recursive: true, force: true });

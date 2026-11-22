@@ -126,7 +126,7 @@ for (let i = 0; i < ${each}; i++) { const r = await appendTrial({ venture: "para
   expect("every parallel append landed", lines.length === writers * each, String(lines.length));
   const v = verify(lines as never);
   expect("the ledger's chain verifies after parallel appends", v.ok, v.errors.slice(0, 3).join("; "));
-  const prov = spawnSync(process.execPath, [join(repo, "packages/naive/src/checks/check-provenance.mjs"), dir], { encoding: "utf8" });
+  const prov = spawnSync(process.execPath, [join(repo, "packages/naive/src/checks/check-provenance.ts"), dir], { encoding: "utf8" });
   expect("the provenance chain verifies after parallel appends", prov.status === 0, prov.stdout + prov.stderr);
   // Parallel resolutions of one trial: exactly one lands.
   const target = lines[0]?.id ?? "";
