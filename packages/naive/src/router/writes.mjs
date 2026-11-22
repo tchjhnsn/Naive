@@ -138,7 +138,7 @@ export async function around(inner, args) {
   const fw = frameworkHealth();
   if (fw) return globalError(fw);
   let res;
-  try { res = resolve(route); } catch (e) { return globalError({ scope: "framework", file: "packages/naive/src/records/data-model.json", problem: `the route table cannot be built: ${String(e.message ?? e).split("\n")[0]}`, recovery: ["Check the data model and the manifests: node packages/naive/src/checks/check-data-model.mjs", "Restore the file it names from git"] }); }
+  try { res = resolve(route); } catch (e) { return globalError({ scope: "framework", file: "packages/naive/src/records/data-model.json", problem: `the route table cannot be built: ${String(e.message ?? e).split("\n")[0]}`, recovery: ["Check the data model and the manifests: node packages/naive/src/checks/check-data-model.ts", "Restore the file it names from git"] }); }
   const dir = venture ? ventureDir(venture, workspace) : null;
   // E-8: a broken venture.json answers with recovery steps, before anything reads it.
   if (dir) { const h = ventureHealth(dir); if (h) return globalError(h, venture); }

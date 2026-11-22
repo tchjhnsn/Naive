@@ -18,7 +18,7 @@ description: >
 
 # Board design
 
-Governance layer, ownership-and-control kit (EE-022). Writes `board.json`; `check-governance.mjs` checks every seat against `ownership.json`.
+Governance layer, ownership-and-control kit (EE-022). Writes `board.json`; `check-governance.ts` checks every seat against `ownership.json`.
 
 ## 1. Whether, and when
 
@@ -26,7 +26,7 @@ Governance layer, ownership-and-control kit (EE-022). Writes `board.json`; `chec
 | --- | --- |
 | Hobby, lifestyle, sole owner | None. A corporation still has directors in law, often just the founder; record that as a one-seat formal board |
 | Managed growth, bootstrapped | Optional. An **advisory board** often helps more than a formal one: advice without giving up control |
-| First priced round (seed or Series A) | A **formal board** is usually a condition of the round. `check-governance.mjs` requires one with venture-capital funding |
+| First priced round (seed or Series A) | A **formal board** is usually a condition of the round. `check-governance.ts` requires one with venture-capital funding |
 | Later rounds, many investors | Larger board, independent directors, committees (audit, compensation) |
 
 A SAFE or note alone usually does not bring a board seat.
@@ -46,7 +46,7 @@ A SAFE or note alone usually does not bring a board seat.
 
 ## 4. Advisors and the advisory board
 
-- An advisory board advises and decides nothing; `check-governance.mjs` refuses reserved matters on it.
+- An advisory board advises and decides nothing; `check-governance.ts` refuses reserved matters on it.
 - Advisors usually get small common-stock grants with vesting, often over two years, under a standard agreement. The Founder Institute's FAST (Founder/Advisor Standard Template) is the common starting point. Record the advisor as a holder (`kind: advisor`) with `agreement` and the grant in `ownership.json`, and their seat on the advisory board.
 - Agree what the advisor will actually do and how often before agreeing the grant.
 

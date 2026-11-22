@@ -31,7 +31,7 @@ export function check(root) {
   }
   // The units that held schema/ before EE-118 step 5, the folder this check read.
   const units = ["records", "terms", "engine", "checks"].map((u) => `packages/naive/src/${u}`);
-  const core = units.flatMap((u) => (existsSync(join(root, u)) ? readdirSync(join(root, u)) : []).filter((n) => n.endsWith(".mjs")).map((n) => `${u}/${n}`)).filter((p) => !/-test\.mjs$|\/test\.mjs$|-eval\.mjs$/.test(p));
+  const core = units.flatMap((u) => (existsSync(join(root, u)) ? readdirSync(join(root, u)) : []).filter((n) => /\.(mjs|ts)$/.test(n)).map((n) => `${u}/${n}`)).filter((p) => !/-test\.(mjs|ts)$|\/test\.(mjs|ts)$|-eval\.(mjs|ts)$/.test(p));
   for (const p of core) {
     if (allowed.has(p)) continue;
     readFileSync(join(root, p), "utf8").split("\n").forEach((line, i) => {

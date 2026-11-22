@@ -16,7 +16,7 @@
 // No model is called and nothing here reaches the network.
 //
 //   node packages/naive/src/engine/assets.mjs <venture dir> facts [--json]       the facts code reads from each file in public/
-//   node packages/naive/src/engine/assets.mjs <venture dir> check [--json]       the register check (also packages/naive/src/checks/check-assets.mjs)
+//   node packages/naive/src/engine/assets.mjs <venture dir> check [--json]       the register check (also packages/naive/src/checks/check-assets.ts)
 
 import { createHash } from "node:crypto";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";

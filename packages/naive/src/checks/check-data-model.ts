@@ -1,0 +1,272 @@
+// Checks the data model (packages/naive/src/records/data-model.json), the layer manifests and the venture
+// packages against the repository (EE-018, EE-071). Rules: record type ids are unique and
+// owned by a known layer; every JSON file in the repo is a record of some type (or ignored
+// with a reason), and every schema file governs one (or is a part one $refs); each reference
+// names a known record type and a check that exists, or says that nothing checks it yet;
+// every layer has a manifest at <layer>/layer.json; each record type is owned by exactly one
+// layer or one package; a layer that owns a record is of that record's layer; a package
+// declares use_model (an array, empty when it calls no model) and at most one skill;
+// layers and packages read and write only known types they do not own; a package's signal listeners pass the
+// listener schema and name their consumers; every SKILL.md
+// belongs to exactly one layer or package; a record type is a log exactly when its form is
+// json-lines, and every file in an example venture has a kind (record, log or derived), from its
+// record type or from the data model's files entries; a typescript record type's paths end in .ts, and a
+// settles block sits only on a projected type and names only properties of its schema; every record type names its
+// function (a departments.json id, or null when shared), and that agrees with PACKAGE_FUNCTION and the owning package; a
+// record type with writer function names a function.
+//
+//   node packages/naive/src/checks/check-data-model.ts          check, and list unchecked references
+//   node packages/naive/src/checks/check-data-model.ts --md     print the layer relationships derived from the manifests
+//
+// Layer relationships are never written by hand: they come from each manifest's reads and writes.
+
+import { spawnSync } from "node:child_process";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { dirname, join, relative } from "node:path";
+import { PACKAGE_FUNCTION, ventureFile } from "../core/venture-paths.mjs";
+import { globRegExp, pathKind, recordsIn, venturePaths } from "../records/index.mjs";
+import { validateValue } from "../records/validate.mjs";
+import type { DataModel, DecisionRights, DepartmentCatalog, Layer } from "../records/types/records.d.ts";
+
+/** A record type with the repository files its paths match, which this check adds. */
+type RecordType = DataModel["records"][number] & { files: string[] };
+/** A skill a manifest lists. */
+type Skill = { id?: string, path: string, move_to?: string };
+/** A layer manifest (layer.json) or a venture package's package.json, which has no schema, as this check reads them. */
+type Manifest = {
+  path: string, name?: string, kit?: string, layer?: string, records?: string[], checks?: string[], skills?: Skill[], skill?: Skill,
+  use_model?: unknown, template_dir?: string, listeners?: { id?: string }[], department?: string, function?: string,
+  reads?: string[], writes?: string[], product?: string,
+};
+
+// EE_ROOT points the check at another copy of the repository (used by packages/naive/src/checks/test.ts).
+const root = process.env.EE_ROOT?.replace(/\/?$/, "/") ?? new URL("../../../..", import.meta.url).pathname;
+const GAPS = new Set<string>(existsSync(join(root, "packages/naive/src/engine/generators/gaps.json")) ? JSON.parse(readFileSync(join(root, "packages/naive/src/engine/generators/gaps.json"), "utf8")).gaps : []);
+const load = <T>(p: string): T => JSON.parse(readFileSync(join(root, p), "utf8")) as T;
+// The record types of the copy being checked, so EE_ROOT reads that copy's schemas and data model.
+const records = recordsIn(root);
+const model = records.readDataModel() as DataModel;
+const errors: string[] = [];
+const warnings: string[] = [];
+
+const files = (dir: string): string[] => readdirSync(join(root, dir), { withFileTypes: true }).flatMap((e) =>
+  [".git", "node_modules", ".naive"].includes(e.name) ? [] : e.isDirectory() ? files(ventureFile(dir, e.name)) : [ventureFile(dir, e.name)]);
+// The files git would track (so build output and installed packages under .gitignore are left out); a
+// copy outside git, as the tests use, is walked instead.
+const tracked = spawnSync("git", ["ls-files", "--cached", "--others", "--exclude-standard"], { cwd: root, encoding: "utf8" });
+const trackedFiles = tracked.status === 0 && tracked.stdout.trim() && !process.env.EE_ROOT ? tracked.stdout.trim().split("\n").filter((f) => existsSync(join(root, f))) : files(".").map((f) => relative(".", f));
+// repos/ is vendored reference source (AGENTS.md, Vendored repositories), not Naive's files.
+const all = trackedFiles.filter((f) => !f.startsWith("repos/"));
+const matches = (g: string) => all.filter((f) => globRegExp(g).test(f));
+
+// Record types.
+const types = new Map<string, RecordType>();
+const layers = new Set(["system", ...model.layers]);
+// Each record type gets its files in this loop, before anything reads them.
+for (const r of model.records as RecordType[]) {
+  if (types.has(r.id)) errors.push(`data model: duplicate record type ${r.id}`);
+  types.set(r.id, r);
+  if (!layers.has(r.layer)) errors.push(`${r.id}: unknown layer ${r.layer}`);
+  if (r.schema && !existsSync(records.recordPath(r.schema))) errors.push(`${r.id}: schema ${r.schema} not found`);
+  // EE-099: a record generator beside each schema. gaps.json lists the types still without one; it only shrinks.
+  if (r.generator && !existsSync(join(root, r.generator))) errors.push(`${r.id}: generator ${r.generator} not found`);
+  if (!r.generator && !GAPS.has(r.id)) errors.push(`${r.id}: names no record generator (EE-099): add packages/naive/src/engine/generators/${r.id}.ts and the generator field`);
+  if (r.generator && GAPS.has(r.id)) errors.push(`${r.id}: has a generator, so remove it from packages/naive/src/engine/generators/gaps.json`);
+  r.files = [...new Set(r.paths.flatMap(matches))];
+  if (!r.files.length) warnings.push(`${r.id}: no records yet at ${r.paths.join(", ")}`);
+}
+for (const r of types.values()) for (const ref of r.refs ?? []) {
+  if (!ref.to.startsWith("(") && !types.has(ref.to)) errors.push(`${r.id}.${ref.field}: refers to unknown record type ${ref.to}`);
+  if (ref.checked_by && !existsSync(join(root, ref.checked_by))) errors.push(`${r.id}.${ref.field}: check ${ref.checked_by} not found`);
+  if (!ref.checked_by) warnings.push(`${r.id}.${ref.field} -> ${ref.to}: nothing checks this reference yet`);
+}
+// Kinds (hosted working copy design, section 2): an append-only record type is a log, and a log is append-only.
+for (const r of types.values()) if ((r.form === "json-lines") !== (r.kind === "log")) errors.push(`${r.id}: kind ${r.kind ?? "record"} with form ${r.form ?? "json"}; a record type is a log exactly when its form is json-lines`);
+// A typescript record (a recipe) is a .ts file. Its schema governs what the module exports, so validate.mjs never reads it.
+for (const r of types.values()) if (r.form === "typescript" && r.paths.some((p) => !p.endsWith(".ts"))) errors.push(`${r.id}: form typescript, so every path ends in .ts`);
+// settles (autoresearch design, "The metric"): only a projected type is scored, and each field it scores or forecasts
+// is a top-level property of its schema, scored one way only; a forecast field is a number (a probability).
+for (const r of types.values()) {
+  if (!r.settles) continue;
+  if (r.writer !== "projection") errors.push(`${r.id}: settles needs writer projection; only a projected record is scored`);
+  const props: Record<string, { type?: unknown }> = r.schema && existsSync(records.recordPath(r.schema)) ? JSON.parse(readFileSync(records.recordPath(r.schema), "utf8")).properties ?? {} : {};
+  for (const f of Object.keys(r.settles.loss ?? {})) if (!(f in props)) errors.push(`${r.id}: settles.loss names ${f}, which is not a property of ${r.schema}`);
+  for (const f of Object.keys(r.settles.forecasts ?? {})) {
+    if (!(f in props)) errors.push(`${r.id}: settles.forecasts names ${f}, which is not a property of ${r.schema}`);
+    else if (props[f].type !== "number") errors.push(`${r.id}: settles.forecasts names ${f}, which is not a number in ${r.schema}`);
+    if (f in (r.settles.loss ?? {})) errors.push(`${r.id}: ${f} is both a loss field and a forecast in settles`);
+  }
+}
+// Every file in an example venture has a kind, read by its logical path (the path inside the venture folder).
+for (const f of all) {
+  const at = f.match(/^packages\/naive\/src\/records\/examples\/[^/]+\/ventures\/[^/]+\/(.+)$/);
+  if (!at) continue;
+  try {
+    if (!pathKind(at[1], model)) errors.push(`${f}: no kind; no record type or files entry in packages/naive/src/records/data-model.json names it`);
+  } catch (e) { errors.push(`${f}: ${(e as Error).message}`); }
+}
+for (const c of model.records) for (const t of c.contains ?? []) if (!types.has(t)) errors.push(`${c.id}: contains unknown record type ${t}`);
+
+// Every JSON file is a record of some type; every schema file governs one.
+const claimed = new Set([...types.values()].flatMap((r) => r.files));
+// An ignore path may be a glob (`*` within a folder, `**/` across folders), as record type paths are.
+const ignorePatterns = model.ignore.map((i) => globRegExp(i.path));
+const isIgnored = (f: string) => ignorePatterns.some((re) => re.test(f));
+// Schemas are compared by absolute file, so a stored path and a tracked path name the same file wherever the record types sit.
+const schemas = new Set([...types.values()].map((r) => r.schema).filter((s): s is string => Boolean(s)).map((s) => records.recordPath(s)));
+// A schema that a named schema $refs (a shared part, such as the validation evidence item) counts as named.
+for (const s of [...schemas]) for (const m of readFileSync(s, "utf8").matchAll(/"\$ref":\s*"([a-z0-9-]+\.schema\.json)/g)) schemas.add(join(dirname(s), m[1]));
+for (const f of all.filter((f) => f.endsWith(".json"))) {
+  if (f.endsWith(".schema.json")) { if (!schemas.has(join(root, f))) errors.push(`${f}: a schema no record type names`); continue; }
+  if (!claimed.has(f) && !isIgnored(f)) errors.push(`${f}: no record type in packages/naive/src/records/data-model.json covers this file`);
+}
+
+// Decision classes a record type names must exist in the decision-rights template (EE-032).
+const classIds = new Set(load<DecisionRights>("packages/naive/template/governance/decision-rights.json").classes.map((c) => c.id));
+for (const r of types.values()) if (r.decision_class && !classIds.has(r.decision_class)) errors.push(`${r.id}: unknown decision class ${r.decision_class}`);
+
+// Layers and packages (EE-071). A layer manifest is packages/naive/src/records/layers/<layer>/layer.json. A package that lists
+// `records` owns those record types (the validation package absorbed the old validation kit).
+const layerFiles = [...model.layers.map((l) => `packages/naive/src/records/layers/${l}/layer.json`), "packages/naive/src/records/layer.json"];
+const packageFiles = all.filter((f) => /^packages\/naive\/library\/packages\/[^/]+\/package\.json$/.test(f));
+const skillsOf = (k: Manifest): Skill[] => [...(k.skills ?? []), ...(k.skill ? [k.skill] : [])];
+const kits = new Map<string | undefined, Manifest>();
+const owner = new Map<string, string | undefined>();
+const own = (id: string | undefined, t: string, k: Manifest, p: string) => {
+  const type = types.get(t);
+  if (!type) { errors.push(`${id}: owns unknown record type ${t}`); return; }
+  if (owner.has(t)) errors.push(`${t}: owned by both ${owner.get(t)} and ${id}`);
+  owner.set(t, id);
+  if (k.layer && type.layer !== k.layer) errors.push(`${id}: owns ${t}, which the data model gives to ${type.layer}`);
+  if (!k.layer && p.startsWith("packages/naive/library/packages/")) errors.push(`${id}: owns ${t} but names no layer`);
+};
+for (const p of layerFiles) {
+  if (!existsSync(join(root, p))) { errors.push(`${p}: missing; every layer has a manifest`); continue; }
+  const k: Manifest = { ...load<Layer>(p), path: p };
+  const folderLayer = p === "packages/naive/src/records/layer.json" ? "system" : p.split("/").at(-2);
+  if (k.layer !== folderLayer) errors.push(`${p}: layer says ${k.layer}`);
+  const id = k.name ?? k.kit;
+  kits.set(id, k);
+  for (const t of k.records ?? []) own(id, t, k, p);
+  for (const c of k.checks ?? []) if (!existsSync(join(root, c))) errors.push(`${id}: check ${c} not found`);
+}
+for (const p of packageFiles) {
+  const k: Manifest = { ...load<Omit<Manifest, "path">>(p), path: p };
+  if (!Array.isArray(k.use_model)) errors.push(`${p}: a package declares use_model, an array, empty when it calls no model`);
+  if (skillsOf(k).length > 1) errors.push(`${p}: a package has at most one skill`);
+  const id = k.name;
+  if ((k.records ?? []).length) {
+    kits.set(id, k);
+    for (const t of k.records ?? []) own(id, t, k, p);
+  }
+  for (const c of k.checks ?? []) if (!existsSync(join(root, c))) errors.push(`${id}: check ${c} not found`);
+  if (k.skill && !existsSync(join(root, k.skill.path))) errors.push(`${id}: skill ${k.skill.path} not found`);
+  if (k.template_dir && !existsSync(join(root, k.template_dir))) errors.push(`${id}: template dir ${k.template_dir} not found`);
+  // A package's signal listeners (signal library design): each passes packages/naive/src/records/listener.schema.json,
+  // names its consumer, and has an id no other listener of the package has.
+  const listenerIds = new Set<string | undefined>();
+  for (const l of k.listeners ?? []) {
+    const v = validateValue("listener.schema.json", l);
+    if (v.status !== 0) errors.push(`${id}: listener ${l?.id ?? "(no id)"}: ${(v.stdout + v.stderr).trim().split("\n").join("; ")}`);
+    if (l && typeof l === "object" && !("consumer" in l)) errors.push(`${id}: listener ${l.id}: a package's listener names its consumer`);
+    if (listenerIds.has(l?.id)) errors.push(`${id}: listener ${l.id} is defined twice`);
+    listenerIds.add(l?.id);
+  }
+}
+for (const t of types.keys()) if (!owner.has(t)) errors.push(`${t}: no layer or package owns this record type`);
+
+// Functions. Every record type names its owning function, an id in packages/naive/src/functions/departments.json, or
+// null when several functions share it. The data model's schema lists the ids, so that list must match the catalog.
+// PACKAGE_FUNCTION (core/venture-paths.mjs, which the src layout reads and which sits below records, so it cannot read
+// the data model) must agree: a venture record type kept in a package folder a function owns names that function or
+// null, a method record type whose every path is under packages/naive/src/functions/<function>/ names that function,
+// and a record type a package owns names the package's function or null.
+const DEPARTMENTS = "packages/naive/src/functions/departments.json";
+const functionIds = new Set<string>(existsSync(join(root, DEPARTMENTS)) ? load<DepartmentCatalog>(DEPARTMENTS).departments.map((x) => x.id) : []);
+const schemaIds: string[] = records.readSchema("data-model").properties.records.items.properties.function?.enum?.filter((x: string | null): x is string => x !== null) ?? [];
+for (const f of schemaIds) if (!functionIds.has(f)) errors.push(`packages/naive/src/records/data-model.schema.json: function ${f} is not an id in ${DEPARTMENTS}`);
+for (const f of functionIds) if (!schemaIds.includes(f)) errors.push(`packages/naive/src/records/data-model.schema.json: function lists no ${f}, an id in ${DEPARTMENTS}`);
+for (const [pkg, f] of Object.entries(PACKAGE_FUNCTION)) if (!functionIds.has(f)) errors.push(`PACKAGE_FUNCTION: ${pkg} names ${f}, which is not an id in ${DEPARTMENTS}`);
+for (const r of types.values()) {
+  // The type requires function, but a record type in the file may leave it out: that is what this finds.
+  if (!("function" in (r as object))) { errors.push(`${r.id}: names no function; give an id in ${DEPARTMENTS}, or null when several functions share it`); continue; }
+  if (r.function !== null && !functionIds.has(r.function)) { errors.push(`${r.id}: function ${r.function} is not an id in ${DEPARTMENTS}`); continue; }
+  // writer function: only <function>-agent or a person writes it (writerRule in packages/naive/src/engine/gate.mjs), so it needs a function.
+  if (r.writer === "function" && r.function === null) errors.push(`${r.id}: writer function needs a function, since only <function>-agent or a person writes it`);
+  // The first venture path is where records are written; later ones are older places still read.
+  const folder = venturePaths(r)[0]?.split("/")[0], pf = folder && (PACKAGE_FUNCTION as Readonly<Record<string, string>>)[folder];
+  if (pf && r.function !== null && r.function !== pf) errors.push(`${r.id}: function ${r.function}, but its records sit in ${folder}/, which ${pf} owns (PACKAGE_FUNCTION); name ${pf}, or null when it is shared`);
+  const under = new Set(r.paths.map((p) => p.match(/^packages\/naive\/src\/functions\/([^/]+)\//)?.[1]));
+  const fn = under.size === 1 ? [...under][0] : undefined;
+  if (fn && functionIds.has(fn) && r.function !== fn) errors.push(`${r.id}: lives under packages/naive/src/functions/${fn}/, so its function is ${fn}, not ${r.function}`);
+  const k = kits.get(owner.get(r.id));
+  const kf = k && !String(k.path).endsWith("/layer.json") ? k.department ?? k.function : undefined;
+  if (k && kf && r.function !== null && r.function !== kf) errors.push(`${r.id}: function ${r.function}, but package ${k.name} that owns it is ${kf}`);
+}
+for (const k of kits.values()) for (const rel of ["reads", "writes"] as const) for (const t of k[rel] ?? []) {
+  const id = k.name ?? k.kit;
+  if (!types.has(t)) errors.push(`${id}: ${rel} unknown record type ${t}`);
+  else if (owner.get(t) === id) errors.push(`${id}: ${rel} ${t}, which it owns; list only records owned elsewhere`);
+}
+for (const k of kits.values()) if (k.product) {
+  const id = k.name ?? k.kit;
+  const [v, pid] = k.product.split("/");
+  const card = all.find((f) => f.endsWith(`/${v}/products/${pid}.json`) || f.endsWith(`/${v}/product/${pid}.json`));
+  if (!card) errors.push(`${id}: product card ${k.product} not found`);
+}
+
+// Skills: each SKILL.md belongs to exactly one layer or package.
+const skillFiles = all.filter((f) => /(^|\/)SKILL\.md$/.test(f) && !f.includes("/_archive/") && (model.layers.includes(f.split("/")[0]) || /^packages\/naive\/src\/(functions|interfaces)\//.test(f)));
+const listed = new Map<string, string | undefined>();
+for (const k of kits.values()) for (const s of skillsOf(k)) {
+  const id = k.name ?? k.kit;
+  if (!existsSync(join(root, s.path))) errors.push(`${id}/${s.id}: ${s.path} not found`);
+  if (listed.has(s.path)) errors.push(`${s.path}: listed by ${listed.get(s.path)} and ${id}`);
+  listed.set(s.path, id);
+  if (s.move_to && !kits.has(s.move_to)) errors.push(`${id}/${s.id}: move_to unknown owner ${s.move_to}`);
+}
+for (const f of skillFiles) if (!listed.has(f)) errors.push(`${f}: no layer or package lists this skill`);
+
+// Layer relationships, derived. The layer is the record type's layer (EE-071).
+const layerOf = (t: string) => types.get(t)?.layer;
+const edges = new Map<string, string[]>();
+const edge = (from: string | undefined, to: string | undefined, t: string) => { if (!from || from === to) return; const key = `${from}>${to}`; edges.set(key, [...(edges.get(key) ?? []), t]); };
+for (const k of kits.values()) {
+  for (const t of k.reads ?? []) edge(layerOf(t), k.layer, t);
+  for (const t of k.writes ?? []) edge(k.layer, layerOf(t), t);
+}
+
+if (process.argv.includes("--md")) {
+  const order = [...model.layers, "system"];
+  // Confidential record types (Mentura's research engine) never appear in generated docs.
+  const shown = (t: string) => !types.get(t)?.confidential;
+  const rows = order.map((l) => {
+    // A layer manifest, so it has the skills and records Layer requires.
+    const k = [...kits.values()].find((x) => x.layer === l && String(x.path).endsWith("/layer.json")) as (Manifest & Layer) | undefined;
+    const from = [...edges].filter(([e]) => e.endsWith(`>${l}`)).map(([e, ts]) => `${e.split(">")[0]} (${[...new Set(ts)].join(", ")})`);
+    const to = [...edges].filter(([e]) => e.startsWith(`${l}>`)).map(([e, ts]) => `${e.split(">")[1]} (${[...new Set(ts)].join(", ")})`);
+    return `| ${l} | ${k?.skills.length ?? 0} | ${k?.records.filter(shown).join(", ") || "none"} | ${from.join("; ") || "none"} | ${to.join("; ") || "none"} |`;
+  });
+  // Exit only once the render is written: stdout to a pipe is asynchronous (see check-nouns.ts --md).
+  await new Promise((done) => process.stdout.write(`${[
+    "### Layer relationships (generated by `node packages/naive/src/checks/check-data-model.ts --md`)",
+    "",
+    "Each arrow is a record type one layer owns and another reads, or one layer writes into another. A reader depends on the owner: change the owner's record and the reader's checks run.",
+    "",
+    "| Layer | Skills | Owns | Takes from | Gives to |",
+    "| --- | --- | --- | --- | --- |",
+    ...rows,
+    "",
+    "```mermaid",
+    "flowchart LR",
+    ...[...edges].map(([e, ts]) => `  ${e.split(">")[0]} -->|${[...new Set(ts)].join(", ")}| ${e.split(">")[1]}`),
+    "```",
+  ].join("\n")}\n`, done));
+  process.exit(0);
+}
+
+for (const w of warnings) console.log(`warn  ${w}`);
+if (errors.length) { for (const e of errors) console.error(`FAIL  ${e}`); process.exit(1); }
+const moves = [...kits.values()].flatMap((k) => skillsOf(k).filter((s) => s.move_to)).length;
+const layerCount = layerFiles.filter((p) => existsSync(join(root, p))).length;
+console.log(`${types.size} record types, ${claimed.size} record files, ${layerCount} layers, ${packageFiles.length} packages, ${listed.size} skills (${moves} proposed moves): the data model holds.`);

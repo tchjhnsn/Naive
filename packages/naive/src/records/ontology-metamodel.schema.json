@@ -63,7 +63,7 @@
         "version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
         "note": { "type": "string", "minLength": 1 },
         "check": {
-          "description": "Files and folders packages/naive/src/checks/check-nouns.mjs scans for retired nouns.",
+          "description": "Files and folders packages/naive/src/checks/check-nouns.ts scans for retired nouns.",
           "type": "array",
           "minItems": 1,
           "items": { "type": "string", "minLength": 1 }
@@ -118,7 +118,7 @@
         "term": { "description": "The admitted EE-095 term this noun names.", "type": "string", "minLength": 1 },
         "properties": { "description": "Property ids of the term that a handoff of this type must satisfy.", "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
         "replaced_by": { "description": "What replaced a retired noun.", "type": "string", "minLength": 1 },
-        "retired_pattern": { "description": "A regular expression for the retired noun, which packages/naive/src/checks/check-nouns.mjs fails on.", "type": "string", "minLength": 1 },
+        "retired_pattern": { "description": "A regular expression for the retired noun, which packages/naive/src/checks/check-nouns.ts fails on.", "type": "string", "minLength": 1 },
         "shape": { "description": "A JSON Schema of what a record claiming this noun must contain (EE-107 item 7).", "type": "object" },
         "broader": { "description": "What the noun is a kind of: other nouns or top categories (N-049).", "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } }
       },

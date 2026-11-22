@@ -45,7 +45,7 @@
   ],
   "templates": [],
   "checks": [
-    "packages/naive/src/checks/check-ventures.mjs"
+    "packages/naive/src/checks/check-ventures.ts"
   ],
   "skill": null,
   "use_model": []

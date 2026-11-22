@@ -3,7 +3,7 @@
 // static rules (X-3, X-5, X-6), function owners (X-2), check settings (P-7, like
 // eslint.config.mjs), thresholds, which System 1 questions run, pinned package versions (U-4) and
 // how strictly the acting role is checked (M-18). Shape: packages/naive/src/records/naive-config.schema.json. Checked
-// by node packages/naive/src/checks/check-config.mjs <venture dir>.
+// by node packages/naive/src/checks/check-config.ts <venture dir>.
 //
 // Reading the config never calls a model or the network: it is files only, so the gate can read it
 // on every write.

@@ -6,7 +6,7 @@
 // A reference is a path that ends in the file's name and names that file: relative to the referring file
 // ("../engine/x.mjs"), from the repository root ("packages/naive/src/engine/x.mjs"), through the package's exports
 // ("naive-framework/src/engine/x.mjs"), or the bare name ("x.mjs", "`x.mjs`") when no other tracked file has it.
-// References are rewritten in every tracked text file outside repos/ and dist/, except lockfiles; a glob
+// References are rewritten in every tracked text file outside repos/ and dist/, except lockfiles and this tool and its test; a glob
 // ("!**/test.mjs") is a pattern, not a reference, and is left. The compiled package names every
 // module .mjs (scripts/build.ts), so an app that imports the old name keeps working.
 //
@@ -17,7 +17,7 @@ import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { posix } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const SKIP = /^(repos|dist|node_modules)\/|(^|\/)package-lock\.json$/;
+const SKIP = /^(repos|dist|node_modules)\/|(^|\/)package-lock\.json$|^scripts\/to-ts(-test)?\.ts$/;
 const TEXT = /\.(mjs|cjs|js|ts|tsx|mts|cts|json|jsonl|md|mdx|yml|yaml|feature|sh|txt|toml)$/;
 const PATHCHAR = /[A-Za-z0-9_.\-/[\]@]/;
 

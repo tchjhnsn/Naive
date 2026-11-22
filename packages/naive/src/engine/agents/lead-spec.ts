@@ -8,7 +8,7 @@
 //   engine/route-task.ts                   the routing rule: which of a function agent, a lead or a person takes a task
 //
 // A lead reads every record and writes only its own lead plan (operations/lead/<id>), decisions/* and
-// operations/handoff/*, never a function's records and never the team plan (Naive's check-team.mjs holds a venture's
+// operations/handoff/*, never a function's records and never the team plan (Naive's check-team.ts holds a venture's
 // team plan to the same rule).
 //
 //   const spec = leadAgent("growth-lead");       // throws on an id no role template with a portfolio has
@@ -75,7 +75,7 @@ export function leadIds(): LeadId[] {
   return leadTemplates().map((r) => r.id as LeadId);
 }
 
-/** What a lead may write: its own plan, decisions and handoffs (the rule Naive's check-team.mjs holds a team plan to). */
+/** What a lead may write: its own plan, decisions and handoffs (the rule Naive's check-team.ts holds a team plan to). */
 const leadMayWrite = (id: string, route: string): boolean =>
   route === `operations/lead/${id}` || /^decisions(\/|$)/.test(route) || /^operations\/handoff(\/|$)/.test(route);
 
@@ -119,7 +119,7 @@ export function leadAgent(id: string): LeadAgentSpec {
 
 /**
  * The team-plan entry a person adds so the venture staffs this lead: write routes its plan, decisions and handoffs,
- * reads every route. The lead never writes the team plan itself. Naive's check-team.mjs also wants a lead plan that
+ * reads every route. The lead never writes the team plan itself. Naive's check-team.ts also wants a lead plan that
  * binds the lead to a telos measure; the lead's first run writes it, or a person does.
  */
 export function leadTeamPlanEntry(spec: LeadAgentSpec, phase: Phase): TeamPlanRole {

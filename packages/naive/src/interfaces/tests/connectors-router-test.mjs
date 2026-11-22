@@ -55,8 +55,8 @@ expect("router: the write is logged by address, with the source's version", e.en
 const { readAsOf } = await import("../../store/as-of.mjs");
 expect("router: a write to another source keeps its bytes in the venture's blob store, so an as-of read by address returns them",
   readAsOf(tandem, "shared://products/teapot.json", e.at)?.content === readFileSync(join(shared, "products/teapot.json"), "utf8"));
-const prov = spawnSync("node", [join(repo, "packages/naive/src/checks/check-provenance.mjs"), ws], { encoding: "utf8" });
-const srcCheck = (d) => spawnSync("node", [join(repo, "packages/naive/src/checks/check-sources.mjs"), d], { encoding: "utf8" });
+const prov = spawnSync("node", [join(repo, "packages/naive/src/checks/check-provenance.ts"), ws], { encoding: "utf8" });
+const srcCheck = (d) => spawnSync("node", [join(repo, "packages/naive/src/checks/check-sources.ts"), d], { encoding: "utf8" });
 expect("router: check-provenance accepts entries for records in another source", prov.status === 0, prov.stderr);
 expect("router: check-sources accepts the map", srcCheck(ws).status === 0, srcCheck(ws).stderr);
 const valid = spawnSync(process.execPath, [join(repo, "packages/naive/src/records/validate.mjs"), "--schema", "knowledge-sources.schema.json", "--file", join(tandem, "knowledge/sources.json")], { encoding: "utf8" });
