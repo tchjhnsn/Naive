@@ -30,7 +30,7 @@ const trim = (s: string) => s.trim().split("\n").slice(-12).join("\n");
 
 // The Naive the criteria ran against: its commit, marked when uncommitted. Hosted without a git working copy,
 // the package version.
-function naiveVersion() {
+export function naiveVersion() {
   if (!isHosted()) {
     const dirty = execSync("git status --porcelain", { cwd: root, encoding: "utf8" }).trim() ? "+uncommitted" : "";
     return execSync("git rev-parse --short HEAD", { cwd: root, encoding: "utf8" }).trim() + dirty;
@@ -41,6 +41,36 @@ function naiveVersion() {
   return String(head.stdout).trim() + (String(git(feature, ["status", "--porcelain"], { cwd: root, encoding: "utf8" }).stdout).trim() ? "+uncommitted" : "");
 }
 
+/** One done-criterion of a handoff. */
+export type Criterion = Handoff["done_criteria"][number];
+/** One criterion's result, as the evidence keeps it. */
+export type CriterionResult = Evidence["results"][number];
+
+/** Whether a criterion runs as a shell command: not a review, and not a venture program. */
+export const isBash = (c: Criterion) => c.kind !== "review" && c.runs !== "effect";
+
+/**
+ * Runs one conformance or self-proof criterion: a venture program on the venture runtime when it runs effect, else its
+ * shell command through the sandbox hook, or bash from the repository root on a laptop.
+ */
+export async function runCriterion(dir: string, c: Criterion, sandbox = hostHook("sandbox")): Promise<CriterionResult> {
+  if (c.runs === "effect") {
+    const result = await runProgram(dir, c.check);
+    return { criterion: c.id, kind: c.kind, passed: passes(result), command: c.check, output: trim(outputOf(result)) };
+  }
+  const run = sandbox ? await sandbox(c.check, { cwd: root }) : spawnSync("/bin/bash", ["-c", c.check], { cwd: root, encoding: "utf8" });
+  return { criterion: c.id, kind: c.kind, passed: run.status === 0, command: c.check, output: trim(`${run.stdout}${run.stderr}`) };
+}
+
+/** The evidence for a run of a handoff's criteria at a time (ISO, seconds), and its id. */
+export function evidenceOf(h: Handoff, results: CriterionResult[], { at, runner, version }: { at: string, runner: string, version: string }): Evidence {
+  const id = `${h.id}-${at.replace(/[-:TZ]/g, "").slice(0, 14)}`;
+  return { id, subject: { kind: "handoff", id: h.id, version }, ran_at: at, runner, results, passed: results.every((r) => r.passed) };
+}
+
+/** Reads a handoff by id. */
+export const readHandoff = (dir: string, id: string): Handoff => JSON.parse(readFileSync(join(ventureFile(dir, "operations/handoffs"), `${id}.json`), "utf8"));
+
 /**
  * Runs one handoff's done-criteria and writes the evidence. Throws a HostedRefusal when hosted with bash
  * criteria and no sandbox hook (effect criteria need none), and an Error when a review verdict lacks its reviewer or note.
@@ -50,8 +80,7 @@ export async function runHandoff(dir: string, id: string, { runner = "local", re
   const hPath = join(ventureFile(dir, "operations/handoffs"), `${id}.json`);
   const h: Handoff = JSON.parse(readFileSync(hPath, "utf8"));
   const sandbox = hostHook("sandbox");
-  const bash = (d: Handoff["done_criteria"][number]) => d.kind !== "review" && d.runs !== "effect";
-  if (isHosted() && !sandbox && h.done_criteria.some(bash)) {
+  if (isHosted() && !sandbox && h.done_criteria.some(isBash)) {
     throw missingHook("running a handoff's bash done-criteria", "sandbox", "Naive never runs a tenant's shell on the host");
   }
   const version = naiveVersion();
@@ -62,22 +91,15 @@ export async function runHandoff(dir: string, id: string, { runner = "local", re
     results.push({ criterion: c.id, kind: "review", passed: verdict === "pass", by, command: c.check, output: note });
     log(`${verdict === "pass" ? "pass" : "FAIL"} ${c.id} (review by ${by})`);
   }
-  for (const c of h.done_criteria.filter((d) => d.kind !== "review" && d.runs === "effect")) {
-    const result = await runProgram(dir, c.check);
-    const passed = passes(result);
-    results.push({ criterion: c.id, kind: c.kind, passed, command: c.check, output: trim(outputOf(result)) });
-    log(`${passed ? "pass" : "FAIL"} ${c.id}`);
-  }
-  for (const c of h.done_criteria.filter(bash)) {
-    const run = sandbox ? await sandbox(c.check, { cwd: root }) : spawnSync("/bin/bash", ["-c", c.check], { cwd: root, encoding: "utf8" });
-    const passed = run.status === 0, output = `${run.stdout}${run.stderr}`;
-    results.push({ criterion: c.id, kind: c.kind, passed, command: c.check, output: trim(output) });
-    log(`${passed ? "pass" : "FAIL"} ${c.id}`);
+  for (const c of h.done_criteria.filter((d) => d.kind !== "review")) {
+    const r = await runCriterion(dir, c, sandbox);
+    results.push(r);
+    log(`${r.passed ? "pass" : "FAIL"} ${c.id}`);
   }
 
   const at = new Date().toISOString().replace(/\.\d+Z$/, "Z");
-  const eid = `${h.id}-${at.replace(/[-:TZ]/g, "").slice(0, 14)}`;
-  const ev: Evidence = { id: eid, subject: { kind: "handoff", id: h.id, version }, ran_at: at, runner, results, passed: results.every((r) => r.passed) };
+  const ev = evidenceOf(h, results, { at, runner, version });
+  const eid = ev.id;
   mkdirSync(join(ventureFile(dir, "evidence/results")), { recursive: true });
   const ePath = join(ventureFile(dir, "evidence/results"), `${eid}.json`);
   writeFileSync(ePath, JSON.stringify(ev, null, 2) + "\n");

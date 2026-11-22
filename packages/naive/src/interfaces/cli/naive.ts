@@ -55,6 +55,7 @@
 //   naive beta status|feedback <capability>|unlock  the plugin beta: which capabilities are open, the checkpoint feedback
 //                                                   that unlocks the next, and unlocking it (beta.enabled in naive.config.json)
 //   naive bugs [--all]                              open P0 and P1 bugs; stable means none
+//   naive handoff run <id> [--runner <id>]           a handoff's done-criteria, durable when naive.config.json sets durable.engine (EE-161)
 //   naive run <file> [--json]                       a venture program on the venture runtime: an Effect or a function (EE-161)
 //   naive trace append [--session <id>]             span lines on stdin, chained into traces/<session>.jsonl (EE-121)
 //   naive trace show [<session>] [--json]           the venture's trace sessions, or one as a tree of spans, offline
@@ -364,6 +365,14 @@ else if (cmd === "build" || cmd === "start") {
   // The plugin beta's gate (packages/naive/src/engine/beta-gate.ts) and the bug summary (packages/naive/src/engine/bugs.ts).
   const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
   process.exit(run(cmd === "beta" ? "packages/naive/src/engine/beta-gate.ts" : "packages/naive/src/engine/bugs.ts", [here(), ...(cmd === "beta" && !args.length ? ["status"] : args)]));
+} else if (cmd === "handoff") {
+  // A handoff's done-criteria: a durable workflow when durable.engine is sqlite or postgres, else run-handoff.ts (EE-161).
+  const [what, id, ...args] = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
+  if (what !== "run" || !id) { console.error("usage: naive handoff run <id> [--runner <id>] [--venture <dir>]"); process.exit(2); }
+  const dir = here();
+  const { durableEngine } = await import("../../router/orchestration/durable-handoff.ts");
+  const durable = durableEngine(dir) !== "memory";
+  process.exit(run(durable ? "packages/naive/src/router/orchestration/durable-handoff.ts" : "packages/naive/src/engine/run-handoff.ts", [dir, id, ...args]));
 } else if (cmd === "run") {
   // A venture program on the venture runtime (packages/naive/src/engine/venture-program.ts, EE-161).
   const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
