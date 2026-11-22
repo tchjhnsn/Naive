@@ -77,6 +77,7 @@ const steps: Step[] = [
   ["the decision library (frames name no answer, premises judged, decisions proposed open)", "node", ["packages/naive/src/engine/frames-test.ts"]],
   ["premise-attack linter (questions by formula, rules off|warn|error, findings proposed open)", "node", ["packages/naive/src/checks/premise-lint-test.ts"]],
   ["effect base: tagged errors, VentureFs on memory and on disk, and the runners (EE-125)", "node", ["packages/naive/src/core/effect/effect-test.ts"]],
+  ["naive.config.json as an Effect service: the file layer, fixed configs, the runtime override, the engine unchanged", "node", ["packages/naive/src/core/effect/config-test.ts"]],
   ["agent specs: one function agent per function with its module's files and a reach that covers its workflows, four leads covering the 13 functions, and routing", "node", ["packages/naive/src/engine/agents/agents-test.ts"]],
   ["provenance and blobs as Effects: the lock resource, the gate chain and the blob store on memory (EE-125)", "node", ["packages/naive/src/core/provenance-effect-test.ts"]],
   ["function modules check: each of the 13 functions as a folder with a manifest, an agent, workflows, a decision matrix and skills that agree with decision rights, the data model and the route table", "node", ["packages/naive/src/checks/check-functions-test.ts"]],
