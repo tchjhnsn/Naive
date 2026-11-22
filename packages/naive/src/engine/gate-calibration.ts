@@ -18,9 +18,9 @@
 
 import { Effect } from "effect";
 import { join } from "node:path";
-import { CannotRun, NotFound, Refused, SchemaInvalid } from "../core/effect/errors.mjs";
-import { readJson, VentureFs } from "../core/effect/fs.mjs";
-import { runMain, runSync } from "../core/effect/run.mjs";
+import { CannotRun, NotFound, Refused, SchemaInvalid } from "../core/effect/errors.ts";
+import { readJson, VentureFs } from "../core/effect/fs.ts";
+import { runMain, runSync } from "../core/effect/run.ts";
 import { ventureFile } from "../core/venture-paths.mjs";
 import { ROOT } from "../phases/phases.mjs";
 import { readDataModel, readSchema, venturePaths } from "../records/index.mjs";

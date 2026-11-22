@@ -26,9 +26,9 @@
 import { join } from "node:path";
 import { Effect } from "effect";
 import { ventureFile } from "../core/venture-paths.mjs";
-import { CannotRun } from "../core/effect/errors.mjs";
-import { readJson, VentureFs } from "../core/effect/fs.mjs";
-import { describe, runMain, runSync } from "../core/effect/run.mjs";
+import { CannotRun } from "../core/effect/errors.ts";
+import { readJson, VentureFs } from "../core/effect/fs.ts";
+import { describe, runMain, runSync } from "../core/effect/run.ts";
 import { validateValue } from "../records/validate.mjs";
 import type { CapabilityCluster, Connection } from "../records/types/records.d.ts";
 import { LOCAL, MAP } from "../store/connectors/index.mjs";

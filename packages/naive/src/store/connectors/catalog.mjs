@@ -18,12 +18,12 @@
 import { Effect } from "effect";
 import { address, isText, words } from "./contract.mjs";
 import { connectAllEffect } from "./index.mjs";
-import { CannotRun } from "../../core/effect/errors.mjs";
-import { VentureFs, readJson } from "../../core/effect/fs.mjs";
-import { runMain, runPromise, runSync } from "../../core/effect/run.mjs";
+import { CannotRun } from "../../core/effect/errors.ts";
+import { VentureFs, readJson } from "../../core/effect/fs.ts";
+import { runMain, runPromise, runSync } from "../../core/effect/run.ts";
 import { ventureFile } from "../../core/venture-paths.mjs";
 
-/** @typedef {import("../../core/effect/errors.mjs").NaiveError} NaiveError */
+/** @typedef {import("../../core/effect/errors.ts").NaiveError} NaiveError */
 /** @typedef {{ address: string, source: string, path: string, version: string, route: string | null, record: string | null, title: string, terms: string[] }} CatalogItem */
 /** @typedef {{ built_at: string, sources: { id: string, connector: string }[], items: CatalogItem[] }} Catalog */
 
