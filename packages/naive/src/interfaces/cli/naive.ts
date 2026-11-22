@@ -256,11 +256,11 @@ else if (cmd === "build" || cmd === "start") {
   if (dir && rest.includes("--framework") && upgradeFramework(dir) !== 0) process.exit(1);
   // --layout src (EE-118 step 8) or structured (EE-086): move a venture onto that layout. No logical path changes,
   // so routes, citations and the provenance log read the same; --check says what would move.
-  const LAYOUTS: Record<string, [string, string]> = { src: ["src-layout", "src/<function>/ beside public/ (EE-118 step 8)"], structured: ["structured-layout", "k-base/ and meta/ (EE-086)"] };
+  const LAYOUTS: Record<string, [string, string]> = { src: ["../../engine/migrations/src-layout.ts", "src/<function>/ beside public/ (EE-118 step 8)"], structured: ["../../engine/migrations/structured-layout.ts", "k-base/ and meta/ (EE-086)"] };
   const layout = opt("layout");
   if (dir && layout) {
     if (!LAYOUTS[layout]) { console.error(`unknown layout ${layout}: src or structured`); process.exit(2); }
-    const { apply } = await import(`../../engine/migrations/${LAYOUTS[layout][0]}.mjs`);
+    const { apply } = await import(LAYOUTS[layout][0]);
     const dry = rest.includes("--check"), notes: string[] = [], escalated: string[] = [];
     apply(dir, { dry, note: (m: string) => notes.push(m), escalate: (m: string) => escalated.push(m) });
     if (!notes.length && !escalated.length) console.log(`this venture is already on the ${layout} layout`);
