@@ -18,7 +18,7 @@ The EE-095 term engine: every term is admitted through one pipeline with a valid
 | [`engine.ts`](./engine.ts) | The term engine (EE-095; Torian, 2026-10-31). |
 | [`fixtures/`](./fixtures) | Fixtures for the membership gate's tests. |
 | [`fixtures.ts`](./fixtures.ts) | Real arrangements, run beside the generated cases. |
-| [`gen-concepts-test.ts`](./gen-concepts-test.ts) | Regenerates the Lean ontology concepts from small fixtures and checks what packages/naive/src/terms/gen-concepts.ts does. |
+| [`gen-concepts-test.ts`](./gen-concepts-test.ts) | Regenerates the Lean ontology concepts from small fixtures and checks what packages/naive/src/terms/gen-concepts.ts does. Its arrays carry explicit types, so the type check of the whole repository does not depend on the order tsc reads files in. |
 | [`gen-concepts.ts`](./gen-concepts.ts) | Writes one Lean `Concept` per noun in packages/naive/src/terms/ontology.json to packages/naive/lean/Naive/Generated/Ontology.lean. |
 | [`lean-agreement-test.ts`](./lean-agreement-test.ts) | Fails the suite when the term engine and the Lean proofs disagree about which terms and theorems exist. |
 | [`levels.ts`](./levels.ts) | The levels terms are defined at, each with its facts and a seeded case generator. The detector and trial levels hold the signal detection terms. The reception level (one signal arriving at one listener) holds the signal library terms; its signals and listeners come from pools, so one signal reaches many listeners. The experiment, plan and settlement levels hold the autoresearch terms. |
@@ -44,4 +44,4 @@ The EE-095 term engine: every term is admitted through one pipeline with a valid
 
 The operating-rules loader and the ontology gate check a module or a handoff against its schema with `validateFile` from [`packages/naive/src/records/validate.mjs`](../records/README.md). A checker that cannot run is still a tool error, never a verdict; the tests prove it with a validator that has no schemas (`useValidator`).
 
-`bypass-guard-test.ts` registers `check-functions.ts` and its test as plain checks: they compare ids and apply a fixed rule (one-way doors and never-redelegated classes are escalate), so nothing symbolic needs the engine.
+`bypass-guard-test.ts` registers `check-functions.ts` and its test as plain checks: they compare ids and apply a fixed rule (one-way doors and never-redelegated classes are escalate), so nothing symbolic needs the engine. It registers `check-phases.ts` and its test as plain checks for the same reason: they compare ids and add up weights.

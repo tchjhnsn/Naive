@@ -627,7 +627,7 @@
         "packages/naive/src/functions/products/frameworks/product-anatomy/phases.json",
         "packages/naive/src/functions/products/frameworks/product-anatomy/questions.json"
       ],
-      "note": "Phases, gates and questions of Product Anatomy; self-describing, checked by its runner's tests"
+      "note": "Product Anatomy's Succession Matrix weights per phase and its questions; the phases and gates themselves are the phase modules. Self-describing, checked by its runner's tests"
     },
     {
       "id": "playbook",
@@ -2540,6 +2540,23 @@
         { "field": "intake", "to": "function-workflow", "checked_by": "packages/naive/src/checks/check-functions.ts" }
       ],
       "note": "A function module's manifest: its purpose, intake workflow, the telos measure kinds it moves and the capability clusters it relies on. Records owned, lead and write reach are derived, not held here"
+    },
+    {
+      "id": "phase-module",
+      "layer": "operations",
+      "function": "strategy",
+      "level": "method",
+      "schema": "packages/naive/src/records/phase-module.schema.json",
+      "generator": "packages/naive/src/engine/generators/phase-module.ts",
+      "paths": [
+        "packages/naive/src/phases/*/phase.json"
+      ],
+      "refs": [
+        { "field": "workflows", "to": "function-workflow", "checked_by": "packages/naive/src/checks/check-phases.ts" },
+        { "field": "weights.functions", "to": "department-catalog", "checked_by": "packages/naive/src/checks/check-phases.ts" },
+        { "field": "gate.evidence[].source", "to": "data-model", "checked_by": "packages/naive/src/checks/check-phases.ts" }
+      ],
+      "note": "A lifecycle phase as a module (EE-126): its question, stage gate and exit evidence, the function workflows active in it and the weights that rank decisions across functions. No agent and no records owned; need-now priors are derived from need-now.json and departments.json"
     },
     {
       "id": "function-decisions",

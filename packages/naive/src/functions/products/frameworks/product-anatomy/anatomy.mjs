@@ -21,15 +21,19 @@ import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { ventureFile } from "../../../../core/venture-paths.mjs";
+import { runSync } from "../../../../core/effect/run.mjs";
+import { loadPhases } from "../../../../phases/phases.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const ENDPOINT = "https://api.typesafe.ai/v1/systemone";
 const MODEL = "jev-latest";
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
 const { questions } = load(join(here, "questions.json"));
-const { phases: allPhases, must_hold, tie } = load(join(here, "phases.json"));
+const { weights, must_hold, tie } = load(join(here, "phases.json"));
+// The phases, their questions and gates come from the phase modules (EE-126); phases.json holds only the weights.
 // Discovery has no weights: no product is ranked before the core product exists.
-const phases = allPhases.filter((p) => p.weights);
+const phases = runSync(loadPhases()).filter((p) => weights[p.id])
+  .map(({ id, name, question, binding_constraint, gate, references }) => ({ id, name, question, binding_constraint, gate: gate.name, references, weights: weights[id] }));
 
 // A venture folder is read as one input: venture.json, products/*.json, flows from flows_to.
 function readVenture(path) {
@@ -141,7 +145,7 @@ function deduce(input, answersFile) {
       role[p] = r.join(" + ");
       roleIds[p] = { roles: ids, ...(revenue.includes(p) && revenue.length > 1 ? { revenue_engine_tied: true } : {}), ...(!allowed(p) ? { allowed_from: input.products[p].allowed_from } : {}) };
     }
-    return { phase: ph, rows, flagship, tied, role, roleIds, projection: i > now };
+    return { phase: ph, rows, flagship, tied, role, roleIds, projection: i > now, successor: /** @type {string | undefined} */ (undefined) };
   });
 
   byPhase.forEach((b, i) => {

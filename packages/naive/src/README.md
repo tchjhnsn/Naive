@@ -4,7 +4,7 @@ Up: [naive](../README.md)
 
 ## What this is
 
-Naive's code in units (EE-118 step 5). Each unit imports only the units below it: core, then records, then terms and store, then engine, then checks, then router, then interfaces. functions holds the 13 function modules (step 7). `node scripts/dependency-rules.ts` enforces the order.
+Naive's code in units (EE-118 step 5). Each unit imports only the units below it: core, then records, then terms and store, then engine, then checks, then router, then interfaces. functions holds the 13 function modules (step 7), and phases the five phase modules (EE-126), which import only core. `node scripts/dependency-rules.ts` enforces the order.
 
 ## Where things are
 
@@ -15,6 +15,7 @@ Naive's code in units (EE-118 step 5). Each unit imports only the units below it
 | [`engine/`](./engine/README.md) | What a venture's records mean and do: init-venture, need-now, decisions, upgrades and migrations. |
 | [`functions/`](./functions/README.md) | One module per function of a venture, the 13 in `functions/departments.json` (EE-047, EE-115). |
 | [`interfaces/`](./interfaces/README.md) | The CLI, MCP server and local API over the router, the skills, harness adapters and the operator console. |
+| [`phases/`](./phases/README.md) | One module per lifecycle phase: its stage gate, exit evidence, active workflows and function weights (EE-126). |
 | [`records/`](./records/README.md) | The record types, the data model, the resolver and the route table. |
 | [`router/`](./router/README.md) | The routes' actions, shared by every interface (EE-030, EE-032). |
 | [`store/`](./store/README.md) | The connectors a venture's records are read and written through (EE-037). |
@@ -23,6 +24,8 @@ Naive's code in units (EE-118 step 5). Each unit imports only the units below it
 ```mermaid
 flowchart BT
   core --> records
+  core --> phases
+  phases --> engine
   records --> terms
   records --> store
   terms --> engine

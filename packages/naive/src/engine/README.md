@@ -119,8 +119,14 @@ The tests and the example checks run on example workspaces this repository owns,
 5. **Personal system.** Out of scope (EE-009). Built separately and joined later through links.
 6. **Layer.** The term engine admits layer in its standard technical sense: a part of an arrangement whose dependencies hold no cycle and put every part in one stack, so each part depends only on the parts beneath it. Run on real arrangements, it passes the OSI model and the ontology's three layers (metamodel, upper ontology, catalog). It fails Naive's own groupings, both the seven EE-001 decided (their loop is a cycle) and the seven manifests as built (their reads form cycles, such as knowledge reading venture from system while system reads decision from knowledge). So for Naive's groupings "layer" works as the system's name for its parts, and the general word keeps its standard meaning with no definition of Naive's own. EE-013 ("layer means only the system's seven layers") and the `layer` noun in `packages/naive/src/terms/ontology.json` ("one of the six") are unchanged; reconciling them is Torian's call.
 
+The lifecycle and need-now read the phases (their names, questions and gates) from the phase modules through [`packages/naive/src/phases/phases.mjs`](../phases/README.md) (EE-126); a lifecycle playbook names a gate only when it renames the phase module's. `packages/naive/src/engine/generators/phase-module.ts` drafts a phase module's `phase.json`.
+
 The engine's modules (decisions, freshness, generators, lifecycle, upgrades, user frameworks, workspace) validate a record in process with `validateFile` or `validateValue` from [`packages/naive/src/records/validate.mjs`](../records/README.md). None of them starts Python.
 
 ## Decision scores
 
 `ownScore` in `decisions.mjs` scores an open decision for the docket and the decision index. A due date within three days dominates; one from three to fourteen days out still counts, less the further it is (24 at five days, 9 at fourteen). An open fail-closed decision adds 15, because the work behind it waits until a person decides it.
+
+## Agents
+
+The function and lead agent specs live in [`agents/`](./agents/README.md) (EE-124).
