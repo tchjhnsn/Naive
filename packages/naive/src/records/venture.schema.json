@@ -169,6 +169,10 @@
         "competence": {
           "type": "string",
           "description": "The core competence that makes the promise deliverable (Prahalad and Hamel)"
+        },
+        "unfair_advantage": {
+          "type": "string",
+          "description": "What the venture has that cannot be easily copied or bought (Lean Canvas, Maurya 2012); the canvas's unfair-advantage box reads it (EE-155)"
         }
       },
       "additionalProperties": false
