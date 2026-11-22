@@ -20,7 +20,8 @@ import { dirname, join, relative, resolve } from "node:path";
 const root = resolve(process.env.EE_ROOT ?? new URL("../../../..", import.meta.url).pathname);
 /** Folders of the apps that depend on Naive; none of them is in this repository. */
 export const APP_FOLDERS = ["platform", "console"];
-const SKIP = /^(\.git|node_modules|\.next|_pagefind|out|generated|preserved)$/;
+// repos/ is vendored reference source (AGENTS.md, Vendored repositories), never imported by Naive.
+const SKIP = /^(\.git|node_modules|\.next|_pagefind|out|generated|preserved|repos)$/;
 const CODE = /\.(mjs|cjs|js|jsx|ts|tsx|mts|cts)$/;
 const errors = [];
 
