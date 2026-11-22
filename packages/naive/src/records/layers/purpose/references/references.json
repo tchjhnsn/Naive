@@ -333,7 +333,7 @@
       "url": "https://www.iso.org/standard/74393.html",
       "checked": "2026-11-22",
       "informs": [
-        "record:venture-anatomy",
+        "noun:venture-anatomy",
         "noun:view",
         "noun:viewpoint"
       ],
@@ -354,8 +354,8 @@
       "url": "https://en.wikipedia.org/wiki/SQL:2011",
       "checked": "2026-11-22",
       "informs": [
-        "record:anatomy-cell",
-        "feature:time-travel"
+        "noun:anatomy-cell",
+        "noun:time-travel"
       ],
       "stance": {
         "is": "adopted",
@@ -374,7 +374,7 @@
       "url": "https://en.wikipedia.org/wiki/Temporal_database",
       "checked": "2026-11-22",
       "informs": [
-        "feature:time-travel"
+        "noun:time-travel"
       ],
       "stance": {
         "is": "adopted",
@@ -413,8 +413,8 @@
       "url": "https://en.wikipedia.org/wiki/Business_Model_Canvas",
       "checked": "2026-11-22",
       "informs": [
-        "record:venture-anatomy",
-        "view:business-model-canvas"
+        "noun:venture-anatomy",
+        "noun:business-model-canvas"
       ],
       "stance": {
         "is": "alternative",
@@ -433,7 +433,7 @@
       "url": "https://cdn.ymaws.com/www.businessarchitectureguild.org/resource/resmgr/bizbok15/BIZBOKv15_introduction.pdf",
       "checked": "2026-11-22",
       "informs": [
-        "record:venture-anatomy"
+        "noun:venture-anatomy"
       ],
       "stance": {
         "is": "alternative",
@@ -452,7 +452,7 @@
       "url": "https://www.gartner.com/en/documents/8166629",
       "checked": "2026-11-22",
       "informs": [
-        "record:venture-anatomy"
+        "noun:venture-anatomy"
       ],
       "stance": {
         "is": "alternative",
@@ -471,7 +471,7 @@
       "url": "https://www.law.cornell.edu/wex/regulation_s-k",
       "checked": "2026-11-22",
       "informs": [
-        "record:venture-anatomy"
+        "noun:venture-anatomy"
       ],
       "stance": {
         "is": "adapted",
@@ -490,8 +490,8 @@
       "url": "https://www.law.cornell.edu/wex/form_s-1",
       "checked": "2026-11-22",
       "informs": [
-        "record:venture-anatomy",
-        "view:s1-outline"
+        "noun:venture-anatomy",
+        "noun:s1-outline"
       ],
       "stance": {
         "is": "adapted",
@@ -510,7 +510,7 @@
       "url": "https://sec.gov/corpfin/modernization-regulation-s-k-compliance-guide",
       "checked": "2026-11-22",
       "informs": [
-        "record:venture-anatomy"
+        "noun:venture-anatomy"
       ],
       "stance": {
         "is": "adapted",
