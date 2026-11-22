@@ -96,9 +96,9 @@ export async function handoffWriteRule({ store, file, input, person, actorId, ag
   try { cur = await store.read(file); } catch (e) { return { ok: false, error: message(e) }; }
   let stored = null;
   try { stored = cur ? JSON.parse(cur.content) : null; } catch { stored = null; }
-  if (!stored?.requested_by && !input?.requested_by) return { ok: true, base: undefined };
+  if (!stored?.requested_by && !input?.requested_by) return { ok: true, base: undefined, stored };
   const why = handoffWriteRefusal({ stored, input, person, actorId, who: claimantOf(agent, actorId) });
-  return why ? { ok: false, error: why } : { ok: true, base: cur?.version ?? null };
+  return why ? { ok: false, error: why } : { ok: true, base: cur?.version ?? null, stored };
 }
 
 /**
