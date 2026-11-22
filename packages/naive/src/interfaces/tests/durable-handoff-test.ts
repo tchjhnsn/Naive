@@ -9,7 +9,11 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { ventureFile } from "../../core/venture-paths.ts";
-import { durableEngine, durableFile } from "../../router/orchestration/durable-handoff.ts";
+import { Effect, Exit, Scope } from "effect";
+import * as Reactivity from "effect/reactivity/Reactivity";
+import { makeNodeSqlite } from "../../core/effect/node-sqlite.ts";
+import { clearHooks, HostedRefusal, registerHook } from "../../core/runtime.ts";
+import { durableEngine, durableFile, runHandoffDurable } from "../../router/orchestration/durable-handoff.ts";
 
 const repo = fileURLToPath(new URL("../../../../..", import.meta.url));
 let failed = 0;
@@ -71,6 +75,26 @@ ok("a later run is a new attempt and runs every criterion", third.status === 0 &
 writeFileSync(cfgPath, JSON.stringify(cfg, null, 2) + "\n");
 const plain = naive("handoff", "run", "h1");
 ok("with the memory engine, naive handoff run runs run-handoff", plain.status === 0 && /every criterion run passed/.test(plain.stdout) && !/durable/.test(plain.stdout) && count("c1") === 3, `${plain.status} ${plain.stdout}${plain.stderr}`);
+
+// postgres runs on the host's SQL client, from the sql hook. A SQLite client stands in for the host's pool here: the
+// engine sees only an effect/sql client.
+writeFileSync(join(handoffs, "h2.json"), JSON.stringify({ id: "h2", title: "Prove it hosted", venture: "kettle", role: "builder", brief: "h2.md", decision_classes: ["implementation-detail"], status: "in-progress", attempts: 1, max_attempts: 3, run_cap: "1h", done_criteria: [
+  { id: "e1", kind: "self-proof", runs: "effect", check: "third.ts" },
+] }, null, 2) + "\n");
+process.env.MENTURA_WORKSPACE = ws;
+const refused = await runHandoffDurable(dir, "h2", { engine: "postgres", log: () => {} }).then(() => "(no refusal)", (e: unknown) => e instanceof HostedRefusal ? e.message : String(e));
+ok("postgres without a host's sql hook is refused, naming the hook", /registerHook\("sql", fn\)/.test(refused), refused);
+process.env.NAIVE_RUNTIME = "hosted";
+const scope = await Effect.runPromise(Scope.make());
+const client = await Effect.runPromise(makeNodeSqlite(join(ws, "host-pool.sqlite")).pipe(Effect.provide(Reactivity.layer), Scope.provide(scope)));
+let asked = 0;
+registerHook("sql", () => { asked++; return client; });
+const hosted = await runHandoffDurable(dir, "h2", { engine: "postgres", log: () => {} });
+ok("hosted, durable.engine postgres runs on the host's sql hook", hosted.evidence.passed && asked === 1 && hosted.engine === "postgres", JSON.stringify({ asked, results: hosted.evidence.results }));
+ok("the host's client holds the workflow's state", existsSync(join(ws, "host-pool.sqlite")));
+await Effect.runPromise(Scope.close(scope, Exit.void));
+clearHooks();
+delete process.env.NAIVE_RUNTIME;
 
 rmSync(ws, { recursive: true, force: true });
 console.log(failed ? `\n${failed} failing` : "\nall passed");

@@ -57,4 +57,4 @@ Tests that check a record against its schema run `node packages/naive/src/record
 
 `hosted-runtime-test.ts` also runs an effect done-criterion (`runs: "effect"`) hosted with no sandbox hook: it runs on the venture runtime, so it needs none (EE-161).
 
-`durable-handoff-test.ts` kills a durable handoff run inside its second criterion (the criterion kills its own process) and checks that the next run resumes without rerunning the first, writes one evidence file through the router with provenance, and that `naive handoff run` uses run-handoff.ts with the memory engine (EE-161).
+`durable-handoff-test.ts` kills a durable handoff run inside its second criterion (the criterion kills its own process) and checks that the next run resumes without rerunning the first, writes one evidence file through the router with provenance, and that `naive handoff run` uses run-handoff.ts with the memory engine (EE-161). It also runs a handoff hosted on `durable.engine` postgres through a `sql` hook, and checks the refusal without one.

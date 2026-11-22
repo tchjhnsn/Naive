@@ -76,6 +76,8 @@ stateDiagram-v2
 - Called by: the modules moved to Effect: the checks `check-functions.ts`, `check-connections.ts`, `check-seams.ts` and `check-detectors.ts` in [`checks/`](../../checks/README.md), the store connectors in [`store/connectors/`](../../store/connectors/README.md), and [`../provenance.ts`](../provenance.ts) and [`../blobs.ts`](../blobs.ts).
 - Calls: `effect` and Node built-ins only.
 
+`durable.ts` chooses the workflow engine for a venture's durable work from `durable.engine` in `naive.config.json` (EE-161): `memory` (the default, no state across processes), `sqlite` (an Effect cluster engine over `.naive/durable.sqlite` for handoffs and `.naive/durable-<kind>.sqlite` for each other kind) or `postgres` (the same engine over the client the host's `sql` hook returns; refused without one, and always on a laptop). `engineLayer(dir, kind)` builds the layer and loads the workflow and cluster modules only when called; `runDurable(layer, effect)` runs on a runtime it disposes.
+
 `node-sqlite.ts` is an `effect/sql` client over Node's built-in `node:sqlite` (`NodeSqlite(filename)`, EE-161), so durable workflows store their state in a SQLite file with no npm dependency and no native module. It drops `node:sqlite`'s experimental warning when it loads, and binds booleans as 0 or 1, undefined as null and dates as ISO strings.
 
 ## Not built

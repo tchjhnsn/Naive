@@ -11,33 +11,20 @@
 // router, as one more activity, so they meet the gate, the handoff claim rules and provenance; a write repeated
 // after a crash finds its evidence already listed and adds nothing.
 //
-// `memory` (the default) keeps no state across processes, so run-handoff.ts runs it as before. `postgres` waits on a
-// host that provides the SQL client (not built). Review criteria are recorded with run-handoff.ts --review, not here.
+// `memory` (the default) keeps no state across processes, so run-handoff.ts runs it as before. `postgres` runs on the
+// host's SQL client, from its `sql` hook (packages/naive/src/core/effect/durable.ts). Review criteria are recorded with run-handoff.ts --review, not here.
 // The workflow and cluster modules load only on this path.
 
-import { mkdirSync, readFileSync } from "node:fs";
 import { basename, dirname, join, relative, resolve } from "node:path";
-import { Effect, Layer, ManagedRuntime, Schema } from "effect";
-import { NodeSqlite } from "../../core/effect/node-sqlite.ts";
+import { Effect, Layer, Schema } from "effect";
+import { durableEngine, durableFile, engineLayer, runDurable, type DurableEngine } from "../../core/effect/durable.ts";
 import { ventureFile } from "../../core/venture-paths.ts";
 import { HostedRefusal, hostHook, isHosted, missingHook } from "../../core/runtime.ts";
 import { evidenceOf, isBash, naiveVersion, readHandoff, runCriterion, type CriterionResult } from "../../engine/run-handoff.ts";
 import type { Evidence } from "../../records/types/records.d.ts";
 import { call } from "../router.ts";
 
-/** The durable engines naive.config.json may name. */
-export type DurableEngine = "memory" | "sqlite" | "postgres";
-
-/** The engine naive.config.json's durable.engine names: memory unless it says sqlite or postgres. */
-export function durableEngine(dir: string): DurableEngine {
-  try {
-    const e = (JSON.parse(readFileSync(join(dir, "naive.config.json"), "utf8")) as { durable?: { engine?: unknown } }).durable?.engine;
-    return e === "sqlite" || e === "postgres" ? e : "memory";
-  } catch { return "memory"; }
-}
-
-/** The SQLite file durable work keeps for a venture. */
-export const durableFile = (dir: string) => join(dir, ".naive", "durable.sqlite");
+export { durableEngine, durableFile, type DurableEngine };
 
 const Result = Schema.Struct({ criterion: Schema.String, kind: Schema.String, passed: Schema.Boolean, command: Schema.String, output: Schema.String });
 
@@ -49,15 +36,14 @@ type Options = { runner?: string, actor?: "person" | "agent", actor_id?: string,
 /** Runs a handoff's conformance and self-proof criteria as a durable workflow, resuming an interrupted run. */
 export async function runHandoffDurable(dir: string, id: string, { runner = "local", actor = "person", actor_id, log = console.log, engine = durableEngine(dir) }: Options = {}): Promise<DurableRun> {
   dir = resolve(dir);
-  if (engine === "postgres") throw new Error("durable.engine postgres needs a host that provides the SQL client, which is not built; use sqlite or memory");
   const h = readHandoff(dir, id);
   const sandbox = hostHook("sandbox");
   if (isHosted() && !sandbox && h.done_criteria.some(isBash)) throw missingHook("running a handoff's bash done-criteria", "sandbox", "Naive never runs a tenant's shell on the host");
   const attempt = (h.evidence ?? []).length;
   const criteria = h.done_criteria.filter((c) => c.kind !== "review");
 
-  const [Workflow, Activity, WorkflowEngine] = await Promise.all([
-    import("effect/workflow/Workflow"), import("effect/workflow/Activity"), import("effect/workflow/WorkflowEngine"),
+  const [Workflow, Activity] = await Promise.all([
+    import("effect/workflow/Workflow"), import("effect/workflow/Activity"),
   ]);
   const Handoff = Workflow.make("naive/handoff", {
     payload: { dir: Schema.String, handoff: Schema.String, attempt: Schema.Number },
@@ -91,29 +77,11 @@ export async function runHandoffDurable(dir: string, id: string, { runner = "loc
     return { evidence: JSON.stringify(ev), route };
   }));
 
-  const EngineLayer = engine === "sqlite" ? await sqliteEngine(dir) : WorkflowEngine.layerMemory;
-  const runtime = ManagedRuntime.make(HandoffLive.pipe(Layer.provideMerge(EngineLayer)));
-  try {
-    const out = await runtime.runPromise(Handoff.execute({ dir, handoff: id, attempt }));
-    const evidence = JSON.parse(out.evidence) as Evidence;
-    for (const r of evidence.results) log(`${r.passed ? "pass" : "FAIL"} ${r.criterion}`);
-    return { evidence, route: out.route, engine };
-  } finally {
-    await runtime.dispose();
-  }
-}
-
-/** The workflow engine over the venture's SQLite file: one runner, shard locks in the database. */
-async function sqliteEngine(dir: string) {
-  const [ClusterWorkflowEngine, SingleRunner, Digest] = await Promise.all([
-    import("effect/cluster/ClusterWorkflowEngine"), import("effect/cluster/SingleRunner"), import("effect/crypto/Digest"),
-  ]);
-  mkdirSync(dirname(durableFile(dir)), { recursive: true });
-  return ClusterWorkflowEngine.layer.pipe(
-    Layer.provideMerge(SingleRunner.layer({ runnerStorage: "sql" })),
-    Layer.provide(NodeSqlite(durableFile(dir))),
-    Layer.provide(Digest.layerWebCrypto),
-  );
+  const EngineLayer = await engineLayer(dir, "handoffs", engine);
+  const out = await runDurable(HandoffLive.pipe(Layer.provideMerge(EngineLayer)), Handoff.execute({ dir, handoff: id, attempt }));
+  const evidence = JSON.parse(out.evidence) as Evidence;
+  for (const r of evidence.results) log(`${r.passed ? "pass" : "FAIL"} ${r.criterion}`);
+  return { evidence, route: out.route, engine };
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
@@ -127,6 +95,6 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     process.exit(run.evidence.passed ? 0 : 1);
   } catch (e) {
     console.error(e instanceof Error ? e.message : String(e));
-    process.exit(e instanceof HostedRefusal || String((e as Error | undefined)?.message).startsWith("durable.engine") ? 2 : 1);
+    process.exit(e instanceof HostedRefusal ? 2 : 1);
   }
 }
