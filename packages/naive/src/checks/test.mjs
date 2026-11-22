@@ -72,7 +72,7 @@ draft("a brief with a TBD is not ready", (d) => writeFileSync(briefOf(d), readFi
 draft("an unknown product is not ready", (d) => edit(handoff(d, "flag-fixes"), (h) => { h.products = ["nope"]; }), /FAIL {2}every product it serves exists: nope/);
 draft("an unknown decision is not ready", (d) => edit(handoff(d, "flag-fixes"), (h) => { h.governed_by = ["EE-999"]; }), /FAIL {2}every governing decision exists.*EE-999/);
 draft("a criterion calling a missing script is not ready", (d) => edit(handoff(d, "flag-fixes"), (h) => { h.done_criteria[0].check = "node purpose/nope.mjs"; }), /FAIL {2}every script a criterion runs exists/);
-// The venture-to-software contract (EE-128): a handoff's method names a MAD record, a part and templates that resolve.
+// The venture-to-software contract (EE-154): a handoff's method names a MAD record, a part and templates that resolve.
 const madRecord = (d, adopted) => { mkdirSync(join(d, "repo/.mad"), { recursive: true }); writeFileSync(join(d, "repo/.mad/record.json"), JSON.stringify({ mad_record: "0.1.0", project: { name: "relay", domain: "software" }, parts: [{ id: "project", name: "Relay" }, { id: "cli", name: "CLI" }], decisions: [], adopted })); };
 const tdd = [{ layer: "software-engineering", part: "cli", templates: ["tdd@0.1.0"] }];
 const method = (d, m) => edit(handoff(d, "flag-fixes"), (h) => { h.method = { framework: "mad", record: "repo/.mad/record.json", ...m }; });

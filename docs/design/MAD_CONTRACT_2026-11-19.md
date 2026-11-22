@@ -7,7 +7,7 @@ ai-model: claude
 authority: advisory
 status: DRAFT
 tags: [naive, mad, contract, handoff, everything-ecosystem, ee-128]
-description: "The venture-to-software contract: a Naive handoff names its method in MAD (record, part, templates), the readiness check resolves it, and MAD's checks come back as Naive evidence (EE-128)."
+description: "The venture-to-software contract: a Naive handoff names its method in MAD (record, part, templates), the readiness check resolves it, and MAD's checks come back as Naive evidence (EE-154)."
 ---
 
 # The venture-to-software contract (Naive to MAD)

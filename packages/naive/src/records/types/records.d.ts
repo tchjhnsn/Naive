@@ -2137,9 +2137,9 @@ export type Handoff = {
   products?: string[];
   /** Decision ids this executes (EE-NNN, G-NNN, D-NNN or an ADR path) */
   governed_by?: string[];
-  /** Optional, from MAD before its restart: a build-method assignment such as A-NNN, or none. It is not checked; a handoff names the method it runs under with method (EE-128) */
+  /** Optional, from MAD before its restart: a build-method assignment such as A-NNN, or none. It is not checked; a handoff names the method it runs under with method (EE-154) */
   assignment?: string;
-  /** The method the work runs under, named in the framework that owns it (EE-128). For software work that is MAD: the project's MAD record, the part of the project the work touches and the templates that govern it. packages/naive/src/checks/check-ready.mjs checks the names resolve in that record (packages/naive/src/checks/method-contract.mjs); Naive reads the record as data and imports nothing from MAD */
+  /** The method the work runs under, named in the framework that owns it (EE-154). For software work that is MAD: the project's MAD record, the part of the project the work touches and the templates that govern it. packages/naive/src/checks/check-ready.mjs checks the names resolve in that record (packages/naive/src/checks/method-contract.mjs); Naive reads the record as data and imports nothing from MAD */
   method?: {
     /** The member framework that owns the method. Only MAD has a contract today */
     framework: "mad";

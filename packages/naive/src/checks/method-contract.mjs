@@ -1,4 +1,4 @@
-// The venture-to-software contract (EE-128): a Naive handoff for software work names the MAD record,
+// The venture-to-software contract (EE-154): a Naive handoff for software work names the MAD record,
 // the part of the project it touches and the templates that govern that part, and this checks the
 // names resolve. Naive reads MAD's record as data and imports nothing from MAD (EE-038): the fields
 // it relies on are the contract, MAD record schema 0.x: project.domain, parts[].id and

@@ -44,7 +44,7 @@ const logs = [join(root, "docs/decisions/decisions.json"), join(ventureFile(dir,
 const decisions = new Map(logs.map((d) => [d.id, d]));
 const badDecisions = (h.governed_by ?? []).filter((d) => !decisions.has(d) || ["withdrawn", "superseded"].includes(decisions.get(d).status));
 item("every governing decision exists and is in force or proposed", !badDecisions.length, badDecisions.join(", "));
-// The method the work runs under, in the framework that owns it (EE-128): its record, part and templates resolve.
+// The method the work runs under, in the framework that owns it (EE-154): its record, part and templates resolve.
 // An old assignment (MAD A-NNN, before MAD's restart) is not checked.
 if (h.method) { const p = checkMethod(dir, h.method); item(`its method resolves in ${h.method.framework} (${h.method.record}, part ${h.method.part})`, !p.length, p.join("; ")); }
 const missingInputs = (h.inputs ?? []).filter((p) => !existsSync(join(root, p)));
