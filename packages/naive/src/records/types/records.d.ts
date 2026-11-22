@@ -150,6 +150,43 @@ export type Alignment = {
   }[];
 };
 
+/** One cell of a Venture Anatomy Matrix sub-matrix (EE-157). Every sub-matrix uses this shape so one calibration and one visualization serve them all. status is known, estimated or unknown, and unknown is a value, never null. valid_from and valid_to are application time (SQL:2011): when the value was true in the world. When the record knew it is system time, kept by the provenance log and the blob store (readAsOf). */
+export type AnatomyCell = unknown;
+
+export type AnatomyCellStatus = "known" | "estimated" | "unknown";
+
+export type AnatomyCellNumberCell = {
+  status: AnatomyCellStatus;
+  value?: number;
+  low?: number;
+  high?: number;
+  /**
+   * @format date
+   */
+  valid_from?: string;
+  /**
+   * @format date
+   */
+  valid_to?: string;
+  note?: string;
+  evidence?: ValidationEvidence[];
+};
+
+export type AnatomyCellEnumCell = {
+  status: AnatomyCellStatus;
+  value?: string;
+  /**
+   * @format date
+   */
+  valid_from?: string;
+  /**
+   * @format date
+   */
+  valid_to?: string;
+  note?: string;
+  evidence?: ValidationEvidence[];
+};
+
 /** A view built from records for a reader: a document, deck, dashboard, design, page or file. Records are the source of truth and are never what gets published; artifacts are what gets published, and each names the records it was built from, at the revision it read, so naive check can say when one has gone stale. */
 export type Artifact = {
   id: string;
@@ -2019,6 +2056,101 @@ export type FundThesis = {
   why_now?: string;
 };
 
+/** How a venture's phase gate thresholds follow from its market and industry (EE-157): rules as data, each with an id, the anatomy cells it reads (market.<cell> or industry.<cell>), a plain reason and the mark that its numbers are unvalidated priors. Read by packages/naive/src/engine/gate-calibration.ts against the presets in packages/naive/src/phases/gate-policies.json. */
+export type GateCalibration = {
+  version: string;
+  note?: string;
+  prior: GateCalibrationPrior;
+  count_levels: {
+    id: GateCalibrationId;
+    reads: GateCalibrationReads;
+    prior: GateCalibrationPrior;
+    /** The share of reachable buyers that moderate asks for, before clamping */
+    share: number;
+    moderate_min: number;
+    moderate_max: number;
+    high_factor: number;
+    low: number;
+    default: GateCalibrationCountLevels;
+    /** Customer types that keep the default counts */
+    keep_default_for: string[];
+    reason: string;
+  };
+  staleness: {
+    default_months: number;
+    prior: GateCalibrationPrior;
+  };
+  rules: {
+    id: GateCalibrationId;
+    reads: GateCalibrationReads;
+    /** The rule fires when any condition is met */
+    when: GateCalibrationCondition[];
+    raise?: {
+      items: GateCalibrationItems;
+      levels: number;
+      boundary?: GateCalibrationBoundary;
+    };
+    floor?: {
+      items: GateCalibrationItems;
+      min?: GateCalibrationLevel;
+      boundary?: GateCalibrationBoundary;
+    };
+    staleness_months?: number;
+    notes?: string[];
+    prior: GateCalibrationPrior;
+    reason: string;
+  }[];
+  override: {
+    id: GateCalibrationId;
+    reads: GateCalibrationReads;
+    reason_required: boolean;
+    second_person_when: GateCalibrationCondition[];
+    prior: GateCalibrationPrior;
+    reason: string;
+  };
+  problem_confirmation: {
+    id: GateCalibrationId;
+    reads: GateCalibrationReads;
+    business: string;
+    consumer: string;
+    unknown: string;
+    business_types: string[];
+    consumer_types: string[];
+    prior: GateCalibrationPrior;
+    reason: string;
+  };
+};
+
+export type GateCalibrationLevel = "very low" | "low" | "moderate" | "high";
+
+export type GateCalibrationBoundary = "fail-open" | "fail-closed";
+
+export type GateCalibrationId = string;
+
+export type GateCalibrationCell = string;
+
+/** Every threshold is an unvalidated prior until evidence calibrates it */
+export type GateCalibrationPrior = "unvalidated";
+
+export type GateCalibrationReads = GateCalibrationCell[];
+
+/** Gate item ids, as in gate-policies.json */
+export type GateCalibrationItems = GateCalibrationId[];
+
+/** Met when the cell is valid and its value is one of in, or above gt, or at least gte */
+export type GateCalibrationCondition = {
+  cell: GateCalibrationCell;
+  in?: string[];
+  gt?: number;
+  gte?: number;
+};
+
+export type GateCalibrationCountLevels = {
+  low: number;
+  moderate: number;
+  high: number;
+};
+
 /** A package's own terms, at glossary/<package>.json (Y-2, the scoping idea of CSS Modules): each term stays local to the package unless export is true, so an agent working in another package sees only exported terms. Two packages exporting one term with different meanings fail packages/naive/src/checks/check-brand.mjs. Version 0.x, unevaluated. */
 export type Glossary = {
   /** The package whose terms these are; the file is glossary/<package>.json */
@@ -2346,6 +2478,42 @@ export type IdeaGraph = {
   /** The highest-signal ideas that build on nothing: what to develop next */
   next: string[];
   [key: string]: unknown;
+};
+
+/** The industry a venture's market sits in, described on standard dimensions (Porter's five forces, regulation, cost of error, capital intensity, clockspeed) so that how strict its phase gates should be is derived from it rather than fixed (EE-157). Cells hold a value with status known, estimated or unknown (never null), cited evidence and when it was true. Kept per venture for now; shared across ventures in Mentura later. */
+export type IndustryAnatomy = {
+  venture: string;
+  /** Often the NAICS code, such as naics-541511 */
+  id: string;
+  name: string;
+  /** The North American Industry Classification System code */
+  naics?: string;
+  /**
+   * @format date
+   */
+  updated?: string;
+  cells: {
+    /** none, light, licensed or heavy */
+    regulation?: AnatomyCellEnumCell;
+    /** What a wrong product costs its user: reversible, costly, harmful or safety-critical */
+    cost_of_error?: AnatomyCellEnumCell;
+    /** low, medium or high: what it costs to build and run before revenue */
+    capital_intensity?: AnatomyCellEnumCell;
+    /** Typical days from start to first revenue for a new entrant */
+    time_to_revenue_days?: AnatomyCellNumberCell;
+    /** slow, medium or fast: how fast products and processes change (Fine 1998) */
+    clockspeed?: AnatomyCellEnumCell;
+    /** low, medium or high (Porter 1979) */
+    supplier_power?: AnatomyCellEnumCell;
+    /** low, medium or high (Porter 1979) */
+    buyer_power?: AnatomyCellEnumCell;
+    /** low, medium or high (Porter 1979) */
+    threat_of_entrants?: AnatomyCellEnumCell;
+    /** low, medium or high (Porter 1979) */
+    threat_of_substitutes?: AnatomyCellEnumCell;
+    /** low, medium or high (Porter 1979) */
+    rivalry?: AnatomyCellEnumCell;
+  };
 };
 
 /** One tool or service a layer can use. Each layer lists its integrations in <layer>/tooling/integrations.json. Credentials are named, never stored. Entries under interface/ are interfaces, not integrations: they must reach at least three of the five other layers (EE-038) (packages/naive/src/checks/check-integrations.mjs). Knowledge integrations with a connector are the connector registry (EE-037): a venture's knowledge/sources.json names them by id. */
@@ -2766,6 +2934,48 @@ export type ListenerOperand = string | number | boolean | null | (string | numbe
 } | {
   /** A collection of projected records: competitors */
   ids: string;
+};
+
+/** One market a venture sells into, described on standard dimensions so that what counts as enough evidence can be derived from it rather than fixed (EE-157). Each cell holds a value with its status (known, estimated or unknown, and unknown is never null), its cited evidence graded like any validation evidence, and when it was true (valid_from, valid_to). The calibration in packages/naive/src/engine/gate-calibration.ts reads it to propose the venture's phase gate thresholds. */
+export type MarketAnatomy = {
+  venture: string;
+  id: string;
+  /** Who buys, in the venture's words; the ICP it serves when one exists */
+  segment: string;
+  /** The ideal customer profile id this market is for */
+  icp?: string;
+  /** The market the current phase's gate is calibrated against */
+  primary?: boolean;
+  /** The industry anatomy id (often a NAICS code) this market sits in */
+  industry?: string;
+  /**
+   * @format date
+   */
+  updated?: string;
+  cells: {
+    /** business, consumer, government or mixed */
+    customer_type?: AnatomyCellEnumCell;
+    /** How many buying organizations or people the venture can actually reach now (serviceable obtainable market as a head count, not dollars) */
+    reachable_buyers?: AnatomyCellNumberCell;
+    /** Serviceable available market per year in US dollars (Blank and Dorf; Steve Blank's TAM, SAM, SOM) */
+    serviceable_market_usd?: AnatomyCellNumberCell;
+    /** Expected annual contract value or yearly spend per buyer, in US dollars */
+    deal_size_usd?: AnatomyCellNumberCell;
+    /** Days from first conversation to a signed purchase */
+    sales_cycle_days?: AnatomyCellNumberCell;
+    /** How many roles must agree to a purchase (the buying center, Webster and Wind 1972) */
+    buying_roles?: AnatomyCellNumberCell;
+    /** once, yearly, monthly, weekly or daily */
+    purchase_frequency?: AnatomyCellEnumCell;
+    /** low, medium or high (Porter 1980) */
+    switching_cost?: AnatomyCellEnumCell;
+    /** none, indirect or direct */
+    network_effects?: AnatomyCellEnumCell;
+    /** emerging, growth, mature or declining (market life cycle) */
+    maturity?: AnatomyCellEnumCell;
+    /** fragmented, moderate or concentrated (by HHI bands of the 2023 Merger Guidelines: under 1000, 1000 to 1800, over 1800) */
+    concentration?: AnatomyCellEnumCell;
+  };
 };
 
 /** The venture's brand tokens, in the marketing package at marketing/brand.json: colors, typefaces with their licenses, the font each role uses, voice rules (the global stylesheet for words), the logo and marks, outside design systems by reference, and scopes where a route prefix overrides the venture brand (nearer context wins). Read by every agent's layout and every interface; checked by packages/naive/src/checks/check-brand.mjs. Translates Next.js global CSS, next/font and file-based icons (Y-3, Y-4, Y-5, T-1, T-2, P-24). Version 0.x, unevaluated. */
@@ -3223,6 +3433,14 @@ export type NaiveConfig = {
     preset?: "lenient" | "standard" | "strict";
     /** When true, each fail-closed shortfall blocks lifecycle advance unless a person overrides it with a reason */
     enforce?: boolean;
+    /** The minimum count of consenting interviews that reaches each level, in place of count_levels in packages/naive/src/phases/gate-policies.json (5 for moderate, 10 for high). packages/naive/src/engine/gate-calibration.ts proposes them from the venture's market (EE-157) */
+    count_levels?: {
+      low?: number;
+      moderate?: number;
+      high?: number;
+    };
+    /** Evidence collected more than this many months ago drops one level when the gate grades it; default 18. packages/naive/src/engine/gate-calibration.ts proposes 9 for a fast industry or an emerging market (EE-157) */
+    staleness_months?: number;
     /** Per phase, per gate item: the minimum evidence level and the boundary */
     items?: {
       [key: string]: {
@@ -5986,6 +6204,73 @@ export type ValidationTeam = {
     scored: string;
     note?: string;
   };
+};
+
+/** The framework's Venture Anatomy Matrix (EE-157), packages/naive/src/functions/strategy/venture-anatomy.json: the venture's architecture description after ISO/IEC/IEEE 42010:2022. Each sub-matrix is a model naming the record types it reads, its owning function, the Regulation S-K items it covers, the phase from which it is expected and how it nests. Each viewpoint frames concerns and selects the sub-matrices a view of the venture reads. It holds no venture data. */
+export type VentureAnatomy = {
+  version: string;
+  note?: string;
+  standard?: {
+    name: string;
+    /** A reference id in packages/naive/src/records/layers/purpose/references/references.json */
+    source: string;
+    /** How application time and system time are kept */
+    time?: string;
+    time_source?: string;
+  };
+  coverage: {
+    /** The reference id of the disclosure standard the coverage check follows */
+    source: string;
+    items: {
+      /** The S-K item number, or S-X for the financial statements */
+      id: string;
+      label: string;
+      source?: string;
+    }[];
+  };
+  submatrices: {
+    id: string;
+    label: string;
+    /** The question this model answers about the venture (a concern, ISO 42010) */
+    concern: string;
+    /** The record type that holds this model; null when none exists yet (status not built) */
+    record: string | null;
+    /** Further record types this model reads */
+    also?: string[];
+    /** When record is lean-canvas: the canvas boxes that are this model's cells */
+    boxes?: string[];
+    status: "built" | "not built";
+    /** The function data-model.json gives the record type */
+    owner: string | null;
+    /** The coverage items (S-K item ids) this model answers */
+    covers: string[];
+    from_phase: "discovery" | "validation" | "beachhead" | "scale" | "platform";
+    nesting?: {
+      /** The sub-matrix each record of this one sits in */
+      in?: string;
+      /** The field that names the record it sits in */
+      field?: string;
+      /** What each record of this one holds */
+      holds?: string;
+      /** The record type that holds the nested parts */
+      record?: string;
+    };
+    note?: string;
+  }[];
+  viewpoints: {
+    id: string;
+    label: string;
+    /** Whose concerns the viewpoint frames, and which */
+    concerns: string;
+    /** A reference id or citation for the viewpoint's convention */
+    source?: string;
+    /** A repository file that defines the view in full, such as the Lean Canvas */
+    definition?: string;
+    /** The sub-matrix ids the view reads */
+    reads: string[];
+    /** How the view is drawn: canvas renders the definition file (the Lean Canvas), outline orders the sub-matrices by coverage item (an S-1 outline), submatrices lists them in matrix order */
+    kind: "canvas" | "outline" | "submatrices";
+  }[];
 };
 
 /** The fields of venture.json a founder writes through foundation/core. Anything else, such as id, name or phase, is refused. */
