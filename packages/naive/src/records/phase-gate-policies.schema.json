@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "phase-gate-policies.schema.json",
+  "title": "Phase gate policies",
+  "description": "How strict each phase gate is (EE-156): per phase, the gate items with what proves each and how its strength is measured on the evidence levels (adapted from GRADE), and named presets that set each item's minimum level and boundary (fail-closed refuses the phase change, fail-open passes and names the shortfall as an open risk). Every threshold is an unvalidated prior.",
+  "type": "object",
+  "required": ["version", "levels", "phases"],
+  "$defs": {
+    "level": { "enum": ["very low", "low", "moderate", "high"] },
+    "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" }
+  },
+  "properties": {
+    "version": { "type": "string" },
+    "note": { "type": "string" },
+    "levels": {
+      "type": "array",
+      "description": "The evidence levels from weakest to strongest",
+      "items": { "$ref": "#/$defs/level" },
+      "minItems": 2
+    },
+    "count_levels": {
+      "type": "object",
+      "description": "For counted evidence, the minimum count that reaches each level above very low",
+      "propertyNames": { "enum": ["low", "moderate", "high"] },
+      "additionalProperties": { "type": "integer", "minimum": 1 }
+    },
+    "count_note": { "type": "string" },
+    "phases": {
+      "type": "object",
+      "description": "Keyed by phase id, as in packages/naive/src/phases/<id>/phase.json",
+      "propertyNames": { "pattern": "^[a-z][a-z0-9-]*$" },
+      "additionalProperties": {
+        "type": "object",
+        "required": ["items", "presets"],
+        "properties": {
+          "items": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": ["id", "label", "ask", "record", "measure", "requires"],
+              "properties": {
+                "id": { "$ref": "#/$defs/id" },
+                "label": { "type": "string" },
+                "ask": { "type": "string", "description": "The question the item answers" },
+                "record": { "type": ["string", "null"], "description": "The record type that proves it, or null when a person's act proves it" },
+                "measure": {
+                  "type": "object",
+                  "required": ["kind"],
+                  "properties": {
+                    "kind": { "enum": ["count", "grade", "coverage", "authority"], "description": "count: counted evidence mapped by count_levels; grade: the GRADE level of the record's cited evidence; coverage: share of open items a plan names; authority: a person's act" },
+                    "of": { "type": "string", "description": "What is counted, for kind count" }
+                  },
+                  "additionalProperties": false
+                },
+                "requires": { "type": "array", "items": { "type": "string" }, "description": "Fields the record must fill before its evidence is scored" }
+              },
+              "additionalProperties": false
+            }
+          },
+          "presets": {
+            "type": "object",
+            "description": "Named policies, keyed by preset id; each maps every item id to its minimum level and boundary",
+            "propertyNames": { "pattern": "^[a-z][a-z0-9-]*$" },
+            "additionalProperties": {
+              "type": "object",
+              "propertyNames": { "pattern": "^[a-z][a-z0-9-]*$" },
+              "additionalProperties": {
+                "type": "object",
+                "required": ["min", "boundary"],
+                "properties": {
+                  "min": { "$ref": "#/$defs/level" },
+                  "boundary": { "enum": ["fail-closed", "fail-open"] }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

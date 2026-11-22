@@ -13,7 +13,8 @@
     "validation-product-market-fit",
     "evidence",
     "validation-interview",
-    "validation-feedback"
+    "validation-feedback",
+    "validation-plan"
   ],
   "refs": [
     "validation-problem",
@@ -57,7 +58,8 @@
     "packages/naive/src/records/validation-operations-readiness.schema.json",
     "packages/naive/src/records/evidence.schema.json",
     "packages/naive/src/records/validation-interview.schema.json",
-    "packages/naive/src/records/validation-feedback.schema.json"
+    "packages/naive/src/records/validation-feedback.schema.json",
+    "packages/naive/src/records/validation-plan.schema.json"
   ],
   "templates": [
     "packages/naive/src/functions/strategy/kits/validation/templates/go-to-market.md",
@@ -101,7 +103,8 @@
     "validation-operations-readiness",
     "validation-weights",
     "validation-interview",
-    "validation-feedback"
+    "validation-feedback",
+    "validation-plan"
   ],
   "reads": [
     "venture",

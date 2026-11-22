@@ -680,6 +680,52 @@
           }
         }
       }
+    },
+    "phase_gates": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "How strict each phase gate is (EE-156, packages/naive/src/engine/phase-gate.mjs, route system/phase-gate): a preset from packages/naive/src/phases/gate-policies.json, per-item overrides, and whether lifecycle advance refuses a fail-closed shortfall. Without enforce the gate is reported only.",
+      "properties": {
+        "preset": {
+          "enum": [
+            "lenient",
+            "standard",
+            "strict"
+          ],
+          "description": "The policy preset; default standard"
+        },
+        "enforce": {
+          "type": "boolean",
+          "description": "When true, each fail-closed shortfall blocks lifecycle advance unless a person overrides it with a reason"
+        },
+        "items": {
+          "type": "object",
+          "description": "Per phase, per gate item: the minimum evidence level and the boundary",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "min": {
+                  "enum": [
+                    "very low",
+                    "low",
+                    "moderate",
+                    "high"
+                  ]
+                },
+                "boundary": {
+                  "enum": [
+                    "fail-open",
+                    "fail-closed"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "$defs": {
