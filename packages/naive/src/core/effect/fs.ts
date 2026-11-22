@@ -5,7 +5,7 @@
 import { Context, Effect, Layer } from "effect";
 import { appendFileSync, closeSync, existsSync, linkSync, mkdirSync, openSync, readdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
-import { IoError, NotFound, ParseError } from "./errors.mjs";
+import { IoError, NotFound, ParseError } from "./errors.ts";
 
 /**
  * @typedef {{

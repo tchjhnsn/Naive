@@ -18,13 +18,13 @@ import { spawnSync } from "node:child_process";
 import { basename, dirname, join } from "node:path";
 import { Effect } from "effect";
 import { blobHash, writeBlobEffect } from "./blobs.mjs";
-import { IoError, ParseError, Refused } from "./effect/errors.mjs";
-import { VentureFs } from "./effect/fs.mjs";
-import { runSync } from "./effect/run.mjs";
+import { IoError, ParseError, Refused } from "./effect/errors.ts";
+import { VentureFs } from "./effect/fs.ts";
+import { runSync } from "./effect/run.ts";
 import { currentSpan, emit } from "./instrumentation.mjs";
 import { ventureFile } from "./venture-paths.mjs";
 
-/** @typedef {import("./effect/errors.mjs").NotFound} NotFound */
+/** @typedef {import("./effect/errors.ts").NotFound} NotFound */
 /** A provenance line as JSON.parse gives it; typed loosely, as before, so callers keep their own narrower shapes. @typedef {any} Entry */
 
 export const LOG = "provenance.jsonl";

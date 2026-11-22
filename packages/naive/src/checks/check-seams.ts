@@ -24,9 +24,9 @@
 
 import { Effect } from "effect";
 import { ventureFile } from "../core/venture-paths.mjs";
-import { CannotRun } from "../core/effect/errors.mjs";
-import { readJson, VentureFs } from "../core/effect/fs.mjs";
-import { runMain, runSync } from "../core/effect/run.mjs";
+import { CannotRun } from "../core/effect/errors.ts";
+import { readJson, VentureFs } from "../core/effect/fs.ts";
+import { runMain, runSync } from "../core/effect/run.ts";
 import type { Connection, SpendRegister } from "../records/types/records.d.ts";
 
 export type FindingCode = "unpaid-connection" | "missing-connection" | "disconnected-connection" | "unapproved-spend";

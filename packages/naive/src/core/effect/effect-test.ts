@@ -4,9 +4,9 @@ import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Effect } from "effect";
-import { CannotRun, IoError, NotFound, Refused } from "./errors.mjs";
-import { MemoryFs, readJson, VentureFs, writeJson } from "./fs.mjs";
-import { describe, exitCode, runPromise, runSync } from "./run.mjs";
+import { CannotRun, IoError, NotFound, Refused } from "./errors.ts";
+import { MemoryFs, readJson, VentureFs, writeJson } from "./fs.ts";
+import { describe, exitCode, runPromise, runSync } from "./run.ts";
 
 const results: [string, boolean][] = [];
 const test = async (name: string, fn: () => void | Promise<void>) => {

@@ -1747,7 +1747,7 @@
       "id": "EE-125",
       "date": "2026-11-22",
       "status": "in-force",
-      "decision": "Naive's code uses Effect (effect.website), its first runtime dependency, pinned exactly. Code that reads or writes files, can fail, runs work concurrently or needs a service is written as Effects: it fails with Naive's tagged errors (packages/naive/src/core/effect/errors.mjs), reaches files through the VentureFs service so a test can provide an in-memory one, and runs from older code through runSync and runPromise, which keep a module's existing exports while its callers move. Pure functions (scoring arithmetic, the term engine, signal ids) stay plain functions. New code is written this way, and existing units move one per pull request with their tests unchanged.",
+      "decision": "Naive's code uses Effect (effect.website), its first runtime dependency, pinned exactly. Code that reads or writes files, can fail, runs work concurrently or needs a service is written as Effects: it fails with Naive's tagged errors (packages/naive/src/core/effect/errors.ts), reaches files through the VentureFs service so a test can provide an in-memory one, and runs from older code through runSync and runPromise, which keep a module's existing exports while its callers move. Pure functions (scoring arithmetic, the term engine, signal ids) stay plain functions. New code is written this way, and existing units move one per pull request with their tests unchanged.",
       "why": "Torian, 2026-11-22 00:37Z in the thread proving Naive's 13 functions: use effect.website, and use it more widely than the new code.",
       "related": [
         "EE-118"
@@ -1755,7 +1755,7 @@
       "affects": [
         {
           "kind": "path",
-          "target": "packages/naive/src/core/effect/run.mjs",
+          "target": "packages/naive/src/core/effect/run.ts",
           "root": "repo",
           "expect": "exists"
         }

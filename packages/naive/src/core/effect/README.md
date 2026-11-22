@@ -20,14 +20,14 @@ flowchart LR
 
 | Path | Holds |
 |---|---|
-| [`errors.mjs`](./errors.mjs) | The tagged errors, each with a readable `message`: `IoError`, `ParseError`, `NotFound`, `SchemaInvalid`, `Refused` (the gate, access or a writer rule), `CannotRun` (exit code 2) and `VersionConflict` (a compare-on-write whose base is stale, built with the connector contract's `(path, base, current)`), and their union `NaiveError`. Catch one with `Effect.catchTag`. |
-| [`fs.mjs`](./fs.mjs) | `VentureFs`, the file system as a service (`exists`, `readText`, `readBytes`, `writeText` of text or bytes, `append`, `createExclusive` for a lock file, `stat`, `link`, `list`, `isDirectory`, `rename`, `remove`); `NodeFs`, its layer over `node:fs`; `MemoryFs` and `memoryFs`, an in-memory one for tests; `readJson` and `writeJson`, which write JSON the way every record is written. |
-| [`run.mjs`](./run.mjs) | `runSync` and `runPromise` provide `NodeFs` and throw the tagged error itself, so a module moved to Effect keeps its exports; `runMain` runs a CLI's Effect, prints a failure in one line (`describe`) and sets the exit code (`exitCode`). |
+| [`errors.ts`](./errors.ts) | The tagged errors, each with a readable `message`: `IoError`, `ParseError`, `NotFound`, `SchemaInvalid`, `Refused` (the gate, access or a writer rule), `CannotRun` (exit code 2) and `VersionConflict` (a compare-on-write whose base is stale, built with the connector contract's `(path, base, current)`), and their union `NaiveError`. Catch one with `Effect.catchTag`. |
+| [`fs.ts`](./fs.ts) | `VentureFs`, the file system as a service (`exists`, `readText`, `readBytes`, `writeText` of text or bytes, `append`, `createExclusive` for a lock file, `stat`, `link`, `list`, `isDirectory`, `rename`, `remove`); `NodeFs`, its layer over `node:fs`; `MemoryFs` and `memoryFs`, an in-memory one for tests; `readJson` and `writeJson`, which write JSON the way every record is written. |
+| [`run.mjs`](./run.ts) | `runSync` and `runPromise` provide `NodeFs` and throw the tagged error itself, so a module moved to Effect keeps its exports; `runMain` runs a CLI's Effect, prints a failure in one line (`describe`) and sets the exit code (`exitCode`). |
 
 ## How to write Naive code with Effect
 
 - Use Effect for code that reads or writes files, can fail, runs work at once, or needs a service. Keep pure functions plain: scoring arithmetic, the term engine and signal ids gain nothing from it.
-- Fail with a tagged error from `errors.mjs`, never a thrown `Error`. Add a new tag there when none fits.
+- Fail with a tagged error from `errors.ts`, never a thrown `Error`. Add a new tag there when none fits.
 - Ask for `VentureFs` instead of importing `node:fs`, so a test can run on `MemoryFs`.
 - When moving an existing module, keep its exported names and shapes (wrap with `runSync` or `runPromise`) and leave its tests unchanged, one unit per pull request.
 - Export the Effect behind each moved function too, named after it with the suffix `Effect` (`record` and `recordEffect`, `writeBlob` and `writeBlobEffect`), so code moved later composes the Effects and not the runners.

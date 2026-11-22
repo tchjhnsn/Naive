@@ -5,9 +5,9 @@
 //   - runMain runs a CLI's Effect, prints a failure in one line and sets process.exitCode.
 // A .mjs file because router and store modules import it and Node does not strip types under node_modules.
 import { Cause, Effect, Exit } from "effect";
-import { NodeFs } from "./fs.mjs";
+import { NodeFs } from "./fs.ts";
 
-/** @typedef {import("./errors.mjs").NaiveError} NaiveError */
+/** @typedef {import("./errors.ts").NaiveError} NaiveError */
 
 /**
  * Throws the tagged error itself (not a wrapper), so old try/catch callers see `_tag` and the message.

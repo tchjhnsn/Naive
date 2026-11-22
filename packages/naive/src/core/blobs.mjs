@@ -16,9 +16,9 @@
 
 import { createHash } from "node:crypto";
 import { Effect } from "effect";
-import { ParseError } from "./effect/errors.mjs";
-import { VentureFs } from "./effect/fs.mjs";
-import { runSync } from "./effect/run.mjs";
+import { ParseError } from "./effect/errors.ts";
+import { VentureFs } from "./effect/fs.ts";
+import { runSync } from "./effect/run.ts";
 import { ventureFile } from "./venture-paths.mjs";
 
 /** The blob store's folder, as a logical path in a venture. Every layout keeps .naive/ at the top. */
@@ -58,7 +58,7 @@ export const hasBlob = (/** @type {string} */ dir, /** @type {string} */ sha256)
  * temporary file is removed whether or not the rename happened.
  * @param {string} dir the venture folder
  * @param {string | Buffer} bytes
- * @returns {Effect.Effect<string, import("./effect/errors.mjs").IoError, "naive/VentureFs">}
+ * @returns {Effect.Effect<string, import("./effect/errors.ts").IoError, "naive/VentureFs">}
  */
 export const writeBlobEffect = (dir, bytes) => Effect.gen(function* () {
   const fs = yield* VentureFs;
@@ -86,7 +86,7 @@ export const writeBlob = (dir, bytes) => runSync(writeBlobEffect(dir, bytes));
  * and with ParseError when the file there does not hash to its name (a damaged blob is never served).
  * @param {string} dir
  * @param {string} sha256
- * @returns {Effect.Effect<Buffer, import("./effect/errors.mjs").IoError | import("./effect/errors.mjs").NotFound | ParseError, "naive/VentureFs">}
+ * @returns {Effect.Effect<Buffer, import("./effect/errors.ts").IoError | import("./effect/errors.ts").NotFound | ParseError, "naive/VentureFs">}
  */
 export const readBlobEffect = (dir, sha256) => Effect.gen(function* () {
   if (typeof sha256 !== "string" || !HEX.test(sha256)) return yield* Effect.fail(new ParseError({ path: String(sha256), cause: "not a SHA-256 in lowercase hex" }));
