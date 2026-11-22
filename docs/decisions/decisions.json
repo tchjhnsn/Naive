@@ -1747,7 +1747,7 @@
       "id": "EE-125",
       "date": "2026-11-22",
       "status": "in-force",
-      "decision": "Naive's code uses Effect (effect.website), its first runtime dependency, pinned exactly. Code that reads or writes files, can fail, runs work concurrently or needs a service is written as Effects: it fails with Naive's tagged errors (packages/naive/src/core/effect/errors.mjs), reaches files through the VentureFs service so a test can provide an in-memory one, and runs from older code through runSync and runPromise, which keep a module's existing exports while its callers move. Pure functions (scoring arithmetic, the term engine, signal ids) stay plain functions. New code is written this way, and existing units move one per pull request with their tests unchanged.",
+      "decision": "Naive's code uses Effect (effect.website), its first runtime dependency, pinned exactly. Code that reads or writes files, can fail, runs work concurrently or needs a service is written as Effects: it fails with Naive's tagged errors (packages/naive/src/core/effect/errors.ts), reaches files through the VentureFs service so a test can provide an in-memory one, and runs from older code through runSync and runPromise, which keep a module's existing exports while its callers move. Pure functions (scoring arithmetic, the term engine, signal ids) stay plain functions. New code is written this way, and existing units move one per pull request with their tests unchanged.",
       "why": "Torian, 2026-11-22 00:37Z in the thread proving Naive's 13 functions: use effect.website, and use it more widely than the new code.",
       "related": [
         "EE-118"
@@ -1755,7 +1755,7 @@
       "affects": [
         {
           "kind": "path",
-          "target": "packages/naive/src/core/effect/run.mjs",
+          "target": "packages/naive/src/core/effect/run.ts",
           "root": "repo",
           "expect": "exists"
         }
@@ -1973,6 +1973,26 @@
         {
           "kind": "path",
           "target": "scripts/to-ts.ts",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
+      "id": "EE-161",
+      "date": "2026-11-22",
+      "status": "in-force",
+      "decision": "A venture runs its Effects through one runtime. ventureRuntime(dir, overrides) in packages/naive/src/core/effect/runtime.ts is a ManagedRuntime built from VentureLayer(dir, overrides), the layer of the venture's services: built on its first run, shared by every run after, and released by dispose, after which a run dies. The layer starts with VentureFs alone, NodeFs unless overrides.fs gives another layer (MemoryFs in a test); each other service in docs/design/TYPESCRIPT_AND_EFFECT_RUNTIME_2026-11-22.md joins it in its own phase, and those that read the venture's files read under dir. runSync, runPromise and runMain run through one such runtime for the process, so older callers keep their shapes. This is phase 2 of that design.",
+      "why": "Built in the 2026-11-22 TypeScript migration swarm as the design's phase 2. One layer is the one place a venture's services are chosen, so a test or a host replaces a service by passing a layer, and later services join without changing the code that boots a runtime. A runtime per venture keeps two ventures' services and lifetimes apart, and the runners stop building NodeFs again on every run.",
+      "related": [
+        "EE-125",
+        "EE-126",
+        "EE-160"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/core/effect/runtime.ts",
           "root": "repo",
           "expect": "exists"
         }

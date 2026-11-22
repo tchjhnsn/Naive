@@ -29,8 +29,8 @@
 
 import { createHash } from "node:crypto";
 import { Effect } from "effect";
-import { Refused, VersionConflict } from "../../core/effect/errors.mjs";
-import { runSync } from "../../core/effect/run.mjs";
+import { Refused, VersionConflict } from "../../core/effect/errors.ts";
+import { runSync } from "../../core/effect/run.ts";
 
 export { VersionConflict };
 

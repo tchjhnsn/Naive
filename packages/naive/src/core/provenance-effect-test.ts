@@ -5,8 +5,8 @@
 import assert from "node:assert/strict";
 import { Effect } from "effect";
 import { blobFile, blobHash, hasBlobEffect, readBlobEffect, writeBlobEffect } from "./blobs.mjs";
-import { IoError } from "./effect/errors.mjs";
-import { memoryFs, VentureFs } from "./effect/fs.mjs";
+import { IoError } from "./effect/errors.ts";
+import { memoryFs, VentureFs } from "./effect/fs.ts";
 import { lineHash, recordGateEffect, stealDeadLockEffect, withLockFileEffect } from "./provenance.mjs";
 
 const results: [string, boolean][] = [];
