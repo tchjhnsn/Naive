@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Installing a decision roadmap (packages/naive/src/engine/check-roadmap.mjs): each step's frame proposes its decisions,
+// Installing a decision roadmap (packages/naive/src/engine/check-roadmap.ts): each step's frame proposes its decisions,
 // open, in the roadmap's order. Nothing is decided: the docket and cross-function ranking decide what
 // the founder sees first. A decision already made is kept, so switching roadmaps mid-way re-orders only
 // what remains. Steps are proposed from the frame itself; judging a frame's premises is naive frame's job.
@@ -9,7 +9,7 @@
 
 import { existsSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { check, ordered, roadmapOf, roadmaps } from "./check-roadmap.mjs";
+import { check, ordered, roadmapOf, roadmaps } from "./check-roadmap.ts";
 import { frameOf } from "./frames.mjs";
 
 /** Propose every step's decisions, open, with the step's place in the roadmap in the note.
@@ -19,7 +19,7 @@ export async function install(dir, id, { agentId = "roadmaps", harness, model } 
   if (!r) return { ok: false, error: `no roadmap ${id}; node packages/naive/src/engine/roadmaps.mjs list shows them` };
   const bad = check(r);
   if (bad.length) return { ok: false, error: bad.join("\n") };
-  const { propose, decisions } = await import("./decisions.mjs");
+  const { propose, decisions } = await import("./decisions.ts");
   const proposed = [], kept = [];
   for (const [i, s] of ordered(r).entries()) {
     const f = frameOf(s.frame);

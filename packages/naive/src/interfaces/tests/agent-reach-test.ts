@@ -1,4 +1,4 @@
-// Tests a function agent's write reach through the router (packages/naive/src/engine/agents/reach.mjs, reachOfWrite
+// Tests a function agent's write reach through the router (packages/naive/src/engine/agents/reach.ts, reachOfWrite
 // in packages/naive/src/router/gate-hooks.mjs): an agent acting as <function>-agent writes only decisions/* and the
 // routes of the record types the data model gives its function. finance-agent writing a customer is refused before
 // the schema and nothing lands; its decision write is not refused for reach; a person, a lead and plain agent are not
@@ -11,7 +11,7 @@ import { existsSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { call } from "../../router/router.mjs";
-import { functionOfAgent, functionWrites, reachRefusal } from "../../engine/agents/reach.mjs";
+import { functionOfAgent, functionWrites, reachRefusal } from "../../engine/agents/reach.ts";
 import { functionAgent } from "../../engine/agents/function-spec.ts";
 
 const repo = new URL("../../../../../", import.meta.url).pathname;

@@ -1,4 +1,4 @@
-// Step definitions for strategic-foundation.feature (EE-051), run by packages/naive/src/engine/bdd.mjs, on a copy of
+// Step definitions for strategic-foundation.feature (EE-051), run by packages/naive/src/engine/bdd.ts, on a copy of
 // the example workspace.
 
 import { spawnSync } from "node:child_process";

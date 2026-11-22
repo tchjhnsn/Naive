@@ -15,7 +15,7 @@ import { handle } from "../mcp/server.mjs";
 import { DEFAULTS, configFor, installed, packagesOf } from "../../engine/naive-config.mjs";
 import { evaluate, matches, packageRules, patternRe, rulesFor } from "../../engine/gate.mjs";
 import { inbox, variantsDecision } from "../../engine/gate-drafts.mjs";
-import { decisions } from "../../engine/decisions.mjs";
+import { decisions } from "../../engine/decisions.ts";
 import { entries } from "../../core/provenance.ts";
 
 const repo = new URL("../../../../..", import.meta.url).pathname;
@@ -177,7 +177,7 @@ const validRecord = (file, schema) => spawnSync(process.execPath, [join(repo, "p
 
 // X-4: the gate is fast and never calls a model; confidence routing reads a score already computed.
 {
-  for (const f of ["packages/naive/src/engine/gate.mjs", "packages/naive/src/engine/access.mjs", "packages/naive/src/engine/naive-config.mjs"]) {
+  for (const f of ["packages/naive/src/engine/gate.mjs", "packages/naive/src/engine/access.ts", "packages/naive/src/engine/naive-config.mjs"]) {
     const src = readFileSync(join(repo, f), "utf8");
     expect(`X-4: ${f} has no network, process or model call`, !/\bfetch\s*\(|https?:\/\/|child_process|node:http|node:https|node:net|use-model|spawn/.test(src));
   }

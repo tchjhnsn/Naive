@@ -1,4 +1,4 @@
-// Publishing (packages/naive/src/engine/publish.mjs, packages/naive/src/engine/check-publications.mjs): build compiles public MDX into an artifact
+// Publishing (packages/naive/src/engine/publish.mjs, packages/naive/src/engine/check-publications.ts): build compiles public MDX into an artifact
 // and leak-checks it; the gate writes a publish decision with its door, exposure and reversibility and
 // refuses without a person; the manifest keeps the live sha256 and earlier versions; rollback, embargo,
 // and a changed record marking the publication stale.
@@ -8,7 +8,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { build, publish, rollback, stale, manifest, mayApprove, Refused } from "./publish.mjs";
-import { checkVenture } from "./check-publications.mjs";
+import { checkVenture } from "./check-publications.ts";
 
 const dir = mkdtempSync(join(tmpdir(), "publish-"));
 let failed = 0;

@@ -1,6 +1,6 @@
 // The telos framework's adapter: reads an unmigrated telos.json (the fallback) and renders the telos view
 // of a migrated venture from canonical goals and exit criteria (views, not copies). Only this adapter,
-// the telos-to-goals migration and the telos's own check read telos.json (packages/naive/src/engine/check-frameworks.mjs).
+// the telos-to-goals migration and the telos's own check read telos.json (packages/naive/src/engine/check-frameworks.ts).
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";

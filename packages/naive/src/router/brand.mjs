@@ -1,6 +1,6 @@
 // The brand and asset verbs of the CLI (mentura brand ..., mentura assets ...). Every write goes
 // through the router, so it is checked against its schema and logged in provenance; the logic lives
-// in packages/naive/src/engine/brand.mjs and packages/naive/src/engine/assets.mjs.
+// in packages/naive/src/engine/brand.ts and packages/naive/src/engine/assets.ts.
 //
 //   mentura assets add <public/file> --venture <id> --source <who or url> --license <id> --credit <who>
 //                                     [--alt <text>] [--decorative] [--as person]
@@ -23,8 +23,8 @@ import { existsSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { dirname, join, resolve as resolvePath } from "node:path";
 import { call, ventureDir } from "./router.mjs";
 import { agentFromEnv, record as prov } from "../core/provenance.ts";
-import { altStatement, checkAssets, facts as allFacts, factsOf, REGISTER, registerOf } from "../engine/assets.mjs";
-import { brandOf, checkBrand, resolveBrand, sitemapOf, sitemapXml, termsFor, tokens, voice } from "../engine/brand.mjs";
+import { altStatement, checkAssets, facts as allFacts, factsOf, REGISTER, registerOf } from "../engine/assets.ts";
+import { brandOf, checkBrand, resolveBrand, sitemapOf, sitemapXml, termsFor, tokens, voice } from "../engine/brand.ts";
 import { ventureFile } from "../core/venture-paths.ts";
 
 const VERSION = "0.1.0";
@@ -193,7 +193,7 @@ export async function main(argv, { workspace } = {}) {
     if (verb === "resolve") { if (!brand) return need(); return show({ ok: true, result: resolveBrand(brand, arg ?? "") }); }
     if (verb === "terms") { const t = termsFor(dir, arg); return show({ ok: true, result: t }, t.terms.map((x) => `${x.term}  (${x.from}): ${x.meaning}`).join("\n") || `no terms reach ${arg}`); }
     if (verb === "voice") {
-      const v = opt("text") !== undefined ? { violations: (await import("../engine/brand.mjs")).voiceCheck(opt("text"), brand ? resolveBrand(brand, opt("for") ?? "").voice.rules : []) } : voice(dir, brand);
+      const v = opt("text") !== undefined ? { violations: (await import("../engine/brand.ts")).voiceCheck(opt("text"), brand ? resolveBrand(brand, opt("for") ?? "").voice.rules : []) } : voice(dir, brand);
       const lines = v.violations.map((x) => `${x.file ? `${x.file}:` : "line "}${x.line}  "${x.found}" breaks ${x.rule}${x.use ? `; use "${x.use}"` : ""}`);
       if (flag("json")) console.log(JSON.stringify(v, null, 2)); else console.log(lines.join("\n") || "keeps to the voice rules");
       return v.violations.length ? 1 : 0;

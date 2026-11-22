@@ -8,7 +8,7 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "nod
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { hash, mayKnow, visibilityOf } from "../../../engine/visibility.mjs";
-import { leaks } from "../../../engine/check-leaks.mjs";
+import { leaks } from "../../../engine/check-leaks.ts";
 import { build } from "./publish-build.mjs";
 
 const repo = new URL("../../../../../..", import.meta.url).pathname;

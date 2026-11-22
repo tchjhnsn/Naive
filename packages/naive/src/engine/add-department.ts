@@ -3,7 +3,7 @@
 // governance layer is on, and the function's starter research program at programs/<function>.md when the venture
 // has none (packages/naive/src/engine/research-programs.mjs). Nothing else is created, so a venture holds only what it uses.
 //
-//   node packages/naive/src/engine/add-department.mjs <venture dir> <department id> [--group]
+//   node packages/naive/src/engine/add-department.ts <venture dir> <department id> [--group]
 //
 // --group puts the folders under primary/ or support/, by the department's place in the value
 // chain. The grouping is for looking at only: the department.json tag says what the folder is.
@@ -11,14 +11,14 @@
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { catalog, foldersOf } from "./departments.mjs";
+import { catalog, foldersOf } from "./departments.ts";
 import { seedPrograms } from "./research-programs.mjs";
 import { ventureFile } from "../core/venture-paths.ts";
 
 const args = process.argv.slice(2);
 const group = args.includes("--group");
 const [dir, id] = args.filter((a) => !a.startsWith("--"));
-if (!dir || !id) { console.error("usage: node packages/naive/src/engine/add-department.mjs <venture dir> <department id> [--group]"); process.exit(2); }
+if (!dir || !id) { console.error("usage: node packages/naive/src/engine/add-department.ts <venture dir> <department id> [--group]"); process.exit(2); }
 if (!existsSync(join(dir, "venture.json"))) { console.error(`${dir} has no venture.json`); process.exit(2); }
 const all = catalog();
 const d = all.find((x) => x.id === id);

@@ -9,8 +9,8 @@
 //   node packages/naive/src/engine/workspace.mjs rename <workspace> "<new name>"
 //
 // ensureWorkspace makes a workspace (Torian, 2026-10-30): naive-workspace.json named "Naive workspace"
-// until renamed, with its IANA timeZone (the clock, packages/naive/src/engine/clock.mjs), the calendar with its default
-// "venture" calendar (packages/naive/src/engine/calendar.mjs), AGENTS.md and raw/, inbox/, meta/, founder/. A workspace
+// until renamed, with its IANA timeZone (the clock, packages/naive/src/engine/clock.ts), the calendar with its default
+// "venture" calendar (packages/naive/src/engine/calendar.ts), AGENTS.md and raw/, inbox/, meta/, founder/. A workspace
 // always holds a venture: naive workspace init creates, ports or migrates one in the same step.
 //
 // Cross-venture reads (canRead): on by default; only published artifacts cross, never records or _private/.
@@ -19,9 +19,9 @@
 import { appendFileSync, existsSync, mkdirSync, readdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { basename, dirname, join, relative, resolve } from "node:path";
 import { ventureFile } from "../core/venture-paths.ts";
-import { systemZone, validZone } from "./clock.mjs";
-import { initCalendar } from "./calendar.mjs";
-import { goals } from "./canonical.mjs";
+import { systemZone, validZone } from "./clock.ts";
+import { initCalendar } from "./calendar.ts";
+import { goals } from "./canonical.ts";
 import { validateFile } from "../records/validate.ts";
 
 export const WORKSPACE_FILE = "naive-workspace.json";
@@ -101,7 +101,7 @@ export function ventureTerms(dir) {
   const files = ["venture.json", "foundation/problem.json", "purpose/validation/problem.json", "foundation/icp.json", "purpose/icp.json"];
   const icp = ventureFile(dir, "foundation/icp");
   const all = [...files.map((f) => ventureFile(dir, f)), ...(existsSync(icp) ? readdirSync(icp).filter((f) => f.endsWith(".json")).map((f) => join(icp, f)) : [])];
-  // The venture's goals come through the canonical core (packages/naive/src/engine/canonical.mjs), never from telos.json.
+  // The venture's goals come through the canonical core (packages/naive/src/engine/canonical.ts), never from telos.json.
   return terms([...all.flatMap((f) => strings(read(f))), ...strings(goals(dir))].join(" "));
 }
 

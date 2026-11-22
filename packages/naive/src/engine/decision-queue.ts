@@ -1,5 +1,5 @@
 // The decision queue (EE-127): one short ranked queue of open decisions across the 13 functions, right for the
-// venture's phase. packages/naive/src/engine/decision-index.mjs scores each decision (the docket's score wrapped with
+// venture's phase. packages/naive/src/engine/decision-index.ts scores each decision (the docket's score wrapped with
 // impact, weight and requirements); this module adds four things on top and changes none of that score:
 //
 //   1. the owning function of each decision (ownerOf): its class's owner, else the function of the record it decides,
@@ -13,7 +13,7 @@
 //
 // The rules are pure functions. Reading what they need (phase weights, role templates, decision rights, the function
 // matrices, lead plans, goals and handoffs) is an Effect through VentureFs (EE-125); rank() runs it with runSync.
-// A .mjs file because decision-index.mjs imports it and the router imports that.
+// A .mjs file because decision-index.ts imports it and the router imports that.
 
 import { Effect } from "effect";
 import { join } from "node:path";
@@ -22,7 +22,7 @@ import { runSync } from "../core/effect/run.ts";
 import { ventureFile } from "../core/venture-paths.ts";
 import { phaseGateRecords, phaseWeights, ROOT } from "../phases/phases.mjs";
 import { readDataModel } from "../records/index.ts";
-import { recordOf } from "./decisions.mjs";
+import { recordOf } from "./decisions.ts";
 
 /** The owner of a decision no rule assigns. */
 export const VENTURE = "venture";

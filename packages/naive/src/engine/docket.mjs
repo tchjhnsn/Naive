@@ -8,7 +8,7 @@
 //   node packages/naive/src/engine/docket.mjs <venture dir> --replay [--steps <n>]   settles the top decision, again and again, in a copy
 //
 // The model, in code (no model call):
-//   own(d)    a decision's own weight: 10 for being open, plus ownScore in packages/naive/src/engine/decisions.mjs (deadline,
+//   own(d)    a decision's own weight: 10 for being open, plus ownScore in packages/naive/src/engine/decisions.ts (deadline,
 //             staleness, what it unlocks, the foundation, a draft to approve, outcomes to test)
 //   value(d)  own(d) plus the own weight of every decision it holds, transitively. A fail-closed gate carries
 //             the weight of everything waiting behind it, so one decision can outweigh whole functions.
@@ -17,14 +17,14 @@
 //             urgency but never outweighs one heavy decision. Each held decision counts once, under its gate.
 //   dominant  a decision whose value is more than the attention of every other function put together.
 //
-// Function: the core package whose record the decision decides (packages/naive/src/engine/decision-analytics.mjs).
+// Function: the core package whose record the decision decides (packages/naive/src/engine/decision-analytics.ts).
 
 import { spawnSync } from "node:child_process";
 import { cpSync, mkdtempSync, mkdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { basename, join } from "node:path";
-import { decisions, ownScore } from "./decisions.mjs";
-import { analytics } from "./decision-analytics.mjs";
+import { decisions, ownScore } from "./decisions.ts";
+import { analytics } from "./decision-analytics.ts";
 import { PACKAGES } from "./packages.mjs";
 
 const ACTIONABLE = new Set(["now", "overdue", "stale"]);
@@ -38,8 +38,8 @@ export function docket(dir, now = Date.parse(process.env.DECISIONS_NOW ?? "") ||
   return { venture: r.venture, ...rankDocket(ds, r.phase, now) };
 }
 
-/** The ranking itself, over decisions as decisions.mjs resolves them, each with its function ({id, title}).
- *  Pure, so scenarios can be ranked without a venture on disk (packages/naive/src/engine/docket-eval.mjs). */
+/** The ranking itself, over decisions as decisions.ts resolves them, each with its function ({id, title}).
+ *  Pure, so scenarios can be ranked without a venture on disk (packages/naive/src/engine/docket-eval.ts). */
 export function rankDocket(all, phase, now = Date.now()) {
   const ds = all.filter((d) => OPEN.has(d.render));
   const own = new Map(ds.map((d) => { const o = ownScore(d, phase, now); return [d.id, { score: BASE + o.score, why: o.why }]; }));

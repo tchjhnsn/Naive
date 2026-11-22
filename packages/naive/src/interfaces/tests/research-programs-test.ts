@@ -18,7 +18,7 @@ import { entries } from "../../core/provenance.ts";
 import { blobHash, hasBlob } from "../../core/blobs.ts";
 import { readAsOf } from "../../store/as-of.ts";
 import { writerRule } from "../../engine/gate.mjs";
-import { catalog } from "../../engine/departments.mjs";
+import { catalog } from "../../engine/departments.ts";
 import { functionsOf, seedPrograms, templateOf } from "../../engine/research-programs.mjs";
 import { upgrade } from "../../engine/upgrades.mjs";
 import { draft as draftProgram } from "../../engine/generators/research-program.ts";
@@ -123,7 +123,7 @@ try {
   expect("upgrade logs each copy in provenance", ["programs/products.md", "programs/finance.md"].every((p) => entries(dir).some((e: { entity?: string, activity?: string }) => e.entity === p && e.activity === "write")));
   const again = await upgrade(dir, { git: false }) as { release: { programs: unknown[] } };
   expect("a second upgrade copies nothing", again.release.programs.length === 0 && seedPrograms(dir).length === 0);
-  const added = node("packages/naive/src/engine/add-department.mjs", dir, "strategy");
+  const added = node("packages/naive/src/engine/add-department.ts", dir, "strategy");
   expect("importing a function again never copies over its program", added.status === 0 && unchanged(), added.stderr);
 
   // The research skill is listed for the interface layer and shipped in the plugin.

@@ -7,7 +7,7 @@ import { randomUUID } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { confidenceCall, evaluate, writerRule } from "../engine/gate.mjs";
 import { trialOf, writeHeld } from "../engine/gate-drafts.mjs";
-import { reachRefusal } from "../engine/agents/reach.mjs";
+import { reachRefusal } from "../engine/agents/reach.ts";
 import { entries as provEntries } from "../core/provenance.ts";
 import { checksFor, configFor } from "../engine/naive-config.mjs";
 import { ventureFile } from "../core/venture-paths.ts";
@@ -30,7 +30,7 @@ export function ownerOfWrite({ dir, r, route, file, projector, remote = false, a
 /**
  * A function agent's write reach, checked on every write before the schema: an agent acting as <function>-agent
  * (a function in departments.json) writes only a route its derived write globs match (functionWrites in
- * packages/naive/src/engine/agents/reach.mjs: decisions/* and the routes of the record types the data model gives
+ * packages/naive/src/engine/agents/reach.ts: decisions/* and the routes of the record types the data model gives
  * its function). A person's call made while the process says an agent is acting counts as the agent's. A person, the
  * projector and every other role (leads, researchers, the chief of staff, plain agent) are not checked here.
  * Returns the refusal as a router answer, or null.

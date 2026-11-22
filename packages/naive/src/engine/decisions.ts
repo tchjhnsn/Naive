@@ -3,7 +3,7 @@
 // with its parent, its boundary and whether it renders now. Behaviors:
 // packages/naive/src/functions/strategy/features/decisions.feature.
 //
-//   node packages/naive/src/engine/decisions.mjs <venture or workspace dir> [--json | --md]
+//   node packages/naive/src/engine/decisions.ts <venture or workspace dir> [--json | --md]
 //
 // Sources: decision records (decisions/*.decision.json beside the record they decide), foundation
 // statements no person has confirmed, and agents' drafts of gated records waiting in _drafts/.
@@ -30,8 +30,8 @@ import { dirname, isAbsolute, join, relative } from "node:path";
 import { FRAME, foundation } from "./foundation.mjs";
 import { actingAgent, agentFromEnv, record as prov } from "../core/provenance.ts";
 import { glob as routeFileGlob, routes } from "../records/routes/routes.ts";
-// Caching hook (F-12): the decision list is computed once per router action (packages/naive/src/engine/caching.mjs).
-import { memo } from "./caching.mjs";
+// Caching hook (F-12): the decision list is computed once per router action (packages/naive/src/engine/caching.ts).
+import { memo } from "./caching.ts";
 import { roles as ventureRoles } from "./venture-type.mjs";
 import { impact } from "./impact.mjs";
 import { mark } from "./stale.mjs";
@@ -610,7 +610,7 @@ export function matrix(r) {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const arg = process.argv[2];
-  if (!arg) { console.error("usage: node packages/naive/src/engine/decisions.mjs <venture or workspace dir> [--json | --md]"); process.exit(2); }
+  if (!arg) { console.error("usage: node packages/naive/src/engine/decisions.ts <venture or workspace dir> [--json | --md]"); process.exit(2); }
   const walk = (d) => existsSync(join(d, "venture.json")) ? [d] : readdirSync(d, { withFileTypes: true }).filter((e) => e.isDirectory() && !e.name.startsWith(".") && !e.name.startsWith("_")).flatMap((e) => walk(join(d, e.name)));
   const dirs = walk(arg);
   const rs = dirs.map((d) => ({ dir: d, ...decisions(d) }));

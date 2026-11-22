@@ -15,8 +15,8 @@
 //
 // No model is called and nothing here reaches the network.
 //
-//   node packages/naive/src/engine/assets.mjs <venture dir> facts [--json]       the facts code reads from each file in public/
-//   node packages/naive/src/engine/assets.mjs <venture dir> check [--json]       the register check (also packages/naive/src/checks/check-assets.ts)
+//   node packages/naive/src/engine/assets.ts <venture dir> facts [--json]       the facts code reads from each file in public/
+//   node packages/naive/src/engine/assets.ts <venture dir> check [--json]       the register check (also packages/naive/src/checks/check-assets.ts)
 
 import { createHash } from "node:crypto";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
@@ -200,7 +200,7 @@ export function checkAssets(dir) {
 if (import.meta.url === `file://${process.argv[1]}`) {
   const [dir, mode = "check"] = process.argv.slice(2).filter((a) => !a.startsWith("--"));
   const json = process.argv.includes("--json");
-  if (!dir || !existsSync(join(dir, "venture.json")) || !statSync(dir).isDirectory()) { console.error("usage: node packages/naive/src/engine/assets.mjs <venture dir> facts|check [--json]"); process.exit(2); }
+  if (!dir || !existsSync(join(dir, "venture.json")) || !statSync(dir).isDirectory()) { console.error("usage: node packages/naive/src/engine/assets.ts <venture dir> facts|check [--json]"); process.exit(2); }
   if (mode === "facts") { const f = facts(dir); console.log(json ? JSON.stringify({ facts: f }, null, 2) : f.map((x) => `${x.path}  ${x.type}${x.width ? ` ${x.width}x${x.height}` : ""}  ${x.bytes} bytes`).join("\n") || "public/ is empty"); process.exit(0); }
   const r = checkAssets(dir);
   if (json) console.log(JSON.stringify(r, null, 2));

@@ -7,7 +7,7 @@ import { spawnSync } from "node:child_process";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { approve, propose } from "../../../../src/engine/decisions.mjs";
+import { approve, propose } from "../../../../src/engine/decisions.ts";
 import { call, resolve } from "../../../../src/router/router.mjs";
 
 const repo = join(import.meta.dirname, "../../..");

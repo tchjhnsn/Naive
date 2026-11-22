@@ -27,7 +27,7 @@ import { readDataModel, readSchema, venturePaths } from "../records/index.ts";
 import { validateValue } from "../records/validate.ts";
 import type { AnatomyCellEnumCell, AnatomyCellNumberCell, GateCalibration, IndustryAnatomy, MarketAnatomy, PhaseGatePolicies } from "../records/types/records.d.ts";
 import { LEVELS } from "./evidence-grade.mjs";
-import { decisionFile, propose } from "./decisions.mjs";
+import { decisionFile, propose } from "./decisions.ts";
 import { CONFIG } from "./naive-config.mjs";
 import { DEFAULT_PRESET, POLICIES } from "./phase-gate.mjs";
 

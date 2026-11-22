@@ -31,7 +31,7 @@ import { pathToFileURL } from "node:url";
 import { redact } from "../packages/naive/src/engine/redact.mjs";
 import { listFrameworks } from "../packages/naive/src/engine/user-frameworks.mjs";
 import { findWorkspace } from "../packages/naive/src/engine/workspace.mjs";
-import { localDate, zoneOf } from "../packages/naive/src/engine/clock.mjs";
+import { localDate, zoneOf } from "../packages/naive/src/engine/clock.ts";
 import { ventureFile } from "../packages/naive/src/core/venture-paths.ts";
 import { humanText, transcriptFiles, walk } from "../packages/naive/src/engine/transcripts.mjs";
 

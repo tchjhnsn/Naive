@@ -1,7 +1,7 @@
 // Detector criteria at run time (docs/design/SIGNAL_DETECTION_2026-11-07.md, build item 5). A call site that turns
 // a score into a yes or no reads its line here instead of holding a constant:
 //
-//   import { criterionFor, line } from "./detectors.mjs"
+//   import { criterionFor, line } from "./detectors.ts"
 //   line(dir, "gate-confidence", 0.7)   ->  the yes line in force for that venture
 //   criterionFor(dir, "gate-confidence") ->  { criterion: { yes, no?, yes_when }, from } or null
 //

@@ -324,7 +324,7 @@ else if (cmd === "build" || cmd === "start") {
 } else if (cmd === "diagnose") {
   process.exit(run("scripts/diagnose-transcripts.mjs", rest));
 } else if (cmd === "activity") {
-  process.exit(run("packages/naive/src/engine/activity.mjs", rest));
+  process.exit(run("packages/naive/src/engine/activity.ts", rest));
 } else if (cmd === "workspace") {
   // A workspace (packages/naive/src/engine/workspace-init.mjs): made with its clock, calendar and first venture; renamed in place.
   const [sub, ...args] = rest;
@@ -342,11 +342,11 @@ else if (cmd === "build" || cmd === "start") {
   // A workspace from before the calendar gets its clock and calendar the first time it asks for them.
   try { if (!existsSync(join(ws, "calendar/calendars"))) ensureWorkspace(ws); } catch (e) { console.error(e.message); process.exit(1); }
   const [sub = "list", ...args] = rest[0] && !rest[0].startsWith("--") ? rest : ["list", ...rest];
-  process.exit(run("packages/naive/src/engine/calendar.mjs", [sub, ws, ...args.filter((a, i) => a !== "--workspace" && args[i - 1] !== "--workspace")]));
+  process.exit(run("packages/naive/src/engine/calendar.ts", [sub, ws, ...args.filter((a, i) => a !== "--workspace" && args[i - 1] !== "--workspace")]));
 } else if (cmd === "beta" || cmd === "bugs") {
-  // The plugin beta's gate (packages/naive/src/engine/beta-gate.mjs) and the bug summary (packages/naive/src/engine/bugs.mjs).
+  // The plugin beta's gate (packages/naive/src/engine/beta-gate.ts) and the bug summary (packages/naive/src/engine/bugs.ts).
   const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
-  process.exit(run(cmd === "beta" ? "packages/naive/src/engine/beta-gate.mjs" : "packages/naive/src/engine/bugs.mjs", [here(), ...(cmd === "beta" && !args.length ? ["status"] : args)]));
+  process.exit(run(cmd === "beta" ? "packages/naive/src/engine/beta-gate.ts" : "packages/naive/src/engine/bugs.ts", [here(), ...(cmd === "beta" && !args.length ? ["status"] : args)]));
 } else if (cmd === "trace") {
   // Traces in the venture's files (packages/naive/src/engine/trace-cli.ts, EE-121).
   const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");

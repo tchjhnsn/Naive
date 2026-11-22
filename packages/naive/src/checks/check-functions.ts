@@ -22,7 +22,7 @@
 // delegation, the cluster catalog) that cannot be read exits 2.
 
 import { join } from "node:path";
-import { PLANS } from "../engine/access.mjs";
+import { PLANS } from "../engine/access.ts";
 import { Effect } from "effect";
 import { CannotRun } from "../core/effect/errors.ts";
 import { readJson, VentureFs } from "../core/effect/fs.ts";

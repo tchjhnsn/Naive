@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "decision-record.schema.json",
   "title": "Decision record",
-  "description": "One decision a venture has to make, in a decisions/ folder beside the record it decides (EE-054), like a Next.js file beside its route: decisions/<record>[.<topic>].decision.json decides <record>.json in the folder that holds decisions/. The decision log (decision.schema.json) stays the append-only history; this is the live decision. node packages/naive/src/engine/decisions.mjs gathers them into the decision matrix.",
+  "description": "One decision a venture has to make, in a decisions/ folder beside the record it decides (EE-054), like a Next.js file beside its route: decisions/<record>[.<topic>].decision.json decides <record>.json in the folder that holds decisions/. The decision log (decision.schema.json) stays the append-only history; this is the live decision. node packages/naive/src/engine/decisions.ts gathers them into the decision matrix.",
   "type": "object",
   "required": [
     "id",
@@ -596,11 +596,11 @@
         "one-way",
         "two-way"
       ],
-      "description": "How reversible the decision is. A one-way door is heavy: the decision index weighs it more and carries propagation further through it (packages/naive/src/engine/decision-index.mjs)."
+      "description": "How reversible the decision is. A one-way door is heavy: the decision index weighs it more and carries propagation further through it (packages/naive/src/engine/decision-index.ts)."
     },
     "requirements": {
       "type": "array",
-      "description": "The venture requirements (foundation/requirements/<id>.json) this decision satisfies, is constrained by, or violates. A heavy requirement lifts a later-phase decision into the current phase; a violation is flagged now (packages/naive/src/engine/decision-index.mjs).",
+      "description": "The venture requirements (foundation/requirements/<id>.json) this decision satisfies, is constrained by, or violates. A heavy requirement lifts a later-phase decision into the current phase; a violation is flagged now (packages/naive/src/engine/decision-index.ts).",
       "items": {
         "type": "object",
         "required": [

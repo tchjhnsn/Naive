@@ -170,7 +170,7 @@ for (const [file, rec] of [["industries/primary.json", anatomy.industry], ["mark
 // The type's functions are imported like any department (EE-047): listed in venture.json, with their folders.
 // In the structured layout the org chart is venture.json's functions; the flat layout imports departments.
 if (vtype && !structured) for (const d of vtype.departments) {
-  const r = spawnSync("node", [join(here, "add-department.mjs"), dir, d], { encoding: "utf8" });
+  const r = spawnSync("node", [join(here, "add-department.ts"), dir, d], { encoding: "utf8" });
   if (r.status !== 0) { console.error((r.stderr || r.stdout).trim()); process.exit(1); }
 }
 console.log(`created ${vtype ? `${vtype.label.toLowerCase()} ` : ""}venture ${id} (${phase}) in ${dir} with ${on.join(", ") || "no layers"}, products/, accounts/ and the three pillars.${venture.core ? " Fill in the core product before ranking products." : ""}`);

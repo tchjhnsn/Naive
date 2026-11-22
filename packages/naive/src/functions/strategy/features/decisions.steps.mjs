@@ -1,4 +1,4 @@
-// Step definitions for decisions.feature (EE-054, EE-057), run by packages/naive/src/engine/bdd.mjs, on a copy of the
+// Step definitions for decisions.feature (EE-054, EE-057), run by packages/naive/src/engine/bdd.ts, on a copy of the
 // example workspace.
 
 import { spawnSync } from "node:child_process";
@@ -12,7 +12,7 @@ const node = (w, script, ...a) => spawnSync("node", [join(repo, script), ...a], 
 const put = (w, file, d) => { const f = join(w.dir, file); mkdirSync(dirname(f), { recursive: true }); writeFileSync(f, JSON.stringify(d, null, 2)); };
 const decide = (w, id, d) => put(w, `governance/decisions/${id}.decision.json`, { id, question: `What about ${id}?`, decides: { record: "decision-rights", path: "governance/decision-rights.json" }, status: "open", ...d });
 const venture = (w, f) => { const p = join(w.dir, "venture.json"); const v = JSON.parse(readFileSync(p, "utf8")); f(v); writeFileSync(p, JSON.stringify(v, null, 2)); };
-const find = (w, id) => (w.report ??= JSON.parse(node(w, "packages/naive/src/engine/decisions.mjs", w.dir, "--json").stdout)).decisions.find((d) => d.id === id);
+const find = (w, id) => (w.report ??= JSON.parse(node(w, "packages/naive/src/engine/decisions.ts", w.dir, "--json").stdout)).decisions.find((d) => d.id === id);
 
 const cli = (w, ...a) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.mjs"), ...a], { encoding: "utf8", env: { ...process.env, MENTURA_WORKSPACE: w.ws }, input: "" });
 const proposeAs = (w, d) => { const f = join(w.ws, "proposal.json"); writeFileSync(f, JSON.stringify(d)); w.p = cli(w, "propose", "--venture", w.venture, "--input", f, "--as", "builder"); w.report = null; };
@@ -44,7 +44,7 @@ export const steps = [
   [/^the workspace is a product without a venture$/, (w) => venture(w, (v) => { v.kind = "product"; })],
   [/^the venture is in "([a-z]+)"$/, (w, phase) => venture(w, (v) => { v.phase = phase; })],
   [/^the founder asks for the decisions$/, (w) => { w.report = null; find(w, "venture"); }],
-  [/^the decisions are checked$/, (w) => { w.p = node(w, "packages/naive/src/engine/decisions.mjs", w.dir); }],
+  [/^the decisions are checked$/, (w) => { w.p = node(w, "packages/naive/src/engine/decisions.ts", w.dir); }],
   [/^"([a-z-]+)" renders "([a-z]+)"$/, (w, id, r) => ok(find(w, id)?.render === r, `${id} renders ${find(w, id)?.render}, not ${r}`)],
   [/^"([a-z-]+)" fails open$/, (w, id) => ok(find(w, id)?.boundary === "fail-open", `${id} is ${find(w, id)?.boundary}`)],
   [/^"([a-z-]+)" is "([a-z]+)"$/, (w, id, f) => ok(find(w, id)?.firmness === f, `${id} is ${find(w, id)?.firmness}, not ${f}`)],

@@ -345,7 +345,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/router/router.mjs",
-    "packages/naive/src/engine/decisions.mjs",
+    "packages/naive/src/engine/decisions.ts",
     "packages/naive/src/engine/gate.mjs"
    ],
    "page": "get-started/the-gate"
@@ -534,7 +534,7 @@
    "chapter": "Chapter 2: Project Structure",
    "status": "built",
    "evidence": [
-    "packages/naive/src/engine/brand.mjs",
+    "packages/naive/src/engine/brand.ts",
     "packages/naive/src/records/marketing-brand.schema.json",
     "packages/naive/src/interfaces/tests/brand-test.mjs"
    ],
@@ -559,7 +559,7 @@
    "chapter": "Chapter 2: Project Structure",
    "status": "built",
    "evidence": [
-    "packages/naive/src/engine/brand.mjs",
+    "packages/naive/src/engine/brand.ts",
     "packages/naive/src/functions/marketing-and-sales/marketing/site/plan.mjs",
     "packages/naive/src/router/router.mjs",
     "packages/naive/src/interfaces/tests/brand-test.mjs"
@@ -697,7 +697,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/router/router.mjs",
-    "packages/naive/src/engine/decisions.mjs"
+    "packages/naive/src/engine/decisions.ts"
    ],
    "page": "get-started/routes-and-records"
   },
@@ -707,7 +707,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/router/router.mjs",
-    "packages/naive/src/engine/decisions.mjs"
+    "packages/naive/src/engine/decisions.ts"
    ],
    "page": "get-started/routes-and-records"
   },
@@ -875,7 +875,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/router/router.mjs",
-    "packages/naive/src/engine/decisions.mjs"
+    "packages/naive/src/engine/decisions.ts"
    ],
    "page": "get-started/routes-and-records"
   },
@@ -930,7 +930,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/router/router.mjs",
-    "packages/naive/src/engine/decisions.mjs"
+    "packages/naive/src/engine/decisions.ts"
    ],
    "page": "get-started/decisions"
   },
@@ -1105,12 +1105,12 @@
    "chapter": "Chapter 5: Server and Client Components",
    "status": "built",
    "evidence": [
-    "packages/naive/src/engine/caching.mjs",
+    "packages/naive/src/engine/caching.ts",
     "packages/naive/src/router/router.mjs",
     "packages/naive/src/interfaces/tests/caching-test.mjs"
    ],
    "page": "get-started/caching",
-   "note": "New route system/judge (and node packages/naive/src/engine/caching.mjs judge) reuses stored answers and sends only uncached questions to NAIVE_JUDGE_CMD (for example node platform/integrations/jev.mjs) in one request. Tested with a stand-in judge that logs what it is asked. ideamap and anatomy do not call it yet; they still build Jev requests for the founder to pipe."
+   "note": "New route system/judge (and node packages/naive/src/engine/caching.ts judge) reuses stored answers and sends only uncached questions to NAIVE_JUDGE_CMD (for example node platform/integrations/jev.mjs) in one request. Tested with a stand-in judge that logs what it is asked. ideamap and anatomy do not call it yet; they still build Jev requests for the founder to pipe."
   },
   {
    "id": "S-9",
@@ -1175,7 +1175,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/router/router.mjs",
-    "packages/naive/src/engine/decisions.mjs"
+    "packages/naive/src/engine/decisions.ts"
    ],
    "page": "get-started/routes-and-records"
   },
@@ -1249,7 +1249,7 @@
    "chapter": "Chapter 6: Fetching Data",
    "status": "built",
    "evidence": [
-    "packages/naive/src/engine/caching.mjs",
+    "packages/naive/src/engine/caching.ts",
     "packages/naive/src/router/router.mjs",
     "packages/naive/src/interfaces/tests/caching-test.mjs"
    ],
@@ -1283,7 +1283,7 @@
    "chapter": "Chapter 6: Fetching Data",
    "status": "built",
    "evidence": [
-    "packages/naive/src/engine/access.mjs",
+    "packages/naive/src/engine/access.ts",
     "packages/naive/src/router/acting.mjs",
     "packages/naive/src/router/router.mjs",
     "packages/naive/src/interfaces/mcp/server.mjs",
@@ -1355,9 +1355,9 @@
    "chapter": "Chapter 6: Fetching Data",
    "status": "built",
    "evidence": [
-    "packages/naive/src/engine/caching.mjs",
+    "packages/naive/src/engine/caching.ts",
     "packages/naive/src/router/router.mjs",
-    "packages/naive/src/engine/decisions.mjs",
+    "packages/naive/src/engine/decisions.ts",
     "packages/naive/src/interfaces/tests/caching-test.mjs"
    ],
    "page": "get-started/caching",
@@ -1390,7 +1390,7 @@
    "evidence": [
     "packages/naive/src/router/router.mjs",
     "packages/naive/src/core/provenance.ts",
-    "packages/naive/src/engine/decisions.mjs"
+    "packages/naive/src/engine/decisions.ts"
    ],
    "page": "get-started/writing-records"
   },
@@ -1399,7 +1399,7 @@
    "chapter": "Chapter 7: Mutating Data",
    "status": "built",
    "evidence": [
-    "packages/naive/src/engine/decisions.mjs",
+    "packages/naive/src/engine/decisions.ts",
     "packages/naive/src/engine/docket.mjs",
     "packages/naive/src/interfaces/cli/mentura.mjs"
    ],
@@ -1424,7 +1424,7 @@
    "evidence": [
     "packages/naive/src/router/router.mjs",
     "packages/naive/src/core/provenance.ts",
-    "packages/naive/src/engine/decisions.mjs"
+    "packages/naive/src/engine/decisions.ts"
    ],
    "page": "get-started/writing-records"
   },
@@ -1435,7 +1435,7 @@
    "evidence": [
     "packages/naive/src/router/router.mjs",
     "packages/naive/src/core/provenance.ts",
-    "packages/naive/src/engine/decisions.mjs"
+    "packages/naive/src/engine/decisions.ts"
    ],
    "page": "get-started/writing-records"
   },
@@ -1446,7 +1446,7 @@
    "evidence": [
     "packages/naive/src/router/router.mjs",
     "packages/naive/src/core/provenance.ts",
-    "packages/naive/src/engine/decisions.mjs"
+    "packages/naive/src/engine/decisions.ts"
    ],
    "page": "get-started/writing-records"
   },
@@ -1457,7 +1457,7 @@
    "evidence": [
     "packages/naive/src/router/router.mjs",
     "packages/naive/src/core/provenance.ts",
-    "packages/naive/src/engine/decisions.mjs"
+    "packages/naive/src/engine/decisions.ts"
    ],
    "page": "get-started/writing-records"
   },
@@ -1468,7 +1468,7 @@
    "evidence": [
     "packages/naive/src/router/router.mjs",
     "packages/naive/src/core/provenance.ts",
-    "packages/naive/src/engine/decisions.mjs"
+    "packages/naive/src/engine/decisions.ts"
    ],
    "page": "get-started/writing-records"
   },
@@ -1491,7 +1491,7 @@
    "evidence": [
     "packages/naive/src/router/router.mjs",
     "packages/naive/src/core/provenance.ts",
-    "packages/naive/src/engine/decisions.mjs"
+    "packages/naive/src/engine/decisions.ts"
    ],
    "page": "get-started/writing-records"
   },
@@ -1502,7 +1502,7 @@
    "evidence": [
     "packages/naive/src/router/router.mjs",
     "packages/naive/src/core/provenance.ts",
-    "packages/naive/src/engine/decisions.mjs"
+    "packages/naive/src/engine/decisions.ts"
    ],
    "page": "get-started/writing-records"
   },
@@ -1531,7 +1531,7 @@
    "evidence": [
     "packages/naive/src/router/router.mjs",
     "packages/naive/src/core/provenance.ts",
-    "packages/naive/src/engine/decisions.mjs"
+    "packages/naive/src/engine/decisions.ts"
    ],
    "page": "get-started/writing-records"
   },
@@ -1547,7 +1547,7 @@
    "evidence": [
     "packages/naive/src/router/router.mjs",
     "packages/naive/src/core/provenance.ts",
-    "packages/naive/src/engine/decisions.mjs"
+    "packages/naive/src/engine/decisions.ts"
    ],
    "page": "get-started/writing-records"
   },
@@ -1558,7 +1558,7 @@
    "evidence": [
     "packages/naive/src/router/router.mjs",
     "packages/naive/src/core/provenance.ts",
-    "packages/naive/src/engine/decisions.mjs"
+    "packages/naive/src/engine/decisions.ts"
    ],
    "page": "get-started/decisions"
   },
@@ -1580,7 +1580,7 @@
    "evidence": [
     "packages/naive/src/router/acting.mjs",
     "packages/naive/src/router/router.mjs",
-    "packages/naive/src/engine/access.mjs",
+    "packages/naive/src/engine/access.ts",
     "packages/naive/src/interfaces/tests/gate-test.mjs"
    ],
    "page": "get-started/the-gate",
@@ -1591,7 +1591,7 @@
    "chapter": "Chapter 8: Caching",
    "status": "built",
    "evidence": [
-    "packages/naive/src/engine/caching.mjs",
+    "packages/naive/src/engine/caching.ts",
     "packages/naive/src/router/router.mjs",
     "packages/naive/src/interfaces/tests/caching-test.mjs"
    ],
@@ -1603,7 +1603,7 @@
    "chapter": "Chapter 8: Caching",
    "status": "built",
    "evidence": [
-    "packages/naive/src/engine/caching.mjs",
+    "packages/naive/src/engine/caching.ts",
     "packages/naive/src/interfaces/tests/caching-test.mjs"
    ],
    "page": "get-started/caching",
@@ -1614,7 +1614,7 @@
    "chapter": "Chapter 8: Caching",
    "status": "built",
    "evidence": [
-    "packages/naive/src/engine/caching.mjs",
+    "packages/naive/src/engine/caching.ts",
     "packages/naive/library/packages/foundation/package.json",
     "packages/naive/library/packages/decisions/package.json",
     "packages/naive/library/packages/validation/package.json",
@@ -1628,7 +1628,7 @@
    "chapter": "Chapter 8: Caching",
    "status": "built",
    "evidence": [
-    "packages/naive/src/engine/caching.mjs",
+    "packages/naive/src/engine/caching.ts",
     "packages/naive/src/interfaces/tests/caching-test.mjs"
    ],
    "page": "get-started/caching",
@@ -1639,7 +1639,7 @@
    "chapter": "Chapter 8: Caching",
    "status": "built",
    "evidence": [
-    "packages/naive/src/engine/caching.mjs",
+    "packages/naive/src/engine/caching.ts",
     "packages/naive/src/interfaces/tests/caching-test.mjs"
    ],
    "page": "get-started/caching",
@@ -1651,7 +1651,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/router/router.mjs",
-    "packages/naive/src/engine/decisions.mjs"
+    "packages/naive/src/engine/decisions.ts"
    ],
    "page": "get-started/errors"
   },
@@ -1660,7 +1660,7 @@
    "chapter": "Chapter 8: Caching",
    "status": "built",
    "evidence": [
-    "packages/naive/src/engine/caching.mjs",
+    "packages/naive/src/engine/caching.ts",
     "packages/naive/src/interfaces/tests/caching-test.mjs"
    ],
    "page": "get-started/caching",
@@ -1671,7 +1671,7 @@
    "chapter": "Chapter 8: Caching",
    "status": "built",
    "evidence": [
-    "packages/naive/src/engine/caching.mjs",
+    "packages/naive/src/engine/caching.ts",
     "packages/naive/src/router/router.mjs",
     "packages/naive/src/interfaces/tests/caching-test.mjs"
    ],
@@ -1683,7 +1683,7 @@
    "chapter": "Chapter 8: Caching",
    "status": "built",
    "evidence": [
-    "packages/naive/src/engine/decisions.mjs"
+    "packages/naive/src/engine/decisions.ts"
    ],
    "page": "get-started/decisions"
   },
@@ -1815,7 +1815,7 @@
     "packages/naive/src/interfaces/tests/freshness-test.mjs"
    ],
    "page": "get-started/revalidating",
-   "note": "Both strategies apply to records. By time: freshness profiles, with stale, expired and per-phase states. On demand: a record goes stale when a record it was derived from (provenance derived_from) is written later, when a where-used child drifts from its parent, when a decision above it changes (from decisions.mjs), or when it is marked by tag, path or package. Report: node packages/naive/src/engine/freshness.mjs, mentura freshness, route system/freshness."
+   "note": "Both strategies apply to records. By time: freshness profiles, with stale, expired and per-phase states. On demand: a record goes stale when a record it was derived from (provenance derived_from) is written later, when a where-used child drifts from its parent, when a decision above it changes (from decisions.ts), or when it is marked by tag, path or package. Report: node packages/naive/src/engine/freshness.mjs, mentura freshness, route system/freshness."
   },
   {
    "id": "V-2",
@@ -1847,7 +1847,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/checks/check-where-used.ts",
-    "packages/naive/src/engine/decisions.mjs"
+    "packages/naive/src/engine/decisions.ts"
    ],
    "page": "get-started/writing-records"
   },
@@ -1869,7 +1869,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/checks/check-where-used.ts",
-    "packages/naive/src/engine/decisions.mjs"
+    "packages/naive/src/engine/decisions.ts"
    ],
    "page": "get-started/writing-records"
   },
@@ -2023,7 +2023,7 @@
    "chapter": "Chapter 11: CSS",
    "status": "built",
    "evidence": [
-    "packages/naive/src/engine/brand.mjs",
+    "packages/naive/src/engine/brand.ts",
     "packages/naive/src/records/glossary.schema.json",
     "packages/naive/src/checks/check-brand.ts",
     "packages/naive/src/router/router.mjs",
@@ -2037,7 +2037,7 @@
    "chapter": "Chapter 11: CSS",
    "status": "built",
    "evidence": [
-    "packages/naive/src/engine/brand.mjs",
+    "packages/naive/src/engine/brand.ts",
     "packages/naive/src/records/marketing-brand.schema.json",
     "packages/naive/src/router/router.mjs",
     "packages/naive/src/router/brand.mjs",
@@ -2051,7 +2051,7 @@
    "chapter": "Chapter 11: CSS",
    "status": "built",
    "evidence": [
-    "packages/naive/src/engine/brand.mjs",
+    "packages/naive/src/engine/brand.ts",
     "packages/naive/src/records/marketing-brand.schema.json",
     "packages/naive/src/interfaces/tests/brand-test.mjs"
    ],
@@ -2082,7 +2082,7 @@
    "chapter": "Chapter 12: Images",
    "status": "built",
    "evidence": [
-    "packages/naive/src/engine/assets.mjs",
+    "packages/naive/src/engine/assets.ts",
     "packages/naive/src/records/public-assets.schema.json",
     "packages/naive/src/checks/check-assets.ts",
     "packages/naive/src/router/brand.mjs",
@@ -2097,7 +2097,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/router/brand.mjs",
-    "packages/naive/src/engine/assets.mjs",
+    "packages/naive/src/engine/assets.ts",
     "packages/naive/src/interfaces/tests/brand-test.mjs"
    ],
    "evidence_elsewhere": [
@@ -2111,7 +2111,7 @@
    "chapter": "Chapter 12: Images",
    "status": "built",
    "evidence": [
-    "packages/naive/src/engine/assets.mjs",
+    "packages/naive/src/engine/assets.ts",
     "packages/naive/src/router/brand.mjs",
     "packages/naive/src/checks/check-assets.ts",
     "packages/naive/src/interfaces/tests/brand-test.mjs"
@@ -2129,7 +2129,7 @@
    "chapter": "Chapter 13: Fonts",
    "status": "built",
    "evidence": [
-    "packages/naive/src/engine/brand.mjs",
+    "packages/naive/src/engine/brand.ts",
     "packages/naive/src/records/marketing-brand.schema.json",
     "packages/naive/src/interfaces/tests/brand-test.mjs"
    ],
@@ -2141,7 +2141,7 @@
    "chapter": "Chapter 13: Fonts",
    "status": "built",
    "evidence": [
-    "packages/naive/src/engine/brand.mjs",
+    "packages/naive/src/engine/brand.ts",
     "packages/naive/src/interfaces/tests/brand-test.mjs"
    ],
    "page": "get-started/brand-and-assets",
@@ -2204,7 +2204,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/router/router.mjs",
-    "packages/naive/src/engine/caching.mjs",
+    "packages/naive/src/engine/caching.ts",
     "packages/naive/src/interfaces/tests/caching-test.mjs"
    ],
    "page": "get-started/caching",
@@ -2216,7 +2216,7 @@
    "status": "built",
    "note": "Covered by P-24: brand.marks lists the logo, icon, apple-icon and favicon, each a registered file in public/. The check enforces that an apple-icon is a 180x180 PNG, an icon is square, a favicon is an ICO, and every m",
    "evidence": [
-    "packages/naive/src/engine/brand.mjs",
+    "packages/naive/src/engine/brand.ts",
     "packages/naive/src/records/marketing-brand.schema.json",
     "packages/naive/src/interfaces/tests/brand-test.mjs"
    ],
@@ -2262,7 +2262,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/router/router.mjs",
-    "packages/naive/src/engine/caching.mjs",
+    "packages/naive/src/engine/caching.ts",
     "packages/naive/src/interfaces/api/server.mjs",
     "packages/naive/src/interfaces/tests/caching-test.mjs"
    ],
@@ -2356,7 +2356,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/engine/gate.mjs",
-    "packages/naive/src/engine/access.mjs",
+    "packages/naive/src/engine/access.ts",
     "packages/naive/src/engine/naive-config.mjs",
     "packages/naive/src/router/gate-hooks.mjs",
     "packages/naive/src/interfaces/tests/gate-test.mjs"

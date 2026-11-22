@@ -21,16 +21,16 @@
 //
 // No model is called and nothing here reaches the network.
 //
-//   node packages/naive/src/engine/brand.mjs <venture dir> tokens [--json]            DTCG tokens, CSS and head links for the venture
-//   node packages/naive/src/engine/brand.mjs <venture dir> --for <route> [--json]     the brand resolved at a route (nearer wins)
-//   node packages/naive/src/engine/brand.mjs <venture dir> voice [--json]             marketing content against the voice rules
-//   node packages/naive/src/engine/brand.mjs <venture dir> --package <id> [--json]    the terms a package sees (its own and exported ones)
-//   node packages/naive/src/engine/brand.mjs <venture dir> --base <url> [--json]      sitemap.xml from the marketing sitemap
-//   node packages/naive/src/engine/brand.mjs <venture dir> check [--json]             the brand check (also packages/naive/src/checks/check-brand.ts)
+//   node packages/naive/src/engine/brand.ts <venture dir> tokens [--json]            DTCG tokens, CSS and head links for the venture
+//   node packages/naive/src/engine/brand.ts <venture dir> --for <route> [--json]     the brand resolved at a route (nearer wins)
+//   node packages/naive/src/engine/brand.ts <venture dir> voice [--json]             marketing content against the voice rules
+//   node packages/naive/src/engine/brand.ts <venture dir> --package <id> [--json]    the terms a package sees (its own and exported ones)
+//   node packages/naive/src/engine/brand.ts <venture dir> --base <url> [--json]      sitemap.xml from the marketing sitemap
+//   node packages/naive/src/engine/brand.ts <venture dir> check [--json]             the brand check (also packages/naive/src/checks/check-brand.ts)
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { allowsCopy, factsOf, registerOf, REGISTER } from "./assets.mjs";
+import { allowsCopy, factsOf, registerOf, REGISTER } from "./assets.ts";
 import { ventureFile } from "../core/venture-paths.ts";
 
 export const BRAND = "marketing/brand.json";
@@ -331,7 +331,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const json = argv.includes("--json");
   const dir = argv[0];
   const mode = argv[1] && !argv[1].startsWith("--") ? argv[1] : null;
-  if (!dir || !existsSync(join(dir, "venture.json"))) { console.error("usage: node packages/naive/src/engine/brand.mjs <venture dir> tokens|voice|check | --for <route> | --package <id> | --base <url> [--json]"); process.exit(2); }
+  if (!dir || !existsSync(join(dir, "venture.json"))) { console.error("usage: node packages/naive/src/engine/brand.ts <venture dir> tokens|voice|check | --for <route> | --package <id> | --base <url> [--json]"); process.exit(2); }
   const print = (x, text) => console.log(json ? JSON.stringify(x, null, 2) : text ?? JSON.stringify(x, null, 2));
   if (opt("for") !== undefined) {
     const brand = brandOf(dir);

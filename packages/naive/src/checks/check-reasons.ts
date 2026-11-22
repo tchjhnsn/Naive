@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // The check for reasons with citations (packages/naive/src/engine/reasons.mjs): for each decided decision, any cited
 // local file whose sha256 differs from the one frozen at approval is reported as "the reason you
-// decided <id> changed: <ref>"; the decision renders stale in packages/naive/src/engine/decisions.mjs.
+// decided <id> changed: <ref>"; the decision renders stale in packages/naive/src/engine/decisions.ts.
 //
 //   node packages/naive/src/checks/check-reasons.ts <venture or workspace dir> [--json]
 //
@@ -9,7 +9,7 @@
 
 import { existsSync, readdirSync } from "node:fs";
 import { join, relative } from "node:path";
-import { decisions } from "../engine/decisions.mjs";
+import { decisions } from "../engine/decisions.ts";
 
 /** A decision as decisions() lists it, with the cited reasons that changed since approval. */
 type Decided = { id: string, reasons_changed?: { ref: string }[] };

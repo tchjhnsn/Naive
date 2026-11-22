@@ -13,7 +13,7 @@
 // adapt() records what it wrote in <venture>/.naive/adapters.json and never overwrites a file it did not
 // write, or one a person changed since: it keeps theirs and says so. An upgrade refreshes the adapters
 // a venture has (packages/naive/src/engine/upgrades.mjs), so the skill copies follow the installed packages. adapt() and
-// refresh() are in packages/naive/src/engine/adapters.mjs, because they write files and run no route; this module re-exports
+// refresh() are in packages/naive/src/engine/adapters.ts, because they write files and run no route; this module re-exports
 // them, and keeps verify(), which runs routes, and the command line.
 
 import { spawnSync } from "node:child_process";
@@ -21,9 +21,9 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync
 import { tmpdir } from "node:os";
 import { dirname, isAbsolute, join } from "node:path";
 import { ventureFile } from "../core/venture-paths.ts";
-import { adapt, adapters, byName, refresh, skillsFor } from "../engine/adapters.mjs";
+import { adapt, adapters, byName, refresh, skillsFor } from "../engine/adapters.ts";
 
-export { adapt, adapters, refresh, skillsFor, STATE } from "../engine/adapters.mjs";
+export { adapt, adapters, refresh, skillsFor, STATE } from "../engine/adapters.ts";
 
 const repo = new URL("../../../..", import.meta.url).pathname;
 // The framework's tests for a harness adapter, run on a new venture in a temporary folder.

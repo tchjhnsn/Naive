@@ -7,7 +7,7 @@ import { spawnSync } from "node:child_process";
 import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { check, ordered, roadmapOf, roadmaps } from "./check-roadmap.mjs";
+import { check, ordered, roadmapOf, roadmaps } from "./check-roadmap.ts";
 import { install } from "./roadmaps.mjs";
 import { ventureFile } from "../core/venture-paths.ts";
 import { advance, lifecycle, meet, playbookOf, playbooks } from "./lifecycle.mjs";
@@ -29,13 +29,13 @@ expect("an unknown frame is rejected", bad({ ethos: { frame: "no-such-frame" } }
 expect("a step with no decider is rejected", bad({ tagline: { decided_by: "" } }).some((e) => /no decider/.test(e)));
 expect("a decider that is not a role is rejected", bad({ tagline: { decided_by: "marketing" } }).some((e) => /not a role/.test(e)));
 expect("a one-way door delegated away from the founder is rejected", bad({ stand: { decided_by: "marketing-lead" } }).some((e) => /one-way door delegated/.test(e)));
-const cli = spawnSync("node", [join(repo, "packages/naive/src/engine/check-roadmap.mjs")], { encoding: "utf8" });
+const cli = spawnSync("node", [join(repo, "packages/naive/src/engine/check-roadmap.ts")], { encoding: "utf8" });
 expect("the check passes on the repository's roadmaps", cli.status === 0, cli.stderr);
 
 // ---- install ----
 const dir = join(tmp, "tandem");
 cpSync(join(repo, "packages/naive/src/records/examples/workspace/ventures/tandem"), dir, { recursive: true });
-const { decisions, approve } = await import("./decisions.mjs");
+const { decisions, approve } = await import("./decisions.ts");
 let r = await install(dir, "brand");
 expect("install proposes one open decision per step, in order", r.ok && r.result.proposed.map((p) => p.step).join() === "ethos,audiences,tagline,visual-identity,first-campaign,stand", r.error ?? JSON.stringify(r.result));
 const ds = decisions(dir).decisions.filter((d) => d.id.startsWith("brand-"));

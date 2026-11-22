@@ -6,7 +6,7 @@ import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { approve, decisions, merge, propose } from "./decisions.mjs";
+import { approve, decisions, merge, propose } from "./decisions.ts";
 import { impact } from "./impact.mjs";
 import { record } from "../core/provenance.ts";
 import { stale } from "./stale.mjs";

@@ -2,8 +2,8 @@
 // The design system's inputs and its check. The marketing function does not keep its own copy of the
 // mission, the ICPs or the market: it inherits them from the records other functions own, here, in code.
 //
-//   node packages/naive/src/engine/design-system.mjs <venture dir> inputs [--json]   what the brand kit reads, by key
-//   node packages/naive/src/engine/design-system.mjs <venture dir> check [--json]    every choice rests on inputs that exist
+//   node packages/naive/src/engine/design-system.ts <venture dir> inputs [--json]   what the brand kit reads, by key
+//   node packages/naive/src/engine/design-system.ts <venture dir> check [--json]    every choice rests on inputs that exist
 //
 // Input keys: mission, promised-to, problem, segment, icp:<id>, alignment:<id>, market:<product>,
 // founder:<id>. A choice's `from` names these keys; a key that no longer exists fails the check, so a
@@ -73,7 +73,7 @@ export function check(dir) {
 if (import.meta.url === `file://${process.argv[1]}`) {
   const [dir, mode = "inputs"] = process.argv.slice(2);
   const json = process.argv.includes("--json");
-  if (!dir || !existsSync(join(dir, "venture.json"))) { console.error("usage: node packages/naive/src/engine/design-system.mjs <venture dir> inputs|check [--json]"); process.exit(2); }
+  if (!dir || !existsSync(join(dir, "venture.json"))) { console.error("usage: node packages/naive/src/engine/design-system.ts <venture dir> inputs|check [--json]"); process.exit(2); }
   if (mode === "check") {
     const errs = check(dir);
     if (json) console.log(JSON.stringify({ ok: !errs.length, problems: errs }, null, 2));

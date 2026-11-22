@@ -13,7 +13,7 @@
 import { spawn } from "node:child_process";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { judgeCommand } from "../../engine/caching.mjs";
+import { judgeCommand } from "../../engine/caching.ts";
 import { envCommand, hostHook, isHosted, missingHook } from "../../core/runtime.ts";
 import { factsOf, icpOf, request, score, PRESENCE } from "../../functions/marketing-and-sales/marketing/site/presence.mjs";
 

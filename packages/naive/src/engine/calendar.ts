@@ -1,22 +1,22 @@
 #!/usr/bin/env node
 // The workspace calendar (Torian, 2026-10-30): created the moment a workspace is initiated, beside its
-// clock (packages/naive/src/engine/clock.mjs). Events are JSCalendar-shaped records (RFC 8984), one per file, in
+// clock (packages/naive/src/engine/clock.ts). Events are JSCalendar-shaped records (RFC 8984), one per file, in
 // <workspace>/calendar/events/<uid>.json; each names its calendar, and calendar/calendars/<id>.json
 // names that calendar's owner, members and visibility. The default calendar is "default" (named Venture).
 //
 // Derived events are a view, never copies: an open decision with a due time and a venture's latest
 // release are read from the records that carry their dates each time the calendar is listed.
 //
-//   node packages/naive/src/engine/calendar.mjs list <workspace> [--from YYYY-MM-DD] [--to YYYY-MM-DD] [--json]
-//   node packages/naive/src/engine/calendar.mjs add <workspace> --title "<title>" --start <local date-time> [--duration PT1H] [--calendar default]
-//   node packages/naive/src/engine/calendar.mjs export <workspace> --ics <file> [--from] [--to]
+//   node packages/naive/src/engine/calendar.ts list <workspace> [--from YYYY-MM-DD] [--to YYYY-MM-DD] [--json]
+//   node packages/naive/src/engine/calendar.ts add <workspace> --title "<title>" --start <local date-time> [--duration PT1H] [--calendar default]
+//   node packages/naive/src/engine/calendar.ts export <workspace> --ics <file> [--from] [--to]
 //
 // list defaults to the 30 days from today in the workspace's zone.
 
 import { randomUUID } from "node:crypto";
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { basename, join, relative } from "node:path";
-import { localDate, localDateTime, now, toInstant, zoneOf } from "./clock.mjs";
+import { localDate, localDateTime, now, toInstant, zoneOf } from "./clock.ts";
 
 export const CALENDAR_DIR = "calendar";
 // Not "venture": a file named venture.json marks a venture folder to every walker in the framework.
@@ -81,7 +81,7 @@ function ventureDirs(root) {
 /** Events derived from records that carry dates: open decisions with a due time, and each venture's latest release. */
 export async function derivedEvents(root) {
   // Loaded here, not at the top, so the workspace (which makes the calendar) never pulls in the router.
-  const { decisions } = await import("./decisions.mjs");
+  const { decisions } = await import("./decisions.ts");
   const zone = zoneOf(root);
   const out = [];
   for (const dir of ventureDirs(root)) {

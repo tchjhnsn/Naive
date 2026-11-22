@@ -1,15 +1,15 @@
 // Tests for the decision queue (EE-127): the owning-function rule, the cross-function score, themes, the context read
-// through VentureFs, and the queue decision-index.mjs adds to its output with its old fields unchanged.
+// through VentureFs, and the queue decision-index.ts adds to its output with its old fields unchanged.
 
 import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { runSync } from "../core/effect/run.ts";
-import { byCross, crossScore, GATE_LIFT, MEASURE_LIFT, measuresOf, ownerOf, rankingContextEffect, rankItems, themesOf, VENTURE } from "./decision-queue.mjs";
-import type { Item, RankingContext } from "./decision-queue.mjs";
-import { rebuild } from "./decision-index.mjs";
-import { propose } from "./decisions.mjs";
+import { byCross, crossScore, GATE_LIFT, MEASURE_LIFT, measuresOf, ownerOf, rankingContextEffect, rankItems, themesOf, VENTURE } from "./decision-queue.ts";
+import type { Item, RankingContext } from "./decision-queue.ts";
+import { rebuild } from "./decision-index.ts";
+import { propose } from "./decisions.ts";
 
 let failed = 0;
 const expect = (name: string, ok: boolean, detail?: unknown): void => {
@@ -99,7 +99,7 @@ try {
   expect("with room, the theme's members show under one item", full.filter((x) => ["dq-a", "dq-b"].includes(x.id)).length === 1 && full.some((x) => x.id === "dq-c"), full.map((x) => x.id));
   expect("the index has a per-function index", Array.isArray(idx.by_function.products), Object.keys(idx.by_function));
 
-  const cli = spawnSync(process.execPath, ["packages/naive/src/engine/decision-index.mjs", dir, "read", "--json"], { encoding: "utf8", cwd: new URL("../../../..", import.meta.url).pathname });
+  const cli = spawnSync(process.execPath, ["packages/naive/src/engine/decision-index.ts", dir, "read", "--json"], { encoding: "utf8", cwd: new URL("../../../..", import.meta.url).pathname });
   const brief = cli.status === 0 ? JSON.parse(cli.stdout) as Record<string, unknown> : {};
   expect("--json keeps its keys and adds by_function, themes and queue", Object.keys(brief).join() === "venture,phase,updated_at,last_update,flagged,entries,by_function,themes,queue", cli.stderr || Object.keys(brief));
 

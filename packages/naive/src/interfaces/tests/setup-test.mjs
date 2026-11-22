@@ -17,7 +17,7 @@ const made = spawnSync("node", [join(repo, "packages/create-venture/index.mjs"),
 if (made.status !== 0) { console.log(`FAIL create-venture: ${made.stderr}`); process.exit(1); }
 process.env.MENTURA_WORKSPACE = base;
 const { handle } = await import("../mcp/server.mjs");
-const { decisions } = await import("../../engine/decisions.mjs");
+const { decisions } = await import("../../engine/decisions.ts");
 
 let failed = 0, n = 0;
 const ok = (c, m) => { if (!c) throw new Error(m ?? "assertion failed"); };

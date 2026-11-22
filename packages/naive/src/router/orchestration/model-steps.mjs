@@ -45,7 +45,7 @@ import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, join, resolve as resolvePath } from "node:path";
 import { call as routerCall, files as ventureFiles, glob, routes } from "../router.mjs";
 import { agentFromEnv, entries as provEntries, record as prov } from "../../core/provenance.ts";
-import { decisions as decisionsOf, propose } from "../../engine/decisions.mjs";
+import { decisions as decisionsOf, propose } from "../../engine/decisions.ts";
 import { loadPackages } from "../../engine/load-packages.mjs";
 import { ventureFile } from "../../core/venture-paths.ts";
 import { envCommand } from "../../core/runtime.ts";

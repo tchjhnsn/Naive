@@ -6,7 +6,7 @@ import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { leaks } from "./check-leaks.mjs";
+import { leaks } from "./check-leaks.ts";
 import { readSchema } from "../records/index.ts";
 
 const repo = new URL("../../../..", import.meta.url).pathname;
@@ -50,7 +50,7 @@ try {
   expect("Naive's own patterns do not know a venture's codename", !leaks([join(ws, "page.mdx")]).some((l) => l.pattern === "codename-orchid"));
   const found = leaks([join(ws, "page.mdx")], { venture: v });
   expect("a venture's founder-edited terms apply with --venture", found.some((l) => l.pattern === "codename-orchid" && l.severity === "fail") && found.some((l) => l.pattern === "jargon-precog" && l.severity === "warn"), found);
-  const cli = (file) => spawnSync("node", [join(repo, "packages/naive/src/engine/check-leaks.mjs"), file, "--venture", v], { encoding: "utf8" });
+  const cli = (file) => spawnSync("node", [join(repo, "packages/naive/src/engine/check-leaks.ts"), file, "--venture", v], { encoding: "utf8" });
   expect("a fail term fails the check", cli(join(ws, "page.mdx")).status === 1);
   writeFileSync(join(ws, "warn.mdx"), "Now with precog.\n");
   const w = cli(join(ws, "warn.mdx"));

@@ -56,7 +56,7 @@ try {
   const cd = await check([join(v, "operations/marketing/content")], { venture: v });
   expect("copy distance: a copied run of ten words warns", cd.stages[0] === "copy-distance" && cd.findings.some((f) => f.rule === "copy-distance" && f.severity === "warn"), cd);
   // brand stage runs when a venture is named
-  expect("brand: the stage runs when packages/naive/src/engine/brand-lint.mjs exists", cd.stages.includes("brand"), cd.stages);
+  expect("brand: the stage runs when packages/naive/src/engine/brand-lint.ts exists", cd.stages.includes("brand"), cd.stages);
   expect("stages run in order", cd.stages.join(",") === "copy-distance,leaks,brand,claims,marks,personal-data,secrets", cd.stages);
 
   // levels from naive.config.json

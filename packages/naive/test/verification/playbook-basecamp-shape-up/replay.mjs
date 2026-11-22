@@ -11,7 +11,7 @@ import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { call, resolve } from "../../../src/router/router.mjs";
-import { approve } from "../../../src/engine/decisions.mjs";
+import { approve } from "../../../src/engine/decisions.ts";
 
 const repo = join(dirname(fileURLToPath(import.meta.url)), "../../../../..");
 const root = mkdtempSync(join(tmpdir(), "shapeup-replay-"));

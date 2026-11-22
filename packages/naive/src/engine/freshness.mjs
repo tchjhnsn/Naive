@@ -38,7 +38,7 @@ import { dirname, isAbsolute, join, relative, resolve as resolvePath } from "nod
 import { agentFromEnv, entries as provEntries, record as prov } from "../core/provenance.ts";
 import { files as ventureFiles, glob, resolve as resolveRoute, routes } from "../records/routes/routes.ts";
 import { connect, LOCAL, sourcesOf } from "../store/connectors/index.ts";
-import { decisions as decisionMatrix, PHASES } from "./decisions.mjs";
+import { decisions as decisionMatrix, PHASES } from "./decisions.ts";
 import { ventureFile } from "../core/venture-paths.ts";
 import { validateFile } from "../records/validate.ts";
 

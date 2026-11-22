@@ -17,7 +17,7 @@
 
 import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { decisionFile, propose, recordOf } from "./decisions.mjs";
+import { decisionFile, propose, recordOf } from "./decisions.ts";
 import { HOME } from "./packages.mjs";
 import { entries as provenance } from "../core/provenance.ts";
 import { mark, notify } from "./stale.mjs";
@@ -64,7 +64,7 @@ function byRefs(dir, changed, list) {
 /** The structural impact of any decision, open or decided, without side effects: nothing is marked stale,
  *  nothing proposed, nothing written. The records it would change (applies_to, or the record it decides),
  *  the records that read them (provenance derived_from) or refer to their type (data-model refs), and
- *  the functions those fall in. packages/naive/src/engine/decision-index.mjs scores open decisions with it.
+ *  the functions those fall in. packages/naive/src/engine/decision-index.ts scores open decisions with it.
  * @param {string} dir
  * @param {*} d
  * @param {{ all?: { provenance?: *[], files?: string[] } }} [opts]

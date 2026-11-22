@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Tests for caching (packages/naive/src/engine/caching.mjs; ledger rows C-1 to C-5, C-7, C-8, S-8, F-2, F-12, O-5 and
+// Tests for caching (packages/naive/src/engine/caching.ts; ledger rows C-1 to C-5, C-7, C-8, S-8, F-2, F-12, O-5 and
 // H-3) on made-up ventures in a temp directory: a declared command's result is stored and reused
 // until the venture changes; every cached value has a life; a judgment is asked again only when its
 // state, question, model or package versions change; private results never cross people; one answer
@@ -10,9 +10,9 @@ import { spawnSync } from "node:child_process";
 import { existsSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { actionScope, actionStats, cached, clear, command, configOf, declarationFor, entries, judge, keyOf, LIFE, lifeOf, lookup, memo, prune, stats, versionsOf } from "../../engine/caching.mjs";
+import { actionScope, actionStats, cached, clear, command, configOf, declarationFor, entries, judge, keyOf, LIFE, lifeOf, lookup, memo, prune, stats, versionsOf } from "../../engine/caching.ts";
 import { call } from "../../router/router.mjs";
-import { decisions, holding } from "../../engine/decisions.mjs";
+import { decisions, holding } from "../../engine/decisions.ts";
 import { route as http } from "../api/server.mjs";
 
 const repo = new URL("../../../../..", import.meta.url).pathname;
@@ -120,8 +120,8 @@ const viaRoute = await call({ venture: "kettle", route: "system/judge", action: 
 expect("S-8: system/judge runs a request through the router and the cache", viaRoute.ok && viaRoute.result.cache.status === "hit", JSON.stringify(viaRoute).slice(0, 300));
 const reqFile = join(ws, "req.json");
 writeFileSync(reqFile, JSON.stringify(req));
-const viaCli = spawnSync("node", [join(repo, "packages/naive/src/engine/caching.mjs"), "judge", dir, "--request", reqFile], { encoding: "utf8", env: process.env });
-expect("S-8: node packages/naive/src/engine/caching.mjs judge reuses the stored answers", viaCli.status === 0 && JSON.parse(viaCli.stdout).cache.status === "hit", viaCli.stderr);
+const viaCli = spawnSync("node", [join(repo, "packages/naive/src/engine/caching.ts"), "judge", dir, "--request", reqFile], { encoding: "utf8", env: process.env });
+expect("S-8: node packages/naive/src/engine/caching.ts judge reuses the stored answers", viaCli.status === 0 && JSON.parse(viaCli.stdout).cache.status === "hit", viaCli.stderr);
 
 // C-7: private results are cached per person and never shared
 const priv = (actor_id) => judge(dir, { ...req, state: { mine: "founder notes" } }, { cmd, private: true, actor: "agent", actor_id });

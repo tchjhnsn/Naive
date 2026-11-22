@@ -39,7 +39,7 @@
     "beta": {
       "type": "object",
       "additionalProperties": false,
-      "description": "The plugin beta's gate (packages/naive/src/engine/beta-gate.mjs): capabilities in beta/capabilities.json unlock in order, each after checkpoint feedback. Off by default.",
+      "description": "The plugin beta's gate (packages/naive/src/engine/beta-gate.ts): capabilities in beta/capabilities.json unlock in order, each after checkpoint feedback. Off by default.",
       "properties": {
         "enabled": {
           "type": "boolean"

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Brand alignment lint: decision records and marketing content held to the design system.
 //
-//   node packages/naive/src/engine/brand-lint.mjs <venture dir> [--json]
+//   node packages/naive/src/engine/brand-lint.ts <venture dir> [--json]
 //
 // Rules are fail-open (warn) by default. naive.config.json brand_lint.rules.<id>.mode set to
 // "fail-closed" makes a rule's findings fail the run (exit 1).
@@ -9,8 +9,8 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join, relative } from "node:path";
 import { ventureFile } from "../core/venture-paths.ts";
-import { DESIGN_SYSTEM } from "./design-system.mjs";
-import { contentFiles } from "./brand.mjs";
+import { DESIGN_SYSTEM } from "./design-system.ts";
+import { contentFiles } from "./brand.ts";
 
 const load = (f) => { try { return JSON.parse(readFileSync(f, "utf8")); } catch { return null; } };
 const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -82,7 +82,7 @@ export function lint(dir) {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const dir = process.argv[2];
-  if (!dir || !existsSync(join(dir, "venture.json"))) { console.error("usage: node packages/naive/src/engine/brand-lint.mjs <venture dir> [--json]"); process.exit(2); }
+  if (!dir || !existsSync(join(dir, "venture.json"))) { console.error("usage: node packages/naive/src/engine/brand-lint.ts <venture dir> [--json]"); process.exit(2); }
   const r = lint(dir);
   if (process.argv.includes("--json")) console.log(JSON.stringify(r, null, 2));
   else {

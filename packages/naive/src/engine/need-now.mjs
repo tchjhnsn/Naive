@@ -14,9 +14,9 @@
 
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
-import { catalog } from "./departments.mjs";
+import { catalog } from "./departments.ts";
 import { ventureFile } from "../core/venture-paths.ts";
-import { scale } from "./canonical.mjs";
+import { scale } from "./canonical.ts";
 import { readDataModel, venturePaths } from "../records/index.ts";
 import { runSync } from "../core/effect/run.ts";
 import { loadPhases } from "../phases/phases.mjs";

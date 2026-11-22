@@ -4,7 +4,7 @@
 // routes' payoff is next steps: each tagged idea goes to the records it feeds (the framework's
 // destinations, packages/naive/src/functions/strategy/frameworks/idea-map/conventions.json `records`), and each destination shows
 // where it stands in the framework and the one step that moves it. Nothing here is invented: a
-// destination's stage and next step come from the decision matrix (packages/naive/src/engine/decisions.mjs), the records
+// destination's stage and next step come from the decision matrix (packages/naive/src/engine/decisions.ts), the records
 // on disk and the graph. Read as two Kanban boards:
 //   - destinations, by stage: routed (ideas, nothing drafted yet), drafted (an agent's draft awaits the
 //     founder), yours (a decision only a person can make), waiting (held by another decision), done;
@@ -20,7 +20,7 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { decisions } from "../../../../engine/decisions.mjs";
+import { decisions } from "../../../../engine/decisions.ts";
 import { CONVENTIONS, MAP, parse } from "./ideamap.mjs";
 import { GRAPH, ORDER } from "./graph.mjs";
 import { confirmedIn } from "../../../../engine/foundation.mjs";

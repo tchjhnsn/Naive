@@ -102,7 +102,7 @@
     "packages/naive/src/checks/check-departments.ts",
     "packages/naive/src/functions/marketing-and-sales/marketing/site/presence.mjs",
     "packages/naive/src/functions/marketing-and-sales/marketing/site/plan.mjs",
-    "packages/naive/src/engine/check-public.mjs",
+    "packages/naive/src/engine/check-public.ts",
     "packages/naive/src/checks/check-brand.ts",
     "packages/naive/src/checks/check-assets.ts"
   ],

@@ -4,7 +4,7 @@
 // decider or merger that is not a role template, or
 // delegate a one-way door away from the founder.
 //
-//   node packages/naive/src/engine/check-roadmap.mjs [<roadmap file> ...]     every roadmap in packages/naive/library/packages/*/roadmaps when none is named
+//   node packages/naive/src/engine/check-roadmap.ts [<roadmap file> ...]     every roadmap in packages/naive/library/packages/*/roadmaps when none is named
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";

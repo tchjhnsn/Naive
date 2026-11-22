@@ -8,7 +8,7 @@
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { manifest } from "../engine/beta-gate.mjs";
+import { manifest } from "../engine/beta-gate.ts";
 import { ventureFile } from "../core/venture-paths.ts";
 import type { BetaCapabilities, Bug, ValidationFeedback, ValidationInterview } from "../records/types/records.d.ts";
 

@@ -7,10 +7,10 @@ The replay runs against the router on this branch, where each ICP profile is its
 | Action | Code the replay called |
 | --- | --- |
 | ReadInputs, WriteNarrative | `call` read of `foundation/problem`, `foundation/icp`, `foundation/alignment`, `governance/decision-rights` (`packages/naive/src/router/router.mjs`). The fixture writes those records first. Its profile goes to `foundation/icp/shop-owners`, because `foundation/icp` has no write action. |
-| DraftGap, DraftFull, WriteFaq, Propose | `propose()` in `packages/naive/src/engine/decisions.mjs` (what `mentura propose` calls), which writes `decisions/<id>.decision.json` |
+| DraftGap, DraftFull, WriteFaq, Propose | `propose()` in `packages/naive/src/engine/decisions.ts` (what `mentura propose` calls), which writes `decisions/<id>.decision.json` |
 | RecordFinding | `call` write then read of `evidence/[id]` |
 | RunMatrix | `call` run of `governance/decisions` |
-| FounderDecides | `approve()` in `packages/naive/src/engine/decisions.mjs` (what `mentura decide` calls) |
+| FounderDecides | `approve()` in `packages/naive/src/engine/decisions.ts` (what `mentura decide` calls) |
 
 The chart hides one step: `Done`, which stays in "Decided by you". The incomplete memo stays an open draft beside the finished one. That is how the checks can fail and pass in one run. The model does not include a later rewrite. The playbook allows another propose while the record is still open. It does not read `ideas/map`. It runs `governance/decisions` once in the model, after the FAQ. The playbook also runs that command at draft time, to copy the phase.
 

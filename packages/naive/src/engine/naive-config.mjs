@@ -11,7 +11,7 @@
 import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { ventureFile } from "../core/venture-paths.ts";
-import { line } from "./detectors.mjs";
+import { line } from "./detectors.ts";
 
 const repo = new URL("../../../..", import.meta.url).pathname;
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
@@ -45,7 +45,7 @@ export function rawConfig(dir) {
   try { return load(f); } catch (e) { throw new Error(`${CONFIG} is not valid JSON: ${e.message}`); }
 }
 
-/** The thresholds a detector holds (packages/naive/src/engine/detectors.mjs): threshold name to detector id. */
+/** The thresholds a detector holds (packages/naive/src/engine/detectors.ts): threshold name to detector id. */
 export const DETECTOR_THRESHOLDS = Object.freeze({ confidence: "gate-confidence", "idea-map": "idea-map-tag" });
 
 /**

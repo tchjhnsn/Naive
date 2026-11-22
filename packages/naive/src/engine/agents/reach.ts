@@ -10,8 +10,8 @@
 
 import { readDataModel } from "../../records/index.ts";
 import { routes } from "../../records/routes/routes.ts";
-import { PLANS, routeGlob } from "../access.mjs";
-import { catalog } from "../departments.mjs";
+import { PLANS, routeGlob } from "../access.ts";
+import { catalog } from "../departments.ts";
 
 /** @type {Map<string, string[]>} */
 const cache = new Map();

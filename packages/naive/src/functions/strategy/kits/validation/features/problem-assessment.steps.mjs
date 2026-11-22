@@ -1,11 +1,11 @@
-// Step definitions for problem-assessment.feature (EE-050), run by packages/naive/src/engine/bdd.mjs. Records are
+// Step definitions for problem-assessment.feature (EE-050), run by packages/naive/src/engine/bdd.ts. Records are
 // written to a temp venture folder; interface scenarios run on a copy of the example workspace.
 
 import { spawnSync } from "node:child_process";
 import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { assess } from "../../../../../engine/assess-problem.mjs";
+import { assess } from "../../../../../engine/assess-problem.ts";
 
 const repo = new URL("../../../../../../../../", import.meta.url).pathname;
 const ok = (cond, msg) => { if (!cond) throw new Error(msg); };

@@ -15,13 +15,13 @@
 // output folder) set, and writes its outputs (paths relative to the output folder) under NAIVE_PUBLISH_OUT.
 //
 // In order, and any failure stops the build:
-//   1. gate     packages/naive/src/engine/check-public.mjs (EE-064): every public variant names its source,
+//   1. gate     packages/naive/src/engine/check-public.ts (EE-064): every public variant names its source,
 //               audience and approver, and copies no ten-word run of its source
 //   2. compile  each field reaches the output only through packages/naive/src/engine/visibility.mjs publicValue: the field
 //               when a person approved its wording as public, or its approved MDX variant
 //   3. build    the channel's builders, in order, reading only the compiled output
 //   4. verify   the output carries no internal field's own wording (a field not approved as public) and
-//               nothing packages/naive/src/engine/check-leaks.mjs matches
+//               nothing packages/naive/src/engine/check-leaks.ts matches
 //   5. record   generated/publish-build.<channel>.json: each output's sha256, the approved variants it
 //               drew on, and the drafts still waiting for a person (for the publish manifest, item 1)
 
@@ -29,8 +29,8 @@ import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
-import { check, CONTENT, frontmatter } from "../../../engine/check-public.mjs";
-import { leaks } from "../../../engine/check-leaks.mjs";
+import { check, CONTENT, frontmatter } from "../../../engine/check-public.ts";
+import { leaks } from "../../../engine/check-leaks.ts";
 import { visibilityOf } from "../../../engine/visibility.mjs";
 import { ventureFile } from "../../../core/venture-paths.ts";
 import { configFor } from "../../../engine/naive-config.mjs";
@@ -89,7 +89,7 @@ export function internalWording(dir) {
     if (!existsSync(f)) continue;
     try { walk(rel, JSON.parse(readFileSync(f, "utf8")), ""); } catch { /* a record that does not parse has its own check */ }
   }
-  // The venture's name and tagline are public by definition (check-public.mjs allows them too).
+  // The venture's name and tagline are public by definition (check-public.ts allows them too).
   const v = existsSync(join(dir, "venture.json")) ? JSON.parse(readFileSync(join(dir, "venture.json"), "utf8")) : {};
   const allowed = new Set([v.name, v.brand?.tagline].filter(Boolean));
   return found.filter((x) => !allowed.has(x.text));

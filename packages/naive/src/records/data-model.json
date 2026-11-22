@@ -35,7 +35,7 @@
         "instance/calendar/calendars/*.json",
         "packages/naive/src/records/examples/workspace/calendar/calendars/*.json"
       ],
-      "note": "A workspace calendar: owner, members, visibility. Created with the workspace (default.json, named Venture); packages/naive/src/engine/calendar.mjs (Torian, 2026-10-30)"
+      "note": "A workspace calendar: owner, members, visibility. Created with the workspace (default.json, named Venture); packages/naive/src/engine/calendar.ts (Torian, 2026-10-30)"
     },
     {
       "id": "workspace-founder",
@@ -118,7 +118,7 @@
           "checked_by": "packages/naive/src/engine/workspace-init-test.mjs"
         }
       ],
-      "note": "One JSCalendar-shaped event (RFC 8984) per file. Derived events (decisions with a due time, releases) are a view in packages/naive/src/engine/calendar.mjs, never stored; naive calendar export writes .ics"
+      "note": "One JSCalendar-shaped event (RFC 8984) per file. Derived events (decisions with a due time, releases) are a view in packages/naive/src/engine/calendar.ts, never stored; naive calendar export writes .ics"
     },
     {
       "id": "venture",
@@ -362,7 +362,7 @@
       "paths": [
         "frameworks/*/framework.json"
       ],
-      "note": "A framework for thinking (telos, ambition tiers, OKRs): vocabulary, frames, a template and maps_to into canonical records; it never changes the schema (packages/naive/src/engine/check-frameworks.mjs)"
+      "note": "A framework for thinking (telos, ambition tiers, OKRs): vocabulary, frames, a template and maps_to into canonical records; it never changes the schema (packages/naive/src/engine/check-frameworks.ts)"
     },
     {
       "id": "idea-dump",
@@ -476,7 +476,7 @@
           "checked_by": "packages/naive/src/checks/check-validation-study.ts"
         }
       ],
-      "note": "A beta tester's answers at one checkpoint, with where the feedback was routed and how (Jev or the fallback). The beta gate unlocks the next capability once it exists (packages/naive/src/engine/beta-gate.mjs)."
+      "note": "A beta tester's answers at one checkpoint, with where the feedback was routed and how (Jev or the fallback). The beta gate unlocks the next capability once it exists (packages/naive/src/engine/beta-gate.ts)."
     },
     {
       "id": "validation-solution",
@@ -765,7 +765,7 @@
         "instance/**/decisions/*.decision.json",
         "packages/naive/src/records/examples/**/decisions/*.decision.json"
       ],
-      "note": "One live decision, in a decisions/ folder beside the record it decides, with its parent, boundary (fail closed or open) and the phase it is needed in (EE-054, EE-057); node packages/naive/src/engine/decisions.mjs renders the matrix. The decision log keeps the history"
+      "note": "One live decision, in a decisions/ folder beside the record it decides, with its parent, boundary (fail closed or open) and the phase it is needed in (EE-054, EE-057); node packages/naive/src/engine/decisions.ts renders the matrix. The decision log keeps the history"
     },
     {
       "id": "decision-impact",
@@ -1573,7 +1573,7 @@
         "instance/**/governance/internal-terms.json",
         "packages/naive/src/records/examples/**/governance/internal-terms.json"
       ],
-      "note": "Patterns that mark internal text (decision ids, attributions, record paths, codenames, phase jargon, draft markers); public output matches none of them (packages/naive/src/engine/check-leaks.mjs). Naive's defaults in packages/naive/src/engine/internal-terms.json, the founder's own in the venture's governance/internal-terms.json",
+      "note": "Patterns that mark internal text (decision ids, attributions, record paths, codenames, phase jargon, draft markers); public output matches none of them (packages/naive/src/engine/check-leaks.ts). Naive's defaults in packages/naive/src/engine/internal-terms.json, the founder's own in the venture's governance/internal-terms.json",
       "decision_class": "strategy-or-constitution"
     },
     {
@@ -1586,7 +1586,7 @@
         "instance/**/governance/publications.json",
         "packages/naive/src/records/examples/**/governance/publications.json"
       ],
-      "note": "Every place the venture has published: channel, artifact, url, the sha256 of the built output that is live, the person who approved it, when, earlier versions and any embargo. naive publish writes it; packages/naive/src/engine/check-publications.mjs checks it"
+      "note": "Every place the venture has published: channel, artifact, url, the sha256 of the built output that is live, the person who approved it, when, earlier versions and any embargo. naive publish writes it; packages/naive/src/engine/check-publications.ts checks it"
     },
     {
       "id": "marketing-matrix",
@@ -2307,7 +2307,7 @@
         "instance/**/artifacts/*.json",
         "packages/naive/src/records/examples/**/artifacts/*.json"
       ],
-      "note": "A view built from records for a reader (document, deck, dashboard, design, page, file, site), naming the records it read; artifacts are what get published, records never are. packages/naive/src/engine/check-artifacts.mjs flags one stale when a record it cites changes"
+      "note": "A view built from records for a reader (document, deck, dashboard, design, page, file, site), naming the records it read; artifacts are what get published, records never are. packages/naive/src/engine/check-artifacts.ts flags one stale when a record it cites changes"
     },
     {
       "id": "raw-text",
@@ -2752,17 +2752,17 @@
         {
           "field": "brand",
           "to": "marketing-brand",
-          "checked_by": "packages/naive/src/engine/design-system.mjs"
+          "checked_by": "packages/naive/src/engine/design-system.ts"
         },
         {
           "field": "audiences",
           "to": "icp",
-          "checked_by": "packages/naive/src/engine/design-system.mjs"
+          "checked_by": "packages/naive/src/engine/design-system.ts"
         },
         {
           "field": "choices[].from",
           "to": "validation-problem",
-          "checked_by": "packages/naive/src/engine/design-system.mjs"
+          "checked_by": "packages/naive/src/engine/design-system.ts"
         }
       ],
       "decision_class": "public-commitment",
@@ -2859,7 +2859,7 @@
         "instance/**/product/bugs/*.json",
         "packages/naive/src/records/examples/**/product/bugs/*.json"
       ],
-      "note": "One defect: title, severity P0 to P3, status, the version it was found and fixed in, and how to reproduce it. Stable means no open P0 or P1 (naive bugs, packages/naive/src/engine/bugs.mjs).",
+      "note": "One defect: title, severity P0 to P3, status, the version it was found and fixed in, and how to reproduce it. Stable means no open P0 or P1 (naive bugs, packages/naive/src/engine/bugs.ts).",
       "refs": [
         {
           "field": "fixed_in",
@@ -2890,7 +2890,7 @@
       "paths": [
         "beta/capabilities.json"
       ],
-      "note": "The plugin beta's capabilities in unlock order, each with its checkpoint feedback form (packages/naive/src/engine/beta-gate.mjs)."
+      "note": "The plugin beta's capabilities in unlock order, each with its checkpoint feedback form (packages/naive/src/engine/beta-gate.ts)."
     },
     {
       "id": "decision-roadmap",
@@ -2906,10 +2906,10 @@
         {
           "field": "steps.*.frame",
           "to": "frame",
-          "checked_by": "packages/naive/src/engine/check-roadmap.mjs"
+          "checked_by": "packages/naive/src/engine/check-roadmap.ts"
         }
       ],
-      "note": "A decision roadmap: an ordered set of frames, each step with its phase, dependencies, door and decider. packages/naive/src/engine/roadmaps.mjs installs it by proposing each step's decisions open; packages/naive/src/engine/check-roadmap.mjs rejects cycles, unknown frames, steps with no decider and one-way doors delegated away from the founder"
+      "note": "A decision roadmap: an ordered set of frames, each step with its phase, dependencies, door and decider. packages/naive/src/engine/roadmaps.mjs installs it by proposing each step's decisions open; packages/naive/src/engine/check-roadmap.ts rejects cycles, unknown frames, steps with no decider and one-way doors delegated away from the founder"
     },
     {
       "id": "lifecycle-playbook",
@@ -3262,7 +3262,7 @@
     },
     {
       "path": "packages/naive/src/records/examples/docket-scenarios.json",
-      "reason": "Venture states with a source-argued next step, the evidence set packages/naive/src/engine/docket-eval.mjs scores the docket against (EE-075); test data, not a record"
+      "reason": "Venture states with a source-argued next step, the evidence set packages/naive/src/engine/docket-eval.ts scores the docket against (EE-075); test data, not a record"
     },
     {
       "path": "package-lock.json",
@@ -3326,7 +3326,7 @@
     },
     {
       "path": "packages/naive/src/engine/internal-terms.json",
-      "reason": "The framework's default patterns for internal text, read by packages/naive/src/engine/check-leaks.mjs (the publishing gate); configuration, not a record"
+      "reason": "The framework's default patterns for internal text, read by packages/naive/src/engine/check-leaks.ts (the publishing gate); configuration, not a record"
     },
     {
       "path": "packages/naive/src/engine/generators/gaps.json",
@@ -3371,8 +3371,8 @@
     {"path": "instance/**/governance/founder-agreement.md", "kind": "record", "reason": "The founder agreement in prose beside governance/founder-agreement.json"},
     {"path": "instance/**/governance/agreements/*.md", "kind": "record", "reason": "A signed agreement in prose"},
     {"path": "instance/**/knowledge/research/*.md", "kind": "record", "reason": "A research note the venture's evidence cites"},
-    {"path": "instance/**/.naive/decision-index.json", "kind": "derived", "reason": "The live decision index's cache, rebuilt on each run (packages/naive/src/engine/decision-index.mjs)"},
-    {"path": "instance/**/.naive/cache/**/*", "kind": "derived", "reason": "The venture's route cache (packages/naive/src/engine/caching.mjs), which prune and clear may drop"},
+    {"path": "instance/**/.naive/decision-index.json", "kind": "derived", "reason": "The live decision index's cache, rebuilt on each run (packages/naive/src/engine/decision-index.ts)"},
+    {"path": "instance/**/.naive/cache/**/*", "kind": "derived", "reason": "The venture's route cache (packages/naive/src/engine/caching.ts), which prune and clear may drop"},
     {"path": "instance/**/.naive/types/**/*", "kind": "derived", "reason": "Types written by naive typegen from the route table and the MCP tools"},
     {"path": "instance/**/.naive/upgrade/**/*", "kind": "derived", "reason": "A staged upgrade's copy of the venture (packages/naive/src/engine/upgrades.mjs), discarded or landed"},
     {"path": "instance/**/.naive/publish/**/*", "kind": "derived", "reason": "Published frameworks built from the venture's folder (packages/naive/src/engine/user-frameworks.mjs)"},
@@ -3383,7 +3383,7 @@
     {"path": "instance/**/.naive/blobs/**/*", "kind": "record", "reason": "The blob store: the bytes each provenance line names, under their SHA-256 (packages/naive/src/core/blobs.ts). Content-addressed and never changed, so it is committed like a record; an as-of read (packages/naive/src/store/as-of.ts) needs it and cannot rebuild it"},
     {"path": "instance/**/_eval/**/*", "kind": "record", "reason": "A recipe's frozen eval set, <venture>/_eval/<sha>/eval-set.json, written by naive recipes plan (packages/naive/src/engine/recipes/eval-set.ts): the as-of points, the frozen signal index, each fact's versions and the settled outcomes. It cannot be rebuilt (a library that backfills later must not leak into it), so a host commits it whole; it never changes once frozen, so a base check can only pass. The router never serves it. Its files must not take a path a log record type names"},
     {"path": "instance/**/.naive/triggers.json", "kind": "record", "reason": "The trigger cursor and every run's state; not rebuildable, so kept whole"},
-    {"path": "instance/**/.naive/beta.json", "kind": "record", "reason": "The plugin beta's unlock state per tester (packages/naive/src/engine/beta-gate.mjs)"},
+    {"path": "instance/**/.naive/beta.json", "kind": "record", "reason": "The plugin beta's unlock state per tester (packages/naive/src/engine/beta-gate.ts)"},
     {"path": "instance/**/.naive/adapters.json", "kind": "record", "reason": "What the harness adapters wrote, so an upgrade never overwrites a file it did not write"},
     {"path": "instance/**/.naive/stale.json", "kind": "record", "reason": "Summaries marked stale when a source changed (packages/naive/src/engine/stale.mjs)"},
     {"path": "instance/**/.naive/telemetry-sent.json", "kind": "record", "reason": "How far the telemetry log has been sent"},

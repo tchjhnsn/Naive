@@ -2,7 +2,7 @@
 // validate.ts, and each well-formed one accepted, so a later edit to the schema's allOf cannot drop a rule silently
 // (review of #142 at 9958f75, finding 4).
 //
-//   node packages/naive/src/engine/decision-affects-test.mjs
+//   node packages/naive/src/engine/decision-affects-test.ts
 
 import { spawnSync } from "node:child_process";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";

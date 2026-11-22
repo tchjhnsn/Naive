@@ -67,9 +67,9 @@ This section is the record of that run. Neither the 203-state failing TLC run no
 
 The first spec set `SameFile == FALSE`, which is `purpose/validation/assess` reading `purpose/validation/problem.json` while `foundation/problem` writes `foundation/problem.json`. TLC (203 states) broke `CheckReadsTheRecordTheTemplateWrote`. The shortest path was: read the profile the venture already has, write the claim, write the plan, read the plan, file the notes, read the notes, add evidence, run the assessment.
 
-Replay, before the fix: `node packages/naive/src/engine/assess-problem.mjs instance/ventures/everything-ecosystem` answered that there is no problem record. The venture's record is `foundation/problem.json`.
+Replay, before the fix: `node packages/naive/src/engine/assess-problem.ts instance/ventures/everything-ecosystem` answered that there is no problem record. The venture's record is `foundation/problem.json`.
 
-`packages/naive/src/engine/assess-problem.mjs` `problemFile()` now reads `foundation/problem.json` when that file is present, and `purpose/validation/problem.json` when that is the only copy. The same order as the route. With `SameFile == TRUE`, TLC holds, as it must with that value hard-coded. The fixture replay above is the re-run.
+`packages/naive/src/engine/assess-problem.ts` `problemFile()` now reads `foundation/problem.json` when that file is present, and `purpose/validation/problem.json` when that is the only copy. The same order as the route. With `SameFile == TRUE`, TLC holds, as it must with that value hard-coded. The fixture replay above is the re-run.
 
 ## Left out
 

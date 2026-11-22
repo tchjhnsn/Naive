@@ -15,7 +15,7 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { routes, ventureDir, ventures } from "../../router/router.mjs";
-import { decisions } from "../../engine/decisions.mjs";
+import { decisions } from "../../engine/decisions.ts";
 import { CONVENTIONS, MAP, parse, summary } from "../../functions/strategy/frameworks/idea-map/ideamap.mjs";
 import { GRAPH } from "../../functions/strategy/frameworks/idea-map/graph.mjs";
 import { route } from "../../functions/strategy/frameworks/idea-map/route.mjs";

@@ -56,8 +56,8 @@ import type { Detector, DetectorTrial } from "../records/types/records.d.ts";
 import { LOCAL, MAP } from "../store/connectors/index.ts";
 import { bestCriterion, expectedCost, optimalBeta, summarize, wilson } from "../engine/detection.ts";
 import type { Payoffs, Summary, Trial } from "../engine/detection.ts";
-import { DETECTORS, TEMPLATE } from "../engine/detectors.mjs";
-import { decisionFile, propose, signers } from "../engine/decisions.mjs";
+import { DETECTORS, TEMPLATE } from "../engine/detectors.ts";
+import { decisionFile, propose, signers } from "../engine/decisions.ts";
 
 /** The costs each impact tier sets by default (detector.schema.json, tier). */
 export const TIER_COSTS: Readonly<Record<string, Payoffs>> = {

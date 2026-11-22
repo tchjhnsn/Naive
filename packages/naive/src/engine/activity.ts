@@ -3,12 +3,12 @@
 // (TRANSCRIPT_DIAGNOSIS_V2 section 2).
 //
 //   naive activity [--from <date>] [--to <date>] [--write] [--dir <transcripts>] [--venture <dir>] [--json]
-//   node packages/naive/src/engine/activity.mjs [same flags]
+//   node packages/naive/src/engine/activity.ts [same flags]
 //
 // Per day and venture: sessions (transcript files with a founder message that day), active minutes (gaps of 10
 // minutes or less between the founder's own messages, summed), the founder's messages, and tokens in (characters / 4).
 // A session belongs to the venture its working directory is in, else to a venture whose path the founder mentions.
-// Days are the venture's IANA time zone's (packages/naive/src/engine/clock.mjs), so "today" is the founder's today.
+// Days are the venture's IANA time zone's (packages/naive/src/engine/clock.ts), so "today" is the founder's today.
 // --write writes operations/activity/<date>.json per day (packages/naive/src/records/activity.schema.json, internal) and
 // operations/activity/_summary.json (days since last touch, streak; packages/naive/src/records/activity-summary.schema.json) in each
 // venture. Reads transcripts only: nothing is sent anywhere, and nothing is scheduled.
@@ -17,7 +17,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 
 import { homedir } from "node:os";
 import { basename, dirname, join, relative, resolve, sep } from "node:path";
 import { humanText, transcriptFiles } from "./transcripts.mjs";
-import { addDays, localDate, daysBetween, zoneOf } from "./clock.mjs";
+import { addDays, localDate, daysBetween, zoneOf } from "./clock.ts";
 import { ventureFile } from "../core/venture-paths.ts";
 import { findWorkspace } from "./workspace.mjs";
 import { HostedRefusal, isHosted } from "../core/runtime.ts";

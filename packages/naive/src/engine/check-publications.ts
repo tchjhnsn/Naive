@@ -6,13 +6,13 @@
 // before its not_before. Warning: an entry whose artifact went stale (a record it was built from changed),
 // which has to be rebuilt, re-linted and republished.
 //
-//   node packages/naive/src/engine/check-publications.mjs <workspace or venture dir>
+//   node packages/naive/src/engine/check-publications.ts <workspace or venture dir>
 
 import { createHash } from "node:crypto";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ventureFile } from "../core/venture-paths.ts";
-import { artifacts } from "./check-artifacts.mjs";
+import { artifacts } from "./check-artifacts.ts";
 
 const load = (f) => JSON.parse(readFileSync(f, "utf8"));
 const sha = (f) => createHash("sha256").update(readFileSync(f)).digest("hex");
@@ -52,7 +52,7 @@ export function checkVenture(dir) {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const root = process.argv[2];
-  if (!root) { console.error("usage: node packages/naive/src/engine/check-publications.mjs <workspace or venture dir>"); process.exit(2); }
+  if (!root) { console.error("usage: node packages/naive/src/engine/check-publications.ts <workspace or venture dir>"); process.exit(2); }
   let errors = [], warnings = [], n = 0;
   for (const v of ventures(root)) { const r = checkVenture(v); errors.push(...r.errors.map((x) => `${v}: ${x}`)); warnings.push(...r.warnings.map((x) => `${v}: ${x}`)); n += r.entries; }
   for (const w of warnings) console.log(`warning: ${w}`);

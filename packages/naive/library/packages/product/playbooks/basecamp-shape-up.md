@@ -38,7 +38,7 @@ The book allows a rare extension of a couple of weeks, and prefers not to use it
 
 Fill this in for one product. Each step names the Naive route it reads or writes. Routes are the ones `node packages/naive/src/router/router.mjs` lists. Specs and a roadmap are not records yet (`packages/naive/library/packages/product/package.json` lists them under `planned`). The cycle and the pitch are handoffs. The bet is a decision record.
 
-The product function reads `foundation/icp`. It does not copy that profile onto the product card. `packages/naive/src/engine/design-system.mjs` `inputs()` is the pattern: read the other function's record by its route, and leave it there.
+The product function reads `foundation/icp`. It does not copy that profile onto the product card. `packages/naive/src/engine/design-system.ts` `inputs()` is the pattern: read the other function's record by its route, and leave it there.
 
 `operations/handoff` is suggested from validation onward (`packages/naive/src/engine/need-now.json` gives handoff a discovery prior of 0.3 and a validation prior of 0.7, and the suggest line is 0.5). The route itself resolves in any phase.
 
@@ -120,7 +120,7 @@ Use an id such as `bet-<slug>`. Status is `open`. Boundary is `fail-closed`. Set
 
 Do not set status to `decided`. Only a person settles a decision (EE-058): the router saves an agent's write of `status: decided` as a draft, and the record stays open (`packages/naive/src/router/router.mjs` write). The founder decides in the next step.
 
-While that decision is open and fail-closed, `packages/naive/src/engine/decisions.mjs` `holding()` matches `decides.path` to the cycle handoff file. An agent's later write of that file comes back as a draft (`packages/naive/src/router/router.mjs` write).
+While that decision is open and fail-closed, `packages/naive/src/engine/decisions.ts` `holding()` matches `decides.path` to the cycle handoff file. An agent's later write of that file comes back as a draft (`packages/naive/src/router/router.mjs` write).
 
 ### 6. The founder bets or declines
 
@@ -130,7 +130,7 @@ A person runs:
 node packages/naive/src/interfaces/cli/mentura.mjs decide bet-<slug> --venture <id> --by "<their name>" --answer <bet or decline>
 ```
 
-`mentura decide` asks them to type the decision id. `packages/naive/src/engine/decisions.mjs` `approve()` records `provenance.approved_by`, and it accepts any wording, so the answer has to be exactly `bet` or `decline` for the bet check below to read it. Reasons go in `--note`.
+`mentura decide` asks them to type the decision id. `packages/naive/src/engine/decisions.ts` `approve()` records `provenance.approved_by`, and it accepts any wording, so the answer has to be exactly `bet` or `decline` for the bet check below to read it. Reasons go in `--note`.
 
 Decline: leave the cycle handoff in `draft`. Do not start it. Do not carry it forward. Someone who wants it later proposes a new bet.
 

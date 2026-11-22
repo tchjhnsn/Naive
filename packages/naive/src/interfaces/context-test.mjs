@@ -28,7 +28,7 @@ const ctx = await import("../router/context.mjs");
 const { events, register } = await import("../core/instrumentation.ts");
 const { vitals } = await import("../router/vitals.mjs");
 const { handle } = await import("./mcp/server.mjs");
-const { propose, approve } = await import("../engine/decisions.mjs");
+const { propose, approve } = await import("../engine/decisions.ts");
 
 let failed = 0;
 const expect = (name, ok, detail = "") => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${detail}`}`); if (!ok) failed++; };

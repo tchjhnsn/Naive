@@ -45,9 +45,9 @@ import { tmpdir } from "node:os";
 import { basename, dirname, join, relative } from "node:path";
 import { actingAgent, agentFromEnv, entries as provEntries, record as prov } from "../core/provenance.ts";
 import { address } from "../store/connectors/contract.ts";
-import { decisionFile, holding, locked } from "../engine/decisions.mjs";
+import { decisionFile, holding, locked } from "../engine/decisions.ts";
 import { configOf, hold } from "../engine/gate.mjs";
-import { blocked as betaBlocked } from "../engine/beta-gate.mjs";
+import { blocked as betaBlocked } from "../engine/beta-gate.ts";
 // Freshness (Revalidating, V-1 to V-8): stale flags on reads, and the freshness and revalidate commands.
 import { readFlag as freshnessFlag } from "../engine/freshness.mjs";
 // Gate group hooks (M-18, F-5, X-2, X-4 to X-6, P-2, P-7, U-4): who is acting, access at the record,
@@ -59,8 +59,8 @@ import { checkPlan, gateWrite, heldDraft, ledgerHook, ownerOfWrite, reachOfWrite
 import { appendLine } from "./appends.mjs";
 import { claimHandoff, handoffWriteRule } from "./handoff-claim.mjs";
 import { LOCAL, attributeSources, connect, sourceFor } from "../store/connectors/index.ts";
-// Caching (packages/naive/src/engine/caching.mjs): per-action memo, the record-level cache for command routes, and system/cache, system/judge, system/answer.
-import { command as cachedCommand, forget, internal as cacheInternal } from "../engine/caching.mjs";
+// Caching (packages/naive/src/engine/caching.ts): per-action memo, the record-level cache for command routes, and system/cache, system/judge, system/answer.
+import { command as cachedCommand, forget, internal as cacheInternal } from "../engine/caching.ts";
 import { actionScope, memo } from "../core/action-scope.ts";
 // Context hook: instrumentation of every call and judgment (packages/naive/src/core/instrumentation.ts, P-4, F-4).
 import { instrumented, judgment } from "../core/instrumentation.ts";
@@ -69,8 +69,8 @@ import { around } from "./writes.mjs";
 import { contain } from "./boundaries.mjs";
 import { packageSlots } from "./package-routes.mjs";
 import { routable } from "../engine/structure.mjs";
-// Brand hook (Y-2..Y-4, J-2..J-4, T-1, T-2, P-24, P-26): routes, commands and layout context from packages/naive/src/engine/brand.mjs.
-import { brandLayout } from "../engine/brand.mjs";
+// Brand hook (Y-2..Y-4, J-2..J-4, T-1, T-2, P-24, P-26): routes, commands and layout context from packages/naive/src/engine/brand.ts.
+import { brandLayout } from "../engine/brand.ts";
 // Investors lint hook: investors/lint (packages/naive/src/checks/lint-investors.ts).
 // Customers lint: a customer that matches no ICP, and a promise the product record does not keep.
 // Legal lint hook: legal/lint (packages/naive/src/checks/lint-legal.ts). A lint, not legal advice.
@@ -80,7 +80,7 @@ import { ventureFile } from "../core/venture-paths.ts";
 import { isFunction, templateOf } from "../engine/research-programs.mjs";
 import { coreOf, statementsIn, withCore } from "../engine/venture-core.mjs";
 import { telosView } from "../../../../frameworks/telos/adapter.mjs";
-import { migrated, scale } from "../engine/canonical.mjs";
+import { migrated, scale } from "../engine/canonical.ts";
 import { schemaNameOf } from "../records/index.ts";
 import { validateFile } from "../records/validate.ts";
 import {
@@ -242,7 +242,7 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
   const lock = actor !== "person" && (action === "write" || action === "append" || action === "claim" || action === "run") ? (locked(dir, requested, actor_id) || locked(dir, route, actor_id)) : null;
   if (lock) return { ok: false, error: `${route} is locked until decision ${lock.id} is made: ${lock.question}`, locked_by: lock.id,
     fix: { who: "a person, not an agent", command: `mentura decide ${lock.id} --venture ${venture} --by <their name> [--answer "<their wording>"]`, then: "retry this call" } };
-  // Beta gate hook (packages/naive/src/engine/beta-gate.mjs): with beta.enabled in naive.config.json, a locked capability's
+  // Beta gate hook (packages/naive/src/engine/beta-gate.ts): with beta.enabled in naive.config.json, a locked capability's
   // routes are refused, naming the checkpoint feedback that unlocks them. Off by default. The tester is
   // NAIVE_BETA_TESTER, the same id as naive beta, never the acting role.
   const beta = betaBlocked(dir, requested, { table: r.route });
@@ -261,7 +261,7 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
   if (r.kind === "command") {
     if (r.internal === "overview") return { ok: true, result: await overview(venture, workspace), ...deprecated };
     if (r.internal === "robots") return { ok: true, result: robots(dir), ...deprecated };
-    // Caching hook: system/cache, system/judge and system/answer are handled in packages/naive/src/engine/caching.mjs.
+    // Caching hook: system/cache, system/judge and system/answer are handled in packages/naive/src/engine/caching.ts.
     if (["cache", "judge", "answer"].includes(r.internal)) return { ...(await cacheInternal(r.internal, { dir, venture, workspace, input, actor, actor_id, via, provenance }, { call, resolve, draftOf })), ...deprecated };
     const lacking = (r.needs ?? []).filter((f) => !existsSync(ventureFile(dir, f)));
     if (lacking.length) return { ok: false, error: `${route} needs ${lacking.join(", ")} in ${venture}`, fix: { missing: lacking } };

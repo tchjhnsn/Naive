@@ -22,7 +22,7 @@ export const TEMPLATE = "packages/naive/src/interfaces/skills/naive-setup/artifa
 const GOAL = "discovery-goal";
 
 export async function state(dir) {
-  const { decisions } = await import("../../engine/decisions.mjs");
+  const { decisions } = await import("../../engine/decisions.ts");
   const v = load(join(dir, "venture.json"));
   const people = existsSync(join(ventureFile(dir, "people/people.json"))) ? load(join(ventureFile(dir, "people/people.json"))) : null;
   const sources = existsSync(join(ventureFile(dir, "knowledge/sources.json"))) ? load(join(ventureFile(dir, "knowledge/sources.json"))) : { sources: [], records: {} };
@@ -55,7 +55,7 @@ const relayed = (d) => d.status !== "decided" && !!d.answer && d.provenance?.dra
 
 // One answer: a decision on file is approved; a foundation statement (or the goal) becomes a decision a person approves.
 export async function decide(dir, { id, answer, via = "api", where = "/setup" }) {
-  const { approve, decisions, founderName, propose } = await import("../../engine/decisions.mjs");
+  const { approve, decisions, founderName, propose } = await import("../../engine/decisions.ts");
   if (!answer || !String(answer).trim()) return { ok: false, error: "write an answer first" };
   const by = founderName(dir);
   const d = decisions(dir).decisions.find((x) => x.id === id);
@@ -98,7 +98,7 @@ export async function point(dir, { fn, system, address, via = "api", actor = "pe
 /** The model relays the founder's answer: proposed with the founder's words as its wording, by an agent,
  *  so it stays open until the founder confirms it (an agent never decides, EE-058). */
 export async function relay(dir, { id, answer, agentId, harness, model }) {
-  const { decisions, propose } = await import("../../engine/decisions.mjs");
+  const { decisions, propose } = await import("../../engine/decisions.ts");
   if (!answer || !String(answer).trim()) return { ok: false, error: "pass the founder's answer, in their words" };
   const words = String(answer).trim();
   const note = `the founder's words, relayed from ${harness ?? "the model's harness"} during setup`;
@@ -117,8 +117,8 @@ export async function relay(dir, { id, answer, agentId, harness, model }) {
 /** The founder confirms the answers the model relayed, at the keyboard: each becomes a decision they made.
  *  @param {string} dir @param {{ by?: string }} [opts] */
 export async function confirm(dir, { by } = {}) {
-  by ??= (await import("../../engine/decisions.mjs")).founderName(dir);
-  const { approve } = await import("../../engine/decisions.mjs");
+  by ??= (await import("../../engine/decisions.ts")).founderName(dir);
+  const { approve } = await import("../../engine/decisions.ts");
   const out = [];
   for (const w of (await state(dir)).waiting) {
     const r = approve(dir, w.id, /** @type {Parameters<typeof approve>[2]} */ ({ by, via: "cli", note: `confirmed at setup: ${by}'s words, relayed by the model` }));

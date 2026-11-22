@@ -13,8 +13,8 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { call } from "../../router/router.mjs";
 import { ledgerPath, verify } from "../../router/detection-ledger.mjs";
-import { approve } from "../../engine/decisions.mjs";
-import { detectorFor } from "../../engine/detectors.mjs";
+import { approve } from "../../engine/decisions.ts";
+import { detectorFor } from "../../engine/detectors.ts";
 import { validateValue } from "../../records/validate.ts";
 import { NOT_BUILT, SEAMS, toolsAgainstSpend } from "../../checks/check-seams.ts";
 import { ACT, DISMISS, decisionId, outcomeOf, run } from "../../router/orchestration/seams.ts";
@@ -109,7 +109,7 @@ try {
     JSON.stringify(decisions));
   expect("each decision matches decision-record.schema.json and offers act and dismiss",
     decisions.every((d) => validateValue("decision-record.schema.json", d).status === 0 && JSON.stringify(d.options) === JSON.stringify([ACT, DISMISS])));
-  expect("the decisions are listed by the decision matrix", node("packages/naive/src/engine/decisions.mjs", dir, "--json").stdout.includes(r.called[0].decision ?? "no decision"));
+  expect("the decisions are listed by the decision matrix", node("packages/naive/src/engine/decisions.ts", dir, "--json").stdout.includes(r.called[0].decision ?? "no decision"));
 
   const again = await run(dir);
   expect("a rerun files nothing new and keeps the three decisions", again.ok && again.called.length === 0 && again.kept.length === 3 && ledger(dir).length === 3, JSON.stringify(again));

@@ -4,7 +4,7 @@
 // labels say which commitment the evidence is strong enough for. Behaviors it must keep are in
 // packages/naive/src/functions/strategy/kits/validation/features/problem-assessment.feature.
 //
-//   node packages/naive/src/engine/assess-problem.mjs <venture dir> [--json] [--preflight] [--as-is]
+//   node packages/naive/src/engine/assess-problem.ts <venture dir> [--json] [--preflight] [--as-is]
 //
 // Assumptions: exists (the problem is real), segment (our segment has it), hurts (it costs
 //   enough that people already spend time or money on it), why-now (something has changed).
@@ -135,7 +135,7 @@ export function assess(dir, { as_is = false, today = new Date() } = {}) {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const dir = process.argv[2];
-  if (!dir) { console.error("usage: node packages/naive/src/engine/assess-problem.mjs <venture dir> [--json] [--preflight] [--as-is]"); process.exit(2); }
+  if (!dir) { console.error("usage: node packages/naive/src/engine/assess-problem.ts <venture dir> [--json] [--preflight] [--as-is]"); process.exit(2); }
   const flag = (f) => process.argv.includes(f);
   const loaded = problemFile(dir);
   /** @type {Assessment} */

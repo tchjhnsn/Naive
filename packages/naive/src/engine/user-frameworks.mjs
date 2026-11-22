@@ -13,9 +13,9 @@
 
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { basename, dirname, join, resolve } from "node:path";
-import { check as checkFrameworks } from "./check-frameworks.mjs";
+import { check as checkFrameworks } from "./check-frameworks.ts";
 import { findWorkspace } from "./workspace.mjs";
-import { leaks } from "./check-leaks.mjs";
+import { leaks } from "./check-leaks.ts";
 import { findSecrets } from "./redact.mjs";
 import { schemaFile } from "../records/index.ts";
 import { validateFile } from "../records/validate.ts";
@@ -130,7 +130,7 @@ export function publishFramework(id, from = process.cwd(), { dryRun = false } = 
   const routes = (f.framework.maps_to ?? []).map((m) => m.canonical_route).filter(Boolean);
   const found = leaks([out]).filter((l) => l.severity !== "warn" && !routes.some((r) => r === l.text || r.startsWith(`${l.text}/`)));
   const leakRun = found.length ? "failed" : "passed";
-  for (const l of found) problems.push(`packages/naive/src/engine/check-leaks.mjs: ${l.pattern} "${l.text}" (${l.why})`);
+  for (const l of found) problems.push(`packages/naive/src/engine/check-leaks.ts: ${l.pattern} "${l.text}" (${l.why})`);
   if (f.framework.visibility !== "public") problems.push(`visibility is ${f.framework.visibility ?? "internal"}: set it to public before publishing for real`);
   return { code: problems.some((p) => !p.startsWith("visibility")) ? 1 : 0, out, leakRun, problems,
     message: `dry run: packed ${Object.keys(files).length} files into ${out}; leak check ${leakRun}; nothing was sent` };

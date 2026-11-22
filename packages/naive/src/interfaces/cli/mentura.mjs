@@ -80,7 +80,7 @@ import { spawnSync } from "node:child_process";
 import { call, draftOf, files, glob, groups, repo, routes, routesMd, ventureDir, ventures } from "../../router/router.mjs";
 import { agentFromEnv, entries, record } from "../../core/provenance.ts";
 import { FRAME, filesOf, statementFiles } from "../../engine/foundation.mjs";
-import { approve, decisionFile, decisions, merge, propose, rollback } from "../../engine/decisions.mjs";
+import { approve, decisionFile, decisions, merge, propose, rollback } from "../../engine/decisions.ts";
 import { reasonsFromArgs, whyLines } from "../../engine/reasons.mjs";
 import { impact } from "../../engine/impact.mjs";
 // Gate group hook (X-2): held drafts kept side by side.
@@ -143,7 +143,7 @@ if (cmd === "add") {
   // Imports one function into a venture (EE-047, EE-048, EE-071). department is the alias for function for one release.
   const v = opt("venture");
   if (!action || !v) usage();
-  const p = spawnSync("node", [join(repo, "packages/naive/src/engine/add-department.mjs"), ventureDir(v, workspace), action, ...(flag("group") ? ["--group"] : [])], { stdio: "inherit" });
+  const p = spawnSync("node", [join(repo, "packages/naive/src/engine/add-department.ts"), ventureDir(v, workspace), action, ...(flag("group") ? ["--group"] : [])], { stdio: "inherit" });
   process.exit(p.status ?? 1);
 }
 
@@ -299,12 +299,12 @@ if (cmd === "merge") {
 }
 
 if (cmd === "index") {
-  // The live decision index (packages/naive/src/engine/decision-index.mjs): re-scores every active decision
+  // The live decision index (packages/naive/src/engine/decision-index.ts): re-scores every active decision
   // (an update equals a rebuild) and appends rank history for what moved.
   const venture = opt("venture");
   const dir = venture && ventureDir(venture, workspace);
   if (!dir) usage();
-  const { rebuild, update } = await import("../../engine/decision-index.mjs");
+  const { rebuild, update } = await import("../../engine/decision-index.ts");
   const idx = argv.includes("--rebuild") ? rebuild(dir) : update(dir, { since: opt("since") });
   out({ venture: idx.venture, phase: idx.phase, update: { mode: idx.last_update.mode, events: idx.last_update.events, rescored: idx.last_update.touched.map((t) => t.id) },
     flagged: idx.entries.filter((e) => e.flags.length).map((e) => ({ id: e.id, flags: e.flags.map((f) => f.why) })),

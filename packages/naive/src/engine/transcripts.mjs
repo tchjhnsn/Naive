@@ -1,7 +1,7 @@
 // Reading agent session transcripts: the transcript files under a folder, and the human's own words in one
-// transcript line, and the folder walk under both. packages/naive/src/engine/activity.mjs and scripts/diagnose-transcripts.mjs both read transcripts this way.
+// transcript line, and the folder walk under both. packages/naive/src/engine/activity.ts and scripts/diagnose-transcripts.mjs both read transcripts this way.
 // It moved here from scripts/diagnose-transcripts.mjs in step 4b of the router inversion, so that
-// packages/naive/src/engine/activity.mjs no longer imports scripts/; the diagnosis script imports it and re-exports both.
+// packages/naive/src/engine/activity.ts no longer imports scripts/; the diagnosis script imports it and re-exports both.
 
 import { existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";

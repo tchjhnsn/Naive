@@ -220,7 +220,7 @@ export type Artifact = {
   };
 };
 
-/** The plugin beta's capabilities in the order they unlock, at beta/capabilities.json. Core capabilities start unlocked. Every other capability unlocks once the tester has given the checkpoint feedback of the one before it (packages/naive/src/engine/beta-gate.mjs). */
+/** The plugin beta's capabilities in the order they unlock, at beta/capabilities.json. Core capabilities start unlocked. Every other capability unlocks once the tester has given the checkpoint feedback of the one before it (packages/naive/src/engine/beta-gate.ts). */
 export type BetaCapabilities = {
   $schema?: string;
   version: string;
@@ -313,7 +313,7 @@ export type Budget = {
   note?: string;
 };
 
-/** One defect in the product, at <venture>/product/bugs/<id>.json. 'Stable' in the validation study is measured as no open P0 or P1 (node packages/naive/src/engine/bugs.mjs, naive bugs). */
+/** One defect in the product, at <venture>/product/bugs/<id>.json. 'Stable' in the validation study is measured as no open P0 or P1 (node packages/naive/src/engine/bugs.ts, naive bugs). */
 export type Bug = {
   id: string;
   venture?: string;
@@ -331,7 +331,7 @@ export type Bug = {
   feedback?: string;
 };
 
-/** One event, one file (calendar/events/<uid>.json), in the shape of a JSCalendar Event (RFC 8984): a start in local time with its IANA time zone and a duration. Events derived from dated records (open decisions with a due time, releases) are never stored; packages/naive/src/engine/calendar.mjs computes them each time the calendar is read. */
+/** One event, one file (calendar/events/<uid>.json), in the shape of a JSCalendar Event (RFC 8984): a start in local time with its IANA time zone and a duration. Events derived from dated records (open decisions with a due time, releases) are never stored; packages/naive/src/engine/calendar.ts computes them each time the calendar is read. */
 export type CalendarEvent = {
   "@type": "Event";
   /** Globally unique; the file's name without .json */
@@ -366,7 +366,7 @@ export type CalendarEvent = {
   updated?: string;
 };
 
-/** One calendar in a workspace (calendar/calendars/<id>.json): who owns it, who is on it, and who may see it. Events name it by id. A workspace is initiated with the default calendar, default, named Venture (Torian, 2026-10-30; packages/naive/src/engine/calendar.mjs). */
+/** One calendar in a workspace (calendar/calendars/<id>.json): who owns it, who is on it, and who may see it. Events name it by id. A workspace is initiated with the default calendar, default, named Venture (Torian, 2026-10-30; packages/naive/src/engine/calendar.ts). */
 export type Calendar = {
   /** The calendar's id, the file's name without .json */
   id: string;
@@ -722,7 +722,7 @@ export type DecisionImpact = {
   built_at: string;
 };
 
-/** One decision a venture has to make, in a decisions/ folder beside the record it decides (EE-054), like a Next.js file beside its route: decisions/<record>[.<topic>].decision.json decides <record>.json in the folder that holds decisions/. The decision log (decision.schema.json) stays the append-only history; this is the live decision. node packages/naive/src/engine/decisions.mjs gathers them into the decision matrix. */
+/** One decision a venture has to make, in a decisions/ folder beside the record it decides (EE-054), like a Next.js file beside its route: decisions/<record>[.<topic>].decision.json decides <record>.json in the folder that holds decisions/. The decision log (decision.schema.json) stays the append-only history; this is the live decision. node packages/naive/src/engine/decisions.ts gathers them into the decision matrix. */
 export type DecisionRecord = {
   /** Unique within the venture. The roots venture and foundation are reserved. */
   id: string;
@@ -901,9 +901,9 @@ export type DecisionRecord = {
   };
   /** When this version restores an earlier one, the version it restores */
   rolled_back_from?: number;
-  /** How reversible the decision is. A one-way door is heavy: the decision index weighs it more and carries propagation further through it (packages/naive/src/engine/decision-index.mjs). */
+  /** How reversible the decision is. A one-way door is heavy: the decision index weighs it more and carries propagation further through it (packages/naive/src/engine/decision-index.ts). */
   door?: "one-way" | "two-way";
-  /** The venture requirements (foundation/requirements/<id>.json) this decision satisfies, is constrained by, or violates. A heavy requirement lifts a later-phase decision into the current phase; a violation is flagged now (packages/naive/src/engine/decision-index.mjs). */
+  /** The venture requirements (foundation/requirements/<id>.json) this decision satisfies, is constrained by, or violates. A heavy requirement lifts a later-phase decision into the current phase; a violation is flagged now (packages/naive/src/engine/decision-index.ts). */
   requirements?: {
     id: string;
     relation: "satisfies" | "constrains" | "violates";
@@ -954,7 +954,7 @@ export type DecisionRights = {
   }[];
 };
 
-/** An ordered set of frames from the decision library, at packages/naive/library/packages/<function>/roadmaps/<id>.json. A roadmap reuses frames and holds no answers: installing it (naive roadmap install <id>) proposes each step's decisions open, and the founder decides. Versioned like a package; a venture that switches roadmaps keeps the decisions already made. packages/naive/src/engine/check-roadmap.mjs rejects cycles, unknown frames, steps with no decider and one-way doors delegated away from the founder. */
+/** An ordered set of frames from the decision library, at packages/naive/library/packages/<function>/roadmaps/<id>.json. A roadmap reuses frames and holds no answers: installing it (naive roadmap install <id>) proposes each step's decisions open, and the founder decides. Versioned like a package; a venture that switches roadmaps keeps the decisions already made. packages/naive/src/engine/check-roadmap.ts rejects cycles, unknown frames, steps with no decider and one-way doors delegated away from the founder. */
 export type DecisionRoadmap = {
   id: string;
   title: string;
@@ -1023,7 +1023,7 @@ export type Delegation = {
   note?: string;
   /** The chief delegator's role id (founder) */
   root: string;
-  /** The people who hold the root role, by name. Only they approve a one-way publication (packages/naive/src/engine/publish.mjs) or merge as the founder (packages/naive/src/engine/decisions.mjs). The template leaves it out; a venture names its own founders */
+  /** The people who hold the root role, by name. Only they approve a one-way publication (packages/naive/src/engine/publish.mjs) or merge as the founder (packages/naive/src/engine/decisions.ts). The template leaves it out; a venture names its own founders */
   founder?: string[];
   never_redelegated?: string[];
   /** Irreversible classes; they stay with the founder */
@@ -1841,7 +1841,7 @@ export type Frame = {
   }[];
 };
 
-/** A framework for thinking, at frameworks/<id>/framework.json: its vocabulary, its questions (frames), a template and how each of its answers lands in canonical records (maps_to). A framework reads and writes the canonical schema and never changes it (Torian, 2026-10-30). packages/naive/src/engine/check-frameworks.mjs checks that every maps_to targets a canonical route. A founder's own frameworks sit in the workspace's frameworks/ folder with the same shape, plus template.md and playbook.md (packages/naive/src/engine/user-frameworks.mjs). */
+/** A framework for thinking, at frameworks/<id>/framework.json: its vocabulary, its questions (frames), a template and how each of its answers lands in canonical records (maps_to). A framework reads and writes the canonical schema and never changes it (Torian, 2026-10-30). packages/naive/src/engine/check-frameworks.ts checks that every maps_to targets a canonical route. A founder's own frameworks sit in the workspace's frameworks/ folder with the same shape, plus template.md and playbook.md (packages/naive/src/engine/user-frameworks.mjs). */
 export type Framework = {
   id: string;
   title: string;
@@ -2539,7 +2539,7 @@ export type Integration = {
   };
 };
 
-/** Patterns that mark internal text, which public output must never contain (packages/naive/src/engine/check-leaks.mjs). Naive's own list is packages/naive/src/engine/internal-terms.json; a venture's founder edits its own at <venture>/governance/internal-terms.json, for unannounced codenames and internal jargon. A pattern with severity warn is reported without failing, for a term whose status a person has not decided yet. */
+/** Patterns that mark internal text, which public output must never contain (packages/naive/src/engine/check-leaks.ts). Naive's own list is packages/naive/src/engine/internal-terms.json; a venture's founder edits its own at <venture>/governance/internal-terms.json, for unannounced codenames and internal jargon. A pattern with severity warn is reported without failing, for a term whose status a person has not decided yet. */
 export type InternalTerms = {
   note?: string;
   updated?: string;
@@ -3212,7 +3212,7 @@ export type NaiveConfig = {
     spans?: boolean;
     content?: boolean;
   };
-  /** The plugin beta's gate (packages/naive/src/engine/beta-gate.mjs): capabilities in beta/capabilities.json unlock in order, each after checkpoint feedback. Off by default. */
+  /** The plugin beta's gate (packages/naive/src/engine/beta-gate.ts): capabilities in beta/capabilities.json unlock in order, each after checkpoint feedback. Off by default. */
   beta?: {
     enabled?: boolean;
     /** Opt-in for routing feedback through Jev: send lets feedback text leave the machine, and counts only with set_by naming the person who turned it on. A TYPESAFE_API_KEY alone sends nothing. */
@@ -4493,7 +4493,7 @@ export type PublicAssetsAlt = {
   by: "agent" | "person";
 };
 
-/** Read from the bytes by code (packages/naive/src/engine/assets.mjs), never written by hand */
+/** Read from the bytes by code (packages/naive/src/engine/assets.ts), never written by hand */
 export type PublicAssetsFacts = {
   type: string;
   width?: number;
@@ -4577,7 +4577,7 @@ export type PublicationPolicy = {
   }[];
 };
 
-/** Every place a venture has published (governance/publications.json): one entry per channel and artifact, naming the channel in governance/publication-policy.json, the artifact that was published (artifacts are what get published, records never are), where it went, the sha256 of the built output, the person who approved it, when, the versions before it (for naive publish rollback) and any embargo. node packages/naive/src/engine/check-publications.mjs fails when something is live without an entry, when an entry's sha256 does not match the built output, or when an entry has no approver. */
+/** Every place a venture has published (governance/publications.json): one entry per channel and artifact, naming the channel in governance/publication-policy.json, the artifact that was published (artifacts are what get published, records never are), where it went, the sha256 of the built output, the person who approved it, when, the versions before it (for naive publish rollback) and any embargo. node packages/naive/src/engine/check-publications.ts fails when something is live without an entry, when an entry's sha256 does not match the built output, or when an entry has no approver. */
 export type Publications = {
   venture?: string;
   entries: {
@@ -5846,7 +5846,7 @@ export type ValidationEvidence = {
    * @format date
    */
   collected: string;
-  /** Problem records only (EE-050): the assumption the item bears on. exists: the problem is real; segment: our segment has it; hurts: it costs enough that people already spend time or money on it; why-now: something has changed. Without it the item counts toward exists. packages/naive/src/engine/assess-problem.mjs labels each assumption from its items. */
+  /** Problem records only (EE-050): the assumption the item bears on. exists: the problem is real; segment: our segment has it; hurts: it costs enough that people already spend time or money on it; why-now: something has changed. Without it the item counts toward exists. packages/naive/src/engine/assess-problem.ts labels each assumption from its items. */
   assumption?: "exists" | "segment" | "hurts" | "why-now";
   /** first-hand: the venture saw it (its own interviews, payments, data exports); reported: someone else says so (a vendor's customer count, a report, a roundup). Defaults to first-hand for a file in the venture folder and reported for a URL. Only first-hand evidence can demonstrate an assumption (EE-050). */
   origin?: "first-hand" | "reported";
@@ -5854,7 +5854,7 @@ export type ValidationEvidence = {
   form?: string;
 };
 
-/** One tester's answers at one beta checkpoint, at <venture>/validation/feedback/<id>.json. The beta gate (packages/naive/src/engine/beta-gate.mjs) unlocks the next capability only once this record exists for the previous one. routed_to is where the feedback went and routing how that was decided. */
+/** One tester's answers at one beta checkpoint, at <venture>/validation/feedback/<id>.json. The beta gate (packages/naive/src/engine/beta-gate.ts) unlocks the next capability only once this record exists for the previous one. routed_to is where the feedback went and routing how that was decided. */
 export type ValidationFeedback = {
   id: string;
   venture?: string;
@@ -6336,7 +6336,7 @@ export type Venture = {
   parent: string | null;
   /** How far the venture has come (EE-012). discovery: does a real problem exist, and who has it. validation: will people adopt this solution and keep using it. beachhead: can it win one segment repeatably at a profitable cost. scale: how fast can it take the mass market. platform: what will others build on. Gates and references: the phase modules, packages/naive/src/phases/<phase>/phase.json. */
   phase: "discovery" | "validation" | "beachhead" | "scale" | "platform";
-  /** The venture's IANA time zone, when it differs from its workspace's (packages/naive/src/engine/clock.mjs); its dates, activity days and derived calendar events are read in it. Unset: the workspace's, else the system's */
+  /** The venture's IANA time zone, when it differs from its workspace's (packages/naive/src/engine/clock.ts); its dates, activity days and derived calendar events are read in it. Unset: the workspace's, else the system's */
   timeZone?: string;
   /** The lifecycle playbook the venture follows (packages/naive/src/functions/products/frameworks/product-anatomy/playbooks/<id>.json): the order of its decisions and the evidence that clears each phase gate. Absent means product-first, Naive's default. */
   lifecycle_playbook?: string;
@@ -6547,8 +6547,8 @@ export type Workspace = {
   };
   /** The founder record, relative to the workspace (normally founders/<handle>/founder.json, packages/naive/src/engine/founders.ts) */
   founder?: string;
-  /** The workspace's IANA time zone (for example America/New_York): the clock's zone (packages/naive/src/engine/clock.mjs). Set when the workspace is initiated, from the system's zone unless given; a venture.json timeZone overrides it for that venture */
+  /** The workspace's IANA time zone (for example America/New_York): the clock's zone (packages/naive/src/engine/clock.ts). Set when the workspace is initiated, from the system's zone unless given; a venture.json timeZone overrides it for that venture */
   timeZone?: string;
-  /** The calendar folder, relative to the workspace (calendar/): calendars/<id>.json and events/<uid>.json (packages/naive/src/engine/calendar.mjs). Created with the workspace */
+  /** The calendar folder, relative to the workspace (calendar/): calendars/<id>.json and events/<uid>.json (packages/naive/src/engine/calendar.ts). Created with the workspace */
   calendar?: string;
 };

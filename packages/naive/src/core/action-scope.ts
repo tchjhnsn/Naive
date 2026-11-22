@@ -1,6 +1,6 @@
 // One action's scope (F-2, F-12, O-5): values computed once per action and shared by every caller in
 // it, through AsyncLocalStorage. The router runs each call as an action; the route table memoizes in it.
-// It moved here from packages/naive/src/engine/caching.mjs, which re-exports it, so modules below schema/ can use it.
+// It moved here from packages/naive/src/engine/caching.ts, which re-exports it, so modules below schema/ can use it.
 
 import { AsyncLocalStorage } from "node:async_hooks";
 

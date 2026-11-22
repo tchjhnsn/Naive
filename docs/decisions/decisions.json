@@ -1795,7 +1795,7 @@
       "affects": [
         {
           "kind": "path",
-          "target": "packages/naive/src/engine/decision-queue.mjs",
+          "target": "packages/naive/src/engine/decision-queue.ts",
           "root": "repo",
           "expect": "exists"
         }

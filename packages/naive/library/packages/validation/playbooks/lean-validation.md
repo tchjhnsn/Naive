@@ -133,7 +133,7 @@ Write `foundation/problem` again with the claim from step 2 and one evidence ite
 
 Do not invent a count, a quote, or a source. A missing source stays an open question.
 
-`packages/naive/src/engine/assess-problem.mjs` demonstrates an assumption only for first-hand `behavior` or `commitment` from the target segment, five or more people, collected within 18 months. Anything else from a target, adjacent, or unknown audience infers. That bar is this framework's, in that file (`MIN_SAMPLE`, `MAX_AGE_MONTHS`).
+`packages/naive/src/engine/assess-problem.ts` demonstrates an assumption only for first-hand `behavior` or `commitment` from the target segment, five or more people, collected within 18 months. Anything else from a target, adjacent, or unknown audience infers. That bar is this framework's, in that file (`MIN_SAMPLE`, `MAX_AGE_MONTHS`).
 
 ## Checks
 
@@ -161,4 +161,4 @@ It asks, and does not assess, when there is no accepted problem record, or when 
 
 When it assesses, `supports` is `explore`, `prototype`, `charge`, or `raise`. It worked for the commitment you are about to make when `blocking` is empty for that next rung. It did not work when a blocking test remains. The result names the next test. Missing evidence stays unknown or assumed.
 
-`packages/naive/src/engine/assess-problem.mjs` reads `foundation/problem.json` when that file is present, and `purpose/validation/problem.json` when that is the only copy. Those are the two files on the `foundation/problem` route.
+`packages/naive/src/engine/assess-problem.ts` reads `foundation/problem.json` when that file is present, and `purpose/validation/problem.json` when that is the only copy. Those are the two files on the `foundation/problem` route.

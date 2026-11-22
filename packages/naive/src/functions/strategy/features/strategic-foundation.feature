@@ -1,5 +1,5 @@
 # The behaviors strategic foundation must keep (EE-051): the records a founder keeps in front of
-# them, framed by the Five Ws and How plus whether. Run: node packages/naive/src/engine/bdd.mjs packages/naive/src/functions/strategy/features/strategic-foundation.feature
+# them, framed by the Five Ws and How plus whether. Run: node packages/naive/src/engine/bdd.ts packages/naive/src/functions/strategy/features/strategic-foundation.feature
 
 Feature: Strategic foundation
   The founder always sees what they do, who they serve, why, how, when, where and whether, and

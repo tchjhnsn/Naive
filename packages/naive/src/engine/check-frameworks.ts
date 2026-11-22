@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 // Checks that frameworks for thinking sit over the canonical schema and never inside it (Torian, 2026-10-30).
 //
-//   node packages/naive/src/engine/check-frameworks.mjs [repo root]
+//   node packages/naive/src/engine/check-frameworks.ts [repo root]
 //
 // Fails when:
 //   - a frameworks/<id>/framework.json maps_to targets a route that is not a canonical record route
 //     (foundation/goals, foundation/requirements, foundation/exit-criteria, foundation/constraints);
 //   - core code (schema/*.mjs) reads a framework-only field, telos.json or a venture's ambition, outside
-//     the framework adapters, the migration, the canonical fallback (packages/naive/src/engine/canonical.mjs) and the checks a
+//     the framework adapters, the migration, the canonical fallback (packages/naive/src/engine/canonical.ts) and the checks a
 //     framework declares as its own. A simple static check; tests are not core code.
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
@@ -16,7 +16,7 @@ import { join } from "node:path";
 export const CANONICAL = ["foundation/goals", "foundation/requirements", "foundation/exit-criteria", "foundation/constraints"];
 const canonical = (route) => CANONICAL.some((c) => route === c || route === `${c}/[id]` || (route.startsWith(`${c}/`) && !route.slice(c.length + 1).includes("/")));
 const FRAMEWORK_ONLY = [/telos\.json/, /\.ambition\b/];
-const ALWAYS_ALLOWED = ["packages/naive/src/engine/canonical.mjs", "packages/naive/src/engine/check-frameworks.mjs", "packages/naive/src/engine/upgrades.mjs", "packages/naive/src/records/validate.ts"];
+const ALWAYS_ALLOWED = ["packages/naive/src/engine/canonical.ts", "packages/naive/src/engine/check-frameworks.ts", "packages/naive/src/engine/upgrades.mjs", "packages/naive/src/records/validate.ts"];
 
 export function check(root) {
   const errors = [];
@@ -36,7 +36,7 @@ export function check(root) {
     if (allowed.has(p)) continue;
     readFileSync(join(root, p), "utf8").split("\n").forEach((line, i) => {
       if (/^\s*(\/\/|\*)/.test(line)) return;
-      for (const re of FRAMEWORK_ONLY) if (re.test(line)) errors.push(`${p}:${i + 1}: reads a framework-only field (${re.source.replace(/\\/g, "")}); read canonical records through packages/naive/src/engine/canonical.mjs`);
+      for (const re of FRAMEWORK_ONLY) if (re.test(line)) errors.push(`${p}:${i + 1}: reads a framework-only field (${re.source.replace(/\\/g, "")}); read canonical records through packages/naive/src/engine/canonical.ts`);
     });
   }
   return { frameworks: fws.map((x) => x.f.id), errors };

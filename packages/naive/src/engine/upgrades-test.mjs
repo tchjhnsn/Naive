@@ -170,8 +170,8 @@ expect("a run that throws is recorded as uncaught, not lost", thrown?.outcome ==
 const dfile = join(t, `decisions/${broken.decision}.decision.json`);
 const dec = existsSync(dfile) ? json(dfile) : {};
 expect("each failure is raised as an open decision for the founder, failing open", dec.status === "open" && dec.boundary === "fail-open" && dec.options.join() === "Retry,Skip this event,Turn the trigger off");
-const held = JSON.parse(run("packages/naive/src/engine/decisions.mjs", [t, "--json"]).stdout).decisions.find((x) => x.id === broken.decision);
-expect("the failure holds nothing else: it fails open and nothing waits on it", held?.boundary === "fail-open" && held.render === "now" && !JSON.parse(run("packages/naive/src/engine/decisions.mjs", [t, "--json"]).stdout).decisions.some((x) => x.held_by === broken.decision));
+const held = JSON.parse(run("packages/naive/src/engine/decisions.ts", [t, "--json"]).stdout).decisions.find((x) => x.id === broken.decision);
+expect("the failure holds nothing else: it fails open and nothing waits on it", held?.boundary === "fail-open" && held.render === "now" && !JSON.parse(run("packages/naive/src/engine/decisions.ts", [t, "--json"]).stdout).decisions.some((x) => x.held_by === broken.decision));
 tc.triggers[1].run.route = "purpose/validation/assess"; tc.triggers[1].run.action = "run"; tc.triggers[1].run.input = { as_is: true };
 writeFileSync(join(t, "naive.config.json"), JSON.stringify(tc, null, 2));
 const retry = mentura(["decide", broken.decision, "--venture", "tick", "--by", "Founder", "--answer", "Retry", "--confirm", broken.decision]);

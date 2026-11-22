@@ -1,4 +1,4 @@
-// Tests the thresholds as detectors (packages/naive/src/engine/detectors.mjs, signal detection build item 5): Naive's
+// Tests the thresholds as detectors (packages/naive/src/engine/detectors.ts, signal detection build item 5): Naive's
 // shipped detectors hold today's constants, a venture's own detector file moves the line at each call site, the
 // overrides a call site already had keep precedence, and yes_when below matches the gate's strict comparison.
 //
@@ -8,11 +8,11 @@ import { spawnSync } from "node:child_process";
 import { cpSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
-import { TEMPLATE, criterionFor, detectorFor, line } from "./detectors.mjs";
+import { TEMPLATE, criterionFor, detectorFor, line } from "./detectors.ts";
 import { DEFAULTS, configFor } from "./naive-config.mjs";
 import { evaluate } from "./gate.mjs";
 import { ACCEPT, route } from "./feedback-route.mjs";
-import { THRESHOLD as INDEX_THRESHOLD, rebuild } from "./decision-index.mjs";
+import { THRESHOLD as INDEX_THRESHOLD, rebuild } from "./decision-index.ts";
 import { call } from "./generators/detector-trial.ts";
 import { TIER_COSTS } from "./generators/detector.ts";
 

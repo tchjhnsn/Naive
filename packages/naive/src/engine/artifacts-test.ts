@@ -1,11 +1,11 @@
-// Artifacts (packages/naive/src/engine/check-artifacts.mjs): a view names the records it was built from; it is stale once
+// Artifacts (packages/naive/src/engine/check-artifacts.ts): a view names the records it was built from; it is stale once
 // one of them changes, and broken when one is gone.
 
 import { createHash } from "node:crypto";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { artifacts } from "./check-artifacts.mjs";
+import { artifacts } from "./check-artifacts.ts";
 
 const dir = mkdtempSync(join(tmpdir(), "artifacts-"));
 let failed = 0;

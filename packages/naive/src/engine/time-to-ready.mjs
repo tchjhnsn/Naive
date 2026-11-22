@@ -17,7 +17,7 @@ import { join, dirname } from "node:path";
 import { needNow } from "./need-now.mjs";
 import { ventureFile } from "../core/venture-paths.ts";
 import { git, isHosted } from "../core/runtime.ts";
-import { exitCriteria } from "./canonical.mjs";
+import { exitCriteria } from "./canonical.ts";
 import { readDataModel, venturePaths } from "../records/index.ts";
 
 const load = (p) => JSON.parse(readFileSync(p, "utf8"));
@@ -54,7 +54,7 @@ export function timeToReady(dir) {
   const nn = needNow(dir);
   const products = where("product").map((f) => ({ f, p: load(ventureFile(dir, f)) }));
   const offered = products.filter(({ p }) => p.status === "live");
-  // The next phase's exit criteria, canonical or (unmigrated) the telos's, read through packages/naive/src/engine/canonical.mjs.
+  // The next phase's exit criteria, canonical or (unmigrated) the telos's, read through packages/naive/src/engine/canonical.ts.
   const nextExit = nn.next ? exitCriteria(dir, nn.next) : null;
   const conditions = {
     promise: v.core?.promise ? firstSeen(join(dir, "venture.json")) : null,

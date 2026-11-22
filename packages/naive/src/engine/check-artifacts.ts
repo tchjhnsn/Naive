@@ -3,7 +3,7 @@
 // records that exist, and one built from a record that has changed since is stale and must be rebuilt.
 // Records are the source of truth; artifacts are views of them, and the views are what get published.
 //
-//   node packages/naive/src/engine/check-artifacts.mjs <workspace or venture dir>    exit 1 on a missing record; stale is a warning
+//   node packages/naive/src/engine/check-artifacts.ts <workspace or venture dir>    exit 1 on a missing record; stale is a warning
 
 import { createHash } from "node:crypto";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
@@ -32,7 +32,7 @@ export function artifacts(dir) {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const root = process.argv[2];
-  if (!root) { console.error("usage: node packages/naive/src/engine/check-artifacts.mjs <workspace or venture dir>"); process.exit(2); }
+  if (!root) { console.error("usage: node packages/naive/src/engine/check-artifacts.ts <workspace or venture dir>"); process.exit(2); }
   const errors = [], warnings = [];
   let n = 0;
   for (const v of ventures(root)) for (const a of artifacts(v)) {

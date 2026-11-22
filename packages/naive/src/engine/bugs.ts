@@ -1,6 +1,6 @@
 // naive bugs: the venture's bug records (product/bugs/<id>.json) and the stable measure.
 //
-//   node packages/naive/src/engine/bugs.mjs <venture dir> [--all] [--json]
+//   node packages/naive/src/engine/bugs.ts <venture dir> [--all] [--json]
 //
 // Lists open P0 and P1 bugs (status open or in-progress). The venture is stable for the validation study
 // when there are none. --all lists every bug. Exits 0 either way; the answer is in the output.
@@ -24,7 +24,7 @@ export function summary(dir) {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const dir = process.argv[2];
-  if (!dir) { console.error("usage: node packages/naive/src/engine/bugs.mjs <venture dir> [--all] [--json]"); process.exit(2); }
+  if (!dir) { console.error("usage: node packages/naive/src/engine/bugs.ts <venture dir> [--all] [--json]"); process.exit(2); }
   const s = summary(dir);
   const out = process.argv.includes("--all") ? { ...s, bugs: bugs(dir) } : s;
   if (process.argv.includes("--json")) console.log(JSON.stringify(out, null, 2));

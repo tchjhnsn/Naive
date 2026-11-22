@@ -21,7 +21,7 @@
 //   node packages/naive/src/checks/check-team.ts <workspace or venture dir>
 
 import { ventureFile } from "../core/venture-paths.ts";
-import { measures } from "../engine/canonical.mjs";
+import { measures } from "../engine/canonical.ts";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import type { AgentCapability, DecisionRights, LeadPlan, RoleTemplate, TeamPlan, Venture } from "../records/types/records.d.ts";

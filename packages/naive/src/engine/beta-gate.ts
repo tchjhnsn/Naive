@@ -1,8 +1,8 @@
 // The plugin beta's gate: capabilities unlock in order, each after the tester gives feedback on the one before.
 //
-//   node packages/naive/src/engine/beta-gate.mjs <venture dir> status [--json]
-//   node packages/naive/src/engine/beta-gate.mjs <venture dir> feedback <capability> --answer <question>=<answer>...
-//   node packages/naive/src/engine/beta-gate.mjs <venture dir> unlock
+//   node packages/naive/src/engine/beta-gate.ts <venture dir> status [--json]
+//   node packages/naive/src/engine/beta-gate.ts <venture dir> feedback <capability> --answer <question>=<answer>...
+//   node packages/naive/src/engine/beta-gate.ts <venture dir> unlock
 //   (naive beta status | feedback <capability> | unlock)
 //
 // The manifest is beta/capabilities.json. Core capabilities (creating the venture, the docket, the foundation
@@ -161,7 +161,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const [dir, sub = "status", ...rest] = process.argv.slice(2);
   const opt = (n) => { const i = rest.indexOf(`--${n}`); return i >= 0 ? rest[i + 1] : undefined; };
   const json = rest.includes("--json");
-  if (!dir) { console.error("usage: node packages/naive/src/engine/beta-gate.mjs <venture dir> status|feedback <capability>|unlock"); process.exit(2); }
+  if (!dir) { console.error("usage: node packages/naive/src/engine/beta-gate.ts <venture dir> status|feedback <capability>|unlock"); process.exit(2); }
   if (rest.includes("--tester")) { console.error("set the tester with NAIVE_BETA_TESTER, so the CLI and the router agree"); process.exit(2); }
   const tester = undefined;
   const say = (o, text) => { console.log(json ? JSON.stringify(o, null, 2) : text); };

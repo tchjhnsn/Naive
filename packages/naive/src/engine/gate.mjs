@@ -13,7 +13,7 @@
 
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
-import { may } from "./access.mjs";
+import { may } from "./access.ts";
 import { configFor, functionOf, packageDefs, packagesOf, pinsBlocking, threshold } from "./naive-config.mjs";
 
 const repo = new URL("../../../..", import.meta.url).pathname;

@@ -20,7 +20,7 @@ import { tmpdir } from "node:os";
 import { join, resolve as resolvePath } from "node:path";
 import { CONFIG, configFor, installed, pinProblems, rawConfig } from "../engine/naive-config.mjs";
 import { evaluate, patternRe, rulesFor } from "../engine/gate.mjs";
-import { teamPlan } from "../engine/access.mjs";
+import { teamPlan } from "../engine/access.ts";
 import { gateOf, repo, resolve, routes } from "../records/routes/routes.ts";
 import { agentFromEnv, record } from "../core/provenance.ts";
 import { ventureFile } from "../core/venture-paths.ts";

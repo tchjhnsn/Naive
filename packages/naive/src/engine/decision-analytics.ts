@@ -5,7 +5,7 @@
 // the venture (EE-054, EE-058); ranking decisions by impact over time is the next view, and is
 // listed under `next` rather than computed.
 //
-//   node packages/naive/src/engine/decision-analytics.mjs <venture dir>
+//   node packages/naive/src/engine/decision-analytics.ts <venture dir>
 //
 // Output is data (JSON), never a view: rendering it belongs to the platform, or to a visualization
 // skill when Naive runs inside another harness such as Claude Code, Codex or Cursor (Torian, 2026-10-28).
@@ -17,7 +17,7 @@
 
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { decisions } from "./decisions.mjs";
+import { decisions } from "./decisions.ts";
 import { HOME, PACKAGES, TITLES } from "./packages.mjs";
 import { ventureFile } from "../core/venture-paths.ts";
 
@@ -73,6 +73,6 @@ export function analytics(dir, now) {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const dir = process.argv[2];
-  if (!dir) { console.error("usage: node packages/naive/src/engine/decision-analytics.mjs <venture dir>"); process.exit(2); }
+  if (!dir) { console.error("usage: node packages/naive/src/engine/decision-analytics.ts <venture dir>"); process.exit(2); }
   console.log(JSON.stringify(analytics(dir), null, 2));
 }

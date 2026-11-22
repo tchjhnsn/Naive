@@ -6,8 +6,8 @@ import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { activeMinutes, activity, summarize, writeActivity } from "./activity.mjs";
-import { localDate, zoneOf } from "./clock.mjs";
+import { activeMinutes, activity, summarize, writeActivity } from "./activity.ts";
+import { localDate, zoneOf } from "./clock.ts";
 
 const repo = new URL("../../../..", import.meta.url).pathname;
 const ws = mkdtempSync(join(tmpdir(), "naive-activity-"));
@@ -89,5 +89,5 @@ assert.equal(summarize("v", "UTC", [], "2026-10-30").last_touch, null);
 const cli = spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/naive.mjs"), "activity", "--venture", studio, "--dir", tdir, "--json"], { encoding: "utf8" });
 assert.equal(cli.status, 0, cli.stderr);
 assert.equal(JSON.parse(cli.stdout).ventures[0].days[0].messages, 5);
-assert.equal(spawnSync("node", [join(repo, "packages/naive/src/engine/activity.mjs"), "--venture", studio, "--dir", tdir, "--from", "yesterday"]).status, 2);
+assert.equal(spawnSync("node", [join(repo, "packages/naive/src/engine/activity.ts"), "--venture", studio, "--dir", tdir, "--from", "yesterday"]).status, 2);
 console.log("activity: active minutes, days in the venture's zone, matched by cwd or mention, records and summary valid, streak and a gentle nudge");

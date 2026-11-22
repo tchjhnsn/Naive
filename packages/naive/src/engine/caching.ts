@@ -26,11 +26,11 @@
 // No model and no network here: a judgment is asked by NAIVE_JUDGE_CMD (a command the app that hosts
 // Naive names, such as its Jev client), which reads a request on stdin and prints its answers.
 //
-//   node packages/naive/src/engine/caching.mjs stats <venture dir> [--json]
-//   node packages/naive/src/engine/caching.mjs list <venture dir> [--level record|judgment]
-//   node packages/naive/src/engine/caching.mjs prune <venture dir>       remove expired entries
-//   node packages/naive/src/engine/caching.mjs clear <venture dir> [--level record|judgment]
-//   node packages/naive/src/engine/caching.mjs judge <venture dir> --request <file|-> [--life <profile>] [--private --as <person>]
+//   node packages/naive/src/engine/caching.ts stats <venture dir> [--json]
+//   node packages/naive/src/engine/caching.ts list <venture dir> [--level record|judgment]
+//   node packages/naive/src/engine/caching.ts prune <venture dir>       remove expired entries
+//   node packages/naive/src/engine/caching.ts clear <venture dir> [--level record|judgment]
+//   node packages/naive/src/engine/caching.ts judge <venture dir> --request <file|-> [--life <profile>] [--private --as <person>]
 
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -453,7 +453,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const argv = process.argv.slice(2);
   const opt = (n) => { const i = argv.indexOf(`--${n}`); return i >= 0 ? argv[i + 1] : undefined; };
   const [cmd, dir] = argv;
-  const usage = () => { console.error(readFileSync(new URL(import.meta.url), "utf8").split("\n").filter((l) => l.startsWith("//   node packages/naive/src/engine/caching.mjs")).map((l) => l.slice(5)).join("\n")); process.exit(2); };
+  const usage = () => { console.error(readFileSync(new URL(import.meta.url), "utf8").split("\n").filter((l) => l.startsWith("//   node packages/naive/src/engine/caching.ts")).map((l) => l.slice(5)).join("\n")); process.exit(2); };
   if (!cmd || !dir || !existsSync(join(dir, "venture.json"))) usage();
   const identity = opt("as") ?? null;
   const out = (x) => console.log(typeof x === "string" ? x : JSON.stringify(x, null, 2));

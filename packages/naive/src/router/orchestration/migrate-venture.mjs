@@ -19,7 +19,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSy
 import { basename, dirname, join, relative, resolve, sep } from "node:path";
 import { call, routes } from "../router.mjs";
 import { agentFromEnv, record as prov } from "../../core/provenance.ts";
-import { propose } from "../../engine/decisions.mjs";
+import { propose } from "../../engine/decisions.ts";
 import { ventureFile } from "../../core/venture-paths.ts";
 import { recordPath } from "../../records/index.ts";
 import { HostedRefusal, isHosted } from "../../core/runtime.ts";

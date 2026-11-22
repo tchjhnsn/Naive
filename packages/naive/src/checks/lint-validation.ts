@@ -11,7 +11,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { grade, gradeRecord } from "./check-validation.ts";
-import { label } from "../engine/assess-problem.mjs";
+import { label } from "../engine/assess-problem.ts";
 import { logicalFiles, ventureFile } from "../core/venture-paths.ts";
 import type { Graded, SubScoreRecord } from "./check-validation.ts";
 

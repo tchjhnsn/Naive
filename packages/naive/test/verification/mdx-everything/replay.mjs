@@ -9,7 +9,7 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "nod
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { build } from "../../../src/functions/marketing-and-sales/marketing/publish-build.mjs";
-import { check } from "../../../src/engine/check-public.mjs";
+import { check } from "../../../src/engine/check-public.ts";
 
 const repo = new URL("../../../../../", import.meta.url).pathname;
 const example = join(repo, "packages/naive/src/records/examples/software/ventures/relay");

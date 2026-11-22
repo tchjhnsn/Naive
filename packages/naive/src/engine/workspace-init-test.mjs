@@ -7,8 +7,8 @@ import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { addEvent, events, fromICS, toICS } from "./calendar.mjs";
-import { due, inDays, localDate, overdue, toInstant, zoneOf } from "./clock.mjs";
+import { addEvent, events, fromICS, toICS } from "./calendar.ts";
+import { due, inDays, localDate, overdue, toInstant, zoneOf } from "./clock.ts";
 import { ventureFile } from "../core/venture-paths.ts";
 
 const repo = new URL("../../../..", import.meta.url).pathname;

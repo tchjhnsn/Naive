@@ -7,7 +7,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { call } from "../../router/router.mjs";
-import { approve, decisions, propose } from "../../engine/decisions.mjs";
+import { approve, decisions, propose } from "../../engine/decisions.ts";
 import { changedReasons, reasonsFromArgs, shaOf } from "../../engine/reasons.mjs";
 
 const repo = new URL("../../../../..", import.meta.url).pathname;

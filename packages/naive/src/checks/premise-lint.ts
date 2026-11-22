@@ -17,7 +17,7 @@ import { join } from "node:path";
 import { createHash } from "node:crypto";
 import { ventureFile } from "../core/venture-paths.ts";
 import { readConfig } from "../engine/naive-config.mjs";
-import { decisions, decisionFiles, propose, decisionFile } from "../engine/decisions.mjs";
+import { decisions, decisionFiles, propose, decisionFile } from "../engine/decisions.ts";
 import type { Constraints, DecisionRecord, ExitCriteria, Goal, NaiveConfig, Requirement, Venture } from "../records/types/records.d.ts";
 
 type Aspect = "undefined-term" | "unmeasurable" | "no-owner" | "unsupported-premise" | "orphan" | "conflict" | "dependency" | "phase-mismatch";
@@ -113,7 +113,7 @@ export function graph(dir: string, { includeDrafts = false }: { includeDrafts?: 
     const rec = load(ventureFile(dir, rel)) as DecisionRecord | null;
     if (rec?.id && !OWN_ID.test(rec.id)) g.decisions.push({ ...rec, _rel: rel });
   }
-  // A parent may be any decision decisions.mjs resolves: the linter's own, the roots, a foundation statement.
+  // A parent may be any decision decisions.ts resolves: the linter's own, the roots, a foundation statement.
   g.decisionIds = new Set(decisions(dir, Date.now()).decisions.map((d: { id: string }) => d.id));
   const v = (load(join(dir, "venture.json")) ?? {}) as Partial<Venture>;
   // An older venture.json lists its functions as an array of ids or { id } objects.

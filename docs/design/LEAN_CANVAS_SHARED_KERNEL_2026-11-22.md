@@ -27,7 +27,7 @@ flowchart LR
   REC["venture records<br/>written by their owners"] -->|read, never copied| ENG
   ENG --> CAN["identity/lean-canvas<br/>roadmap, next box"]
   ENG --> BOX["identity/lean-canvas/&lt;box&gt;<br/>owner, status, unlocks"]
-  PH --> Q["decision-queue.mjs<br/>x2 for gate evidence"]
+  PH --> Q["decision-queue.ts<br/>x2 for gate evidence"]
 ```
 
 ## What the data model says about owners

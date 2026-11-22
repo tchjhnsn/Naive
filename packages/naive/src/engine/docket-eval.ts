@@ -3,9 +3,9 @@
 // step is argued from a cited source (packages/naive/src/records/examples/docket-scenarios.json), and builds the same
 // question for an independent judge, so the docket, the judge and the source can be compared.
 //
-//   node packages/naive/src/engine/docket-eval.mjs [--json]                    the docket against the scenarios
-//   node packages/naive/src/engine/docket-eval.mjs request | <judge> > a.json  the judge's request (a Jev client, as NAIVE_JUDGE_CMD names)
-//   node packages/naive/src/engine/docket-eval.mjs --answers a.json [--json]   the docket and the judge against the scenarios
+//   node packages/naive/src/engine/docket-eval.ts [--json]                    the docket against the scenarios
+//   node packages/naive/src/engine/docket-eval.ts request | <judge> > a.json  the judge's request (a Jev client, as NAIVE_JUDGE_CMD names)
+//   node packages/naive/src/engine/docket-eval.ts --answers a.json [--json]   the docket and the judge against the scenarios
 //
 // Per state: does the docket's next decision match the expected one, and its leading function? For the
 // judge, each open decision the founder can act on is one question ("is this the best next step?") and
@@ -19,7 +19,7 @@ const FILE = new URL("../records/examples/docket-scenarios.json", import.meta.ur
 const NOW = Date.parse("2026-10-29T12:00:00Z");
 const TITLE = { foundation: "Foundation", validation: "Validation", product: "Product", marketing: "Marketing and sales", finance: "Finance", people: "People", legal: "Legal and governance", operations: "Operations" };
 
-/** The decisions as decisions.mjs would resolve them, after the given ones are settled. */
+/** The decisions as decisions.ts would resolve them, after the given ones are settled. */
 function resolve(decisions, settled) {
   const open = decisions.filter((d) => !settled.has(d.id));
   return open.map((d) => {

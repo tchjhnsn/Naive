@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "publications.schema.json",
   "title": "Publications manifest",
-  "description": "Every place a venture has published (governance/publications.json): one entry per channel and artifact, naming the channel in governance/publication-policy.json, the artifact that was published (artifacts are what get published, records never are), where it went, the sha256 of the built output, the person who approved it, when, the versions before it (for naive publish rollback) and any embargo. node packages/naive/src/engine/check-publications.mjs fails when something is live without an entry, when an entry's sha256 does not match the built output, or when an entry has no approver.",
+  "description": "Every place a venture has published (governance/publications.json): one entry per channel and artifact, naming the channel in governance/publication-policy.json, the artifact that was published (artifacts are what get published, records never are), where it went, the sha256 of the built output, the person who approved it, when, the versions before it (for naive publish rollback) and any embargo. node packages/naive/src/engine/check-publications.ts fails when something is live without an entry, when an entry's sha256 does not match the built output, or when an entry has no approver.",
   "type": "object",
   "required": ["entries"],
   "additionalProperties": false,

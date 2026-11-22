@@ -31,7 +31,7 @@ export const TESTS = [
   "packages/naive/src/interfaces/tests/decision-index-test.mjs",
   "packages/naive/src/interfaces/tests/connectors-router-test.mjs",
   "packages/naive/src/engine/lifecycle-test.mjs",
-  "packages/naive/src/engine/decision-versions-test.mjs",
+  "packages/naive/src/engine/decision-versions-test.ts",
   "packages/naive/src/engine/upgrades-test.mjs",
   "packages/naive/src/checks/traces-test.ts",
   "packages/naive/src/interfaces/tests/as-of-test.ts",

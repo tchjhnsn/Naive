@@ -93,7 +93,7 @@ const missing = run("check-departments.ts", dep);
 expect("check-departments still finds what is wrong in a structured venture", missing.status === 1 && /risk-and-compliance is listed but has no folder/.test(missing.stderr) && !/is not in venture.json departments/.test(missing.stderr), missing.stderr);
 
 const before = readdirSync(dep).sort().join();
-const add = (...args) => spawnSync("node", [join(repo, "packages/naive/src/engine/add-department.mjs"), dep, ...args], { encoding: "utf8" });
+const add = (...args) => spawnSync("node", [join(repo, "packages/naive/src/engine/add-department.ts"), dep, ...args], { encoding: "utf8" });
 const added = add("supply-chain"), grouped = add("assets", "--group");
 expect("add-department puts the folder in k-base/ on a structured venture and nothing at the top", added.status === 0 && existsSync(join(dep, "k-base/operations/departments/supply-chain/department.json")) && readdirSync(dep).sort().join() === before, added.stdout + added.stderr);
 expect("add-department --group does the same", grouped.status === 0 && existsSync(join(dep, "k-base/operations/departments/support/assets/department.json")) && readdirSync(dep).sort().join() === before, grouped.stdout + grouped.stderr);

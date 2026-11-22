@@ -46,7 +46,7 @@ export default tseslint.config(
       "no-unused-vars": ["warn", { argsIgnorePattern: "^_", varsIgnorePattern: "^_", caughtErrors: "none" }],
       // Empty catch blocks are the house idiom for "best effort" reads; other empty blocks still fail.
       "no-empty": ["error", { allowEmptyCatch: true }],
-      // TODO(2026-10-29): the \x00/\x01 separators in router.mjs, access.mjs and model-steps.mjs are deliberate.
+      // TODO(2026-10-29): the \x00/\x01 separators in router.mjs, access.ts and model-steps.mjs are deliberate.
       // Replace them with a named constant and turn this back on.
       "no-control-regex": "off",
     },

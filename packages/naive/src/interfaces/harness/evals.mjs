@@ -6,7 +6,7 @@
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { decisions } from "../../engine/decisions.mjs";
+import { decisions } from "../../engine/decisions.ts";
 import { DUMP, MAP, parse } from "../../functions/strategy/frameworks/idea-map/ideamap.mjs";
 import { GRAPH } from "../../functions/strategy/frameworks/idea-map/graph.mjs";
 import { ideasOf } from "../../functions/strategy/frameworks/idea-map/route.mjs";

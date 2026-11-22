@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // The publish lint (publishing gate, pipeline): every check a page must pass before it is public, run in
-// order over the files given. Stages: copy distance (packages/naive/src/engine/check-public.mjs, when a venture
-// with marketing content is named), leaks (packages/naive/src/engine/check-leaks.mjs), brand (packages/naive/src/engine/brand-lint.mjs, when it
+// order over the files given. Stages: copy distance (packages/naive/src/engine/check-public.ts, when a venture
+// with marketing content is named), leaks (packages/naive/src/engine/check-leaks.ts), brand (packages/naive/src/engine/brand-lint.ts, when it
 // exists and a venture is named), claims (a sentence asserting a number or customers needs a source in the
 // file's frontmatter sources list), marks (other companies' marks), personal data (emails, phone numbers)
 // and secrets (API key shapes).
@@ -18,7 +18,7 @@
 
 import { appendFileSync, existsSync, mkdirSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
-import { leaks } from "./check-leaks.mjs";
+import { leaks } from "./check-leaks.ts";
 
 const repo = new URL("../../../..", import.meta.url).pathname;
 const load = (f) => { try { return JSON.parse(readFileSync(f, "utf8")); } catch { return null; } };
@@ -27,7 +27,7 @@ export const LEVELS = ["off", "warn", "error"];
 export const RULES = [
   { id: "copy-distance", level: "warn", description: "Marketing content copies a run of words from the internal record it is a variant of" },
   { id: "leaks", level: "error", description: "Public text carries an internal term (packages/naive/src/engine/internal-terms.json)" },
-  { id: "brand", level: "warn", description: "The brand lint (packages/naive/src/engine/brand-lint.mjs) found something" },
+  { id: "brand", level: "warn", description: "The brand lint (packages/naive/src/engine/brand-lint.ts) found something" },
   { id: "claims", level: "error", description: "A sentence asserts a number or customers and the file cites no source" },
   { id: "marks", level: "warn", description: "Text uses another company's mark" },
   { id: "personal-data", level: "warn", description: "Text carries an email address or phone number" },
@@ -126,7 +126,7 @@ export async function check(paths, { venture } = {}) {
 
   // 1. copy distance
   if (on("copy-distance") && venture) {
-    const { check: pub, CONTENT } = await import("./check-public.mjs");
+    const { check: pub, CONTENT } = await import("./check-public.ts");
     if (existsSync(join(venture, CONTENT))) {
       stages.push("copy-distance");
       const given = new Set(files.map((f) => resolve(f)));
@@ -140,9 +140,9 @@ export async function check(paths, { venture } = {}) {
     for (const l of leaks(files, { venture })) findings.push({ rule: "leaks", file: l.file, text: l.text, message: `internal term ${l.pattern}: ${l.why}`, ...(l.severity === "warn" ? { term_severity: "warn" } : {}), published: publishedOf.get(resolve(l.file)) ?? false });
   }
   // 3. brand
-  if (on("brand") && venture && existsSync(join(repo, "packages/naive/src/engine/brand-lint.mjs"))) {
+  if (on("brand") && venture && existsSync(join(repo, "packages/naive/src/engine/brand-lint.ts"))) {
     stages.push("brand");
-    const { lint } = await import("./brand-lint.mjs");
+    const { lint } = await import("./brand-lint.ts");
     for (const f of lint(venture).findings) findings.push({ rule: "brand", file: join(venture, f.file ?? ""), text: f.rule, message: f.message, published: false });
   }
   // 4-7. claims, marks, personal data, secrets

@@ -8,7 +8,7 @@ import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { spawnSync } from "node:child_process";
 import { lint, proposeFindings, ASPECTS } from "./premise-lint.ts";
-import { approve } from "../engine/decisions.mjs";
+import { approve } from "../engine/decisions.ts";
 
 let failed = 0;
 const ok = (cond: unknown, name: string) => { console.log(`${cond ? "ok  " : "FAIL"}  ${name}`); if (!cond) failed++; };
@@ -210,7 +210,7 @@ const rerun = run(d11);
 const kept = JSON.parse(readFileSync(settledFile, "utf8"));
 ok(rerun.status === 0 && kept.question === "older wording" && kept.status === "decided" && kept.answer === "ten customers", "a decided decision with other wording is left alone");
 
-// Parents decisions.mjs accepts are not reported missing.
+// Parents decisions.ts accepts are not reported missing.
 const d13 = fresh("Grow a good business.");
 run(d13);
 const [linterId] = premiseFiles(d13).map((f) => f.replace(".decision.json", ""));

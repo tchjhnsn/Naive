@@ -6,17 +6,17 @@ import type { Cmd, CommandRoute } from "./routes.ts";
 
 export const BRAND_ROUTES: Readonly<Record<string, string>> = { "marketing-brand": "marketing/brand", "marketing-design-system": "marketing/design-system", "public-assets": "public/assets", glossary: "glossary" };
 
-/** packages/naive/src/engine/brand.mjs: its command routes, built with the route table's cmd(). */
+/** packages/naive/src/engine/brand.ts: its command routes, built with the route table's cmd(). */
 export const brandCommands = (cmd: Cmd): CommandRoute[] => [
-  cmd("marketing/brand/tokens", "packages/naive/src/engine/brand.mjs", "The venture's brand tokens (Y-3): colors and typefaces as W3C design tokens, the CSS custom properties and @font-face rules an interface loads, each scope as its own selector, and the head links for the venture's marks (P-24)", { args: ["tokens"] }),
-  cmd("marketing/brand/resolve", "packages/naive/src/engine/brand.mjs", "The brand at one route (Y-5, T-2): the venture brand with every scope that covers the route applied, nearer last, and which scope set each value; input value is the route", { value_flag: "--for" }),
-  cmd("marketing/design-system/inputs", "packages/naive/src/engine/design-system.mjs", "What the design system inherits from other functions, by key: the mission, the problem and segment, each ICP profile, the alignment principles, each product's market and each founder. A design choice's from names these keys", { args: ["inputs"] }),
-  cmd("marketing/design-system/check", "packages/naive/src/engine/design-system.mjs", "Every design choice rests on inputs that still exist: a retired ICP or a new mission names the brand choices to revisit", { args: ["check"] }),
-  cmd("marketing/brand-lint", "packages/naive/src/engine/brand-lint.mjs", "Brand alignment lint: decision records and marketing content against the design system (avoid words, jargon, unknown audiences, unsourced choices); fail-open unless naive.config.json brand_lint.rules.<id>.mode is fail-closed", { args: [] }),
-  cmd("marketing/voice", "packages/naive/src/engine/brand.mjs", "Marketing content held to the voice rules, the global stylesheet for words (Y-3): each phrase to avoid, where it is and what to use instead; and terms another package keeps local (Y-2)", { args: ["voice"] }),
-  cmd("glossary/terms", "packages/naive/src/engine/brand.mjs", "The terms one package sees (Y-2): its own glossary and the terms other packages export; their local terms stay with them. Input value is the package", { value_flag: "--package" }),
-  cmd("marketing/sitemap/xml", "packages/naive/src/engine/brand.mjs", "sitemap.xml rendered from the marketing sitemap record (P-26), for a release; input value is the site's base URL", { value_flag: "--base" }),
-  cmd("public/assets/facts", "packages/naive/src/engine/assets.mjs", "What code reads from each file in public/ (J-4): type from the bytes, width and height, icon sizes, bytes and sha256. Agents copy these, never guess them", { args: ["facts"] }),
+  cmd("marketing/brand/tokens", "packages/naive/src/engine/brand.ts", "The venture's brand tokens (Y-3): colors and typefaces as W3C design tokens, the CSS custom properties and @font-face rules an interface loads, each scope as its own selector, and the head links for the venture's marks (P-24)", { args: ["tokens"] }),
+  cmd("marketing/brand/resolve", "packages/naive/src/engine/brand.ts", "The brand at one route (Y-5, T-2): the venture brand with every scope that covers the route applied, nearer last, and which scope set each value; input value is the route", { value_flag: "--for" }),
+  cmd("marketing/design-system/inputs", "packages/naive/src/engine/design-system.ts", "What the design system inherits from other functions, by key: the mission, the problem and segment, each ICP profile, the alignment principles, each product's market and each founder. A design choice's from names these keys", { args: ["inputs"] }),
+  cmd("marketing/design-system/check", "packages/naive/src/engine/design-system.ts", "Every design choice rests on inputs that still exist: a retired ICP or a new mission names the brand choices to revisit", { args: ["check"] }),
+  cmd("marketing/brand-lint", "packages/naive/src/engine/brand-lint.ts", "Brand alignment lint: decision records and marketing content against the design system (avoid words, jargon, unknown audiences, unsourced choices); fail-open unless naive.config.json brand_lint.rules.<id>.mode is fail-closed", { args: [] }),
+  cmd("marketing/voice", "packages/naive/src/engine/brand.ts", "Marketing content held to the voice rules, the global stylesheet for words (Y-3): each phrase to avoid, where it is and what to use instead; and terms another package keeps local (Y-2)", { args: ["voice"] }),
+  cmd("glossary/terms", "packages/naive/src/engine/brand.ts", "The terms one package sees (Y-2): its own glossary and the terms other packages export; their local terms stay with them. Input value is the package", { value_flag: "--package" }),
+  cmd("marketing/sitemap/xml", "packages/naive/src/engine/brand.ts", "sitemap.xml rendered from the marketing sitemap record (P-26), for a release; input value is the site's base URL", { value_flag: "--base" }),
+  cmd("public/assets/facts", "packages/naive/src/engine/assets.ts", "What code reads from each file in public/ (J-4): type from the bytes, width and height, icon sizes, bytes and sha256. Agents copy these, never guess them", { args: ["facts"] }),
 ];
 
 /** packages/naive/src/checks/lint-investors.ts: its command routes, built with the route table's cmd(). */
@@ -64,7 +64,7 @@ export const foundationLintCommands = (cmd: Cmd): CommandRoute[] => [
   cmd("foundation/lint", "packages/naive/src/checks/lint-foundation.ts", "Foundation lint: a mission that names no ICP, an ICP with no jobs, an alignment principle with no check, and a problem form no ICP has. Fail-open unless naive.config.json foundation_lint.rules.<id>.mode is fail-closed", { args: [] }),
 ];
 
-/** packages/naive/src/engine/caching.mjs: its command routes, built with the route table's cmd(). */
+/** packages/naive/src/engine/caching.ts: its command routes, built with the route table's cmd(). */
 export function cacheRoutes(cmd: Cmd): CommandRoute[] {
   return [
     cmd("system/cache", null, "The venture's cache (C-1, C-17): entries by level, what is private to you, what has expired, and which routes are cached for how long; input value list, prune or clear", { internal: "cache" }),

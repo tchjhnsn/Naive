@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// The live decision index (system/decision-index). The docket (rank(), ownScore() in decisions.mjs) says
+// The live decision index (system/decision-index). The docket (rank(), ownScore() in decisions.ts) says
 // which open decisions matter now; the index wraps it and keeps it current from the provenance stream:
 //
 //   1. structural impact for every decision, open or decided (impact.mjs structural()): the records it
@@ -16,31 +16,31 @@
 //      counts the provenance events since the last run;
 //   5. rank history: each re-score appends {at, decision, rank, score, why, cause} to
 //      .naive/decision-index-history.jsonl;
-//   6. the decision queue (packages/naive/src/engine/decision-queue.mjs, EE-127): each decision's owning function,
+//   6. the decision queue (packages/naive/src/engine/decision-queue.ts, EE-127): each decision's owning function,
 //      the score ranked within each function (by_function), themes of decisions on the same record or handoff, and
 //      one short queue across functions, the score weighted by the function's weight in the venture's phase.
 //
 // The index is a cache (.naive/decision-index.json, gitignored), recomputed in full on every run and
 // never written to provenance. Qualitative notes are an agent's draft: note is null until one writes it, and only decisions above the threshold get one.
 //
-//   node packages/naive/src/engine/decision-index.mjs <venture dir> [update | rebuild | read] [--since <iso>] [--json]
+//   node packages/naive/src/engine/decision-index.ts <venture dir> [update | rebuild | read] [--since <iso>] [--json]
 //   mentura index --venture <id> [--since <iso>] [--rebuild]
 //   route system/decision-index (run: input value update, rebuild or read; view)
 
 import { appendFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { entries as provenance } from "../core/provenance.ts";
-import { decisionFile, decisions, ownScore, PHASES } from "./decisions.mjs";
+import { decisionFile, decisions, ownScore, PHASES } from "./decisions.ts";
 import { structural, ventureRecords } from "./impact.mjs";
 import { ventureFile } from "../core/venture-paths.ts";
-import { line } from "./detectors.mjs";
-import { rank } from "./decision-queue.mjs";
+import { line } from "./detectors.ts";
+import { rank } from "./decision-queue.ts";
 
 export const INDEX = ".naive/decision-index.json";
 export const HISTORY = ".naive/decision-index-history.jsonl";
 export const REQUIREMENTS = "foundation/requirements";
 /** Propagation stops when an update's weight falls below this. The index records the decision-index-note
- *  detector's line (packages/naive/src/engine/detectors.mjs), with this as the fallback. */
+ *  detector's line (packages/naive/src/engine/detectors.ts), with this as the fallback. */
 export const THRESHOLD = 0.25;
 /** Link strengths between decisions. */
 export const STRENGTH = { parent: 0.8, child: 0.8, held_by: 0.8, holds: 0.8, blocks: 0.9, blocked_by: 0.9, conflicts: 0.7, record: 0.5, requirement: 0.6 };
@@ -170,7 +170,7 @@ function entry(d, ctx, now) {
 
 const order = (es) => es.sort((a, b) => b.score - a.score || a.id.localeCompare(b.id)).map((e, i) => ({ ...e, rank: i + 1 }));
 
-// The queue, the per-function index and the themes over the ranked entries (decision-queue.mjs).
+// The queue, the per-function index and the themes over the ranked entries (decision-queue.ts).
 const ranking = (dir, ctx, entries) => rank(dir, ctx.m.phase, entries.map((e) => ({ entry: e, decision: ctx.byId.get(e.id), raw: ctx.raw.get(e.id) ?? {} })));
 
 function history(dir, rows) {
@@ -233,7 +233,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const dir = argv[0];
   const mode = ["update", "rebuild", "read"].find((m) => argv.includes(m)) ?? "update";
   const since = argv.includes("--since") ? argv[argv.indexOf("--since") + 1] : undefined;
-  if (!dir || !existsSync(join(dir, "venture.json"))) { console.error("usage: node packages/naive/src/engine/decision-index.mjs <venture dir> [update | rebuild | read] [--since <iso>] [--json]"); process.exit(2); }
+  if (!dir || !existsSync(join(dir, "venture.json"))) { console.error("usage: node packages/naive/src/engine/decision-index.ts <venture dir> [update | rebuild | read] [--since <iso>] [--json]"); process.exit(2); }
   const idx = mode === "rebuild" ? rebuild(dir) : mode === "read" ? (read(dir) ?? rebuild(dir)) : update(dir, { since });
   const brief = { venture: idx.venture, phase: idx.phase, updated_at: idx.updated_at, last_update: { mode: idx.last_update.mode, events: idx.last_update.events, touched: idx.last_update.touched.length },
     flagged: idx.entries.filter((e) => e.flags.length).map((e) => ({ id: e.id, flags: e.flags.map((f) => f.why) })),

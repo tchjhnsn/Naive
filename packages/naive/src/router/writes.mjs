@@ -29,7 +29,7 @@ export async function snapshot(dir) {
   const safe = async (f) => { try { return await f(); } catch { return null; } };
   const { venturePackage } = await import("./orchestration/venture-package.mjs");
   const { needNow } = await import("../engine/need-now.mjs");
-  const { decisions } = await import("../engine/decisions.mjs");
+  const { decisions } = await import("../engine/decisions.ts");
   return { packages: await safe(() => venturePackage(dir)), need: await safe(() => needNow(dir)), decisions: await safe(() => decisions(dir)) };
 }
 
@@ -76,7 +76,7 @@ export async function next(after, { record, route, draft, venture, change }) {
   if (missing.length) { const rt = await routeOfType(missing[0].record); return { route: rt, action: "write", command: commandFor(rt, venture), why: `the next ${missing[0].role} record in ${p.title} that moves now` }; }
   const suggest = (after?.need?.rows ?? []).filter((x) => x.status === "suggest now" && x.type !== record).sort((a, b) => b.now - a.now)[0];
   if (suggest) { const rt = await routeOfType(suggest.type); if (rt) return { route: rt, action: "write", command: commandFor(rt, venture), why: `need-now suggests it now: ${suggest.why}` }; }
-  const { rank } = await import("../engine/decisions.mjs");
+  const { rank } = await import("../engine/decisions.ts");
   const ds = after?.decisions ? rank(after.decisions.decisions, after.decisions.phase).filter((d) => d.rank != null && d.source === "file") : [];
   if (ds.length) return { route: "governance/decisions", action: "decide", who: "a person", command: `mentura decide ${ds[0].id} --venture ${venture} --by <your name>`, why: ds[0].question };
   return { route: null, action: null, why: "nothing waits on this write" };
@@ -84,7 +84,7 @@ export async function next(after, { record, route, draft, venture, change }) {
 
 /** The actions available in a route's folder to one actor (M-9). */
 export async function actionsIn({ dir, r, route, actor = "agent", actor_id, venture }) {
-  const { holding, locked } = await import("../engine/decisions.mjs");
+  const { holding, locked } = await import("../engine/decisions.ts");
   const { configOf, hold } = await import("../engine/gate.mjs");
   const folder = r.collection === "item" ? r.route.slice(0, -"/[id]".length) : route.includes("/") ? route.slice(0, route.lastIndexOf("/")) : route;
   const rs = routes().filter((x) => x.route === folder || x.route.startsWith(`${folder}/`));

@@ -5,7 +5,7 @@
 //
 // Each function module ships a starter at packages/naive/src/functions/<function>/templates/research-program.md. It is
 // copied into a venture once, when the venture lists the function in venture.json departments (EE-047) and the
-// venture has no programs/<function>.md yet: packages/naive/src/engine/add-department.mjs copies it when a function is
+// venture has no programs/<function>.md yet: packages/naive/src/engine/add-department.ts copies it when a function is
 // imported (init-venture.mjs imports a typed venture's functions through it), and naive upgrade copies any that are
 // missing. A file that exists is never touched, so the venture's copy is the founder's from then on.
 //
@@ -15,7 +15,7 @@
 import { copyFileSync, existsSync, mkdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { ventureFile } from "../core/venture-paths.ts";
-import { catalog } from "./departments.mjs";
+import { catalog } from "./departments.ts";
 
 const root = new URL("../../../..", import.meta.url).pathname;
 

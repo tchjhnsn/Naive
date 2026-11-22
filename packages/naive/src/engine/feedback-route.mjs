@@ -8,9 +8,9 @@
 // feedback-accept detector's: an accept option, else the venture's governance/detectors/feedback-accept.json (dir),
 // else Naive's shipped default, else ACCEPT. The default fallback is keyword rules that call no model. No Jev client is built here: the caller injects one, so
 // tests use stubs and never reach the network. send is the venture's explicit opt-in (beta.jev in
-// naive.config.json, read by packages/naive/src/engine/beta-gate.mjs): feedback text stays on the machine without it, key or no key.
+// naive.config.json, read by packages/naive/src/engine/beta-gate.ts): feedback text stays on the machine without it, key or no key.
 
-import { line } from "./detectors.mjs";
+import { line } from "./detectors.ts";
 
 export const DESTINATIONS = ["product/bugs", "validation/feedback", "decisions", "foundation", "inbox"];
 export const ACCEPT = 0.95;

@@ -14,8 +14,8 @@ import { deflateSync } from "node:zlib";
 import { call } from "../../router/router.mjs";
 import { addAsset, addRemote } from "../../router/brand.mjs";
 import { entries } from "../../core/provenance.ts";
-import { allowsCopy, checkAssets, factsOf, hostAllowed } from "../../engine/assets.mjs";
-import { checkBrand, resolveBrand, sitemapXml, termsFor, tokens, voiceCheck } from "../../engine/brand.mjs";
+import { allowsCopy, checkAssets, factsOf, hostAllowed } from "../../engine/assets.ts";
+import { checkBrand, resolveBrand, sitemapXml, termsFor, tokens, voiceCheck } from "../../engine/brand.ts";
 
 const repo = new URL("../../../../..", import.meta.url).pathname;
 let failed = 0;

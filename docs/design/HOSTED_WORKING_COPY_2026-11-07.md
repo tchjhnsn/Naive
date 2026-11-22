@@ -112,7 +112,7 @@ Under `NAIVE_RUNTIME=hosted`, Naive refuses each feature that reaches outside th
 |---|---|
 | A handoff's bash done-criteria (`run-handoff.mjs`) | Refused, unless the host passes a sandbox runner in. Naive never runs a tenant's shell on the host |
 | `NAIVE_*_CMD` from the environment | Ignored. The host registers its judge, site reader or trace exporter as a function at start, the way it registers connectors today |
-| Reading `~/.claude/projects` (`activity.mjs`) | Refused. Transcripts reach a hosted venture as records |
+| Reading `~/.claude/projects` (`activity.ts`) | Refused. Transcripts reach a hosted venture as records |
 | `git` calls (boundaries, port, upgrades) | Refused, except where the host provides a git working copy |
 
 A founder's laptop never sets this, so nothing changes there.

@@ -9,7 +9,7 @@ import { spawnSync } from "node:child_process";
 import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, relative } from "node:path";
-import { approve, decisions, mayMerge, merge, propose, rollback } from "../../engine/decisions.mjs";
+import { approve, decisions, mayMerge, merge, propose, rollback } from "../../engine/decisions.ts";
 import { decide } from "../../router/orchestration/setup.mjs";
 import { independent, reviewIsIndependent, verificationErrors } from "../../checks/verify.ts";
 

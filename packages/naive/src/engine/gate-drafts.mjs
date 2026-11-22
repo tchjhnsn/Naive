@@ -13,7 +13,7 @@
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
-import { approve } from "./decisions.mjs";
+import { approve } from "./decisions.ts";
 import { ventureFile } from "../core/venture-paths.ts";
 
 const sha = (s) => createHash("sha256").update(s).digest("hex");

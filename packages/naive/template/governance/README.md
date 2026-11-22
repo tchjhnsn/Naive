@@ -54,7 +54,7 @@ venture-template/
 
 ## Default detectors
 
-`detectors/<id>.json` holds one detector record (`packages/naive/src/records/detector.schema.json`) for each yes or no threshold Naive already had, with today's constant as its line, `set_by: "default"`. A call site reads its line through `packages/naive/src/engine/detectors.mjs`: the venture's own `governance/detectors/<id>.json` first, then the default here, then the constant in the code. A venture moves a line by keeping its own copy with the person who set it. `init-venture.mjs` does not copy these files, so a venture without its own copy follows Naive's default.
+`detectors/<id>.json` holds one detector record (`packages/naive/src/records/detector.schema.json`) for each yes or no threshold Naive already had, with today's constant as its line, `set_by: "default"`. A call site reads its line through `packages/naive/src/engine/detectors.ts`: the venture's own `governance/detectors/<id>.json` first, then the default here, then the constant in the code. A venture moves a line by keeping its own copy with the person who set it. `init-venture.mjs` does not copy these files, so a venture without its own copy follows Naive's default.
 
 `detectors/triage-accept.json` is new with raw triage (build item 1, `docs/design/RAW_TRIAGE_2026-11-09.md`) rather than a moved constant: the line Jev's labels on a raw entry clear, 0.95 like `feedback-accept`. A label at or above it, or at or below one minus it, files; one between is held for the founder. Its score is Jev's certainty, max(p, 1 - p), with `yes_when: below`, so a yes call is a held label, as at the gate: a held label the founder answers as Jev guessed is a false alarm, and a filed label the founder changes is a miss.
 

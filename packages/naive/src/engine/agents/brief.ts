@@ -8,7 +8,7 @@
 
 import { existsSync, readFileSync } from "node:fs";
 import { join, relative } from "node:path";
-import { roleOf } from "../access.mjs";
+import { roleOf } from "../access.ts";
 import type { Phase, TeamPlanRole } from "./function-spec.ts";
 import { functionAgent, functionIds, naivePath, teamPlanEntry } from "./function-spec.ts";
 import { leadAgent, leadIds, leadTeamPlanEntry } from "./lead-spec.ts";

@@ -11,7 +11,7 @@
 import { createInterface } from "node:readline";
 import { call, routes, routesMd, ventureDir, ventures } from "../../router/router.mjs";
 import { runStreaming } from "../../router/context.mjs";
-import { propose } from "../../engine/decisions.mjs";
+import { propose } from "../../engine/decisions.ts";
 
 const PROTOCOL = "2025-06-18";
 const venture = { type: "string", description: "The venture's id, or its folder path for a nested venture (see mentura_ventures)" };

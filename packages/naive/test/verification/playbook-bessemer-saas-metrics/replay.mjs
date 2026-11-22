@@ -10,7 +10,7 @@ import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { call, routes } from "../../../src/router/router.mjs";
-import { propose } from "../../../src/engine/decisions.mjs";
+import { propose } from "../../../src/engine/decisions.ts";
 
 const repo = join(dirname(fileURLToPath(import.meta.url)), "../../../../..");
 const playbookPath = join(repo, "packages/naive/library/packages/finance/playbooks/bessemer-saas-metrics.md");

@@ -29,7 +29,7 @@ import { fileURLToPath } from "node:url";
 import { agentFromEnv, record } from "../core/provenance.ts";
 import { phase as changePhase } from "./freshness.mjs";
 import { ventureFile } from "../core/venture-paths.ts";
-import { exitCriteria } from "./canonical.mjs";
+import { exitCriteria } from "./canonical.ts";
 import { validateFile } from "../records/validate.ts";
 import { runSync } from "../core/effect/run.ts";
 import { loadPhases } from "../phases/phases.mjs";
@@ -42,7 +42,7 @@ export const DEFAULT_PLAYBOOK = "product-first";
 const playbookDir = join(root, "packages/naive/src/functions/products/frameworks/product-anatomy/playbooks");
 export const playbooks = () => existsSync(playbookDir) ? readdirSync(playbookDir).filter((f) => f.endsWith(".json")).map((f) => load(join(playbookDir, f))) : [];
 export const playbookOf = (id) => playbooks().find((p) => p.id === id) ?? null;
-// Exit criteria are canonical records (foundation/exit-criteria/<phase>.json), read through packages/naive/src/engine/canonical.mjs;
+// Exit criteria are canonical records (foundation/exit-criteria/<phase>.json), read through packages/naive/src/engine/canonical.ts;
 // a venture not yet migrated by telos-to-goals falls back to its telos's phases.
 
 /**

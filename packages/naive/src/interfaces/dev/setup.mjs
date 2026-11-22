@@ -2,7 +2,7 @@
 // walks a founder through establishing the venture's structure, in order: the venture and its people,
 // where each function keeps its truth, the strategic foundation and the first decisions (the decision
 // docket), and a goal for the discovery phase. Every answer is written as the code would write it:
-// a decision a person approves (packages/naive/src/engine/decisions.mjs), or knowledge/sources.json through the router, with
+// a decision a person approves (packages/naive/src/engine/decisions.ts), or knowledge/sources.json through the router, with
 // provenance. When the docket's first decisions are settled, the page says the structure is established
 // and what comes next.
 //

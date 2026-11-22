@@ -6,8 +6,8 @@ import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { decisions, ownScore, propose } from "../../engine/decisions.mjs";
-import { phaseWeight, rankHistory, read, rebuild, update } from "../../engine/decision-index.mjs";
+import { decisions, ownScore, propose } from "../../engine/decisions.ts";
+import { phaseWeight, rankHistory, read, rebuild, update } from "../../engine/decision-index.ts";
 import { record } from "../../core/provenance.ts";
 import { call } from "../../router/router.mjs";
 

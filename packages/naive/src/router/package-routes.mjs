@@ -77,7 +77,7 @@ export const routeOfType = async (type) => {
 
 // The drafts waiting in a package's records (P-37): its pending state.
 async function pendingIn(dir, types, venture) {
-  const { recordOf } = await import("../engine/decisions.mjs");
+  const { recordOf } = await import("../engine/decisions.ts");
   const { entries } = await import("../core/provenance.ts");
   const d = join(ventureFile(dir, "_drafts"));
   if (!existsSync(d)) return [];

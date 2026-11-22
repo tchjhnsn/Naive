@@ -4,7 +4,7 @@
 // in <name>.steps.mjs beside <name>.feature (an exported array of [RegExp, async (world, ...groups)]).
 // A step with no definition fails its scenario, so a behavior cannot be written down and skipped.
 //
-//   node packages/naive/src/engine/bdd.mjs <file.feature>...
+//   node packages/naive/src/engine/bdd.ts <file.feature>...
 //
 // Supports Feature, Rule, Background, Scenario, the five step keywords and # comments; not
 // Scenario Outline, tables or doc strings yet.
@@ -45,7 +45,7 @@ export async function run(file) {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const files = process.argv.slice(2);
-  if (!files.length) { console.error("usage: node packages/naive/src/engine/bdd.mjs <file.feature>..."); process.exit(2); }
+  if (!files.length) { console.error("usage: node packages/naive/src/engine/bdd.ts <file.feature>..."); process.exit(2); }
   let failed = 0;
   for (const f of files) for (const r of await run(f)) {
     console.log(`${r.ok ? "ok  " : "FAIL"} ${r.scenario}${r.ok ? "" : `\n       ${r.error}`}`);

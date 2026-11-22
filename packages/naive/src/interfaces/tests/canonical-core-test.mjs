@@ -8,8 +8,8 @@ import { join } from "node:path";
 import { context } from "../../engine/upgrades.mjs";
 import * as mig from "../../engine/migrations/telos-to-goals.mjs";
 import { lifecycle, meet } from "../../engine/lifecycle.mjs";
-import { exitCriteria, scale } from "../../engine/canonical.mjs";
-import { check } from "../../engine/check-frameworks.mjs";
+import { exitCriteria, scale } from "../../engine/canonical.ts";
+import { check } from "../../engine/check-frameworks.ts";
 import { telosView } from "../../../../../frameworks/telos/adapter.mjs";
 import { call } from "../../router/router.mjs";
 

@@ -11,7 +11,7 @@
 //   check    a frame matches its schema's rules and names no instrument as an answer
 //   eval     judges the frame's worked cases and compares the verdicts with what they expect
 //
-// Judgments go through the judgment cache (packages/naive/src/engine/caching.mjs) with the command in NAIVE_JUDGE_CMD
+// Judgments go through the judgment cache (packages/naive/src/engine/caching.ts) with the command in NAIVE_JUDGE_CMD
 // (the app that hosts Naive names its judge there). Lookups are a kit's job: run reads one from --lookup.
 //
 //   node packages/naive/src/engine/frames.mjs list
@@ -91,7 +91,7 @@ const NONE = "not on record";
 const money = (m) => (m ? `${(m.amount / 100).toLocaleString("en-US", { maximumFractionDigits: 0 })} ${m.currency}` : null);
 /** The facts a frame reads, from the venture's records; a fact the records do not hold is "not on record". */
 export async function props(dir) {
-  const { decisions } = await import("./decisions.mjs");
+  const { decisions } = await import("./decisions.ts");
   const v = load(join(dir, "venture.json"));
   const ds = decisions(dir).decisions;
   const answer = (id) => { const d = ds.find((x) => x.id === id); return d?.status === "decided" ? d.answer : null; };
@@ -145,7 +145,7 @@ async function ask(dir, req) {
   const cmd = judgeCmd();
   if (isHosted() && !hostHook("judge")) throw missingHook("judging a frame's premises", "judge");
   if (!cmd && !isHosted()) throw new Error("no judge: set NAIVE_JUDGE_CMD (a command that answers the Jev protocol)");
-  const { judge } = await import("./caching.mjs");
+  const { judge } = await import("./caching.ts");
   return judge(dir, req, { ...(cmd ? { cmd } : {}), packages: [req.package].filter(Boolean) });
 }
 
@@ -176,7 +176,7 @@ export async function run(dir, { id, text, lookup, now = Date.now(), agentId = "
   try { judged = await ask(dir, req); } catch (e) { return { ok: false, error: e.message, request: req }; }
   const v = verdicts(f, judged.answers, facts);
   const reframe = fill(f.reframe, facts);
-  const { propose, decisions } = await import("./decisions.mjs");
+  const { propose, decisions } = await import("./decisions.ts");
   const said = text ? `The founder said: "${text}". ` : "";
   const summary = Object.entries(v.premises).map(([k, x]) => `${k} ${x.verdict}`).join("; ");
   const proposed = [], skipped = [];

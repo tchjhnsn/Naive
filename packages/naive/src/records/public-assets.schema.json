@@ -20,7 +20,7 @@
       "type": "object",
       "required": ["type", "bytes", "sha256"],
       "additionalProperties": false,
-      "description": "Read from the bytes by code (packages/naive/src/engine/assets.mjs), never written by hand",
+      "description": "Read from the bytes by code (packages/naive/src/engine/assets.ts), never written by hand",
       "properties": {
         "type": { "type": "string" },
         "width": { "type": "integer" },

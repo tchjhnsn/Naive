@@ -3,7 +3,7 @@
 // packages/naive/src/engine/internal-terms.json, plus a venture's own governance/internal-terms.json, against the files given.
 // MDX comments ({/* ... */}) and frontmatter are not public, so they are skipped.
 //
-//   node packages/naive/src/engine/check-leaks.mjs <file or folder>... [--venture <dir>] [--json]
+//   node packages/naive/src/engine/check-leaks.ts <file or folder>... [--venture <dir>] [--json]
 // Exit 1 when anything matches.
 
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
@@ -39,7 +39,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const vi = argv.indexOf("--venture");
   const venture = vi >= 0 ? argv[vi + 1] : undefined;
   const paths = argv.filter((a, i) => !a.startsWith("--") && argv[i - 1] !== "--venture");
-  if (!paths.length) { console.error("usage: node packages/naive/src/engine/check-leaks.mjs <file or folder>... [--venture <dir>] [--json]"); process.exit(2); }
+  if (!paths.length) { console.error("usage: node packages/naive/src/engine/check-leaks.ts <file or folder>... [--venture <dir>] [--json]"); process.exit(2); }
   const found = leaks(paths, { venture });
   if (argv.includes("--json")) console.log(JSON.stringify(found, null, 2));
   else { for (const l of found) console.error(`${l.severity === "warn" ? "WARN" : "FAIL"}  ${l.file}: ${l.pattern} "${l.text}" (${l.why})`); if (!found.some((l) => l.severity !== "warn")) console.log(`no internal text in ${paths.join(", ")}${found.length ? ` (${found.length} warnings)` : ""}`); }

@@ -26,8 +26,8 @@ import { createHash } from "node:crypto";
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { ventureFile } from "../core/venture-paths.ts";
-import { artifacts } from "./check-artifacts.mjs";
-import { leaks } from "./check-leaks.mjs";
+import { artifacts } from "./check-artifacts.ts";
+import { leaks } from "./check-leaks.ts";
 import { check, frontmatter } from "./publish-lint.mjs";
 import { record } from "../core/provenance.ts";
 

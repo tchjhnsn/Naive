@@ -14,7 +14,7 @@ import { join } from "node:path";
 import { call } from "../../router/router.mjs";
 import { entries } from "../../core/provenance.ts";
 import { checkKit, wrap } from "../../router/kit-boundary.mjs";
-import { approve } from "../../engine/decisions.mjs";
+import { approve } from "../../engine/decisions.ts";
 import {
   KINDS, Uncaught, answersModel, assertJson, checkRequest, checkStep, checkSteps, commandModel, confirm, expectDeterministic,
   keepComputed, outcomeOf, payload, provenanceOf, run, settle, stepsOf, typed, waterfall, waves,
