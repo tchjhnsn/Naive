@@ -2,7 +2,7 @@
 //
 //   node test.mjs
 //
-// Needs Node 22.18 or later, npm install (typescript), and python3 with the jsonschema package. Exit code 1 if any fails.
+// Needs Node 22.19 or later (EE-158), npm install (typescript), and python3 with the jsonschema package. Exit code 1 if any fails.
 // Generated files are checked for staleness by regenerating them into memory and comparing.
 //
 // Steps run in parallel, one worker per core (TEST_WORKERS overrides), and report in the order listed here.
@@ -94,6 +94,8 @@ const steps = [
   ["transcript diagnosis (human words only, redacted first, one raw draft per run)", "node", ["scripts/diagnose-transcripts-test.mjs"]],
   ["dependency rules (no new cycle between units, one version per shared dependency)", "node", ["scripts/dependency-rules.ts"]],
   ["dependency rules break on copies that violate them", "node", ["scripts/dependency-rules-test.ts"]],
+  ["vendored repositories match their pins (repos/effect is the installed effect version)", "node", ["scripts/vendored.ts"]],
+  ["vendored check breaks on copies", "node", ["scripts/vendored-test.ts"]],
   ["activity (active minutes, days in the venture's zone, streak)", "node", ["packages/naive/src/engine/activity-test.mjs"]],
   ["telos: examples", "node", ["packages/naive/src/checks/check-telos.mjs", "packages/naive/src/records/examples/workspace"]],
   ["publishing gate: field visibility, leak canaries, internal terms", "node", ["packages/naive/src/functions/marketing-and-sales/marketing/leaks-test.mjs"]],

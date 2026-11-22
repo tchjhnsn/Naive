@@ -32,7 +32,7 @@ The Everything Ecosystem methodology, packaged as one private repo (EE-001). Pro
 
 ## Build and test
 
-- `node test.mjs` runs every test and check below and reports each one; CI runs it on every pull request (`.github/workflows/test.yml`). It needs Node 22.18 or later (developing only; the published package still runs on Node 20), `npm install` at the root (one root `package-lock.json`), and, for one cross-check only, python3 with `jsonschema`: `node packages/naive/src/records/validate-test.ts` compares `packages/naive/src/records/validate.mjs` with jsonschema and skips without it. Naive validates records in process with `validate.mjs` and needs no Python.
+- `node test.mjs` runs every test and check below and reports each one; CI runs it on every pull request (`.github/workflows/test.yml`). It needs Node 22.19 or later, the floor for Naive and every venture since Effect 4 requires it (EE-158), `npm install` at the root (one root `package-lock.json`), and, for one cross-check only, python3 with `jsonschema`: `node packages/naive/src/records/validate-test.ts` compares `packages/naive/src/records/validate.mjs` with jsonschema and skips without it. Naive validates records in process with `validate.mjs` and needs no Python.
 - `node packages/naive/src/checks/check-types.ts` (`npm run typecheck`) type-checks the code with `tsc` and `tsconfig.json` (`allowJs`, `checkJs`). Every file must be free of errors. `tsconfig.strict.json` holds `.ts` files to strict mode, and no file may carry an `@ts-` suppression.
 - `node packages/naive/src/records/record-types.ts` writes `packages/naive/src/records/types/records.d.ts`, one TypeScript type per `packages/naive/src/records/*.schema.json` (`venture.schema.json` is `Venture`); `--check` fails when the committed file is stale, and a schema keyword or type name it cannot handle throws (`node packages/naive/src/records/record-types-test.ts`).
 - `node packages/naive/src/functions/capabilities/skills/design-coverage/check.mjs --entity <dir>` checks design coverage for an entity.
@@ -107,6 +107,17 @@ Naive is moving from JavaScript to TypeScript in four phases: type-check the Jav
 - A record's type comes from its JSON Schema, never typed by hand.
 - No `any` in new code. Use `unknown` and narrow it.
 - Existing `.mjs` files are converted in their phase, not inside unrelated PRs.
+
+## Vendored repositories
+
+`repos/` holds the source of libraries Naive depends on, added with `git subtree --squash` so agents can read the real code, its tests and its docs instead of guessing from the web or from compiled `node_modules`. `repos/effect` is Effect at the tag of the exact version in `package.json` (`effect@4.1.5`).
+
+- Read `repos/effect/LLMS.md` before writing Effect code, and use `repos/effect/packages/effect/src` and its tests as the source of truth for idiomatic usage and API design.
+- Use vendored repositories as read-only reference. Prefer their examples and patterns over generated guesses or web search results.
+- Do not edit files under `repos/` unless asked.
+- Do not import from `repos/`. Code imports the installed package (`effect`), never the vendored copy.
+- A vendored copy moves with its pin, in the same pull request: `git subtree pull --prefix=repos/effect https://github.com/Effect-TS/effect.git effect@<version> --squash`. `node scripts/vendored.ts` fails when they differ (`node scripts/vendored-test.ts`).
+- `repos/` is not shipped in the package and is left out of the type check, ESLint, the docs claims check, the boundary check and the data model check.
 
 ## Rules
 
