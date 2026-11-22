@@ -21,7 +21,12 @@ export const repo = fileURLToPath(new URL("../../../../..", import.meta.url));
 export const load = (p) => JSON.parse(readFileSync(p, "utf8"));
 // The workspace is MENTURA_WORKSPACE, else the current directory: a framework never defaults to a folder of its own.
 export const defaultWorkspace = () => process.env.MENTURA_WORKSPACE ?? process.cwd();
-export const PHASES = load(join(repo, "packages/naive/src/functions/products/frameworks/product-anatomy/phases.json")).phases;
+// The phases, read from the phase modules (packages/naive/src/phases/<id>/phase.json, EE-126) in lifecycle order. Read
+// here as data rather than through packages/naive/src/phases/phases.mjs, because the phases unit comes after records.
+const phasesDir = join(repo, "packages/naive/src/phases");
+export const PHASES = (existsSync(phasesDir) ? readdirSync(phasesDir) : []).filter((d) => existsSync(join(phasesDir, d, "phase.json")))
+  .map((d) => load(join(phasesDir, d, "phase.json"))).sort((a, b) => a.step - b.step)
+  .map(({ id, name, question, gate, binding_constraint }) => ({ id, name, question, gate: gate.name, binding_constraint }));
 
 export const glob = (g) => new RegExp("^" + g.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*\*\//g, "\0").replace(/\*\*/g, "\u0001").replace(/\*/g, "[^/]*").replace(/\0/g, "(?:[^/]+/)*").replace(/\u0001/g, ".*") + "$");
 // A venture's files, stopping at a nested venture (which has its own records) and skipping dot and private folders.
