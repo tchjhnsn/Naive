@@ -6,7 +6,8 @@
 //      else of a record it would change, else "venture";
 //   2. a per-function index (byFunction): the index's score ranked within each function;
 //   3. a cross-function rank (crossScore): score x the function's weight in the phase over the mean weight, x 1.5
-//      when the decision bears on a telos measure a lead plan binds;
+//      when the decision bears on a telos measure a lead plan binds, x 2 when it settles a record the phase's gate
+//      asks for as exit evidence (phase.json gate.evidence, EE-155), so the queue asks first what the gate needs;
 //   4. themes (themesOf): decisions that touch the same record or the same handoff, grouped so the queue shows one
 //      item per theme. A theme is a plain grouping by shared keys, no model and no clustering library.
 //
@@ -19,7 +20,7 @@ import { join } from "node:path";
 import { readJson, VentureFs } from "../core/effect/fs.mjs";
 import { runSync } from "../core/effect/run.mjs";
 import { ventureFile } from "../core/venture-paths.mjs";
-import { phaseWeights, ROOT } from "../phases/phases.mjs";
+import { phaseGateRecords, phaseWeights, ROOT } from "../phases/phases.mjs";
 import { readDataModel } from "../records/index.mjs";
 import { recordOf } from "./decisions.mjs";
 
@@ -27,6 +28,8 @@ import { recordOf } from "./decisions.mjs";
 export const VENTURE = "venture";
 /** How much a decision that bears on a measure a lead plan binds is raised. */
 export const MEASURE_LIFT = 1.5;
+/** How much a decision that settles a record the phase's gate asks for is raised (EE-155). */
+export const GATE_LIFT = 2;
 /** How many items the queue shows. */
 export const QUEUE_SIZE = 10;
 
@@ -34,9 +37,9 @@ export const QUEUE_SIZE = 10;
  * @typedef {{ function: string, by: "class" | "record" | "none", why: string }} Owner
  * @typedef {{ class?: string | null, record?: string | null, records?: (string | null)[] }} OwnerInput
  * @typedef {{ functions: readonly string[], classes: Record<string, string>, recordFunctions: Record<string, string | null> }} OwnerContext
- * @typedef {{ score: number, function: string, measures?: readonly string[] }} CrossInput
- * @typedef {{ weights: Record<string, number>, bound: Record<string, string> }} CrossContext
- * @typedef {{ score: number, function_weight: number, multiplier: number, measure_lift: number, measures: string[], cross: number }} CrossParts
+ * @typedef {{ score: number, function: string, measures?: readonly string[], record?: string | null }} CrossInput
+ * @typedef {{ weights: Record<string, number>, bound: Record<string, string>, gate?: readonly string[] }} CrossContext
+ * @typedef {{ score: number, function_weight: number, multiplier: number, measure_lift: number, measures: string[], gate_lift: number, cross: number }} CrossParts
  * @typedef {{ id: string, keys: readonly string[] }} Keyed
  * @typedef {{ id: string, keys: string[], members: string[] }} Theme
  * @typedef {{ id: string, question?: string, score: number, why?: string[], impact?: { changed?: string[] } }} IndexEntry
@@ -46,7 +49,7 @@ export const QUEUE_SIZE = 10;
  * @typedef {{
  *   phase: string, functions: string[], weights: Record<string, number>, classes: Record<string, string>,
  *   recordFunctions: Record<string, string | null>, leads: { id: string, portfolio: string[] }[],
- *   bound: Record<string, string>, goalMeasures: Record<string, string[]>, handoffs: Record<string, string[]>,
+ *   bound: Record<string, string>, goalMeasures: Record<string, string[]>, handoffs: Record<string, string[]>, gate: string[],
  * }} RankingContext
  */
 
@@ -79,6 +82,7 @@ const round = (n, places = 2) => Math.round(n * 10 ** places) / 10 ** places;
 /**
  * The cross-function score of one decision:
  *   cross = score x (w_f / mean w) x (MEASURE_LIFT when it bears on a measure a lead plan binds, else 1)
+ *                 x (GATE_LIFT when it settles a record type the phase's gate asks for, else 1)
  * where w_f is its function's weight in the venture's phase (phase.json, through phaseWeights) and mean w the mean
  * weight over the phase's functions (1/13 when they sum to 1), so a function at the mean leaves the score as it is.
  * "venture", or a function the phase does not weigh, counts at the mean. With no weights the multiplier is 1.
@@ -93,15 +97,23 @@ export function crossScore(e, ctx) {
   const multiplier = mean > 0 ? round(w / mean, 3) : 1;
   const measures = [...new Set((e.measures ?? []).filter((m) => m in ctx.bound))].sort();
   const lift = measures.length ? MEASURE_LIFT : 1;
-  return { score: e.score, function_weight: round(w, 3), multiplier, measure_lift: lift, measures, cross: round(e.score * multiplier * lift) };
+  const gate = e.record && (ctx.gate ?? []).includes(e.record) ? GATE_LIFT : 1;
+  return { score: e.score, function_weight: round(w, 3), multiplier, measure_lift: lift, measures, gate_lift: gate, cross: round(e.score * multiplier * lift * gate) };
 }
 
 /**
- * Orders by cross score, then the index's score, then id: the same input always gives the same order.
- * @param {{ id: string, score: number, cross: number }} a
- * @param {{ id: string, score: number, cross: number }} b
+ * Orders by cross score, then the gate's own order of its evidence (problem before customer profile), then the
+ * index's score, then id: the same input always gives the same order.
+ * @param {{ id: string, score: number, cross: number, gate_rank?: number }} a
+ * @param {{ id: string, score: number, cross: number, gate_rank?: number }} b
  */
-export const byCross = (a, b) => b.cross - a.cross || b.score - a.score || a.id.localeCompare(b.id);
+export const byCross = (a, b) => b.cross - a.cross || (a.gate_rank ?? Infinity) - (b.gate_rank ?? Infinity) || b.score - a.score || a.id.localeCompare(b.id);
+
+/**
+ * Where a record type stands in the gate's evidence list, or undefined when the gate does not ask for it.
+ * @param {readonly string[] | undefined} gate @param {string | null | undefined} record
+ */
+const gateRank = (gate, record) => { const i = record ? (gate ?? []).indexOf(record) : -1; return i < 0 ? undefined : i; };
 
 /**
  * Themes: decisions linked by a shared key (a record file, or a handoff) fall in one theme, transitively. Input in
@@ -157,9 +169,9 @@ export function rankItems(items, ctx, { size = QUEUE_SIZE } = {}) {
   const rows = items.map(({ entry, decision, raw }) => {
     const changed = entry.impact?.changed ?? [];
     const owner = ownerOf({ class: decision.class ?? null, record: decision.decides?.record ?? null, records: changed.map(recordOf) }, ctx);
-    const parts = crossScore({ score: entry.score, function: owner.function, measures: measuresOf(raw, changed, ctx.goalMeasures) }, ctx);
+    const parts = crossScore({ score: entry.score, function: owner.function, measures: measuresOf(raw, changed, ctx.goalMeasures), record: decision.decides?.record ?? null }, ctx);
     const keys = [...changed.map((f) => `record:${f}`), ...(ctx.handoffs[entry.id] ?? []).map((h) => `handoff:${h}`)];
-    return { id: entry.id, question: entry.question ?? "", score: entry.score, cross: parts.cross, owner, parts, keys, why: entry.why ?? [] };
+    return { id: entry.id, question: entry.question ?? "", score: entry.score, cross: parts.cross, owner, parts, keys, record: decision.decides?.record ?? null, gate_rank: gateRank(ctx.gate, decision.decides?.record), why: entry.why ?? [] };
   }).sort(byCross);
   const order = [...ctx.functions, VENTURE];
   /** @type {Record<string, { rank: number, id: string, score: number }[]>} */
@@ -178,6 +190,7 @@ export function rankItems(items, ctx, { size = QUEUE_SIZE } = {}) {
       head.owner.why,
       ...(fn === VENTURE ? [] : [`${fn} weighs ${head.parts.function_weight} in ${ctx.phase} (x${head.parts.multiplier} the mean)`]),
       ...head.parts.measures.map((m) => `bears on measure ${m}, which ${ctx.bound[m]}'s lead plan binds`),
+      ...(head.parts.gate_lift > 1 ? [`the ${ctx.phase} gate asks for ${byId.get(t.id)?.record} as exit evidence (x${head.parts.gate_lift})`] : []),
       ...(t.members.length > 1 ? [`one theme with ${t.members.slice(1).join(", ")}: they share ${t.keys.map((k) => k.replace(/^[a-z]+:/, "")).join(", ")}`] : []),
       ...head.why,
     ];
@@ -226,6 +239,7 @@ export const rankingContextEffect = (dir, phase, { root = ROOT } = {}) => Effect
   const depts = yield* readJson(join(root, "packages/naive/src/functions/departments.json"));
   const functions = isObject(depts) && Array.isArray(depts.departments) ? depts.departments.filter(isObject).map((d) => String(d.id)) : [];
   const weights = yield* phaseWeights(phase, { root }).pipe(Effect.catchTag("NotFound", () => Effect.succeed(/** @type {Record<string, number>} */ ({}))));
+  const gate = yield* phaseGateRecords(phase, { root }).pipe(Effect.catchTag("NotFound", () => Effect.succeed(/** @type {string[]} */ ([]))));
 
   const roles = (yield* jsonFiles(join(root, "packages/naive/template/governance/roles"))).map((f) => f.value).filter(isObject);
   const leads = roles.filter((r) => Array.isArray(r.portfolio)).map((r) => ({ id: String(r.id), portfolio: strings(r.portfolio) }));
@@ -280,7 +294,7 @@ export const rankingContextEffect = (dir, phase, { root = ROOT } = {}) => Effect
     const id = typeof value.id === "string" ? value.id : name.replace(/\.json$/, "");
     for (const d of strings(value.governed_by)) handoffs[d] = [...(handoffs[d] ?? []), id];
   }
-  return { phase, functions, weights, classes, recordFunctions, leads, bound, goalMeasures, handoffs };
+  return { phase, functions, weights, classes, recordFunctions, leads, bound, goalMeasures, handoffs, gate };
 });
 
 /**
