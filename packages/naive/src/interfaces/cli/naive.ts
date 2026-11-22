@@ -82,12 +82,13 @@
 
 import { spawnSync, type SpawnSyncOptions } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, watch, writeFileSync } from "node:fs";
-import { createServer, type AddressInfo } from "node:net";
+import type { AddressInfo } from "node:net";
 import { basename, join, relative, resolve } from "node:path";
 import { asRouted, findVenture } from "./find-venture.ts";
 import { logical } from "../../core/venture-paths.ts";
 import { ventureFile } from "../../core/venture-paths.ts";
 import { checkWorkspace, ensureWorkspace, findWorkspace } from "../../engine/workspace.ts";
+import { checkCopies } from "../../engine/effect-pin.ts";
 import { schemaNameOf } from "../../records/index.ts";
 import { naiveScript, PACKAGE_ROOT } from "../../core/scripts.ts";
 import { validateFile } from "../../records/validate.ts";
@@ -110,8 +111,6 @@ function here() {
   return dir;
 }
 
-// A port that is free, starting at the one asked for, the way next dev moves on from 3000.
-const free = (p: number): Promise<number> => new Promise((ok) => { const s = createServer().once("error", () => ok(free(p + 1))).once("listening", () => { const bound = (s.address() as AddressInfo).port; s.close(() => ok(bound)); }).listen(p, "127.0.0.1"); });
 
 // The schema a venture file is checked against, from the route table (records only).
 async function schemaFor(file: string): Promise<string | null> {
@@ -127,20 +126,29 @@ async function dev(dir: string): Promise<void> {
   }
   const { workspace, venture } = asRouted(dir);
   process.env.MENTURA_WORKSPACE = workspace;
-  const port = await free(Number(opt("port") ?? 4331));
   // One origin: /setup is the setup page (packages/naive/src/interfaces/dev/setup.ts); everything else is the board, served
   // on a port of its own and passed through.
   const { serve } = await import("../demo/board.ts");
   const { handle } = await import("../dev/setup.ts");
-  const boardPort = await free(0);
-  serve(boardPort, venture);
+  // Each server listens before its address is printed or used, so no other process can take a port between a probe and
+  // the listen (the board takes any free port; the setup server the one asked for, else the next free one).
+  const board = serve(0, venture);
+  if (!board.listening) await new Promise((ok) => board.once("listening", ok));
+  const boardPort = (board.address() as AddressInfo).port;
   const { createServer: http, request } = await import("node:http");
-  http(async (req, res) => {
+  const server = http(async (req, res) => {
     if (await handle(req, res, dir)) return;
     const up = request({ host: "127.0.0.1", port: boardPort, path: req.url, method: req.method, headers: req.headers }, (r) => { res.writeHead(r.statusCode ?? 502, r.headers); r.pipe(res); });
     up.on("error", (e) => { res.writeHead(502); res.end(String(e.message)); });
     req.pipe(up);
-  }).listen(port, "127.0.0.1");
+  });
+  const port = await new Promise<number>((ok, fail) => {
+    const at = (p: number) => {
+      server.once("error", (e: NodeJS.ErrnoException) => e.code === "EADDRINUSE" && p !== 0 ? at(p + 1) : fail(e));
+      server.listen(p, "127.0.0.1", () => { server.removeAllListeners("error"); ok((server.address() as AddressInfo).port); });
+    };
+    at(Number(opt("port") ?? 4331));
+  });
   const name = JSON.parse(readFileSync(join(dir, "venture.json"), "utf8")).name ?? venture;
   console.log(`\n  ▲ Naive ${version()}\n  - Venture:  ${name} (${relative(process.cwd(), dir) || "."})\n  - Setup:    http://127.0.0.1:${port}/setup\n  - Board:    http://127.0.0.1:${port}/\n  - Map:      http://127.0.0.1:${port}/map\n\n  Watching for changes. Each saved record is checked against its schema. Ctrl-C to stop.\n`);
   // Live feedback on save (I-24): a record that no longer matches its schema says so at once.
@@ -175,6 +183,10 @@ function check(dir: string): number {
     console.log(`${r.status === 0 ? "pass" : "FAIL"}  ${c.replace("check-", "")}: ${last}`);
     if (r.status !== 0) console.log((r.stdout + r.stderr).trim().split("\n").slice(0, 12).map((l) => `      ${l}`).join("\n"));
   }
+  // One Effect, shared (EE-161): the venture pins Naive's exact effect version and loads the copy Naive loads.
+  const effect = checkCopies(dir);
+  if (!effect.ok) failed++;
+  console.log(`${effect.ok ? "pass" : "FAIL"}  effect: ${effect.message}`);
   // The workspace the venture sits in: its naive-workspace.json matches the schema.
   const ws = findWorkspace(dir);
   if (ws) { const e = checkWorkspace(ws); if (e) failed++; console.log(`${e ? "FAIL" : "pass"}  workspace: ${e ? e.split("\n")[0] : "naive-workspace.json matches its schema"}`); }

@@ -87,8 +87,9 @@ t("installed from the registry, the venture depends on the framework by version,
   for (const d of [repo, join(repo, "packages/create-venture")]) ok(spawnSync("npm", ["pack", "--pack-destination", packs], { cwd: d, env, encoding: "utf8" }).status === 0, `npm pack in ${d}`);
   const tgz = (n: string) => { const f = readdirSync(packs).find((x) => x.startsWith(`${n}-`)); if (f === undefined) throw new TypeError(`no ${n} pack in ${packs}`); return join(packs, f); };
   writeFileSync(join(proj, "package.json"), "{}\n");
-  // The framework's runtime dependencies (effect, EE-125) come packed from this checkout's node_modules, so the install stays offline.
-  const deps = Object.keys(load(join(repo, "package.json")).dependencies ?? {});
+  // The framework's runtime and peer dependencies (effect, EE-125) come packed from this checkout's node_modules, so the install stays offline.
+  const manifest = load(join(repo, "package.json"));
+  const deps = Object.keys({ ...manifest.dependencies, ...manifest.peerDependencies });
   for (const d of deps) ok(spawnSync("npm", ["pack", "--pack-destination", packs], { cwd: join(repo, "node_modules", d), env, encoding: "utf8" }).status === 0, `npm pack ${d}`);
   const i = spawnSync("npm", ["install", "--offline", tgz("naive-framework"), tgz("create-venture"), ...deps.map(tgz)], { cwd: proj, env, encoding: "utf8" });
   ok(i.status === 0, i.stderr);
@@ -105,6 +106,10 @@ t("installed from the registry, the venture depends on the framework by version,
 t("--framework given as name@range keeps only the range", () => {
   ok(create(["pinned", "--yes", "--skip-install", "--no-git", "--framework", "naive-framework@^0.1.0"]).status === 0);
   ok(load(join(base, "pinned/package.json")).devDependencies["naive-framework"] === "^0.1.0");
+});
+
+t("the venture pins Effect at the framework's exact peer version (EE-161)", () => {
+  ok(load(join(base, "pinned/package.json")).dependencies?.effect === load(join(repo, "package.json")).peerDependencies.effect);
 });
 
 // With network: the registry-installed generator creates a venture and npm installs the published framework.

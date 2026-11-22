@@ -238,8 +238,9 @@ await t("from a packed npm install: naive workspace init makes the workspace and
   const app = join(out, "app");
   mkdirSync(app);
   writeFileSync(join(app, "package.json"), "{}");
-  // The framework's runtime dependencies (effect, EE-125) come packed from this checkout's node_modules, so the install stays offline.
-  const deps = Object.keys(JSON.parse(readFileSync(join(repo, "package.json"), "utf8")).dependencies ?? {})
+  // The framework's runtime and peer dependencies (effect, EE-125) come packed from this checkout's node_modules, so the install stays offline.
+  const manifest = JSON.parse(readFileSync(join(repo, "package.json"), "utf8"));
+  const deps = Object.keys({ ...manifest.dependencies, ...manifest.peerDependencies })
     .map((d) => join(out, spawnSync("npm", ["pack", "--silent", "--pack-destination", out], { cwd: join(repo, "node_modules", d), encoding: "utf8" }).stdout.trim()));
   const i = spawnSync("npm", ["install", "--offline", "--no-audit", "--no-fund", join(out, p.stdout.trim()), ...deps], { cwd: app, encoding: "utf8" });
   ok(i.status === 0, i.stderr);

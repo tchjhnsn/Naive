@@ -293,7 +293,9 @@ if (Object.keys(functions).length) {
     note: `systems of record: ${Object.entries(functions).map(([fn, f]) => `${fn} ${f.systems.map((s) => `${s.system} (${s.status})`).join(", ") || "in the founder's words"}`).join("; ")}` });
 }
 
-// The venture's package.json: the framework as a dev dependency, the four scripts (I-17) and the framework's Node floor (EE-158).
+// The venture's package.json: the framework as a dev dependency, Effect at the framework's exact peer pin (EE-161: one
+// copy, shared by Naive and the venture's programs, so their services agree), the four scripts (I-17) and the
+// framework's Node floor (EE-158).
 const fromClone = existsSync(join(framework, "test.ts")) && !framework.split("/").includes("node_modules");
 // A dependency value is a range or a location, never name@range: --framework naive-framework@^0.2 keeps ^0.2.
 // From a clone, the pin is the clone's repository at its commit (naive#70, as everything-ecosystem pins it, EE-119), so the
@@ -305,6 +307,7 @@ const spec = opt("framework")?.replace(new RegExp(`^${fw.name}@`), "") ?? (fromC
 writeFileSync(join(dir, "package.json"), JSON.stringify({
   name: id, private: true, type: "module",
   scripts: { dev: "naive dev", build: "naive build", start: "naive start", check: "naive check" },
+  ...(fw.peerDependencies?.effect ? { dependencies: { effect: fw.peerDependencies.effect } } : {}),
   devDependencies: { [fw.name]: spec },
   ...(fw.engines?.node ? { engines: { node: fw.engines.node } } : {}),
 }, null, 2) + "\n");
