@@ -1780,6 +1780,26 @@
           "expect": "exists"
         }
       ]
+    },
+    {
+      "id": "EE-127",
+      "date": "2026-11-22",
+      "status": "in-force",
+      "decision": "Open decisions are ranked across the 13 functions in one short queue. Each decision is owned by one function: its class's owner (the owning role's template function in decision rights, else the one function whose matrix lists the class), else the function of the record type it decides, else of a record it changes, else the venture. Its cross-function score is the decision index's score times its function's weight in the venture's phase over the mean weight, times 1.5 when it bears on a telos measure exactly one lead plan binds; ties break by score, then id. Decisions that change the same record or that one handoff executes form one theme, and the queue shows the top ten themes, one item each, with the function's lead. The rules are pure functions and the reading is in Effect (EE-125).",
+      "why": "The person needs one short queue of what to decide next across all functions, weighted for the phase the venture is in (EE-126 phase weights) and for the measures leads are accountable for, without seeing the same question once per decision that touches it.",
+      "related": [
+        "EE-126",
+        "EE-125",
+        "EE-124"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/decision-queue.mjs",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
     }
   ]
 }
