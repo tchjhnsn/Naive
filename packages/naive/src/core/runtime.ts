@@ -12,9 +12,12 @@
 //   trace     stands in for NAIVE_TRACE_CMD, the same shape
 //   sandbox   runs a handoff's bash done-criterion: (command, { cwd }) => { status, stdout, stderr }, or a promise of it
 //   git       a git working copy: (args, opts) => { status, stdout, stderr }, answered at once (the same shape as spawnSync)
+//   sql       the host's SQL client for durable work on durable.engine postgres: () => an effect/sql SqlClient, or a promise of
+//             it. The host owns the pool and its driver (@effect/sql-pg), so Naive depends on no database driver (EE-161).
 // Imports nothing in the repository.
 
 import { spawnSync, type SpawnSyncOptions } from "node:child_process";
+import type { SqlClient } from "effect/sql/SqlClient";
 
 /** Whether this process runs hosted: NAIVE_RUNTIME=hosted. */
 export const isHosted = (): boolean => process.env.NAIVE_RUNTIME === "hosted";
@@ -23,13 +26,14 @@ export type CommandResult = { status: number | null; stdout: string; stderr: str
 export type CommandHook = (args: string[], input?: string) => CommandResult | Promise<CommandResult>;
 export type SandboxHook = (command: string, opts: { cwd: string }) => CommandResult | Promise<CommandResult>;
 export type GitHook = (args: string[], opts?: SpawnSyncOptions) => CommandResult;
-export type Hooks = { judge: CommandHook; site: CommandHook; trace: CommandHook; sandbox: SandboxHook; git: GitHook };
+export type SqlHook = () => SqlClient | Promise<SqlClient>;
+export type Hooks = { judge: CommandHook; site: CommandHook; trace: CommandHook; sandbox: SandboxHook; git: GitHook; sql: SqlHook };
 export type HookName = keyof Hooks;
 
 /** The hooks a host can register, and the environment variable each stands in for (null when none does). */
-export const HOOKS = Object.freeze({ judge: "NAIVE_JUDGE_CMD", site: "NAIVE_SITE_CMD", trace: "NAIVE_TRACE_CMD", sandbox: null, git: null });
+export const HOOKS = Object.freeze({ judge: "NAIVE_JUDGE_CMD", site: "NAIVE_SITE_CMD", trace: "NAIVE_TRACE_CMD", sandbox: null, git: null, sql: null });
 
-const registered: { [K in HookName]: Hooks[K] | undefined } = { judge: undefined, site: undefined, trace: undefined, sandbox: undefined, git: undefined };
+const registered: { [K in HookName]: Hooks[K] | undefined } = { judge: undefined, site: undefined, trace: undefined, sandbox: undefined, git: undefined, sql: undefined };
 
 /** Registers a host hook. A hosted host calls this at start, the way it registers connectors. */
 export function registerHook<K extends HookName>(name: K, fn: Hooks[K]): void {
@@ -43,6 +47,7 @@ export function clearHooks(): void {
   registered.judge = registered.site = registered.trace = undefined;
   registered.sandbox = undefined;
   registered.git = undefined;
+  registered.sql = undefined;
 }
 
 /** The hook the host registered, when hosted. Undefined on a laptop, so laptop code never sees one. */
