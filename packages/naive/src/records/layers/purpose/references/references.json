@@ -319,6 +319,318 @@
         "is": "adapted",
         "why": "The core promise is the core benefit stated as what anyone can claim from the venture."
       }
+    },
+    {
+      "id": "iso-42010-2022-architecture-description",
+      "title": "ISO/IEC/IEEE 42010:2022 Software, systems and enterprise: Architecture description",
+      "authors": [
+        "ISO/IEC JTC 1/SC 7",
+        "IEEE"
+      ],
+      "year": 2022,
+      "kind": "standard",
+      "summary": "An architecture description describes a system through models; a view is the result of applying a viewpoint, which names the stakeholders' concerns and the model kinds that answer them, to the system. One model can take part in many views.",
+      "url": "https://www.iso.org/standard/74393.html",
+      "checked": "2026-11-22",
+      "informs": [
+        "noun:venture-anatomy",
+        "noun:view",
+        "noun:viewpoint"
+      ],
+      "stance": {
+        "is": "adopted",
+        "why": "The Venture Anatomy Matrix is the venture's architecture description: each sub-matrix is a model, and the Lean Canvas, Business Model Canvas and an S-1 outline are views produced by viewpoints (EE-157)."
+      }
+    },
+    {
+      "id": "sql-2011-temporal",
+      "title": "ISO/IEC 9075-2:2011 (SQL:2011) temporal features: application-time and system-versioned tables",
+      "authors": [
+        "ISO/IEC JTC 1/SC 32"
+      ],
+      "year": 2011,
+      "kind": "standard",
+      "summary": "Application time (valid time) records when a fact holds in the world; system time (transaction time) records when the database held it. Using both gives bitemporal tables, and the two times are independent.",
+      "url": "https://en.wikipedia.org/wiki/SQL:2011",
+      "checked": "2026-11-22",
+      "informs": [
+        "noun:anatomy-cell",
+        "noun:time-travel"
+      ],
+      "stance": {
+        "is": "adopted",
+        "why": "Each anatomy cell carries application time (valid_from, valid_to); system time is the provenance log and blob store, so the matrix answers both what we believed at t and what was true at t (EE-157)."
+      }
+    },
+    {
+      "id": "snodgrass-temporal-databases",
+      "title": "Temporal database (overview of valid time, transaction time and bitemporal data)",
+      "authors": [
+        "Wikipedia contributors"
+      ],
+      "year": 2026,
+      "kind": "article",
+      "summary": "Secondary overview of temporal database concepts and the TSQL2 and SQL:2011 lineage.",
+      "url": "https://en.wikipedia.org/wiki/Temporal_database",
+      "checked": "2026-11-22",
+      "informs": [
+        "noun:time-travel"
+      ],
+      "stance": {
+        "is": "adopted",
+        "why": "Background for the bitemporal terms used in EE-157."
+      }
+    },
+    {
+      "id": "view-model-overview",
+      "title": "View model (overview of views and viewpoints, IEEE 1471 lineage)",
+      "authors": [
+        "Wikipedia contributors"
+      ],
+      "year": 2026,
+      "kind": "article",
+      "summary": "Secondary overview: a viewpoint specifies concerns and modelling techniques; a view is that viewpoint applied to a system.",
+      "url": "https://en.wikipedia.org/wiki/View_model",
+      "checked": "2026-11-22",
+      "informs": [
+        "noun:view",
+        "noun:viewpoint"
+      ],
+      "stance": {
+        "is": "adopted",
+        "why": "Background for ISO 42010's terms as used in EE-157."
+      }
+    },
+    {
+      "id": "osterwalder-2004-business-model-ontology",
+      "title": "The Business Model Ontology: A Proposition in a Design Science Approach",
+      "authors": [
+        "Alexander Osterwalder"
+      ],
+      "year": 2004,
+      "kind": "paper",
+      "summary": "PhD thesis, University of Lausanne: nine building blocks (value proposition, target customer, distribution channel, relationship, value configuration, capability, partnership, cost structure, revenue model), later the Business Model Canvas (Osterwalder and Pigneur, Business Model Generation, 2010).",
+      "url": "https://en.wikipedia.org/wiki/Business_Model_Canvas",
+      "checked": "2026-11-22",
+      "informs": [
+        "noun:venture-anatomy",
+        "noun:business-model-canvas"
+      ],
+      "stance": {
+        "is": "alternative",
+        "why": "Too narrow to be the whole venture model; kept as one view over the matrix (EE-157)."
+      }
+    },
+    {
+      "id": "bizbok-15-business-architecture",
+      "title": "A Guide to the Business Architecture Body of Knowledge (BIZBOK Guide), version 15",
+      "authors": [
+        "Business Architecture Guild"
+      ],
+      "year": 2026,
+      "kind": "book",
+      "summary": "Business architecture through four core maps (capability, value stream, information, organization) assembled into blueprints for different audiences. A body of knowledge, not a formal standard.",
+      "url": "https://cdn.ymaws.com/www.businessarchitectureguild.org/resource/resmgr/bizbok15/BIZBOKv15_introduction.pdf",
+      "checked": "2026-11-22",
+      "informs": [
+        "noun:venture-anatomy"
+      ],
+      "stance": {
+        "is": "alternative",
+        "why": "Built for large enterprises; its blueprint idea matches views, but ISO 42010 is the formal standard (EE-157)."
+      }
+    },
+    {
+      "id": "gartner-2017-digital-twin-organization",
+      "title": "Digital twin of an organization",
+      "authors": [
+        "Gartner"
+      ],
+      "year": 2017,
+      "kind": "article",
+      "summary": "A dynamic model of the organization fed by operational and contextual data, used to plan, monitor and simulate. An analyst term, not a standard.",
+      "url": "https://www.gartner.com/en/documents/8166629",
+      "checked": "2026-11-22",
+      "informs": [
+        "noun:venture-anatomy"
+      ],
+      "stance": {
+        "is": "alternative",
+        "why": "Describes the ambition of a live venture model; not adopted as a name because it is a vendor and analyst term (EE-157)."
+      }
+    },
+    {
+      "id": "sec-regulation-s-k",
+      "title": "Regulation S-K (17 CFR part 229), with Form S-1",
+      "authors": [
+        "U.S. Securities and Exchange Commission"
+      ],
+      "year": 2020,
+      "kind": "law",
+      "summary": "What a registration statement such as Form S-1 must disclose besides financial statements (Regulation S-X): Item 101 description of business, 105 risk factors, 303 management's discussion and analysis, 401 directors and officers, 403 security ownership. Items 101, 103 and 105 were modernized in 2020 (Release 33-10825).",
+      "url": "https://www.law.cornell.edu/wex/regulation_s-k",
+      "checked": "2026-11-22",
+      "informs": [
+        "noun:venture-anatomy"
+      ],
+      "stance": {
+        "is": "adapted",
+        "why": "The coverage check for the Venture Anatomy Matrix: every S-K item a company would disclose maps to at least one sub-matrix (EE-157)."
+      }
+    },
+    {
+      "id": "sec-form-s-1",
+      "title": "Form S-1 registration statement",
+      "authors": [
+        "U.S. Securities and Exchange Commission"
+      ],
+      "year": 2026,
+      "kind": "law",
+      "summary": "The registration statement for an initial public offering; Part I is the prospectus. Content follows Regulation S-K and S-X.",
+      "url": "https://www.law.cornell.edu/wex/form_s-1",
+      "checked": "2026-11-22",
+      "informs": [
+        "noun:venture-anatomy",
+        "noun:s1-outline"
+      ],
+      "stance": {
+        "is": "adapted",
+        "why": "An S-1-style outline is one view over the matrix (EE-157)."
+      }
+    },
+    {
+      "id": "sec-2020-s-k-modernization",
+      "title": "Modernization of Regulation S-K Items 101, 103 and 105: Small Entity Compliance Guide",
+      "authors": [
+        "U.S. Securities and Exchange Commission"
+      ],
+      "year": 2020,
+      "kind": "law",
+      "summary": "The 2020 amendments: risk factors are material factors, organized under headings, with a summary when long.",
+      "url": "https://sec.gov/corpfin/modernization-regulation-s-k-compliance-guide",
+      "checked": "2026-11-22",
+      "informs": [
+        "noun:venture-anatomy"
+      ],
+      "stance": {
+        "is": "adapted",
+        "why": "Shapes the risk sub-matrix (EE-157)."
+      }
+    },
+    {
+      "id": "porter-1979-five-forces",
+      "title": "How Competitive Forces Shape Strategy",
+      "authors": [
+        "Michael E. Porter"
+      ],
+      "year": 1979,
+      "kind": "article",
+      "summary": "Harvard Business Review: industry structure through five forces, supplier power, buyer power, threat of new entrants, threat of substitutes and rivalry among existing competitors.",
+      "url": "https://hbr.org/1979/03/how-competitive-forces-shape-strategy",
+      "checked": "2026-11-22",
+      "informs": [
+        "noun:industry-anatomy"
+      ],
+      "stance": {
+        "is": "adopted",
+        "why": "The industry anatomy matrix rates the five forces low, medium or high (EE-157)."
+      }
+    },
+    {
+      "id": "webster-wind-1972-buying-center",
+      "title": "A General Model for Understanding Organizational Buying Behavior",
+      "authors": [
+        "Frederick E. Webster Jr.",
+        "Yoram Wind"
+      ],
+      "year": 1972,
+      "kind": "paper",
+      "summary": "Journal of Marketing 36(2): organizational purchases are made by a buying center of several roles (users, influencers, buyers, deciders, gatekeepers).",
+      "url": "https://doi.org/10.1177/002224297203600204",
+      "checked": "2026-11-22",
+      "informs": [
+        "noun:market-anatomy",
+        "field:buying_roles"
+      ],
+      "stance": {
+        "is": "adopted",
+        "why": "The market cell buying_roles counts the roles in the buying center; three or more means interviews must span roles (EE-157)."
+      }
+    },
+    {
+      "id": "doj-ftc-2023-merger-guidelines",
+      "title": "Merger Guidelines (2023)",
+      "authors": [
+        "U.S. Department of Justice",
+        "Federal Trade Commission"
+      ],
+      "year": 2023,
+      "kind": "standard",
+      "summary": "Issued December 18, 2023. A market with an HHI over 1,800 is highly concentrated (the 2010 Horizontal Merger Guidelines had used 2,500).",
+      "url": "https://www.justice.gov/d9/2023-12/2023%20Merger%20Guidelines.pdf",
+      "checked": "2026-11-22",
+      "informs": [
+        "field:concentration"
+      ],
+      "stance": {
+        "is": "adapted",
+        "why": "The market cell concentration uses the 2023 bands: under 1,000 fragmented, 1,000 to 1,800 moderate, over 1,800 concentrated (EE-157)."
+      }
+    },
+    {
+      "id": "fine-1998-clockspeed",
+      "title": "Clockspeed: Winning Industry Control in the Age of Temporary Advantage",
+      "authors": [
+        "Charles H. Fine"
+      ],
+      "year": 1998,
+      "kind": "book",
+      "summary": "Industries evolve at different clockspeeds, the rate at which products, processes and organizations change; fast-clockspeed industries need shorter planning and evidence horizons.",
+      "informs": [
+        "field:clockspeed"
+      ],
+      "stance": {
+        "is": "adopted",
+        "why": "The industry cell clockspeed; fast clockspeed shortens how long evidence stays fresh, 9 months instead of 18 (EE-157)."
+      }
+    },
+    {
+      "id": "levitt-1965-product-life-cycle",
+      "title": "Exploit the Product Life Cycle",
+      "authors": [
+        "Theodore Levitt"
+      ],
+      "year": 1965,
+      "kind": "article",
+      "summary": "Harvard Business Review: markets and products pass through introduction, growth, maturity and decline, each needing different strategy.",
+      "url": "https://hbr.org/1965/11/exploit-the-product-life-cycle",
+      "checked": "2026-11-22",
+      "informs": [
+        "field:maturity"
+      ],
+      "stance": {
+        "is": "adapted",
+        "why": "The market cell maturity uses emerging, growth, mature and declining (EE-157)."
+      }
+    },
+    {
+      "id": "blank-dorf-2012-startup-owners-manual",
+      "title": "The Startup Owner's Manual",
+      "authors": [
+        "Steve Blank",
+        "Bob Dorf"
+      ],
+      "year": 2012,
+      "kind": "book",
+      "summary": "Customer development step by step, including market sizing as total, served and target market (TAM, SAM, SOM).",
+      "informs": [
+        "field:reachable_buyers",
+        "field:serviceable_market_usd"
+      ],
+      "stance": {
+        "is": "adapted",
+        "why": "Naive counts the obtainable market as reachable buyers (a head count) as well as dollars, because gate thresholds scale with how many people can be reached (EE-157)."
+      }
     }
   ]
 }
