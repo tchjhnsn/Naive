@@ -155,6 +155,7 @@ const steps: Step[] = [
   ["recipe search: a fixture venture improves with no model; every knob step an agent's experiment write, held as a draft, none scored twice; stops at the budget", "node", ["packages/naive/src/interfaces/tests/recipe-search-test.ts"]],
   ["one writer per file: only the signal projector writes a projection record; a person is refused with the emit hint; the person's master record stays theirs", "node", ["packages/naive/src/interfaces/tests/projector-test.ts"]],
   ["the signal pull end to end: two ventures, one shared library, local corrections; a second pull writes nothing", "node", ["packages/naive/src/interfaces/tests/signals-pull-test.ts"]],
+  ["durable signal pull: a pull killed after its first record write resumes with its plan, writes each record once and moves the cursor (EE-161)", "node", ["packages/naive/src/interfaces/tests/durable-signals-test.ts"]],
   ["rendering through recipes end to end: two ventures, naive recipes init and the example recipe, receptions beside each record, hindsight past the horizon; a second pull writes nothing", "node", ["packages/naive/src/interfaces/tests/recipe-render-test.ts"]],
   ["check-signals: Naive's packages and the example library (types, worked cases, signals, the day log, listeners)", "node", ["packages/naive/src/checks/check-signals.ts"]],
   ["check-signals breaks on copies: each rule of signal libraries, types and listeners", "node", ["packages/naive/src/checks/check-signals-test.ts"]],
