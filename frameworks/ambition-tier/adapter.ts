@@ -3,10 +3,10 @@
 
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import type { Venture } from "../../packages/naive/src/records/types/records.d.ts";
 
 export const TIERS = ["hobby", "survival", "lifestyle", "managed-growth", "aggressive-growth"];
 /** The tier written in venture.json, before migration. */
-export const ambitionOf = (dir, v) => (v ?? JSON.parse(readFileSync(join(dir, "venture.json"), "utf8"))).ambition ?? null;
-/** venture.json's ambition as a canonical goal of kind scale. Pure.
- * @param {string} tier @param {{ venture?: string }} [opts] */
-export const toScaleGoal = (tier, { venture } = {}) => ({ id: "scale", ...(venture ? { venture } : {}), statement: `The venture means to grow as a ${tier} venture`, kind: "scale", value: tier, framework: "ambition-tier" });
+export const ambitionOf = (dir: string, v?: Venture): Venture["ambition"] | null => (v ?? JSON.parse(readFileSync(join(dir, "venture.json"), "utf8")) as Venture).ambition ?? null;
+/** venture.json's ambition as a canonical goal of kind scale. Pure. */
+export const toScaleGoal = (tier: string, { venture }: { venture?: string } = {}) => ({ id: "scale", ...(venture ? { venture } : {}), statement: `The venture means to grow as a ${tier} venture`, kind: "scale", value: tier, framework: "ambition-tier" });

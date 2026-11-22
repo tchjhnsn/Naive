@@ -1,6 +1,9 @@
 export const title = "Lean validation: an interview plan, then evidence on the problem";
 
-const work = (v) => {
+/** The TLA+ state this view reads: one field per variable it names. */
+type Vars = { claim: string; evidence: string; icp: string; learn: string; notes: string; plan: string; sources: string; who: string };
+
+const work = (v: Vars) => {
   if (v.evidence === "linked") return "Evidence is on the problem";
   if (v.evidence === "dangling" && v.notes === "read") return "The notes are ready, but the cite is still a missing file";
   if (v.notes === "read") return "The notes were read back";
@@ -18,7 +21,7 @@ const work = (v) => {
   return "Nothing from this playbook is written yet";
 };
 
-export const state = (v) => {
+export const state = (v: Vars) => {
   if (v.learn === "holds" && v.sources === "pass") return "Both checks pass";
   if (v.learn === "holds") return "The assessment says the evidence holds";
   if (v.evidence === "linked" && v.sources === "pass") return "The source check passes";
@@ -30,7 +33,7 @@ export const state = (v) => {
   return work(v);
 };
 
-export const group = (v) => {
+export const group = (v: Vars) => {
   if (v.learn === "holds" && v.sources === "pass") return "check passes";
   if (v.sources === "fail" || v.evidence === "dangling" || (v.learn === "asks" && v.claim !== "accepted")) return "check fails";
   if (v.evidence === "linked" || v.notes !== "none") return "evidence";
@@ -48,7 +51,7 @@ export const colors = {
   "check fails": "orange",
 };
 
-export const step = (action, from, to) => {
+export const step = (action: string, from: Vars, to: Vars) => {
   if (action === "Done") return null;
   if (action === "RunAssess" && from.evidence === "none" && (from.plan !== "none" || from.learn === "learning")) return null;
   return ({

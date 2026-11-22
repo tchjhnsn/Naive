@@ -8,12 +8,15 @@ import { join } from "node:path";
 import { plan, offeringsOf } from "./plan.ts";
 import { check } from "../../../../engine/check-public.ts";
 import { weights, needs, score, request, pageType, typesOf, customerNeeds, icpOf, MATRIX } from "./presence.ts";
+import type { Site } from "./presence.ts";
 
 let failed = 0;
-const t = (name, fn) => { try { fn(); console.log(`ok   ${name}`); } catch (e) { failed++; console.log(`FAIL ${name}: ${e.message}`); } };
-const ok = (c, m) => { if (!c) throw new Error(m); };
+const t = (name: string, fn: () => void) => { try { fn(); console.log(`ok   ${name}`); } catch (e) { failed++; console.log(`FAIL ${name}: ${(e as Error).message}`); } };
+const ok = (c: unknown, m: string | number) => { if (!c) throw new Error(String(m)); };
+/** The value, or a thrown error naming what is missing, as reading a property of undefined would throw. */
+const must = <T>(x: T | undefined, what: string): T => { if (x === undefined) throw new Error(`${what} is missing`); return x; };
 
-const site = { site: "https://kept.example", via: "fetch", read_at: "2026-10-28T20:00:00Z", pages: [
+const site: Site = { site: "https://kept.example", via: "fetch", read_at: "2026-10-28T20:00:00Z", pages: [
   { path: "/", title: "Kept", depth: 0, in_nav: true, label: "", text: "Kept fills the gaps no-shows leave in a solo PT clinic. Book a demo." },
   { path: "/pricing", title: "Pricing", depth: 1, in_nav: true, label: "Pricing", text: "$49 per month per clinic." },
   { path: "/about", title: "About", depth: 1, in_nav: false, label: "About", text: "Founded by Sam, a PT's spouse." },
@@ -40,7 +43,7 @@ t("the score credits what the judge says each page states, and buries what sits 
 
 t("a missing item no audience needs now is not held against the site", () => {
   const r = score(site, { answers: {}, facts: {} });
-  const hiring = r.items.find((x) => x.id === "hiring");
+  const hiring = must(r.items.find((x) => x.id === "hiring"), "the hiring item");
   ok(hiring.score === 0 && /fine while/.test(hiring.note) && !r.fix_first.includes("hiring"), hiring.note);
 });
 
@@ -54,7 +57,7 @@ t("who is behind it matters to a clinic owner and barely to a consumer, and the 
   const clinic = needs(weights({}), customerNeeds(typesOf({ text: "physical therapists who own their clinic" }, { "type:regulated-professional": { noul: 0.96 }, "type:smb-owner": { noul: 0.88 } })));
   const shoppers = needs(weights({}), customerNeeds(typesOf({ text: "shoppers" }, { "type:consumer": { noul: 0.9 } })));
   ok(clinic.team.need === 0.6 && clinic.team.required === "nav" && /clients' data/.test(clinic.team.evidence[0].why), JSON.stringify(clinic.team));
-  ok(shoppers.team.need < 0.2 && /rarely look up who founded it/.test(shoppers.team.evidence.find((e) => e.audience === "customers").why), JSON.stringify(shoppers.team));
+  ok(shoppers.team.need < 0.2 && /rarely look up who founded it/.test(must(shoppers.team.evidence.find((e) => e.audience === "customers"), "the customers evidence").why), JSON.stringify(shoppers.team));
 });
 
 t("Jev's conservative answers still place the ICP: the strongest types within reach of the top count", () => {
@@ -67,21 +70,21 @@ t("the sitemap rates each read route on what belongs there and suggests the page
   const by = Object.fromEntries(r.sitemap.map((n) => [n.path, n]));
   ok(by["/pricing"].rating === 100 && by["/pricing"].parent === "/" && by["/pricing"].level === "nav", JSON.stringify(by["/pricing"]));
   ok(by["/about"].missing.includes("team") && by["/investors"]?.ghost && by["/investors"].missing.includes("raising"), JSON.stringify(r.sitemap.map((n) => [n.path, n.missing])));
-  ok(r.icp.source === "inferred" && /inferred/.test(r.icp.cite), JSON.stringify(r.icp));
+  ok(r.icp.source === "inferred" && /inferred/.test(String(r.icp.cite)), JSON.stringify(r.icp));
 });
 
 t("the ICP is read from the site: what it says outright first, and the records' ICP is kept aside for a clarity check", () => {
-  const s2 = { site: "https://x.test", pages: [{ path: "/", depth: 0, text: "Scheduling built for solo physical therapy clinics. Trusted by 400 owners." }, { path: "/customers", depth: 1, text: "Used by clinics in Texas" }] };
+  const s2: Site = { site: "https://x.test", pages: [{ path: "/", depth: 0, text: "Scheduling built for solo physical therapy clinics. Trusted by 400 owners." }, { path: "/customers", depth: 1, text: "Used by clinics in Texas" }] };
   const v = mkdtempSync(join(tmpdir(), "icp-"));
   writeFileSync(join(v, "venture.json"), "{}"); mkdirSync(join(v, "purpose")); writeFileSync(join(v, "purpose/icp.json"), JSON.stringify({ profiles: [{ who: "billing partners" }] }));
   const i = icpOf(v, s2);
-  ok(i.source === "site" && i.says.some((x) => /built for solo physical therapy clinics/.test(x)) && i.says.some((x) => /Used by clinics/.test(x)) && i.stated[0] === "billing partners", JSON.stringify(i));
+  ok(i.source === "site" && i.says.some((x) => /built for solo physical therapy clinics/.test(x)) && i.says.some((x) => /Used by clinics/.test(x)) && i.stated?.[0] === "billing partners", JSON.stringify(i));
 });
 
 // The planner (EE-064): a partner-led venture whose product is offered to clinics' billing partners.
 const venture = (() => {
   const v = mkdtempSync(join(tmpdir(), "plan-"));
-  const w = (f, x) => { mkdirSync(join(v, f, ".."), { recursive: true }); writeFileSync(join(v, f), typeof x === "string" ? x : JSON.stringify(x)); };
+  const w = (f: string, x: unknown) => { mkdirSync(join(v, f, ".."), { recursive: true }); writeFileSync(join(v, f), typeof x === "string" ? x : JSON.stringify(x)); };
   w("venture.json", { id: "relay", name: "Relay", phase: "validation", brand: { tagline: "Fewer empty slots" } });
   w("purpose/icp.json", { venture: "relay", profiles: [
     { id: "billing-partners", who: "medical billing companies that run the front office for small physical therapy clinics", primary: true, customer: "b2b", buying_roles: ["decider", "buyer"] },
@@ -100,16 +103,16 @@ t("the product decides the audience: offered to the partners others are reached 
 
 t("the plan puts what customers need on the home page, with components, reasons and the variant to write", () => {
   const p = plan(venture);
-  const home = p.pages.find((x) => x.path === "/");
-  const hero = home.sections.find((s) => s.item === "what");
+  const home = must(p.pages.find((x) => x.path === "/"), "the home page");
+  const hero = must(home.sections.find((s) => s.item === "what"), "the hero section");
   ok(hero.component === "Hero" && hero.why.length && hero.variant === "operations/marketing/content/home/what.mdx", JSON.stringify(hero));
-  ok(home.sections[0].need >= home.sections.at(-1).need, "sections ordered by need");
-  ok(home.sections.find((s) => s.item === "problem").source.exists, "problem record found");
+  ok(home.sections[0].need >= must(home.sections.at(-1), "the last section").need, "sections ordered by need");
+  ok(must(home.sections.find((s) => s.item === "problem"), "the problem section").source.exists, "problem record found");
 });
 
 t("an audience that is not a priority gets no page, only a note on when it would", () => {
   const quiet = plan(venture), raising = plan(venture, { flags: { raising: true } });
-  ok(!quiet.pages.some((x) => x.type === "investors") && quiet.omitted.some((o) => o.item === "raising" && /raising/.test(o.when)), JSON.stringify(quiet.omitted));
+  ok(!quiet.pages.some((x) => x.type === "investors") && quiet.omitted.some((o) => o.item === "raising" && /raising/.test(String(o.when))), JSON.stringify(quiet.omitted));
   ok(raising.pages.find((x) => x.type === "investors")?.level === "nav", JSON.stringify(raising.pages.map((x) => [x.path, x.level])));
 });
 
@@ -119,7 +122,7 @@ t("the public gate blocks content that copies its internal record or is publishe
   writeFileSync(join(dir, "problem.mdx"), "---\nvariant_of: purpose/validation/problem.json\naudience: customers\npublish: true\n---\n<Problem>Solo clinics lose four to six visits a week to no-shows and nobody at the clinic has time</Problem>\n");
   writeFileSync(join(dir, "what.mdx"), "---\nvariant_of: venture.json\naudience: customers\npublish: true\napproved_by: Sam\n---\n<Hero>Relay. Fewer empty slots, for the partners who run clinics' front offices.</Hero>\n");
   const r = check(venture);
-  const bad = r.errors.find((x) => x.file.endsWith("problem.mdx"));
+  const bad = must<{ file: string; errors: string[] }>(r.errors.find((x: { file: string }) => x.file.endsWith("problem.mdx")), "the problem.mdx error");
   ok(r.files === 2 && r.errors.length === 1 && bad.errors.some((e) => /approval/.test(e)) && bad.errors.some((e) => /copies/.test(e)), JSON.stringify(r.errors));
 });
 

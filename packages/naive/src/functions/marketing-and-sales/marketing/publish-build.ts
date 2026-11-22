@@ -35,29 +35,35 @@ import { visibilityOf } from "../../../engine/visibility.ts";
 import { ventureFile } from "../../../core/venture-paths.ts";
 import { configFor } from "../../../engine/naive-config.ts";
 
-const sha = (s) => createHash("sha256").update(s).digest("hex");
+const sha = (s: string | Buffer) => createHash("sha256").update(s).digest("hex");
 
-/** @typedef {{ outputs: string[], builders: string[] }} Channel */
+/** A channel: the outputs its builders write, and the builder scripts. */
+export type Channel = { outputs: string[], builders: string[] };
+/** An MDX variant in the venture's public content. */
+type Variant = { file: string, variant_of: string, approved: boolean, approved_by: string | null, sha256: string };
+/** What a build records: each output's sha256, the approved variants it drew on, the drafts still waiting. */
+export type BuildRecord = {
+  channel: string, venture: string | null, built_at: string, outputs: { path: string, sha256: string }[],
+  sources: { file: string, variant_of: string, approved_by: string | null, sha256: string }[], pending: { file: string, variant_of: string }[],
+};
+/** A build that passed, with its record, or one refused at a stage with the reasons. */
+export type BuildResult = ({ ok: true, stage?: undefined, errors?: undefined } & BuildRecord) | { ok: false, channel: string, stage?: string, errors: string[] };
 
 /**
  * The channels a venture names in naive.config.json publish_build.channels, with each builder resolved
  * against the venture folder, and the default output folder. A venture that names none has no channel.
- * @param {string} dir
- * @returns {{ channels: Record<string, Channel>, out: string }}
  */
-export function channelsFor(dir) {
+export function channelsFor(dir: string): { channels: Record<string, Channel>, out: string } {
   dir = resolve(dir);
-  /** @type {{ channels?: Record<string, Channel>, out?: string }} */
-  const pb = configFor(dir).publish_build ?? {};
-  /** @type {Record<string, Channel>} */
-  const channels = {};
+  const pb: { channels?: Record<string, Channel>, out?: string } = configFor(dir).publish_build ?? {};
+  const channels: Record<string, Channel> = {};
   for (const [name, ch] of Object.entries(pb.channels ?? {})) channels[name] = { outputs: [...(ch.outputs ?? [])], builders: (ch.builders ?? []).map((b) => resolve(dir, b)) };
   return { channels, out: resolve(dir, pb.out ?? ".release/publish-build") };
 }
 
 // Every MDX variant in the venture's public content, approved or not.
-function variants(dir) {
-  const out = [];
+function variants(dir: string) {
+  const out: Variant[] = [];
   for (const d of ["marketing/content", CONTENT]) {
     const root = ventureFile(dir, d);
     if (!existsSync(root)) continue;
@@ -72,9 +78,9 @@ function variants(dir) {
 
 // The wording of every record field that is not approved as public: strings of 24 characters or more in
 // foundation/*, products/* and venture.json. None of them may appear in public output as written.
-export function internalWording(dir) {
-  const found = [];
-  const walk = (rel, x, path) => {
+export function internalWording(dir: string) {
+  const found: { rel: string, field: string, text: string }[] = [];
+  const walk = (rel: string, x: unknown, path: string) => {
     if (typeof x === "string") { if (x.length >= 24 && visibilityOf(dir, rel, path).visibility !== "public") found.push({ rel, field: path, text: x }); }
     else if (Array.isArray(x)) x.forEach((y, i) => walk(rel, y, path ? `${path}.${i}` : String(i)));
     else if (x && typeof x === "object") for (const [k, y] of Object.entries(x)) walk(rel, y, path ? `${path}.${k}` : k);
@@ -95,14 +101,12 @@ export function internalWording(dir) {
   return found.filter((x) => !allowed.has(x.text));
 }
 
-const unescape = (s) => s.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
+const unescape = (s: string) => s.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
 
 /**
- * @param {string} channel @param {string} dir
- * @param {{ out?: string, channels?: Record<string, Channel> }} [opts] channels registered by the app; else the venture's naive.config.json
- * @returns {{ ok: boolean, channel: string, stage?: string, errors?: string[], venture?: string, built_at?: string, outputs?: { path: string, sha256: string }[], sources?: { file: string, variant_of?: string, approved_by?: string, sha256: string }[], pending?: { file: string, variant_of?: string }[] }}
+ * Builds one channel. opts.channels are channels registered by the app; else the venture's naive.config.json.
  */
-export function build(channel, dir, opts = {}) {
+export function build(channel: string, dir: string, opts: { out?: string, channels?: Record<string, Channel> } = {}): BuildResult {
   dir = resolve(dir);
   const named = channelsFor(dir);
   const channels = opts.channels ?? named.channels;
@@ -114,7 +118,7 @@ export function build(channel, dir, opts = {}) {
   }
   // 1. gate
   const gate = check(dir);
-  if (gate.errors.length) return { ok: false, channel, stage: "gate", errors: gate.errors.flatMap((x) => x.errors.map((e) => `${x.file}: ${e}`)) };
+  if (gate.errors.length) return { ok: false, channel, stage: "gate", errors: gate.errors.flatMap((x: { file: string, errors: string[] }) => x.errors.map((e) => `${x.file}: ${e}`)) };
   // 2 and 3. compile and build: each script reads the venture only through publicValue, and writes under out.
   const env = { ...process.env, NAIVE_VENTURE: dir, NAIVE_PUBLISH_OUT: out };
   for (const b of ch.builders) {
@@ -123,7 +127,7 @@ export function build(channel, dir, opts = {}) {
   }
   // 4. verify
   const outputs = ch.outputs.map((p) => ({ path: p, file: join(out, p) }));
-  const errors = [];
+  const errors: string[] = [];
   for (const o of outputs) if (!existsSync(o.file)) errors.push(`${o.path}: the channel's builders did not write it`);
   if (errors.length) return { ok: false, channel, stage: "build", errors };
   const wording = internalWording(dir);
@@ -135,7 +139,7 @@ export function build(channel, dir, opts = {}) {
   if (errors.length) return { ok: false, channel, stage: "verify", errors };
   // 5. record
   const all = variants(dir);
-  const record = {
+  const record: BuildRecord = {
     channel,
     venture: JSON.parse(readFileSync(join(dir, "venture.json"), "utf8")).id ?? null,
     built_at: new Date().toISOString(),

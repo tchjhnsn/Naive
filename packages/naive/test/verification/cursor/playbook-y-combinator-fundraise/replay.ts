@@ -9,24 +9,26 @@ import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import type { DecisionRecord, Handoff, ValidationProblem } from "../../../../src/records/types/records.d.ts";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repo = join(here, "../../../../../..");
 const playbook = readFileSync(join(repo, "packages/naive/library/packages/investors/playbooks/y-combinator-fundraise.md"), "utf8");
 const tla = readFileSync(join(here, "YCFundraise.tla"), "utf8");
 
-const rows = [];
-const fail = (name, detail) => { rows.push({ name, result: "FAIL", detail }); };
-const pass = (name, detail) => { rows.push({ name, result: "PASS", detail }); };
-function check(name, ok, detail) { (ok ? pass : fail)(name, detail); return ok; }
+const rows: { name: string, result: "PASS" | "FAIL", detail: string }[] = [];
+const fail = (name: string, detail: string) => { rows.push({ name, result: "FAIL", detail }); };
+const pass = (name: string, detail: string) => { rows.push({ name, result: "PASS", detail }); };
+function check(name: string, ok: unknown, detail: string) { (ok ? pass : fail)(name, detail); return ok; }
 
-function setOf(source, name) {
+function setOf(source: string, name: string) {
   const m = source.match(new RegExp(`${name} == \\{([^}]+)\\}`));
   if (!m) throw new Error(`no set ${name}`);
   return new Set([...m[1].matchAll(/"([^"]+)"/g)].map((x) => x[1]));
 }
 
 const routeLine = tla.match(/^Routes == .+$/m);
+if (!routeLine) throw new Error("no Routes line in the model");
 const modelRoutes = new Set([
   ...setOf(tla, "Provided"),
   ...setOf(tla, "Optional"),
@@ -36,9 +38,9 @@ const modelRoutes = new Set([
 
 const listed = spawnSync("node", [join(repo, "packages/naive/src/router/router.mjs")], { encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
 if (listed.status !== 0) { console.error(listed.stderr); process.exit(1); }
-const table = new Map(JSON.parse(listed.stdout).map((r) => [r.route, r]));
+const table = new Map<string, unknown>(JSON.parse(listed.stdout).map((r: { route: string }) => [r.route, r]));
 
-function normalize(token) {
+function normalize(token: string) {
   return token
     .replaceAll("<id>", "[id]")
     .replace(/^decisions\/raise-plan$/, "decisions/[id]")
@@ -49,8 +51,8 @@ function normalize(token) {
     .replace(/^people\/founders\/[a-z0-9-]+$/, "people/founders/[id]");
 }
 
-const mentioned = new Set();
-const forbidden = new Set();
+const mentioned = new Set<string>();
+const forbidden = new Set<string>();
 for (const line of playbook.split("\n")) {
   for (const raw of [...line.matchAll(/`([^`]+)`/g)].map((m) => m[1])) {
     const route = normalize(raw);
@@ -80,8 +82,7 @@ const init = spawnSync("node", [join(repo, "packages/naive/src/engine/init-ventu
 if (init.status !== 0) { console.error(init.stderr || init.stdout); process.exit(1); }
 
 let n = 0;
-/** @param {string} route @param {string} action @param {{ as?: string, input?: unknown }} [options] */
-function call(route, action, { as = "agent", input } = {}) {
+function call(route: string, action: string, { as = "agent", input }: { as?: string, input?: unknown } = {}) {
   const args = [join(repo, "packages/naive/src/interfaces/cli/mentura.mjs"), route, action, "--venture", venture, "--workspace", ws, "--as", as, "--json"];
   if (input) {
     const file = join(ws, `in-${n++}.json`);
@@ -99,8 +100,8 @@ check("NoUnreadSource: problem is absent until the venture writes it",
   missingProblem.body?.ok === true && missingProblem.body?.result == null && missingProblem.body?.not_found,
   missingProblem.body?.not_found?.note ?? missingProblem.stderr);
 
-function noteFields(note) {
-  const out = {};
+function noteFields(note: string | undefined) {
+  const out: Record<string, string> = {};
   for (const line of String(note ?? "").split("\n")) {
     const m = /^([a-z_]+):\s*(.*)$/.exec(line);
     if (m) out[m[1]] = m[2].trim();
@@ -108,7 +109,7 @@ function noteFields(note) {
   return out;
 }
 
-function planCheck(record) {
+function planCheck(record: DecisionRecord | null | undefined) {
   if (!record) return "missing";
   const fields = noteFields(record.note);
   const options = record.options ?? [];
@@ -127,7 +128,7 @@ function planCheck(record) {
   return "pass";
 }
 
-function investorCheck(list, plan) {
+function investorCheck(list: Record<string, { name?: string } | null> | null | undefined, plan: unknown) {
   if (!plan) return "no raise plan";
   const records = list && typeof list === "object" ? Object.values(list) : [];
   if (!records.length) return "no investors";
@@ -257,7 +258,7 @@ check("replay: a new data-stream id is stored under customers, which is why the 
   stream.body?.result?.written === "customers/_streams/meetings/stream.json",
   stream.body?.result?.written ?? stream.stderr);
 
-function roomCheck(handoff, problem) {
+function roomCheck(handoff: Handoff | null | undefined, problem: ValidationProblem | null | undefined) {
   if (!handoff) return "missing checklist";
   const evidence = call("evidence", "read");
   const evidenceCount = evidence.body?.result ? Object.keys(evidence.body.result).length : 0;
@@ -392,7 +393,7 @@ const signed = call("governance/ownership", "write", {
   },
 });
 const signedRead = call("governance/ownership", "read");
-const kindOk = (signedRead.body?.result?.instruments ?? []).every((i) => ["safe-post-money", "safe-pre-money", "convertible-note"].includes(i.kind));
+const kindOk = (signedRead.body?.result?.instruments ?? []).every((i: { kind: string }) => ["safe-post-money", "safe-pre-money", "convertible-note"].includes(i.kind));
 check("person can record a schema instrument kind on governance/ownership",
   signed.body?.ok === true && signed.body?.result?.draft === false && kindOk,
   signed.body?.result?.written ?? signed.stderr);

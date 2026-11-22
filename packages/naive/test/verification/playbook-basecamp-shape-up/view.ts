@@ -1,6 +1,9 @@
 export const title = "One six-week cycle: shape a pitch, bet, build, then cool down";
 
-export const state = (v) => {
+/** The TLA+ state this view reads: one field per variable it names. */
+type Vars = { check: string; phase: string; pitch: string };
+
+export const state = (v: Vars) => {
   if (v.phase === "start") return "Venture has a product and an ICP";
   if (v.phase === "saw-product") return "The offer is read";
   if (v.phase === "who-read") return "Who it is for is read";
@@ -21,7 +24,7 @@ export const state = (v) => {
   return "Unmapped";
 };
 
-export const group = (v) => {
+export const group = (v: Vars) => {
   if (v.phase === "pitched" && v.check === "fail") return "failed";
   if (v.phase === "building" && v.check === "fail") return "failed";
   if (v.phase === "declined") return "declined";
@@ -42,7 +45,7 @@ export const colors = {
   cooldown: "yellow",
 };
 
-export const step = (action, _from, to) => {
+export const step = (action: string, _from: Vars, to: Vars) => {
   if (action === "WritePitch" || action === "WritePitchFull" || action === "WritePitchThin") {
     return to.pitch === "thin" ? "you write the pitch and leave a section blank" : "you write the pitch as a handoff";
   }

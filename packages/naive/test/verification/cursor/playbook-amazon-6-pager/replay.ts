@@ -9,6 +9,12 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { approve, propose } from "../../../../src/engine/decisions.ts";
 import { call, resolve } from "../../../../src/router/router.mjs";
+import type { DecisionRecord, IcpProfile } from "../../../../src/records/types/records.d.ts";
+
+/** What a router action answers, with the result this replay expects of the route (null when the record is missing). */
+type Answer<T = unknown> = { ok: boolean, error?: string, result?: T | null, not_found?: { note?: string }, pending_draft?: unknown };
+/** What the memo checks compare the decision with. */
+type Ctx = { profileId: string, statement: string, principleId: string, findingId: string, findingReadable: boolean };
 
 const repo = join(import.meta.dirname, "../../..");
 const playbook = readFileSync(join(repo, "packages/naive/library/packages/decisions/playbooks/amazon-6-pager.md"), "utf8");
@@ -24,19 +30,19 @@ const patternRoutes = [
   "governance/decisions",
 ];
 
-const rows = [];
-const note = (rule, result, detail) => {
+const rows: { rule: string, result: string, detail: string }[] = [];
+const note = (rule: string, result: string, detail: string) => {
   rows.push({ rule, result, detail });
   console.log(`${result.padEnd(4)} ${rule}: ${detail}`);
 };
-const die = (msg) => { throw new Error(msg); };
+const die = (msg: string): never => { throw new Error(msg); };
 
-function section(noteText, label) {
+function section(noteText: string | undefined, label: string) {
   const m = (noteText ?? "").match(new RegExp(`^${label}:\\s*(.*)$`, "m"));
   return m ? m[1].trim() : "";
 }
 
-function evaluate(decision, ctx) {
+function evaluate(decision: DecisionRecord | null | undefined, ctx: Ctx): Record<string, boolean> {
   const text = decision?.note ?? "";
   const risk = (decision?.outcomes ?? []).find((o) => o.id === "main-risk" && o.projected && (o.evidence ?? []).includes(ctx.findingId));
   return {
@@ -58,20 +64,20 @@ function evaluate(decision, ctx) {
 }
 
 const ws = mkdtempSync(join(tmpdir(), "six-pager-"));
-const init = (id) => {
+const init = (id: string) => {
   const dir = join(ws, id);
   const r = spawnSync("node", [join(repo, "packages/naive/src/engine/init-venture.ts"), dir, id, "--phase", "validation", "--legal-form", "llc"], { encoding: "utf8" });
   if (r.status !== 0) die(r.stderr || r.stdout);
   return dir;
 };
 
-const opts = (venture) => ({ venture, workspace: ws, via: "replay" });
+const opts = (venture: string) => ({ venture, workspace: ws, via: "replay" });
 
-async function readRoute(venture, route) {
-  return call({ ...opts(venture), route, action: "read", actor: "person" });
+async function readRoute<T = DecisionRecord>(venture: string, route: string) {
+  return call({ ...opts(venture), route, action: "read", actor: "person" }) as Promise<Answer<T>>;
 }
-async function writeRoute(venture, route, input, actor = "person") {
-  return call({ ...opts(venture), route, action: "write", input, actor, provenance: { note: "amazon-6-pager replay" } });
+async function writeRoute(venture: string, route: string, input: object, actor = "person") {
+  return call({ ...opts(venture), route, action: "write", input, actor, provenance: { note: "amazon-6-pager replay" } }) as Promise<Answer<{ draft?: boolean }>>;
 }
 
 try {
@@ -106,29 +112,30 @@ try {
     classes: [{ id: "strategy-or-constitution", owner: "founder", level: "escalate" }],
   };
 
-  for (const [route, input] of [
+  const inputs: [string, object][] = [
     ["foundation/problem", problem],
     [`foundation/icp/${profileId}`, profile],
     ["foundation/alignment", alignment],
     ["governance/decision-rights", rights],
-  ]) {
+  ];
+  for (const [route, input] of inputs) {
     const w = await writeRoute(venture, route, input);
     if (!w.ok) die(`write ${route}: ${w.error}`);
-    const back = await readRoute(venture, route);
+    const back = await readRoute<unknown>(venture, route);
     if (!back.ok || back.result == null) die(`read ${route} after write: ${JSON.stringify(back)}`);
   }
   const listWrite = await writeRoute(venture, "foundation/icp", { profiles: [profile] });
   if (listWrite.ok) die("foundation/icp should have no write action");
-  const profiles = await readRoute(venture, "foundation/icp");
+  const profiles = await readRoute<Record<string, IcpProfile>>(venture, "foundation/icp");
   const primary = Object.values(profiles.result ?? {}).find((p) => p.primary);
   if (primary?.id !== profileId) die(`foundation/icp read has no primary profile ${profileId}: ${JSON.stringify(profiles.result)}`);
-  note("NoReadBeforeProvided", "PASS", `the four inputs were written, then read, before any memo; foundation/icp lists primary profile ${primary.id}`);
+  note("NoReadBeforeProvided", "PASS", `the four inputs were written, then read, before any memo; foundation/icp lists primary profile ${primary?.id}`);
 
   const bare = "bare";
   init(bare);
-  const missing = await readRoute(bare, "foundation/problem");
+  const missing = await readRoute<unknown>(bare, "foundation/problem");
   if (!missing.not_found) die(`expected foundation/problem to be missing on ${bare}, got ${JSON.stringify(missing)}`);
-  note("NoReadBeforeProvided", "PASS", `on a venture with no problem record, foundation/problem read is not_found (${missing.not_found.note}); the replay does not write a memo there`);
+  note("NoReadBeforeProvided", "PASS", `on a venture with no problem record, foundation/problem read is not_found (${missing.not_found?.note}); the replay does not write a memo there`);
 
   const ctx = { profileId, statement, principleId, findingId, findingReadable: false };
   const gapInput = { id: "gap-memo", question: "Should we leave the sections empty?", status: "open" };
@@ -144,7 +151,7 @@ try {
 
   const dotted = await writeRoute(venture, "decisions/bad.id", { id: "bad-id", question: "Bad?", status: "open" });
   if (dotted.ok) die("decisions/bad.id should be rejected");
-  note("RoutesReal", "PASS", `decisions/[id] rejects an id with a dot: ${dotted.error.split("\n")[0]}`);
+  note("RoutesReal", "PASS", `decisions/[id] rejects an id with a dot: ${(dotted.error ?? "").split("\n")[0]}`);
 
   const refused = propose(dir, { id: "refuse-decided", question: "Can the memo decide itself?", status: "decided", answer: "Yes" }, { agentId: "replay", via: "replay" });
   if (refused.ok) die("propose() accepted status decided");
@@ -192,7 +199,7 @@ try {
   };
   const findingWrite = await writeRoute(venture, `evidence/${findingId}`, finding);
   if (!findingWrite.ok) die(`write evidence: ${findingWrite.error}`);
-  const findingRead = await readRoute(venture, `evidence/${findingId}`);
+  const findingRead = await readRoute<{ id?: string }>(venture, `evidence/${findingId}`);
   if (findingRead.result?.id !== findingId) die(`evidence read: ${JSON.stringify(findingRead)}`);
   ctx.findingReadable = true;
   note("NoReadBeforeProvided", "PASS", "evidence/faq-finding was written, then read, before the FAQ cited it");
@@ -221,15 +228,16 @@ try {
   note("ChecksCanPassAndFail", "PASS", "decisions/full-memo after propose passes customer, problem, solution, principle, faq, still-open, and person-decided");
   note("MemoNeverDecides", "PASS", "after propose, status is open, drafted_by.kind is agent, and approved_by is absent");
 
-  const matrix = await call({ ...opts(venture), route: "governance/decisions", action: "run", actor: "person" });
+  const matrix = await call({ ...opts(venture), route: "governance/decisions", action: "run", actor: "person" }) as Answer<{ phase?: string, decisions?: unknown }>;
   if (!matrix.ok) die(`governance/decisions: ${matrix.error}`);
-  const listed = matrix.result?.decisions ?? matrix.result;
-  const rowsOf = Array.isArray(listed) ? listed : listed?.decisions;
+  const listed: unknown = matrix.result?.decisions ?? matrix.result;
+  const rowsOf: unknown = Array.isArray(listed) ? listed : (listed as { decisions?: unknown } | null | undefined)?.decisions;
   if (!Array.isArray(rowsOf)) die(`matrix shape ${JSON.stringify(matrix.result).slice(0, 400)}`);
-  const seenGap = rowsOf.find((d) => d.id === "gap-memo");
-  const seenFull = rowsOf.find((d) => d.id === "full-memo");
+  const docket = rowsOf as { id: string, status?: string }[];
+  const seenGap = docket.find((d) => d.id === "gap-memo");
+  const seenFull = docket.find((d) => d.id === "full-memo");
   if (seenGap?.status !== "open" || seenFull?.status !== "open") die(`matrix statuses gap=${seenGap?.status} full=${seenFull?.status}`);
-  note("RoutesReal", "PASS", `governance/decisions run lists gap-memo and full-memo, both status open, phase ${matrix.result.phase}`);
+  note("RoutesReal", "PASS", `governance/decisions run lists gap-memo and full-memo, both status open, phase ${matrix.result?.phase}`);
 
   const decided = approve(dir, "full-memo", { by: "Avery Founder", via: "replay" });
   if (!decided.ok) die(`approve: ${decided.error}`);
@@ -266,7 +274,7 @@ try {
 
   console.log("\nreplay ok");
 } catch (error) {
-  console.error(error.message ?? error);
+  console.error((error as Error).message ?? error);
   process.exitCode = 1;
 } finally {
   rmSync(ws, { recursive: true, force: true });

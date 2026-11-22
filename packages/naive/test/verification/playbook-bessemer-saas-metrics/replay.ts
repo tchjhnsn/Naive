@@ -11,6 +11,27 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { call, routes } from "../../../src/router/router.mjs";
 import { propose } from "../../../src/engine/decisions.ts";
+import type { DecisionRecord, MoneySummary, Product, ValidationPricing } from "../../../src/records/types/records.d.ts";
+
+/** What a router action answers, with the result this replay expects of the route. */
+type Answer<T = unknown> = ({ ok: true; result: T; error?: string } | { ok: false; error?: string; result?: undefined })
+  & { not_found?: { note?: string }; [k: string]: unknown };
+/** One published Bessemer string: its value, where it was published and when it applies. */
+type Published = { value: string; source: string; condition: string; phases: string[]; arr: string[] | null; segment: string | null; stage: string | null };
+/** One phase's target in the metrics note. */
+type Target = { value?: unknown; metric?: string; source?: string; condition?: string };
+/** The metrics note the playbook writes, as the checks read it. Any field may be missing from a malformed note. */
+type MetricsNote = {
+  playbook?: string; phase?: string; product?: string | null; arr_band?: string; segment?: string | null; stage_note?: string | null;
+  actuals?: Record<string, unknown>; targets?: Record<string, Target | undefined>;
+};
+/** What the checks read beside the note. */
+type Ctx = {
+  product?: Product | null; pricing?: ValidationPricing | null; money?: MoneySummary | null; decision?: DecisionRecord | null;
+  sources?: Set<string>; telosExisted?: boolean; telosWrittenByPlaybook?: boolean; telosCriteria?: { statement: string; evidence?: string }[];
+};
+/** One failed rule. */
+type Finding = { rule: string; message: string };
 
 const repo = join(dirname(fileURLToPath(import.meta.url)), "../../../../..");
 const playbookPath = join(repo, "packages/naive/library/packages/finance/playbooks/bessemer-saas-metrics.md");
@@ -22,7 +43,7 @@ const BANDS = ["$1-10MM", "$10-25MM", "$25-50MM", "$50-100MM", "$100MM+"];
 const SCALING = "bessemer-scaling-100m";
 const S2023 = "bessemer-state-of-the-cloud-2023";
 
-const row = (value, source, condition, extra = {}) => ({
+const row = (value: string, source: string, condition: string, extra: Partial<Published> = {}): Published => ({
   value, source, condition,
   phases: extra.phases ?? LATER,
   arr: extra.arr ?? null,
@@ -30,7 +51,7 @@ const row = (value, source, condition, extra = {}) => ({
   stage: extra.stage ?? null,
 });
 
-const bandRows = (band, pairs, condition) => pairs.map(([value]) => row(value, SCALING, condition, { arr: [band] }));
+const bandRows = (band: string, pairs: string[][], condition: string) => pairs.map(([value]) => row(value, SCALING, condition, { arr: [band] }));
 
 export const PUBLISHED = [
   ...bandRows("$1-10MM", [["165% ARR growth"], ["125% net retention"], ["72% gross margin"], ["-167% FCF margin"]], "$1-10MM ARR median"),
@@ -81,12 +102,12 @@ export const PUBLISHED = [
   ].map((value) => row(value, SCALING, "public playbook", { phases: ["platform"], arr: ["$100MM+"], stage: "public playbook" })),
 ];
 
-const evidenceItem = (id) => ({
+const evidenceItem = (id: string) => ({
   id, kind: "desk-research", summary: "Fixture evidence so the pricing and fit records validate. Not a Bessemer figure.",
   source: { path: "validation/pricing.json" }, audience: "unknown", collected: "2026-10-29",
 });
 
-const telosBody = (id) => ({
+const telosBody = (id: string) => ({
   statement: "The fixture venture has an end a person already wrote.",
   end_state: "The fixture is still running.",
   measures: [{ id: "recurring-revenue", statement: "Annual recurring revenue", target: "unset until the founder sets it", kind: "revenue", primary: true }],
@@ -98,7 +119,7 @@ function blankTargets() {
   return Object.fromEntries(PHASES.map((p) => [p, { value: PHRASE }]));
 }
 
-function metricsNote(over = {}) {
+function metricsNote(over: Partial<MetricsNote> = {}): MetricsNote {
   return {
     playbook: "bessemer-saas-metrics",
     phase: over.phase ?? "beachhead",
@@ -115,23 +136,23 @@ function metricsNote(over = {}) {
 }
 
 // The metrics record the checks read: the person's answer once decided, the agent's note while open.
-export function metricsOf(decision) {
+export function metricsOf(decision: DecisionRecord | null | undefined): MetricsNote | null {
   try {
-    return JSON.parse(decision?.status === "decided" ? decision.answer : decision?.note);
+    return JSON.parse(String(decision?.status === "decided" ? decision.answer : decision?.note)) as MetricsNote | null;
   } catch {
     return null;
   }
 }
 
-export function grade(metrics, ctx) {
-  const note = metrics ?? {};
-  const findings = [];
-  const fail = (rule, message) => findings.push({ rule, message });
+export function grade(metrics: MetricsNote | null, ctx: Ctx) {
+  const note: MetricsNote = metrics ?? {};
+  const findings: Finding[] = [];
+  const fail = (rule: string, message: string) => findings.push({ rule, message });
   const product = ctx.product;
   const pricing = ctx.pricing;
   const models = new Set(product?.business_model ?? []);
   const fit = product && (models.has("subscription") || models.has("freemium")
-    || ["subscription", "freemium", "usage"].includes(pricing?.model));
+    || ["subscription", "freemium", "usage"].includes(pricing?.model ?? ""));
   if (!fit) fail("cloud-fit", product ? "product and pricing are not a recurring software model this playbook applies" : "no product card");
   const early = new Set(["discovery", "validation"]);
   for (const phase of PHASES) {
@@ -146,14 +167,14 @@ export function grade(metrics, ctx) {
     if (!hit) fail("targets-sourced", `${phase} target ${JSON.stringify(t.value)} is not a published Bessemer string for that source and condition`);
     else {
       if (!hit.phases.includes(phase)) fail("targets-sourced", `${phase} cannot carry ${hit.condition}`);
-      if (hit.arr && !hit.arr.includes(note.arr_band)) fail("targets-sourced", `${phase} needs arr_band ${hit.arr.join(" or ")}, note has ${note.arr_band}`);
+      if (hit.arr && !hit.arr.includes(note.arr_band ?? "")) fail("targets-sourced", `${phase} needs arr_band ${hit.arr.join(" or ")}, note has ${note.arr_band}`);
       if (hit.segment && note.segment !== hit.segment) fail("targets-sourced", `${phase} needs segment ${hit.segment}`);
       if (hit.stage && note.stage_note !== hit.stage) fail("targets-sourced", `${phase} needs stage_note ${hit.stage}`);
       if (!ctx.sources?.has(hit.source)) fail("targets-sourced", `raw/sources/${hit.source} is not filed`);
     }
   }
   const money = ctx.money;
-  const keys = ["runway_months", "cash", "monthly_inflow", "monthly_outflow", "monthly_net"];
+  const keys = ["runway_months", "cash", "monthly_inflow", "monthly_outflow", "monthly_net"] as const;
   for (const k of keys) {
     const got = note.actuals?.[k];
     if (!money) {
@@ -175,7 +196,8 @@ export function grade(metrics, ctx) {
     const numeric = PHASES.filter((p) => note.targets?.[p]?.value !== PHRASE && p === note.phase);
     const criteria = ctx.telosCriteria ?? [];
     for (const p of numeric) {
-      const t = note.targets[p];
+      const t = note.targets?.[p];
+      if (!t) throw new TypeError(`the note has no target for ${p}`);
       if (!criteria.some((c) => c.statement === t.value && c.evidence === t.source)) {
         fail("telos-when-decided", `accepted target ${t.value} is not an exit criterion citing ${t.source}`);
       }
@@ -186,19 +208,19 @@ export function grade(metrics, ctx) {
   return { passed: findings.length === 0, findings, byRule };
 }
 
-function assert(cond, message) {
+function assert(cond: unknown, message?: string): asserts cond {
   if (!cond) throw new Error(message);
 }
 
-async function read(workspace, venture, route) {
-  return call({ venture, route, action: "read", workspace, actor: "agent", via: "replay" });
+async function read<T = unknown>(workspace: string, venture: string, route: string) {
+  return call({ venture, route, action: "read", workspace, actor: "agent", via: "replay" }) as Promise<Answer<T | null>>;
 }
 
-async function write(workspace, venture, route, input, actor = "person") {
-  return call({ venture, route, action: "write", input, workspace, actor, via: "replay", provenance: { note: "bessemer playbook replay fixture" } });
+async function write(workspace: string, venture: string, route: string, input: unknown, actor = "person") {
+  return call({ venture, route, action: "write", input, workspace, actor, via: "replay", provenance: { note: "bessemer playbook replay fixture" } }) as Promise<Answer<{ written: string; draft: boolean }>>;
 }
 
-function initVenture(workspace, id, phase) {
+function initVenture(workspace: string, id: string, phase: string) {
   const dir = join(workspace, "ventures", id);
   const made = spawnSync("node", [join(repo, "packages/naive/src/engine/init-venture.ts"), dir, id, "--phase", phase], { encoding: "utf8" });
   if (made.status !== 0) throw new Error(made.stderr || made.stdout);
@@ -212,14 +234,14 @@ const SOURCES = [
   ["bessemer-cloud-100-benchmarks-2025", "https://www.bvp.com/atlas/the-cloud-100-benchmarks-report", "2026-10-29", "The Cloud 100 Benchmarks Report 2025"],
 ];
 
-async function fileSources(workspace, venture) {
+async function fileSources(workspace: string, venture: string) {
   for (const [id, origin, fetched, title] of SOURCES) {
     const w = await write(workspace, venture, `raw/sources/${id}`, { id, origin, title, fetched });
     assert(w.ok, `raw/sources/${id}: ${w.error}`);
   }
 }
 
-function moneyRecord() {
+function moneyRecord(): MoneySummary {
   return {
     source: "replay-fixture", synced_at: "2026-10-29T00:00:00Z", as_of: "2026-10-29T00:00:00Z",
     cash: { amount: 10000000, currency: "USD" },
@@ -230,7 +252,7 @@ function moneyRecord() {
   };
 }
 
-function actualsFrom(money) {
+function actualsFrom(money: MoneySummary) {
   return {
     runway_months: money.runway_months, cash: money.cash, monthly_inflow: money.monthly_inflow,
     monthly_outflow: money.monthly_outflow, monthly_net: money.monthly_net,
@@ -247,20 +269,20 @@ async function main() {
     "product/[id]", "validation/pricing", "purpose/money/summary", "validation/product-market-fit",
     "foundation/telos", "raw/sources/[id]", "decisions/[id]", "evidence/[id]",
   ];
-  for (const route of wanted) assert(table.some((r) => r.route === route), `router table has no ${route}`);
-  assert(!table.some((r) => r.route === "finance/metrics" || r.route === "venture"), "venture and finance/metrics are not generated table rows");
+  for (const route of wanted) assert(table.some((r: { route: string }) => r.route === route), `router table has no ${route}`);
+  assert(!table.some((r: { route: string }) => r.route === "finance/metrics" || r.route === "venture"), "venture and finance/metrics are not generated table rows");
 
   const workspace = mkdtempSync(join(tmpdir(), "bessemer-replay-"));
-  const results = [];
-  const record = (rule, pass, replay) => results.push({ rule, pass, replay });
+  const results: { rule: string; pass: boolean; replay: string }[] = [];
+  const record = (rule: string, pass: boolean, replay: string) => results.push({ rule, pass, replay });
 
   // Route probe: finance/metrics does not exist. venture does, through the package route.
-  const ghost = await call({ venture: "none", route: "finance/metrics", action: "read", workspace, via: "replay" });
+  const ghost = await (call({ venture: "none", route: "finance/metrics", action: "read", workspace, via: "replay" }) as Promise<Answer>);
   record("EveryStepUsesARealRoute", ghost.ok === false && /no route finance\/metrics/.test(ghost.error ?? ""), `call finance/metrics -> ${ghost.error}`);
 
   const passId = "saas-pass";
   initVenture(workspace, passId, "beachhead");
-  const ventureRead = await read(workspace, passId, "venture");
+  const ventureRead = await read<{ phase: string }>(workspace, passId, "venture");
   assert(ventureRead.ok && ventureRead.result?.phase === "beachhead", `venture read: ${JSON.stringify(ventureRead).slice(0, 400)}`);
   record("venture route answers phase", true, `venture read phase=${ventureRead.result.phase} via packages/naive/src/router/package-routes.mjs specialCall`);
 
@@ -276,14 +298,14 @@ async function main() {
   assert((await write(workspace, passId, "foundation/telos", telosBody(passId))).ok, "telos write failed");
   await fileSources(workspace, passId);
 
-  const reads = {};
+  const reads: Record<string, unknown> = {};
   for (const route of ["product/ledger", "validation/pricing", "purpose/money/summary", "validation/product-market-fit", "foundation/telos"]) {
     const r = await read(workspace, passId, route);
     assert(r.ok && r.result, `${route} did not return a record: ${r.error ?? r.not_found?.note}`);
     reads[route] = r.result;
   }
-  assert(reads["purpose/money/summary"].runway_months === 20, "money summary runway was not the fixture");
-  assert(!reads["purpose/money/summary"].arr, "money summary must not be treated as having ARR");
+  assert((reads["purpose/money/summary"] as MoneySummary).runway_months === 20, "money summary runway was not the fixture");
+  assert(!(reads["purpose/money/summary"] as Record<string, unknown>).arr, "money summary must not be treated as having ARR");
 
   const note = metricsNote({ phase: "beachhead", actuals: actualsFrom(money) });
   const proposed = propose(join(workspace, "ventures", passId), {
@@ -295,7 +317,7 @@ async function main() {
     note: JSON.stringify(note),
   }, { agentId: "replay", via: "replay" });
   assert(proposed.ok, `propose: ${proposed.error}`);
-  const decisionRead = await read(workspace, passId, "decisions/finance-saas-metrics");
+  const decisionRead = await read<DecisionRecord>(workspace, passId, "decisions/finance-saas-metrics");
   assert(decisionRead.ok && decisionRead.result?.status === "open", `decision read: ${JSON.stringify(decisionRead).slice(0, 300)}`);
 
   const refused = propose(join(workspace, "ventures", passId), {
@@ -306,7 +328,7 @@ async function main() {
 
   const sourceIds = new Set(SOURCES.map(([id]) => id));
   const ctx = {
-    product: reads["product/ledger"], pricing: reads["validation/pricing"], money: reads["purpose/money/summary"],
+    product: reads["product/ledger"] as Product, pricing: reads["validation/pricing"] as ValidationPricing, money: reads["purpose/money/summary"] as MoneySummary,
     sources: sourceIds, decision: decisionRead.result, telosExisted: true, telosWrittenByPlaybook: false,
   };
   const graded = grade(note, ctx);
@@ -324,7 +346,7 @@ async function main() {
   };
   const evidenceWrite = await write(workspace, passId, "evidence/bessemer-saas-metrics", evidence);
   assert(evidenceWrite.ok, `evidence write: ${evidenceWrite.error}`);
-  const evidenceRead = await read(workspace, passId, "evidence/bessemer-saas-metrics");
+  const evidenceRead = await read<{ passed: boolean }>(workspace, passId, "evidence/bessemer-saas-metrics");
   assert(evidenceRead.result?.passed === true, "evidence read was not passed");
   record("CheckMatches pass", true, "beachhead fixture with a subscription product, money summary, filed sources, and every phase target 'no published Bessemer target' wrote evidence passed true");
 
@@ -345,7 +367,7 @@ async function main() {
   assert(missingProduct.ok && missingProduct.result === null && missingProduct.not_found, "missing product should be not_found, not an error");
   const missingMoney = await read(workspace, failId, "purpose/money/summary");
   assert(missingMoney.result === null, "missing money summary should be not_found");
-  const failDecision = (await read(workspace, failId, "decisions/finance-saas-metrics")).result;
+  const failDecision = (await read<DecisionRecord>(workspace, failId, "decisions/finance-saas-metrics")).result;
   const failGrade = grade(failNote, { product: null, pricing: null, money: null, sources: sourceIds, decision: failDecision, telosExisted: false, telosWrittenByPlaybook: false });
   assert(!failGrade.passed && failGrade.byRule["cloud-fit"].length === 1, JSON.stringify(failGrade.findings));
   assert(failGrade.byRule["no-early-number"].length === 0, "the phrase on discovery is not an early number");
@@ -358,7 +380,7 @@ async function main() {
     passed: false,
   };
   assert((await write(workspace, failId, "evidence/bessemer-saas-metrics", failEvidence)).ok, "fail evidence write");
-  assert((await read(workspace, failId, "evidence/bessemer-saas-metrics")).result.passed === false, "fail evidence did not stay false");
+  assert((await read<{ passed: boolean }>(workspace, failId, "evidence/bessemer-saas-metrics")).result?.passed === false, "fail evidence did not stay false");
   record("CheckMatches fail", true, "discovery fixture with no product card: evidence passed false, cloud-fit failed, other phase targets stayed the unpublished phrase");
 
   // A cited median is allowed only when the band matches. An invented number is not. An early phase cannot cite.
@@ -406,9 +428,10 @@ async function main() {
   });
   const decide = spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.mjs"), "decide", "finance-saas-metrics", "--venture", passId, "--workspace", workspace, "--by", "Fixture Founder", "--confirm", "finance-saas-metrics", "--answer", JSON.stringify(withNumber)], { encoding: "utf8" });
   assert(decide.status === 0, `decide: ${decide.stderr || decide.stdout}`);
-  const decided = (await read(workspace, passId, "decisions/finance-saas-metrics")).result;
-  assert(decided.status === "decided" && decided.provenance.approved_by === "Fixture Founder", "decide did not record the person");
-  assert(decided.note === decisionRead.result.note, "the proposed note should not change");
+  const decided = (await read<DecisionRecord>(workspace, passId, "decisions/finance-saas-metrics")).result;
+  assert(decided, "the decided record was not read");
+  assert(decided.status === "decided" && decided.provenance?.approved_by === "Fixture Founder", "decide did not record the person");
+  assert(decided.note === decisionRead.result?.note, "the proposed note should not change");
   assert(JSON.stringify(metricsOf(decided)) === JSON.stringify(withNumber), "the checks should read the person's answer");
   const badAnswer = grade(metricsOf({ ...decided, answer: JSON.stringify(invented) }), { ...ctx, decision: decided });
   assert(badAnswer.byRule["targets-sourced"].length, "an invented number in the answer should fail");
@@ -430,10 +453,10 @@ async function main() {
     telosCriteria: draftedTelos.phases[0].exit_criteria,
   });
   assert(telosGrade.passed, `telos draft path: ${JSON.stringify(telosGrade.findings)}`);
-  record("telos draft after a person decides", true, `agent write of foundation/telos returned draft true; live file unchanged; approved_by ${decided.provenance.approved_by}`);
+  record("telos draft after a person decides", true, `agent write of foundation/telos returned draft true; live file unchanged; approved_by ${decided.provenance?.approved_by}`);
 
   // The main chart path, in order, on the pass venture. Each call is the route the model names.
-  const path = [];
+  const path: string[] = [];
   for (const route of ["venture", "product/ledger", "validation/pricing", "purpose/money/summary", "validation/product-market-fit", "foundation/telos", "raw/sources/bessemer-scaling-100m", "decisions/finance-saas-metrics", "evidence/bessemer-saas-metrics"]) {
     const r = await read(workspace, passId, route);
     assert(r.ok, `${route}: ${r.error}`);
@@ -441,13 +464,13 @@ async function main() {
   }
   record("main chart path", true, path.join("; "));
 
-  const rules = [
+  const rules: [string, boolean | { pass: boolean } | undefined][] = [
     ["EveryStepUsesARealRoute", results.find((r) => r.rule === "EveryStepUsesARealRoute")],
     ["NoUseBeforeProvided", results.filter((r) => r.rule.startsWith("NoUseBeforeProvided")).every((r) => r.pass)],
     ["CheckMatches", results.filter((r) => r.rule.startsWith("CheckMatches")).every((r) => r.pass)],
   ];
-  console.log(JSON.stringify({ workspace, results, rules: rules.map(([name, ok]) => ({ rule: name, pass: ok === true || ok?.pass === true })) }, null, 2));
-  if (results.some((r) => !r.pass) || rules.some(([, ok]) => !(ok === true || ok?.pass === true))) process.exit(1);
+  console.log(JSON.stringify({ workspace, results, rules: rules.map(([name, ok]) => ({ rule: name, pass: ok === true || (typeof ok === "object" && ok.pass === true) })) }, null, 2));
+  if (results.some((r) => !r.pass) || rules.some(([, ok]) => !(ok === true || (typeof ok === "object" && ok.pass === true)))) process.exit(1);
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {

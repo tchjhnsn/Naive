@@ -1,6 +1,9 @@
 export const title = "Money lint: a transfer decision and an account";
 
-const transfer = (v) => {
+/** The TLA+ state this view reads: one field per variable it names. */
+type Vars = { account: string; approver: string; phase: string };
+
+const transfer = (v: Vars) => {
   if (v.phase === "none") return "No transfer decision";
   if (v.phase === "bad") return "Transfer record unreadable";
   const named = v.approver === "named";
@@ -9,16 +12,16 @@ const transfer = (v) => {
   return named ? "Executed, approver named" : "Executed, no approver";
 };
 
-const account = (v) => ({
+const account = (v: Vars) => ({
   none: "No account",
   owned: "Account has an owner",
   unowned: "Account has no owner",
   bad: "Account record unreadable",
 }[v.account]);
 
-export const state = (v) => ({ Transfer: transfer(v), Account: account(v) });
+export const state = (v: Vars) => ({ Transfer: transfer(v), Account: account(v) });
 
-export const group = (v) => {
+export const group = (v: Vars) => {
   if (v.phase === "executed" && v.approver === "named") return "executed";
   if (v.phase === "approved" && v.approver === "named") return "approved";
   if (v.phase === "proposed" && v.approver === "named") return "proposed";
@@ -35,7 +38,7 @@ export const colors = {
 };
 
 // Mode toggles and the settled stutter do not change the transfer or the account.
-const LABELS = {
+const LABELS: Record<string, string | null> = {
   Propose: "a transfer is proposed",
   NameApprover: "someone is named as approver",
   Approve: "the transfer is approved",
@@ -56,7 +59,7 @@ const LABELS = {
 
 // Hide arrows that repeat a path the chart already shows. Every state stays reachable, and each
 // state keeps an arrow out. Mode toggles stay hidden: they do not change the transfer or the account.
-export const step = (action, from) => {
+export const step = (action: string, from: Vars) => {
   if (!(action in LABELS)) return action;
   if (action === "CorruptDecision" && from.phase !== "none") return null;
   if (action === "Withdraw" && from.phase !== "bad") return null;

@@ -12,25 +12,31 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { call, resolve } from "../../../src/router/router.mjs";
 import { approve } from "../../../src/engine/decisions.ts";
+import type { DecisionRecord, DecisionRights, Handoff, IcpProfile, Product, ProvenanceEntry } from "../../../src/records/types/records.d.ts";
+
+/** What a router action answers, with the result this replay expects of the route. */
+type Answer<T = unknown> = ({ ok: true; result: T; error?: string } | { ok: false; error?: string; result?: undefined }) & { not_found?: { note?: string }; [k: string]: unknown };
+/** What a record write answers. */
+type Written = { written: string; draft: boolean; note?: string };
 
 const repo = join(dirname(fileURLToPath(import.meta.url)), "../../../../..");
 const root = mkdtempSync(join(tmpdir(), "shapeup-replay-"));
 const venture = "shapeup-replay";
 const dir = join(root, venture);
-const rows = [];
-const note = (rule, ok, detail) => {
+const rows: { rule: string; ok: unknown; detail: unknown }[] = [];
+const note = (rule: string, ok: unknown, detail: unknown) => {
   rows.push({ rule, ok, detail });
   console.log(`${ok ? "PASS" : "FAIL"}  ${rule}: ${detail}`);
 };
 
-const cli = (args) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.mjs"), ...args, "--workspace", root], { encoding: "utf8" });
-const writeRoute = async (route, record, actor) => call({
+const cli = (args: string[]) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.mjs"), ...args, "--workspace", root], { encoding: "utf8" });
+const writeRoute = async (route: string, record: Record<string, unknown>, actor?: string) => call({
   venture, route, action: "write", input: record, actor, workspace: root, via: "replay",
   provenance: { note: "shape-up replay" },
-});
-const readRoute = (route) => call({ venture, route, action: "read", actor: "person", workspace: root, via: "replay" });
+}) as Promise<Answer<Written>>;
+const readRoute = <T = unknown>(route: string) => call({ venture, route, action: "read", actor: "person", workspace: root, via: "replay" }) as Promise<Answer<T | null>>;
 
-function brief(appetite) {
+function brief(appetite: string) {
   return `# Cycle
 
 ## Outcome
@@ -133,16 +139,16 @@ const icp = await writeRoute("foundation/icp/operators", {
 }, "person");
 note("ReadIcp-write", icp.ok === true, icp.ok ? `${icp.result.written} draft=${icp.result.draft}` : icp.error);
 
-const offer = await readRoute("product/offering");
-const who = await readRoute("foundation/icp");
+const offer = await readRoute<Product>("product/offering");
+const who = await readRoute<Record<string, IcpProfile>>("foundation/icp");
 note("ReadsWereProvided-present", offer.ok && offer.result?.id === "offering" && who.ok && who.result?.operators?.primary === true,
   `product=${offer.result?.id ?? offer.not_found?.note ?? offer.error}; icp=${who.result?.operators?.id ?? who.not_found?.note ?? who.error}`);
 
-const early = await readRoute("operations/handoff/cycle-one");
+const early = await readRoute<Handoff>("operations/handoff/cycle-one");
 note("ReadsWereProvided-early-pitch", early.ok === true && early.result === null && early.not_found != null,
   early.not_found?.note ?? early.error ?? "unexpected record");
 
-const rights = await readRoute("governance/decision-rights");
+const rights = await readRoute<DecisionRights>("governance/decision-rights");
 note("ReadRights", rights.ok === true, rights.result ? "record present" : (rights.not_found?.note ?? rights.error));
 
 mkdirSync(join(dir, "operations/handoffs"), { recursive: true });
@@ -153,7 +159,7 @@ writeFileSync(thinBrief, brief("Six weeks for one designer and one or two progra
 const shortBrief = join(dir, "operations/handoffs/cycle-one-short.md");
 writeFileSync(shortBrief, brief("One week, if it stays small."));
 
-const checkBrief = (file) => spawnSync("node", [join(repo, "packages/naive/test/verification/playbook-basecamp-shape-up/pitch-check.ts"), file], { encoding: "utf8" });
+const checkBrief = (file: string) => spawnSync("node", [join(repo, "packages/naive/test/verification/playbook-basecamp-shape-up/pitch-check.ts"), file], { encoding: "utf8" });
 const passBrief = checkBrief(fullBrief);
 const failBlank = checkBrief(thinBrief);
 const failShort = checkBrief(shortBrief);
@@ -170,18 +176,18 @@ const held = await writeRoute("operations/handoff/cycle-one", handoff({ title: "
 note("NoBuildBeforeBet", held.ok === true && held.result?.draft === true, held.ok ? `${held.result.written} draft=${held.result.draft} ${held.result.note ?? ""}` : held.error);
 
 const forged = await writeRoute("decisions/bet-cycle-one", { ...bet, status: "decided", provenance: { drafted_by: { kind: "agent", id: "replay" }, approved_by: "replay-agent" } }, "agent");
-const stillOpen = await readRoute("decisions/bet-cycle-one");
+const stillOpen = await readRoute<DecisionRecord>("decisions/bet-cycle-one");
 note("AgentCannotDecide", forged.ok === true && forged.result?.draft === true && stillOpen.result?.status === "open",
   forged.ok ? `${forged.result.written} draft=${forged.result.draft}; record status=${stillOpen.result?.status}` : forged.error);
 
 const approved = approve(dir, "bet-cycle-one", { by: "Founder Replay", answer: "bet", via: "replay" });
 note("YouBet", approved.ok === true && approved.result?.wording != null, approved.ok ? JSON.stringify(approved.result) : approved.error);
 
-const betCheck = async (cycleId, betId) => {
-  const cycle = (await readRoute(`operations/handoff/${cycleId}`)).result;
+const betCheck = async (cycleId: string, betId: string) => {
+  const cycle = (await readRoute<Handoff>(`operations/handoff/${cycleId}`)).result;
   if (cycle?.status === "draft") return true;
-  const decision = (await readRoute(`decisions/${betId}`)).result;
-  const log = (await readRoute("system/provenance")).result ?? [];
+  const decision = (await readRoute<DecisionRecord>(`decisions/${betId}`)).result;
+  const log = (await readRoute<ProvenanceEntry[]>("system/provenance")).result ?? [];
   const accepted = log.some((e) => e.entity === `decisions/${betId}.decision.json` && e.activity === "accept" && e.agent?.kind === "person");
   return decision?.status === "decided" && decision.answer === "bet" && decision.provenance?.approved_by != null && accepted;
 };
@@ -265,9 +271,9 @@ const earlyCool = await writeRoute("operations/handoff/cooldown-one", {
     { id: "explored", kind: "self-proof", check: "node -e \"process.exit(0)\"" },
   ],
 }, "person");
-const cycleNow = await readRoute("operations/handoff/cycle-one");
-const coolNow = await readRoute("operations/handoff/cooldown-one");
-const earlyBad = coolNow.result && !["done", "escalated"].includes(cycleNow.result?.status);
+const cycleNow = await readRoute<Handoff>("operations/handoff/cycle-one");
+const coolNow = await readRoute<Handoff>("operations/handoff/cooldown-one");
+const earlyBad = coolNow.result && !["done", "escalated"].includes(cycleNow.result?.status ?? "");
 note("CooldownAfterCycle-early-fails", earlyCool.ok === true && earlyBad === true,
   `cycle status=${cycleNow.result?.status}; cooldown written=${coolNow.result?.id}`);
 
@@ -276,16 +282,16 @@ await writeRoute("operations/handoff/cycle-one", handoff({
   claimed_by: "replay",
   escalations: [{ class: "attempts", question: "The six-week appetite is spent. Shape a new pitch before any more time is bet.", to: "founder" }],
 }), "person");
-const cycleLate = await readRoute("operations/handoff/cycle-one");
-const coolLate = await readRoute("operations/handoff/cooldown-one");
+const cycleLate = await readRoute<Handoff>("operations/handoff/cycle-one");
+const coolLate = await readRoute<Handoff>("operations/handoff/cooldown-one");
 note("CooldownAfterCycle", cycleLate.result?.status === "escalated" && coolLate.result?.id === "cooldown-one",
   `cycle=${cycleLate.result?.status}; cooldown=${coolLate.result?.id}`);
 
-const prov = await readRoute("system/provenance");
+const prov = await readRoute<ProvenanceEntry[]>("system/provenance");
 const text = JSON.stringify(prov.result ?? "");
 note("YouBet-provenance", prov.ok === true && /bet-cycle-one/.test(text), prov.ok ? "provenance log readable and mentions the bet" : (prov.error ?? "empty"));
 
-const routeCheck = await call({ venture, route: "operations/handoff/cycle-one", action: "check", actor: "person", workspace: root, via: "replay" });
+const routeCheck = await (call({ venture, route: "operations/handoff/cycle-one", action: "check", actor: "person", workspace: root, via: "replay" }) as Promise<Answer<{ check: string; output: string }[]>>);
 const readyLine = (routeCheck.result ?? []).find((r) => String(r.check).includes("check-ready"));
 note("RouteCheck-needs-id", routeCheck.ok === false && readyLine != null && /usage:/.test(readyLine.output ?? ""),
   readyLine ? readyLine.output.split("\n")[0] : (routeCheck.error ?? "no check-ready line"));

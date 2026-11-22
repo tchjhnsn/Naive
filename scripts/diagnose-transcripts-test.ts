@@ -86,15 +86,17 @@ assert.equal(again.messages, 0);
 assert.ok(existsSync(join(root, "raw/sources/diagnosis-2026-10-30-2")));
 
 // the model pass runs only with the flag, on redacted text
+// The stand-in model module leaves the messages it saw on globalThis.
+const shared = globalThis as typeof globalThis & { __seen?: { text: string }[] };
 const mod = join(root, "..", `${root.split("/").pop()}-model.mjs`);
 writeFileSync(mod, `export default async (ms) => { globalThis.__seen = ms; return [{ kind: "decision", quote: "decide on " + ${JSON.stringify(FAKE)} }]; };`);
 await assert.rejects(diagnose({ root, dir, all: true, since: "2026-10-01T00:00:00Z", env: { NAIVE_DIAGNOSE_MODEL: "1" } }), /MODULE/);
 const m = await diagnose({ root, dir, all: true, since: "2026-10-01T00:00:00Z", env: { NAIVE_DIAGNOSE_MODEL: "1", NAIVE_DIAGNOSE_MODEL_MODULE: mod }, tz: "UTC" });
-assert.ok(globalThis.__seen.every((x) => !x.text.includes(FAKE)), "the model sees redacted text only");
+assert.ok(shared.__seen?.every((x) => !x.text.includes(FAKE)), "the model sees redacted text only");
 assert.ok(m.candidates.some((c) => c.by === "model" && !c.quote.includes(FAKE)));
-delete globalThis.__seen;
+delete shared.__seen;
 const off = await diagnose({ root, dir, all: true, since: "2026-10-01T00:00:00Z", env: { NAIVE_DIAGNOSE_MODEL_MODULE: mod } });
-assert.ok(!off.candidates.some((c) => c.by === "model") && globalThis.__seen === undefined, "off by default");
+assert.ok(!off.candidates.some((c) => c.by === "model") && shared.__seen === undefined, "off by default");
 
 // v2: typed catches, matched against records, with conversation provenance and a threshold
 const v2 = mkdtempSync(join(tmpdir(), "naive-diag2-"));
@@ -103,9 +105,9 @@ mkdirSync(join(v2, "foundation/goals"), { recursive: true });
 writeFileSync(join(v2, "foundation/goals/revenue.json"), JSON.stringify({ id: "revenue", statement: "Reach ten paying studios this year", kind: "outcome" }));
 writeFileSync(join(v2, "foundation/constraints.json"), JSON.stringify({ must_not: [{ id: "no-ads", statement: "Never sell advertising against founder data" }] }));
 const tdir = mkdtempSync(join(tmpdir(), "naive-diag2-t-"));
-const line = (o) => JSON.stringify(o);
-const H = (ts, text, cwd = v2) => line({ type: "user", timestamp: ts, cwd, message: { role: "user", content: text } });
-const A = (ts, text) => line({ type: "assistant", timestamp: ts, message: { role: "assistant", content: [{ type: "text", text }] } });
+const line = (o: unknown) => JSON.stringify(o);
+const H = (ts: string, text: string, cwd = v2) => line({ type: "user", timestamp: ts, cwd, message: { role: "user", content: text } });
+const A = (ts: string, text: string) => line({ type: "assistant", timestamp: ts, message: { role: "assistant", content: [{ type: "text", text }] } });
 writeFileSync(join(tdir, "s1.jsonl"), [
   H("2026-10-29T03:00:00Z", "Our goal is to reach ten paying studios this year. We must never sell advertising against founder data."),
   A("2026-10-29T03:00:30Z", "Should we use Postgres or SQLite? Option A or option B."),
@@ -135,8 +137,8 @@ assert.ok(stale.due && stale.stale_session === "s1.jsonl", "a new session older 
 assert.ok(!existsSync(join(v2, ".naive")) && !existsSync(join(v2, "raw")), "the check writes nothing");
 
 const r2 = await diagnose({ root: v2, dir: tdir, now: new Date("2026-10-31T12:00:00Z"), env: {} });
-const by = (k) => r2.candidates.filter((c) => c.kind === k);
-const has = (k, re) => by(k).find((c) => re.test(c.quote));
+const by = (k: string) => r2.candidates.filter((c) => c.kind === k);
+const has = (k: string, re: RegExp) => by(k).find((c) => re.test(c.quote));
 assert.equal(has("goal", /ten paying studios/)?.status, "recorded", "a goal with a record is recorded");
 assert.equal(has("constraint", /never sell advertising/)?.status, "recorded", "a constraint with a record is recorded");
 assert.ok(has("decision", /^Yes, A/), "a yes in reply to options is a decision");
@@ -149,15 +151,15 @@ assert.ok(has("promise", /We promise/), "a promise");
 assert.ok(has("open-question", /churn/), "an unanswered question is open");
 assert.ok(!has("open-question", /price the studio plan for teams/), "an answered question is not open");
 const frame = has("frame", /price the studio plan/);
-assert.ok(frame && frame.asked === 2 && frame.sources.length === 2, "a question asked again is a frame");
+assert.ok(frame && frame.asked === 2 && frame.sources?.length === 2, "a question asked again is a frame");
 // provenance: every heuristic catch cites file, timestamp and the sha256 of the redacted message
-for (const c of r2.candidates) assert.ok(c.source.file && c.source.timestamp && /^[0-9a-f]{64}$/.test(c.source.sha256), c.quote);
+for (const c of r2.candidates) assert.ok(c.source?.file && c.source.timestamp && /^[0-9a-f]{64}$/.test(c.source.sha256), c.quote);
 const g = has("goal", /ten paying studios/);
 const convDir = join(v2, "raw/sources/conversations-2026-10-28");
 assert.deepEqual(r2.conversations, ["conversations-2026-10-28", "conversations-2026-10-30"], "days in the venture's zone (03:00Z is the 28th in Chicago)");
 const kept = readFileSync(join(convDir, "messages.jsonl"), "utf8").trim().split("\n").map((l) => JSON.parse(l));
-const cited = kept.find((m) => m.sha256 === g.source.sha256);
-assert.ok(cited && sha256(cited.text) === cited.sha256 && cited.timestamp === g.source.timestamp, "a catch's citation resolves to the kept message");
+const cited = kept.find((m) => m.sha256 === g?.source?.sha256);
+assert.ok(cited && sha256(cited.text) === cited.sha256 && cited.timestamp === g?.source?.timestamp, "a catch's citation resolves to the kept message");
 assert.deepEqual(Object.keys(JSON.parse(readFileSync(join(convDir, "source.json"), "utf8"))).sort(), ["fetched", "id", "origin", "title"]);
 assert.match(readFileSync(join(convDir, "text.md"), "utf8"), /visibility: internal/);
 const catches = readFileSync(join(r2.out, "catches.jsonl"), "utf8").trim().split("\n").map((l) => JSON.parse(l));
@@ -189,7 +191,7 @@ assert.equal(recited.source.sha256, fixed.sha256, "the catch cites the new hash"
 assert.ok(readFileSync(join(convDir, "text.md"), "utf8").includes(fixed.sha256) && !readFileSync(join(convDir, "text.md"), "utf8").includes(leakedSha), "text.md cites the new hash");
 assert.equal(readFileSync(join(convDir, "messages.jsonl"), "utf8").split(snapshot.trim())[0], "", "messages that needed nothing more are untouched");
 // short decisions in reply to options only: a bare yes with no options before it is not one
-assert.equal(heuristicCandidates([{ text: "Yes, A.", file: "x", timestamp: "t", sha256: "0", after_options: false, answered: true }]).length, 0);
+assert.equal(heuristicCandidates([{ text: "Yes, A.", file: "x", timestamp: "t", sha256: "0", cwd: null, after_options: false, answered: true }]).length, 0);
 
 // Fresh ventures for the checks below: one structured venture, with a sibling whose session must never be read.
 const fresh = () => {
@@ -200,7 +202,7 @@ const fresh = () => {
   writeFileSync(join(other, "venture.json"), JSON.stringify({ id: "other" }));
   return { home, v, other, t, dir: join(home, "transcripts") };
 };
-const says = (ts, text, cwd) => JSON.stringify({ type: "user", timestamp: ts, cwd, message: { role: "user", content: text } });
+const says = (ts: string, text: string, cwd: string) => JSON.stringify({ type: "user", timestamp: ts, cwd, message: { role: "user", content: text } });
 const uuid = "e087c27d-08ac-4948-ad1a-b23d923db95e";
 
 // the venture it runs in, and every project only with all

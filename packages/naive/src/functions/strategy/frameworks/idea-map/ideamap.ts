@@ -20,24 +20,48 @@ import { existsSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { answersFor, configFor, questionsFor, threshold } from "../../../../engine/naive-config.ts";
+import type { DepartmentCatalog, Venture } from "../../../../records/types/records.d.ts";
+
+/** Naive's tagging conventions (conventions.json): the departments, records and pillars an idea can be tagged with. */
+export type Conventions = {
+  version: string; note: string; threshold: number; exists: string;
+  pillars: Record<string, string[]>;
+  departments: Record<string, string>;
+  records: Record<string, { title: string; route: string; about: string; decisions?: string[] }>;
+  max: { departments: number; records: number };
+  guidelines: Record<string, unknown>;
+};
+/** One idea as split from the dump. */
+export type DumpIdea = { id: string; line: number; section?: string; text: string };
+/** One idea read back from map.mdx: its text and the props it was written with. A stated idea record may add typed relations and a scope. */
+export type MapIdea = {
+  id: string; text: string; line?: number; section?: string; pillar?: string | null; departments?: string[]; records?: string[];
+  exists?: boolean; tentative?: boolean; relations?: unknown; scope?: { scope: string; via: string };
+};
+/** Jev's answers, by question id. */
+export type JevAnswers = Record<string, { noul?: number | boolean; score?: number }>;
+/** One idea's tags as Jev's answers give them. */
+export type Tag = { departments: string[]; records: string[]; exists: boolean; scores: Record<string, number>; tentative?: boolean };
+/** One idea's tags limited to the conventions, with its pillar. */
+type CleanTag = { departments: string[]; records: string[]; exists: boolean; pillar: string | null; tentative?: true };
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repo = join(here, "../../../../../../..");
-const load = (p) => JSON.parse(readFileSync(p, "utf8"));
-export const CONVENTIONS = load(join(here, "conventions.json"));
-const DEPARTMENTS = load(join(repo, "packages/naive/src/functions/departments.json")).departments;
+const load = (p: string): unknown => JSON.parse(readFileSync(p, "utf8"));
+export const CONVENTIONS = load(join(here, "conventions.json")) as Conventions;
+const DEPARTMENTS = (load(join(repo, "packages/naive/src/functions/departments.json")) as DepartmentCatalog).departments;
 export const DUMP = "purpose/ideas/dump.md", MAP = "purpose/ideas/map.mdx";
 const pillarOf = Object.fromEntries(Object.entries(CONVENTIONS.pillars).flatMap(([p, ds]) => ds.map((d) => [d, p])));
 
 /** The ideas in a raw dump:  each bullet or numbered line is one idea; any other line is its
  *  own idea too, unless it continues a hard-wrapped line, and a long one splits into sentences. Headings name the section that follows. */
-export function split(text) {
-  const ideas = [];
-  let section = null, para = null;
-  const push = (t, line) => {
+export function split(text: string): DumpIdea[] {
+  const ideas: DumpIdea[] = [];
+  let section: string | null = null, para: { text: string, line: number, last: string } | null = null;
+  const push = (t: string, line: number) => {
     const clean = t.replace(/\s+/g, " ").trim();
     if (!clean) return;
-    const parts = clean.length > 200 ? clean.match(/[^.!?]+(?:[.!?]+["')\]]*|$)\s*/g).reduce((acc, s) => {
+    const parts = clean.length > 200 ? (clean.match(/[^.!?]+(?:[.!?]+["')\]]*|$)\s*/g) as RegExpMatchArray).reduce((acc: string[], s) => {
       if (acc.length && (acc.at(-1) + s).length < 160) acc[acc.length - 1] += s; else acc.push(s);
       return acc;
     }, []) : [clean];
@@ -62,9 +86,9 @@ export function split(text) {
 
 /** One typed request for Jev: for each idea, a yes-no-unknown judgment per department, per record,
  *  and whether it already exists. Jev answers each with a probability. */
-export function request(ideas, venture = {}) {
-  const questions = {};
-  const ask = (key, id, about) => { questions[`${key}:${id}`] = { type: "noul", instructions: `Is the idea in \`ideas.${id}\` mainly about ${about}?`, criteria: { true: "Yes: this is one of the one or two things the idea is mainly about", false: "No: it is about this only in passing, or not at all" } }; };
+export function request(ideas: DumpIdea[], venture: Partial<Venture> = {}) {
+  const questions: Record<string, { type: "noul", instructions: string, criteria: { true: string, false: string } }> = {};
+  const ask = (key: string, id: string, about: string) => { questions[`${key}:${id}`] = { type: "noul", instructions: `Is the idea in \`ideas.${id}\` mainly about ${about}?`, criteria: { true: "Yes: this is one of the one or two things the idea is mainly about", false: "No: it is about this only in passing, or not at all" } }; };
   for (const i of ideas) {
     for (const [d, about] of Object.entries(CONVENTIONS.departments)) ask(`dept.${d}`, i.id, about);
     for (const [r, { about }] of Object.entries(CONVENTIONS.records)) ask(`rec.${r}`, i.id, about);
@@ -74,8 +98,8 @@ export function request(ideas, venture = {}) {
 }
 
 /** Jev's answers as tags: every judgment at or above the threshold, with the weakest one kept as confidence. */
-export function fromAnswers(answers, threshold = CONVENTIONS.threshold) {
-  const tags = {};
+export function fromAnswers(answers: JevAnswers, threshold: number = CONVENTIONS.threshold): Record<string, Tag> {
+  const tags: Record<string, Tag> = {};
   for (const [key, a] of Object.entries(answers)) {
     const [q, id] = key.split(":");
     const p = typeof a.noul === "number" ? a.noul : a.noul === true ? 1 : 0;
@@ -87,9 +111,9 @@ export function fromAnswers(answers, threshold = CONVENTIONS.threshold) {
     else if (q === "exists") t.exists = true;
   }
   for (const t of Object.values(tags)) {
-    const strongest = (prefix) => Object.entries(t.scores).filter(([k]) => k.startsWith(prefix)).sort((a, b) => b[1] - a[1]);
+    const strongest = (prefix: string) => Object.entries(t.scores).filter(([k]) => k.startsWith(prefix)).sort((a, b) => b[1] - a[1]);
     // An idea always sits somewhere on the map: below the threshold it takes its likeliest department.
-    if (!t.departments.length) { const [k] = strongest("dept.")[0] ?? []; if (k) t.departments.push(k.slice(5)), t.tentative = true; }
+    if (!t.departments.length) { const [k] = strongest("dept.")[0] ?? []; if (k) { t.departments.push(k.slice(5)); t.tentative = true; } }
     t.departments = t.departments.sort((a, b) => t.scores[`dept.${b}`] - t.scores[`dept.${a}`]).slice(0, CONVENTIONS.max.departments);
     t.records = t.records.sort((a, b) => t.scores[`rec.${b}`] - t.scores[`rec.${a}`]).slice(0, CONVENTIONS.max.records);
   }
@@ -97,8 +121,8 @@ export function fromAnswers(answers, threshold = CONVENTIONS.threshold) {
 }
 
 /** Tags limited to the conventions, with each idea's pillar from its first department. */
-export function clean(tags) {
-  const out = {};
+export function clean(tags: Record<string, Partial<Tag>> | null | undefined): Record<string, CleanTag> {
+  const out: Record<string, CleanTag> = {};
   for (const [id, t] of Object.entries(tags ?? {})) {
     const departments = (t.departments ?? []).filter((d) => d in CONVENTIONS.departments);
     const records = (t.records ?? []).filter((r) => r in CONVENTIONS.records);
@@ -107,17 +131,17 @@ export function clean(tags) {
   return out;
 }
 
-const attr = (v) => typeof v === "string" ? JSON.stringify(v) : `{${JSON.stringify(v)}}`;
-const esc = (s) => s.replace(/[{}<>]/g, (c) => ({ "{": "&#123;", "}": "&#125;", "<": "&lt;", ">": "&gt;" }[c]));
-const unesc = (s) => s.replace(/&#123;|&#125;|&lt;|&gt;/g, (c) => ({ "&#123;": "{", "&#125;": "}", "&lt;": "<", "&gt;": ">" }[c]));
+const attr = (v: unknown) => typeof v === "string" ? JSON.stringify(v) : `{${JSON.stringify(v)}}`;
+const esc = (s: string) => s.replace(/[{}<>]/g, (c) => ({ "{": "&#123;", "}": "&#125;", "<": "&lt;", ">": "&gt;" } as Record<string, string>)[c]);
+const unesc = (s: string) => s.replace(/&#123;|&#125;|&lt;|&gt;/g, (c) => ({ "&#123;": "{", "&#125;": "}", "&lt;": "<", "&gt;": ">" } as Record<string, string>)[c]);
 
 /** map.mdx: frontmatter, then one <Idea> per idea, text verbatim, tags as props. */
-export function render(ideas, tags, { venture, tagger, created = new Date().toISOString().replace(/\.\d+Z$/, "Z") }) {
+export function render(ideas: DumpIdea[], tags: Record<string, Partial<Tag>> | null | undefined, { venture, tagger, created = new Date().toISOString().replace(/\.\d+Z$/, "Z") }: { venture: string, tagger: string, created?: string }) {
   const t = clean(tags);
   const head = ["---", "type: idea-map", `venture: ${venture}`, `created: ${created}`, `source: ${DUMP}`, `tagged_by: ${tagger}`, `conventions: packages/naive/src/functions/strategy/frameworks/idea-map/conventions.json@${CONVENTIONS.version}`, "---", "",
     `{/* Generated by Naive from ${DUMP}. Each idea is the founder's text, unchanged; the props are tags from Naive's conventions. */}`, ""];
   const body = ideas.map((i) => {
-    const x = t[i.id] ?? { departments: [], records: [], exists: false, pillar: null };
+    const x: CleanTag = t[i.id] ?? { departments: [], records: [], exists: false, pillar: null };
     const props = { id: i.id, line: i.line, ...(i.section ? { section: i.section } : {}), pillar: x.pillar ?? "unmapped", departments: x.departments, records: x.records, exists: x.exists, ...(x.tentative ? { tentative: true } : {}) };
     return `<Idea ${Object.entries(props).map(([k, v]) => `${k}=${attr(v)}`).join(" ")}>\n${esc(i.text)}\n</Idea>\n`;
   });
@@ -125,29 +149,29 @@ export function render(ideas, tags, { venture, tagger, created = new Date().toIS
 }
 
 /** The ideas and their tags back out of map.mdx. */
-export function parse(mdx) {
+export function parse(mdx: string): { meta: Record<string, string>, ideas: MapIdea[] } {
   const meta = Object.fromEntries((mdx.match(/^---\n([\s\S]*?)\n---/)?.[1] ?? "").split("\n").map((l) => l.split(/:\s(.*)/s).slice(0, 2)).filter((x) => x.length === 2));
   const ideas = [...mdx.matchAll(/<Idea ([^>]*)>\n([\s\S]*?)\n<\/Idea>/g)].map(([, props, text]) => {
-    const o = { text: unesc(text) };
+    const o: Record<string, unknown> = { text: unesc(text) };
     for (const [, k, s, j] of props.matchAll(/(\w+)=(?:("(?:[^"\\]|\\.)*")|\{([^}]*)\})/g)) o[k] = JSON.parse(s ?? j);
-    return o;
+    return o as MapIdea;
   });
   return { meta, ideas };
 }
 
 /** Where the ideas cluster, what the phase needs that the dump never mentions, and what it says about products. */
-export function summary(map, phase = "discovery") {
+export function summary(map: { ideas: MapIdea[] }, phase = "discovery") {
   const { ideas } = map;
-  const count = (f) => Object.fromEntries(f.map((k) => [k, 0]));
+  const count = (f: string[]): Record<string, number> => Object.fromEntries(f.map((k) => [k, 0]));
   const byPillar = count(Object.keys(CONVENTIONS.pillars)), byDept = count(Object.keys(CONVENTIONS.departments)), byRecord = count(Object.keys(CONVENTIONS.records));
   for (const i of ideas) {
-    if (i.pillar in byPillar) byPillar[i.pillar]++;
+    if (i.pillar != null && i.pillar in byPillar) byPillar[i.pillar]++;
     for (const d of i.departments ?? []) byDept[d]++;
     for (const r of i.records ?? []) byRecord[r]++;
   }
   const n = ideas.length || 1;
   const strengths = Object.entries(byDept).filter(([, c]) => c).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([d, c]) => ({ department: d, ideas: c, share: Math.round((c / n) * 100) / 100 }));
-  const prior = (d) => { const x = DEPARTMENTS.find((y) => y.id === d); return x?.base?.[phase] ?? 0; };
+  const prior = (d: string) => { const x = DEPARTMENTS.find((y) => y.id === d); return x?.base?.[phase] ?? 0; };
   const gaps = Object.entries(byDept).filter(([d, c]) => !c && prior(d) >= 0.4).map(([d]) => ({ department: d, need_now: prior(d), why: DEPARTMENTS.find((y) => y.id === d)?.why ?? null }));
   const founderRecords = ["validation-problem", "icp", "product", "venture-core"];
   const unasked = founderRecords.filter((r) => !byRecord[r]).map((r) => ({ record: r, about: CONVENTIONS.records[r].about }));
@@ -157,20 +181,20 @@ export function summary(map, phase = "discovery") {
     product: { ideas: products.map((i) => i.id), exists: existing.map((i) => ({ id: i.id, text: i.text })), reading: existing.length ? "the dump says something already exists; confirm it in product-exists" : products.length ? "product ideas, none described as existing yet" : "no product ideas in the dump" } };
 }
 
-const ventureOf = (dir) => load(join(dir, "venture.json"));
+const ventureOf = (dir: string) => load(join(dir, "venture.json")) as Venture;
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const [a, b, c] = process.argv.slice(2);
-  const opt = (n) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 ? process.argv[i + 1] : undefined; };
-  const json = (x) => console.log(JSON.stringify(x, null, 2));
+  const opt = (n: string) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 ? process.argv[i + 1] : undefined; };
+  const json = (x: unknown) => console.log(JSON.stringify(x, null, 2));
   if (a === "split") json(split(readFileSync(b, "utf8")));
   // Gate group hook (P-2): the venture's naive.config.json says which System 1 questions run and the tag threshold.
   else if (a === "request") json(questionsFor(request(split(readFileSync(join(b, DUMP), "utf8")), ventureOf(b)), configFor(b), "idea-map"));
-  else if (a === "answers") { const cfg = configFor(b); json(fromAnswers(answersFor(load(c).answers ?? load(c), cfg, "idea-map"), threshold(cfg, "idea-map", CONVENTIONS.threshold))); }
+  else if (a === "answers") { const cfg = configFor(b); json(fromAnswers(answersFor((load(c) as { answers?: JevAnswers }).answers ?? load(c), cfg, "idea-map"), threshold(cfg, "idea-map", CONVENTIONS.threshold))); }
   else if (a === "write") {
     const ideas = split(readFileSync(join(b, DUMP), "utf8"));
     mkdirSync(join(b, dirname(MAP)), { recursive: true });
-    writeFileSync(join(b, MAP), render(ideas, load(c), { venture: ventureOf(b).id, tagger: opt("tagger") ?? "unknown" }));
+    writeFileSync(join(b, MAP), render(ideas, load(c) as Record<string, Partial<Tag>>, { venture: ventureOf(b).id, tagger: opt("tagger") ?? "unknown" }));
     console.log(`wrote ${MAP}: ${ideas.length} ideas`);
   } else if (a && existsSync(join(a, "venture.json"))) {
     if (!existsSync(join(a, MAP))) { console.error(`${MAP} does not exist yet: the founder submits an idea dump first (node packages/naive/src/interfaces/harness/run.mjs discovery --dump <file>)`); process.exit(1); }

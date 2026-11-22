@@ -7,8 +7,8 @@ import { homedir } from "node:os";
 
 const HERE = dirname(new URL(import.meta.url).pathname);
 const vault = (process.argv[process.argv.indexOf("--vault") + 1] && process.argv.includes("--vault")) ? process.argv[process.argv.indexOf("--vault") + 1].replace(/^~/, homedir()) : join(homedir(), "workspace", "vault");
-const entities = [];
-function find(d, depth) {
+const entities: string[] = [];
+function find(d: string, depth: number) {
   if (depth > 5) return;
   for (const n of readdirSync(d)) {
     if (n.startsWith(".") || n.startsWith("_") || n === "node_modules") continue;
@@ -22,13 +22,15 @@ function find(d, depth) {
 }
 for (const root of ["companies", "projects"]) find(join(vault, root), 0);
 
-const rows = [];
+/** The quick report check.ts writes to latest-quick.json, as far as this table reads it. */
+type QuickReport = { entity: { entityClass?: string, designProfile?: string }, summary: Record<string, number>, results: { id: string, status: string }[] };
+const rows: ({ e: string, r: QuickReport, err?: undefined } | { e: string, r?: undefined, err: string })[] = [];
 for (const e of entities) {
   try {
     const out = execFileSync("node", [join(HERE, "check.ts"), "--entity", e, "--quick"], { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
-    const r = JSON.parse(readFileSync(join(e, "_meta", "design-coverage", "latest-quick.json"), "utf8"));
+    const r = JSON.parse(readFileSync(join(e, "_meta", "design-coverage", "latest-quick.json"), "utf8")) as QuickReport;
     rows.push({ e: relative(vault, e), r });
-  } catch (err) { rows.push({ e: relative(vault, e), err: String(err.message).slice(0, 120) }); }
+  } catch (err) { rows.push({ e: relative(vault, e), err: String((err as Error).message).slice(0, 120) }); }
 }
 const declared = rows.filter((x) => x.r?.entity?.designProfile === "declared").length;
 const md = [
@@ -37,7 +39,7 @@ const md = [
   `# Design coverage across the vault (${new Date().toISOString().slice(0, 10)})`, "",
   `Quick mode: no model calls. **✗ null** means no candidate document was found for a required design document; **?** means a candidate exists and a deep check is needed to judge it. ${declared} of ${rows.length} entities declare a \`design-profile\` (SAD v3.0.13); undeclared entities are checked only against documents required for every scope.`, "",
   "| Entity | Class | Profile | ✗ null | ? candidate | Missing (first 6) |", "|---|---|---|---|---|---|",
-  ...rows.sort((a, b) => (b.r?.summary.null ?? 0) - (a.r?.summary.null ?? 0)).map(({ e, r, err }) => err ? `| ${e} | — | error | — | — | ${err} |`
+  ...rows.sort((a, b) => (b.r?.summary.null ?? 0) - (a.r?.summary.null ?? 0)).map(({ e, r, err }) => r === undefined ? `| ${e} | — | error | — | — | ${err} |`
     : `| [[${e.split("/").pop()}/entity-profile\\|${e}]] | ${r.entity.entityClass ?? "—"} | ${r.entity.designProfile === "declared" ? "declared" : "**not declared**"} | ${r.summary.null} | ${r.summary.candidate} | ${r.results.filter((x) => x.status === "null").slice(0, 6).map((x) => x.id).join(", ")} |`),
 ];
 mkdirSync(join(vault, "_meta", "design-coverage"), { recursive: true });

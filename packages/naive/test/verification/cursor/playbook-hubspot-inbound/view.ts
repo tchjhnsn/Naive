@@ -1,8 +1,11 @@
 export const title = "Inbound content plan, from the sitemap";
 
-const has = (v, route) => Array.isArray(v.available) && v.available.includes(route);
+/** The TLA+ state this view reads: one field per variable it names. */
+type Vars = { available: readonly string[]; step: string };
 
-const labels = {
+const has = (v: Vars, route: string) => Array.isArray(v.available) && v.available.includes(route);
+
+const labels: Record<string, string | null> = {
   sitemap: "Sitemap read",
   people: "ICP read",
   problem: "Problem read",
@@ -17,13 +20,13 @@ const labels = {
   failed: "A check failed",
 };
 
-export const state = (v) => {
+export const state = (v: Vars) => {
   if (v.step === "start") return has(v, "marketing/sitemap") ? "Sitemap not read" : "No sitemap on the venture";
   if (v.step === "stopped") return has(v, "marketing/sitemap") ? "Stopped: no ICP" : "Stopped: no sitemap";
   return labels[v.step] ?? v.step;
 };
 
-export const group = (v) => {
+export const group = (v: Vars) => {
   if (v.step === "stopped" || (v.step === "start" && !has(v, "marketing/sitemap"))) return "stop";
   if (v.step === "failed") return "fail";
   if (v.step === "passed") return "pass";
@@ -41,7 +44,7 @@ export const colors = {
   stop: "pink",
 };
 
-const byMove = {
+const byMove: Record<string, string | null> = {
   "start->sitemap": "you read the planned site",
   "sitemap->people": "you read who the venture serves",
   "people->problem": "you read the problem",
@@ -58,7 +61,7 @@ const byMove = {
   "sitemap->stopped": "you stop [the venture has no ICP]",
 };
 
-export const step = (action, from, to) => {
+export const step = (action: string, from: Vars, to: Vars) => {
   if (action === "Done") return null;
   return byMove[`${from.step}->${to.step}`] ?? action;
 };

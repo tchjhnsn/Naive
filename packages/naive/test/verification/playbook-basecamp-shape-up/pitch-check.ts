@@ -15,7 +15,7 @@ if (!file) {
 }
 
 const brief = readFileSync(file, "utf8");
-const section = (name) => {
+const section = (name: string) => {
   const body = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const m = brief.match(new RegExp(`^##\\s+(?:\\d+\\.\\s*)?${body}\\b[^\\n]*\\n([\\s\\S]*?)(?=^##\\s|$(?![\\s\\S]))`, "mi"));
   return m ? m[1].trim() : "";
@@ -25,7 +25,7 @@ const need = ["Outcome", "Work", "Problem", "Appetite", "Solution", "Rabbit hole
 const missing = need.filter((name) => !section(name));
 const six = /six weeks/i.test(section("Appetite"));
 if (missing.length || !six) {
-  const parts = [];
+  const parts: string[] = [];
   if (missing.length) parts.push(`missing ${missing.join(", ")}`);
   if (!six) parts.push("appetite does not name six weeks");
   console.error(parts.join("; "));

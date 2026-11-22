@@ -48,7 +48,7 @@ if (!root) {
   console.error("usage: node ladder-census.ts <components-dir> [--objects a,b] [--json out.json]");
   process.exit(1);
 }
-const flag = (name) => {
+const flag = (name: string) => {
   const i = argv.indexOf(`--${name}`);
   return i === -1 ? null : argv[i + 1];
 };
@@ -57,7 +57,7 @@ const jsonOut = flag("json");
 
 // ---------------------------------------------------------------- traversal
 
-function walk(dir, acc = []) {
+function walk(dir: string, acc: string[] = []): string[] {
   for (const entry of readdirSync(dir)) {
     if (entry === "node_modules" || entry.startsWith(".")) continue;
     const full = ventureFile(dir, entry);
@@ -70,7 +70,7 @@ function walk(dir, acc = []) {
 
 // Pull prop names off the component's props type. Deliberately shallow: this is
 // a signal for comparing siblings on one ladder, not a type checker.
-function extractProps(src, componentName) {
+function extractProps(src: string, componentName: string) {
   const patterns = [
     new RegExp(`(?:interface|type)\\s+${componentName}Props\\s*=?\\s*\\{([\\s\\S]*?)\\n\\}`),
     /(?:interface|type)\s+Props\s*=?\s*\{([\s\S]*?)\n\}/,
@@ -83,7 +83,9 @@ function extractProps(src, componentName) {
   return [];
 }
 
-function classify(name) {
+type Tier = (typeof TIERS)[number];
+
+function classify(name: string) {
   for (const t of TIERS) if (t.match.test(name)) return t;
   return null;
 }
@@ -104,13 +106,19 @@ const components = files.map((f) => {
   };
 });
 
-const ladders = {};
-const unsuffixed = {};
+type Component = (typeof components)[number];
+/** A component on a rung: one with a representation suffix that is not infrastructure. */
+type Rendering = Component & { tier: Tier };
+const isRung = (c: Component): c is Rendering => Boolean(c.tier) && !c.infra;
+type Rung = { tier: string, kind: string, component: string, file: string, props: string[] };
+// The kernel candidate rides on the array, so the report shows it and the JSON leaves it out.
+const ladders: Record<string, Rung[] & { kernelCandidate?: string[] }> = {};
+const unsuffixed: Record<string, { component: string, file: string, props: string[] }[]> = {};
 
 for (const obj of objects) {
   const owned = components.filter((c) => c.name.toLowerCase().includes(obj.toLowerCase()));
   if (!owned.length) continue;
-  const rungs = owned.filter((c) => c.tier && !c.infra);
+  const rungs = owned.filter(isRung);
   const loose = owned.filter((c) => !c.tier && !c.infra);
   if (rungs.length) {
     ladders[obj] = rungs
@@ -123,7 +131,7 @@ for (const obj of objects) {
 // A component carrying a representation suffix but matching no object in the
 // lexicon is either a generic primitive or an object the lexicon is missing.
 const unclaimed = components
-  .filter((c) => c.tier && !c.infra)
+  .filter(isRung)
   .filter((c) => !objects.some((o) => c.name.toLowerCase().includes(o.toLowerCase())))
   .map((c) => ({ tier: `L${c.tier.tier}`, component: c.name, file: c.file }));
 
@@ -142,8 +150,8 @@ for (const [obj, rungs] of Object.entries(ladders)) {
 
 // ---------------------------------------------------------------- report
 
-const pad = (s, n) => String(s).padEnd(n);
-const out = [];
+const pad = (s: string, n: number) => String(s).padEnd(n);
+const out: string[] = [];
 out.push(`ladder census · ${root}`);
 out.push(`${files.length} components scanned · ${Object.keys(ladders).length} candidate ladders\n`);
 

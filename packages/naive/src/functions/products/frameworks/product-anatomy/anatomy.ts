@@ -23,35 +23,45 @@ import { fileURLToPath } from "node:url";
 import { ventureFile } from "../../../../core/venture-paths.ts";
 import { runSync } from "../../../../core/effect/run.ts";
 import { loadPhases } from "../../../../phases/phases.ts";
+import type { Product, Venture } from "../../../../records/types/records.d.ts";
+
+/** One typed question Jev answers per product (questions.json). */
+type Question = { type: "noul" | "score"; instructions: string; criteria: string[] };
+/** The runner's input: a venture folder read as one, or a single input file. */
+type Input = { venture: Venture; core?: Venture["core"]; products: Record<string, Product>; flows?: { from: string; to: string }[] };
+/** Each product's answers by question id, and `<question>_confidence`. */
+type AnswersFile = { scorer: string; scored?: string; answers: Record<string, Record<string, number>> };
+type Weights = Record<string, Record<string, number>>;
+type MustHold = { flagship: { promise_delivery_at_least: number; promise_breach_below: number }; revenue_engine: { revenue_at_least: number } };
 
 const here = dirname(fileURLToPath(import.meta.url));
 const ENDPOINT = "https://api.typesafe.ai/v1/systemone";
 const MODEL = "jev-latest";
-const load = (p) => JSON.parse(readFileSync(p, "utf8"));
-const { questions } = load(join(here, "questions.json"));
-const { weights, must_hold, tie } = load(join(here, "phases.json"));
+const load = (p: string) => JSON.parse(readFileSync(p, "utf8"));
+const { questions } = load(join(here, "questions.json")) as { questions: Record<string, Question> };
+const { weights, must_hold, tie } = load(join(here, "phases.json")) as { weights: Weights; must_hold: MustHold; tie: number };
 // The phases, their questions and gates come from the phase modules (EE-126); phases.json holds only the weights.
 // Discovery has no weights: no product is ranked before the core product exists.
 const phases = runSync(loadPhases()).filter((p) => weights[p.id])
   .map(({ id, name, question, binding_constraint, gate, references }) => ({ id, name, question, binding_constraint, gate: gate.name, references, weights: weights[id] }));
 
 // A venture folder is read as one input: venture.json, products/*.json, flows from flows_to.
-function readVenture(path) {
+function readVenture(path: string): Input {
   if (!statSync(path).isDirectory()) {
-    const input = load(path);
-    input.venture ??= input.company;
+    const input = load(path) as Input & { company?: Venture };
+    if (input.company) input.venture ??= input.company;
     return input;
   }
-  const venture = load(join(path, "venture.json"));
+  const venture = load(join(path, "venture.json")) as Venture;
   const dir = join(path, "products");
-  const cards = existsSync(dir) ? readdirSync(dir).filter((f) => f.endsWith(".json")).map((f) => load(ventureFile(dir, f))) : [];
+  const cards = existsSync(dir) ? readdirSync(dir).filter((f) => f.endsWith(".json")).map((f) => load(ventureFile(dir, f)) as Product) : [];
   const products = Object.fromEntries(cards.map((c) => [c.id, c]));
   const flows = cards.flatMap((c) => (c.flows_to ?? []).map((to) => ({ from: c.id, to })));
   return { venture, core: venture.core, products, flows };
 }
 
-function request(input) {
-  const qs = {};
+function request(input: Input) {
+  const qs: Record<string, Question> = {};
   for (const pid of Object.keys(input.products)) {
     for (const [qid, q] of Object.entries(questions)) {
       qs[`${qid}:${pid}`] = { ...q, instructions: `About the product in \`products.${pid}\`: ${q.instructions}` };
@@ -60,7 +70,7 @@ function request(input) {
   return { state: { venture: { ...input.venture, core: input.core }, products: input.products }, model: MODEL, questions: qs };
 }
 
-async function score(input, outPath) {
+async function score(input: Input, outPath: string) {
   if (!process.env.TYPESAFE_API_KEY) {
     console.error("No TYPESAFE_API_KEY set: fill the answers file with a reasoning model instead, and name it in `scorer`.");
     process.exit(3);
@@ -71,8 +81,8 @@ async function score(input, outPath) {
     body: JSON.stringify(request(input)),
   });
   if (!res.ok) throw new Error(`TypeSafe returned ${res.status}: ${await res.text()}`);
-  const { answers } = /** @type {{ answers: object }} */ (await res.json());
-  const out = { scorer: MODEL, scored: new Date().toISOString(), answers: {} };
+  const { answers } = (await res.json()) as { answers: Record<string, { type: string; noul?: number; score?: number; confidence?: number }> };
+  const out: { scorer: string; scored: string; answers: Record<string, Record<string, number | null | undefined>> } = { scorer: MODEL, scored: new Date().toISOString(), answers: {} };
   for (const [key, a] of Object.entries(answers)) {
     const [qid, pid] = key.split(":");
     out.answers[pid] ??= {};
@@ -83,12 +93,12 @@ async function score(input, outPath) {
   console.log(`wrote ${outPath} (${Object.keys(answers).length} answers from ${MODEL})`);
 }
 
-function norm(qid, v) {
+function norm(qid: string, v: number) {
   const q = questions[qid];
   return q.type === "score" ? v / (q.criteria.length - 1) : v;
 }
 
-function deduce(input, answersFile) {
+function deduce(input: Input, answersFile: AnswersFile) {
   const A = answersFile.answers;
   const pids = Object.keys(input.products);
   const out = Object.fromEntries(pids.map((p) => [p, 0]));
@@ -102,7 +112,7 @@ function deduce(input, answersFile) {
     .sort((a, b) => A[b].competence_draw - A[a].competence_draw || out[b] - out[a])[0] ?? null;
 
   const byPhase = phases.map((ph, i) => {
-    const allowed = (p) => i >= phaseIndex[input.products[p].allowed_from ?? phases[0].id];
+    const allowed = (p: string) => i >= phaseIndex[input.products[p].allowed_from ?? phases[0].id];
     const rows = pids.map((p) => {
       const w = ph.weights;
       let sum = 0, total = 0;
@@ -110,7 +120,7 @@ function deduce(input, answersFile) {
         sum += wt * (c === "spillover" ? out[p] / maxOut : norm(c, A[p][c]));
         total += wt;
       }
-      const fails = [];
+      const fails: string[] = [];
       if (!allowed(p)) fails.push(`not allowed until ${input.products[p].allowed_from}`);
       if (A[p].promise_delivery < must_hold.flagship.promise_delivery_at_least) fails.push("does not deliver the promise directly");
       if (A[p].promise_breach >= must_hold.flagship.promise_breach_below) fails.push("could breach the promise");
@@ -126,13 +136,13 @@ function deduce(input, answersFile) {
       : pids.filter((p) => allowed(p) && A[p].revenue === topRevenue);
     // A wedge leads users into the flagship: it flows into it, or it is a part of the
     // flagship kit that also stands alone (part_of, EE-015).
-    const leadsIn = (p) => (input.flows ?? []).some((f) => f.from === p && f.to === flagship)
-      || (input.products[p].part_of ?? []).includes(flagship);
+    const leadsIn = (p: string) => (input.flows ?? []).some((f) => f.from === p && f.to === flagship)
+      || (flagship !== null && (input.products[p].part_of ?? []).includes(flagship));
     // Each role is kept as an id (for data) and as the words the Markdown shows.
-    const role = {}, roleIds = {};
+    const role: Record<string, string> = {}, roleIds: Record<string, { roles: string[]; revenue_engine_tied?: boolean; allowed_from?: string }> = {};
     for (const p of pids) {
-      const r = [], ids = [];
-      const add = (id, text) => { ids.push(id); r.push(text); };
+      const r: string[] = [], ids: string[] = [];
+      const add = (id: string, text: string) => { ids.push(id); r.push(text); };
       if (p === flagship) add("flagship", "flagship");
       if (p === substrate) add("substrate", "substrate");
       if (revenue.includes(p)) add("revenue-engine", revenue.length > 1 ? "revenue engine (tied)" : "revenue engine");
@@ -145,7 +155,7 @@ function deduce(input, answersFile) {
       role[p] = r.join(" + ");
       roleIds[p] = { roles: ids, ...(revenue.includes(p) && revenue.length > 1 ? { revenue_engine_tied: true } : {}), ...(!allowed(p) ? { allowed_from: input.products[p].allowed_from } : {}) };
     }
-    return { phase: ph, rows, flagship, tied, role, roleIds, projection: i > now, successor: /** @type {string | undefined} */ (undefined) };
+    return { phase: ph, rows, flagship, tied, role, roleIds, projection: i > now, successor: undefined as string | undefined };
   });
 
   byPhase.forEach((b, i) => {
@@ -156,7 +166,9 @@ function deduce(input, answersFile) {
 }
 
 // The matrix as data (A-001): what the Markdown report shows, for tests and agents to read.
-function toJson(input, answersFile, d) {
+type Deduced = ReturnType<typeof deduce>;
+
+function toJson(input: Input, answersFile: AnswersFile, d: Deduced) {
   return {
     venture: input.venture.id ?? input.venture.name, phase: input.venture.phase, scorer: answersFile.scorer,
     substrate: d.substrate,
@@ -169,11 +181,11 @@ function toJson(input, answersFile, d) {
   };
 }
 
-function report(input, answersFile, d) {
-  const name = (p) => input.products[p].name;
+function report(input: Input, answersFile: AnswersFile, d: Deduced) {
+  const name = (p: string) => input.products[p].name;
   const lines = [`# Product Anatomy Matrix: ${input.venture.name}`, "",
     `Scored by: ${answersFile.scorer.replace(/\.$/, "")}. Current phase: ${input.venture.phase}. Later phases are projections from today's answers; re-answer at each gate.`, "",
-    `Core promise: ${input.core.promise}`, ""];
+    `Core promise: ${input.core?.promise}`, ""];
   lines.push("Portfolio role by phase:", "", `| Product | ${phases.map((p) => p.name).join(" | ")} |`, `| --- |${phases.map(() => " --- |").join("")}`);
   for (const p of Object.keys(input.products)) lines.push(`| ${name(p)} | ${d.byPhase.map((b) => b.role[p]).join(" | ")} |`);
   for (const b of d.byPhase) {

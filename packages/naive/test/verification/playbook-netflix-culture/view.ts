@@ -1,10 +1,13 @@
 export const title = "Culture doc and hiring bar on the team plan";
 
+/** The TLA+ state this view reads: one field per variable it names. */
+type Vars = { brief: boolean; check: string; copied: boolean; payWritten: boolean; pc: string };
+
 const readingWork = new Set(["problem", "profile"]);
 const readingPeople = new Set(["team", "people", "founderlist", "founders"]);
 const readingPay = new Set(["rights", "ownership"]);
 
-export const state = (v) => {
+export const state = (v: Vars) => {
   if (v.check === "pass") return "The culture check passed";
   if (v.check === "fail") return "The culture check failed";
   if (v.pc === "accepted") {
@@ -27,7 +30,7 @@ export const state = (v) => {
   return "In progress";
 };
 
-export const group = (v) => {
+export const group = (v: Vars) => {
   if (v.check === "pass") return "passed";
   if (v.check === "fail") return "failed";
   if (v.pc === "culture" && v.copied) return "fix";
@@ -44,7 +47,7 @@ export const colors = {
   failed: "orange",
 };
 
-export const step = (action, _from, to) => {
+export const step = (action: string, _from: Vars, to: Vars) => {
   if (action === "Done") return null;
   if (action === "ReadProblem") return "you read the work";
   if (action === "ReadProfile") return "you read the venture profile";

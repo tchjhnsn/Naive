@@ -1,10 +1,13 @@
 export const title = "Finance lint";
 
-function metricFires(v) {
+/** The TLA+ state this view reads: one field per variable it names. */
+type Vars = { exitCode: string; metric: string; phase: string; price: string; spend: string };
+
+function metricFires(v: Vars) {
   return v.metric === "no_targets" || (v.metric === "validation_only" && v.phase !== "validation");
 }
 
-function findings(v) {
+function findings(v: Vars) {
   if (v.spend === "malformed" || v.price === "malformed" || v.metric === "malformed") return "A record did not parse";
   if (v.price === "missing_price" || v.price === "missing_cost") return "Price or cost is missing";
   const parts = [];
@@ -14,9 +17,9 @@ function findings(v) {
   return parts.length ? parts.join(". ") : "Nothing to flag";
 }
 
-export const state = (v) => `${findings(v)}. ${v.exitCode === "1" ? "Run fails" : "Run passes"}`;
+export const state = (v: Vars) => `${findings(v)}. ${v.exitCode === "1" ? "Run fails" : "Run passes"}`;
 
-export const group = (v) => {
+export const group = (v: Vars) => {
   if (v.exitCode === "1") return "fail";
   if (v.spend === "malformed" || v.price === "malformed" || v.metric === "malformed" || v.price === "missing_price" || v.price === "missing_cost") return "gap";
   if (v.spend === "no_runway" || v.price === "below" || metricFires(v)) return "warn";
@@ -25,7 +28,7 @@ export const group = (v) => {
 
 export const colors = { quiet: "teal", warn: "yellow", fail: "orange", gap: "blue" };
 
-const loads = {
+const loads: Record<string, string | null> = {
   LoadAbsent: "you check a venture with none of these records",
   LoadClean: "you check a clean venture",
   LoadSpend: "you check a spend decision with no runway impact",
@@ -38,7 +41,7 @@ const loads = {
   LoadMissingCost: "you check a price or cost that is not a number",
 };
 
-export const step = (action, from, to) => {
+export const step = (action: string, from: Vars, to: Vars) => {
   if (action === "Done") return null;
   if (action === "PhaseChanges") {
     const before = metricFires(from);

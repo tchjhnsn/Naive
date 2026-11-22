@@ -1,18 +1,21 @@
 export const title = "Customers lint: a promise read against the product record";
 
-function icpOn(v) {
+/** The TLA+ state this view reads: one field per variable it names. */
+type Vars = { configMode: string; crashed: boolean; customer: string; icp: string; product: string; promise: string };
+
+function icpOn(v: Vars) {
   return (v.customer === "matched" || v.customer === "unmatched") && (v.customer === "unmatched" || v.icp !== "known");
 }
-function promiseOn(v) {
+function promiseOn(v: Vars) {
   return v.promise === "made" && (v.customer === "matched" || v.customer === "unmatched") && v.product !== "keeps";
 }
-function failed(v) {
+function failed(v: Vars) {
   const closeIcp = v.configMode === "icp-closed" || v.configMode === "both-closed";
   const closePromise = v.configMode === "promise-closed" || v.configMode === "both-closed";
   return (icpOn(v) && closeIcp) || (promiseOn(v) && closePromise);
 }
 
-export const state = (v) => {
+export const state = (v: Vars) => {
   if (v.crashed) return "Lint crashed";
   if (v.customer === "bad") return "Customer record unreadable, lint finished";
   const icp = icpOn(v);
@@ -28,7 +31,7 @@ export const state = (v) => {
 
 // One label per pair of chart states. Every action between that pair shares it.
 // Any other pair is hidden. The README lists what the chart leaves out.
-const edges = {
+const edges: Record<string, string | null> = {
   "Quiet|Config unreadable, still quiet": "naive.config.json cannot be read",
   "Config unreadable, still quiet|Quiet": "naive.config.json can be read again",
   "Quiet|Customer record unreadable, lint finished": "the customer record cannot be read",
@@ -51,7 +54,7 @@ const edges = {
   "Failed closed: both rules|Warned: both rules": "the run is fail-open again",
 };
 
-export const group = (v) => {
+export const group = (v: Vars) => {
   const s = state(v);
   if (s.startsWith("Failed") || s === "Lint crashed") return "failed";
   if (s.startsWith("Warned")) return "warned";
@@ -61,4 +64,4 @@ export const group = (v) => {
 
 export const colors = { quiet: "teal", warned: "yellow", failed: "orange", unreadable: "purple" };
 
-export const step = (_action, from, to) => edges[`${state(from)}|${state(to)}`] ?? null;
+export const step = (_action: string, from: Vars, to: Vars) => edges[`${state(from)}|${state(to)}`] ?? null;

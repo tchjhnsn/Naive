@@ -9,6 +9,9 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import type { DecisionRecord } from "../../../../src/records/types/records.d.ts";
+
+type Decision = DecisionRecord | null | undefined;
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repo = join(here, "../../../../../..");
@@ -16,8 +19,8 @@ const cli = join(repo, "packages/naive/src/interfaces/cli/mentura.mjs");
 const router = join(repo, "packages/naive/src/router/router.mjs");
 const init = join(repo, "packages/naive/src/engine/init-venture.ts");
 
-const rows = [];
-const note = (rule, ok, detail) => {
+const rows: { rule: string, ok: unknown, detail: string }[] = [];
+const note = (rule: string, ok: unknown, detail: string) => {
   rows.push({ rule, ok, detail });
   console.log(`${ok ? "PASS" : "FAIL"}  ${rule}`);
   console.log(`      ${detail}`);
@@ -26,8 +29,8 @@ const note = (rule, ok, detail) => {
 const SPEC_KEYS = ["objects", "retry-writes", "error-shape", "versions", "changelog"];
 const HABIT_KEYS = ["date", "difference", "previous-wording", "product"];
 
-function linesOf(answer) {
-  const out = {};
+function linesOf(answer: unknown) {
+  const out: Record<string, string> = {};
   for (const line of String(answer ?? "").split("\n")) {
     const i = line.indexOf(":");
     if (i < 0) continue;
@@ -35,33 +38,33 @@ function linesOf(answer) {
   }
   return out;
 }
-const filled = (value) => typeof value === "string" && value.length > 0 && !value.includes("<") && !value.includes(">");
-const statusOk = (rec) => rec && (rec.status === "open" || (rec.status === "decided" && typeof rec.provenance?.approved_by === "string" && rec.provenance.approved_by.length > 0));
-const keysOk = (rec, keys) => {
+const filled = (value: unknown) => typeof value === "string" && value.length > 0 && !value.includes("<") && !value.includes(">");
+const statusOk = (rec: Decision) => rec && (rec.status === "open" || (rec.status === "decided" && typeof rec.provenance?.approved_by === "string" && rec.provenance.approved_by.length > 0));
+const keysOk = (rec: Decision, keys: string[]) => {
   const lines = linesOf(rec?.answer);
   return keys.every((k) => filled(lines[k]));
 };
-function check2(rec) {
+function check2(rec: Decision) {
   return statusOk(rec) && keysOk(rec, SPEC_KEYS);
 }
-function check4(rec) {
+function check4(rec: Decision) {
   return statusOk(rec) && keysOk(rec, HABIT_KEYS);
 }
-function objectsOf(rec) {
+function objectsOf(rec: Decision) {
   return linesOf(rec?.answer).objects.split(",").map((s) => s.trim()).filter(Boolean);
 }
-function check1(card, icp) {
+function check1(card: { offered_to?: string[] } | null | undefined, icp: object | null | undefined) {
   const ids = new Set(Object.keys(icp ?? {}));
   return Array.isArray(card?.offered_to) && card.offered_to.length > 0 && card.offered_to.every((id) => ids.has(id));
 }
-function check3(glossary, spec) {
+function check3(glossary: { terms?: { term: string }[] } | null | undefined, spec: Decision) {
   const objects = new Set(objectsOf(spec));
   const terms = glossary?.terms ?? [];
   return terms.length > 0 && terms.every((t) => objects.has(t.term));
 }
-function check5(entry, products) {
+function check5(entry: Decision, products: object | null | undefined) {
   if (!check4(entry)) return false;
-  const id = linesOf(entry.answer).product;
+  const id = linesOf(entry?.answer).product;
   return Object.prototype.hasOwnProperty.call(products ?? {}, id);
 }
 
@@ -70,10 +73,10 @@ const venture = join(root, "docs-probe");
 const scratch = join(root, "scratch");
 spawnSync("mkdir", ["-p", scratch]);
 
-function node(script, args) {
+function node(script: string, args: string[]) {
   return spawnSync("node", [script, ...args], { encoding: "utf8", cwd: repo });
 }
-function mentura(args, file) {
+function mentura(args: string[], file?: string) {
   const cmd = ["--venture", "docs-probe", "--workspace", root, "--json"];
   if (file) cmd.push("--input", file);
   const r = node(cli, [...args, ...cmd]);
@@ -83,7 +86,7 @@ function mentura(args, file) {
   }
   return { status: r.status ?? 1, json, stdout: r.stdout, stderr: r.stderr };
 }
-function writeJson(name, value) {
+function writeJson(name: string, value: unknown) {
   const path = join(scratch, name);
   writeFileSync(path, JSON.stringify(value, null, 2) + "\n");
   return path;
@@ -118,7 +121,7 @@ const habit = {
     "product: ledger",
   ].join("\n"),
 };
-const entry = (product) => ({
+const entry = (product: string) => ({
   id: "changelog-first-change",
   question: "What does a caller see differently in this change?",
   decides: { record: "product", path: "product/ledger.json" },
@@ -136,7 +139,7 @@ const entry = (product) => ({
 try {
   const tableRun = node(router, []);
   const table = JSON.parse(tableRun.stdout);
-  const names = new Set(table.map((r) => r.route));
+  const names = new Set(table.map((r: { route: string }) => r.route));
   const wanted = ["foundation/icp", "product", "product/[id]", "decisions", "decisions/[id]", "glossary/[id]"];
   const missing = wanted.filter((r) => !names.has(r));
   note("RouteReal", missing.length === 0, missing.length ? `missing from node packages/naive/src/router/router.mjs: ${missing.join(", ")}` : `all ${wanted.length} template routes are in the route table (${table.length} routes)`);
@@ -210,7 +213,7 @@ try {
   const goodTerms = writeJson("glossary.json", { package: "product", terms: [{ term: "transfer", meaning: "One movement a caller records and reads back.", export: false }] });
   const glossaryWrite = mentura(["glossary/product", "write", "--as", "person", "--note", "replay terms"], goodTerms);
   const glossaryRead = mentura(["glossary/product", "read"]);
-  note("Check 3 passes when each term is an object on the spec", glossaryWrite.status === 0 && check3(glossaryRead.json?.result, specRead.json?.result) === true, `terms ${(glossaryRead.json?.result?.terms ?? []).map((t) => t.term).join(", ")}`);
+  note("Check 3 passes when each term is an object on the spec", glossaryWrite.status === 0 && check3(glossaryRead.json?.result, specRead.json?.result) === true, `terms ${(glossaryRead.json?.result?.terms ?? []).map((t: { term: string }) => t.term).join(", ")}`);
 
   const habitMissing = mentura(["decisions/changelog-habit", "read"]);
   note("Check 4 fails when the habit is not on file", !check4(habitMissing.json?.result), `result ${JSON.stringify(habitMissing.json?.result)}`);
@@ -230,7 +233,7 @@ try {
   note("Check 5 passes when product is a card id", entryWrite.status === 0 && check5(entryRead.json?.result, productsAgain.json?.result) === true, `product line ${JSON.stringify(linesOf(entryRead.json?.result?.answer).product)}`);
 
   const list = mentura(["decisions", "read"]);
-  const keys = (list.json?.decisions ?? []).map((d) => d.id);
+  const keys = (list.json?.decisions ?? []).map((d: { id: string }) => d.id);
   note("decisions list returns the habit, the entry and the at=product decision", keys.includes("changelog-habit") && keys.includes("changelog-first-change") && keys.includes("docs-spec-nested"), `${keys.length} ids; nested on the list ${keys.includes("docs-spec-nested")}`);
 
   const decided = mentura(["decide", "docs-spec", "--by", "Ada Founder", "--confirm", "docs-spec"]);
@@ -238,8 +241,8 @@ try {
   note("Check 2 still passes after the founder decides", decided.status === 0 && decidedRead.json?.result?.status === "decided" && decidedRead.json?.result?.provenance?.approved_by === "Ada Founder" && check2(decidedRead.json?.result) === true, `decide status ${decided.status}; approved_by ${JSON.stringify(decidedRead.json?.result?.provenance?.approved_by ?? null)}`);
 
   const cardCheck = mentura(["product/ledger", "check"]);
-  const cardPassed = cardCheck.json?.ok === true && (cardCheck.json?.result ?? []).every((c) => c.passed === true);
-  note("product/ledger check passes on this fixture", cardPassed, `ok ${cardCheck.json?.ok}; ${(cardCheck.json?.result ?? []).map((c) => `${c.check} ${c.passed}`).join("; ")}`);
+  const cardPassed = cardCheck.json?.ok === true && (cardCheck.json?.result ?? []).every((c: { passed?: boolean }) => c.passed === true);
+  note("product/ledger check passes on this fixture", cardPassed, `ok ${cardCheck.json?.ok}; ${(cardCheck.json?.result ?? []).map((c: { check?: string, passed?: boolean }) => `${c.check} ${c.passed}`).join("; ")}`);
 
   const soft = writeJson("soft.json", { id: "ledger-soft", name: "Ledger Soft", description: "A software card with no repository.", software: true, offered_to: ["builders"] });
   const softWrite = mentura(["product/ledger-soft", "write", "--note", "replay software without a repo"], soft);
@@ -248,7 +251,7 @@ try {
   const softFailed = softWrite.status === 0 && softCheck.status !== 0 && softText.includes("ledger-soft") && softText.includes("repository");
   note("product/[id] check runs on the whole venture, so another card can fail it", softFailed, `ledger check status ${softCheck.status}; ${softText.replace(/\s+/g, " ").trim().slice(0, 320)}`);
 } catch (error) {
-  note("replay", false, error.stack || error.message);
+  note("replay", false, (error as Error).stack || (error as Error).message);
 } finally {
   rmSync(root, { recursive: true, force: true });
 }

@@ -31,29 +31,41 @@ import { createRequire } from "node:module";
 import { basename, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { CONVENTIONS, MAP, parse } from "./ideamap.ts";
+import type { JevAnswers, MapIdea } from "./ideamap.ts";
+import type { IdeaGraph, OntologyCatalog, Venture } from "../../../../records/types/records.d.ts";
+import type * as Engine from "../../../../terms/engine.ts";
+import type * as Terms from "../../../../terms/terms.ts";
+import type * as Relations from "../../../../terms/relations.ts";
+import type { Target } from "../../../../terms/relations.ts";
+
+/** A dependency or a stated relation between two ideas: from the idea built on to the idea that builds on it. */
+type Edge = { from: string, to: string, p: number, by: string, relation?: string };
+/** An idea record as checkRelations reads it: typed relations to other ideas and a scope it attaches to. */
+type StatedIdea = { id: string, relations?: unknown, scope?: { scope: string, via: string } };
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repo = join(here, "../../../../../../..");
-const load = (p) => JSON.parse(readFileSync(p, "utf8"));
+const load = (p: string): unknown => JSON.parse(readFileSync(p, "utf8"));
+/** The entry for a key every caller knows is there; reading a missing one throws, as reading a property of undefined would. */
+const got = <K, V>(m: Map<K, V>, k: K): V => { const v = m.get(k); if (v === undefined) throw new TypeError(`no entry for ${String(k)}`); return v; };
 export const GRAPH = "purpose/ideas/graph.json";
-const NEED = load(join(repo, "packages/naive/src/engine/need-now.json")).records;
+const NEED = (load(join(repo, "packages/naive/src/engine/need-now.json")) as { records: Record<string, { base?: Record<string, number> } | undefined> }).records;
 
 // The term engine is TypeScript, loaded only when an idea states a relation, so a process that imports this file for
 // its constants (every naive or mentura process, through the router) does not pay for it. Node strips types from
 // 22.18, and never under node_modules, so an installed package cannot load it. Without it the graph still builds
 // from judged dependencies, and any stated relation is refused rather than let through unchecked.
-/** @returns {(typeof import("../../../../terms/engine.ts") & typeof import("../../../../terms/terms.ts") & typeof import("../../../../terms/relations.ts")) | null} */
-function termEngine() {
+function termEngine(): (typeof Engine & typeof Terms & typeof Relations) | null {
   if (!process.features.typescript) return null;
   const require = createRequire(import.meta.url);
   try { return { ...require("../../../../terms/engine.ts"), ...require("../../../../terms/terms.ts"), ...require("../../../../terms/relations.ts") }; }
-  catch (e) { if (e?.code === "ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING") return null; throw e; }
+  catch (e) { if ((e as { code?: string } | null)?.code === "ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING") return null; throw e; }
 }
 
 // Naive's convention of which records build on which, used when no judge has answered. An idea that
 // feeds a later record builds on an idea that feeds an earlier one in the same department.
 export const ORDER = ["telos", "validation-problem", "icp", "venture-core", "validation-solution", "product", "validation-pricing", "validation-go-to-market", "brand", "validation-team", "alignment"];
-const EXTRA_NEED = { "venture-core": { discovery: 0.8, validation: 0.9, beachhead: 0.9, scale: 0.9, platform: 0.9 }, brand: { discovery: 0.2, validation: 0.4, beachhead: 0.7, scale: 0.8, platform: 0.8 } };
+const EXTRA_NEED: Record<string, Record<string, number> | undefined> = { "venture-core": { discovery: 0.8, validation: 0.9, beachhead: 0.9, scale: 0.9, platform: 0.9 }, brand: { discovery: 0.2, validation: 0.4, beachhead: 0.7, scale: 0.8, platform: 0.8 } };
 export const WEIGHTS = { need: 0.35, unblocks: 0.25, concrete: 0.25, emphasis: 0.15 };
 // Jev answers dependency questions conservatively (in our first runs few pairs passed 0.75), so the bar is 0.5.
 const THRESHOLD = 0.5;
@@ -61,8 +73,8 @@ const THRESHOLD = 0.5;
 const CONCRETE = ["A wish or a theme: nothing anyone could act on yet", "A direction: it names what, but not how or for whom", "A plan: someone could start on it with a few questions answered", "Actionable now: someone could act on it this week as written"];
 
 /** The Jev request: for each ordered pair, whether one idea must be worked out first; and how concrete each is. */
-export function request(ideas, venture = {}) {
-  const questions = {};
+export function request(ideas: MapIdea[], venture: Partial<Venture> = {}) {
+  const questions: Record<string, { type: string, instructions: string, criteria: unknown }> = {};
   for (const a of ideas) for (const b of ideas) if (a.id !== b.id)
     questions[`dep:${a.id}>${b.id}`] = { type: "noul", instructions: `Does developing the idea in \`ideas.${b.id}\` depend on the idea in \`ideas.${a.id}\` being worked out first (it builds on it, needs its answer, or makes no sense without it)?`,
       criteria: { true: "Yes: it builds directly on that idea", false: "No: it could be developed without it" } };
@@ -71,9 +83,9 @@ export function request(ideas, venture = {}) {
 }
 
 /** Dependencies by convention: b builds on a when a feeds an earlier record and they share a department. */
-export function conventionEdges(ideas) {
-  const rank = (i) => Math.min(...(i.records ?? []).map((r) => ORDER.indexOf(r)).filter((x) => x >= 0), 99);
-  const edges = [];
+export function conventionEdges(ideas: MapIdea[]): Edge[] {
+  const rank = (i: MapIdea) => Math.min(...(i.records ?? []).map((r) => ORDER.indexOf(r)).filter((x) => x >= 0), 99);
+  const edges: Edge[] = [];
   for (const a of ideas) for (const b of ideas) {
     if (a.id === b.id || rank(a) >= rank(b) || rank(a) === 99) continue;
     if ((a.departments ?? []).some((d) => (b.departments ?? []).includes(d))) edges.push({ from: a.id, to: b.id, p: 0.8, by: "convention" });
@@ -83,50 +95,49 @@ export function conventionEdges(ideas) {
 
 // Keeps the graph a DAG: edges are added strongest first. A repeat of an edge already kept (a stated builds-on that
 // the convention or Jev also gives) adds nothing, and one that would close a cycle is dropped.
-function acyclic(ids, edges) {
-  const out = new Map(ids.map((i) => [i, new Set()]));
-  const reaches = (from, to) => { const seen = new Set(), stack = [from]; while (stack.length) { const x = stack.pop(); if (x === to) return true; if (seen.has(x)) continue; seen.add(x); stack.push(...out.get(x)); } return false; };
-  const kept = [], dropped = [];
+function acyclic(ids: string[], edges: Edge[]) {
+  const out = new Map(ids.map((i) => [i, new Set<string>()]));
+  const reaches = (from: string, to: string) => { const seen = new Set<string>(), stack = [from]; while (stack.length) { const x = stack.pop() as string; if (x === to) return true; if (seen.has(x)) continue; seen.add(x); stack.push(...got(out, x)); } return false; };
+  const kept: Edge[] = [], dropped: Edge[] = [];
   for (const e of [...edges].sort((a, b) => b.p - a.p)) {
-    if (out.get(e.from).has(e.to)) continue;
+    if (got(out, e.from).has(e.to)) continue;
     if (reaches(e.to, e.from)) { dropped.push(e); continue; }
-    out.get(e.from).add(e.to); kept.push(e);
+    got(out, e.from).add(e.to); kept.push(e);
   }
   // Transitive reduction: a -> c goes when a -> b -> c already says it.
-  const reduced = kept.filter((e) => ![...out.get(e.from)].some((m) => m !== e.to && reaches(m, e.to)));
+  const reduced = kept.filter((e) => ![...got(out, e.from)].some((m) => m !== e.to && reaches(m, e.to)));
   return { edges: reduced, dropped };
 }
 
-const sha = (s) => createHash("sha256").update(s).digest("hex");
+const sha = (s: string) => createHash("sha256").update(s).digest("hex");
 
-const relationsOf = (i) => (Array.isArray(i.relations) ? i.relations : []);
+const relationsOf = (i: StatedIdea): { relation: string, to: string }[] => (Array.isArray(i.relations) ? i.relations : []);
 // A graph written before edges were typed has no relation on its edges: every one of them was a dependency.
-const dependency = (e) => (e.relation ?? "builds-on") === "builds-on";
+const dependency = (e: { relation?: string }) => (e.relation ?? "builds-on") === "builds-on";
 
 /** The scopes an idea can attach to: every scope in packages/naive/src/terms/ontology-catalog.json, and shared. */
-export const catalogScopes = () => [...load(join(repo, "packages/naive/src/terms/ontology-catalog.json")).scopes.map((s) => s.scope), "shared"];
+export const catalogScopes = (): string[] => [...(load(join(repo, "packages/naive/src/terms/ontology-catalog.json")) as OntologyCatalog).scopes.map((s) => s.scope), "shared"];
 
 /** Every relation and scope the ideas state, run through the term typed-link. Returns the problems, none when it passes.
- * @param {{ id: string, relations?: { relation: string, to: string }[], scope?: { scope: string, via: string } }[]} ideas
- * @param {string[]} [scopes] the scopes a link can name; by default catalogScopes() */
-export function checkRelations(ideas, scopes) {
+ * scopes are the scopes a link can name; by default catalogScopes(). */
+export function checkRelations(ideas: StatedIdea[], scopes?: string[]): string[] {
   const malformed = ideas.flatMap((i) => i.relations === undefined ? [] : !Array.isArray(i.relations) ? [`${i.id}: relations is not a list`]
-    : i.relations.flatMap((r, k) => (r !== null && typeof r === "object" ? [] : [`${i.id}: relations[${k}] is ${JSON.stringify(r)}, not a relation`])));
+    : i.relations.flatMap((r: unknown, k) => (r !== null && typeof r === "object" ? [] : [`${i.id}: relations[${k}] is ${JSON.stringify(r)}, not a relation`])));
   if (malformed.length) return malformed;
-  const stated = ideas.flatMap((i, from) => [
-    ...relationsOf(i).map((r) => ({ type: String(r.relation), target: "idea", from, name: r.to })),
-    ...(i.scope ? [{ type: String(i.scope.via), target: "scope", from, name: i.scope.scope }] : []),
+  const stated = ideas.flatMap((i, from): { type: string, target: Target, from: number, name: string }[] => [
+    ...relationsOf(i).map((r) => ({ type: String(r.relation), target: "idea" as const, from, name: r.to })),
+    ...(i.scope ? [{ type: String(i.scope.via), target: "scope" as const, from, name: i.scope.scope }] : []),
   ]);
   if (!stated.length) return [];
   const terms = termEngine();
   if (!terms) return [`${stated.length} stated relation(s) need the EE-095 term engine, which runs from a checkout on Node 22.18 or later`];
   scopes ??= catalogScopes();
-  const at = { idea: new Map(ideas.map((i, k) => [i.id, k])), scope: new Map(scopes.map((s, k) => [s, k])) };
+  const at: Record<Target, Map<string, number>> = { idea: new Map(ideas.map((i, k) => [i.id, k])), scope: new Map(scopes.map((s, k) => [s, k])) };
   const links = stated.map(({ name, ...l }) => ({ ...l, to: at[l.target].get(name) ?? -1 }));
   const facts = { confirmed: true, ideas: ideas.length, scopes: scopes.length, links };
   const verdict = terms.run(terms.typedLink, facts);
   if (verdict.pass) return [];
-  const failed = new Set(verdict.failed), problems = [];
+  const failed = new Set(verdict.failed), problems: string[] = [];
   links.forEach((l, k) => {
     const who = `${ideas[l.from].id}: ${l.type} ${stated[k].name}`;
     if (failed.has("T1") && !terms.known(l.type, l.target)) problems.push(`${who}: ${l.type} is not ${l.target === "idea" ? "a relation between ideas" : "a scope attachment"} (${terms.namesBetween(l.target).join(", ")})`);
@@ -137,13 +148,13 @@ export function checkRelations(ideas, scopes) {
   return problems.length ? problems : [`typed-link failed: ${verdict.failed.join(", ")}`];
 }
 
-/** The Merkle DAG with signal, lanes and layout.
- * @param {*[]} ideas @param {{ answers?: object | null, phase?: string, venture?: string, source?: string }} [opts] */
-export function build(ideas, { answers = null, phase = "discovery", venture, source } = {}) {
+/** The Merkle DAG with signal, lanes and layout. */
+export function build(ideas: MapIdea[], { answers = null, phase = "discovery", venture, source }: { answers?: JevAnswers | null, phase?: string, venture?: string, source?: string } = {}) {
   const rejected = checkRelations(ideas);
   if (rejected.length) throw new Error(`rejected relations:\n  ${rejected.join("\n  ")}`);
   const ids = ideas.map((i) => i.id);
-  let raw = [], concrete = {};
+  let raw: Edge[] = [];
+  const concrete: Record<string, number | null> = {};
   if (answers) {
     for (const [k, a] of Object.entries(answers)) {
       if (k.startsWith("dep:")) { const [from, to] = k.slice(4).split(">"); const p = typeof a.noul === "number" ? a.noul : a.noul === true ? 1 : 0; if (p >= THRESHOLD) raw.push({ from, to, p: Math.round(p * 100) / 100, by: "jev" }); }
@@ -151,34 +162,34 @@ export function build(ideas, { answers = null, phase = "discovery", venture, sou
     }
   } else raw = conventionEdges(ideas);
   // A stated relation reads "to relates to from", the way a dependency does: the arrow points at the idea that states it.
-  const stated = ideas.flatMap((i) => relationsOf(i).map((r) => ({ from: r.to, to: i.id, p: 1, by: "stated", relation: r.relation })));
+  const stated = ideas.flatMap((i) => relationsOf(i).map((r): Edge => ({ from: r.to, to: i.id, p: 1, by: "stated", relation: r.relation })));
   const { edges: deps, dropped } = acyclic(ids, [...stated.filter(dependency), ...raw.map((e) => ({ ...e, relation: "builds-on" }))]);
   const edges = [...deps, ...stated.filter((e) => !dependency(e))];
   const parents = new Map(ids.map((i) => [i, deps.filter((e) => e.to === i).map((e) => e.from)]));
   const children = new Map(ids.map((i) => [i, deps.filter((e) => e.from === i).map((e) => e.to)]));
 
   // Topological order, depth (longest path from a root) and Merkle hashes.
-  const order = [], depth = {}, hash = {};
-  const indeg = new Map(ids.map((i) => [i, parents.get(i).length]));
+  const order: string[] = [], depth: Record<string, number> = {}, hash: Record<string, string> = {};
+  const indeg = new Map(ids.map((i) => [i, got(parents, i).length]));
   const queue = ids.filter((i) => !indeg.get(i));
-  while (queue.length) { const x = queue.shift(); order.push(x); for (const c of children.get(x)) { indeg.set(c, indeg.get(c) - 1); if (!indeg.get(c)) queue.push(c); } }
+  while (queue.length) { const x = queue.shift() as string; order.push(x); for (const c of got(children, x)) { indeg.set(c, got(indeg, c) - 1); if (!indeg.get(c)) queue.push(c); } }
   const byId = Object.fromEntries(ideas.map((i) => [i.id, i]));
   for (const x of order) {
-    depth[x] = Math.max(-1, ...parents.get(x).map((p) => depth[p])) + 1;
-    hash[x] = sha(JSON.stringify({ text: byId[x].text, parents: parents.get(x).map((p) => hash[p]).sort() })).slice(0, 16);
+    depth[x] = Math.max(-1, ...got(parents, x).map((p) => depth[p])) + 1;
+    hash[x] = sha(JSON.stringify({ text: byId[x].text, parents: got(parents, x).map((p) => hash[p]).sort() })).slice(0, 16);
   }
-  const descendants = (x, seen = new Set()) => { for (const c of children.get(x)) if (!seen.has(c)) { seen.add(c); descendants(c, seen); } return seen; };
+  const descendants = (x: string, seen = new Set<string>()) => { for (const c of got(children, x)) if (!seen.has(c)) { seen.add(c); descendants(c, seen); } return seen; };
 
   // Signal (version 0.x): need of the records it feeds in this phase, what builds on it, how concrete
   // it is, and how much of the dump shares its department.
-  const need = (r) => (NEED[r]?.base ?? EXTRA_NEED[r])?.[phase] ?? 0;
-  const deptCount = {};
+  const need = (r: string) => (NEED[r]?.base ?? EXTRA_NEED[r])?.[phase] ?? 0;
+  const deptCount: Record<string, number> = {};
   for (const i of ideas) for (const d of i.departments ?? []) deptCount[d] = (deptCount[d] ?? 0) + 1;
   const maxDesc = Math.max(1, ...ids.map((x) => descendants(x).size));
   const maxDept = Math.max(1, ...Object.values(deptCount));
   const nodes = ids.map((x) => {
     const i = byId[x];
-    const parts = {
+    const parts: Record<string, number> = {
       need: Math.max(0, ...(i.records ?? []).map(need)),
       unblocks: descendants(x).size / maxDesc,
       concrete: concrete[x] ?? (i.exists ? 1 : 0.5),
@@ -186,29 +197,29 @@ export function build(ideas, { answers = null, phase = "discovery", venture, sou
     };
     const signal = Object.entries(WEIGHTS).reduce((s, [k, w]) => s + w * parts[k], 0);
     return { id: x, hash: hash[x], text: i.text, ...(i.section ? { section: i.section } : {}), pillar: i.pillar, departments: i.departments ?? [], records: i.records ?? [], exists: !!i.exists,
-      depth: depth[x], builds_on: parents.get(x), signal: Math.round(signal * 100) / 100, parts: Object.fromEntries(Object.entries(parts).map(([k, v]) => [k, Math.round(v * 100) / 100])) };
+      depth: depth[x], builds_on: got(parents, x), signal: Math.round(signal * 100) / 100, parts: Object.fromEntries(Object.entries(parts).map(([k, v]) => [k, Math.round(v * 100) / 100])) };
   });
 
   // Lanes: the weakly connected parts of the DAG. A lane with dependencies is synchronous inside; lanes
   // are asynchronous to each other. Lanes and their ideas are ordered by signal.
-  const lane = {}, lanes = [];
+  const lane: Record<string, number> = {}, lanes: string[][] = [];
   for (const x of ids) {
     if (lane[x] !== undefined) continue;
-    const members = [], stack = [x];
-    while (stack.length) { const y = stack.pop(); if (lane[y] !== undefined) continue; lane[y] = lanes.length; members.push(y); stack.push(...parents.get(y), ...children.get(y)); }
+    const members: string[] = [], stack = [x];
+    while (stack.length) { const y = stack.pop() as string; if (lane[y] !== undefined) continue; lane[y] = lanes.length; members.push(y); stack.push(...got(parents, y), ...got(children, y)); }
     lanes.push(members);
   }
-  const nodeOf = Object.fromEntries(nodes.map((n) => [n.id, n]));
-  const top = (ms) => Math.max(...ms.map((m) => nodeOf[m].signal));
+  const nodeOf: Record<string, (typeof nodes)[number] & { lane?: string }> = Object.fromEntries(nodes.map((n) => [n.id, n]));
+  const top = (ms: string[]) => Math.max(...ms.map((m) => nodeOf[m].signal));
   const ranked = lanes.map((ms) => ms.sort((a, b) => nodeOf[a].depth - nodeOf[b].depth || nodeOf[b].signal - nodeOf[a].signal)).sort((a, b) => top(b) - top(a) || b.length - a.length);
   const laneOut = ranked.map((ms, k) => {
-    const depts = {}; for (const m of ms) for (const d of nodeOf[m].departments.slice(0, 1)) depts[d] = (depts[d] ?? 0) + 1;
+    const depts: Record<string, number> = {}; for (const m of ms) for (const d of nodeOf[m].departments.slice(0, 1)) depts[d] = (depts[d] ?? 0) + 1;
     const id = `lane-${k + 1}`;
     for (const m of ms) nodeOf[m].lane = id;
     return { id, mode: ms.length > 1 ? "sync" : "async", ideas: ms, department: Object.entries(depts).sort((a, b) => b[1] - a[1])[0]?.[0] ?? null, signal: top(ms),
       why: ms.length > 1 ? `${ms.length} ideas that build on each other: they move in order` : "stands alone: it can move on its own, beside the other lanes" };
   });
-  const sinks = nodes.filter((n) => !children.get(n.id).length).map((n) => n.hash).sort();
+  const sinks = nodes.filter((n) => !got(children, n.id).length).map((n) => n.hash).sort();
   return {
     version: "0.1.0", venture, phase, created: new Date().toISOString().replace(/\.\d+Z$/, "Z"), source,
     root: sha(sinks.join("")).slice(0, 16), judged_by: answers ? "jev" : "convention", weights: WEIGHTS,
@@ -218,21 +229,21 @@ export function build(ideas, { answers = null, phase = "discovery", venture, sou
 }
 
 /** Which ideas changed between two graphs: a changed hash means the idea or something it builds on changed. */
-export function diff(a, b) {
+export function diff(a: { nodes: { id: string, hash: string }[] }, b: { nodes: { id: string, hash: string }[] }) {
   const A = new Map(a.nodes.map((n) => [n.id, n.hash])), B = new Map(b.nodes.map((n) => [n.id, n.hash]));
   return { changed: [...B].filter(([id, h]) => A.has(id) && A.get(id) !== h).map(([id]) => id), added: [...B.keys()].filter((id) => !A.has(id)), removed: [...A.keys()].filter((id) => !B.has(id)) };
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const [a, b, c] = process.argv.slice(2);
-  const venture = (d) => load(join(d, "venture.json"));
-  const mapOf = (d) => parse(readFileSync(join(d, MAP), "utf8"));
+  const venture = (d: string) => load(join(d, "venture.json")) as Venture;
+  const mapOf = (d: string) => parse(readFileSync(join(d, MAP), "utf8"));
   if (a === "request") console.log(JSON.stringify(request(mapOf(b).ideas, venture(b))));
   else if (a === "check" && b) {
     const files = readdirSync(b).filter((f) => f.endsWith(".json")).sort();
-    const records = files.map((f) => load(join(b, f)));
+    const records = files.map((f) => load(join(b, f)) as { id: string, relations?: unknown[], scope?: { scope: string, via: string } });
     // Facts are keyed by id, so a second record with one id would hide the first one's links. An id names its file.
-    const holders = new Map();
+    const holders = new Map<string, string[]>();
     records.forEach((r, k) => holders.set(r.id, [...(holders.get(r.id) ?? []), files[k]]));
     const misnamed = [...files.flatMap((f, k) => (records[k].id === basename(f, ".json") ? [] : [`${f}: id ${records[k].id} does not match the file name`])),
       ...[...holders].filter(([, fs]) => fs.length > 1).map(([id, fs]) => `${id}: the same id in ${fs.join(", ")}`)];
@@ -242,13 +253,13 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     console.log(problems.length ? `${problems.length} problem(s)` : `${records.length} ideas, ${n} relations and scopes, typed-link passes`);
     process.exit(problems.length ? 1 : 0);
   } else if (a === "build") {
-    const answers = c ? (load(c).answers ?? load(c)) : null;
+    const answers = c ? ((load(c) as { answers?: JevAnswers }).answers ?? load(c)) as JevAnswers : null;
     const g = build(mapOf(b).ideas, { answers, phase: venture(b).phase, venture: venture(b).id, source: `${MAP}@${sha(readFileSync(join(b, MAP), "utf8")).slice(0, 16)}` });
     writeFileSync(join(b, GRAPH), JSON.stringify(g, null, 2) + "\n");
     console.log(`wrote ${GRAPH}: ${g.nodes.length} ideas, ${g.edges.filter(dependency).length} dependencies, ${g.edges.filter((e) => !dependency(e)).length} other relations, ${g.lanes.filter((l) => l.mode === "sync").length} sync lanes, ${g.lanes.filter((l) => l.mode === "async").length} async; root ${g.root}`);
   } else if (a && existsSync(join(a, "venture.json"))) {
     if (!existsSync(join(a, GRAPH))) { console.error(`${GRAPH} does not exist yet: build it from the idea map (node graph.ts build <venture>)`); process.exit(1); }
-    const g = load(join(a, GRAPH));
+    const g = load(join(a, GRAPH)) as IdeaGraph;
     if (process.argv.includes("--json")) console.log(JSON.stringify(g, null, 2));
     else {
       console.log(`${g.nodes.length} ideas, ${g.edges.filter(dependency).length} dependencies (${g.judged_by}), root ${g.root}`);

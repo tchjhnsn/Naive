@@ -1,4 +1,7 @@
-const label = (v) => {
+/** The TLA+ state this view reads: one field per variable it names. */
+type Vars = { closed: boolean; exitCode: number; finding: string; shape: string; step: string };
+
+const label = (v: Vars) => {
   if (v.step === "start") return "Nothing read yet";
   if (v.step === "loaded") return "Records read from the venture";
   if (v.step === "judged") {
@@ -10,8 +13,8 @@ const label = (v) => {
 };
 
 export const title = "Foundation lint: a finding, and how the run exits";
-export const state = (v) => label(v);
-export const group = (v) => {
+export const state = (v: Vars) => label(v);
+export const group = (v: Vars) => {
   const name = label(v);
   if (name === "Nothing read yet") return "waiting";
   if (name === "Records read from the venture") return "read";
@@ -20,7 +23,7 @@ export const group = (v) => {
   return "clear";
 };
 export const colors = { waiting: "tan", read: "blue", warn: "yellow", fail: "orange", clear: "teal" };
-export const step = (action, _from, to) => {
+export const step = (action: string, _from: Vars, to: Vars) => {
   if (action === "Done") return null;
   if (action === "Load") return "read the records through venture files";
   if (action === "Judge") {

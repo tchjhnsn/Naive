@@ -7,22 +7,23 @@ import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import type { SpawnSyncReturns } from "node:child_process";
 
 const repo = new URL("../../../../../", import.meta.url).pathname;
 const today = new Date().toISOString().slice(0, 10);
-const rows = [];
+const rows: { rule: string; pass: unknown; detail: unknown }[] = [];
 const scratch = mkdtempSync(join(tmpdir(), "lean-inputs-"));
-const inputFile = (name, record) => {
+const inputFile = (name: string, record: unknown) => {
   const file = join(scratch, `${name}.json`);
   writeFileSync(file, JSON.stringify(record));
   return file;
 };
-const ok = (rule, pass, detail) => { rows.push({ rule, pass, detail }); if (!pass) console.error(`FAIL ${rule}: ${detail}`); };
+const ok = (rule: string, pass: unknown, detail: unknown) => { rows.push({ rule, pass, detail }); if (!pass) console.error(`FAIL ${rule}: ${detail}`); };
 
-const mentura = (workspace, venture, args) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.mjs"), ...args, "--venture", venture, "--workspace", workspace, "--json"], { encoding: "utf8" });
-const jsonOf = (p) => { try { return JSON.parse(p.stdout); } catch { return null; } };
+const mentura = (workspace: string, venture: string, args: string[]) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.mjs"), ...args, "--venture", venture, "--workspace", workspace, "--json"], { encoding: "utf8" });
+const jsonOf = (p: SpawnSyncReturns<string>) => { try { return JSON.parse(p.stdout); } catch { return null; } };
 
-function venture(id) {
+function venture(id: string) {
   const workspace = mkdtempSync(join(tmpdir(), "lean-replay-"));
   const dir = join(workspace, id);
   const init = spawnSync("node", [join(repo, "packages/naive/src/engine/init-venture.ts"), dir, id, "--phase", "discovery"], { encoding: "utf8" });
@@ -30,11 +31,11 @@ function venture(id) {
   return { workspace, id, dir, cleanup: () => rmSync(workspace, { recursive: true, force: true }) };
 }
 
-const icp = (id) => ({
+const icp = (id: string) => ({
   venture: id, id: "shop-owners", who: "Independent shop owners with one location", primary: true,
   where_to_find: ["the Tuesday market"], not: ["friends who do not run a shop"],
 });
-const claim = (id, evidence) => ({
+const claim = (id: string, evidence: unknown[]) => ({
   venture: id,
   statement: "A fixture claim used only to replay the playbook routes.",
   segment: "Independent shop owners with one location",
@@ -42,8 +43,8 @@ const claim = (id, evidence) => ({
   why_now: "A fixture reason, not a researched fact.",
   evidence,
 });
-const source = (id, title) => ({ id, origin: "founder-supplied", title, fetched: today });
-const behavior = (id, assumption) => ({
+const source = (id: string, title: string) => ({ id, origin: "founder-supplied", title, fetched: today });
+const behavior = (id: string, assumption: string) => ({
   id, kind: "behavior", summary: "Fixture: five people in the segment already pay for a workaround.",
   supports: true, source: { path: "raw/sources/problem-interview-notes/text.md" },
   audience: "target", sample: { n: 5 }, specificity: "specific", collected: today,
@@ -70,14 +71,14 @@ const main = () => {
     ok("DraftIsNotTheRecord: the accepted file is absent while the draft waits", !existsSync(join(a.dir, "foundation/problem.json")), "foundation/problem.json exists");
 
     const assessDraft = jsonOf(mentura(a.workspace, a.id, ["purpose/validation/assess", "run"]));
-    const draftMissing = assessDraft?.needs_input?.missing?.some((m) => m.field === "purpose/validation/problem.json");
+    const draftMissing = assessDraft?.needs_input?.missing?.some((m: { field: string }) => m.field === "purpose/validation/problem.json");
     ok("CheckAgrees: the assessment asks while the claim is only a draft", assessDraft?.ok && draftMissing, JSON.stringify(assessDraft?.needs_input ?? assessDraft));
 
     const accepted = mentura(a.workspace, a.id, ["accept", "foundation/problem", "--confirm", "foundation/problem"]);
     ok("AcceptClaim: you accept the draft", accepted.status === 0 && existsSync(join(a.dir, "foundation/problem.json")), accepted.stderr || accepted.stdout);
 
     const asked = jsonOf(mentura(a.workspace, a.id, ["purpose/validation/assess", "run"]));
-    const askedFor = asked?.needs_input?.missing?.find((m) => m.field === "evidence")?.items ?? [];
+    const askedFor = asked?.needs_input?.missing?.find((m: { field: string }) => m.field === "evidence")?.items ?? [];
     ok("CheckAgrees: a complete claim with no evidence asks instead of assessing", asked?.ok && ["exists", "segment", "hurts", "why-now"].every((id) => askedFor.includes(id)), JSON.stringify(asked?.needs_input ?? asked));
     const asIs = jsonOf(mentura(a.workspace, a.id, ["purpose/validation/assess", "run", "--as-is"]));
     ok("CheckAgrees: running as is on that claim supports explore", asIs?.result?.supports === "explore", JSON.stringify(asIs?.result ?? asIs?.needs_input));

@@ -1,6 +1,9 @@
 export const title = "Founder-led sales: one customer through the pipeline";
 
-const label = (v) => {
+/** The TLA+ state this view reads: one field per variable it names. */
+type Vars = { deal: string; foundationRead: boolean; notes: boolean; price: string; sourcesRead: boolean; stopped: boolean; stream: boolean; verdict: string };
+
+const label = (v: Vars) => {
   if (v.stopped && v.verdict === "none") return "Stopped: the foundation records are missing";
   if (v.verdict === "pass") return "Checks passed";
   if (v.verdict === "fail") return "Checks failed";
@@ -19,9 +22,9 @@ const label = (v) => {
   return "Other";
 };
 
-export const state = (v) => label(v);
+export const state = (v: Vars) => label(v);
 
-export const group = (v) => {
+export const group = (v: Vars) => {
   const name = label(v);
   if (name.startsWith("Stopped") || name === "Checks failed" || name.startsWith("A buying")) return "stop";
   if (name === "Checks passed" || name === "Paying") return "paid";
@@ -40,7 +43,7 @@ export const colors = {
   read: "blue",
 };
 
-const words = {
+const words: Record<string, string | null> = {
   ReadSources: "you read where customer records live",
   ReadFoundation: "you read who you sell to",
   ReadPrice: "you read the price, or find that there is none",
@@ -57,7 +60,7 @@ const words = {
   Done: "you stop here",
 };
 
-export const step = (action, from, to) => {
+export const step = (action: string, from: Vars, to: Vars) => {
   if (action === "RunCheck") {
     if (from.deal === "none" && !from.stopped && from.price === "unread") return null;
     return to.verdict === "pass" ? "you run the checks, and they pass" : "you run the checks, and they fail";

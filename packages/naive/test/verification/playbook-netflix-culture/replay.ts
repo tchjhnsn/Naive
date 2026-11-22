@@ -11,15 +11,31 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { call, routes } from "../../../src/router/router.mjs";
+import type { Alignment, DecisionRecord, Founder, Ownership, People, TeamPlan, ValidationProblem, ValidationTeam } from "../../../src/records/types/records.d.ts";
+
+/** What a router action answers, with the result this replay expects of the route (null when the record is missing). */
+type Answer<T = unknown> = { ok: boolean, error?: string, result?: T | null, not_found?: unknown };
+/** The records the main path reads, by route. */
+type Reads = {
+  "foundation/problem": Answer<ValidationProblem>, "knowledge/venture-profile": Answer<string>, "foundation/alignment": Answer<Alignment>,
+  "people/team": Answer<ValidationTeam>, people: Answer<People>, "people/founders": Answer, "people/founders/fixture-founder": Answer<Founder>,
+  "governance/decision-rights": Answer, "governance/ownership": Answer<Ownership>, "people/team-plan": Answer<TeamPlan>,
+};
+/** What the culture check reads. */
+type CultureInputs = { plan?: { note?: string } | null, alignment?: Alignment | null, team?: ValidationTeam | null, ownership?: Ownership | null,
+  brief?: string, decision?: DecisionRecord | null, problem?: ValidationProblem | null };
+type Recruiting = { role: string, kind: string, brief: string };
 
 const repo = join(dirname(fileURLToPath(import.meta.url)), "../../../../..");
 const playbook = readFileSync(join(repo, "packages/naive/library/packages/people/playbooks/netflix-culture.md"), "utf8");
-const rows = [];
-const fail = (rule, message) => {
+const rows: { rule: string, result: "PASS" | "FAIL", replay: string }[] = [];
+// A record the main path needs throws when it is missing, as reading a field of null did; the replay reports it.
+const must = <T,>(x: T | null | undefined, what: string): T => { if (x === undefined || x === null) throw new TypeError(`${what} is missing`); return x; };
+const fail = (rule: string, message: string) => {
   rows.push({ rule, result: "FAIL", replay: message });
   console.error(`FAIL  ${rule}: ${message}`);
 };
-const pass = (rule, replay) => {
+const pass = (rule: string, replay: string) => {
   rows.push({ rule, result: "PASS", replay });
   console.log(`PASS  ${rule}: ${replay}`);
 };
@@ -63,7 +79,7 @@ const MARKS = [
 
 const table = routes();
 const missing = STEPS.filter(([route, action]) => {
-  const hit = table.find((r) => r.route === route);
+  const hit = table.find((r: { route: string, actions: string[] }) => r.route === route);
   return !hit || !hit.actions.includes(action) || !playbook.includes(route);
 });
 if (missing.length) fail("RouteIsReal", `missing from the router or the playbook: ${missing.map(([r, a]) => `${r} ${a}`).join("; ")}`);
@@ -73,16 +89,16 @@ const unmarked = MARKS.filter((m) => !playbook.toLowerCase().includes(m.toLowerC
 if (unmarked.length) fail("TrademarkNamed", `the playbook does not name: ${unmarked.join("; ")}`);
 else pass("TrademarkNamed", "the playbook names every phrase the culture check refuses");
 
-const mentura = (args, workspace) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.mjs"), ...args, "--workspace", workspace], { encoding: "utf8" });
+const mentura = (args: string[], workspace: string) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.mjs"), ...args, "--workspace", workspace], { encoding: "utf8" });
 
-function gapsOf(team) {
+function gapsOf(team: ValidationTeam | null | undefined): { ok: false, error: string, gaps?: undefined } | { ok: true, gaps: string[], error?: undefined } {
   if (!team) return { ok: false, error: "people/team has no record" };
   const gaps = (team.needed ?? []).filter((n) => !(team.held ?? []).some((h) => h.skill === n.skill)).map((n) => n.skill);
   return { ok: true, gaps };
 }
 
-function cultureCheck({ plan, alignment, team, ownership, brief, decision, problem }) {
-  const reasons = [];
+function cultureCheck({ plan, alignment, team, ownership, brief, decision, problem }: CultureInputs) {
+  const reasons: string[] = [];
   const note = plan?.note ?? "";
   const text = `${note}\n${brief ?? ""}`;
   for (const mark of MARKS) if (text.toLowerCase().includes(mark.toLowerCase())) reasons.push(`contains ${mark}`);
@@ -119,7 +135,7 @@ function cultureCheck({ plan, alignment, team, ownership, brief, decision, probl
   return reasons;
 }
 
-const noteFor = (cites) => `Behaviors:
+const noteFor = (cites: string) => `Behaviors:
 - We name one owner for a significant decision: the owner asks for disagreement before the call, and the people who disagreed carry the call out
 - We keep a rule only when it prevents a harm we can name: harassment and leaking private records are the rules in force here
 Not for: someone who wants the bar to be adequate
@@ -129,7 +145,7 @@ Rests on: foundation/problem, people/team
 Revised: at the next phase change
 `;
 
-const briefFor = (pay, equity) => `# Practice lead
+const briefFor = (pay: string, equity: string) => `# Practice lead
 
 ## The role
 
@@ -147,8 +163,7 @@ Pay: ${pay}
 Equity: ${equity}
 `;
 
-/** @param {string} id @param {{ recruiting?: object[], note: string, why: string }} fields */
-function planFor(id, { recruiting, note, why }) {
+function planFor(id: string, { recruiting, note, why }: { recruiting?: Recruiting[], note: string, why: string }) {
   return {
     venture: id,
     updated: "2026-10-29",
@@ -161,14 +176,14 @@ function planFor(id, { recruiting, note, why }) {
   };
 }
 
-async function writePerson(workspace, id, route, input) {
-  const r = await call({ venture: id, route, action: "write", input, actor: "person", workspace, via: "replay" });
+async function writePerson(workspace: string, id: string, route: string, input: Record<string, unknown>) {
+  const r = await call({ venture: id, route, action: "write", input, actor: "person", workspace, via: "replay" }) as Answer<{ draft?: boolean }>;
   if (!r.ok) throw new Error(`${route} write: ${r.error ?? JSON.stringify(r)}`);
   if (r.result?.draft) throw new Error(`${route} write by a person landed as a draft`);
   return r;
 }
 
-async function setup(workspace, id, { ownership }) {
+async function setup(workspace: string, id: string, { ownership }: { ownership: boolean }) {
   const dir = join(workspace, "ventures", id);
   const made = spawnSync("node", [join(repo, "packages/naive/src/engine/init-venture.ts"), dir, id, "--phase", "discovery"], { encoding: "utf8" });
   if (made.status !== 0) throw new Error(made.stderr || made.stdout);
@@ -209,15 +224,15 @@ async function setup(workspace, id, { ownership }) {
   return dir;
 }
 
-async function readRoute(workspace, id, route) {
-  return call({ venture: id, route, action: "read", actor: "person", workspace, via: "replay" });
+async function readRoute<T = unknown>(workspace: string, id: string, route: string) {
+  return call({ venture: id, route, action: "read", actor: "person", workspace, via: "replay" }) as Promise<Answer<T>>;
 }
 
 const ws = mkdtempSync(join(tmpdir(), "netflix-culture-"));
 try {
   const bare = join(ws, "ventures", "no-team");
   spawnSync("node", [join(repo, "packages/naive/src/engine/init-venture.ts"), bare, "no-team", "--phase", "discovery"], { encoding: "utf8" });
-  const missingTeam = await readRoute(ws, "no-team", "people/team");
+  const missingTeam = await readRoute<ValidationTeam>(ws, "no-team", "people/team");
   const refused = gapsOf(missingTeam.result);
   let emptyPlanOk = false;
   const bareCheck = await call({ venture: "no-team", route: "people/team-plan", action: "check", workspace: ws, via: "replay" });
@@ -227,11 +242,12 @@ try {
 
   const id = "culture-fixture";
   const dir = await setup(ws, id, { ownership: false });
-  const reads = {};
+  const got: Record<string, Answer> = {};
   for (const route of ["foundation/problem", "knowledge/venture-profile", "foundation/alignment", "people/team", "people", "people/founders", "people/founders/fixture-founder", "governance/decision-rights", "governance/ownership", "people/team-plan"]) {
-    reads[route] = await readRoute(ws, id, route);
+    got[route] = await readRoute(ws, id, route);
   }
-  const ahead = [];
+  const reads = got as Reads;
+  const ahead: string[] = [];
   if (!reads["foundation/problem"].result?.statement) ahead.push("problem");
   if (typeof reads["knowledge/venture-profile"].result !== "string") ahead.push("profile");
   if (!reads["foundation/alignment"].result?.principles?.length) ahead.push("alignment");
@@ -242,8 +258,8 @@ try {
   if (!reads["governance/ownership"].not_found) ahead.push("ownership should be absent");
   if (!reads["people/team-plan"].not_found) ahead.push("team plan should be absent before the write");
   const goodNote = noteFor("alignment:own-words");
-  if (goodNote.includes(reads["foundation/problem"].result.statement)) ahead.push("note pastes the problem");
-  if (goodNote.includes(reads["foundation/alignment"].result.principles[0].statement)) ahead.push("note pastes alignment");
+  if (goodNote.includes(must(reads["foundation/problem"].result, "foundation/problem").statement)) ahead.push("note pastes the problem");
+  if (goodNote.includes(must(reads["foundation/alignment"].result, "foundation/alignment").principles[0].statement)) ahead.push("note pastes alignment");
   if (ahead.length) fail("NoReadAhead", ahead.join("; "));
   else pass("NoReadAhead", "a missing people/team refuses a skill; the main path reads the problem, profile, alignment, team, people, and founder the venture has; decision-rights, ownership, and the team plan are absent; the note cites alignment:own-words and does not paste either statement");
 
@@ -280,11 +296,11 @@ try {
   writeFileSync(proposalPath, JSON.stringify(proposal));
   const proposed = mentura(["propose", "--venture", id, "--input", proposalPath], ws);
   if (proposed.status !== 0) fail("YouAccept", `propose failed: ${proposed.stderr || proposed.stdout}`);
-  const openDecision = await readRoute(ws, id, "decisions/team-plan-culture");
-  const pasted = { ...planFor(id, { note: `${goodNote}\n${reads["foundation/alignment"].result.principles[0].statement}`, why, recruiting: [{ role: "practice-lead", kind: "hire", brief: "people/briefs/practice-lead.md" }] }) };
-  const agentPaste = await call({ venture: id, route: "people/team-plan", action: "write", input: pasted, actor: "agent", workspace: ws, via: "replay" });
-  const liveAfterPaste = await readRoute(ws, id, "people/team-plan");
-  const held = agentPaste.result?.draft === true && !liveAfterPaste.result?.note?.includes(reads["foundation/alignment"].result.principles[0].statement);
+  const openDecision = await readRoute<DecisionRecord>(ws, id, "decisions/team-plan-culture");
+  const pasted = { ...planFor(id, { note: `${goodNote}\n${must(reads["foundation/alignment"].result, "foundation/alignment").principles[0].statement}`, why, recruiting: [{ role: "practice-lead", kind: "hire", brief: "people/briefs/practice-lead.md" }] }) };
+  const agentPaste = await call({ venture: id, route: "people/team-plan", action: "write", input: pasted, actor: "agent", workspace: ws, via: "replay" }) as Answer<{ draft?: boolean }>;
+  const liveAfterPaste = await readRoute<TeamPlan>(ws, id, "people/team-plan");
+  const held = agentPaste.result?.draft === true && !liveAfterPaste.result?.note?.includes(must(reads["foundation/alignment"].result, "foundation/alignment").principles[0].statement);
   if (!held) fail("YouAccept", `an agent write while team-plan-culture is open was not held as a draft: ${JSON.stringify(agentPaste.result)?.slice(0, 300)}`);
 
   const shared = {
@@ -298,10 +314,10 @@ try {
   const before = cultureCheck({ ...shared, decision: openDecision.result });
   const decided = mentura(["decide", "team-plan-culture", "--venture", id, "--by", "Fixture Founder", "--confirm", "team-plan-culture"], ws);
   if (decided.status !== 0) fail("YouAccept", `decide failed: ${decided.stderr || decided.stdout}`);
-  const decision = await readRoute(ws, id, "decisions/team-plan-culture");
+  const decision = await readRoute<DecisionRecord>(ws, id, "decisions/team-plan-culture");
   const after = cultureCheck({ ...shared, decision: decision.result });
   const pastedReasons = cultureCheck({ ...shared, plan: { ...liveAfterPaste.result, note: `${goodNote}\nThe founder writes the culture doc in their own words.` }, decision: decision.result });
-  const problemReasons = cultureCheck({ ...shared, plan: { ...liveAfterPaste.result, note: `${goodNote}\n${reads["foundation/problem"].result.statement}` }, decision: decision.result });
+  const problemReasons = cultureCheck({ ...shared, plan: { ...liveAfterPaste.result, note: `${goodNote}\n${must(reads["foundation/problem"].result, "foundation/problem").statement}` }, decision: decision.result });
   const markedReasons = cultureCheck({ ...shared, brief: `${goodBrief}\nkeeper test`, decision: decision.result });
   const figuredReasons = cultureCheck({ ...shared, brief: briefFor("1000", "not recorded"), decision: decision.result });
   if (held && before.length && !after.length && pastedReasons.length && problemReasons.length && markedReasons.length && figuredReasons.length && decision.result?.provenance?.approved_by === "Fixture Founder") {
@@ -312,7 +328,7 @@ try {
 
   const id2 = "culture-owned";
   const dir2 = await setup(ws, id2, { ownership: true });
-  const owned = await readRoute(ws, id2, "governance/ownership");
+  const owned = await readRoute<Ownership>(ws, id2, "governance/ownership");
   const ownedBrief = briefFor("see governance/ownership", "see governance/ownership");
   mkdirSync(join(dir2, "people/briefs"), { recursive: true });
   writeFileSync(join(dir2, "people/briefs/practice-lead.md"), ownedBrief);
@@ -321,12 +337,12 @@ try {
   writeFileSync(join(ws, "proposal-2.json"), JSON.stringify(proposal2));
   const proposed2 = mentura(["propose", "--venture", id2, "--input", join(ws, "proposal-2.json")], ws);
   const decided2 = mentura(["decide", "team-plan-culture", "--venture", id2, "--by", "Fixture Founder", "--confirm", "team-plan-culture"], ws);
-  const decision2 = await readRoute(ws, id2, "decisions/team-plan-culture");
-  const plan2 = await readRoute(ws, id2, "people/team-plan");
+  const decision2 = await readRoute<DecisionRecord>(ws, id2, "decisions/team-plan-culture");
+  const plan2 = await readRoute<TeamPlan>(ws, id2, "people/team-plan");
   const ownedInputs = {
-    plan: plan2.result, alignment: (await readRoute(ws, id2, "foundation/alignment")).result,
-    team: (await readRoute(ws, id2, "people/team")).result, ownership: owned.result,
-    problem: (await readRoute(ws, id2, "foundation/problem")).result, decision: decision2.result,
+    plan: plan2.result, alignment: (await readRoute<Alignment>(ws, id2, "foundation/alignment")).result,
+    team: (await readRoute<ValidationTeam>(ws, id2, "people/team")).result, ownership: owned.result,
+    problem: (await readRoute<ValidationProblem>(ws, id2, "foundation/problem")).result, decision: decision2.result,
   };
   const cleanPay = cultureCheck({ ...ownedInputs, brief: ownedBrief });
   const copiedPay = cultureCheck({ ...ownedInputs, brief: briefFor("see governance/ownership", "17") });
@@ -336,7 +352,7 @@ try {
     fail("NoInventedPay", `propose ${proposed2.status} decide ${decided2.status} clean ${cleanPay.join("; ") || "ok"} copied ${copiedPay.join("; ") || "ok"} ownership ${owned.ok}`);
   }
 } catch (error) {
-  fail("Replay", error.stack ?? error.message);
+  fail("Replay", (error as Error).stack ?? (error as Error).message);
 } finally {
   rmSync(ws, { recursive: true, force: true });
 }

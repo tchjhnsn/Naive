@@ -14,8 +14,8 @@ import { build } from "./publish-build.ts";
 
 const repo = new URL("../../../../../..", import.meta.url).pathname;
 let failed = 0;
-const expect = (name, ok, detail) => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${JSON.stringify(detail)}`}`); if (!ok) failed++; };
-const walk = (p) => !existsSync(p) ? [] : statSync(p).isDirectory() ? readdirSync(p).flatMap((n) => walk(join(p, n))) : [p];
+const expect = (name: string, ok: unknown, detail?: unknown) => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${JSON.stringify(detail)}`}`); if (!ok) failed++; };
+const walk = (p: string): string[] => !existsSync(p) ? [] : statSync(p).isDirectory() ? readdirSync(p).flatMap((n) => walk(join(p, n))) : [p];
 
 // Prose fields only: ids, enums and derived short forms are left alone so the records still check.
 const PROSE = new Set(["statement", "who", "why", "description", "summary", "answer", "promise", "note", "text", "rationale", "title", "question", "jobs", "forms", "segment"]);
@@ -24,20 +24,20 @@ const FIXTURE = "packages/naive/src/records/examples/software/ventures/relay";
 const ws = mkdtempSync(join(tmpdir(), "canaries-"));
 const v = join(ws, "venture");
 cpSync(join(repo, FIXTURE), v, { recursive: true });
-const seeded = {};
+const seeded: Record<string, string> = {};
 for (const f of walk(v).filter((f) => f.endsWith(".json") && !f.endsWith(".visibility.json"))) {
   const rel = relative(v, f);
   const tag = `CANARY-${rel.replace(/[^a-z0-9]+/gi, "-").replace(/-json$/, "")}`;
   let n = 0;
-  const seed = (x, k) => typeof x === "string" ? (PROSE.has(k) && x.includes(" ") && x.length > 15 ? (n++, `${x} ${tag}`) : x)
+  const seed = (x: unknown, k: string): unknown => typeof x === "string" ? (PROSE.has(k) && x.includes(" ") && x.length > 15 ? (n++, `${x} ${tag}`) : x)
     : Array.isArray(x) ? x.map((y) => seed(y, k)) : x && typeof x === "object" ? Object.fromEntries(Object.entries(x).map(([kk, y]) => [kk, seed(y, kk)])) : x;
-  let j;
+  let j: unknown;
   try { j = JSON.parse(readFileSync(f, "utf8")); } catch { continue; }
-  const out = seed(j);
+  const out = seed(j, "");
   if (n) { writeFileSync(f, JSON.stringify(out, null, 2) + "\n"); seeded[tag] = rel; }
 }
 
-const fx = (f) => join(repo, "packages/naive/src/functions/marketing-and-sales/marketing/fixtures", f);
+const fx = (f: string) => join(repo, "packages/naive/src/functions/marketing-and-sales/marketing/fixtures", f);
 const channels = {
   facts: { outputs: ["generated/venture-facts.json"], builders: [fx("facts.ts")] },
   artifact: { outputs: ["generated/venture-facts.json", "artifact/index.html"], builders: [fx("facts.ts"), fx("page.ts")] },
@@ -52,13 +52,13 @@ try {
     const r = build(c, v);
     expect(`${c} builds from the seeded venture through the gate`, r.ok, r.errors?.join("; ").slice(0, 400));
   }
-  const found = [];
+  const found: { output: string, record: string }[] = [];
   for (const o of outputs) {
     if (!existsSync(join(out, o))) continue;
     for (const tag of new Set(readFileSync(join(out, o), "utf8").match(/CANARY-[A-Za-z0-9-]+/g) ?? [])) found.push({ output: o, record: seeded[tag] ?? tag });
   }
-  const known = JSON.parse(readFileSync(join(repo, "packages/naive/src/engine/known-leaks.json"), "utf8")).leaks;
-  const key = (l) => `${l.output} <- ${l.record}`;
+  const known = (JSON.parse(readFileSync(join(repo, "packages/naive/src/engine/known-leaks.json"), "utf8")) as { leaks: { output: string, record: string }[] }).leaks;
+  const key = (l: { output: string, record: string }) => `${l.output} <- ${l.record}`;
   const knownKeys = new Set(known.map(key)), foundKeys = new Set(found.map(key));
   const fresh = found.filter((l) => !knownKeys.has(key(l)));
   const fixed = known.filter((l) => !foundKeys.has(key(l)));

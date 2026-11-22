@@ -1,21 +1,28 @@
 // Step definitions for strategic-foundation.feature (EE-051), run by packages/naive/src/engine/bdd.ts, on a copy of
 // the example workspace.
 
-import { spawnSync } from "node:child_process";
+import { spawnSync, type SpawnSyncReturns } from "node:child_process";
 import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-const repo = new URL("../../../../../../", import.meta.url).pathname;
-const ok = (cond, msg) => { if (!cond) throw new Error(msg); };
-const node = (w, script, ...a) => spawnSync("node", [join(repo, script), ...a], { encoding: "utf8", env: { ...process.env, MENTURA_WORKSPACE: w.ws }, input: "" });
-const cli = (w, ...a) => node(w, "packages/naive/src/interfaces/cli/mentura.mjs", ...a);
-const report = (w) => Object.fromEntries(JSON.parse(node(w, "packages/naive/src/engine/foundation.ts", w.dir, "--json").stdout).flatMap((q) => q.statements.map((s) => [s.id, s.status])));
-// One ICP profile record, foundation/icp/owners.json.
-const icp = (id, forms) => ({ venture: id, updated: "2026-10-28", id: "owners", who: "Owners of small service shops", primary: true, ...(forms ? { problem_forms: forms } : {}) });
-const putIcp = (w, rec) => { mkdirSync(join(w.dir, "foundation/icp"), { recursive: true }); writeFileSync(join(w.dir, "foundation/icp/owners.json"), JSON.stringify(rec)); };
+/** What one scenario's steps share; the first Given step sets the workspace. */
+type World = { ws: string, venture: string, dir: string, cleanup: () => void, p: SpawnSyncReturns<string>, report?: Record<string, string> };
+type Step = [RegExp, (w: World, ...groups: string[]) => unknown];
+/** One question of the foundation report, as foundation.mjs --json prints it. */
+type Question = { question: string, statements: { id: string, status: string, value?: unknown }[] };
 
-export const steps = [
+const repo = new URL("../../../../../../", import.meta.url).pathname;
+const ok = (cond: unknown, msg: string) => { if (!cond) throw new Error(msg); };
+const node = (w: World, script: string, ...a: string[]) => spawnSync("node", [join(repo, script), ...a], { encoding: "utf8", env: { ...process.env, MENTURA_WORKSPACE: w.ws }, input: "" });
+const cli = (w: World, ...a: string[]) => node(w, "packages/naive/src/interfaces/cli/mentura.mjs", ...a);
+const foundation = (w: World) => JSON.parse(node(w, "packages/naive/src/engine/foundation.ts", w.dir, "--json").stdout) as Question[];
+const report = (w: World) => Object.fromEntries(foundation(w).flatMap((q) => q.statements.map((s) => [s.id, s.status])));
+// One ICP profile record, foundation/icp/owners.json.
+const icp = (id: string, forms?: string[]) => ({ venture: id, updated: "2026-10-28", id: "owners", who: "Owners of small service shops", primary: true, ...(forms ? { problem_forms: forms } : {}) });
+const putIcp = (w: World, rec: unknown) => { mkdirSync(join(w.dir, "foundation/icp"), { recursive: true }); writeFileSync(join(w.dir, "foundation/icp/owners.json"), JSON.stringify(rec)); };
+
+export const steps: Step[] = [
   [/^the example venture "([a-z-]+)"$/, (w, id) => {
     const d = mkdtempSync(join(tmpdir(), "foundation-"));
     cpSync(join(repo, "packages/naive/src/records/examples/workspace"), join(d, "workspace"), { recursive: true });
@@ -28,12 +35,12 @@ export const steps = [
   }],
   [/^the founder asks for the strategic foundation$/, (w) => { w.report = report(w); }],
   [/^"([a-z-]+)" shows "([^"]+)"$/, (w, id, v) => {
-    const s = JSON.parse(node(w, "packages/naive/src/engine/foundation.ts", w.dir, "--json").stdout).flatMap((q) => q.statements).find((x) => x.id === id);
+    const s = foundation(w).flatMap((q) => q.statements).find((x) => x.id === id);
     ok(s?.value === v, `${id} shows ${JSON.stringify(s?.value)}`);
   }],
   [/^an ICP for "([a-z-]+)" that names no problem form$/, (w, id) => putIcp(w, icp(id))],
   [/^it answers "([a-z]+)", "([a-z]+)", "([a-z]+)", "([a-z]+)", "([a-z]+)", "([a-z]+)", "([a-z]+)" and "([a-z]+)"$/, (w, ...qs) => {
-    const got = JSON.parse(node(w, "packages/naive/src/engine/foundation.ts", w.dir, "--json").stdout).map((q) => q.question);
+    const got = foundation(w).map((q) => q.question);
     ok(got.join() === qs.join(), `questions: ${got.join()}`);
   }],
   [/^"([a-z-]+)" is "([a-z]+)"$/, (w, id, status) => ok((w.report ??= report(w))[id] === status, `${id} is ${w.report[id]}, not ${status}`)],

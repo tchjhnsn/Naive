@@ -13,14 +13,14 @@ import { check } from "../../../src/engine/check-public.ts";
 
 const repo = new URL("../../../../../", import.meta.url).pathname;
 const example = join(repo, "packages/naive/src/records/examples/software/ventures/relay");
-const fx = (f) => join(repo, "packages/naive/src/functions/marketing-and-sales/marketing/fixtures", f);
+const fx = (f: string) => join(repo, "packages/naive/src/functions/marketing-and-sales/marketing/fixtures", f);
 const channels = {
   site: { outputs: ["generated/venture-facts.json"], builders: [fx("facts.ts")] },
   artifact: { outputs: ["generated/venture-facts.json", "artifact/index.html"], builders: [fx("facts.ts"), fx("page.ts")] },
   foundation: { outputs: ["artifact/foundation.html"], builders: [fx("foundation.ts")] },
 };
 const tmp = mkdtempSync(join(tmpdir(), "replay-mdx-"));
-const say = (rule, verdict, what) => console.log(`${rule.padEnd(26)} ${verdict.padEnd(5)} ${what}`);
+const say = (rule: string, verdict: string, what: string) => console.log(`${rule.padEnd(26)} ${verdict.padEnd(5)} ${what}`);
 
 try {
   // R1 on the branch: the same channel through packages/naive/src/functions/marketing-and-sales/marketing/publish-build.ts.
@@ -31,11 +31,11 @@ try {
 
   // Fixture venture for R2 to R4.
   const v = join(tmp, "v");
-  const w = (rel, x) => { mkdirSync(join(v, rel, ".."), { recursive: true }); writeFileSync(join(v, rel), typeof x === "string" ? x : JSON.stringify(x, null, 2)); };
+  const w = (rel: string, x: unknown) => { mkdirSync(join(v, rel, ".."), { recursive: true }); writeFileSync(join(v, rel), typeof x === "string" ? x : JSON.stringify(x, null, 2)); };
   w("venture.json", { id: "v", name: "V", phase: "discovery", core: { promise: "We help founders know which decision matters most this week and why." } });
   w("foundation/problem.json", { statement: "Founders cannot tell which decision matters most this week, so they stall after building." });
   w("foundation/problem.visibility.json", { fields: { statement: { visibility: "variant" } } });
-  const mdx = (meta, body) => w("operations/marketing/content/problem.mdx", `---\nvariant_of: foundation/problem.json#statement\naudience: founders\n${meta}\n---\n${body}\n`);
+  const mdx = (meta: string, body: string) => w("operations/marketing/content/problem.mdx", `---\nvariant_of: foundation/problem.json#statement\naudience: founders\n${meta}\n---\n${body}\n`);
 
   mdx("publish: false", "Choosing what to do next is the hard part.");
   say("GateAcceptsHonestVariant", check(v).errors.length ? "FAIL" : "PASS", `check-public on a record#field draft: ${check(v).errors.length} blocked (main blocks it: "variant_of ... does not exist")`);

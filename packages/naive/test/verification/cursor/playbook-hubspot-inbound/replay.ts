@@ -9,6 +9,20 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { call, routes } from "../../../../src/router/router.mjs";
 
+/** A route's result, as far as this replay reads it: the content route's result is text or text by path, which contentFiles reads. */
+type Result = {
+  pages?: { path: string }[], statement?: string, id?: string, files?: number | null, violations?: { found: string }[],
+  channels?: { rules?: { approvers?: string[] }[] }[], errors?: { errors?: string[] }[], [key: string]: unknown,
+};
+/** What the router answers for a read, a run or a write. */
+type Res = { ok: boolean, error?: string, result?: Result | null, not_found?: { note?: string }, source?: { address?: string, path?: string } };
+/** Which fixture records build writes, and which drafts. */
+type BuildOpt = { sitemap?: boolean, icp?: boolean, problem?: boolean, product?: boolean, brand?: boolean, policy?: boolean, folder?: string, drafts?: string };
+/** A draft's frontmatter as build writes it. */
+type Front = { variant_of: string, audience: string, publish: boolean, page: string, stage: string, flywheel: string, pillar: boolean, links_to: string, gated: boolean, approved_by?: string };
+/** Frontmatter as frontmatter() reads it back: text, except publish once it is set. */
+type Meta = { publish?: string | boolean, [key: string]: string | boolean | undefined };
+
 const NAMED = [
   "marketing/sitemap",
   "foundation/icp",
@@ -22,10 +36,10 @@ const NAMED = [
   "operations/marketing/public",
 ];
 
-const STAGES = new Set(["awareness", "consideration", "decision", "onboarding", "adoption", "retention", "advocacy"]);
-const FLYWHEELS = new Set(["attract", "engage", "delight"]);
-const rows = [];
-const note = (rule, expect, ok, detail) => {
+const STAGES = new Set<unknown>(["awareness", "consideration", "decision", "onboarding", "adoption", "retention", "advocacy"]);
+const FLYWHEELS = new Set<unknown>(["attract", "engage", "delight"]);
+const rows: { rule: string, expect: string, ok: unknown, detail: unknown }[] = [];
+const note = (rule: string, expect: string, ok: unknown, detail: unknown) => {
   rows.push({ rule, expect, ok, detail });
   console.log(`${ok ? "PASS" : "FAIL"}  ${rule}  expected ${expect}: ${detail}`);
 };
@@ -124,28 +138,28 @@ const sitemap = {
 
 const GOOD = "A shop owner can see the week on one page.";
 
-function mdx(fields, body) {
+function mdx(fields: Front, body: string) {
   const lines = ["---"];
   for (const [k, v] of Object.entries(fields)) if (v !== undefined) lines.push(`${k}: ${v}`);
   lines.push("---", "", body, "");
   return lines.join("\n");
 }
 
-function frontmatter(text) {
+function frontmatter(text: string): { meta: Meta, body: string } {
   const m = text.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/);
   if (!m) return { meta: {}, body: text };
-  const meta = Object.fromEntries(m[1].split("\n").map((l) => l.match(/^([a-z_]+):\s*(.*)$/)).filter(Boolean).map(([, k, v]) => [k, v.trim()]));
+  const meta: Meta = Object.fromEntries(m[1].split("\n").map((l) => l.match(/^([a-z_]+):\s*(.*)$/)).filter((x) => x !== null).map(([, k, v]) => [k, v.trim()]));
   if (meta.publish) meta.publish = meta.publish === "true";
   return { meta, body: m[2] };
 }
 
-function writeJson(dir, rel, value) {
+function writeJson(dir: string, rel: string, value: unknown) {
   const p = join(dir, rel);
   mkdirSync(join(p, ".."), { recursive: true });
   writeFileSync(p, JSON.stringify(value, null, 2));
 }
 
-function build(dir, opt = {}) {
+function build(dir: string, opt: BuildOpt = {}) {
   writeJson(dir, "venture.json", ventureJson);
   if (opt.sitemap !== false) writeJson(dir, "marketing/sitemap.json", sitemap);
   if (opt.icp !== false) writeJson(dir, `foundation/icp/${icp.id}.json`, icp);
@@ -156,7 +170,7 @@ function build(dir, opt = {}) {
   const folder = opt.folder ?? "operations/marketing/content";
   const drafts = opt.drafts ?? "good";
   if (drafts === "none") return;
-  const home = {
+  const home: Front = {
     variant_of: "foundation/problem.json",
     audience: "shop-owner",
     publish: false,
@@ -167,7 +181,7 @@ function build(dir, opt = {}) {
     links_to: "",
     gated: false,
   };
-  const guide = {
+  const guide: Front = {
     variant_of: "product/offer.json",
     audience: "shop-owner",
     publish: false,
@@ -179,7 +193,7 @@ function build(dir, opt = {}) {
     gated: false,
   };
   let homeBody = GOOD;
-  let guideBody = "This page lines up two ways to keep a shop's week.";
+  const guideBody = "This page lines up two ways to keep a shop's week.";
   if (drafts === "bad-audience") home.audience = "customers";
   if (drafts === "bad-stage") home.stage = "conversion";
   if (drafts === "missing-page") {
@@ -202,7 +216,7 @@ function build(dir, opt = {}) {
   writeFile(dir, `${folder}/guide/approaches.mdx`, mdx(guide, guideBody));
 }
 
-function writeFile(dir, rel, text) {
+function writeFile(dir: string, rel: string, text: string) {
   const p = join(dir, rel);
   mkdirSync(join(p, ".."), { recursive: true });
   writeFileSync(p, text);
@@ -215,38 +229,38 @@ function workspace() {
   return { ws, dir };
 }
 
-async function read(ws, route) {
-  return call({ venture: "inbound-fixture", route, action: "read", workspace: ws, via: "replay", actor: "agent" });
+async function read(ws: string, route: string) {
+  return call({ venture: "inbound-fixture", route, action: "read", workspace: ws, via: "replay", actor: "agent" }) as Promise<Res>;
 }
-async function run(ws, route) {
-  return call({ venture: "inbound-fixture", route, action: "run", workspace: ws, via: "replay", actor: "agent" });
+async function run(ws: string, route: string) {
+  return call({ venture: "inbound-fixture", route, action: "run", workspace: ws, via: "replay", actor: "agent" }) as Promise<Res>;
 }
 
-function contentFiles(res) {
+function contentFiles(res: { ok: boolean, result?: unknown, source?: Res["source"] }): { path: string, text: string }[] {
   if (!res?.ok || res.result == null) return [];
   if (typeof res.result === "string") return [{ path: res.source?.address ?? res.source?.path ?? "", text: res.result }];
-  return Object.entries(res.result).filter(([, text]) => typeof text === "string").map(([path, text]) => ({ path, text }));
+  return Object.entries(res.result).filter((e): e is [string, string] => typeof e[1] === "string").map(([path, text]) => ({ path, text }));
 }
 
-function pagePaths(sitemapRes) {
+function pagePaths(sitemapRes: Res) {
   const pages = sitemapRes?.result?.pages ?? [];
   return pages.map((p) => p.path);
 }
 
-function checkCovered(sitemapRes, contentRes) {
+function checkCovered(sitemapRes: Res, contentRes: Res) {
   const pages = pagePaths(sitemapRes);
   const got = new Set(contentFiles(contentRes).map((f) => frontmatter(f.text).meta.page));
   const missing = pages.filter((p) => !got.has(p));
   return { ok: pages.length > 0 && missing.length === 0, missing, pages };
 }
 
-function checkAudience(icpRes, contentRes) {
-  const ids = new Set(Object.keys(icpRes?.result ?? {}));
+function checkAudience(icpRes: Res, contentRes: Res) {
+  const ids = new Set<unknown>(Object.keys(icpRes?.result ?? {}));
   const bad = contentFiles(contentRes).filter((f) => !ids.has(frontmatter(f.text).meta.audience));
   return { ok: contentFiles(contentRes).length > 0 && bad.length === 0, bad: bad.map((f) => frontmatter(f.text).meta.audience) };
 }
 
-function checkStage(contentRes) {
+function checkStage(contentRes: Res) {
   const bad = contentFiles(contentRes).filter((f) => {
     const m = frontmatter(f.text).meta;
     return !STAGES.has(m.stage) || !FLYWHEELS.has(m.flywheel);
@@ -254,7 +268,7 @@ function checkStage(contentRes) {
   return { ok: contentFiles(contentRes).length > 0 && bad.length === 0, bad: bad.map((f) => frontmatter(f.text).meta.stage) };
 }
 
-function checkPillar(contentRes) {
+function checkPillar(contentRes: Res) {
   const files = contentFiles(contentRes).map((f) => ({ ...f, meta: frontmatter(f.text).meta }));
   const pillars = files.filter((f) => f.meta.pillar === "true");
   const hidden = files.some((f) => f.path.includes("/_private/"));
@@ -263,19 +277,19 @@ function checkPillar(contentRes) {
   return { ok: pillars.length === 1 && !hidden && !gated && links, pillars: pillars.length, gated, hidden };
 }
 
-function gateReport(res) {
+function gateReport(res: Res): Result {
   if (res.ok) return res.result ?? {};
-  try { return JSON.parse(res.error); } catch { return { files: null, errors: [], raw: res.error }; }
+  try { return JSON.parse(String(res.error)); } catch { return { files: null, errors: [], raw: res.error }; }
 }
 
-function checkApprover(policyRes, contentRes) {
-  const approvers = new Set((policyRes?.result?.channels ?? []).flatMap((c) => (c.rules ?? []).flatMap((r) => r.approvers ?? [])));
+function checkApprover(policyRes: Res, contentRes: Res) {
+  const approvers = new Set<unknown>((policyRes?.result?.channels ?? []).flatMap((c) => (c.rules ?? []).flatMap((r) => r.approvers ?? [])));
   const published = contentFiles(contentRes).map((f) => frontmatter(f.text).meta).filter((m) => m.publish === true);
   const bad = published.filter((m) => !approvers.has(m.approved_by));
   return { ok: bad.length === 0, published: published.length, bad: bad.map((m) => m.approved_by ?? "") };
 }
 
-async function withVenture(opt, fn) {
+async function withVenture(opt: BuildOpt, fn: (ws: string, dir: string) => Promise<void>) {
   const { ws, dir } = workspace();
   try {
     build(dir, opt);
@@ -285,12 +299,12 @@ async function withVenture(opt, fn) {
   }
 }
 
-const table = new Set(routes().map((r) => r.route));
+const table = new Set(routes().map((r: { route: string }) => r.route));
 for (const route of NAMED) {
   note("route exists", "present", table.has(route), route);
 }
 
-const contentRoute = routes().find((r) => r.route === "marketing/content");
+const contentRoute = routes().find((r: { route: string, actions: string[] }) => r.route === "marketing/content");
 note(
   "content route has no write",
   "write absent",
@@ -305,19 +319,19 @@ await withVenture({ drafts: "none" }, async (ws, dir) => {
   const inputs = await run(ws, "marketing/design-system/inputs");
   const list = await read(ws, "product");
   const id = list.ok && list.result ? Object.keys(list.result)[0] : null;
-  const item = id ? await read(ws, `product/${id}`) : { ok: false, error: "no product id" };
+  const item: Res = id ? await read(ws, `product/${id}`) : { ok: false, error: "no product id" };
   const voiceBefore = await run(ws, "marketing/voice");
   const policyRes = await read(ws, "governance/publication-policy");
   build(dir, { drafts: "good" });
   const contentRes = await read(ws, "marketing/content");
   const voice = await run(ws, "marketing/voice");
   const gate = await run(ws, "operations/marketing/public");
-  const write = await call({ venture: "inbound-fixture", route: "marketing/content", action: "write", workspace: ws, via: "replay", actor: "agent", input: {} });
+  const write = await call({ venture: "inbound-fixture", route: "marketing/content", action: "write", workspace: ws, via: "replay", actor: "agent", input: {} }) as Res;
 
   note("main path sitemap", "2 pages", sitemapRes.ok && sitemapRes.result?.pages?.length === 2, `${sitemapRes.result?.pages?.length ?? 0} pages`);
   note("main path icp", "shop-owner", icpRes.ok && Object.keys(icpRes.result ?? {}).join() === "shop-owner", Object.keys(icpRes.result ?? {}).join() || (icpRes.not_found?.note ?? icpRes.error));
   note("main path problem", "statement", problemRes.ok && typeof problemRes.result?.statement === "string", problemRes.ok ? "statement present" : (problemRes.not_found?.note ?? problemRes.error));
-  note("main path inputs", "icp:shop-owner and problem", inputs.ok && inputs.result?.["icp:shop-owner"] && inputs.result?.problem, inputs.ok ? Object.keys(inputs.result).sort().join(", ") : inputs.error);
+  note("main path inputs", "icp:shop-owner and problem", inputs.ok && inputs.result?.["icp:shop-owner"] && inputs.result?.problem, inputs.ok ? Object.keys(inputs.result ?? {}).sort().join(", ") : inputs.error);
   note("main path product list", "offer", id === "offer", id ?? list.error);
   note("main path product item", "offer", item.ok && item.result?.id === "offer", item.result?.id ?? item.error);
   note("main path voice before drafts", "runs", voiceBefore.ok, voiceBefore.ok ? `${voiceBefore.result?.files ?? 0} files` : voiceBefore.error);
@@ -349,10 +363,10 @@ await withVenture({ icp: false, drafts: "none" }, async (ws) => {
 
 await withVenture({ brand: false, drafts: "good" }, async (ws) => {
   const voice = await run(ws, "marketing/voice");
-  note("voice with no brand", "runs, no rule broken", voice.ok && (voice.result?.violations?.length ?? 1) === 0, voice.ok ? `${voice.result.files} files` : voice.error);
+  note("voice with no brand", "runs, no rule broken", voice.ok && (voice.result?.violations?.length ?? 1) === 0, voice.ok ? `${voice.result?.files} files` : voice.error);
 });
 
-async function failCase(name, opt, expect, pred) {
+async function failCase(name: string, opt: BuildOpt, expect: string, pred: (ws: string) => Promise<{ ok: unknown, detail: unknown }>) {
   await withVenture(opt, async (ws) => {
     const detail = await pred(ws);
     note(name, expect, detail.ok, detail.detail);

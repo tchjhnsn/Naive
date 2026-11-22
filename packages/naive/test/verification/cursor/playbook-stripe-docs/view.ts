@@ -1,6 +1,9 @@
 export const title = "Stripe docs playbook: the spec a caller reads, then one changelog entry";
 
-const label = {
+/** The TLA+ state this view reads: one field per variable it names. */
+type Vars = { phase: string };
+
+const label: Record<string, string | null> = {
   start: "Start",
   stopped: "Stopped: no reader on file",
   reader: "Reader known",
@@ -23,9 +26,9 @@ const label = {
   seen: "Habit and entries listed",
 };
 
-export const state = (v) => label[v.phase] ?? v.phase;
+export const state = (v: Vars) => label[v.phase] ?? v.phase;
 
-export const group = (v) => {
+export const group = (v: Vars) => {
   const p = v.phase;
   if (p === "start" || p === "stopped") return "waiting";
   if (p === "reader" || p === "listed" || p === "card" || p === "card-unlinked") return "product";
@@ -44,7 +47,7 @@ export const colors = {
   failed: "orange",
 };
 
-export const step = (action, _from, to) => {
+export const step = (action: string, _from: Vars, to: Vars) => {
   if (action === "Done") return null;
   if (action.startsWith("RunCheck")) {
     if (to.phase === "passed") return "you run the checks and they pass [every section is filled and the card names the reader]";

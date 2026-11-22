@@ -1,39 +1,52 @@
 // Step definitions for decisions.feature (EE-054, EE-057), run by packages/naive/src/engine/bdd.ts, on a copy of the
 // example workspace.
 
-import { spawnSync } from "node:child_process";
+import { spawnSync, type SpawnSyncReturns } from "node:child_process";
 import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 
+/** A decision as decisions.ts --json lists it, as far as these steps read it. */
+type Listed = { id: string, rank?: number | null, why: string[], awaiting?: string, render?: string, boundary?: string, firmness?: string, held_by?: string, lane?: string,
+  action?: { command?: string }, provenance?: { approved_by?: string, phase?: string, wording?: string } };
+/** What one scenario's steps share; the first Given step sets the workspace. */
+type World = { ws: string, venture: string, dir: string, cleanup: () => void, p: SpawnSyncReturns<string>, report?: { decisions: Listed[] } | null };
+type Step = [RegExp, (w: World, ...groups: string[]) => unknown];
+/** A need-now row, as need-now.ts --json prints it. */
+type NeedRow = { type: string, status: string, now: number };
+
 const repo = new URL("../../../../../../", import.meta.url).pathname;
-const ok = (cond, msg) => { if (!cond) throw new Error(msg); };
-const node = (w, script, ...a) => spawnSync("node", [join(repo, script), ...a], { encoding: "utf8", env: { ...process.env, MENTURA_WORKSPACE: w.ws }, input: "" });
-const put = (w, file, d) => { const f = join(w.dir, file); mkdirSync(dirname(f), { recursive: true }); writeFileSync(f, JSON.stringify(d, null, 2)); };
-const decide = (w, id, d) => put(w, `governance/decisions/${id}.decision.json`, { id, question: `What about ${id}?`, decides: { record: "decision-rights", path: "governance/decision-rights.json" }, status: "open", ...d });
-const venture = (w, f) => { const p = join(w.dir, "venture.json"); const v = JSON.parse(readFileSync(p, "utf8")); f(v); writeFileSync(p, JSON.stringify(v, null, 2)); };
-const find = (w, id) => (w.report ??= JSON.parse(node(w, "packages/naive/src/engine/decisions.ts", w.dir, "--json").stdout)).decisions.find((d) => d.id === id);
+const ok = (cond: unknown, msg: string) => { if (!cond) throw new Error(msg); };
+// A decision the step needs fails the scenario when it is not listed, as reading a field of undefined did.
+const must = <T,>(x: T | undefined, what: string): T => { if (x === undefined) throw new TypeError(`no decision ${what}`); return x; };
+const node = (w: World, script: string, ...a: string[]) => spawnSync("node", [join(repo, script), ...a], { encoding: "utf8", env: { ...process.env, MENTURA_WORKSPACE: w.ws }, input: "" });
+const put = (w: World, file: string, d: unknown) => { const f = join(w.dir, file); mkdirSync(dirname(f), { recursive: true }); writeFileSync(f, JSON.stringify(d, null, 2)); };
+const decide = (w: World, id: string, d: Record<string, unknown>) => put(w, `governance/decisions/${id}.decision.json`, { id, question: `What about ${id}?`, decides: { record: "decision-rights", path: "governance/decision-rights.json" }, status: "open", ...d });
+const venture = (w: World, f: (v: { kind?: string, phase?: string }) => void) => { const p = join(w.dir, "venture.json"); const v = JSON.parse(readFileSync(p, "utf8")); f(v); writeFileSync(p, JSON.stringify(v, null, 2)); };
+const find = (w: World, id: string) => (w.report ??= JSON.parse(node(w, "packages/naive/src/engine/decisions.ts", w.dir, "--json").stdout) as { decisions: Listed[] }).decisions.find((d) => d.id === id);
+const report = (w: World) => { find(w, "venture"); return must(w.report ?? undefined, "report"); };
+const needNow = (w: World, type: string) => (JSON.parse(node(w, "packages/naive/src/engine/need-now.ts", w.dir, "--json").stdout) as { rows: NeedRow[] }).rows.find((x) => x.type === type);
 
-const cli = (w, ...a) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.mjs"), ...a], { encoding: "utf8", env: { ...process.env, MENTURA_WORKSPACE: w.ws }, input: "" });
-const proposeAs = (w, d) => { const f = join(w.ws, "proposal.json"); writeFileSync(f, JSON.stringify(d)); w.p = cli(w, "propose", "--venture", w.venture, "--input", f, "--as", "builder"); w.report = null; };
+const cli = (w: World, ...a: string[]) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.mjs"), ...a], { encoding: "utf8", env: { ...process.env, MENTURA_WORKSPACE: w.ws }, input: "" });
+const proposeAs = (w: World, d: Record<string, unknown>) => { const f = join(w.ws, "proposal.json"); writeFileSync(f, JSON.stringify(d)); w.p = cli(w, "propose", "--venture", w.venture, "--input", f, "--as", "builder"); w.report = null; };
 
-export const steps = [
+export const steps: Step[] = [
   [/^the example venture "([a-z-]+)"$/, (w, id) => {
     const d = mkdtempSync(join(tmpdir(), "decisions-"));
     cpSync(join(repo, "packages/naive/src/records/examples/workspace"), join(d, "workspace"), { recursive: true });
     w.ws = join(d, "workspace"); w.venture = id; w.dir = join(w.ws, "ventures", id); w.cleanup = () => rmSync(d, { recursive: true, force: true });
   }],
   [/^an open decision "([a-z-]+)" that fails (closed|open)$/, (w, id, b) => decide(w, id, { boundary: `fail-${b}` })],
-  [/^the first ranked decisions are "([a-z-]+)", "([a-z-]+)"$/, (w, a, b) => { find(w, "venture"); const r = w.report.decisions.filter((d) => d.rank != null).map((d) => d.id); ok(r[0] === a && r[1] === b, `ranked: ${r.join(", ")}`); }],
-  [/^"([a-z-]+)" ranks above "([a-z-]+)" because "([^"]+)"$/, (w, a, b, why) => { const x = find(w, a), y = find(w, b); ok(x.rank > (y.rank ?? -1) && x.why.includes(why), `${a} ${x.rank} ${JSON.stringify(x.why)}; ${b} ${y?.rank}`); }],
+  [/^the first ranked decisions are "([a-z-]+)", "([a-z-]+)"$/, (w, a, b) => { const r = report(w).decisions.filter((d) => d.rank != null).map((d) => d.id); ok(r[0] === a && r[1] === b, `ranked: ${r.join(", ")}`); }],
+  [/^"([a-z-]+)" ranks above "([a-z-]+)" because "([^"]+)"$/, (w, a, b, why) => { const x = must(find(w, a), a), y = must(find(w, b), b); ok(Number(x.rank) > (y.rank ?? -1) && x.why.includes(why), `${a} ${x.rank} ${JSON.stringify(x.why)}; ${b} ${y?.rank}`); }],
   [/^an open decision "([a-z-]+)" under "([a-z-]+)"$/, (w, id, parent) => decide(w, id, { parent })],
   [/^an open decision "([a-z-]+)" needed in "([a-z]+)"$/, (w, id, phase) => decide(w, id, { needed_in: phase })],
   [/^an open decision "([a-z-]+)" needed in "([a-z]+)" and due at "([^"]+)"$/, (w, id, phase, due) => decide(w, id, { needed_in: phase, due })],
   [/^an open decision "([a-z-]+)" due at "([^"]+)"$/, (w, id, due) => decide(w, id, { due })],
   [/^it is now "([^"]+)"$/, (w, at) => { process.env.DECISIONS_NOW = at; const c = w.cleanup; w.cleanup = () => { delete process.env.DECISIONS_NOW; c(); }; }],
-  [/^an open decision "([a-z-]+)" about the product "([a-z-]+)"( that fails closed)?$/, (w, id, product, closed) =>
+  [/^an open decision "([a-z-]+)" about the product "([a-z-]+)"( that fails closed)?$/, (w, id, product, closed: string | undefined) =>
     put(w, `products/decisions/${product}.${id}.decision.json`, { id, question: `What about ${id}?`, status: "open", ...(closed ? { boundary: "fail-closed" } : {}) })],
-  [/^a decision "([a-z-]+)"(?: under "([a-z-]+)")? decided at "([^"]+)"( by nobody)?$/, (w, id, parent, at, nobody) =>
+  [/^a decision "([a-z-]+)"(?: under "([a-z-]+)")? decided at "([^"]+)"( by nobody)?$/, (w, id, parent: string | undefined, at, nobody: string | undefined) =>
     decide(w, id, { ...(parent ? { parent } : {}), status: "decided", answer: "yes", provenance: { drafted_by: { kind: "agent", id: "claude" }, ...(nobody ? {} : { approved_by: "Founder", approved_at: at, phase: "discovery", wording: "approved" }) } })],
   [/^an agent's wording for an open decision "([a-z-]+)"$/, (w, id) => decide(w, id, { answer: "Charge per seat", provenance: { drafted_by: { kind: "agent", id: "claude" } } })],
   [/^a decision "([a-z-]+)" with the outcome "([a-z-]+)" marked "([a-z]+)" and no actual outcome$/, (w, id, o, result) =>
@@ -79,9 +92,9 @@ export const steps = [
   [/^"([a-z-]+)" says to "([^"]+)"$/, (w, id, cmd) => ok(find(w, id)?.action?.command?.startsWith(cmd), `${id}: ${JSON.stringify(find(w, id)?.action)}`)],
   [/^"([A-Za-z]+)" answers "([a-z-]+)" with "([^"]+)"$/, (w, by, id, answer) => { const p = cli(w, "decide", id, "--venture", w.venture, "--by", by, "--answer", answer, "--confirm", id); ok(p.status === 0, `decide: ${p.stdout}${p.stderr}`); w.report = null; }],
   [/^"([a-z-]+)" was worded by the founder$/, (w, id) => ok(find(w, id)?.provenance?.wording === "own", `${id}: ${JSON.stringify(find(w, id)?.provenance)}`)],
-  [/^need-now suggests "([a-z-]+)" at ([0-9.]+)$/, (w, type, at) => { const r = JSON.parse(node(w, "packages/naive/src/engine/need-now.ts", w.dir, "--json").stdout).rows.find((x) => x.type === type); ok(r?.status === "suggest now" && r.now === Number(at), `${type}: ${JSON.stringify(r)}`); }],
-  [/^need-now holds back "([a-z-]+)"$/, (w, type) => { const r = JSON.parse(node(w, "packages/naive/src/engine/need-now.ts", w.dir, "--json").stdout).rows.find((x) => x.type === type); ok(r?.status === "hold back", `${type}: ${JSON.stringify(r)}`); }],
+  [/^need-now suggests "([a-z-]+)" at ([0-9.]+)$/, (w, type, at) => { const r = needNow(w, type); ok(r?.status === "suggest now" && r.now === Number(at), `${type}: ${JSON.stringify(r)}`); }],
+  [/^need-now holds back "([a-z-]+)"$/, (w, type) => { const r = needNow(w, type); ok(r?.status === "hold back", `${type}: ${JSON.stringify(r)}`); }],
   [/^"([a-z-]+)" can move on its own$/, (w, id) => ok(find(w, id)?.lane === "async", `${id}: ${find(w, id)?.lane}`)],
   [/^"([a-z-]+)" moves in order$/, (w, id) => ok(find(w, id)?.lane === "sync", `${id}: ${find(w, id)?.lane}`)],
-  [/^need-now rates "([a-z-]+)" at ([0-9.]+)$/, (w, type, at) => { const r = JSON.parse(node(w, "packages/naive/src/engine/need-now.ts", w.dir, "--json").stdout).rows.find((x) => x.type === type); ok(r?.now === Number(at), `${type}: ${JSON.stringify(r)}`); }],
+  [/^need-now rates "([a-z-]+)" at ([0-9.]+)$/, (w, type, at) => { const r = needNow(w, type); ok(r?.now === Number(at), `${type}: ${JSON.stringify(r)}`); }],
 ];

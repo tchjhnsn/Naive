@@ -16,24 +16,31 @@ import { join, basename, dirname, resolve } from "node:path";
 import { createHash } from "node:crypto";
 import { homedir } from "node:os";
 
+/** One design document the registry requires: where its evidence is found and the questions it must answer. */
+type RegDoc = { id: string; name: string; layer: string; stage: string; required_when: string; questions: { text: string }[];
+  evidence: { title_patterns: string[]; frontmatter_types: string[]; path_globs: string[] } };
+/** A document found under the roots. */
+type DocFile = { path: string; type: string; title: string; heads: string; text: string };
+/** Jev's answer, as the cache keeps it. */
+type JevResponse = { usage?: { input_tokens?: number }; answers: Record<string, { noul: number }> };
+
 const HERE = dirname(new URL(import.meta.url).pathname);
-const REG = JSON.parse(readFileSync(join(HERE, "../../design-documents.registry.json"), "utf8"));
+const REG = JSON.parse(readFileSync(join(HERE, "../../design-documents.registry.json"), "utf8")) as { version: string; documents: RegDoc[] };
 const MODEL = "jev-1.13.0";
 const args = process.argv.slice(2);
-const opt = (k, d) => { const i = args.indexOf(k); return i >= 0 ? args[i + 1] : d; };
-const flag = (k) => args.includes(k);
-const home = (p) => p.replace(/^~(?=\/|$)/, homedir());
-const tilde = (p) => p.replace(homedir(), "~");
+function opt(k: string): string | undefined;
+function opt(k: string, d: string): string;
+function opt(k: string, d?: string) { const i = args.indexOf(k); return i >= 0 ? args[i + 1] : d; }
+const flag = (k: string) => args.includes(k);
+const home = (p: string) => p.replace(/^~(?=\/|$)/, homedir());
+const tilde = (p: string) => p.replace(homedir(), "~");
 const quick = flag("--quick");
 
 // ---------- the design profile ----------
-/**
- * @typedef {{ found: boolean, why?: string, entityClass?: string, name?: string, roots?: string[], include?: string,
- *   characteristics?: string[], obligations?: string[], [field: string]: string | string[] | boolean | undefined }} DesignProfile
- */
+export type DesignProfile = { found: boolean, why?: string, entityClass?: string, name?: string, roots?: string[], include?: string,
+  characteristics?: string[], obligations?: string[], [field: string]: string | string[] | boolean | undefined };
 /** Reads `design-profile:` from an entity profile's frontmatter (a small, fixed shape; no YAML dependency). */
-/** @returns {DesignProfile} */
-export function readDesignProfile(entityDir) {
+export function readDesignProfile(entityDir: string): DesignProfile {
   const p = join(entityDir, "entity-profile.md");
   if (!existsSync(p)) return { found: false, why: "no entity-profile.md" };
   const t = readFileSync(p, "utf8");
@@ -42,19 +49,20 @@ export function readDesignProfile(entityDir) {
   const name = (t.match(/^#\s+(.+)$/m) || [])[1] ?? basename(entityDir);
   const i = fm.search(/^design-profile:\s*(#.*)?$/m);
   if (i < 0) return { found: false, entityClass, name, why: "design-profile not declared in entity-profile.md" };
-  const dp = {};
+  const dp: Record<string, string | string[]> = {};
   for (const line of fm.slice(i).split("\n").slice(1)) {
     if (!/^\s{2,}\S/.test(line)) break;
     const m = line.match(/^\s+([\w-]+):\s*(.*)$/); if (!m) continue;
-    let v = m[2].trim().replace(/\s+#.*$/, "");
+    const v = m[2].trim().replace(/\s+#.*$/, "");
     dp[m[1]] = v.startsWith("[") ? v.slice(1, -1).split(",").map((x) => x.trim().replace(/^["']|["']$/g, "")).filter(Boolean) : v.replace(/^["']|["']$/g, "");
   }
   return { found: true, entityClass, name, ...dp };
 }
 
-const entityDir = opt("--entity") ? resolve(home(opt("--entity"))) : null;
+const entityArg = opt("--entity");
+const entityDir = entityArg ? resolve(home(entityArg)) : null;
 const profile = entityDir ? readDesignProfile(entityDir) : null;
-const listArg = (k) => (opt(k, "") || "").split(",").filter(Boolean);
+const listArg = (k: string) => (opt(k, "") || "").split(",").filter(Boolean);
 const roots = [
   ...(entityDir ? [entityDir] : []),
   ...((profile?.roots ?? []).map(home)),
@@ -68,7 +76,7 @@ const entityClass = opt("--entity-class") ?? profile?.entityClass ?? "";
 const systemsDesign = profile?.["systems-design"] ?? (entityDir ? "not-started" : "active"); // active | not-started | n/a
 // Experience and interface design apply to anything people use; they are active unless the profile says n/a (no human users)
 // or not-started. Default active so their gaps are visible (SAD v3.0.14).
-const layerState = { system: systemsDesign, experience: profile?.["experience-design"] ?? "active", interface: profile?.["interface-design"] ?? "active" };
+const layerState: Record<string, DesignProfile[string]> = { system: systemsDesign, experience: profile?.["experience-design"] ?? "active", interface: profile?.["interface-design"] ?? "active" };
 const layer = opt("--layer", "all");
 const outDefault = entityDir ? join(entityDir, "_meta", "design-coverage", quick ? "latest-quick" : "latest") : "design-coverage";
 const out = opt("--out", outDefault);
@@ -76,7 +84,7 @@ if (!roots.length) { console.error("need --entity <dir> or --root <dir>"); proce
 if (!quick && !process.env.TYPESAFE_API_KEY) { console.error("deep check needs TYPESAFE_API_KEY (run with --env-file), or use --quick"); process.exit(2); }
 
 // ---------- collect documents ----------
-function walk(d, top, acc = []) {
+function walk(d: string, top: string, acc: string[] = []) {
   for (const n of readdirSync(d)) {
     if (n.startsWith(".") || ["node_modules", "_archive", "dist", "build", ".next", "data", "_meta"].includes(n)) continue;
     const p = join(d, n); let s; try { s = statSync(p); } catch { continue; }
@@ -88,7 +96,7 @@ function walk(d, top, acc = []) {
   }
   return acc;
 }
-const files = roots.flatMap((r) => walk(r, r)).map((p) => {
+const files = roots.flatMap((r) => walk(r, r)).map((p): DocFile => {
   const t = readFileSync(p, "utf8");
   const fm = t.startsWith("---") ? t.slice(3, t.indexOf("\n---", 3)) : "";
   const type = (fm.match(/^type:\s*(.+)$/m) || [])[1]?.trim() ?? "";
@@ -97,7 +105,7 @@ const files = roots.flatMap((r) => walk(r, r)).map((p) => {
   return { path: p, type, title, heads, text: t };
 });
 
-function score(doc, f) {
+function score(doc: RegDoc, f: DocFile) {
   const hay = `${basename(f.path)} ${f.title} ${f.heads}`.toLowerCase();
   let s = 0;
   for (const t of doc.evidence.title_patterns) if (hay.includes(t.toLowerCase())) s += 2;
@@ -109,13 +117,13 @@ function score(doc, f) {
 }
 // A candidate needs a strong signal: a title pattern in the name, title or headings, a heading naming the id, or a path match.
 // A frontmatter type and shared question words alone matched unrelated documents (SAD v3.0.14 audit: 12 of 18 false).
-function strong(doc, f) {
+function strong(doc: RegDoc, f: DocFile) {
   const name = `${basename(f.path).replace(/[_-]+/g, " ")} ${f.title}`.toLowerCase(); // headings are too noisy for a strong signal
   if (doc.evidence.title_patterns.some((t) => name.includes(t.toLowerCase()))) return true;
   if (new RegExp(`\\b${doc.id}\\b`, "i").test(`${f.title} ${f.heads}`)) return true; // the id in the title or a heading
   return doc.evidence.path_globs.some((g) => new RegExp(g.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*\*\//g, "(.*/)?").replace(/\*/g, "[^/]*")).test(f.path));
 }
-function required(doc) {
+function required(doc: RegDoc): { ok: true, status?: undefined, why: string } | { ok: false, status: string, why: string } {
   const st = layerState[doc.layer];
   if (st && st !== "active") return { ok: false, status: st === "n/a" ? "not_applicable" : "not_started", why: st === "n/a" ? `${doc.layer} design not applicable to this entity` : `${doc.layer} design not started (design-profile ${doc.layer}-design)` };
   const r = doc.required_when;
@@ -128,9 +136,9 @@ function required(doc) {
 // ---------- TypeSafe ----------
 const cachePath = `${out.replace(/latest(-quick)?$/, "")}typesafe-cache.json`;
 mkdirSync(dirname(out), { recursive: true });
-const cache = !quick && existsSync(cachePath) ? JSON.parse(readFileSync(cachePath, "utf8")) : {};
+const cache: Record<string, JevResponse> = !quick && existsSync(cachePath) ? JSON.parse(readFileSync(cachePath, "utf8")) : {};
 let tokens = 0;
-async function ask(state, questions) {
+async function ask(state: Record<string, string>, questions: Record<string, unknown>): Promise<JevResponse> {
   const k = createHash("sha256").update(JSON.stringify({ state, questions })).digest("hex");
   if (cache[k]) return cache[k];
   for (let a = 0; a < 5; a++) {
@@ -139,11 +147,11 @@ async function ask(state, questions) {
       body: JSON.stringify({ model: MODEL, state, questions }), signal: AbortSignal.timeout(90000) });
     if (res.status === 429 || res.status >= 500) { await new Promise((r) => setTimeout(r, 2500 * (a + 1))); continue; }
     if (!res.ok) throw new Error(`TypeSafe ${res.status}`);
-    const o = /** @type {{ usage?: { input_tokens?: number } }} */ (await res.json()); tokens += o.usage?.input_tokens ?? 0; cache[k] = o; return o;
+    const o = (await res.json()) as JevResponse; tokens += o.usage?.input_tokens ?? 0; cache[k] = o; return o;
   }
   throw new Error("retries exhausted");
 }
-function excerpt(f, doc) {
+function excerpt(f: DocFile, doc: RegDoc) {
   const t = f.text; const keep = [f.title, f.heads];
   const words = [...doc.evidence.title_patterns, doc.id].map((w) => w.toLowerCase());
   for (const s of t.split(/\n(?=#{2,3}\s)/)) if (words.some((w) => s.slice(0, 200).toLowerCase().includes(w))) keep.push(s);
@@ -152,9 +160,8 @@ function excerpt(f, doc) {
 }
 
 const docs = REG.documents.filter((d) => layer === "all" || d.layer === layer);
-/** @typedef {{ id: string, name: string, layer: string, stage: string, status: string, reason?: string, answered?: number, total?: number, candidates: { path: string }[], [field: string]: unknown }} Result */
-/** @type {Result[]} */
-const results = [];
+type Result = { id: string, name: string, layer: string, stage: string, status: string, reason?: string, answered?: number, total?: number, candidates: { path: string }[], [field: string]: unknown };
+const results: Result[] = [];
 for (const doc of docs) {
   const base = { id: doc.id, name: doc.name, layer: doc.layer, stage: doc.stage };
   const req = required(doc);
@@ -162,7 +169,7 @@ for (const doc of docs) {
   const cands = files.map((f) => ({ f, s: score(doc, f) })).filter((x) => x.s >= 2 && strong(doc, x.f)).sort((a, b) => b.s - a.s).slice(0, 3);
   if (!cands.length) { results.push({ ...base, status: "null", answered: 0, total: doc.questions.length, unanswered: doc.questions.map((q) => q.text), candidates: [] }); continue; }
   if (quick) { results.push({ ...base, status: "candidate", total: doc.questions.length, candidates: cands.map(({ f, s }) => ({ path: tilde(f.path), match_score: +s.toFixed(1) })) }); continue; }
-  const answered = new Array(doc.questions.length).fill(0); const per = [];
+  const answered: number[] = new Array(doc.questions.length).fill(0); const per: { path: string, match_score: number, answers: number[] }[] = [];
   for (const { f, s } of cands) {
     const r = await ask({ document_path: tilde(f.path), document_excerpt: excerpt(f, doc) },
       Object.fromEntries(doc.questions.map((q, i) => [`q${i}`, { type: "noul",
@@ -187,7 +194,7 @@ const report = { generated: new Date().toISOString(), mode: quick ? "quick" : "d
   summary: Object.fromEntries(["exists", "partial", "candidate", "null", "not_started", "not_applicable"].map((s) => [s, results.filter((r) => r.status === s).length])),
   gaps: gaps.map((g) => `${g.id} ${g.name}: ${g.status}`), results };
 writeFileSync(`${out}.json`, JSON.stringify(report, null, 1));
-const sym = { exists: "✓", partial: "↺", null: "✗", candidate: "?", not_applicable: "N/A", not_started: "—" };
+const sym: Record<string, string> = { exists: "✓", partial: "↺", null: "✗", candidate: "?", not_applicable: "N/A", not_started: "—" };
 const md = [
   `# Design coverage${profile?.name ? `: ${profile.name}` : ""} (${report.generated.slice(0, 10)}, ${report.mode})`, "",
   ...(profile && !profile.found ? [`> **Gap: ${profile.why}.** Declare it (SAD v3.0.13) so the right documents are required; until then only documents required for every scope are checked.`, ""] : []),

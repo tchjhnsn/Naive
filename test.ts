@@ -1,6 +1,6 @@
 // Runs every test and check in the repository and reports each one (EE-017).
 //
-//   node test.mjs
+//   node test.ts
 //
 // Needs Node 22.19 or later (EE-158), npm install (typescript), and python3 with the jsonschema package. Exit code 1 if any fails.
 // Generated files are checked for staleness by regenerating them into memory and comparing.
@@ -15,8 +15,11 @@ import { join } from "node:path";
 
 const root = new URL(".", import.meta.url).pathname;
 
-/** @type {Array<[string, string, string[]]>} */
-const steps = [
+/** A step: its name, the command and its arguments, and, for a generated file, whether the output matches the committed copy. */
+type Step = [name: string, cmd: string, args: string[], matches?: (stdout: string) => boolean];
+type Result = { ok: boolean, output: string };
+
+const steps: Step[] = [
   ["schema records are valid (validate.ts)", "node", ["packages/naive/src/records/validate.ts"]],
   ["validate.ts agrees with Python's jsonschema: same verdicts and failing paths on every record and its mutants", "node", ["packages/naive/src/records/validate-test.ts"]],
   ["checker tests (with cases that must fail)", "node", ["packages/naive/src/checks/test.ts"]],
@@ -73,7 +76,7 @@ const steps = [
   ["structure checks read where files sit: a migrated telos, departments in k-base/, what stays at the top", "node", ["packages/naive/src/interfaces/tests/structure-checks-test.mjs"]],
   ["the decision library (frames name no answer, premises judged, decisions proposed open)", "node", ["packages/naive/src/engine/frames-test.ts"]],
   ["premise-attack linter (questions by formula, rules off|warn|error, findings proposed open)", "node", ["packages/naive/src/checks/premise-lint-test.ts"]],
-  ["effect base: tagged errors, VentureFs on memory and on disk, the runners and the venture runtime (EE-125, EE-161)", "node", ["packages/naive/src/core/effect/effect-test.ts"]],
+  ["effect base: tagged errors, VentureFs on memory and on disk, and the runners (EE-125)", "node", ["packages/naive/src/core/effect/effect-test.ts"]],
   ["agent specs: one function agent per function with its module's files and a reach that covers its workflows, four leads covering the 13 functions, and routing", "node", ["packages/naive/src/engine/agents/agents-test.ts"]],
   ["provenance and blobs as Effects: the lock resource, the gate chain and the blob store on memory (EE-125)", "node", ["packages/naive/src/core/provenance-effect-test.ts"]],
   ["function modules check: each of the 13 functions as a folder with a manifest, an agent, workflows, a decision matrix and skills that agree with decision rights, the data model and the route table", "node", ["packages/naive/src/checks/check-functions-test.ts"]],
@@ -194,12 +197,12 @@ const steps = [
 ];
 
 // Generated files: the committed copy must equal a fresh render.
-const rendered = (path, marker) => (md) => {
+const rendered = (path: string, marker: string) => (md: string) => {
   const doc = readFileSync(join(root, path), "utf8");
   return doc.slice(doc.indexOf(marker)).trim() === md.trim();
 };
 
-const cheap = [
+const cheap: Step[] = [
   // ESLint is not skipped when missing: that hid real lint errors while the suite said "all passing" (02d5581).
   ["eslint (npm run lint)", "npm", ["run", "lint", "--silent"]],
   ["types (tsc checkJs, every file)", "node", ["packages/naive/src/checks/check-types.ts"]],
@@ -222,7 +225,7 @@ for (const name of exclusive) if (!steps.some(([n]) => n === name)) throw new Er
 const workers = Math.max(1, Math.floor(Number(process.env.TEST_WORKERS) || availableParallelism()));
 let failed = 0;
 
-const run = ([, cmd, args, matches]) => new Promise((resolve) => {
+const run = ([, cmd, args, matches]: Step) => new Promise<Result>((resolve) => {
   const child = spawn(cmd, args, { cwd: root, stdio: ["ignore", "pipe", "pipe"], env: { ...process.env, GIT_OPTIONAL_LOCKS: "0" } });
   let stdout = "", stderr = "";
   child.stdout.setEncoding("utf8").on("data", (d) => { stdout += d; });
@@ -231,14 +234,14 @@ const run = ([, cmd, args, matches]) => new Promise((resolve) => {
   child.on("close", (code) => resolve({ ok: matches ? matches(stdout) : code === 0, output: stdout + stderr }));
 });
 
-const report = ([name], { ok, output }) => {
+const report = ([name]: Step, { ok, output }: Result) => {
   if (!ok) failed++;
   console.log(`${ok ? "pass" : "FAIL"}  ${name}`);
   if (!ok) console.log(output.trim().split("\n").filter((l) => /FAIL|✗|error|Error|not /.test(l)).slice(0, 8).map((l) => `      ${l}`).join("\n"));
 };
 
-const runAll = async (list, size) => {
-  const results = [];
+const runAll = async (list: Step[], size: number) => {
+  const results: Result[] = [];
   let next = 0, reported = 0;
   await Promise.all(Array.from({ length: size }, async () => {
     while (next < list.length) {

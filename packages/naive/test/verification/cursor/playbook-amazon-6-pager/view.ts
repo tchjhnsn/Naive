@@ -1,6 +1,9 @@
 export const title = "A decision memo: draft, propose while it stays open, then you decide";
 
-const labels = {
+/** The TLA+ state this view reads: one field per variable it names. */
+type Vars = { stage: string };
+
+const labels: Record<string, string | null> = {
   start: "No memo yet",
   inputs: "You have read the problem, the customer, the principles, and who may decide",
   gap: "An incomplete memo is an open draft",
@@ -13,9 +16,9 @@ const labels = {
   decided: "Decided by you",
 };
 
-export const state = (v) => labels[v.stage] ?? v.stage;
+export const state = (v: Vars) => labels[v.stage] ?? v.stage;
 
-export const group = (v) => {
+export const group = (v: Vars) => {
   if (v.stage === "start" || v.stage === "inputs") return "ready";
   if (v.stage === "proposed") return "proposed";
   if (v.stage === "decided") return "decided";
@@ -29,7 +32,7 @@ export const colors = {
   decided: "teal",
 };
 
-export const step = (action) => ({
+export const step = (action: string) => ({
   ReadInputs: "you read what the venture already holds",
   DraftGap: "you draft a memo and leave the sections empty",
   DraftFull: "you open the memo you mean to propose",
@@ -40,4 +43,4 @@ export const step = (action) => ({
   Propose: "you propose the memo, and it stays open",
   FounderDecides: "you decide",
   Done: null,
-})[action] ?? action;
+} as Record<string, string | null>)[action] ?? action;

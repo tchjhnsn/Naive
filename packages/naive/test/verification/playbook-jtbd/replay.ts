@@ -12,18 +12,29 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { call, resolve } from "../../../src/router/router.mjs";
+import type { IcpProfile, Product, ValidationProblem } from "../../../src/records/types/records.d.ts";
+
+/** What a router action answers, with the result this replay expects of the route. */
+type Answer<T = unknown> = ({ ok: true; result: T; error?: string } | { ok: false; error?: string; result?: undefined })
+  & { not_found?: { note?: string }; pending_draft?: { file: string }; [k: string]: unknown };
+/** What a record write answers. */
+type Written = { written: string; draft: boolean; note?: string };
+/** A fixture venture: its id, its folder and the workspace that holds it. */
+type Fixture = { id: string; dir: string; workspace: string };
+/** One question of the purpose/foundation report. */
+type FoundationQuestion = { question: string; statements?: { id: string; status?: string }[] };
 
 const repo = fileURLToPath(new URL("../../../../..", import.meta.url));
 const root = mkdtempSync(join(tmpdir(), "jtbd-replay-"));
-const rows = [];
+const rows: { rule: string; pass: unknown; replay: string }[] = [];
 
-function report(rule, pass, replay) {
+function report(rule: string, pass: unknown, replay: string) {
   rows.push({ rule, pass, replay });
   console.log(`${pass ? "PASS" : "FAIL"}  ${rule}`);
   console.log(`       ${replay}`);
 }
 
-function venture(name) {
+function venture(name: string): Fixture {
   const id = `jtbd-${name}`;
   const dir = join(root, id);
   mkdirSync(dir, { recursive: true });
@@ -54,7 +65,7 @@ function problem() {
 
 const PROFILE = "foundation/icp/shop-owners";
 
-function profile(jobs = [], over = {}) {
+function profile(jobs: string[] = [], over: Partial<IcpProfile> = {}): IcpProfile {
   return {
     venture: "placeholder",
     id: "shop-owners",
@@ -68,16 +79,16 @@ function profile(jobs = [], over = {}) {
   };
 }
 
-function put(v, route, record, actor = "person") {
+function put(v: Fixture, route: string, record: Record<string, unknown>, actor = "person") {
   const input = record.venture === "placeholder" ? { ...record, venture: v.id } : record;
-  return call({ venture: v.id, workspace: v.workspace, route, action: "write", input, actor, via: "replay" });
+  return call({ venture: v.id, workspace: v.workspace, route, action: "write", input, actor, via: "replay" }) as Promise<Answer<Written>>;
 }
 
-async function read(v, route) {
-  return call({ venture: v.id, workspace: v.workspace, route, action: "read", via: "replay" });
+async function read<T = unknown>(v: Fixture, route: string) {
+  return call({ venture: v.id, workspace: v.workspace, route, action: "read", via: "replay" }) as Promise<Answer<T | null>>;
 }
 
-function accept(v, route) {
+function accept(v: Fixture, route: string) {
   return spawnSync("node", [
     join(repo, "packages/naive/src/interfaces/cli/mentura.mjs"), "accept", route,
     "--venture", v.id, "--workspace", v.workspace, "--confirm", route,
@@ -85,11 +96,11 @@ function accept(v, route) {
 }
 
 // The playbook's checks 1 and 2, on a list of profile records and the product job strings already read.
-function jobsCheck(profiles, productJobs) {
-  const failures = [];
+function jobsCheck(profiles: IcpProfile[], productJobs: string[]) {
+  const failures: string[] = [];
   for (const p of profiles) {
     const jobs = p.jobs;
-    if (!Array.isArray(jobs) || jobs.length === 0 || jobs.some((j) => typeof j !== "string" || j.trim() === "")) {
+    if (!Array.isArray(jobs) || jobs.length === 0 || jobs.some((j: unknown) => typeof j !== "string" || j.trim() === "")) {
       failures.push(`${p.id}: no job`);
       continue;
     }
@@ -100,16 +111,16 @@ function jobsCheck(profiles, productJobs) {
   return failures;
 }
 
-function foundation(dir) {
+function foundation(dir: string) {
   return spawnSync("node", [join(repo, "packages/naive/src/engine/foundation.ts"), dir], { encoding: "utf8" });
 }
 
-function icpStatus(report) {
+function icpStatus(report: FoundationQuestion[] | null | undefined) {
   const who = (report ?? []).find((q) => q.question === "who");
   return who?.statements?.find((s) => s.id === "icp")?.status ?? null;
 }
 
-const named = [
+const named: [string, string][] = [
   ["foundation/problem", "read"],
   ["foundation/icp", "read"],
   [PROFILE, "write"],
@@ -119,7 +130,7 @@ const named = [
 ];
 
 let routesOk = true;
-const routeNotes = [];
+const routeNotes: string[] = [];
 for (const [route, action] of named) {
   const hit = resolve(route);
   const ok = !!hit.r && hit.r.actions.includes(action);
@@ -137,15 +148,15 @@ report("EveryRouteReal", routesOk, routeNotes.join("; "));
   const v = venture("reads");
   await put(v, "foundation/problem", problem());
   await put(v, PROFILE, profile([]));
-  const list = await read(v, "product");
-  const card = await read(v, "product/ledger");
+  const list = await read<Record<string, Product>>(v, "product");
+  const card = await read<Product>(v, "product/ledger");
   const usedField = card.result != null && "job" in (card.result ?? {});
   const absentOk = list.ok && list.result == null && list.not_found && card.ok && card.result == null && card.not_found && !usedField;
-  const problemRead = await read(v, "foundation/problem");
-  const icpRead = await read(v, "foundation/icp");
+  const problemRead = await read<ValidationProblem>(v, "foundation/problem");
+  const icpRead = await read<Record<string, IcpProfile>>(v, "foundation/icp");
   const providedOk = problemRead.ok && problemRead.result?.statement && icpRead.ok && Object.keys(icpRead.result ?? {}).join() === "shop-owners";
   const wrote = await put(v, "product/ledger", { id: "ledger", name: "Ledger", description: "Fixture card", job: "Close the books" });
-  const present = await read(v, "product/ledger");
+  const present = await read<Product>(v, "product/ledger");
   const presentOk = wrote.ok && wrote.result?.draft === false && present.result?.job === "Close the books";
   report(
     "ReadsAreProvided",
@@ -160,7 +171,7 @@ report("EveryRouteReal", routesOk, routeNotes.join("; "));
   await put(v, "foundation/problem", problem());
   await put(v, PROFILE, profile([]));
   await put(v, "product/ledger", { id: "ledger", name: "Ledger", description: "Fixture card", job: "Close the books" });
-  const live = Object.values((await read(v, "foundation/icp")).result ?? {});
+  const live = Object.values((await read<Record<string, IcpProfile>>(v, "foundation/icp")).result ?? {});
   const emptyFail = jobsCheck(live, ["Close the books"]);
   const blankFail = jobsCheck([profile([""])], []);
   const copyWho = jobsCheck([profile(["Owners of small shops"])], []);
@@ -178,7 +189,7 @@ report("EveryRouteReal", routesOk, routeNotes.join("; "));
   report(
     "CheckMatchesJobs",
     decisive,
-    `empty=${emptyFail.join(",") || "pass"}; blank=${blankFail.join(",") || "pass"}; copy-who=${copyWho.join(",") || "pass"}; copy-trait=${copyTrait.join(",") || "pass"}; copy-product=${copyProduct.join(",") || "pass"}; progress=${pass.join(",") || "pass"}; foundation.ts with a bad form only in a draft exit=${formsPass.status}; bad form live exit=${formsFail.status}`,
+    `empty=${emptyFail.join(",") || "pass"}; blank=${blankFail.join(",") || "pass"}; copy-who=${copyWho.join(",") || "pass"}; copy-trait=${copyTrait.join(",") || "pass"}; copy-product=${copyProduct.join(",") || "pass"}; progress=${pass.join(",") || "pass"}; foundation.mjs with a bad form only in a draft exit=${formsPass.status}; bad form live exit=${formsFail.status}`,
   );
 }
 
@@ -194,19 +205,19 @@ report("EveryRouteReal", routesOk, routeNotes.join("; "));
   const refused = await put(v, "foundation/icp", { profiles: [profile([progress])] }, "agent");
   const draftWrite = await put(v, PROFILE, profile([progress]), "agent");
   const secondDraft = await put(v, second, profile([progress], { id: "bookkeepers", who: "Bookkeepers for small shops", short: "Bookkeepers", primary: false }), "agent");
-  const after = await read(v, PROFILE);
+  const after = await read<IcpProfile>(v, PROFILE);
   const draftPath = after.pending_draft?.file;
   const draftBody = draftPath ? JSON.parse(readFileSync(join(v.dir, draftPath), "utf8")) : null;
   const liveStillEmpty = Array.isArray(after.result?.jobs) && after.result.jobs.length === 0;
   const draftHasJob = draftBody ? jobsCheck([draftBody], []).length === 0 : false;
-  const before = await call({ venture: v.id, workspace: v.workspace, route: "purpose/foundation", action: "run", via: "replay" });
+  const before = await (call({ venture: v.id, workspace: v.workspace, route: "purpose/foundation", action: "run", via: "replay" }) as Promise<Answer<FoundationQuestion[]>>);
   const statusBefore = icpStatus(before.result);
   const accepted1 = accept(v, PROFILE);
-  const midRun = await call({ venture: v.id, workspace: v.workspace, route: "purpose/foundation", action: "run", via: "replay" });
+  const midRun = await (call({ venture: v.id, workspace: v.workspace, route: "purpose/foundation", action: "run", via: "replay" }) as Promise<Answer<FoundationQuestion[]>>);
   const statusMid = icpStatus(midRun.result);
   const accepted2 = accept(v, second);
-  const accepted = await read(v, PROFILE);
-  const afterRun = await call({ venture: v.id, workspace: v.workspace, route: "purpose/foundation", action: "run", via: "replay" });
+  const accepted = await read<IcpProfile>(v, PROFILE);
+  const afterRun = await (call({ venture: v.id, workspace: v.workspace, route: "purpose/foundation", action: "run", via: "replay" }) as Promise<Answer<FoundationQuestion[]>>);
   const statusAfter = icpStatus(afterRun.result);
   const liveJob = accepted.result?.jobs?.[0];
   const ok = refused.ok === false && draftWrite.ok && draftWrite.result?.draft === true && secondDraft.result?.draft === true && liveStillEmpty && draftHasJob
@@ -222,12 +233,13 @@ report("EveryRouteReal", routesOk, routeNotes.join("; "));
   await put(v2, "foundation/problem", problem());
   await put(v2, PROFILE, profile([]));
   const copied = await put(v2, PROFILE, profile(["Owners of small shops"]), "agent");
-  const copiedRead = await read(v2, PROFILE);
+  const copiedRead = await read<IcpProfile>(v2, PROFILE);
+  if (!copiedRead.pending_draft) throw new Error("the agent's copied job left no pending draft");
   const copiedDraft = JSON.parse(readFileSync(join(v2.dir, copiedRead.pending_draft.file), "utf8"));
   const copyFails = jobsCheck([copiedDraft], []).length > 0;
   const acceptCopy = accept(v2, PROFILE);
-  const liveCopy = await read(v2, PROFILE);
-  const liveFails = jobsCheck([liveCopy.result], []).length > 0;
+  const liveCopy = await read<IcpProfile>(v2, PROFILE);
+  const liveFails = jobsCheck([liveCopy.result as IcpProfile], []).length > 0;
   report(
     "AcceptFail (probe, not a playbook step)",
     copied.ok && copyFails && acceptCopy.status === 0 && liveFails,

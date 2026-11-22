@@ -1,6 +1,9 @@
 export const title = "Jobs on each customer profile";
 
-export const state = (v) => {
+/** The TLA+ state this view reads: one field per variable it names. */
+type Vars = { check: string; jobs: string; phase: string; problem: string; product: string };
+
+export const state = (v: Vars) => {
   if (v.phase === "start") return "Start";
   if (v.phase === "stopped" && v.problem === "missing") return "Stopped: no problem record";
   if (v.phase === "stopped") return "Stopped: no customer profile";
@@ -19,7 +22,7 @@ export const state = (v) => {
   return v.phase;
 };
 
-export const group = (v) => {
+export const group = (v: Vars) => {
   if (v.phase === "stopped" || v.check === "fail" || v.phase === "bad-route" || v.phase === "bad-read") return "blocked";
   if (v.phase === "accepted" || (v.phase === "checked" && v.check === "pass")) return "done";
   if (v.phase === "drafted") return "draft";
@@ -28,14 +31,14 @@ export const group = (v) => {
 
 export const colors = { working: "blue", draft: "yellow", blocked: "orange", done: "teal" };
 
-export const step = (action, _from, to) => {
+export const step = (action: string, _from: Vars, to: Vars) => {
   if (action === "Park") return null;
   if (action === "SeeProduct") {
     return to.product === "present"
       ? "you read the product's claimed job"
       : "you find no product card";
   }
-  const labels = {
+  const labels: Record<string, string> = {
     ReadProblem: "you read the problem record [when the venture has one]",
     StopNoProblem: "you stop [no problem record yet]",
     ReadIcp: "you read the customer profiles [when the venture has them]",

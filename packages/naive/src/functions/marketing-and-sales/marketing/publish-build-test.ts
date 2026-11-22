@@ -9,21 +9,22 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "nod
 import { tmpdir } from "node:os";
 import { join, relative } from "node:path";
 import { build, channelsFor } from "./publish-build.ts";
+import type { BuildRecord } from "./publish-build.ts";
 
 const repo = new URL("../../../../../../", import.meta.url).pathname;
 let failed = 0;
-const expect = (name, ok, detail) => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${JSON.stringify(detail)}`}`); if (!ok) failed++; };
+const expect = (name: string, ok: unknown, detail?: unknown) => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${JSON.stringify(detail)}`}`); if (!ok) failed++; };
 
 const tmp = mkdtempSync(join(tmpdir(), "publish-build-"));
 const v = join(tmp, "canary"), out = join(tmp, "out");
-const w = (rel, x) => { mkdirSync(join(v, rel, ".."), { recursive: true }); writeFileSync(join(v, rel), typeof x === "string" ? x : JSON.stringify(x, null, 2)); };
+const w = (rel: string, x: unknown) => { mkdirSync(join(v, rel, ".."), { recursive: true }); writeFileSync(join(v, rel), typeof x === "string" ? x : JSON.stringify(x, null, 2)); };
 const CANARY = "CANARY-9b1e";
 w("venture.json", { id: "canary", name: "Canary", type: "software-startup", parent: null, owner: "self", status: "active", layers: {}, phase: "discovery", core: { promise: `${CANARY} promise: we help founders know the next decision to make.` } });
 w("people/people.json", { venture: "canary", mode: "solo", people: [{ id: "founder", name: "Founder", role: "founder" }] });
 w("foundation/problem.json", { venture: "canary", statement: `${CANARY} problem: founders cannot tell which decision matters most this week.`, segment: `${CANARY} segment: solo founders building with agents`, forms: [{ id: "f", statement: `${CANARY} form: nobody uses what they built` }], evidence: [] });
 w("foundation/alignment.json", { venture: "canary", principles: [{ id: "p", statement: `${CANARY} principle: people decide by default, always` }] });
 // The channels, named the way an app names them: builders relative to the venture folder.
-const fx = (f) => relative(v, join(repo, "packages/naive/src/functions/marketing-and-sales/marketing/fixtures", f));
+const fx = (f: string) => relative(v, join(repo, "packages/naive/src/functions/marketing-and-sales/marketing/fixtures", f));
 const channels = {
   site: { outputs: ["generated/venture-facts.json"], builders: [fx("facts.ts")] },
   artifact: { outputs: ["generated/venture-facts.json", "artifact/index.html"], builders: [fx("facts.ts"), fx("page.ts")] },
@@ -54,7 +55,7 @@ try {
   expect("an approved variant (variant_of record#field) passes the gate and reaches the artifact", r.ok && page.includes("Picking the decision that matters") && r.sources[0]?.approved_by === "Founder", r);
   r = build("foundation", v, { out });
   expect("the foundation one-pager shows the approved variant, and no internal wording", r.ok && readFileSync(join(out, "artifact/foundation.html"), "utf8").includes("Picking the decision that matters") && !all().includes(CANARY), r);
-  const rec = JSON.parse(readFileSync(join(out, "generated/publish-build.artifact.json"), "utf8"));
+  const rec = JSON.parse(readFileSync(join(out, "generated/publish-build.artifact.json"), "utf8")) as BuildRecord;
   expect("the build record names each output's sha256 and the variants it drew on", rec.outputs.every((o) => /^[0-9a-f]{64}$/.test(o.sha256)) && rec.sources.length === 1, rec);
 
   w("operations/marketing/content/problem.mdx", "---\nvariant_of: foundation/problem.json#statement\naudience: founders\npublish: true\napproved_by: Founder\n---\nproblem: founders cannot tell which decision matters most this week.\n");

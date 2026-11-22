@@ -13,11 +13,12 @@ import { readSchema } from "../../../../records/index.ts";
 
 // Tests start in order and may await a child process, so the command runs overlap; results print in order.
 let failed = 0;
-const results = [];
-const t = (name, fn) => results.push((async () => fn())().then(() => `ok   ${name}`, (e) => { failed++; return `FAIL ${name}: ${e.message}`; }));
-/** @returns {Promise<{ status: number | string, stdout: string, stderr: string }>} */
-const node = (args) => new Promise((resolve) => execFile("node", args, { encoding: "utf8" }, (e, stdout, stderr) => resolve({ status: e ? (e.code ?? 1) : 0, stdout, stderr })));
-const ok = (c, m) => { if (!c) throw new Error(m); };
+const results: Promise<string>[] = [];
+const t = (name: string, fn: () => unknown) => results.push((async () => fn())().then(() => `ok   ${name}`, (e: Error) => { failed++; return `FAIL ${name}: ${e.message}`; }));
+const node = (args: string[]) => new Promise<{ status: number | string, stdout: string, stderr: string }>((resolve) => execFile("node", args, { encoding: "utf8" }, (e, stdout, stderr) => resolve({ status: e ? (e.code ?? 1) : 0, stdout, stderr })));
+const ok = (c: unknown, m: string) => { if (!c) throw new Error(m); };
+// A missing entry fails the test that looked for it, as the property read on undefined did.
+const must = <T,>(x: T | undefined | null, what: string): T => { if (x === undefined || x === null) throw new TypeError(`missing ${what}`); return x; };
 
 const dump = `no shows are killing my clinic
 I already built a google sheet that texts patients
@@ -45,7 +46,7 @@ t("the map round-trips, and every idea's text is unchanged, braces and angle bra
   const back = parse(render(ideas, tags, { venture: "kept", tagger: "fixture", created: "2026-10-28T00:00:00Z" }));
   ok(back.meta.tagged_by === "fixture" && back.ideas.length === ideas.length, JSON.stringify(back.meta));
   ideas.forEach((i, k) => ok(back.ideas[k].text === i.text, `${i.id}: ${back.ideas[k].text}`));
-  ok(back.ideas[2].pillar === "business" && back.ideas[2].departments[0] === "finance", JSON.stringify(back.ideas[2]));
+  ok(back.ideas[2].pillar === "business" && back.ideas[2].departments?.[0] === "finance", JSON.stringify(back.ideas[2]));
 });
 
 t("Jev's answers become tags at the threshold, at most two departments, strongest first", () => {
@@ -76,7 +77,7 @@ const ideas = [
   { id: "i-03", text: "charge $49 a month", departments: ["finance"], records: ["validation-pricing"] },
   { id: "i-04", text: "never sell patient data", departments: ["risk-and-compliance"], records: ["alignment"] },
 ];
-const dep = (a, b, p) => ({ [`dep:${a}>${b}`]: { type: "noul", noul: p } });
+const dep = (a: string, b: string, p: number) => ({ [`dep:${a}>${b}`]: { type: "noul", noul: p } });
 const answers = { ...dep("i-01", "i-02", 0.9), ...dep("i-02", "i-03", 0.8), ...dep("i-01", "i-03", 0.7), ...dep("i-03", "i-01", 0.6), ...dep("i-01", "i-04", 0.2) };
 
 t("the graph is a DAG: a dependency that closes a cycle is dropped, and implied ones are reduced", () => {
@@ -89,8 +90,8 @@ t("the graph is a DAG: a dependency that closes a cycle is dropped, and implied 
 t("ideas tied by dependencies move in order; an idea tied to nothing moves on its own", () => {
   const g = build(ideas, { answers });
   const sync = g.lanes.find((l) => l.mode === "sync"), lone = g.lanes.find((l) => l.ideas.includes("i-04"));
-  ok(sync && JSON.stringify(sync.ideas) === JSON.stringify(["i-01", "i-02", "i-03"]) && lone.mode === "async", JSON.stringify(g.lanes));
-  ok(g.nodes.find((n) => n.id === "i-03").depth === 2, "depth");
+  ok(sync && JSON.stringify(sync.ideas) === JSON.stringify(["i-01", "i-02", "i-03"]) && must(lone, "the i-04 lane").mode === "async", JSON.stringify(g.lanes));
+  ok(must(g.nodes.find((n) => n.id === "i-03"), "i-03").depth === 2, "depth");
 });
 
 t("the hash is Merkle: changing an idea changes its hash and every hash that builds on it, and nothing else", () => {
@@ -113,26 +114,26 @@ t("without a judge, Naive's record order supplies the dependencies", () => {
 t("a stated builds-on that the convention already gives is one edge, and the root does not move", () => {
   const pair = [{ ...ideas[0], departments: ["products"] }, ideas[1]];
   const plain = build(pair), twice = build([pair[0], { ...pair[1], relations: [{ relation: "builds-on", to: "i-01" }] }]);
-  ok(twice.root === plain.root && twice.edges.length === 1 && JSON.stringify(twice.nodes.find((n) => n.id === "i-02").builds_on) === JSON.stringify(["i-01"]), JSON.stringify(twice.edges));
+  ok(twice.root === plain.root && twice.edges.length === 1 && JSON.stringify(must(twice.nodes.find((n) => n.id === "i-02"), "i-02").builds_on) === JSON.stringify(["i-01"]), JSON.stringify(twice.edges));
 });
 
 // Typed relations (S2-PR9): an idea's stated relations become typed edges, checked through the term typed-link.
 const graphCli = new URL("./graph.ts", import.meta.url).pathname;
-const repoFile = (f) => new URL(`../../../../../../../${f}`, import.meta.url).pathname;
+const repoFile = (f: string) => new URL(`../../../../../../../${f}`, import.meta.url).pathname;
 const examples = repoFile("packages/naive/src/records/examples/workspace/people/p-0a0a0a0a/ideas");
-const checkFiles = (files) => {
+const checkFiles = (files: Record<string, unknown>) => {
   const d = mkdtempSync(join(tmpdir(), "ideas-"));
   for (const [f, r] of Object.entries(files)) writeFileSync(join(d, f), JSON.stringify(r));
   return node([graphCli, "check", d]);
 };
-const ideasFolder = (records) => checkFiles(Object.fromEntries(records.map((r) => [`${r.id}.json`, r])));
+const ideasFolder = (records: ({ id: string } & Record<string, unknown>)[]) => checkFiles(Object.fromEntries(records.map((r) => [`${r.id}.json`, r])));
 
 t("a stated relation becomes a typed edge; dependencies are builds-on, and only they shape the hashes", () => {
   const plain = build(ideas, { answers });
   const typed = build(ideas.map((i) => i.id === "i-04" ? { ...i, relations: [{ relation: "contradicts", to: "i-02" }, { relation: "builds-on", to: "i-03" }] } : i), { answers });
   ok(plain.edges.every((e) => e.relation === "builds-on"), JSON.stringify(plain.edges));
   ok(typed.edges.some((e) => e.from === "i-02" && e.to === "i-04" && e.relation === "contradicts" && e.by === "stated"), JSON.stringify(typed.edges));
-  ok(JSON.stringify(typed.nodes.find((n) => n.id === "i-04").builds_on) === JSON.stringify(["i-03"]), "a stated builds-on joins the DAG");
+  ok(JSON.stringify(must(typed.nodes.find((n) => n.id === "i-04"), "i-04").builds_on) === JSON.stringify(["i-03"]), "a stated builds-on joins the DAG");
   const noBuild = build(ideas.map((i) => i.id === "i-04" ? { ...i, relations: [{ relation: "contradicts", to: "i-02" }] } : i), { answers });
   ok(noBuild.root === plain.root && JSON.stringify(noBuild.nodes.map((n) => n.hash)) === JSON.stringify(plain.nodes.map((n) => n.hash)), "contradicts leaves every hash alone");
 });
@@ -141,7 +142,7 @@ t("a relation outside the closed set is rejected through the term engine, by the
   const r = await ideasFolder([{ id: "a", text: "x", captured: "2026-11-05", relations: [{ relation: "rebuts", to: "b" }] }, { id: "b", text: "y", captured: "2026-11-05" }]);
   ok(r.status === 1 && /a: rebuts b: rebuts is not a relation between ideas/.test(r.stdout), r.stdout + r.stderr);
   let threw = "";
-  try { build([{ id: "i-01", text: "x", relations: [{ relation: "rebuts", to: "i-02" }] }, { id: "i-02", text: "y" }]); } catch (e) { threw = e.message; }
+  try { build([{ id: "i-01", text: "x", relations: [{ relation: "rebuts", to: "i-02" }] }, { id: "i-02", text: "y" }]); } catch (e) { threw = (e as Error).message; }
   ok(/rejected relations/.test(threw) && /rebuts/.test(threw), threw);
 });
 
@@ -162,11 +163,8 @@ t("check names a relations entry that is not an object, and exits 1 without a st
 });
 
 t("without the term engine, check refuses stated relations instead of passing them", async () => {
-  // The rest of Naive is TypeScript too, so the engine is taken away as an installed package loses it: Node refuses
-  // to strip its types.
-  const noEngine = `import { registerHooks } from "node:module";
-registerHooks({ resolve(s, c, next) { if (/\\/terms\\/(engine|terms|relations)\\.ts$/.test(s)) throw Object.assign(new Error("no term engine"), { code: "ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING" }); return next(s, c); } });`;
-  const r = await node(["--import", `data:text/javascript,${encodeURIComponent(noEngine)}`, graphCli, "check", examples]);
+  // graph.ts is TypeScript, so type stripping stays on; the feature flag graph.ts reads is turned off before it loads.
+  const r = await node(["--import", `data:text/javascript,Object.defineProperty(process.features,"typescript",{value:false})`, graphCli, "check", examples]);
   ok(r.status === 1 && /5 stated relation\(s\) need the EE-095 term engine/.test(r.stdout), r.stdout + r.stderr);
 });
 
@@ -206,11 +204,11 @@ t("the schemas, the term engine and Lean name the same relations", () => {
   ok(JSON.stringify(idea.$defs.attachment.enum) === JSON.stringify(namesBetween("scope")), `attachment enum ${idea.$defs.attachment.enum}`);
   ok(graph.properties.edges.items.properties.relation.$ref === "founder-idea.schema.json#/$defs/relation", "graph edges share the relation list");
   const lean = readFileSync(repoFile("packages/naive/lean/Naive/Terms.lean"), "utf8");
-  const camel = (n) => n.replace(/[-_]([a-z])/g, (_, c) => c.toUpperCase());
+  const camel = (n: string) => n.replace(/[-_]([a-z])/g, (_, c: string) => c.toUpperCase());
   const ctors = /inductive IdeaRelation((?:\s*\|\s*\w+)+)/.exec(lean)?.[1].split("|").map((x) => x.trim()).filter(Boolean);
   ok(JSON.stringify(ctors) === JSON.stringify(namesBetween("idea").map(camel)), `Lean IdeaRelation ${ctors}`);
-  const arms = (fn) => Object.fromEntries([...(new RegExp(`def IdeaRelation\\.${fn}[^]*?\\n\\n`).exec(lean)?.[0] ?? "").matchAll(/\| \.(\w+) => some \.(\w+)/g)].map((m) => [m[1], m[2]]));
-  const table = (field) => Object.fromEntries(namesBetween("idea").filter((n) => RELATIONS[n][field]).map((n) => [camel(n), camel(RELATIONS[n][field])]));
+  const arms = (fn: string) => Object.fromEntries([...(new RegExp(`def IdeaRelation\\.${fn}[^]*?\\n\\n`).exec(lean)?.[0] ?? "").matchAll(/\| \.(\w+) => some \.(\w+)/g)].map((m) => [m[1], m[2]]));
+  const table = (field: "inverse" | "order") => Object.fromEntries(namesBetween("idea").filter((n) => RELATIONS[n][field]).map((n) => [camel(n), camel(String(RELATIONS[n][field]))]));
   ok(JSON.stringify(arms("inverse")) === JSON.stringify(table("inverse")), `inverse: Lean ${JSON.stringify(arms("inverse"))}`);
   ok(JSON.stringify(arms("order")) === JSON.stringify(table("order")), `order: Lean ${JSON.stringify(arms("order"))}`);
 });
@@ -225,21 +223,24 @@ const venture = (() => {
   return v;
 })();
 
+// A venture with an idea map routes; one without waits, which fails the test that routed it.
+const routed = (dir: string) => { const r = route(dir); if ("waiting" in r) throw new Error(r.waiting); return r; };
+
 t("each tagged idea reaches its destination; an untagged one stays loose", () => {
-  const r = route(venture);
+  const r = routed(venture);
   const problem = r.destinations.find((d) => d.id === "validation-problem");
   ok(problem && problem.ideas[0].id === "i-01" && r.loose.some((i) => i.id === "i-04"), JSON.stringify(r.destinations.map((d) => [d.id, d.ideas.map((i) => i.id)])));
 });
 
 t("a destination with ideas and nothing drafted is routed to an agent; Naive's product question is the founder's", () => {
-  const r = route(venture);
+  const r = routed(venture);
   const problem = r.destinations.find((d) => d.id === "validation-problem"), products = r.destinations.find((d) => d.id === "product");
-  ok(problem.stage === "routed" && problem.next.by === "agent", JSON.stringify(problem));
-  ok(products.stage === "yours" && products.next.decision === "product-exists", JSON.stringify(products));
+  ok(must(problem, "validation-problem").stage === "routed" && problem?.next?.by === "agent", JSON.stringify(problem));
+  ok(must(products, "product").stage === "yours" && products?.next?.decision === "product-exists", JSON.stringify(products));
 });
 
 t("the team question fails open, so its destination moves on its own", () => {
-  const team = route(venture).destinations.find((d) => d.id === "validation-team");
+  const team = routed(venture).destinations.find((d) => d.id === "validation-team");
   ok(team && team.lane === "async", JSON.stringify(team));
 });
 

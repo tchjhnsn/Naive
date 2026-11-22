@@ -1,12 +1,15 @@
 export const title = "Validation lint: a claim, its evidence, and the decision";
 
-const past = (v) => v.rec === "held" && (v.age === 1 || v.phase > v.born);
-const discoveryDecision = (v) => v.decided === "validation" && (v.rec === "claim" || v.strength === "discovery");
+/** The TLA+ state this view reads: one field per variable it names. */
+type Vars = { age: number; born: number; decided: string; phase: number; rec: string; strength: string; who: string };
+
+const past = (v: Vars) => v.rec === "held" && (v.age === 1 || v.phase > v.born);
+const discoveryDecision = (v: Vars) => v.decided === "validation" && (v.rec === "claim" || v.strength === "discovery");
 
 // Labels the reader can act on. A decision in Discovery, and a Validation decision on stronger
 // evidence, add no finding, so they share the label of the claim without that decision.
 // The fail-open / fail-closed switch does not change the finding, so it stays off the chart.
-export const state = (v) => {
+export const state = (v: Vars) => {
   if (v.rec === "missing") return "No validation record";
   if (v.rec === "bad") return "Record will not parse";
   if (v.rec === "claim") return discoveryDecision(v) ? "Claim with no evidence, decided in Validation" : "Claim with no evidence";
@@ -16,7 +19,7 @@ export const state = (v) => {
   return bits.join(", ");
 };
 
-export const group = (v) => {
+export const group = (v: Vars) => {
   if (v.rec === "missing" || v.rec === "bad") return "empty";
   const finding = v.rec === "claim" || past(v) || (v.rec === "held" && v.who === "agent") || discoveryDecision(v);
   return finding ? "warn" : "clean";
@@ -24,7 +27,7 @@ export const group = (v) => {
 
 export const colors = { empty: "tan", warn: "orange", clean: "teal" };
 
-export const step = (action, from, to) => {
+export const step = (action: string, from: Vars, to: Vars) => {
   if (action === "Wait" || action === "Close" || action === "OpenMode" || action === "GradeOwner") return null;
   if (action === "Tick") return past(from) ? null : "time passes the shelf life";
   if (action === "Advance") return past(from) === past(to) ? null : "the venture changes phase";

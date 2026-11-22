@@ -1,6 +1,9 @@
 export const title = "Bessemer SaaS metrics: what the founder files, then what gets checked";
 
-const labels = {
+/** The TLA+ state this view reads: one field per variable it names. */
+type Vars = { check: string; pc: string };
+
+const labels: Record<string, string | null> = {
   start: "Not started",
   venture: "Phase read",
   product: "Product read",
@@ -14,12 +17,12 @@ const labels = {
   "on-telos": "Targets drafted on the telos",
 };
 
-export const state = (v) => {
+export const state = (v: Vars) => {
   if (v.pc === "checked") return v.check === "pass" ? "Checks passed" : "Checks failed";
   return labels[v.pc] ?? v.pc;
 };
 
-export const group = (v) => {
+export const group = (v: Vars) => {
   if (v.pc === "checked" && v.check === "fail") return "failed";
   if (v.pc === "checked" || v.pc === "decided" || v.pc === "on-telos") return "passed";
   if (v.pc === "sources" || v.pc === "decision") return "proposed";
@@ -28,7 +31,7 @@ export const group = (v) => {
 
 export const colors = { reading: "blue", proposed: "purple", passed: "teal", failed: "orange" };
 
-export const step = (action, _from, to) => {
+export const step = (action: string, _from: Vars, to: Vars) => {
   if (action === "RunChecks") {
     return to.check === "pass"
       ? "you run the checks [when the product is on file]"

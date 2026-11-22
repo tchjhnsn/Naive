@@ -5,33 +5,32 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ventureFile } from "../../packages/naive/src/core/venture-paths.ts";
+import type { ExitCriteria, Goal, Telos } from "../../packages/naive/src/records/types/records.d.ts";
 
-const load = (f) => JSON.parse(readFileSync(f, "utf8"));
+const load = (f: string): unknown => JSON.parse(readFileSync(f, "utf8"));
 export const TELOS_FILES = ["foundation/telos.json", "purpose/telos.json"];
-export const telosFile = (dir) => TELOS_FILES.find((t) => existsSync(ventureFile(dir, t))) ?? null;
+export const telosFile = (dir: string): string | null => TELOS_FILES.find((t) => existsSync(ventureFile(dir, t))) ?? null;
 export const PHASE_IDS = ["discovery", "validation", "beachhead", "scale", "platform"];
 
 /** An unmigrated telos's exit criteria for a phase: { file, record (the telos), criteria } or null. */
-export function telosExitCriteria(dir, phase) {
+export function telosExitCriteria(dir: string, phase: string) {
   const f = telosFile(dir);
   if (!f) return null;
-  const t = load(ventureFile(dir, f));
+  const t = load(ventureFile(dir, f)) as Telos;
   const p = t.phases?.find((x) => x.phase === phase);
   return { file: f, record: t, criteria: p?.exit_criteria ?? [] };
 }
 
 /** An unmigrated telos's measures ({ id, kind, primary } as written), or [] with no telos. */
-export function telosMeasures(dir) {
+export function telosMeasures(dir: string): Telos["measures"] {
   const f = telosFile(dir);
-  return f ? load(ventureFile(dir, f)).measures ?? [] : [];
+  return f ? (load(ventureFile(dir, f)) as Telos).measures ?? [] : [];
 }
 
-/** Telos -> canonical: { goals: [{file, rec}], exit: [{file, rec}] }. Pure.
- * @param {*} t @param {{ venture?: string }} [opts] */
-export function split(t, { venture } = {}) {
+/** Telos -> canonical: { goals: [{file, rec}], exit: [{file, rec}] }. Pure. */
+export function split(t: Telos, { venture }: { venture?: string } = {}) {
   const base = venture ? { venture } : {};
-  /** @type {{ file: string, rec: Record<string, unknown> }[]} */
-  const goals = [{
+  const goals: { file: string, rec: Record<string, unknown> }[] = [{
     file: "foundation/goals/telos.json",
     rec: { id: "telos", ...base, statement: t.statement, kind: "venture", ...(t.horizon !== undefined ? { horizon: t.horizon } : {}),
       ...(t.end_state ? { end_state: t.end_state } : {}),
@@ -45,10 +44,10 @@ export function split(t, { venture } = {}) {
 }
 
 /** Canonical -> telos (the view a migrated venture's foundation/telos route renders), or null when there is nothing to render. */
-export function telosView(dir) {
+export function telosView(dir: string | null | undefined) {
   if (!dir) return null;
-  const read = (rel) => { const d = ventureFile(dir, rel); return existsSync(d) ? readdirSync(d).filter((f) => f.endsWith(".json")).sort().map((f) => load(join(d, f))) : []; };
-  const goals = read("foundation/goals"), exit = read("foundation/exit-criteria");
+  const read = <T>(rel: string): T[] => { const d = ventureFile(dir, rel); return existsSync(d) ? readdirSync(d).filter((f) => f.endsWith(".json")).sort().map((f) => load(join(d, f)) as T) : []; };
+  const goals = read<Goal>("foundation/goals"), exit = read<ExitCriteria>("foundation/exit-criteria");
   const end = goals.find((g) => g.kind === "venture");
   if (!end && !exit.length) return null;
   const owner = goals.find((g) => g.kind === "owner");
@@ -56,6 +55,6 @@ export function telosView(dir) {
     statement: end?.statement ?? null, end_state: end?.end_state ?? null, ...(end?.horizon !== undefined ? { horizon: end.horizon } : {}),
     measures: (end?.measures ?? []).map((m) => ({ id: m.id, statement: m.statement, ...(m.target !== undefined ? { target: String(m.target) } : {}), ...(m.kind ? { kind: m.kind } : {}), ...(m.primary ? { primary: true } : {}) })),
     owner_outcome: owner ? { path: owner.value, ...(owner.why ? { why: owner.why } : {}) } : null,
-    phases: PHASE_IDS.map((ph) => exit.find((e) => e.phase === ph)).filter(Boolean).map((e) => ({ phase: e.phase, exit_criteria: e.criteria.map((c) => ({ id: c.id, statement: c.statement, serves: c.serves ?? [], ...(c.evidence ? { evidence: c.evidence } : {}), ...(c.met ? { met: c.met } : {}) })) })),
+    phases: PHASE_IDS.map((ph) => exit.find((e) => e.phase === ph)).filter((e) => e !== undefined).map((e) => ({ phase: e.phase, exit_criteria: e.criteria.map((c) => ({ id: c.id, statement: c.statement, serves: c.serves ?? [], ...(c.evidence ? { evidence: c.evidence } : {}), ...(c.met ? { met: c.met } : {}) })) })),
   };
 }

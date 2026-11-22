@@ -1,6 +1,9 @@
 export const title = "Legal lint (not legal advice)";
 
-const judged = (v) => {
+/** The TLA+ state this view reads: one field per variable it names. */
+type Vars = { agreement: string; agreementFinding: boolean; agreementMode: string; claim: string; claimFinding: boolean; claimMode: string; code: number; phase: string };
+
+const judged = (v: Vars) => {
   if (v.claimFinding && v.agreementFinding) return "Both rules have findings";
   if (v.claimFinding) return "Public claim has no source";
   if (v.agreementFinding) return "Agreement has no counterparty";
@@ -8,7 +11,7 @@ const judged = (v) => {
   return "Nothing to report";
 };
 
-export const state = (v) => {
+export const state = (v: Vars) => {
   if (v.phase === "ready") return "Ready to lint";
   if (v.phase === "judged") return judged(v);
   if (v.phase === "done") {
@@ -19,7 +22,7 @@ export const state = (v) => {
   return "Reading records";
 };
 
-export const group = (v) => {
+export const group = (v: Vars) => {
   if (v.phase === "done") return v.code === 1 ? "failed" : "ok";
   if (v.phase === "judged") return (v.claimFinding || v.agreementFinding) ? "findings" : "clear";
   return "running";
@@ -27,7 +30,7 @@ export const group = (v) => {
 
 export const colors = { running: "blue", findings: "yellow", clear: "teal", ok: "teal", failed: "orange" };
 
-export const step = (action, from, to) => {
+export const step = (action: string, from: Vars, to: Vars) => {
   if (action === "SeeClaim") return "the lint reads the venture's records";
   if (action === "SeeAgreement" || action === "ApplyModes") return null;
   if (action === "Judge") {

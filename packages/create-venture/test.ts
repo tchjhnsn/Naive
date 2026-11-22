@@ -11,18 +11,17 @@ const repo = new URL("../..", import.meta.url).pathname;
 const base = mkdtempSync(join(tmpdir(), "create-venture-test-"));
 const home = join(base, "home");
 mkdirSync(home);
-/** @type {NodeJS.ProcessEnv} */
-const env = { ...process.env, HOME: home, XDG_CONFIG_HOME: join(home, ".config"), npm_config_user_agent: "" };
+const env: NodeJS.ProcessEnv = { ...process.env, HOME: home, XDG_CONFIG_HOME: join(home, ".config"), npm_config_user_agent: "" };
 // The generator calls a real model when TYPESAFE_API_KEY is set; these tests use the stand-in or the list.
 for (const k of ["TYPESAFE_API_KEY", "TYPESAFEAI_API_KEY", "MENTURA_TYPE_CMD"]) delete env[k];
 delete env.MENTURA_WORKSPACE;
-const create = (args, cwd = base, extra = {}) => spawnSync("node", [join(repo, "packages/create-venture/index.mjs"), ...args], { cwd, env: { ...env, ...extra }, encoding: "utf8" });
-const naive = (args, cwd) => spawnSync("node", [join(base, "kettle/node_modules/.bin/naive"), ...args], { cwd, env, encoding: "utf8" });
-const load = (p) => JSON.parse(readFileSync(p, "utf8"));
+const create = (args: string[], cwd = base, extra: Record<string, string> = {}) => spawnSync("node", [join(repo, "packages/create-venture/index.mjs"), ...args], { cwd, env: { ...env, ...extra }, encoding: "utf8" });
+const naive = (args: string[], cwd?: string) => spawnSync("node", [join(base, "kettle/node_modules/.bin/naive"), ...args], { cwd, env, encoding: "utf8" });
+const load = (p: string) => JSON.parse(readFileSync(p, "utf8"));
 let failed = 0;
-const tests = [];
-const t = (name, fn) => tests.push([name, fn]);
-const ok = (c, m) => { if (!c) throw new Error(m ?? "assertion failed"); };
+const tests: [string, () => void][] = [];
+const t = (name: string, fn: () => void) => tests.push([name, fn]);
+const ok = (c: unknown, m?: string) => { if (!c) throw new Error(m ?? "assertion failed"); };
 
 const v = join(base, "kettle");
 writeFileSync(join(base, "dump.md"), "# Ideas\n\nKettles for cafes.\n");
@@ -76,7 +75,7 @@ t("the idea dump is saved verbatim as raw/dump.md and recorded in provenance", (
 
 t("every record file is mapped to its JSON Schema for the editor", () => {
   const s = load(join(v, ".vscode/settings.json"))["json.schemas"];
-  const icp = s.find((x) => x.fileMatch.includes("/k-base/foundation/icp/*.json"));
+  const icp = s.find((x: { fileMatch: string[] }) => x.fileMatch.includes("/k-base/foundation/icp/*.json"));
   ok(icp?.url === "./node_modules/naive-framework/packages/naive/src/records/icp-profile.schema.json", JSON.stringify(icp));
   ok(existsSync(join(v, icp.url)), "the schema it points to is installed");
 });
@@ -86,7 +85,7 @@ t("installed from the registry, the venture depends on the framework by version,
   const packs = join(base, "packs"), proj = join(base, "registry");
   mkdirSync(packs); mkdirSync(proj);
   for (const d of [repo, join(repo, "packages/create-venture")]) ok(spawnSync("npm", ["pack", "--pack-destination", packs], { cwd: d, env, encoding: "utf8" }).status === 0, `npm pack in ${d}`);
-  const tgz = (n) => join(packs, readdirSync(packs).find((f) => f.startsWith(`${n}-`)));
+  const tgz = (n: string) => { const f = readdirSync(packs).find((x) => x.startsWith(`${n}-`)); if (f === undefined) throw new TypeError(`no ${n} pack in ${packs}`); return join(packs, f); };
   writeFileSync(join(proj, "package.json"), "{}\n");
   // The framework's runtime dependencies (effect, EE-125) come packed from this checkout's node_modules, so the install stays offline.
   const deps = Object.keys(load(join(repo, "package.json")).dependencies ?? {});
@@ -135,14 +134,14 @@ t("the answers are kept for the next venture, and --reset-preferences forgets th
   ok(create(["--reset-preferences"]).status === 0 && !existsSync(join(home, ".config/naive/create-venture.json")));
 });
 
-const prompts = (args, lines, extra = {}) => spawnSync("node", [join(repo, "packages/create-venture/index.mjs"), ...args, "--layout", "flat", "--skip-install", "--no-git"], { cwd: base, env: { ...env, CREATE_VENTURE_PROMPTS: "1", ...extra }, input: lines.join("\n") + "\n", encoding: "utf8" });
+const prompts = (args: string[], lines: string[], extra: Record<string, string> = {}) => spawnSync("node", [join(repo, "packages/create-venture/index.mjs"), ...args, "--layout", "flat", "--skip-install", "--no-git"], { cwd: base, env: { ...env, CREATE_VENTURE_PROMPTS: "1", ...extra }, input: lines.join("\n") + "\n", encoding: "utf8" });
 
 t("structured layout: the org chart in venture.json names each function's owner, and people/ stores no hats", () => {
   ok(create(["duo", "--type", "software-startup", "--name", "Ana Ruiz", "--team", "Ben Okafor", "--yes", "--skip-install", "--no-git"]).status === 0);
   const v2 = load(join(base, "duo/venture.json"));
-  ok(v2.layout === "structured" && Object.values(v2.functions).every((f) => f.owner === "ana-ruiz"), JSON.stringify(v2.functions));
+  ok(v2.layout === "structured" && Object.values(v2.functions as Record<string, { owner?: string }>).every((f) => f.owner === "ana-ruiz"), JSON.stringify(v2.functions));
   const roster = load(join(base, "duo/k-base/people/people.json"));
-  ok(roster.people.every((p) => !("hats" in p)), JSON.stringify(roster));
+  ok(roster.people.every((p: object) => !("hats" in p)), JSON.stringify(roster));
   const top = readdirSync(join(base, "duo")).filter((f) => !f.startsWith(".")).sort().join(" ");
   ok(top === "AGENTS.md README.md k-base meta package.json venture.json", top);
   const r = spawnSync("node", [join(repo, "packages/naive/src/checks/check-people.ts"), join(base, "duo")], { encoding: "utf8" });
@@ -164,7 +163,7 @@ t("the setup questions: nothing is scaffolded until the type and role are set; c
   const people = load(ventureFile(join(base, "clinic"), "people/people.json"));
   ok(people.mode === "solo" && people.people[0].role === "founder" && people.people[0].hats.length === c.departments.length, JSON.stringify(people));
   const fns = load(ventureFile(join(base, "clinic"), "knowledge/sources.json")).functions;
-  ok(fns.products.systems.map((s) => s.system).join() === "local-repo,github" && fns.products.systems[1].address === "pat/clinic", JSON.stringify(fns.products));
+  ok(fns.products.systems.map((s: { system: string }) => s.system).join() === "local-repo,github" && fns.products.systems[1].address === "pat/clinic", JSON.stringify(fns.products));
   ok(fns.finance.systems[0].system === "stripe" && fns.finance.systems[0].status === "pointed" && !fns["customer-service"], JSON.stringify(fns));
   ok(fns.legal.systems.length === 0 && /our lawyer/.test(fns.legal.note), "a function answered in prose keeps the founder's words");
 });
@@ -179,7 +178,7 @@ t("a VC fund with a team: an investor role, one file per founder, each function 
   ok(existsSync(ventureFile(join(base, "northstar"), "fund/decisions/thesis.decision.json")) && existsSync(ventureFile(join(base, "northstar"), "deals")) && existsSync(ventureFile(join(base, "northstar"), "portfolio")), "a fund starts with its thesis question, deals and a portfolio");
   ok(!existsSync(ventureFile(join(base, "northstar"), "products/decisions")) && !existsSync(ventureFile(join(base, "northstar"), "marketing")), "a fund has no product questions and no marketing package");
   const people = load(ventureFile(join(base, "northstar"), "people/people.json"));
-  ok(people.mode === "team" && people.people.every((p) => p.role === "general-partner"), JSON.stringify(people));
+  ok(people.mode === "team" && people.people.every((p: { role: string }) => p.role === "general-partner"), JSON.stringify(people));
   ok(JSON.stringify(load(ventureFile(join(base, "northstar"), "people/founders/ada-lovelace.json")).hats) === JSON.stringify(["finance", "external-relationships"]));
   const check = spawnSync("node", [join(repo, "packages/naive/src/checks/check-people.ts"), base], { encoding: "utf8" });
   ok(check.status === 0, check.stdout);
@@ -259,10 +258,12 @@ async function devTest() {
   let out = "";
   child.stdout.on("data", (d) => (out += d));
   child.stderr.on("data", (d) => (out += d));
-  const wait = async (re, ms = 15000) => { const t0 = Date.now(); while (!re.test(out)) { if (Date.now() - t0 > ms) throw new Error(`timed out waiting for ${re}: ${out}`); await new Promise((r) => setTimeout(r, 100)); } };
+  const wait = async (re: RegExp, ms = 15000) => { const t0 = Date.now(); while (!re.test(out)) { if (Date.now() - t0 > ms) throw new Error(`timed out waiting for ${re}: ${out}`); await new Promise((r) => setTimeout(r, 100)); } };
   try {
     await wait(/Board:\s+http:\/\/127\.0\.0\.1:(\d+)/);
-    const port = out.match(/Board:\s+http:\/\/127\.0\.0\.1:(\d+)/)[1];
+    const board = out.match(/Board:\s+http:\/\/127\.0\.0\.1:(\d+)/);
+    if (!board) throw new Error(`no board address: ${out}`);
+    const port = board[1];
     ok(existsSync(join(v, "AGENTS.md")) && /wrote AGENTS\.md/.test(out), "the root layout is written when missing");
     ok((await fetch(`http://127.0.0.1:${port}/`)).status === 200, "the board answers");
     ok((await fetch(`http://127.0.0.1:${port}/map`)).status === 200, "the map answers");
@@ -275,9 +276,9 @@ async function devTest() {
 }
 
 for (const [name, fn] of tests) {
-  try { fn(); console.log(`ok   ${name}`); } catch (e) { failed++; console.log(`FAIL ${name}: ${e.message}`); }
+  try { fn(); console.log(`ok   ${name}`); } catch (e) { failed++; console.log(`FAIL ${name}: ${(e as Error).message}`); }
 }
 try { await devTest(); console.log("ok   naive dev serves the board, writes a missing root layout, and checks each record as you save it"); }
-catch (e) { failed++; console.log(`FAIL naive dev: ${e.message}`); }
+catch (e) { failed++; console.log(`FAIL naive dev: ${(e as Error).message}`); }
 rmSync(base, { recursive: true, force: true });
 process.exit(failed ? 1 : 0);

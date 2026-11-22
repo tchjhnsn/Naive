@@ -10,19 +10,24 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { call, routes } from "../../../src/router/router.mjs";
+import type { MarketingBrand, MarketingSitemap, Product, ValidationPricing } from "../../../src/records/types/records.d.ts";
+
+/** What a router action answers, with the result this replay expects of the route. */
+type Answer<T = unknown> = { ok: boolean; error?: string; result?: T; not_found?: boolean; [k: string]: unknown };
+type Page = MarketingSitemap["pages"][number];
 
 const repo = join(dirname(fileURLToPath(import.meta.url)), "../../../../..");
 const playbook = join(repo, "packages/naive/library/packages/marketing/playbooks/apple-launch.md");
 const text = readFileSync(playbook, "utf8");
 let failed = 0;
-const expect = (name, ok, detail) => {
+const expect = (name: string, ok: unknown, detail?: unknown) => {
   console.log(`${ok ? "PASS" : "FAIL"}  ${name}${ok || detail == null ? "" : `: ${typeof detail === "string" ? detail : JSON.stringify(detail)}`}`);
   if (!ok) failed++;
 };
 
 const steps = [...text.matchAll(/^route: (\S+) action: (\S+)$/gm)].map((m) => ({ route: m[1], action: m[2] }));
 const table = routes();
-const row = (route) => table.find((r) => r.route === route);
+const row = (route: string) => table.find((r: { route: string }) => r.route === route);
 for (const s of steps) {
   const r = row(s.route);
   expect(`route exists: ${s.route} ${s.action}`, !!r && r.actions.includes(s.action), r ? r.actions : "missing");
@@ -39,12 +44,12 @@ function venture() {
   if (p.status !== 0) throw new Error(p.stderr || p.stdout);
   return dir;
 }
-const go = (dir, route, action, input) => call({
+const go = <T = unknown>(dir: string, route: string, action: string, input?: Record<string, unknown>) => call({
   venture: "launch", route, action, actor: "person", workspace: dir,
   input: action === "run" ? { ...(input ?? {}), cache: "no-store" } : input,
-});
+}) as Promise<Answer<T>>;
 
-const product = {
+const product: Product = {
   id: "kettle",
   name: "Kettle",
   description: "A small tool that boils water for one person who wants tea now.",
@@ -57,7 +62,7 @@ const product = {
 };
 const thin = { id: "kettle", name: "Kettle", description: "A kettle with no job yet." };
 
-const narrative = (body, extra = {}) => `---
+const narrative = (body: string, extra: { audience?: string; publish?: boolean; approved_by?: string } = {}) => `---
 variant_of: product/kettle.json
 audience: ${extra.audience ?? "home-cooks"}
 publish: ${extra.publish ?? false}
@@ -80,7 +85,7 @@ status: Say it is still being built, so nothing is for sale today.
 job: If the live switch fails, play the recorded take of the same fill and stop.
 `);
 
-function putContent(dir, name, body) {
+function putContent(dir: string, name: string, body: string) {
   const rel = `operations/marketing/content/${name}`;
   mkdirSync(join(dir, "operations/marketing/content"), { recursive: true });
   writeFileSync(join(dir, rel), body);
@@ -89,14 +94,15 @@ function putContent(dir, name, body) {
 
 const BEAT = /^(job|technology|description|offering|status|market|name|pricing): \S/;
 const MARK = /\b(Apple|iPhone|iPod)\b|\bThink different\b/i;
-function beats(body) {
+function beats(body: string) {
   const m = body.match(/^---\n[\s\S]*?\n---\n?([\s\S]*)$/);
   const text = m ? m[1] : body;
   return text.split("\n").map((l) => l.trim()).filter((l) => l && !l.startsWith("# "));
 }
-function support(card, demoBody, pricingFound) {
+function support(card: Product, demoBody: string, pricingFound: boolean) {
+  const fields: Record<string, unknown> = card;
   const allowed = new Set(["job", "technology", "description", "offering", "status", "market", "name"].filter((k) => {
-    const v = card[k];
+    const v = fields[k];
     return v != null && v !== "" && !(Array.isArray(v) && !v.length);
   }));
   if (pricingFound) allowed.add("pricing");
@@ -107,12 +113,12 @@ function support(card, demoBody, pricingFound) {
   });
   return { pass: lines.length > 0 && bad.length === 0, bad };
 }
-function marks(bodies) {
+function marks(bodies: string[]) {
   return bodies.filter((b) => MARK.test(b.replace(/^---\n[\s\S]*?\n---\n?/, "")));
 }
 
 const VARIANTS = ["operations/marketing/content/launch-narrative.mdx", "operations/marketing/content/launch-demo.mdx"];
-function sitemapCheck(pages, productFile, before = []) {
+function sitemapCheck(pages: Page[], productFile: string, before: Page[] = []) {
   const launch = pages.find((p) => p.path === "/launch");
   return !!launch
     && launch.sections?.map((s) => s.variant).join() === VARIANTS.join()
@@ -120,9 +126,9 @@ function sitemapCheck(pages, productFile, before = []) {
     && before.every((b) => pages.some((p) => p.path === b.path));
 }
 
-function launchPage(id) {
+function launchPage(id: string): Page {
   const file = `product/${id}.json`;
-  const section = (item, component, variant) => ({
+  const section = (item: string, component: string, variant: string) => ({
     item, component, need: 1, for: ["home-cooks"],
     why: [`This section is drawn from product/${id}.`],
     source: { record: "product", file, route: `product/${id}` },
@@ -136,7 +142,7 @@ function launchPage(id) {
     ],
   };
 }
-function sitemap(pages) {
+function sitemap(pages: Page[]): MarketingSitemap {
   return {
     version: "0", venture: "launch", facts: {},
     offerings: [{ id: "kettle", name: "Kettle", offering: "product", status: "building", offered_to: ["home-cooks"], from: "product/kettle" }],
@@ -149,7 +155,7 @@ function sitemap(pages) {
     },
   };
 }
-const homePage = {
+const homePage: Page = {
   path: "/", parent: null, label: "Home", type: "home", level: "home",
   sections: [{
     item: "home-intro", component: "Prose", need: 1, for: ["home-cooks"],
@@ -159,11 +165,11 @@ const homePage = {
   }],
 };
 
-const brand = {
+const brand: MarketingBrand = {
   version: "0", venture: "launch",
   voice: { tone: ["plain"], rules: [{ id: "no-synergy", avoid: "synergy", use: "work together", why: "the venture does not say synergy" }] },
 };
-const pricing = {
+const pricing: ValidationPricing = {
   venture: "launch", product: "kettle", model: "one-time", buyer: "home cooks",
   points: [{ name: "kettle", amount: 40, currency: "USD", period: "once" }],
   evidence: [],
@@ -180,11 +186,11 @@ const pricing = {
 // --- no card, thin card, ready card ---
 {
   const dir = venture();
-  const missing = await go(dir, "product/no-such", "read");
+  const missing = await go<Product>(dir, "product/no-such", "read");
   expect("a missing product read is not-found and invents nothing", missing.ok && missing.result == null && missing.not_found, missing.error ?? missing.not_found);
   const thinWrite = await go(dir, "product/kettle", "write", thin);
   expect("a card with no job can be written", thinWrite.ok, thinWrite.error);
-  const thinRead = await go(dir, "product/kettle", "read");
+  const thinRead = await go<Product>(dir, "product/kettle", "read");
   expect("the thin card has no job, so the template stops", thinRead.ok && !thinRead.result?.job, thinRead.result);
   rmSync(dir, { recursive: true, force: true });
 }
@@ -194,59 +200,59 @@ const pricing = {
   const dir = venture();
   const wrote = await go(dir, "product/kettle", "write", product);
   expect("the ready product card writes", wrote.ok, wrote.error);
-  const card = await go(dir, "product/kettle", "read");
+  const card = await go<Product>(dir, "product/kettle", "read");
   expect("product/[id] read returns the job", card.ok && card.result?.job === product.job, card.error);
 
-  const inputs = await go(dir, "marketing/design-system/inputs", "run");
+  const inputs = await go<Record<string, { route?: string } | undefined>>(dir, "marketing/design-system/inputs", "run");
   expect("design-system inputs run", inputs.ok, inputs.error);
   expect("inputs expose market:kettle and do not copy the description", inputs.result?.["market:kettle"]?.route === "product/kettle" && !JSON.stringify(inputs.result).includes(product.description), inputs.result);
 
-  const noBrand = await go(dir, "marketing/brand", "read");
+  const noBrand = await go<MarketingBrand>(dir, "marketing/brand", "read");
   expect("brand read is not-found when the venture has none", noBrand.ok && noBrand.result == null && noBrand.not_found, noBrand.error);
 
-  const noPrice = await go(dir, "validation/pricing", "read");
+  const noPrice = await go<ValidationPricing>(dir, "validation/pricing", "read");
   expect("pricing read is not-found when the venture has none", noPrice.ok && noPrice.result == null && noPrice.not_found, noPrice.error);
 
   // Wrong folder: the public gate cannot fail a file it does not see.
   mkdirSync(join(dir, "marketing/content"), { recursive: true });
   writeFileSync(join(dir, "marketing/content/bad.mdx"), "just some words with no frontmatter\n");
-  const blind = await go(dir, "operations/marketing/public", "run");
+  const blind = await go<{ files: number; errors?: unknown[] }>(dir, "operations/marketing/public", "run");
   expect("public gate passes a broken file that sits in marketing/content", blind.ok && blind.result?.files === 0, blind.error ?? blind.result);
   rmSync(join(dir, "marketing/content/bad.mdx"));
 
   putContent(dir, "launch-narrative.mdx", narrative("Heat the water.\n", { audience: "" }).replace("audience: \n", ""));
-  const noAudience = await go(dir, "operations/marketing/public", "run");
+  const noAudience = await go<{ files: number; errors?: unknown[] }>(dir, "operations/marketing/public", "run");
   expect("public gate fails a narrative with no audience", noAudience.ok === false && /audience/.test(noAudience.error ?? ""), noAudience.error);
 
   putContent(dir, "launch-narrative.mdx", narrative(product.description + "\n"));
-  const leak = await go(dir, "operations/marketing/public", "run");
+  const leak = await go<{ files: number; errors?: unknown[] }>(dir, "operations/marketing/public", "run");
   expect("public gate fails a narrative that copies the product description", leak.ok === false && /copies/.test(leak.error ?? ""), leak.error);
 
   putContent(dir, "launch-narrative.mdx", narrative("Heat the water.\n", { publish: true }));
-  const noApprover = await go(dir, "operations/marketing/public", "run");
+  const noApprover = await go<{ files: number; errors?: unknown[] }>(dir, "operations/marketing/public", "run");
   expect("public gate fails a published narrative with no approver", noApprover.ok === false && /approved_by/.test(noApprover.error ?? ""), noApprover.error);
 
   putContent(dir, "launch-narrative.mdx", cleanNarrative);
   putContent(dir, "launch-demo.mdx", cleanDemo);
-  const gate = await go(dir, "operations/marketing/public", "run");
+  const gate = await go<{ files: number; errors?: unknown[] }>(dir, "operations/marketing/public", "run");
   expect("public gate passes the clean narrative and demo", gate.ok && gate.result?.errors?.length === 0 && gate.result?.files === 2, gate.error ?? gate.result);
 
-  const seen = await go(dir, "marketing/content", "read");
+  const seen = await go<Record<string, unknown>>(dir, "marketing/content", "read");
   const seenText = JSON.stringify(seen.result ?? "");
   expect("marketing/content read shows both files", seen.ok && /Fill it and start it/.test(seenText) && /shuts itself off/.test(seenText), seen.error ?? Object.keys(seen.result ?? {}));
 
-  const voiceBare = await go(dir, "marketing/voice", "run");
+  const voiceBare = await go<{ ok: boolean; violations?: { file: string; found?: string }[] }>(dir, "marketing/voice", "run");
   expect("voice with no brand record: the call succeeds and result.ok is true", voiceBare.ok && voiceBare.result?.ok === true && (voiceBare.result?.violations ?? []).length === 0, voiceBare.error ?? voiceBare.result);
 
   const brandWrite = await go(dir, "marketing/brand", "write", brand);
   expect("a person can write the brand voice rule", brandWrite.ok, brandWrite.error);
   putContent(dir, "launch-narrative.mdx", narrative("This launch promises synergy across the kitchen.\n"));
-  const voiceBad = await go(dir, "marketing/voice", "run");
+  const voiceBad = await go<{ ok: boolean; violations?: { file: string; found?: string }[] }>(dir, "marketing/voice", "run");
   expect("voice call still exits ok when a phrase is avoided badly", voiceBad.ok === true, voiceBad.error);
   expect("voice result.ok is false and names the file", voiceBad.result?.ok === false && (voiceBad.result?.violations ?? []).some((v) => /launch-narrative/.test(v.file) && v.found?.toLowerCase() === "synergy"), voiceBad.result);
 
   putContent(dir, "launch-narrative.mdx", cleanNarrative);
-  const voiceGood = await go(dir, "marketing/voice", "run");
+  const voiceGood = await go<{ ok: boolean; violations?: { file: string; found?: string }[] }>(dir, "marketing/voice", "run");
   expect("voice result.ok is true once the avoid-phrase is gone", voiceGood.ok && voiceGood.result?.ok === true, voiceGood.result);
 
   const priceBeat = narrative(`# Show the product doing its job
@@ -254,38 +260,38 @@ pricing: Name the price the pricing record holds.
 job: Fill it and start it, so the room sees water heat for tea.
 `);
   putContent(dir, "launch-demo.mdx", priceBeat);
-  const supportMissing = support(card.result, priceBeat, false);
+  const supportMissing = support(card.result as Product, priceBeat, false);
   expect("a pricing beat fails support when validation/pricing was not found", supportMissing.pass === false, supportMissing.bad);
 
   const priceWrite = await go(dir, "validation/pricing", "write", pricing);
   expect("a pricing record writes", priceWrite.ok, priceWrite.error);
-  const priceRead = await go(dir, "validation/pricing", "read");
-  const supportPriced = support(card.result, priceBeat, priceRead.ok && priceRead.result != null);
+  const priceRead = await go<ValidationPricing>(dir, "validation/pricing", "read");
+  const supportPriced = support(card.result as Product, priceBeat, priceRead.ok && priceRead.result != null);
   expect("the same pricing beat passes support once the record is there", priceRead.ok && priceRead.result?.points?.[0]?.amount === 40 && supportPriced.pass, priceRead.error ?? supportPriced);
 
   const warranty = narrative(`# Show the product doing its job
 warranty: Promise a guarantee the card does not hold.
 `);
-  expect("a beat on a field the card lacks fails support", support(card.result, warranty, true).pass === false);
+  expect("a beat on a field the card lacks fails support", support(card.result as Product, warranty, true).pass === false);
 
   putContent(dir, "launch-demo.mdx", cleanDemo);
-  expect("the clean demo passes support", support(card.result, cleanDemo, false).pass === true, support(card.result, cleanDemo, false));
+  expect("the clean demo passes support", support(card.result as Product, cleanDemo, false).pass === true, support(card.result as Product, cleanDemo, false));
   expect("the clean demo opens on the situation beat", beats(cleanDemo)[0].startsWith("description: "), beats(cleanDemo)[0]);
-  expect("a situation field fails support", support(card.result, cleanDemo.replace("description: Open", "situation: Open"), false).pass === false);
+  expect("a situation field fails support", support(card.result as Product, cleanDemo.replace("description: Open", "situation: Open"), false).pass === false);
 
   const marked = narrative("Think different about boiling water.\n");
   expect("Think different fails the mark check", marks([marked]).length === 1);
   expect("the clean files pass the mark check", marks([cleanNarrative, cleanDemo]).length === 0);
 
   putContent(dir, "launch-narrative.mdx", cleanNarrative);
-  const gateAgain = await go(dir, "operations/marketing/public", "run");
+  const gateAgain = await go<{ files: number; errors?: unknown[] }>(dir, "operations/marketing/public", "run");
   expect("public gate still passes after the bad drafts are replaced", gateAgain.ok, gateAgain.error);
 
-  const emptyMap = await go(dir, "marketing/sitemap", "read");
+  const emptyMap = await go<MarketingSitemap>(dir, "marketing/sitemap", "read");
   expect("sitemap read is not-found on a new venture", emptyMap.ok && emptyMap.result == null, emptyMap.error);
   const created = await go(dir, "marketing/sitemap", "write", sitemap([launchPage("kettle")]));
   expect("sitemap write of the launch page succeeds", created.ok, created.error);
-  const mapped = await go(dir, "marketing/sitemap", "read");
+  const mapped = await go<MarketingSitemap>(dir, "marketing/sitemap", "read");
   const pages = mapped.result?.pages ?? [];
   expect("the new sitemap passes the sitemap check", mapped.ok && sitemapCheck(pages, "product/kettle.json"), mapped.error ?? pages);
   expect("the sitemap check fails with no /launch page", sitemapCheck([], "product/kettle.json") === false);
@@ -303,11 +309,11 @@ warranty: Promise a guarantee the card does not hold.
   await go(dir, "product/kettle", "write", product);
   const first = await go(dir, "marketing/sitemap", "write", sitemap([homePage]));
   expect("a home page sitemap writes", first.ok, first.error);
-  const before = await go(dir, "marketing/sitemap", "read");
+  const before = await go<MarketingSitemap>(dir, "marketing/sitemap", "read");
   const kept = [...(before.result?.pages ?? []), launchPage("kettle")];
   const second = await go(dir, "marketing/sitemap", "write", sitemap(kept));
   expect("adding the launch page writes", second.ok, second.error);
-  const after = await go(dir, "marketing/sitemap", "read");
+  const after = await go<MarketingSitemap>(dir, "marketing/sitemap", "read");
   const paths = (after.result?.pages ?? []).map((p) => p.path).sort();
   expect("the home page is still there beside /launch", after.ok && paths.join() === "/,/launch", paths);
   expect("the sitemap check passes with the earlier page kept", sitemapCheck(after.result?.pages ?? [], "product/kettle.json", before.result?.pages) === true);

@@ -1,6 +1,9 @@
 export const title = "An investor update, and what investors/lint flags";
 
-export const state = (v) => {
+/** The TLA+ state this view reads: one field per variable it names. */
+type Vars = { closed: readonly string[]; exitCode: number; raiseHit: boolean; records: string; termsHit: boolean; update: string; updateHit: boolean };
+
+export const state = (v: Vars) => {
   if (v.records !== "ok") return "A record is missing or broken";
   if (v.raiseHit) return v.exitCode === 1 ? "Raise has no use of funds, run fails" : "Raise has no use of funds";
   if (v.termsHit) return v.exitCode === 1 ? "Terms conflict with alignment, run fails" : "Terms conflict with alignment";
@@ -12,7 +15,7 @@ export const state = (v) => {
   return "Clean venture";
 };
 
-export const group = (v) => {
+export const group = (v: Vars) => {
   if (v.records !== "ok") return "broken";
   if (v.exitCode === 1) return "fails";
   if (v.raiseHit || v.termsHit || v.updateHit) return "flagged";
@@ -30,7 +33,7 @@ export const colors = {
   broken: "tan",
 };
 
-const labels = {
+const labels: Record<string, string | null> = {
   RecordRaiseWithoutUse: "you record a raise with no use of funds",
   AddUseOfFunds: "you add a use of funds",
   RecordConflictingTerms: "you record terms a principle forbids",
@@ -50,9 +53,9 @@ const labels = {
   Done: null,
 };
 
-const quiet = (v) => v.records === "ok" && !v.raiseHit && !v.termsHit && !v.updateHit && v.update === "none";
+const quiet = (v: Vars) => v.records === "ok" && !v.raiseHit && !v.termsHit && !v.updateHit && v.update === "none";
 
-export const step = (action, from, to) => {
+export const step = (action: string, from: Vars, to: Vars) => {
   if (action === "Done") return null;
   // The clean venture with a fail-closed rule and no finding is one state. Showing every
   // violation starting from there repeats arrows the clean venture already has.

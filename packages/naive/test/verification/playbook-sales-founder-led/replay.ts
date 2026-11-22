@@ -7,6 +7,12 @@ import { mkdtempSync, mkdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { call } from "../../../src/router/router.mjs";
+import type { ValidationPricing } from "../../../src/records/types/records.d.ts";
+
+/** What a router action answers, with the result this replay expects of the route (null when the record is missing). */
+type Answer<T = unknown> = { ok: boolean, error?: string, result?: T | null };
+/** A customer record, as these checks read it. */
+type Customer = { id: string, name?: string, icp: string, buying_stage: string, summary?: string, notes?: string };
 
 const root = new URL("../../../../..", import.meta.url).pathname;
 const ws = mkdtempSync(join(tmpdir(), "founder-led-"));
@@ -18,18 +24,18 @@ if (init.status !== 0) {
 }
 process.env.MENTURA_WORKSPACE = ws;
 
-const lines = [];
-const expect = (name, ok, detail = "") => {
+const lines: string[] = [];
+const expect = (name: string, ok: unknown, detail = "") => {
   lines.push(`${ok ? "PASS" : "FAIL"} ${name}${detail ? ` (${detail})` : ""}`);
   if (!ok) failed++;
 };
 let failed = 0;
 
-const read = async (route) => call({ venture: "fixture", route, action: "read", actor: "person" });
-const write = async (route, input) => call({ venture: "fixture", route, action: "write", input, actor: "person" });
+const read = async <T = unknown>(route: string) => call({ venture: "fixture", route, action: "read", actor: "person" }) as Promise<Answer<T>>;
+const write = async (route: string, input: Record<string, unknown>) => call({ venture: "fixture", route, action: "write", input, actor: "person" }) as Promise<Answer>;
 
 const sentence = "ICP shop-owner. Reach: people I already know. Yes: they pay an amount written in notes. Let go: they will not pay.";
-const customer = (extra) => ({
+const customer = (extra: Partial<Customer> & { id: string }) => ({
   id: extra.id,
   name: extra.name ?? "A person I can contact",
   icp: extra.icp ?? "shop-owner",
@@ -38,7 +44,7 @@ const customer = (extra) => ({
   notes: extra.notes ?? "",
 });
 
-const evidence = (id, summary) => ({
+const evidence = (id: string, summary: string) => ({
   id,
   kind: "stated",
   summary,
@@ -47,16 +53,16 @@ const evidence = (id, summary) => ({
   collected: "2026-10-29",
 });
 
-const profiles = (icp) => icp && typeof icp === "object" ? Object.keys(icp) : [];
-const records = (result) => result && typeof result === "object" ? Object.values(result) : [];
-const founderIds = (result) => result && typeof result === "object" ? Object.keys(result) : [];
+const profiles = (icp: unknown) => icp && typeof icp === "object" ? Object.keys(icp) : [];
+const records = (result: Record<string, Customer> | null | undefined) => result && typeof result === "object" ? Object.values(result) : [];
+const founderIds = (result: unknown) => result && typeof result === "object" ? Object.keys(result) : [];
 
-function evaluate(list, icpIds, streamExists, founders) {
+function evaluate(list: Customer[], icpIds: string[], streamExists: boolean, founders: string[]): Record<string, boolean> {
   const stages = new Set(["named", "aware", "trying", "paying", "gone"]);
   const later = new Set(["aware", "trying", "paying", "gone"]);
   const anyNotes = list.some((r) => String(r.notes ?? "").trim() !== "");
-  const amount = (notes) => /\d+(?:\.\d+)?\s*[A-Z]{3}/.test(String(notes ?? ""));
-  const callerId = (notes) => String(notes ?? "").match(/caller:\s*([a-z0-9-]+)/)?.[1] ?? null;
+  const amount = (notes: string | undefined) => /\d+(?:\.\d+)?\s*[A-Z]{3}/.test(String(notes ?? ""));
+  const callerId = (notes: string | undefined) => String(notes ?? "").match(/caller:\s*([a-z0-9-]+)/)?.[1] ?? null;
   const paying = list.filter((r) => r.buying_stage === "paying" && amount(r.notes));
   return {
     "list-started": list.length >= 1,
@@ -79,7 +85,7 @@ function evaluate(list, icpIds, streamExists, founders) {
 }
 
 async function snapshot() {
-  const customers = await read("customers");
+  const customers = await read<Record<string, Customer>>("customers");
   const icp = await read("foundation/icp");
   const stream = await read("purpose/data-stream/conversations");
   const founders = await read("people/founders");
@@ -253,8 +259,8 @@ const priceWrite = await write("validation/pricing", {
   evidence: [evidence("price-fixture", "A fixture price so the route can be read. Not evidence that anyone paid 49.")],
 });
 expect("step 3: write validation/pricing after the customer amount is already 40", priceWrite.ok, priceWrite.error ?? "");
-const priceRead = await read("validation/pricing");
-const customerRead = await read("customers/ada-shop");
+const priceRead = await read<ValidationPricing>("validation/pricing");
+const customerRead = await read<Customer>("customers/ada-shop");
 expect("rule reads: the price record is 49 USD", priceRead.result?.points?.[0]?.amount === 49);
 expect("rule reads: the customer notes still say 40, not the price record", /40/.test(customerRead.result?.notes ?? "") && !/49/.test(customerRead.result?.notes ?? ""));
 

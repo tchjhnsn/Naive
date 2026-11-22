@@ -1,6 +1,9 @@
 export const title = "People lint: a role, a hire, and who owns a decision";
 
-export const state = (v) => ({
+/** The TLA+ state this view reads: one field per variable it names. */
+type Vars = { decision: string; hired: boolean; plan: string; records: string; roleOwns: boolean };
+
+export const state = (v: Vars) => ({
   "Team plan": v.plan === "named" ? "The plan names the role" : "The plan does not name the role",
   Hire: v.hired ? "A hire is on the books" : "No hire",
   Role: v.roleOwns ? "The role owns a function" : "The role owns no function",
@@ -12,7 +15,7 @@ export const state = (v) => ({
   Records: v.records === "ok" ? "Records read" : v.records === "missing" ? "Records missing" : "Records malformed",
 });
 
-export const group = (v) => {
+export const group = (v: Vars) => {
   if (v.records !== "ok") return "unreadable";
   if (!v.roleOwns || (v.hired && v.plan !== "named") || v.decision === "nobody") return "finding";
   return "clean";
@@ -20,7 +23,7 @@ export const group = (v) => {
 
 export const colors = { clean: "teal", finding: "orange", unreadable: "purple" };
 
-export const step = (action) => ({
+export const step = (action: string) => ({
   NameRole: "you add the role to the team plan",
   DropRole: "you remove the role from the team plan",
   Hire: "you hire for the role",
@@ -37,4 +40,4 @@ export const step = (action) => ({
   CloseHire: null,
   CloseDecision: null,
   OpenRules: null,
-})[action] ?? action;
+} as Record<string, string | null>)[action] ?? action;

@@ -1,6 +1,9 @@
 export const title = "A launch narrative and a demo script, from the product card";
 
-export const state = (v) => {
+/** The TLA+ state this view reads: one field per variable it names. */
+type Vars = { demo: string; markCheck: string; narrative: string; product: string; publicCheck: string; sawBrand: boolean; sawInputs: boolean; sawPricing: boolean; sawProduct: boolean; sitemap: string; supportCheck: string; voiceCheck: string };
+
+export const state = (v: Vars) => {
   if (!v.sawProduct) return "You have not read the product card yet";
   if (v.product === "absent") return "No product card to launch";
   if (v.product === "thin") return "The product card has no job to show";
@@ -18,7 +21,7 @@ export const state = (v) => {
   return "The launch passes its checks";
 };
 
-export const group = (v) => {
+export const group = (v: Vars) => {
   if (!v.sawProduct || v.product === "absent" || v.product === "thin") return "waiting";
   if (v.publicCheck === "fail" || v.voiceCheck === "fail" || v.supportCheck === "fail" || v.markCheck === "fail") return "failed";
   if (v.publicCheck === "pass") return "passed";
@@ -34,7 +37,7 @@ export const colors = {
   failed: "orange",
 };
 
-export const step = (action, from, to) => {
+export const step = (action: string, from: Vars, to: Vars) => {
   if (action === "ReadMissing") return "you read the product card and there is none";
   if (action === "ReadProduct") {
     return to.product === "thin"

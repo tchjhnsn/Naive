@@ -1,6 +1,9 @@
 export const title = "Product lint: a record is read, judged, then the run exits";
 
-const judged = (v) => {
+/** The TLA+ state this view reads: one field per variable it names. */
+type Vars = { defect: string; exit: number; finding: string; phase: string };
+
+const judged = (v: Vars) => {
   if (v.defect === "malformed") return "Broken record skipped";
   if (v.finding === "none") return "No finding";
   if (v.finding === "product-no-icp") return "Finding: product offered to no ICP";
@@ -8,14 +11,14 @@ const judged = (v) => {
   return "Finding: business model has no pricing record";
 };
 
-export const state = (v) => {
+export const state = (v: Vars) => {
   if (v.phase === "start") return "Venture given, records not read";
   if (v.phase === "read") return "Records read from the venture";
   if (v.phase === "judged") return judged(v);
   return v.exit === 1 ? "Exit 1" : "Exit 0";
 };
 
-export const group = (v) => {
+export const group = (v: Vars) => {
   if (v.phase === "start" || v.phase === "read") return "reading";
   if (v.phase === "exited") return v.exit === 1 ? "failed" : "clear";
   if (v.defect === "malformed" || v.finding === "none") return "clear";
@@ -24,7 +27,7 @@ export const group = (v) => {
 
 export const colors = { reading: "blue", clear: "teal", finding: "orange", failed: "pink" };
 
-export const step = (action, from, to) => {
+export const step = (action: string, from: Vars, to: Vars) => {
   if (action === "Done") return null;
   if (action === "Read") return "read the venture's records";
   if (action === "Judge") {

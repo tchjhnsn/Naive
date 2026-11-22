@@ -11,9 +11,9 @@ import { fileURLToPath } from "node:url";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const dir = mkdtempSync(join(tmpdir(), "anatomy-test-"));
-const write = (p, v) => { mkdirSync(dirname(join(dir, p)), { recursive: true }); writeFileSync(join(dir, p), JSON.stringify(v)); };
-const card = (id, extra = {}) => ({ id, name: id, description: id, allowed_from: "validation", ...extra });
-const a = (o) => ({ promise_delivery: 1, competence_draw: 1, promise_breach: 0.1, job_intensity: 1, ready: 3, revenue: 0, reversibility: 2, ...o });
+const write = (p: string, v: unknown) => { mkdirSync(dirname(join(dir, p)), { recursive: true }); writeFileSync(join(dir, p), JSON.stringify(v)); };
+const card = (id: string, extra = {}) => ({ id, name: id, description: id, allowed_from: "validation", ...extra });
+const a = (o: Record<string, number>) => ({ promise_delivery: 1, competence_draw: 1, promise_breach: 0.1, job_intensity: 1, ready: 3, revenue: 0, reversibility: 2, ...o });
 
 write("v/venture.json", { id: "t", name: "t", phase: "discovery", core: { promise: "p" } });
 write("v/products/kit.json", card("kit"));
@@ -27,12 +27,15 @@ write("low.json", { scorer: "test", answers: {
   other: a({ promise_delivery: 2, competence_draw: 2, revenue: 1 }),
 } });
 
-const run = (answers, json) => execFileSync("node", [join(here, "anatomy.ts"), "matrix", join(dir, "v"), join(dir, answers), ...(json ? ["--json"] : [])], { encoding: "utf8" });
+const run = (answers: string, json: boolean) => execFileSync("node", [join(here, "anatomy.ts"), "matrix", join(dir, "v"), join(dir, answers), ...(json ? ["--json"] : [])], { encoding: "utf8" });
+/** The matrix as `anatomy.ts matrix --json` prints it. */
+type Matrix = { substrate: string | null; phases: { id: string; flagship: string | null; roles: Record<string, { roles: string[] }>; role_text: Record<string, string> }[] };
+const matrix = (answers: string) => JSON.parse(run(answers, true)) as Matrix;
 // Roles in the Validation phase, read from the JSON output (A-001), not by parsing the Markdown.
-const roles = (answers) => Object.fromEntries(Object.entries(JSON.parse(run(answers, true)).phases.find((p) => p.id === "validation").roles).map(([p, r]) => [p, r.roles.join(" + ")]));
+const roles = (answers: string) => Object.fromEntries(Object.entries(matrix(answers).phases.find((p) => p.id === "validation")?.roles ?? {}).map(([p, r]) => [p, r.roles.join(" + ")]));
 
 let failed = 0;
-const expect = (name, ok) => { console.log(`${ok ? "ok  " : "FAIL"} ${name}`); if (!ok) failed++; };
+const expect = (name: string, ok: boolean) => { console.log(`${ok ? "ok  " : "FAIL"} ${name}`); if (!ok) failed++; };
 
 const low = roles("low.json");
 expect("no revenue engine when the top revenue score is below the threshold", !Object.values(low).some((r) => r.includes("revenue-engine")));
@@ -50,7 +53,7 @@ const high = roles("high.json");
 expect("a product at the threshold is the revenue engine", high.other === "revenue-engine");
 
 const md = run("high.json", false).split("\n## ")[0];
-const data = JSON.parse(run("high.json", true));
+const data = matrix("high.json");
 expect("the JSON and the Markdown report the same roles", data.phases.every((ph, i) =>
   Object.entries(ph.role_text).every(([p, r]) => md.split("\n").some((l) => l.startsWith(`| ${p} |`) && l.split("|")[i + 2].trim() === r))));
 expect("the JSON names the substrate and a flagship per phase", data.substrate === "kit" && data.phases.every((ph) => ph.flagship === "kit"));
