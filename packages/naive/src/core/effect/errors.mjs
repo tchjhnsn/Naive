@@ -9,14 +9,31 @@ import { Data } from "effect";
  * @typedef {new (fields: Fields) => import("effect/Cause").YieldableError & { readonly _tag: Tag } & Readonly<Fields>} Tagged
  */
 
+/** @param {unknown} cause */
+const because = (cause) => (cause instanceof Error && cause.message ? `: ${cause.message}` : "");
+
+// Each error carries a readable `message`, so code that still catches and prints `e.message` shows the reason.
+
 /** A file could not be read, written, listed or removed. */
-export class IoError extends /** @type {Tagged<"IoError", { path: string, op: string, cause: unknown }>} */ (Data.TaggedError("IoError")) {}
+export class IoError extends /** @type {Tagged<"IoError", { path: string, op: string, cause: unknown, message: string }>} */ (Data.TaggedError("IoError")) {
+  /** @param {{ path: string, op: string, cause: unknown }} fields */
+  constructor(fields) { super({ ...fields, message: `cannot ${fields.op} ${fields.path}${because(fields.cause)}` }); }
+}
 /** A file was read but its text is not the JSON it should be. */
-export class ParseError extends /** @type {Tagged<"ParseError", { path: string, cause: unknown }>} */ (Data.TaggedError("ParseError")) {}
+export class ParseError extends /** @type {Tagged<"ParseError", { path: string, cause: unknown, message: string }>} */ (Data.TaggedError("ParseError")) {
+  /** @param {{ path: string, cause: unknown }} fields */
+  constructor(fields) { super({ ...fields, message: `${fields.path} is not valid JSON${because(fields.cause)}` }); }
+}
 /** A record, route or file that should exist does not. */
-export class NotFound extends /** @type {Tagged<"NotFound", { what: string, path?: string }>} */ (Data.TaggedError("NotFound")) {}
+export class NotFound extends /** @type {Tagged<"NotFound", { what: string, path?: string, message: string }>} */ (Data.TaggedError("NotFound")) {
+  /** @param {{ what: string, path?: string }} fields */
+  constructor(fields) { super({ ...fields, message: `${fields.what} not found${fields.path ? `: ${fields.path}` : ""}` }); }
+}
 /** A value failed its JSON Schema; `errors` are the validator's lines. */
-export class SchemaInvalid extends /** @type {Tagged<"SchemaInvalid", { schema: string, errors: string[] }>} */ (Data.TaggedError("SchemaInvalid")) {}
+export class SchemaInvalid extends /** @type {Tagged<"SchemaInvalid", { schema: string, errors: string[], message: string }>} */ (Data.TaggedError("SchemaInvalid")) {
+  /** @param {{ schema: string, errors: string[] }} fields */
+  constructor(fields) { super({ ...fields, message: `${fields.schema}: ${fields.errors.join("; ")}` }); }
+}
 /** The gate, access or a writer rule refused a write. `rule` names it and `hint` says what to do instead. */
 export class Refused extends /** @type {Tagged<"Refused", { rule: string, message: string, hint?: string }>} */ (Data.TaggedError("Refused")) {}
 /** A check or command cannot run at all (a missing tool, a module that cannot be read). Exit code 2. */
