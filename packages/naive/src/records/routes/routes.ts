@@ -147,7 +147,7 @@ function buildRoutes(): Route[] {
     const pick = (tdir: string) => existsSync(join(repo, tdir)) ? readdirSync(join(repo, tdir)).filter((f) => f === `${short}.md` || (f.startsWith(`${short}-`) && f.endsWith(".md"))).sort((a, b) => (a === `${short}.md` ? -1 : b === `${short}.md` ? 1 : a.localeCompare(b)))[0] : null;
     const found = tdirs.map((tdir): [string, string | null | undefined] => [tdir, pick(tdir)]).find(([, n]) => n);
     const template = found ? `${found[0]}/${found[1]}` : null;
-    const checks = [...new Set((r.refs ?? []).map((x) => x.checked_by).filter((c): c is string => !!c && /^packages\/naive\/src\/[a-z]+\/check-[a-z-]+\.mjs$/.test(c) && c !== "packages/naive/src/checks/check-data-model.ts"))];
+    const checks = [...new Set((r.refs ?? []).map((x) => x.checked_by).filter((c): c is string => !!c && /^packages\/naive\/src\/[a-z]+\/check-[a-z-]+\.(mjs|ts)$/.test(c) && c !== "packages/naive/src/checks/check-data-model.ts"))];
     const legacy = [r.layer === "system" ? "system" : r.layer, sub, short].filter(Boolean).join("/");
     const base = PACKAGE_ROUTE[r.id] ?? legacy;
     const form = r.form ?? "json";
