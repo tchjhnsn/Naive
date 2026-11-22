@@ -109,6 +109,16 @@ export const phaseWeights = (phase, opts = {}) => Effect.map(loadPhase(phase, op
   (p) => Object.fromEntries(Object.entries(p.weights.functions).map(([fn, w]) => [fn, w.weight])));
 
 /**
+ * The record types the phase's gate asks for as exit evidence (gate.evidence[].source), in the gate's order. The
+ * decision queue raises a decision that settles one of them, so the queue asks first what the gate needs.
+ * @param {string} phase
+ * @param {Opts} [opts]
+ * @returns {Effect.Effect<string[], LoadError, "naive/VentureFs">}
+ */
+export const phaseGateRecords = (phase, opts = {}) => Effect.map(loadPhase(phase, opts),
+  (p) => [...new Set((p.gate.evidence ?? []).map((e) => e.source).filter((x) => typeof x === "string"))]);
+
+/**
  * The need-now priors of one phase, derived from need-now.json and departments.json: for each record type and each
  * function, the base probability a venture in this phase needs it. Conditions on venture facts are applied by
  * packages/naive/src/engine/need-now.mjs, not here.

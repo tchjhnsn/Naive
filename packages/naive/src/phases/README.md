@@ -8,7 +8,7 @@ The five lifecycle phases as phase modules (EE-126): one folder per phase (disco
 
 ```mermaid
 flowchart LR
-  PJ["phases/&lt;id&gt;/phase.json<br/>gate, evidence, workflows, weights"] --> LOAD["phases.mjs<br/>loadPhase, loadPhases,<br/>phaseWeights, phasePriors"]
+  PJ["phases/&lt;id&gt;/phase.json<br/>gate, evidence, workflows, weights"] --> LOAD["phases.mjs<br/>loadPhase, loadPhases,<br/>phaseWeights, phaseGateRecords,<br/>phasePriors"]
   NN["engine/need-now.json"] -->|derived| LOAD
   DEP["functions/departments.json"] -->|derived| LOAD
   LOAD --> LC["engine/lifecycle.mjs"]
@@ -23,7 +23,7 @@ flowchart LR
 
 | Path | Holds |
 |---|---|
-| [`phases.mjs`](./phases.mjs) | The loader, in Effect (EE-125) through `VentureFs`: `loadPhase(id)` and `loadPhases()` (in lifecycle order) check each file's shape (the whole of `packages/naive/src/records/phase-module.schema.json` is the check's job) and fail with `NotFound` or `SchemaInvalid`; `phaseWeights(phase)` gives each function's weight; `phasePriors(phase)` derives the phase's need-now priors for record types and functions. Callers that are not Effect run them with `runSync`. |
+| [`phases.mjs`](./phases.mjs) | The loader, in Effect (EE-125) through `VentureFs`: `loadPhase(id)` and `loadPhases()` (in lifecycle order) check each file's shape (the whole of `packages/naive/src/records/phase-module.schema.json` is the check's job) and fail with `NotFound` or `SchemaInvalid`; `phaseWeights(phase)` gives each function's weight; `phaseGateRecords(phase)` gives the record types its gate asks for as exit evidence, in the gate's order, which the decision queue raises (EE-155); `phasePriors(phase)` derives the phase's need-now priors for record types and functions. Callers that are not Effect run them with `runSync`. |
 | [`discovery/phase.json`](./discovery/phase.json) | Problem-solution fit. |
 | [`validation/phase.json`](./validation/phase.json) | Product-market fit: retention holds. |
 | [`beachhead/phase.json`](./beachhead/phase.json) | Repeatability. |
