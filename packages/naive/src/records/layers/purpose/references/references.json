@@ -319,6 +319,203 @@
         "is": "adapted",
         "why": "The core promise is the core benefit stated as what anyone can claim from the venture."
       }
+    },
+    {
+      "id": "iso-42010-2022-architecture-description",
+      "title": "ISO/IEC/IEEE 42010:2022 Software, systems and enterprise: Architecture description",
+      "authors": [
+        "ISO/IEC JTC 1/SC 7",
+        "IEEE"
+      ],
+      "year": 2022,
+      "kind": "standard",
+      "summary": "An architecture description describes a system through models; a view is the result of applying a viewpoint, which names the stakeholders' concerns and the model kinds that answer them, to the system. One model can take part in many views.",
+      "url": "https://www.iso.org/standard/74393.html",
+      "checked": "2026-11-22",
+      "informs": [
+        "record:venture-anatomy",
+        "noun:view",
+        "noun:viewpoint"
+      ],
+      "stance": {
+        "is": "adopted",
+        "why": "The Venture Anatomy Matrix is the venture's architecture description: each sub-matrix is a model, and the Lean Canvas, Business Model Canvas and an S-1 outline are views produced by viewpoints (EE-157)."
+      }
+    },
+    {
+      "id": "sql-2011-temporal",
+      "title": "ISO/IEC 9075-2:2011 (SQL:2011) temporal features: application-time and system-versioned tables",
+      "authors": [
+        "ISO/IEC JTC 1/SC 32"
+      ],
+      "year": 2011,
+      "kind": "standard",
+      "summary": "Application time (valid time) records when a fact holds in the world; system time (transaction time) records when the database held it. Using both gives bitemporal tables, and the two times are independent.",
+      "url": "https://en.wikipedia.org/wiki/SQL:2011",
+      "checked": "2026-11-22",
+      "informs": [
+        "record:anatomy-cell",
+        "feature:time-travel"
+      ],
+      "stance": {
+        "is": "adopted",
+        "why": "Each anatomy cell carries application time (valid_from, valid_to); system time is the provenance log and blob store, so the matrix answers both what we believed at t and what was true at t (EE-157)."
+      }
+    },
+    {
+      "id": "snodgrass-temporal-databases",
+      "title": "Temporal database (overview of valid time, transaction time and bitemporal data)",
+      "authors": [
+        "Wikipedia contributors"
+      ],
+      "year": 2026,
+      "kind": "article",
+      "summary": "Secondary overview of temporal database concepts and the TSQL2 and SQL:2011 lineage.",
+      "url": "https://en.wikipedia.org/wiki/Temporal_database",
+      "checked": "2026-11-22",
+      "informs": [
+        "feature:time-travel"
+      ],
+      "stance": {
+        "is": "adopted",
+        "why": "Background for the bitemporal terms used in EE-157."
+      }
+    },
+    {
+      "id": "view-model-overview",
+      "title": "View model (overview of views and viewpoints, IEEE 1471 lineage)",
+      "authors": [
+        "Wikipedia contributors"
+      ],
+      "year": 2026,
+      "kind": "article",
+      "summary": "Secondary overview: a viewpoint specifies concerns and modelling techniques; a view is that viewpoint applied to a system.",
+      "url": "https://en.wikipedia.org/wiki/View_model",
+      "checked": "2026-11-22",
+      "informs": [
+        "noun:view",
+        "noun:viewpoint"
+      ],
+      "stance": {
+        "is": "adopted",
+        "why": "Background for ISO 42010's terms as used in EE-157."
+      }
+    },
+    {
+      "id": "osterwalder-2004-business-model-ontology",
+      "title": "The Business Model Ontology: A Proposition in a Design Science Approach",
+      "authors": [
+        "Alexander Osterwalder"
+      ],
+      "year": 2004,
+      "kind": "paper",
+      "summary": "PhD thesis, University of Lausanne: nine building blocks (value proposition, target customer, distribution channel, relationship, value configuration, capability, partnership, cost structure, revenue model), later the Business Model Canvas (Osterwalder and Pigneur, Business Model Generation, 2010).",
+      "url": "https://en.wikipedia.org/wiki/Business_Model_Canvas",
+      "checked": "2026-11-22",
+      "informs": [
+        "record:venture-anatomy",
+        "view:business-model-canvas"
+      ],
+      "stance": {
+        "is": "alternative",
+        "why": "Too narrow to be the whole venture model; kept as one view over the matrix (EE-157)."
+      }
+    },
+    {
+      "id": "bizbok-15-business-architecture",
+      "title": "A Guide to the Business Architecture Body of Knowledge (BIZBOK Guide), version 15",
+      "authors": [
+        "Business Architecture Guild"
+      ],
+      "year": 2026,
+      "kind": "book",
+      "summary": "Business architecture through four core maps (capability, value stream, information, organization) assembled into blueprints for different audiences. A body of knowledge, not a formal standard.",
+      "url": "https://cdn.ymaws.com/www.businessarchitectureguild.org/resource/resmgr/bizbok15/BIZBOKv15_introduction.pdf",
+      "checked": "2026-11-22",
+      "informs": [
+        "record:venture-anatomy"
+      ],
+      "stance": {
+        "is": "alternative",
+        "why": "Built for large enterprises; its blueprint idea matches views, but ISO 42010 is the formal standard (EE-157)."
+      }
+    },
+    {
+      "id": "gartner-2017-digital-twin-organization",
+      "title": "Digital twin of an organization",
+      "authors": [
+        "Gartner"
+      ],
+      "year": 2017,
+      "kind": "article",
+      "summary": "A dynamic model of the organization fed by operational and contextual data, used to plan, monitor and simulate. An analyst term, not a standard.",
+      "url": "https://www.gartner.com/en/documents/8166629",
+      "checked": "2026-11-22",
+      "informs": [
+        "record:venture-anatomy"
+      ],
+      "stance": {
+        "is": "alternative",
+        "why": "Describes the ambition of a live venture model; not adopted as a name because it is a vendor and analyst term (EE-157)."
+      }
+    },
+    {
+      "id": "sec-regulation-s-k",
+      "title": "Regulation S-K (17 CFR part 229), with Form S-1",
+      "authors": [
+        "U.S. Securities and Exchange Commission"
+      ],
+      "year": 2020,
+      "kind": "law",
+      "summary": "What a registration statement such as Form S-1 must disclose besides financial statements (Regulation S-X): Item 101 description of business, 105 risk factors, 303 management's discussion and analysis, 401 directors and officers, 403 security ownership. Items 101, 103 and 105 were modernized in 2020 (Release 33-10825).",
+      "url": "https://www.law.cornell.edu/wex/regulation_s-k",
+      "checked": "2026-11-22",
+      "informs": [
+        "record:venture-anatomy"
+      ],
+      "stance": {
+        "is": "adapted",
+        "why": "The coverage check for the Venture Anatomy Matrix: every S-K item a company would disclose maps to at least one sub-matrix (EE-157)."
+      }
+    },
+    {
+      "id": "sec-form-s-1",
+      "title": "Form S-1 registration statement",
+      "authors": [
+        "U.S. Securities and Exchange Commission"
+      ],
+      "year": 2026,
+      "kind": "law",
+      "summary": "The registration statement for an initial public offering; Part I is the prospectus. Content follows Regulation S-K and S-X.",
+      "url": "https://www.law.cornell.edu/wex/form_s-1",
+      "checked": "2026-11-22",
+      "informs": [
+        "record:venture-anatomy",
+        "view:s1-outline"
+      ],
+      "stance": {
+        "is": "adapted",
+        "why": "An S-1-style outline is one view over the matrix (EE-157)."
+      }
+    },
+    {
+      "id": "sec-2020-s-k-modernization",
+      "title": "Modernization of Regulation S-K Items 101, 103 and 105: Small Entity Compliance Guide",
+      "authors": [
+        "U.S. Securities and Exchange Commission"
+      ],
+      "year": 2020,
+      "kind": "law",
+      "summary": "The 2020 amendments: risk factors are material factors, organized under headings, with a summary when long.",
+      "url": "https://sec.gov/corpfin/modernization-regulation-s-k-compliance-guide",
+      "checked": "2026-11-22",
+      "informs": [
+        "record:venture-anatomy"
+      ],
+      "stance": {
+        "is": "adapted",
+        "why": "Shapes the risk sub-matrix (EE-157)."
+      }
     }
   ]
 }
