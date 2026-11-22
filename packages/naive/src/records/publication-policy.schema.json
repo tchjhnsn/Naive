@@ -178,7 +178,7 @@
                 "end": {
                   "type": "string",
                   "minLength": 1,
-                  "description": "What publishing this content on this channel is for, such as helping prospective customers decide or keeping investors informed (EE-129, for what end). check-publication.mjs warns when a rule has none."
+                  "description": "What publishing this content on this channel is for, such as helping prospective customers decide or keeping investors informed (EE-129, for what end). check-publication.ts warns when a rule has none."
                 },
                 "from_layers": {
                   "type": "array",

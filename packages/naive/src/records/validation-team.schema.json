@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "validation-team.schema.json",
   "title": "Validation: team",
-  "description": "The team sub-score (EE-026), at <venture>/purpose/validation/team.json: the skills the coming phases need, the skills held and by whom, and the gaps, including whether a cofounder is sought for them. packages/naive/src/checks/check-validation.mjs lists the gaps.",
+  "description": "The team sub-score (EE-026), at <venture>/purpose/validation/team.json: the skills the coming phases need, the skills held and by whom, and the gaps, including whether a cofounder is sought for them. packages/naive/src/checks/check-validation.ts lists the gaps.",
   "type": "object",
   "required": [
     "venture",

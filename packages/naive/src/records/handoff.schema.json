@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "handoff.schema.json",
   "title": "Handoff",
-  "description": "One unit of delegated work, stored at <venture>/operations/handoffs/<id>.json (EE-017). It is the machine half of handoff contract v2 (packages/naive/src/functions/capabilities/handoff-v2.md): who holds it, which decision rights it carries, how it is checked, and where it stands. The brief (outcome, work, context) is prose in a Markdown file beside it. packages/naive/src/checks/check-ready.mjs checks it is ready before work starts; packages/naive/src/checks/check-execution.mjs checks it against the venture's decision rights and evidence. The optional ontology block is what the membership gate reads (packages/naive/src/checks/check-nouns.mjs --package). The verdict is not stored here; it is a line in the sidecar <id>.provenance.jsonl (R-17).",
+  "description": "One unit of delegated work, stored at <venture>/operations/handoffs/<id>.json (EE-017). It is the machine half of handoff contract v2 (packages/naive/src/functions/capabilities/handoff-v2.md): who holds it, which decision rights it carries, how it is checked, and where it stands. The brief (outcome, work, context) is prose in a Markdown file beside it. packages/naive/src/checks/check-ready.ts checks it is ready before work starts; packages/naive/src/checks/check-execution.ts checks it against the venture's decision rights and evidence. The optional ontology block is what the membership gate reads (packages/naive/src/checks/check-nouns.ts --package). The verdict is not stored here; it is a line in the sidecar <id>.provenance.jsonl (R-17).",
   "type": "object",
   "required": [
     "id",
@@ -53,7 +53,7 @@
       "items": {
         "type": "string"
       },
-      "description": "Files the work needs before it can start, from the repo root; check-ready.mjs makes sure they exist"
+      "description": "Files the work needs before it can start, from the repo root; check-ready.ts makes sure they exist"
     },
     "role": {
       "type": "string",
@@ -115,7 +115,7 @@
         "escalated",
         "done"
       ],
-      "description": "draft until packages/naive/src/checks/check-ready.mjs passes and is recorded; then ready, in-progress, escalated or done"
+      "description": "draft until packages/naive/src/checks/check-ready.ts passes and is recorded; then ready, in-progress, escalated or done"
     },
     "ready_check": {
       "type": "object",
@@ -140,7 +140,7 @@
           "type": "integer"
         }
       },
-      "description": "Written by check-ready.mjs --record when every readiness item passed, before execution started"
+      "description": "Written by check-ready.ts --record when every readiness item passed, before execution started"
     },
     "claimed_by": {
       "type": "string",
@@ -148,7 +148,7 @@
     },
     "requested_by": {
       "type": "string",
-      "description": "Optional: the lead role or person that wrote the handoff and verifies it. When set, the router lets only the requester edit it before a claim, only the claimant write progress and evidence after one, and only the requester write the verification and acceptance; every review criterion's reviewer is this requester (check-ready.mjs, check-execution.mjs)"
+      "description": "Optional: the lead role or person that wrote the handoff and verifies it. When set, the router lets only the requester edit it before a claim, only the claimant write progress and evidence after one, and only the requester write the verification and acceptance; every review criterion's reviewer is this requester (check-ready.ts, check-execution.ts)"
     },
     "verification": {
       "type": "object",

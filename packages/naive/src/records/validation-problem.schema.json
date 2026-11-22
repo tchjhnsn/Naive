@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "validation-problem.schema.json",
   "title": "Validation: problem",
-  "description": "The problem sub-score (EE-026), at <venture>/purpose/validation/problem.json: the problem, who has it, how they cope today, and the cited evidence that it is real. A statement alone is the weakest form of this record; packages/naive/src/checks/check-validation.mjs grades it from its evidence.",
+  "description": "The problem sub-score (EE-026), at <venture>/purpose/validation/problem.json: the problem, who has it, how they cope today, and the cited evidence that it is real. A statement alone is the weakest form of this record; packages/naive/src/checks/check-validation.ts grades it from its evidence.",
   "type": "object",
   "required": [
     "venture",

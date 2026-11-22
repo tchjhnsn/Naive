@@ -1,5 +1,5 @@
 // Finds a Naive script by its file name across the src units, for code that runs a checker or tool by name
-// (spawnSync("node", [naiveScript("check-ventures.mjs"), dir])). Before EE-118 step 5 every such script sat in schema/;
+// (spawnSync("node", [naiveScript("check-ventures.ts"), dir])). Before EE-118 step 5 every such script sat in schema/;
 // now each sits in the unit that owns it (packages/naive/src/<unit>/).
 import { existsSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
@@ -20,7 +20,7 @@ export const PACKAGE_ROOT = (() => {
 export const UNITS = Object.freeze(["core", "records", "terms", "store", "engine", "checks", "router", "interfaces"]);
 
 /**
- * The absolute path of a script, by file name ("check-ventures.mjs") or by name without the extension. A `.ts` name
+ * The absolute path of a script, by file name ("check-ventures.ts") or by name without the extension. A `.ts` name
  * also finds its `.mjs`, which is what the compiled package (dist/, EE-159) holds in its place, and a `.mjs` name
  * finds the `.ts` a module became when it was converted.
  * @param {string} name

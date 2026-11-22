@@ -20,7 +20,7 @@
   ],
   "templates": [],
   "checks": [
-    "packages/naive/src/checks/check-data-model.mjs"
+    "packages/naive/src/checks/check-data-model.ts"
   ],
   "listeners": [
     {

@@ -10,10 +10,10 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { call, routes } from "../../router/router.mjs";
 import { ventureFile } from "../../core/venture-paths.mjs";
-import { lint } from "../../checks/lint-investors.mjs";
+import { lint } from "../../checks/lint-investors.ts";
 
 const repo = new URL("../../../../..", import.meta.url).pathname;
-const script = new URL("../../checks/lint-investors.mjs", import.meta.url).pathname;
+const script = new URL("../../checks/lint-investors.ts", import.meta.url).pathname;
 let failed = 0;
 /** @type {(name: string, ok: unknown, detail?: unknown) => void} */
 const expect = (name, ok, detail = "") => {
@@ -220,7 +220,7 @@ const investor = (extra) => ({ id: "north", name: "North", ...extra });
 // ---- The route, and the ventures already in the repo.
 {
   const listed = routes().find((r) => r.route === "investors/lint");
-  expect("investors/lint is a command on packages/naive/src/checks/lint-investors.mjs", listed?.kind === "command" && listed.script === "packages/naive/src/checks/lint-investors.mjs" && listed.actions.includes("run"), listed);
+  expect("investors/lint is a command on packages/naive/src/checks/lint-investors.ts", listed?.kind === "command" && listed.script === "packages/naive/src/checks/lint-investors.ts" && listed.actions.includes("run"), listed);
 
   const ws = mkdtempSync(join(tmpdir(), "lint-investors-ws-"));
   dirs.push(ws);

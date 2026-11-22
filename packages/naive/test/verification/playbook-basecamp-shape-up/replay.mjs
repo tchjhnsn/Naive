@@ -203,20 +203,20 @@ note("YouDecline", declined.ok === true && moved.result?.draft === false && decl
   `declined at draft passes=${declinedDraft}; declined and moved to ready passes=${declinedMoved}; answered bet and ready passes=${betMoved}`);
 await writeRoute("operations/handoff/cycle-two", declinedPitch, "person");
 
-const ready = spawnSync("node", [join(repo, "packages/naive/src/checks/check-ready.mjs"), dir, "cycle-one"], { encoding: "utf8" });
+const ready = spawnSync("node", [join(repo, "packages/naive/src/checks/check-ready.ts"), dir, "cycle-one"], { encoding: "utf8" });
 note("CheckReady-pass", ready.status === 0, (ready.stdout + ready.stderr).trim().split("\n").slice(-3).join(" | "));
 
 writeFileSync(fullBrief, brief("Six weeks for one designer and one or two programmers.").replace("## Outcome\n\nCustomers can finish the job the product card names, inside this cycle.\n\n", "## Outcome\n\n"));
-const readyFail = spawnSync("node", [join(repo, "packages/naive/src/checks/check-ready.mjs"), dir, "cycle-one"], { encoding: "utf8" });
+const readyFail = spawnSync("node", [join(repo, "packages/naive/src/checks/check-ready.ts"), dir, "cycle-one"], { encoding: "utf8" });
 writeFileSync(fullBrief, brief("Six weeks for one designer and one or two programmers."));
 note("CheckReady-fail", readyFail.status === 1 && /Outcome/.test(readyFail.stdout + readyFail.stderr),
   (readyFail.stdout + readyFail.stderr).trim().split("\n").filter((l) => l.startsWith("FAIL") || l.includes("not ready")).join(" | "));
 
-const execDraft = spawnSync("node", [join(repo, "packages/naive/src/checks/check-execution.mjs"), dir], { encoding: "utf8" });
+const execDraft = spawnSync("node", [join(repo, "packages/naive/src/checks/check-execution.ts"), dir], { encoding: "utf8" });
 note("CheckExecution-draft-pass", execDraft.status === 0, (execDraft.stdout + execDraft.stderr).trim().split("\n").pop());
 
 const doneBare = await writeRoute("operations/handoff/cycle-one", handoff({ status: "done", claimed_by: "replay", pr: "https://example.com/pull/1" }), "person");
-const execDone = spawnSync("node", [join(repo, "packages/naive/src/checks/check-execution.mjs"), dir], { encoding: "utf8" });
+const execDone = spawnSync("node", [join(repo, "packages/naive/src/checks/check-execution.ts"), dir], { encoding: "utf8" });
 note("NoShipWithoutEvidence", doneBare.ok === true && execDone.status === 1 && /no passing evidence|done without/.test(execDone.stdout + execDone.stderr),
   (execDone.stdout + execDone.stderr).trim().split("\n").slice(0, 4).join(" | "));
 
@@ -236,7 +236,7 @@ const shipped = await writeRoute("operations/handoff/cycle-one", handoff({
   status: "done", claimed_by: "replay", pr: "https://example.com/pull/1",
   evidence: ["../../evidence/results/cycle-one-shipped.json"],
 }), "person");
-const execShip = spawnSync("node", [join(repo, "packages/naive/src/checks/check-execution.mjs"), dir], { encoding: "utf8" });
+const execShip = spawnSync("node", [join(repo, "packages/naive/src/checks/check-execution.ts"), dir], { encoding: "utf8" });
 note("Ship", evidence.ok === true && shipped.ok === true && execShip.status === 0,
   `evidence=${evidence.ok ? evidence.result.written : evidence.error}; execution=${(execShip.stdout + execShip.stderr).trim().split("\n").pop()}`);
 
@@ -245,11 +245,11 @@ const tripped = await writeRoute("operations/handoff/cycle-one", handoff({
   claimed_by: "replay",
   escalations: [{ class: "attempts", question: "The six-week appetite is spent. Shape a new pitch before any more time is bet.", to: "founder" }],
 }), "person");
-const execTrip = spawnSync("node", [join(repo, "packages/naive/src/checks/check-execution.mjs"), dir], { encoding: "utf8" });
+const execTrip = spawnSync("node", [join(repo, "packages/naive/src/checks/check-execution.ts"), dir], { encoding: "utf8" });
 note("BreakerHolds", tripped.ok === true && execTrip.status === 0, (execTrip.stdout + execTrip.stderr).trim().split("\n").pop());
 
 const silent = await writeRoute("operations/handoff/cycle-one", handoff({ status: "escalated", claimed_by: "replay", escalations: [] }), "person");
-const execSilent = spawnSync("node", [join(repo, "packages/naive/src/checks/check-execution.mjs"), dir], { encoding: "utf8" });
+const execSilent = spawnSync("node", [join(repo, "packages/naive/src/checks/check-execution.ts"), dir], { encoding: "utf8" });
 note("Breaker-needs-a-question", silent.ok === true && execSilent.status === 1 && /no open question/.test(execSilent.stdout + execSilent.stderr),
   (execSilent.stdout + execSilent.stderr).trim().split("\n")[0]);
 

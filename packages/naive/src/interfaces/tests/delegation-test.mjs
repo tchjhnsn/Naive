@@ -2,7 +2,7 @@
 // Tests for delegation and the verification substrate on made-up ventures in a temp folder: the
 // template passes; a grant wider than its grantor's, a broken chain, a re-delegated money class, a
 // one-way door, an expired grant and a self-verifying role each fail; a lead outside its rules or a
-// portfolio gap or overlap fails; and verify.mjs keeps the
+// portfolio gap or overlap fails; and verify.ts keeps the
 // builder from verifying its own work. Never writes into the repo.
 
 import { spawnSync } from "node:child_process";
@@ -11,7 +11,7 @@ import { tmpdir } from "node:os";
 import { join, relative } from "node:path";
 import { approve, decisions, mayMerge, merge, propose, rollback } from "../../engine/decisions.mjs";
 import { decide } from "../../router/orchestration/setup.mjs";
-import { independent, reviewIsIndependent, verificationErrors } from "../../checks/verify.mjs";
+import { independent, reviewIsIndependent, verificationErrors } from "../../checks/verify.ts";
 
 const repo = new URL("../../../../..", import.meta.url).pathname;
 const template = join(repo, "packages/naive/template/governance");
@@ -29,13 +29,13 @@ function venture(/** @type {(d: *, roles: string) => void} */ edit = () => {}, t
   const d = structuredClone(base);
   edit(d, join(gov, "roles"));
   writeFileSync(join(gov, "delegation.json"), JSON.stringify(d, null, 2));
-  const r = spawnSync("node", [join(repo, "packages/naive/src/checks/check-delegation.mjs"), dir, "--today", today], { encoding: "utf8" });
+  const r = spawnSync("node", [join(repo, "packages/naive/src/checks/check-delegation.ts"), dir, "--today", today], { encoding: "utf8" });
   return { ok: r.status === 0, out: r.stdout + r.stderr };
 }
 const grant = (d, id) => d.grants.find((g) => g.id === id);
 const fails = (name, edit, re, today) => { const r = venture(edit, today); expect(name, !r.ok && re.test(r.out), r.out); };
 
-const t = spawnSync("node", [join(repo, "packages/naive/src/checks/check-delegation.mjs")], { encoding: "utf8" });
+const t = spawnSync("node", [join(repo, "packages/naive/src/checks/check-delegation.ts")], { encoding: "utf8" });
 expect("the template passes", t.status === 0, t.stdout + t.stderr);
 expect("a copy of the template passes", venture().ok);
 
@@ -119,7 +119,7 @@ function overlaid(write) {
   mkdirSync(join(gov, "roles"), { recursive: true });
   writeFileSync(join(gov, "delegation.json"), JSON.stringify(base));
   write(gov);
-  const r = spawnSync("node", [join(repo, "packages/naive/src/checks/check-delegation.mjs"), dir, "--today", "2026-10-29"], { encoding: "utf8" });
+  const r = spawnSync("node", [join(repo, "packages/naive/src/checks/check-delegation.ts"), dir, "--today", "2026-10-29"], { encoding: "utf8" });
   return { ok: r.status === 0, out: r.stdout + r.stderr };
 }
 const partial = overlaid((gov) => writeFileSync(join(gov, "decision-rights.json"), JSON.stringify({ classes: [{ id: "implementation-detail", level: "act" }] })));

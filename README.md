@@ -53,7 +53,7 @@ It replaces the earlier description "AI-Native OS for Builders": an operating sy
 
 ## Framework and platform
 
-The system has two sides, the way Next.js and Vercel do (EE-041): the framework is **Naive** and the platform is **Mentura** (EE-043). The framework is the conventions: it works offline, with no account, and names no vendor. The platform hosts, connects and integrates: connectors that reach a vendor, integrations that call outside services, hosting and a template gallery. Mentura lives in another repository (everything-ecosystem) and depends on Naive by version (EE-118). Naive never names a Mentura module: Mentura hands in its tools by configuration (`NAIVE_JUDGE_CMD`, `NAIVE_KITS`, `NAIVE_PLATFORM_ADAPTER`, `registerConnector`), and `node packages/naive/src/checks/check-boundary.mjs` fails on code that names one.
+The system has two sides, the way Next.js and Vercel do (EE-041): the framework is **Naive** and the platform is **Mentura** (EE-043). The framework is the conventions: it works offline, with no account, and names no vendor. The platform hosts, connects and integrates: connectors that reach a vendor, integrations that call outside services, hosting and a template gallery. Mentura lives in another repository (everything-ecosystem) and depends on Naive by version (EE-118). Naive never names a Mentura module: Mentura hands in its tools by configuration (`NAIVE_JUDGE_CMD`, `NAIVE_KITS`, `NAIVE_PLATFORM_ADAPTER`, `registerConnector`), and `node packages/naive/src/checks/check-boundary.ts` fails on code that names one.
 
 ## The Claude Code plugin
 

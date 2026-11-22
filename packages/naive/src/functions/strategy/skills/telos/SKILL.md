@@ -19,11 +19,11 @@ description: >
 
 # Telos: start with the end
 
-Purpose layer (EE-023). Writes `foundation/goals/telos` (the end and its measures), `foundation/goals/owner-outcome` and `foundation/exit-criteria/<phase>`; `node packages/naive/src/checks/check-telos.mjs` checks them. A `foundation/telos` write is refused once a venture has any of these records. Covey's habit "begin with the end in mind" and Aristotle's telos, the end a thing exists for, name the same move: decide the end first, then derive every earlier step from it.
+Purpose layer (EE-023). Writes `foundation/goals/telos` (the end and its measures), `foundation/goals/owner-outcome` and `foundation/exit-criteria/<phase>`; `node packages/naive/src/checks/check-telos.ts` checks them. A `foundation/telos` write is refused once a venture has any of these records. Covey's habit "begin with the end in mind" and Aristotle's telos, the end a thing exists for, name the same move: decide the end first, then derive every earlier step from it.
 
 ## When
 
-- When a venture leaves Discovery (`check-telos.mjs` warns from then on, unless the ambition is hobby).
+- When a venture leaves Discovery (`check-telos.ts` warns from then on, unless the ambition is hobby).
 - At every phase gate, to write the next phase's exit criteria.
 - When the ambition changes, because the owner outcome may change with it.
 

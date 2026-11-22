@@ -1,4 +1,4 @@
-// Finance lint (packages/naive/src/checks/lint-finance.mjs, route finance/lint).
+// Finance lint (packages/naive/src/checks/lint-finance.ts, route finance/lint).
 // One venture breaks every rule. The other cases replay the model: a clean venture stays silent,
 // phase changes the metric rule, finance_lint.rules.<id>.mode decides the exit code, and missing
 // or malformed records (including a missing price or cost) do not throw. Reads go through ventureFile.
@@ -13,7 +13,7 @@ import { call } from "../../router/router.mjs";
 
 const root = new URL("../../../../..", import.meta.url).pathname;
 const tmp = mkdtempSync(join(tmpdir(), "lint-finance-"));
-const script = join(root, "packages/naive/src/checks/lint-finance.mjs");
+const script = join(root, "packages/naive/src/checks/lint-finance.ts");
 let failed = 0;
 const expect = (name, ok) => { console.log(`${ok ? "ok  " : "FAIL"} ${name}`); if (!ok) failed++; };
 
@@ -162,7 +162,7 @@ expect("structured layout reads finance_lint mode through ventureFile", json(str
 
 expect("usage without a venture exits 2", run(join(tmp, "missing")).status === 2);
 const cfgDir = venture("cfg", {}, { config: { finance_lint: { rules: { "spend-no-runway": { mode: "fail-closed" } } } } });
-const cfg = spawnSync("node", [join(root, "packages/naive/src/checks/check-config.mjs"), cfgDir], { encoding: "utf8" });
+const cfg = spawnSync("node", [join(root, "packages/naive/src/checks/check-config.ts"), cfgDir], { encoding: "utf8" });
 expect("finance_lint in naive.config.json passes check-config", cfg.status === 0 && /valid/.test(cfg.stdout));
 
 const ws = join(tmp, "ws");

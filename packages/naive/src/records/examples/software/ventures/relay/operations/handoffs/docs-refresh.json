@@ -23,12 +23,12 @@
     {
       "id": "docs-build",
       "kind": "conformance",
-      "check": "node packages/naive/src/checks/check-publication.mjs packages/naive/src/records/examples/software"
+      "check": "node packages/naive/src/checks/check-publication.ts packages/naive/src/records/examples/software"
     },
     {
       "id": "pages-pass",
       "kind": "self-proof",
-      "check": "node packages/naive/src/checks/check-ventures.mjs packages/naive/src/records/examples/software"
+      "check": "node packages/naive/src/checks/check-ventures.ts packages/naive/src/records/examples/software"
     }
   ],
   "status": "escalated",

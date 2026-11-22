@@ -1,6 +1,6 @@
 # Legal lint
 
-A TLA+ model of one run of `packages/naive/src/checks/lint-legal.mjs` (route `legal/lint`). This is a lint, not legal advice. TLC checked the model with the pstack `/statechart` skill. The chart is `out/chart.mmd` and `out/chart.png`.
+A TLA+ model of one run of `packages/naive/src/checks/lint-legal.ts` (route `legal/lint`). This is a lint, not legal advice. TLC checked the model with the pstack `/statechart` skill. The chart is `out/chart.mmd` and `out/chart.png`.
 
 The model is one claim and one agreement. It does not count a second claim, a second missing holder, or the usage exit (2) when the directory has no `venture.json`. Exit 2 happens before a run. The route can also refuse a `venture.json` that does not match its schema. That refusal is the router's, and the model does not include it.
 

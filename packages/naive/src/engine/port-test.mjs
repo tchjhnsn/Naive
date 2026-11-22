@@ -79,7 +79,7 @@ expect("every move is in provenance with the path it came from", log.some((e) =>
 expect("apply says how to repair the worktree", /worktree repair/.test(a.stdout));
 const tr = JSON.parse(readFileSync(ventureFile(dir, ".release/port-trace.json"), "utf8"));
 expect("the run leaves a trace with a child per folder", tr.name === "naive port apply" && tr.children.length === 2 && !/NOT_A_REAL_KEY/.test(JSON.stringify(tr)));
-const chk = spawnSync("node", [join(repo, "packages/naive/src/checks/check-sources.mjs"), dir], { encoding: "utf8" });
+const chk = spawnSync("node", [join(repo, "packages/naive/src/checks/check-sources.ts"), dir], { encoding: "utf8" });
 expect("the source map it writes passes the sources check", chk.status === 0, chk.stdout + chk.stderr);
 
 const twice = naive("port", "--venture", dir, "--apply", "--confirm", "port");

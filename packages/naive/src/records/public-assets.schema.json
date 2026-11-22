@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "public-assets.schema.json",
   "title": "Public assets",
-  "description": "The register of what the venture ships as it is, at public/assets.json (I-23, J-2, J-3, J-4): each file in public/ with its source, license and credit, facts read by code from its bytes, and alt text with who wrote it; remote images as links with a note in raw/sources/<id>/; and remote_hosts, the hosts an agent may fetch from. Checked by packages/naive/src/checks/check-assets.mjs. Version 0.x, unevaluated.",
+  "description": "The register of what the venture ships as it is, at public/assets.json (I-23, J-2, J-3, J-4): each file in public/ with its source, license and credit, facts read by code from its bytes, and alt text with who wrote it; remote images as links with a note in raw/sources/<id>/; and remote_hosts, the hosts an agent may fetch from. Checked by packages/naive/src/checks/check-assets.ts. Version 0.x, unevaluated.",
   "type": "object",
   "required": ["version", "assets"],
   "additionalProperties": false,

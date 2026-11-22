@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "validation-product-market-fit.schema.json",
   "title": "Validation: product-market fit",
-  "description": "The product-market fit sub-score (EE-026), at <venture>/purpose/validation/product-market-fit.json: whether a segment keeps using the product. Retention cohorts and the Sean Ellis survey are recorded as data; packages/naive/src/checks/check-validation.mjs reads them (does retention level off; what share would be very disappointed).",
+  "description": "The product-market fit sub-score (EE-026), at <venture>/purpose/validation/product-market-fit.json: whether a segment keeps using the product. Retention cohorts and the Sean Ellis survey are recorded as data; packages/naive/src/checks/check-validation.ts reads them (does retention level off; what share would be very disappointed).",
   "type": "object",
   "required": [
     "venture",

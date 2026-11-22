@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "data-model.schema.json",
   "title": "Data model",
-  "description": "The shape of packages/naive/src/records/data-model.json (EE-018): every record type of the ecosystem, the layer that owns it, its schema, where its records live and what each references. packages/naive/src/checks/check-data-model.mjs checks it against the repository.",
+  "description": "The shape of packages/naive/src/records/data-model.json (EE-018): every record type of the ecosystem, the layer that owns it, its schema, where its records live and what each references. packages/naive/src/checks/check-data-model.ts checks it against the repository.",
   "type": "object",
   "$defs": {
     "settles": {
@@ -14,7 +14,7 @@
         "min_counts"
       ],
       "additionalProperties": false,
-      "description": "How a projected record type is scored (autoresearch design, everything-ecosystem docs/design/AUTORESEARCH_RECORDS_2026-11-06.md, \"The metric\"): only a type with writer projection may carry it. The prediction is the record a recipe renders as of t; the settled record is what people and producers established about valid times up to t once the horizon passed. Settled loss is the weighted mean over (record, as-of point) rows of each field's loss, and a forecast field is scored by Brier against whether its resolving event arrived within its window. A null record loses every field. packages/naive/src/checks/check-data-model.mjs checks that each field named is a top-level property of the type's schema. The scorers are build plan item 5, not built",
+      "description": "How a projected record type is scored (autoresearch design, everything-ecosystem docs/design/AUTORESEARCH_RECORDS_2026-11-06.md, \"The metric\"): only a type with writer projection may carry it. The prediction is the record a recipe renders as of t; the settled record is what people and producers established about valid times up to t once the horizon passed. Settled loss is the weighted mean over (record, as-of point) rows of each field's loss, and a forecast field is scored by Brier against whether its resolving event arrived within its window. A null record loses every field. packages/naive/src/checks/check-data-model.ts checks that each field named is a top-level property of the type's schema. The scorers are build plan item 5, not built",
       "properties": {
         "horizon": {
           "$ref": "freshness-profiles.schema.json#/$defs/duration",
@@ -215,7 +215,7 @@
             ]
           },
           "function": {
-            "description": "The function (packages/naive/src/functions/departments.json) that owns the record type, or null for a type several functions share or none owns. packages/naive/src/checks/check-data-model.mjs checks that this list matches departments.json and that a venture record kept in a package folder a function owns (PACKAGE_FUNCTION in packages/naive/src/core/venture-paths.mjs) names that function or null",
+            "description": "The function (packages/naive/src/functions/departments.json) that owns the record type, or null for a type several functions share or none owns. packages/naive/src/checks/check-data-model.ts checks that this list matches departments.json and that a venture record kept in a package folder a function owns (PACKAGE_FUNCTION in packages/naive/src/core/venture-paths.mjs) names that function or null",
             "enum": [
               "strategy",
               "products",

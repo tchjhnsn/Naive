@@ -19,8 +19,8 @@
   ],
   "templates": [],
   "checks": [
-    "packages/naive/src/checks/check-data-packages.mjs",
-    "packages/naive/src/checks/lint-investors.mjs"
+    "packages/naive/src/checks/check-data-packages.ts",
+    "packages/naive/src/checks/lint-investors.ts"
   ],
   "skill": {
     "id": "investors-function",

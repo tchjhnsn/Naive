@@ -2,7 +2,7 @@
   "id": "validation-recommend",
   "title": "Recommend Validation",
   "description": "The validation score recommends Validation when the score V is at or above the line and no sub-score is below its floor. The owner decides.",
-  "call_site": "packages/naive/src/checks/check-validation.mjs score, W.threshold",
+  "call_site": "packages/naive/src/checks/check-validation.ts score, W.threshold",
   "tier": "low",
   "question": {
     "verb": "recommend",
@@ -12,7 +12,7 @@
   },
   "evidence": {
     "kind": "check",
-    "sensor": "packages/naive/src/checks/check-validation.mjs",
+    "sensor": "packages/naive/src/checks/check-validation.ts",
     "sources": [
       {
         "source": "venture",

@@ -17,7 +17,7 @@ description: >
 
 # Agent capabilities
 
-Evidence layer (EE-029). Writes `packages/naive/src/functions/human-capital/capabilities/agent-capabilities.json`; `packages/naive/src/checks/check-team.mjs` checks it.
+Evidence layer (EE-029). Writes `packages/naive/src/functions/human-capital/capabilities/agent-capabilities.json`; `packages/naive/src/checks/check-team.ts` checks it.
 
 ## Why
 
