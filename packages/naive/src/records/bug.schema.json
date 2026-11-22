@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "bug.schema.json",
   "title": "Bug",
-  "description": "One defect in the product, at <venture>/product/bugs/<id>.json. 'Stable' in the validation study is measured as no open P0 or P1 (node packages/naive/src/engine/bugs.mjs, naive bugs).",
+  "description": "One defect in the product, at <venture>/product/bugs/<id>.json. 'Stable' in the validation study is measured as no open P0 or P1 (node packages/naive/src/engine/bugs.ts, naive bugs).",
   "type": "object",
   "required": ["id", "title", "severity", "status", "found_in"],
   "additionalProperties": false,

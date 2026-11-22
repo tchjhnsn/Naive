@@ -3,7 +3,7 @@
 // person. The generator fills a starting escalation list (complaints, legal threats, safety, refunds above the limit and
 // data requests) when none is given, and never changes one a person gave. The draft goes to the write chain for
 // support/policy.json; it is a public-commitment record, so an agent's write is held for a person to accept.
-import { cli, drop, questions, schemaOf, validate } from "./generate.mjs";
+import { cli, drop, questions, schemaOf, validate } from "./generate.ts";
 import type { SupportPolicy } from "../../records/types/records.d.ts";
 
 export const record = "support-policy";

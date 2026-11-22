@@ -34,17 +34,17 @@
 import { createHash } from "node:crypto";
 import { appendFileSync, closeSync, existsSync, mkdirSync, openSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
-import { readBlob, writeBlob } from "../core/blobs.mjs";
-import { tracing, withSpan } from "../core/instrumentation.mjs";
-import { actingAgent, agentFromEnv, entries, record as prov } from "../core/provenance.mjs";
-import { now } from "../engine/clock.mjs";
-import { decisionFile, propose } from "../engine/decisions.mjs";
-import { ventureFile } from "../core/venture-paths.mjs";
-import { validateValue } from "../records/validate.mjs";
+import { readBlob, writeBlob } from "../core/blobs.ts";
+import { tracing, withSpan } from "../core/instrumentation.ts";
+import { actingAgent, agentFromEnv, entries, record as prov } from "../core/provenance.ts";
+import { now } from "../engine/clock.ts";
+import { decisionFile, propose } from "../engine/decisions.ts";
+import { ventureFile } from "../core/venture-paths.ts";
+import { validateValue } from "../records/validate.ts";
 import { forwardSet, loadEvalSet, loadPlan, scoreExperiment, scoreForward, scoreHoldout } from "../engine/recipes/eval-set.ts";
 import type { Scored } from "../engine/recipes/eval-set.ts";
 import { chainOnto } from "../engine/generators/experiment.ts";
-import { gateWrite, heldDraft } from "./gate-hooks.mjs";
+import { gateWrite, heldDraft } from "./gate-hooks.ts";
 import type { EvalPlan, Experiment } from "../records/types/records.d.ts";
 
 type Obj = Record<string, unknown>;
@@ -67,7 +67,7 @@ export const EVALUATOR = Object.freeze({ kind: "agent", id: "evaluator", via: "r
 const sha = (s: string | Buffer): string => createHash("sha256").update(s).digest("hex");
 export const liveFile = (pattern: string) => `${pattern}.recipe.ts`;
 export const logFile = (pattern: string) => `${pattern}.experiments.jsonl`;
-// The router's own draft path (router.mjs draftPath): _drafts/<file with / as __>.draft.
+// The router's own draft path (router.ts draftPath): _drafts/<file with / as __>.draft.
 export const draftFile = (file: string) => `_drafts/${file.replace(/\//g, "__")}.draft`;
 
 /** The experiment log's lines, oldest first. */

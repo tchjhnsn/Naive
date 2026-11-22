@@ -12,7 +12,7 @@ The statechart script is the pstack `statechart` skill (`scripts/statechart`). I
 TLA2TOOLS=/path/to/tla2tools.jar JAVA=java \
   /path/to/statechart/scripts/statechart \
   packages/naive/test/verification/playbook-netflix-culture/NetflixCulture.tla \
-  --view packages/naive/test/verification/playbook-netflix-culture/view.mjs \
+  --view packages/naive/test/verification/playbook-netflix-culture/view.ts \
   --out /tmp/netflix-culture-chart
 ```
 
@@ -26,7 +26,7 @@ sh png.sh /tmp/netflix-culture-chart/chart.svg
 Replay the routes on fixture ventures:
 
 ```bash
-node packages/naive/test/verification/playbook-netflix-culture/replay.mjs
+node packages/naive/test/verification/playbook-netflix-culture/replay.ts
 ```
 
 Re-run both after any edit to the playbook or to a route the template names.
@@ -35,7 +35,7 @@ Re-run both after any edit to the playbook or to a route the template names.
 
 | Rule | TLC | Replay |
 |---|---|---|
-| RouteIsReal. Every template step names a route the router has, with the action the step uses. | PASS | PASS. 14 routes in the playbook are in `node packages/naive/src/router/router.mjs`, each with the named action. |
+| RouteIsReal. Every template step names a route the router has, with the action the step uses. | PASS | PASS. 14 routes in the playbook are in `node packages/naive/src/router/router.ts`, each with the named action. |
 | NoReadAhead. A step reads a record's content only when the venture or an earlier step provides it. | PASS | PASS. A missing `people/team` does not yield a skill. The main path reads the problem, profile, alignment, team, people, and founder the fixture has. Decision rights, ownership, and the team plan are absent until their own steps. The note cites `alignment:own-words` and does not paste the problem statement or the principle. |
 | CheckHonest. The culture check passes only when the note cites alignment, the bar has a brief and no pay figure, the gaps were read, and a person has decided `decisions/team-plan-culture`. It fails otherwise. Both results happen. | PASS. The chart ends at both "The culture check passed" and "The culture check failed". | PASS. The check failed before `mentura decide`. It failed on a pasted principle, a pasted problem statement, the phrase "keeper test", and a pay figure. It passed after Fixture Founder decided `decisions/team-plan-culture`. While that decision was open, an agent's write that pasted a principle was held as a draft and the live note stayed. |
 | NoInventedPay. A pay or equity figure in the bar was read from `governance/ownership`. The culture check still fails if a figure is copied into the brief. | PASS | PASS. With ownership present, the brief points at `governance/ownership` and has no grant amount. A brief that copies the fixture grant `17` fails the culture check. With ownership absent, the brief says pay and equity are not recorded. |

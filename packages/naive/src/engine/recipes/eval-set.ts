@@ -19,12 +19,12 @@
 // tip, and forwardSet and scoreForward when monitor runs (build plan item 8).
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
-import { actingAgent, agentFromEnv, entries, record } from "../../core/provenance.mjs";
-import { sessions, spans } from "../../core/instrumentation.mjs";
-import { ventureFile } from "../../core/venture-paths.mjs";
-import { readDataModel, globRegExp, venturePaths } from "../../records/index.mjs";
-import { validateValue } from "../../records/validate.mjs";
-import { readAsOf } from "../../store/as-of.mjs";
+import { actingAgent, agentFromEnv, entries, record } from "../../core/provenance.ts";
+import { sessions, spans } from "../../core/instrumentation.ts";
+import { ventureFile } from "../../core/venture-paths.ts";
+import { readDataModel, globRegExp, venturePaths } from "../../records/index.ts";
+import { validateValue } from "../../records/validate.ts";
+import { readAsOf } from "../../store/as-of.ts";
 import { draft as draftPlan } from "../generators/eval-plan.ts";
 import { LOCAL_LIBRARY, LOCAL_ROOT, dedupeSignals, fill, libraries, mergeTypes, resolveType, signalsOf, splitRange, typesIn } from "../signals.ts";
 import { baselineRecord, forecastOutcome, recipeInput, settledRecord, timeMs } from "./outcomes.ts";

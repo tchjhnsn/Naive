@@ -4,7 +4,7 @@
 // starts the status at upcoming. alertDate gives the day the calendar raises it: twice its preparation time before the
 // due date. The draft goes to the write chain for legal/obligations/<id>.json, which only the risk-and-compliance agent
 // (risk-and-compliance-agent) or a person may write.
-import { cli, drop, questions, schemaOf, slug, validate } from "./generate.mjs";
+import { cli, drop, questions, schemaOf, slug, validate } from "./generate.ts";
 import type { Obligation } from "../../records/types/records.d.ts";
 
 export const record = "obligation";

@@ -189,7 +189,7 @@ A replaced target looks like this:
 }
 ```
 
-`condition` is the label in the checker (`packages/naive/test/verification/playbook-bessemer-saas-metrics/replay.mjs`). The 2024 vertical-AI figures and the 2025 Cloud 100 growth and years-to-Centaur figures are not conditions. Do not paste them.
+`condition` is the label in the checker (`packages/naive/test/verification/playbook-bessemer-saas-metrics/replay.ts`). The 2024 vertical-AI figures and the 2025 Cloud 100 growth and years-to-Centaur figures are not conditions. Do not paste them.
 
 ## Checks
 
@@ -201,7 +201,7 @@ Run them after step 8 and again after a person decides. An `answer` that does no
 | `targets-sourced` | Every phase value is `no published Bessemer target`, or it is a string in the tables above whose `source` file exists under `raw/sources` and whose condition matches `arr_band`, `segment`, and `stage_note` | A number with no source, a number that is not in the tables, or a condition the venture's note does not meet |
 | `no-early-number` | Discovery and validation values are `no published Bessemer target` | Either of those phases has any other value |
 | `actuals-from-records` | Each actual equals `purpose/money/summary` when that read returned a record, and is `not in the venture` when it did not | An actual is filled in with no summary, or it disagrees with the summary |
-| `decision-open` | Status is `open`, or status is `decided` and `provenance.approved_by` is present | Status is `decided` with no approver. Propose with any status other than open is refused (`packages/naive/src/engine/decisions.mjs`) |
+| `decision-open` | Status is `open`, or status is `decided` and `provenance.approved_by` is present | Status is `decided` with no approver. Propose with any status other than open is refused (`packages/naive/src/engine/decisions.ts`) |
 | `telos-when-decided` | Before the decision is decided, this criterion passes without a telos write. After it is decided, either there is still no telos and no telos write was made, or the current phase's accepted numeric targets appear as exit criteria on a telos draft or record and each one names its source | A telos was created from nothing in this playbook, or a numeric target was written onto it before the decision was decided |
 
-`node packages/naive/test/verification/playbook-bessemer-saas-metrics/replay.mjs` runs these checks both ways against the router, on fixture ventures.
+`node packages/naive/test/verification/playbook-bessemer-saas-metrics/replay.ts` runs these checks both ways against the router, on fixture ventures.

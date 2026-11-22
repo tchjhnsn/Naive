@@ -12,7 +12,7 @@ export JAVA=java
 node --disable-warning=ExperimentalWarning <statechart>/scripts/statechart.ts \
   packages/naive/test/verification/lint-people/PeopleLint.tla \
   --config packages/naive/test/verification/lint-people/PeopleLint.cfg \
-  --view packages/naive/test/verification/lint-people/view.mjs \
+  --view packages/naive/test/verification/lint-people/view.ts \
   --out /tmp/people-lint-out
 node <pele>/render.mjs /tmp/people-lint-out/chart.mmd
 sh <pele>/png.sh /tmp/people-lint-out/chart.svg

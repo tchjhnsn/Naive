@@ -12,10 +12,10 @@ import { calibrate, calibration, cellAt, decisionId, isIsoDate, parsePreset, par
 import type { IsoDate, Rules } from "./gate-calibration.ts";
 import type { AnatomyCellEnumCell, AnatomyCellNumberCell, IndustryAnatomy, MarketAnatomy, PhaseGatePolicies } from "../records/types/records.d.ts";
 import { runSync } from "../core/effect/run.ts";
-import { gradeItem } from "./evidence-grade.mjs";
-import { phaseGate, POLICIES } from "./phase-gate.mjs";
-import { ventureFile } from "../core/venture-paths.mjs";
-import { validateFile, validateValue } from "../records/validate.mjs";
+import { gradeItem } from "./evidence-grade.ts";
+import { phaseGate, POLICIES } from "./phase-gate.ts";
+import { ventureFile } from "../core/venture-paths.ts";
+import { validateFile, validateValue } from "../records/validate.ts";
 
 let failed = 0;
 const expect = (name: string, ok: boolean, detail?: unknown): void => {
@@ -96,7 +96,7 @@ expect("unknown cells add assumptions in the plan's words and lower confidence",
 const est = cal(market({ customer_type: { status: "estimated", value: "business" } }), null);
 expect("an estimated cell counts with half the confidence of a known one", est.confidence.score < sparse.confidence.score && est.confidence.score > 0, [est.confidence, sparse.confidence]);
 expect("the gradeItem default stays 18 months, a shorter window drops a level", (() => {
-  const e = { kind: "desk-research", audience: "target", collected: "2025-11-01" };
+  const e = { kind: "desk-research", audience: "target", collected: "2025-11-01" } as const;
   const t = new Date("2026-11-01");
   return gradeItem(e, t).level === "low" && gradeItem(e, t, 9).level === "very low";
 })());
@@ -104,7 +104,7 @@ expect("the gradeItem default stays 18 months, a shorter window drops a level", 
 // ---- A venture: read, propose, config, CLI and route ----
 const ws = mkdtempSync(join(tmpdir(), "gate-calibration-"));
 const dir = join(ws, "acme");
-const init = node(["packages/naive/src/engine/init-venture.mjs", dir, "acme", "--type", "software-startup"]);
+const init = node(["packages/naive/src/engine/init-venture.ts", dir, "acme", "--type", "software-startup"]);
 expect("a software startup venture starts", init.status === 0, init.stderr);
 const put = (rel: string, value: unknown): void => {
   const f = ventureFile(dir, rel);
@@ -152,7 +152,7 @@ const parsed = JSON.parse(json.stdout || "{}") as { count_levels?: { moderate: n
 expect("the CLI prints JSON", json.status === 0 && parsed.venture === "acme" && parsed.count_levels?.moderate === 3, json.stderr);
 const bad = node(["packages/naive/src/engine/gate-calibration.ts", dir, "--valid-at", "soon"]);
 expect("a bad --valid-at exits 2", bad.status === 2, bad.status);
-const route = spawnSync("node", ["packages/naive/src/interfaces/cli/mentura.mjs", "system/phase-gate/calibrate", "run", "--venture", "acme"], { cwd: repo, encoding: "utf8", env: { ...process.env, MENTURA_WORKSPACE: ws } });
+const route = spawnSync("node", ["packages/naive/src/interfaces/cli/mentura.ts", "system/phase-gate/calibrate", "run", "--venture", "acme"], { cwd: repo, encoding: "utf8", env: { ...process.env, MENTURA_WORKSPACE: ws } });
 let routed: { venture?: string, count_levels?: { moderate: number }, items?: Record<string, { boundary: string }> } = {};
 try { routed = JSON.parse(route.stdout); } catch { routed = {}; }
 expect("the route system/phase-gate/calibrate runs the calibration as a command route", route.status === 0 && routed.venture === "acme" && routed.count_levels?.moderate === 3 && routed.items?.["economic-signal"]?.boundary === "fail-closed", route.stdout.slice(0, 400) + route.stderr);

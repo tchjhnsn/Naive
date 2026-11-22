@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "beta-capabilities.schema.json",
   "title": "Beta capability manifest",
-  "description": "The plugin beta's capabilities in the order they unlock, at beta/capabilities.json. Core capabilities start unlocked. Every other capability unlocks once the tester has given the checkpoint feedback of the one before it (packages/naive/src/engine/beta-gate.mjs).",
+  "description": "The plugin beta's capabilities in the order they unlock, at beta/capabilities.json. Core capabilities start unlocked. Every other capability unlocks once the tester has given the checkpoint feedback of the one before it (packages/naive/src/engine/beta-gate.ts).",
   "type": "object",
   "required": [
     "version",

@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "adapter.schema.json",
   "title": "Adapter",
-  "description": "What runs Naive on a platform or in an agent harness (Z-4), as a Next.js adapter customizes build and deploy for a platform. A harness adapter (Claude Code, Codex, Cursor) adapts the framework through the venture's AGENTS.md and skills: the entry files it writes into a venture, and where it puts the package skills. A platform adapter (Mentura, Naive's first, as Vercel is for Next.js) names the tests it runs. An adapter is verified when it passes the framework's tests (node packages/naive/src/interfaces/adapters.mjs verify <name>). Harness adapters are packages/naive/src/interfaces/adapters/<name>.json; the platform's is platform/adapter.json.",
+  "description": "What runs Naive on a platform or in an agent harness (Z-4), as a Next.js adapter customizes build and deploy for a platform. A harness adapter (Claude Code, Codex, Cursor) adapts the framework through the venture's AGENTS.md and skills: the entry files it writes into a venture, and where it puts the package skills. A platform adapter (Mentura, Naive's first, as Vercel is for Next.js) names the tests it runs. An adapter is verified when it passes the framework's tests (node packages/naive/src/interfaces/adapters.ts verify <name>). Harness adapters are packages/naive/src/interfaces/adapters/<name>.json; the platform's is platform/adapter.json.",
   "type": "object",
   "required": ["name", "title", "kind", "reads", "files", "skills", "sources"],
   "additionalProperties": false,

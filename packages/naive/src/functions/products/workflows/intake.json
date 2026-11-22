@@ -12,7 +12,7 @@
     { "id": "summarize", "do": "Tell the founder in one message which products exist, which risks lack evidence, the open P0 and P1 bugs, and what to build or test next, raising the order of work to the product lead.", "raises": ["set-priorities"] }
   ],
   "done_criteria": [
-    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/records/validate.mjs" },
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/records/validate.ts" },
     { "id": "risks-named", "kind": "review", "check": "Does the product being built now name evidence, or the lack of it, for each of the four risks?", "reviewer": "product-lead" }
   ]
 }

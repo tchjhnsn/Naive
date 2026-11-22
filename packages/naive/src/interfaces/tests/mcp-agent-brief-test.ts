@@ -12,7 +12,7 @@ const expect = (name: string, ok: boolean, detail: unknown = "") => { console.lo
 
 const env: Record<string, string | undefined> = { ...process.env, MENTURA_WORKSPACE: join(repo, "packages/naive/src/records/examples/software") };
 delete env.MENTURA_ACTOR_ID;
-const child = spawn("node", [join(repo, "packages/naive/src/interfaces/mcp/server.mjs")], { env, stdio: ["pipe", "pipe", "inherit"] });
+const child = spawn("node", [join(repo, "packages/naive/src/interfaces/mcp/server.ts")], { env, stdio: ["pipe", "pipe", "inherit"] });
 const waiting = new Map<number, (m: Record<string, unknown>) => void>();
 createInterface({ input: child.stdout }).on("line", (line) => {
   const m = JSON.parse(line) as Record<string, unknown>;

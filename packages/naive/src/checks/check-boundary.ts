@@ -7,7 +7,7 @@
 //      code that names a path under one of APP_FOLDERS fails, and so does a relative import that leaves
 //      the repository. Comments are not code. An app hands Naive its modules by configuration instead:
 //      an environment variable such as NAIVE_JUDGE_CMD, or a hook it calls such as registerConnector
-//      (packages/naive/src/store/connectors/index.mjs).
+//      (packages/naive/src/store/connectors/index.ts).
 //   2. Every connector the registry names (packages/naive/src/records/layers/knowledge/tooling/integrations.json) is a module in this
 //      repository that works offline and names no vendor: no fetch, no node:http, node:https or
 //      node:net, and no credentials. A vendor connector is the app's, registered at run time.

@@ -20,9 +20,9 @@
 
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
-import { grantBacked, liveGrant, readDelegation } from "../core/venture-paths.mjs";
+import { grantBacked, liveGrant, readDelegation } from "../core/venture-paths.ts";
 import { independent } from "./verify.ts";
-import { readSchema } from "../records/index.mjs";
+import { readSchema } from "../records/index.ts";
 import type { Delegation, DecisionRights, DepartmentCatalog, RoleTemplate } from "../records/types/records.d.ts";
 
 const root = new URL("../../../..", import.meta.url).pathname;
@@ -40,7 +40,7 @@ const own = (rel: string) => { const p = venture && join(venture, "governance", 
 type Grant = Delegation["grants"][number];
 let d: Delegation;
 try { d = readDelegation(file) as Delegation; } catch (e) { console.log(`FAIL  ${(e as Error).message}`); process.exit(1); }
-// A venture's own classes and roles overlay the template's, by id, as check-ready.ts and router.mjs do.
+// A venture's own classes and roles overlay the template's, by id, as check-ready.ts and router.ts do.
 const classes = new Set(load<DecisionRights>(join(template, "decision-rights.json")).classes.map((c) => c.id));
 const ownRights = own("decision-rights.json");
 if (ownRights) for (const c of load<DecisionRights>(ownRights).classes) classes.add(c.id);
@@ -93,7 +93,9 @@ if (leads.length) {
   }
 }
 const live = (g: Grant) => liveGrant(g, today);
-const SCOPE = new RegExp(readSchema("delegation").properties.grants.items.properties.scope.pattern);
+// The parsed schema is read at a module boundary: cast once to the one pattern this check takes from it.
+type DelegationSchema = { properties: { grants: { items: { properties: { scope: { pattern: string } } } } } };
+const SCOPE = new RegExp((readSchema("delegation") as DelegationSchema).properties.grants.items.properties.scope.pattern);
 const name = (g: Grant, i: number) => `grant/${g.id ?? i}`;
 
 d.grants.forEach((g, i) => {

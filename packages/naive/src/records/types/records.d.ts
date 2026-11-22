@@ -70,7 +70,7 @@ export type Activity = {
   computed?: string;
 };
 
-/** What runs Naive on a platform or in an agent harness (Z-4), as a Next.js adapter customizes build and deploy for a platform. A harness adapter (Claude Code, Codex, Cursor) adapts the framework through the venture's AGENTS.md and skills: the entry files it writes into a venture, and where it puts the package skills. A platform adapter (Mentura, Naive's first, as Vercel is for Next.js) names the tests it runs. An adapter is verified when it passes the framework's tests (node packages/naive/src/interfaces/adapters.mjs verify <name>). Harness adapters are packages/naive/src/interfaces/adapters/<name>.json; the platform's is platform/adapter.json. */
+/** What runs Naive on a platform or in an agent harness (Z-4), as a Next.js adapter customizes build and deploy for a platform. A harness adapter (Claude Code, Codex, Cursor) adapts the framework through the venture's AGENTS.md and skills: the entry files it writes into a venture, and where it puts the package skills. A platform adapter (Mentura, Naive's first, as Vercel is for Next.js) names the tests it runs. An adapter is verified when it passes the framework's tests (node packages/naive/src/interfaces/adapters.ts verify <name>). Harness adapters are packages/naive/src/interfaces/adapters/<name>.json; the platform's is platform/adapter.json. */
 export type Adapter = {
   name: string;
   title: string;
@@ -220,7 +220,7 @@ export type Artifact = {
   };
 };
 
-/** The plugin beta's capabilities in the order they unlock, at beta/capabilities.json. Core capabilities start unlocked. Every other capability unlocks once the tester has given the checkpoint feedback of the one before it (packages/naive/src/engine/beta-gate.mjs). */
+/** The plugin beta's capabilities in the order they unlock, at beta/capabilities.json. Core capabilities start unlocked. Every other capability unlocks once the tester has given the checkpoint feedback of the one before it (packages/naive/src/engine/beta-gate.ts). */
 export type BetaCapabilities = {
   $schema?: string;
   version: string;
@@ -313,7 +313,7 @@ export type Budget = {
   note?: string;
 };
 
-/** One defect in the product, at <venture>/product/bugs/<id>.json. 'Stable' in the validation study is measured as no open P0 or P1 (node packages/naive/src/engine/bugs.mjs, naive bugs). */
+/** One defect in the product, at <venture>/product/bugs/<id>.json. 'Stable' in the validation study is measured as no open P0 or P1 (node packages/naive/src/engine/bugs.ts, naive bugs). */
 export type Bug = {
   id: string;
   venture?: string;
@@ -331,7 +331,7 @@ export type Bug = {
   feedback?: string;
 };
 
-/** One event, one file (calendar/events/<uid>.json), in the shape of a JSCalendar Event (RFC 8984): a start in local time with its IANA time zone and a duration. Events derived from dated records (open decisions with a due time, releases) are never stored; packages/naive/src/engine/calendar.mjs computes them each time the calendar is read. */
+/** One event, one file (calendar/events/<uid>.json), in the shape of a JSCalendar Event (RFC 8984): a start in local time with its IANA time zone and a duration. Events derived from dated records (open decisions with a due time, releases) are never stored; packages/naive/src/engine/calendar.ts computes them each time the calendar is read. */
 export type CalendarEvent = {
   "@type": "Event";
   /** Globally unique; the file's name without .json */
@@ -366,7 +366,7 @@ export type CalendarEvent = {
   updated?: string;
 };
 
-/** One calendar in a workspace (calendar/calendars/<id>.json): who owns it, who is on it, and who may see it. Events name it by id. A workspace is initiated with the default calendar, default, named Venture (Torian, 2026-10-30; packages/naive/src/engine/calendar.mjs). */
+/** One calendar in a workspace (calendar/calendars/<id>.json): who owns it, who is on it, and who may see it. Events name it by id. A workspace is initiated with the default calendar, default, named Venture (Torian, 2026-10-30; packages/naive/src/engine/calendar.ts). */
 export type Calendar = {
   /** The calendar's id, the file's name without .json */
   id: string;
@@ -464,7 +464,7 @@ export type Connection = {
   /** The source id in the venture's knowledge/sources.json that this connection feeds. Needed when authoritative_for names anything: the source map, not the connection, says which source masters a field. */
   source?: string;
   status?: "planned" | "connected" | "disconnected";
-  /** Contract 1: the records and fields the outside system is authoritative for, each a source map rule named by its record type and attribute (rules carry no id of their own). Each must resolve (packages/naive/src/store/connectors/resolve.mjs) to a rule whose system of record is this connection's source; everything else stays owned by the repository. */
+  /** Contract 1: the records and fields the outside system is authoritative for, each a source map rule named by its record type and attribute (rules carry no id of their own). Each must resolve (packages/naive/src/store/connectors/resolve.ts) to a rule whose system of record is this connection's source; everything else stays owned by the repository. */
   authoritative_for: {
     /** A venture record type id. */
     record: string;
@@ -594,7 +594,7 @@ export type DataModel = {
     confidential?: boolean;
     /** The owning layer, or system for records every layer shares */
     layer: "system" | "purpose" | "knowledge" | "operations" | "evidence" | "governance" | "interface";
-    /** The function (packages/naive/src/functions/departments.json) that owns the record type, or null for a type several functions share or none owns. packages/naive/src/checks/check-data-model.ts checks that this list matches departments.json and that a venture record kept in a package folder a function owns (PACKAGE_FUNCTION in packages/naive/src/core/venture-paths.mjs) names that function or null */
+    /** The function (packages/naive/src/functions/departments.json) that owns the record type, or null for a type several functions share or none owns. packages/naive/src/checks/check-data-model.ts checks that this list matches departments.json and that a venture record kept in a package folder a function owns (PACKAGE_FUNCTION in packages/naive/src/core/venture-paths.ts) names that function or null */
     function: "strategy" | "products" | "marketing-and-sales" | "supply-chain" | "service-delivery" | "customer-service" | "human-capital" | "it" | "finance" | "assets" | "risk-and-compliance" | "external-relationships" | "capabilities" | null;
     /** method: this repo's own records; workspace: one per builder; venture: inside a venture folder */
     level: "method" | "workspace" | "venture";
@@ -602,10 +602,10 @@ export type DataModel = {
     schema: string | null;
     /** EE-099: the record generator beside the schema; it describes what to ask and drafts one record that passes the schema, and stores nothing itself */
     generator?: string;
-    /** Default json. json-list: the file holds a list of records. json-lines: one record per line, append-only. typescript: a TypeScript module (a recipe, <pattern>.recipe.ts); the schema, when there is one, governs the data the module exports, not the file, so packages/naive/src/records/validate.mjs does not read it */
+    /** Default json. json-list: the file holds a list of records. json-lines: one record per line, append-only. typescript: a TypeScript module (a recipe, <pattern>.recipe.ts); the schema, when there is one, governs the data the module exports, not the file, so packages/naive/src/records/validate.ts does not read it */
     form?: "json" | "json-list" | "markdown" | "prose" | "json-lines" | "typescript";
     kind?: DataModelKind;
-    /** Who may write records of this type. any (the default): whoever the gate and decision rights allow. projection: only the signal projector (signal library design); the router refuses every other actor, a person included, before the schema (writerRule in packages/naive/src/engine/gate.mjs). person: only a person (autoresearch design, a function's research program); the router refuses every agent, whatever its role, and the projector, before the schema, and a person's write lands live. function: only the agent of the record type's function, the team-plan role <function>-agent (EE-123), or a person; the router refuses an agent acting in any other role, or in none, and the projector, before the schema (lead agents design, the spend register). The record type must name a function */
+    /** Who may write records of this type. any (the default): whoever the gate and decision rights allow. projection: only the signal projector (signal library design); the router refuses every other actor, a person included, before the schema (writerRule in packages/naive/src/engine/gate.ts). person: only a person (autoresearch design, a function's research program); the router refuses every agent, whatever its role, and the projector, before the schema, and a person's write lands live. function: only the agent of the record type's function, the team-plan role <function>-agent (EE-123), or a person; the router refuses an agent acting in any other role, or in none, and the projector, before the schema (lead agents design, the spend register). The record type must name a function */
     writer?: "any" | "projection" | "person" | "function";
     settles?: DataModelSettles;
     /** This record type is a view of part of another type's file. Files are validated and owned by that type; the view has its own route and schema for what may be written. */
@@ -625,7 +625,7 @@ export type DataModel = {
     }[];
     note?: string;
   }[];
-  /** Venture files no record type covers, each with its kind, so a host knows how to commit every file in a venture folder (hosted working copy design, section 2). packages/naive/src/records/index.mjs pathKind reads them together with the record types */
+  /** Venture files no record type covers, each with its kind, so a host knows how to commit every file in a venture folder (hosted working copy design, section 2). packages/naive/src/records/index.ts pathKind reads them together with the record types */
   files?: {
     /** A glob inside any venture folder, written with the instance/**\/ prefix venture-level record paths carry */
     path: string;
@@ -701,7 +701,7 @@ export type Deal = {
   note?: string;
 };
 
-/** The impact map of a merged decision version (packages/naive/src/engine/impact.mjs), written beside the decision as decisions/<id>.impact.json: for each venture function, the records that depend on what the merge changed (by provenance, the where-used list and data-model refs), which of them were marked stale, an agent's note, and the open follow-up decisions proposed. Naive proposes; a person decides. */
+/** The impact map of a merged decision version (packages/naive/src/engine/impact.ts), written beside the decision as decisions/<id>.impact.json: for each venture function, the records that depend on what the merge changed (by provenance, the where-used list and data-model refs), which of them were marked stale, an agent's note, and the open follow-up decisions proposed. Naive proposes; a person decides. */
 export type DecisionImpact = {
   decision: string;
   version: number;
@@ -722,7 +722,7 @@ export type DecisionImpact = {
   built_at: string;
 };
 
-/** One decision a venture has to make, in a decisions/ folder beside the record it decides (EE-054), like a Next.js file beside its route: decisions/<record>[.<topic>].decision.json decides <record>.json in the folder that holds decisions/. The decision log (decision.schema.json) stays the append-only history; this is the live decision. node packages/naive/src/engine/decisions.mjs gathers them into the decision matrix. */
+/** One decision a venture has to make, in a decisions/ folder beside the record it decides (EE-054), like a Next.js file beside its route: decisions/<record>[.<topic>].decision.json decides <record>.json in the folder that holds decisions/. The decision log (decision.schema.json) stays the append-only history; this is the live decision. node packages/naive/src/engine/decisions.ts gathers them into the decision matrix. */
 export type DecisionRecord = {
   /** Unique within the venture. The roots venture and foundation are reserved. */
   id: string;
@@ -901,9 +901,9 @@ export type DecisionRecord = {
   };
   /** When this version restores an earlier one, the version it restores */
   rolled_back_from?: number;
-  /** How reversible the decision is. A one-way door is heavy: the decision index weighs it more and carries propagation further through it (packages/naive/src/engine/decision-index.mjs). */
+  /** How reversible the decision is. A one-way door is heavy: the decision index weighs it more and carries propagation further through it (packages/naive/src/engine/decision-index.ts). */
   door?: "one-way" | "two-way";
-  /** The venture requirements (foundation/requirements/<id>.json) this decision satisfies, is constrained by, or violates. A heavy requirement lifts a later-phase decision into the current phase; a violation is flagged now (packages/naive/src/engine/decision-index.mjs). */
+  /** The venture requirements (foundation/requirements/<id>.json) this decision satisfies, is constrained by, or violates. A heavy requirement lifts a later-phase decision into the current phase; a violation is flagged now (packages/naive/src/engine/decision-index.ts). */
   requirements?: {
     id: string;
     relation: "satisfies" | "constrains" | "violates";
@@ -954,7 +954,7 @@ export type DecisionRights = {
   }[];
 };
 
-/** An ordered set of frames from the decision library, at packages/naive/library/packages/<function>/roadmaps/<id>.json. A roadmap reuses frames and holds no answers: installing it (naive roadmap install <id>) proposes each step's decisions open, and the founder decides. Versioned like a package; a venture that switches roadmaps keeps the decisions already made. packages/naive/src/engine/check-roadmap.mjs rejects cycles, unknown frames, steps with no decider and one-way doors delegated away from the founder. */
+/** An ordered set of frames from the decision library, at packages/naive/library/packages/<function>/roadmaps/<id>.json. A roadmap reuses frames and holds no answers: installing it (naive roadmap install <id>) proposes each step's decisions open, and the founder decides. Versioned like a package; a venture that switches roadmaps keeps the decisions already made. packages/naive/src/engine/check-roadmap.ts rejects cycles, unknown frames, steps with no decider and one-way doors delegated away from the founder. */
 export type DecisionRoadmap = {
   id: string;
   title: string;
@@ -1023,7 +1023,7 @@ export type Delegation = {
   note?: string;
   /** The chief delegator's role id (founder) */
   root: string;
-  /** The people who hold the root role, by name. Only they approve a one-way publication (packages/naive/src/engine/publish.mjs) or merge as the founder (packages/naive/src/engine/decisions.mjs). The template leaves it out; a venture names its own founders */
+  /** The people who hold the root role, by name. Only they approve a one-way publication (packages/naive/src/engine/publish.ts) or merge as the founder (packages/naive/src/engine/decisions.ts). The template leaves it out; a venture names its own founders */
   founder?: string[];
   never_redelegated?: string[];
   /** Irreversible classes; they stay with the founder */
@@ -1145,7 +1145,7 @@ export type Detector = {
   /** A short name for people. */
   title?: string;
   description?: string;
-  /** Where the call is made, such as a module and the setting it reads, for example packages/naive/src/engine/gate.mjs confidence_below. */
+  /** Where the call is made, such as a module and the setting it reads, for example packages/naive/src/engine/gate.ts confidence_below. */
   call_site?: string;
   /** Optional: the role a yes call is put to as an open decision, by id: a role in the roles registers or a role template (governance/roles/<id>.json). A seam detector names the lead whose portfolio spans the seam, such as finance-lead for tools against spend. It changes who is asked, not who decides: only a person settles the decision, and settling it resolves the call's trial. */
   assign_to?: string;
@@ -1427,7 +1427,7 @@ export type Evidence = {
   passed: boolean;
 };
 
-/** A phase's canonical exit criteria, at <venture>/foundation/exit-criteria/<phase>.json: what must be true to leave the phase, each serving a goal measure. The lifecycle gate (packages/naive/src/engine/lifecycle.mjs) reads these; a criterion is met when a person says so. */
+/** A phase's canonical exit criteria, at <venture>/foundation/exit-criteria/<phase>.json: what must be true to leave the phase, each serving a goal measure. The lifecycle gate (packages/naive/src/engine/lifecycle.ts) reads these; a criterion is met when a person says so. */
 export type ExitCriteria = {
   phase: "discovery" | "validation" | "beachhead" | "scale" | "platform";
   venture?: string;
@@ -1450,7 +1450,7 @@ export type ExitCriteria = {
   updated?: string;
 };
 
-/** How the venture might end and what each owner would get, at <venture>/governance/exit.json (EE-022): the exit paths it keeps open and the sale values to model. Payouts are never typed here: packages/naive/src/engine/payouts.mjs computes them from ownership.json for each scenario. */
+/** How the venture might end and what each owner would get, at <venture>/governance/exit.json (EE-022): the exit paths it keeps open and the sale values to model. Payouts are never typed here: packages/naive/src/engine/payouts.ts computes them from ownership.json for each scenario. */
 export type Exit = {
   paths: {
     /** hold: no exit, the owners keep it */
@@ -1475,7 +1475,7 @@ export type Experiment = {
   pattern: EvalPlanPattern;
   /** The sha of the eval plan in force */
   plan: EvalPlanSha;
-  /** sha256 of the candidate recipe's source, which the blob store keeps under that hash (packages/naive/src/core/blobs.mjs). On a holdout line, the tip that was checked */
+  /** sha256 of the candidate recipe's source, which the blob store keeps under that hash (packages/naive/src/core/blobs.ts). On a holdout line, the tip that was checked */
   candidate: EvalPlanSha;
   /** The tip the candidate was edited from, or null for a recipe's first write. A write whose base is not the tip is refused before it is scored and logs no line */
   base?: EvalPlanSha | null;
@@ -1630,7 +1630,7 @@ export type FounderAgreement = {
   deadlock?: string;
 };
 
-/** One idea of a person's (people/<person-id>/ideas/<id>.json, EE-114), owned by the person, not a venture. It exists before any venture and outlives one; a venture cites the idea it grew from. The text is the person's, verbatim; an agent never rewrites it. Ideas under founders/<handle>/ideas/ still validate until the founders folder moves (not built yet). Its relations and scope are checked through the EE-095 term engine (term typed-link): node packages/naive/src/functions/strategy/frameworks/idea-map/graph.mjs check <ideas folder>. */
+/** One idea of a person's (people/<person-id>/ideas/<id>.json, EE-114), owned by the person, not a venture. It exists before any venture and outlives one; a venture cites the idea it grew from. The text is the person's, verbatim; an agent never rewrites it. Ideas under founders/<handle>/ideas/ still validate until the founders folder moves (not built yet). Its relations and scope are checked through the EE-095 term engine (term typed-link): node packages/naive/src/functions/strategy/frameworks/idea-map/graph.ts check <ideas folder>. */
 export type FounderIdea = {
   id: string;
   /** The idea in its owner's own words */
@@ -1664,10 +1664,10 @@ export type FounderIdea = {
   note?: string;
 };
 
-/** How this idea relates to the one it names: broader, narrower and related (SKOS), part-of and derived-from (preserved PR 157), builds-on (the idea graph), supports and contradicts (AIF, IBIS). The idea relations in packages/naive/src/terms/relations.ts, which packages/naive/src/functions/strategy/frameworks/idea-map/test.mjs keeps equal to this list */
+/** How this idea relates to the one it names: broader, narrower and related (SKOS), part-of and derived-from (preserved PR 157), builds-on (the idea graph), supports and contradicts (AIF, IBIS). The idea relations in packages/naive/src/terms/relations.ts, which packages/naive/src/functions/strategy/frameworks/idea-map/test.ts keeps equal to this list */
 export type FounderIdeaRelation = "broader" | "narrower" | "related" | "part-of" | "derived-from" | "builds-on" | "supports" | "contradicts";
 
-/** How the idea attaches to its scope. The scope attachments in packages/naive/src/terms/relations.ts, which packages/naive/src/functions/strategy/frameworks/idea-map/test.mjs keeps equal to this list */
+/** How the idea attaches to its scope. The scope attachments in packages/naive/src/terms/relations.ts, which packages/naive/src/functions/strategy/frameworks/idea-map/test.ts keeps equal to this list */
 export type FounderIdeaAttachment = "creates" | "amends" | "appends-to" | "derives-from";
 
 /** A person who inspires the founder, and what about them invokes the founder's zeal (founders/<handle>/inspirations/<id>.json). A public figure may be named; a private person is an opaque id whose name sits in founders/<handle>/_private/. */
@@ -1772,7 +1772,7 @@ export type FounderProfile = {
   confirmed?: boolean;
 };
 
-/** One recurring venture problem, as a shape, at packages/naive/library/packages/<function>/frames/<id>.frame.json. A frame is to Naive what a component is to a React component library. It holds the goal, the decisions hidden in the founder's sentence, the premises that sentence assumes and the moves to attack them, and what current information a lookup must supply. It never holds an answer: no instrument, vendor, term or market norm, because those go stale and can be wrong. packages/naive/src/engine/frames.mjs matches a frame to the founder's words, reads the props from the venture's records, has a model judge each premise yes, no or unknown, and proposes the frame's decisions with open options for the founder to decide. */
+/** One recurring venture problem, as a shape, at packages/naive/library/packages/<function>/frames/<id>.frame.json. A frame is to Naive what a component is to a React component library. It holds the goal, the decisions hidden in the founder's sentence, the premises that sentence assumes and the moves to attack them, and what current information a lookup must supply. It never holds an answer: no instrument, vendor, term or market norm, because those go stale and can be wrong. packages/naive/src/engine/frames.ts matches a frame to the founder's words, reads the props from the venture's records, has a model judge each premise yes, no or unknown, and proposes the frame's decisions with open options for the founder to decide. */
 export type Frame = {
   id: string;
   title: string;
@@ -1787,7 +1787,7 @@ export type Frame = {
     id: string;
     /** What the founder's sentence assumes, as a yes/no proposition about this venture */
     claim: string;
-    /** The premise attack applied to it, one of packages/naive/src/engine/frames.mjs ATTACKS */
+    /** The premise attack applied to it, one of packages/naive/src/engine/frames.ts ATTACKS */
     attack: string;
     /** The props the judgment of this premise needs */
     reads?: string[];
@@ -1841,7 +1841,7 @@ export type Frame = {
   }[];
 };
 
-/** A framework for thinking, at frameworks/<id>/framework.json: its vocabulary, its questions (frames), a template and how each of its answers lands in canonical records (maps_to). A framework reads and writes the canonical schema and never changes it (Torian, 2026-10-30). packages/naive/src/engine/check-frameworks.mjs checks that every maps_to targets a canonical route. A founder's own frameworks sit in the workspace's frameworks/ folder with the same shape, plus template.md and playbook.md (packages/naive/src/engine/user-frameworks.mjs). */
+/** A framework for thinking, at frameworks/<id>/framework.json: its vocabulary, its questions (frames), a template and how each of its answers lands in canonical records (maps_to). A framework reads and writes the canonical schema and never changes it (Torian, 2026-10-30). packages/naive/src/engine/check-frameworks.ts checks that every maps_to targets a canonical route. A founder's own frameworks sit in the workspace's frameworks/ folder with the same shape, plus template.md and playbook.md (packages/naive/src/engine/user-frameworks.ts). */
 export type Framework = {
   id: string;
   title: string;
@@ -1878,7 +1878,7 @@ export type Framework = {
   status?: "draft" | "stable";
 };
 
-/** One line of a venture's freshness log (<venture>/knowledge/freshness.jsonl, Revalidating V-1, V-2, V-5, V-7): an on-demand revalidation (a tag, a folder path or a package marked stale, like revalidateTag and revalidatePath), a check that a record is still right without changing it (verify), or a phase change. Append-only; each append is also a line in the provenance log. packages/naive/src/engine/freshness.mjs writes and reads it. */
+/** One line of a venture's freshness log (<venture>/knowledge/freshness.jsonl, Revalidating V-1, V-2, V-5, V-7): an on-demand revalidation (a tag, a folder path or a package marked stale, like revalidateTag and revalidatePath), a check that a record is still right without changing it (verify), or a phase change. Append-only; each append is also a line in the provenance log. packages/naive/src/engine/freshness.ts writes and reads it. */
 export type FreshnessLog = {
   /**
    * @format date-time
@@ -1910,7 +1910,7 @@ export type FreshnessLog = {
   };
 };
 
-/** How long records stay fresh (Revalidating, V-1 to V-3), after Next.js cacheLife profiles (stale, revalidate, expire) plus two Naive adds: per_phase (stale once the venture changes phase) and live (never frozen into a release; a live hole). The framework's defaults are packages/naive/src/engine/freshness.json; a venture overrides profiles and record assignments under freshness in its naive.config.json. packages/naive/src/engine/freshness.mjs reads both. */
+/** How long records stay fresh (Revalidating, V-1 to V-3), after Next.js cacheLife profiles (stale, revalidate, expire) plus two Naive adds: per_phase (stale once the venture changes phase) and live (never frozen into a release; a live hole). The framework's defaults are packages/naive/src/engine/freshness.json; a venture overrides profiles and record assignments under freshness in its naive.config.json. packages/naive/src/engine/freshness.ts reads both. */
 export type FreshnessProfiles = {
   $schema?: string;
   note?: string;
@@ -2407,7 +2407,7 @@ export type IcpProfile = {
   conversation?: ConversationRef[];
 };
 
-/** The structured form of a founder's idea map (EE-060): a Merkle DAG. Each idea's hash covers its text and the hashes of the ideas it builds on, so a change upstream changes every hash downstream. Written by packages/naive/src/functions/strategy/frameworks/idea-map/graph.mjs; it holds no decisions. */
+/** The structured form of a founder's idea map (EE-060): a Merkle DAG. Each idea's hash covers its text and the hashes of the ideas it builds on, so a change upstream changes every hash downstream. Written by packages/naive/src/functions/strategy/frameworks/idea-map/graph.ts; it holds no decisions. */
 export type IdeaGraph = {
   version: string;
   venture: string;
@@ -2526,9 +2526,9 @@ export type Integration = {
   /** Path to the skill, MCP config or script that wires it in, when one exists */
   adapter?: string;
   links?: string[];
-  /** Knowledge layer only: the module that implements the connector contract (packages/naive/src/store/connectors/contract.mjs) for this integration, so a venture's knowledge/sources.json can keep records in it (EE-037) */
+  /** Knowledge layer only: the module that implements the connector contract (packages/naive/src/store/connectors/contract.ts) for this integration, so a venture's knowledge/sources.json can keep records in it (EE-037) */
   connector?: {
-    /** Path from the repository root; it exports connect(options). Naive ships only connectors that work offline and name no vendor (packages/naive/src/store/connectors/); an app that hosts Naive registers any other with registerConnector in packages/naive/src/store/connectors/index.mjs (EE-041) */
+    /** Path from the repository root; it exports connect(options). Naive ships only connectors that work offline and name no vendor (packages/naive/src/store/connectors/); an app that hosts Naive registers any other with registerConnector in packages/naive/src/store/connectors/index.ts (EE-041) */
     module: string;
     /** The write modes it supports; the first is its default */
     writes: ("direct" | "pull-request" | "none")[];
@@ -2539,7 +2539,7 @@ export type Integration = {
   };
 };
 
-/** Patterns that mark internal text, which public output must never contain (packages/naive/src/engine/check-leaks.mjs). Naive's own list is packages/naive/src/engine/internal-terms.json; a venture's founder edits its own at <venture>/governance/internal-terms.json, for unannounced codenames and internal jargon. A pattern with severity warn is reported without failing, for a term whose status a person has not decided yet. */
+/** Patterns that mark internal text, which public output must never contain (packages/naive/src/engine/check-leaks.ts). Naive's own list is packages/naive/src/engine/internal-terms.json; a venture's founder edits its own at <venture>/governance/internal-terms.json, for unannounced codenames and internal jargon. A pattern with severity warn is reported without failing, for a term whose status a person has not decided yet. */
 export type InternalTerms = {
   note?: string;
   updated?: string;
@@ -2557,7 +2557,7 @@ export type InternalTerms = {
   }[];
 };
 
-/** The output of one model step ("use model", EE-073), at <venture>/knowledge/judgments/<id>.json: the package and step that asked, the item it was asked about, the paths the model was given, its typed answer and confidence, the computed values it had to keep, and what code did with it. A judgment is the agent's until a person confirms it; the records it read stay their authors'. Written by packages/naive/src/router/orchestration/model-steps.mjs through the router. */
+/** The output of one model step ("use model", EE-073), at <venture>/knowledge/judgments/<id>.json: the package and step that asked, the item it was asked about, the paths the model was given, its typed answer and confidence, the computed values it had to keep, and what code did with it. A judgment is the agent's until a person confirms it; the records it read stay their authors'. Written by packages/naive/src/router/orchestration/model-steps.ts through the router. */
 export type Judgment = {
   /** <package>-<step>-<item>, or <package>-<step> for a step asked once */
   id: string;
@@ -2605,7 +2605,7 @@ export type Judgment = {
   asked_at?: string;
 };
 
-/** A Mentura kit (EE-071): an enhanced package, at platform/kits/<name>/kit.json. It extends one Naive package (automations, agent workflows, skills, connectors on top of it) or one framework command (an agent-run upgrade), and never replaces it. The framework reads this manifest as data and runs the kit's entry as its own process; it never imports platform code (packages/naive/src/engine/kits.mjs). Automations are triggers a venture turns on by listing the kit in naive.config.json kits; each runs only once the package it needs is complete (packages/naive/src/router/orchestration/triggers.mjs). */
+/** A Mentura kit (EE-071): an enhanced package, at platform/kits/<name>/kit.json. It extends one Naive package (automations, agent workflows, skills, connectors on top of it) or one framework command (an agent-run upgrade), and never replaces it. The framework reads this manifest as data and runs the kit's entry as its own process; it never imports platform code (packages/naive/src/engine/kits.ts). Automations are triggers a venture turns on by listing the kit in naive.config.json kits; each runs only once the package it needs is complete (packages/naive/src/router/orchestration/triggers.ts). */
 export type Kit = {
   name: string;
   title: string;
@@ -2845,7 +2845,7 @@ export type Lease = {
   note?: string;
 };
 
-/** An ordering of the venture development lifecycle, at packages/naive/src/functions/products/frameworks/product-anatomy/playbooks/<id>.json. The five phases, their questions and their gates are fixed in the phase modules (packages/naive/src/phases/<id>/phase.json); a playbook varies the order of decisions, which decisions gate which phase, and the evidence that clears each gate. A venture names its playbook in venture.json lifecycle_playbook (default product-first); packages/naive/src/engine/lifecycle.mjs reads the gate and its evidence from it. The founder chooses the playbook. */
+/** An ordering of the venture development lifecycle, at packages/naive/src/functions/products/frameworks/product-anatomy/playbooks/<id>.json. The five phases, their questions and their gates are fixed in the phase modules (packages/naive/src/phases/<id>/phase.json); a playbook varies the order of decisions, which decisions gate which phase, and the evidence that clears each gate. A venture names its playbook in venture.json lifecycle_playbook (default product-first); packages/naive/src/engine/lifecycle.ts reads the gate and its evidence from it. The founder chooses the playbook. */
 export type LifecyclePlaybook = {
   id: string;
   title: string;
@@ -3086,7 +3086,7 @@ export type MarketingDesignSystem = {
 /** The inputs the choice rests on, by key from marketing/design-system/inputs: mission, problem, icp:<id>, alignment:<id>, market:<product>, founder:<id>, competitor:<name> */
 export type MarketingDesignSystemFrom = string[];
 
-/** The planned public site (EE-064): which information is shown where, how (the MDX component), when and for whom, with the reasons, planned from the venture's records by packages/naive/src/functions/marketing-and-sales/marketing/site/plan.mjs. A marketing record, part of the marketing package handed to engineering (EE-065). Version 0.x, unevaluated. */
+/** The planned public site (EE-064): which information is shown where, how (the MDX component), when and for whom, with the reasons, planned from the venture's records by packages/naive/src/functions/marketing-and-sales/marketing/site/plan.ts. A marketing record, part of the marketing package handed to engineering (EE-065). Version 0.x, unevaluated. */
 export type MarketingSitemap = {
   version: string;
   venture: string;
@@ -3199,7 +3199,7 @@ export type MoneySummary = {
   note?: string;
 };
 
-/** A venture's overrides to Naive's defaults, at the venture root (P-2, like next.config.js): the gate (fail-closed routes, rules over the router's path patterns, which package rules it imports), function owners, check settings (P-7, like eslint.config.mjs), thresholds, which System 1 questions run, pinned package versions (U-4) and how strictly the acting role is checked (M-18). Every field is optional; a missing one keeps the default in packages/naive/src/engine/naive-config.mjs. node packages/naive/src/checks/check-config.ts <venture dir> checks it. */
+/** A venture's overrides to Naive's defaults, at the venture root (P-2, like next.config.js): the gate (fail-closed routes, rules over the router's path patterns, which package rules it imports), function owners, check settings (P-7, like eslint.config.mjs), thresholds, which System 1 questions run, pinned package versions (U-4) and how strictly the acting role is checked (M-18). Every field is optional; a missing one keeps the default in packages/naive/src/engine/naive-config.ts. node packages/naive/src/checks/check-config.ts <venture dir> checks it. */
 export type NaiveConfig = {
   $schema?: string;
   /** Autoresearch over the venture's recipes (everything-ecosystem docs/design/AUTORESEARCH_RECORDS_2026-11-06.md). */
@@ -3212,7 +3212,7 @@ export type NaiveConfig = {
     spans?: boolean;
     content?: boolean;
   };
-  /** The plugin beta's gate (packages/naive/src/engine/beta-gate.mjs): capabilities in beta/capabilities.json unlock in order, each after checkpoint feedback. Off by default. */
+  /** The plugin beta's gate (packages/naive/src/engine/beta-gate.ts): capabilities in beta/capabilities.json unlock in order, each after checkpoint feedback. Off by default. */
   beta?: {
     enabled?: boolean;
     /** Opt-in for routing feedback through Jev: send lets feedback text leave the machine, and counts only with set_by naming the person who turned it on. A TYPESAFE_API_KEY alone sends nothing. */
@@ -3227,7 +3227,7 @@ export type NaiveConfig = {
       };
     };
   };
-  /** Usage telemetry (packages/naive/src/engine/telemetry.mjs, packages/naive/src/records/telemetry.schema.json), opt-in: enabled writes events to .naive/telemetry.jsonl; send lets them leave the machine, and counts only with set_by naming the person who turned it on. */
+  /** Usage telemetry (packages/naive/src/engine/telemetry.ts, packages/naive/src/records/telemetry.schema.json), opt-in: enabled writes events to .naive/telemetry.jsonl; send lets them leave the machine, and counts only with set_by naming the person who turned it on. */
   telemetry?: {
     enabled?: boolean;
     send?: boolean;
@@ -3286,7 +3286,7 @@ export type NaiveConfig = {
     [key: string]: string | {
       version: string;
       early?: boolean;
-      channel?: "stable" | "canary";
+      channel?: "stable" | "canary" | "experimental";
     };
   };
   /** How the acting role is checked on every action (M-18) */
@@ -3301,7 +3301,7 @@ export type NaiveConfig = {
   };
   /** Mentura kits whose automations this venture turns on */
   kits?: string[];
-  /** The publish lint (packages/naive/src/engine/publish-lint.mjs): each rule off, warn or error, the marks to flag, and findings a person waived */
+  /** The publish lint (packages/naive/src/engine/publish-lint.ts): each rule off, warn or error, the marks to flag, and findings a person waived */
   publish_lint?: {
     rules?: { [K in "copy-distance" | "leaks" | "brand" | "claims" | "marks" | "personal-data" | "secrets"]?: "off" | "warn" | "error" };
     marks?: string[];
@@ -3313,7 +3313,7 @@ export type NaiveConfig = {
       by?: string;
     }[];
   };
-  /** The publish build (packages/naive/src/functions/marketing-and-sales/marketing/publish-build.mjs): the venture's channels and the folder they build into. Naive ships no channel; the venture or its app names each one */
+  /** The publish build (packages/naive/src/functions/marketing-and-sales/marketing/publish-build.ts): the venture's channels and the folder they build into. Naive ships no channel; the venture or its app names each one */
   publish_build?: {
     /** The default output folder, relative to the venture folder (default .release/publish-build) */
     out?: string;
@@ -3326,8 +3326,10 @@ export type NaiveConfig = {
       };
     };
   };
-  /** What starts the next step on an event (packages/naive/src/router/orchestration/triggers.mjs) */
-  triggers?: unknown[];
+  /** What starts the next step on an event (packages/naive/src/router/orchestration/triggers.ts) */
+  triggers?: Trigger[];
+  /** Trigger ids switched off: a person answering a failed run with off adds its id here, and the trigger stays off until the id is removed (packages/naive/src/router/orchestration/triggers.ts) */
+  triggers_off?: string[];
   /** The venture's own signal listeners (signal library design): each joins a signal type to one consumer with that consumer's criterion. A listener here replaces any listener of the same id from a package, a frame or a kit. packages/naive/src/engine/signals.ts merges them and naive signals pull evaluates them */
   listeners?: (Listener & {
     consumer: unknown;
@@ -3416,7 +3418,7 @@ export type NaiveConfig = {
       };
     };
   };
-  /** How strict each phase gate is (EE-156, packages/naive/src/engine/phase-gate.mjs, route system/phase-gate): a preset from packages/naive/src/phases/gate-policies.json, per-item overrides, and whether lifecycle advance refuses a fail-closed shortfall. Without enforce the gate is reported only. */
+  /** How strict each phase gate is (EE-156, packages/naive/src/engine/phase-gate.ts, route system/phase-gate): a preset from packages/naive/src/phases/gate-policies.json, per-item overrides, and whether lifecycle advance refuses a fail-closed shortfall. Without enforce the gate is reported only. */
   phase_gates?: {
     /** The policy preset; default standard */
     preset?: "lenient" | "standard" | "strict";
@@ -3541,7 +3543,7 @@ export type OntologyCatalogScope = {
   imports: string[];
 };
 
-/** The metamodel (M2) of Naive's ontology (N-048, EE-113). packages/naive/src/terms/ontology.json follows the ontology class, and a model may only propose a change to it as a change line that validates against $defs/change_line (node packages/naive/src/records/validate.mjs --schema ontology-metamodel.schema.json --def change_line --file <line>). Nouns are the vocabulary objects of EE-107 item 7, and the change line is EE-107 items 1 and 2. Changing this file is a one-way-door amend. mappings names the SKOS and OWL term for each class and noun field, or none. */
+/** The metamodel (M2) of Naive's ontology (N-048, EE-113). packages/naive/src/terms/ontology.json follows the ontology class, and a model may only propose a change to it as a change line that validates against $defs/change_line (node packages/naive/src/records/validate.ts --schema ontology-metamodel.schema.json --def change_line --file <line>). Nouns are the vocabulary objects of EE-107 item 7, and the change line is EE-107 items 1 and 2. Changing this file is a one-way-door amend. mappings names the SKOS and OWL term for each class and noun field, or none. */
 export type OntologyMetamodel = OntologyMetamodelOntology;
 
 /** The ontology document, packages/naive/src/terms/ontology.json. */
@@ -3960,7 +3962,7 @@ export type Opportunity = {
   note?: string;
 };
 
-/** Who owns the venture and on what terms, at <venture>/governance/ownership.json (EE-022): share classes and the rights each carries, holders, grants with vesting, the option pool, and unpriced instruments such as SAFEs. It is a record of what was agreed, not the legal document: the signed documents are the truth, and decisions to change this file are founder decisions made with counsel (decision class ownership-or-control). packages/naive/src/checks/check-governance.ts checks it; packages/naive/src/engine/payouts.mjs computes payouts from it. */
+/** Who owns the venture and on what terms, at <venture>/governance/ownership.json (EE-022): share classes and the rights each carries, holders, grants with vesting, the option pool, and unpriced instruments such as SAFEs. It is a record of what was agreed, not the legal document: the signed documents are the truth, and decisions to change this file are founder decisions made with counsel (decision class ownership-or-control). packages/naive/src/checks/check-governance.ts checks it; packages/naive/src/engine/payouts.ts computes payouts from it. */
 export type Ownership = {
   /**
    * @format date
@@ -4103,7 +4105,7 @@ export type PhaseGatePoliciesLevel = "very low" | "low" | "moderate" | "high";
 
 export type PhaseGatePoliciesId = string;
 
-/** The manifest of one lifecycle phase as a module (EE-126), at packages/naive/src/phases/<id>/phase.json: the phase's question, its stage gate (what the gate asks, after Cooper's stage-gate) and the exit evidence the gate requires, the function workflows active in the phase and the weights that rank decisions across the 13 functions. A phase module has no agent and owns no records. It is the one place a phase's name, question and gate are defined: packages/naive/src/engine/lifecycle.mjs, the route table and Product Anatomy read them from here. Its need-now priors are not held here: packages/naive/src/phases/phases.mjs derives them from packages/naive/src/engine/need-now.json and packages/naive/src/functions/departments.json. packages/naive/src/checks/check-phases.ts checks every module. */
+/** The manifest of one lifecycle phase as a module (EE-126), at packages/naive/src/phases/<id>/phase.json: the phase's question, its stage gate (what the gate asks, after Cooper's stage-gate) and the exit evidence the gate requires, the function workflows active in the phase and the weights that rank decisions across the 13 functions. A phase module has no agent and owns no records. It is the one place a phase's name, question and gate are defined: packages/naive/src/engine/lifecycle.ts, the route table and Product Anatomy read them from here. Its need-now priors are not held here: packages/naive/src/phases/phases.ts derives them from packages/naive/src/engine/need-now.json and packages/naive/src/functions/departments.json. packages/naive/src/checks/check-phases.ts checks every module. */
 export type PhaseModule = {
   /** The phase (EE-012), the same as the folder's name. */
   id: "discovery" | "validation" | "beachhead" | "scale" | "platform";
@@ -4493,7 +4495,7 @@ export type PublicAssetsAlt = {
   by: "agent" | "person";
 };
 
-/** Read from the bytes by code (packages/naive/src/engine/assets.mjs), never written by hand */
+/** Read from the bytes by code (packages/naive/src/engine/assets.ts), never written by hand */
 export type PublicAssetsFacts = {
   type: string;
   width?: number;
@@ -4577,7 +4579,7 @@ export type PublicationPolicy = {
   }[];
 };
 
-/** Every place a venture has published (governance/publications.json): one entry per channel and artifact, naming the channel in governance/publication-policy.json, the artifact that was published (artifacts are what get published, records never are), where it went, the sha256 of the built output, the person who approved it, when, the versions before it (for naive publish rollback) and any embargo. node packages/naive/src/engine/check-publications.mjs fails when something is live without an entry, when an entry's sha256 does not match the built output, or when an entry has no approver. */
+/** Every place a venture has published (governance/publications.json): one entry per channel and artifact, naming the channel in governance/publication-policy.json, the artifact that was published (artifacts are what get published, records never are), where it went, the sha256 of the built output, the person who approved it, when, the versions before it (for naive publish rollback) and any embargo. node packages/naive/src/engine/check-publications.ts fails when something is live without an entry, when an entry's sha256 does not match the built output, or when an entry has no approver. */
 export type Publications = {
   venture?: string;
   entries: {
@@ -4955,7 +4957,7 @@ export type RoleTemplate = {
   skill: string;
 };
 
-/** Renamed routes (EE-032). Routes are an API that agents and scripts depend on, so a renamed record keeps its old route as an alias: the router follows it and answers with a deprecation note. Remove an alias only after the version it was deprecated in has been out for a release. packages/naive/src/interfaces/test.mjs checks that every alias points at a route that exists. */
+/** Renamed routes (EE-032). Routes are an API that agents and scripts depend on, so a renamed record keeps its old route as an alias: the router follows it and answers with a deprecation note. Remove an alias only after the version it was deprecated in has been out for a release. packages/naive/src/interfaces/test.ts checks that every alias points at a route that exists. */
 export type RouteAliases = {
   aliases: {
     /** The old route */
@@ -5203,7 +5205,7 @@ export type SignalCitation = {
   ref: string;
 });
 
-/** How present a venture's public records are on its marketing site, weighed by who the site must speak to now (EE-062, EE-063). Written by packages/naive/src/functions/marketing-and-sales/marketing/site/presence.mjs from a read of the site; version 0.x, ours and unevaluated. */
+/** How present a venture's public records are on its marketing site, weighed by who the site must speak to now (EE-062, EE-063). Written by packages/naive/src/functions/marketing-and-sales/marketing/site/presence.ts from a read of the site; version 0.x, ours and unevaluated. */
 export type SitePresence = {
   version: string;
   site: string;
@@ -5256,7 +5258,7 @@ export type SitePresence = {
   /** Who the site is for and where that comes from: the founder's words, the venture's ICP record, or inferred from the home page; and the customer types Jev placed it in */
   icp: {
     text: string;
-    source: "founder" | "record" | "inferred";
+    source: "founder" | "record" | "inferred" | "site";
     cite: string;
     types: {
       id: string;
@@ -5578,7 +5580,7 @@ export type TeamPlan = {
   }[];
 };
 
-/** One usage event, one line of <venture>/.naive/telemetry.jsonl; the one schema the plugin beta and Mentura share. Opt-in only (telemetry.enabled in naive.config.json). An event carries no record contents and no _private path: only which capability ran, when, for how long and how it ended. It leaves the machine only when telemetry.send is true and a person set it (packages/naive/src/engine/telemetry.mjs). */
+/** One usage event, one line of <venture>/.naive/telemetry.jsonl; the one schema the plugin beta and Mentura share. Opt-in only (telemetry.enabled in naive.config.json). An event carries no record contents and no _private path: only which capability ran, when, for how long and how it ended. It leaves the machine only when telemetry.send is true and a person set it (packages/naive/src/engine/telemetry.ts). */
 export type Telemetry = {
   /** The event, e.g. route.write, beta.unlock */
   name: string;
@@ -5730,7 +5732,7 @@ export type Triage = {
   note?: string;
 };
 
-/** What starts the next step when something happens in a venture (M-12), as React's event handlers and effects trigger actions. An event is a line of the venture's provenance log: a record written, drafted, accepted, confirmed or moved. A trigger lives in naive.config.json triggers, or in a Mentura kit's automations; a kit's automation also names the package it needs, and runs only once that package is complete. A run that fails is recorded and raised as a decision for the founder, never lost (E-7). packages/naive/src/router/orchestration/triggers.mjs runs them. */
+/** What starts the next step when something happens in a venture (M-12), as React's event handlers and effects trigger actions. An event is a line of the venture's provenance log: a record written, drafted, accepted, confirmed or moved. A trigger lives in naive.config.json triggers, or in a Mentura kit's automations; a kit's automation also names the package it needs, and runs only once that package is complete. A run that fails is recorded and raised as a decision for the founder, never lost (E-7). packages/naive/src/router/orchestration/triggers.ts runs them. */
 export type Trigger = {
   id: string;
   /** Which provenance entries start it; every field given must match */
@@ -5846,7 +5848,7 @@ export type ValidationEvidence = {
    * @format date
    */
   collected: string;
-  /** Problem records only (EE-050): the assumption the item bears on. exists: the problem is real; segment: our segment has it; hurts: it costs enough that people already spend time or money on it; why-now: something has changed. Without it the item counts toward exists. packages/naive/src/engine/assess-problem.mjs labels each assumption from its items. */
+  /** Problem records only (EE-050): the assumption the item bears on. exists: the problem is real; segment: our segment has it; hurts: it costs enough that people already spend time or money on it; why-now: something has changed. Without it the item counts toward exists. packages/naive/src/engine/assess-problem.ts labels each assumption from its items. */
   assumption?: "exists" | "segment" | "hurts" | "why-now";
   /** first-hand: the venture saw it (its own interviews, payments, data exports); reported: someone else says so (a vendor's customer count, a report, a roundup). Defaults to first-hand for a file in the venture folder and reported for a URL. Only first-hand evidence can demonstrate an assumption (EE-050). */
   origin?: "first-hand" | "reported";
@@ -5854,7 +5856,7 @@ export type ValidationEvidence = {
   form?: string;
 };
 
-/** One tester's answers at one beta checkpoint, at <venture>/validation/feedback/<id>.json. The beta gate (packages/naive/src/engine/beta-gate.mjs) unlocks the next capability only once this record exists for the previous one. routed_to is where the feedback went and routing how that was decided. */
+/** One tester's answers at one beta checkpoint, at <venture>/validation/feedback/<id>.json. The beta gate (packages/naive/src/engine/beta-gate.ts) unlocks the next capability only once this record exists for the previous one. routed_to is where the feedback went and routing how that was decided. */
 export type ValidationFeedback = {
   id: string;
   venture?: string;
@@ -6336,7 +6338,7 @@ export type Venture = {
   parent: string | null;
   /** How far the venture has come (EE-012). discovery: does a real problem exist, and who has it. validation: will people adopt this solution and keep using it. beachhead: can it win one segment repeatably at a profitable cost. scale: how fast can it take the mass market. platform: what will others build on. Gates and references: the phase modules, packages/naive/src/phases/<phase>/phase.json. */
   phase: "discovery" | "validation" | "beachhead" | "scale" | "platform";
-  /** The venture's IANA time zone, when it differs from its workspace's (packages/naive/src/engine/clock.mjs); its dates, activity days and derived calendar events are read in it. Unset: the workspace's, else the system's */
+  /** The venture's IANA time zone, when it differs from its workspace's (packages/naive/src/engine/clock.ts); its dates, activity days and derived calendar events are read in it. Unset: the workspace's, else the system's */
   timeZone?: string;
   /** The lifecycle playbook the venture follows (packages/naive/src/functions/products/frameworks/product-anatomy/playbooks/<id>.json): the order of its decisions and the evidence that clears each phase gate. Absent means product-first, Naive's default. */
   lifecycle_playbook?: string;
@@ -6367,7 +6369,7 @@ export type Venture = {
   };
   /** The departments this venture imports, by id from packages/naive/src/functions/departments.json (EE-047). Only these get folders; the rest are not in the venture at all until need-now suggests them and the builder adds them (EE-048). */
   departments?: string[];
-  /** The Naive packages this venture uses, by name from packages/naive/library/packages/ (EE-071), the way package.json lists dependencies (Next.js translation P-3). Left out, the manifest derives them: the core packages that fit the phase now plus any package holding records. Checked by packages/naive/src/engine/structure.mjs. */
+  /** The Naive packages this venture uses, by name from packages/naive/library/packages/ (EE-071), the way package.json lists dependencies (Next.js translation P-3). Left out, the manifest derives them: the core packages that fit the phase now plus any package holding records. Checked by packages/naive/src/engine/structure.ts. */
   packages?: string[];
   /** The Mentura kits this venture uses (EE-071). Each names the one package it extends, which the venture must use; the kit itself lives on the platform. */
   kits?: {
@@ -6547,8 +6549,8 @@ export type Workspace = {
   };
   /** The founder record, relative to the workspace (normally founders/<handle>/founder.json, packages/naive/src/engine/founders.ts) */
   founder?: string;
-  /** The workspace's IANA time zone (for example America/New_York): the clock's zone (packages/naive/src/engine/clock.mjs). Set when the workspace is initiated, from the system's zone unless given; a venture.json timeZone overrides it for that venture */
+  /** The workspace's IANA time zone (for example America/New_York): the clock's zone (packages/naive/src/engine/clock.ts). Set when the workspace is initiated, from the system's zone unless given; a venture.json timeZone overrides it for that venture */
   timeZone?: string;
-  /** The calendar folder, relative to the workspace (calendar/): calendars/<id>.json and events/<uid>.json (packages/naive/src/engine/calendar.mjs). Created with the workspace */
+  /** The calendar folder, relative to the workspace (calendar/): calendars/<id>.json and events/<uid>.json (packages/naive/src/engine/calendar.ts). Created with the workspace */
   calendar?: string;
 };

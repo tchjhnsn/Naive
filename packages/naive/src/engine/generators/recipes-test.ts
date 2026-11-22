@@ -8,10 +8,10 @@
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { validateFile, validateValue } from "../../records/validate.mjs";
-import { pathKind, readDataModel } from "../../records/index.mjs";
+import { validateFile, validateValue } from "../../records/validate.ts";
+import { pathKind, readDataModel } from "../../records/index.ts";
 import { canonicalJson } from "../../core/signal-id.ts";
-import { lineHash } from "../../core/provenance.mjs";
+import { lineHash } from "../../core/provenance.ts";
 import { recipeExports, runRecipe } from "../recipes/sandbox.ts";
 import * as recipe from "./recipe.ts";
 import * as evalPlan from "./eval-plan.ts";
@@ -104,7 +104,8 @@ t("plan: a holdout not yet settled when the plan was made is refused", later({ m
 const model = readDataModel();
 t("the data model passes data-model.schema.json", valid("data-model.schema.json", model));
 const cs = model.records.find((r: { id: string }) => r.id === "competitor-signals");
-t("competitor signals settles its fields and forecasts p_raise_90d by competitor-funding", cs?.settles?.forecasts?.p_raise_90d?.resolved_by?.signals?.[0] === "competitor-funding@^1" && cs?.settles?.loss?.funding?.fn === "set-jaccard");
+t("competitor signals settles its fields and forecasts p_raise_90d by competitor-funding", cs?.settles?.forecasts?.p_raise_90d?.resolved_by !== undefined && "signals" in cs.settles.forecasts.p_raise_90d.resolved_by && cs.settles.forecasts.p_raise_90d.resolved_by.signals[0] === "competitor-funding@^1" && cs?.settles?.loss?.funding?.fn === "set-jaccard");
+if (cs === undefined) throw new Error("the data model has no competitor-signals record type");
 const settling = (settles: unknown) => valid("data-model.schema.json", { ...model, records: model.records.map((r: { id: string }) => r.id === "competitor-signals" ? { ...r, settles } : r) });
 t("settles: abs-scaled without a scale fails", !settling({ ...cs.settles, loss: { first_seen: { fn: "abs-scaled" } } }));
 t("settles: a loss outside the catalog fails", !settling({ ...cs.settles, loss: { first_seen: { fn: "squared" } } }));

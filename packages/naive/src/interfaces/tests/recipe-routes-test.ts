@@ -14,14 +14,22 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { signalId } from "../../core/signal-id.ts";
-import { record } from "../../core/provenance.mjs";
+import { record } from "../../core/provenance.ts";
 import { planRecipe } from "../../engine/recipes/eval-set.ts";
-import { call, resolve } from "../../router/router.mjs";
+import { call as routerCall, resolve } from "../../router/router.ts";
+import { typed } from "./answer.ts";
 import { checkRecipes } from "../../checks/check-recipes.ts";
 import { edit as fileEdit, readRaw as fileRead, write as fileWrite } from "../../router/agent-files.ts";
 
 let failed = 0;
 const expect = (name: string, ok: boolean, detail: unknown = ""): void => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${JSON.stringify(detail).slice(0, 700)}`}`); if (!ok) failed++; };
+/** What this test reads off the recipe route's answers: the tip, the budget, and an experiment write's verdict. */
+type Got = {
+  tip: string, source: string, draft: boolean, live: string, spent: { dev_evaluations: number, of: number },
+  verdict: string, kept_as: string, retried: boolean, line: { hash: string },
+};
+type Extra = { conflict?: { tip: string }, retried: boolean, verdict: string, fix?: { route: string } };
+const call = typed<Got, Extra>(routerCall);
 const repo = fileURLToPath(new URL("../../../../../", import.meta.url));
 const examples = join(repo, "packages/naive/src/records/examples/signals");
 const PATTERN = "competitors/[id]/signals", ROUTE = `recipes/${PATTERN}`;

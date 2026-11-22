@@ -4,7 +4,7 @@
 // the title unless one is given and starts the scenario at base. projectRunway gives ending cash month by month and the
 // months of runway; runway is projected from the budget and never stored in it. The draft goes to the write chain for
 // finance/budget/<id>.json, which only the finance agent (finance-agent) or a person may write.
-import { cli, drop, questions, schemaOf, slug, validate } from "./generate.mjs";
+import { cli, drop, questions, schemaOf, slug, validate } from "./generate.ts";
 import type { Budget } from "../../records/types/records.d.ts";
 
 export const record = "budget";

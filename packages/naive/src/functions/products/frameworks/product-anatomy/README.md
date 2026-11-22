@@ -34,17 +34,17 @@ Version 0.2.0 (unevaluated). Nouns follow `packages/naive/src/terms/ontology.md`
 ## Run
 
 ```bash
-node anatomy.mjs request ../../../schema/examples/workspace/ventures/studio   # a venture folder
-node anatomy.mjs request examples/polity.json                    # or a single input file
-node anatomy.mjs score examples/polity.json out.json --send      # Jev; needs TYPESAFE_API_KEY
-node anatomy.mjs matrix examples/polity.json examples/polity.answers.reasoned.json
+node anatomy.ts request ../../../schema/examples/workspace/ventures/studio   # a venture folder
+node anatomy.ts request examples/polity.json                    # or a single input file
+node anatomy.ts score examples/polity.json out.json --send      # Jev; needs TYPESAFE_API_KEY
+node anatomy.ts matrix examples/polity.json examples/polity.answers.reasoned.json
 ```
 
 Without a key, a reasoning model fills the answers file by hand and names itself in `scorer`. `examples/polity.answers.reasoned.json` is that kind of draft. `examples/ai-labs/` holds four more: Anthropic, OpenAI, SpaceX with xAI and Thinking Machines, run as studies of other ventures.
 
 ## JSON output
 
-`node anatomy.mjs matrix <venture> <answers.json> --json` prints the same matrix as data (assignment A-001), for tests and agents:
+`node anatomy.ts matrix <venture> <answers.json> --json` prints the same matrix as data (assignment A-001), for tests and agents:
 
 ```json
 {
@@ -60,4 +60,4 @@ Without a key, a reasoning model fills the answers file by hand and names itself
 }
 ```
 
-`roles` holds role ids (flagship, substrate, revenue-engine, wedge, end-product, option, unassigned), with `revenue_engine_tied` and `allowed_from` where they apply; `role_text` holds the words the Markdown shows. `test.mjs` checks that the two agree.
+`roles` holds role ids (flagship, substrate, revenue-engine, wedge, end-product, option, unassigned), with `revenue_engine_tied` and `allowed_from` where they apply; `role_text` holds the words the Markdown shows. `test.ts` checks that the two agree.

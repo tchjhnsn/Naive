@@ -2,7 +2,7 @@
 // docs/design/SIGNAL_LIBRARY_2026-11-06.md). Given a signal, it fills the id, the subject and the signal's path, and
 // the publication time (now unless given). The line goes at the end of log/<type>/<yyyy-mm-dd>.jsonl for the day
 // it was published.
-import { cli, questions, schemaOf, validate } from "./generate.mjs";
+import { cli, questions, schemaOf, validate } from "./generate.ts";
 import { signalPath } from "./signal.ts";
 import type { Signal, SignalLog } from "../../records/types/records.d.ts";
 

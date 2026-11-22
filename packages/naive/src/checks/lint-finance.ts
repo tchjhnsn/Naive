@@ -17,7 +17,7 @@
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join, relative, sep } from "node:path";
-import { logical, ventureFile } from "../core/venture-paths.mjs";
+import { logical, ventureFile } from "../core/venture-paths.ts";
 
 const PHASES = ["discovery", "validation", "beachhead", "scale", "platform"];
 const PRICING = ["validation/pricing.json", "purpose/validation/pricing.json"];
@@ -180,7 +180,7 @@ export function lint(dir: string) {
   return { ok: !failed, phase, rules, findings };
 }
 
-export { financeCommands } from "../records/routes/commands.mjs";
+export { financeCommands } from "../records/routes/commands.ts";
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const dir = process.argv[2];
