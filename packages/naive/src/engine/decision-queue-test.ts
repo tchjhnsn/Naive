@@ -6,7 +6,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { runSync } from "../core/effect/run.mjs";
-import { byCross, crossScore, MEASURE_LIFT, measuresOf, ownerOf, rankingContextEffect, rankItems, themesOf, VENTURE } from "./decision-queue.mjs";
+import { byCross, crossScore, GATE_LIFT, MEASURE_LIFT, measuresOf, ownerOf, rankingContextEffect, rankItems, themesOf, VENTURE } from "./decision-queue.mjs";
 import type { Item, RankingContext } from "./decision-queue.mjs";
 import { rebuild } from "./decision-index.mjs";
 import { propose } from "./decisions.mjs";
@@ -37,6 +37,11 @@ expect("bearing on a measure a lead plan binds raises it", lifted.measure_lift =
 expect("no weights leave the score as it is", crossScore({ score: 7, function: "x" }, { weights: {}, bound: {} }).cross === 7);
 const tied = [{ id: "b", score: 5, cross: 10 }, { id: "a", score: 5, cross: 10 }, { id: "c", score: 9, cross: 10 }].sort(byCross).map((x) => x.id).join();
 expect("ties break by score, then id", tied === "c,a,b", tied);
+const gated = crossScore({ score: 100, function: VENTURE, record: "validation-problem" }, { weights: {}, bound: {}, gate: ["validation-problem", "icp"] });
+expect("settling a record the phase's gate asks for raises it (EE-155)", gated.gate_lift === GATE_LIFT && gated.cross === 200, gated);
+expect("a record the gate does not ask for is not raised", crossScore({ score: 100, function: VENTURE, record: "product" }, { weights: {}, bound: {}, gate: ["icp"] }).gate_lift === 1);
+const gateTie = [{ id: "a-icp", score: 5, cross: 10, gate_rank: 1 }, { id: "z-problem", score: 5, cross: 10, gate_rank: 0 }, { id: "b", score: 9, cross: 10 }].sort(byCross).map((x) => x.id).join();
+expect("equal cross scores follow the gate's own order of its evidence", gateTie === "z-problem,a-icp,b", gateTie);
 expect("measures come from outcomes and changed goal files", measuresOf({ outcomes: [{ measure: "growth/weekly-active" }, { measure: "How we will check it" }] }, ["foundation/goals/g.json"], { "foundation/goals/g.json": ["revenue"] }).join() === "revenue,weekly-active");
 
 // ---- themes ----

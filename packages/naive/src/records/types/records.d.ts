@@ -2614,6 +2614,26 @@ export type LeadPlan = {
   next_review?: string;
 };
 
+/** The framework's Lean Canvas (Maurya 2012) as the venture's shared kernel (EE-155): nine boxes, each a reference to a record attribute its owning function writes. */
+export type LeanCanvas = {
+  version: string;
+  note?: string;
+  standard?: {
+    name: string;
+    source: string;
+    adapted_from?: string;
+  };
+  boxes: {
+    id: string;
+    label: string;
+    ask: string;
+    /** The record type the box reads; its function in data-model.json owns the box */
+    record: string;
+    /** A dotted path in the record, or . for the whole record */
+    attribute: string;
+  }[];
+};
+
 /** One lease or space commitment of the venture (a lease under ASC 842 and IFRS 16; APQC 10.1.3, provide workspace and facilities), at assets/leases/<id>.json (route assets/leases/[id]): premises, coworking or equipment, with its term, rent, notice and renewal dates and the terms that are hard to exit (a personal guarantee, auto-renewal). It abstracts the signed document and never replaces it. Signing, renewing or giving notice is a person's decision. The assets function owns it, and only the assets agent (role assets-agent) or a person writes it (writer function in packages/naive/src/records/data-model.json). */
 export type Lease = {
   /** The lease's id, the file name without .json */
@@ -5975,6 +5995,8 @@ export type Venture = {
     must_not?: string;
     /** The core competence that makes the promise deliverable (Prahalad and Hamel) */
     competence?: string;
+    /** What the venture has that cannot be easily copied or bought (Lean Canvas, Maurya 2012); the canvas's unfair-advantage box reads it (EE-155) */
+    unfair_advantage?: string;
   };
   /** The departments this venture imports, by id from packages/naive/src/functions/departments.json (EE-047). Only these get folders; the rest are not in the venture at all until need-now suggests them and the builder adds them (EE-048). */
   departments?: string[];
