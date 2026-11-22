@@ -60,7 +60,7 @@ try {
   // The shipped detector and the sensor, without a venture.
   const shipped = detectorFor(undefined, DETECTOR)?.detector;
   expect("the shipped seam detector names the finance lead, the costly tier and both functions' records as sources",
-    shipped?.assign_to === "finance-lead" && shipped.tier === "costly" && shipped.costs.miss === 3 && shipped.costs.false_alarm === 1
+    shipped?.assign_to === "finance-lead" && shipped.tier === "costly" && shipped.costs?.miss === 3 && shipped.costs?.false_alarm === 1
       && JSON.stringify(shipped.evidence.sources.map((s: { records: string }) => s.records)) === JSON.stringify(["it/connections/[id]", "finance/spend/[id]"]), JSON.stringify(shipped));
   expect("the shipped seam detector matches detector.schema.json", validateValue("detector.schema.json", shipped).status === 0);
   expect("tools against spend is the one built seam, and the others are listed as not built with the record they miss",
@@ -138,6 +138,7 @@ try {
   // A venture's own copy of the detector moves the line.
   const own = venture("own-line", [connection("slack", "connected")], []);
   const d = structuredClone(shipped);
+  if (!d) throw new Error(`no shipped detector ${DETECTOR}`);
   d.criterion.yes = { value: 2, set_by: "founder" };
   put(join(own, `governance/detectors/${DETECTOR}.json`), d);
   const ownRun = await run(own);

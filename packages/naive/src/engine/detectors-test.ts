@@ -26,6 +26,7 @@ const ws = mkdtempSync(join(tmpdir(), "detectors-test-"));
 // A venture's own copy of a shipped detector with its yes line moved, set by a person.
 const own = (dir: string, id: string, yes: number): void => {
   const d = structuredClone(detectorFor(undefined, id)?.detector);
+  if (!d) throw new Error(`no shipped detector ${id}`);
   d.criterion.yes = { value: yes, set_by: "founder" };
   put(join(dir, "governance/detectors", `${id}.json`), d);
 };
