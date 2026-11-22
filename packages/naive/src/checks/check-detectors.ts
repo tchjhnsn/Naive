@@ -38,10 +38,16 @@
 // the right call plus the cost of the wrong one for that trial's class. The Wilson interval on that share gives the
 // interval on the cost difference. A proposal is filed once per detector and line in force: a rerun leaves it as
 // it is, open or decided. It never edits a detector.
+//
+// It reads files through VentureFs (EE-125): readVenture is the Effect, and checkVenture runs it on the disk. A bad
+// argument exits 2; a structural error, or a file it needs that cannot be read, exits 1.
 
-import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { createHash } from "node:crypto";
+import { Effect } from "effect";
+import { CannotRun } from "../core/effect/errors.mjs";
+import { readJson, VentureFs } from "../core/effect/fs.mjs";
+import { runMain, runSync } from "../core/effect/run.mjs";
 import { lineHash } from "../core/provenance.mjs";
 import { ventureFile } from "../core/venture-paths.mjs";
 import { ROOT, readDataModel } from "../records/index.mjs";
@@ -95,7 +101,6 @@ export type DetectorReport = {
 export type Report = { venture: string; detectors: DetectorReport[]; defaults: string[]; errors: string[]; checked: string[] };
 
 const isObj = (x: unknown): x is Record<string, unknown> => typeof x === "object" && x !== null && !Array.isArray(x);
-const readJson = (f: string): unknown => JSON.parse(readFileSync(f, "utf8"));
 const schemaErrors = (schema: string, value: unknown): string[] => {
   const v = validateValue(schema, value);
   return v.status === 0 ? [] : (v.stdout + v.stderr).trim().split("\n").filter(Boolean);
@@ -106,30 +111,33 @@ const tenth = (x: number): string => String(Math.round(x * 10) / 10);
 /** Whether a score is a yes call at a yes line. Under above a score at or above the line is yes; under below a score strictly below it is. */
 export const yesAt = (score: number, line: number, yesWhen: YesWhen): boolean => (yesWhen === "below" ? score < line : score >= line);
 
-function rolesKnown(dir: string): Set<string> {
+const rolesKnown = (dir: string) => Effect.gen(function* () {
+  const fs = yield* VentureFs;
   const out = new Set<string>(signers(dir) as Set<string>);
   for (const name of ["venture-roles.json", "agent-roles.json"]) {
     const own = ventureFile(dir, `governance/roles/${name}`);
-    const f = existsSync(own) ? own : join(ROOT, "packages/naive/template/governance/roles", name);
-    if (!existsSync(f)) continue;
-    const r = readJson(f);
+    const f = (yield* fs.exists(own)) ? own : join(ROOT, "packages/naive/template/governance/roles", name);
+    if (!(yield* fs.exists(f))) continue;
+    const r = yield* readJson(f);
     if (isObj(r) && Array.isArray(r.roles)) for (const x of r.roles) if (isObj(x) && typeof x.id === "string") out.add(x.id);
   }
   return out;
-}
+});
 
-function sourcesKnown(dir: string): Set<string> {
+const sourcesKnown = (dir: string) => Effect.gen(function* () {
+  const fs = yield* VentureFs;
   const out = new Set([LOCAL]);
   const f = ventureFile(dir, MAP);
-  if (existsSync(f)) {
-    const m = readJson(f);
+  if (yield* fs.exists(f)) {
+    const m = yield* readJson(f);
     if (isObj(m) && Array.isArray(m.sources)) for (const s of m.sources) if (isObj(s) && typeof s.id === "string") out.add(s.id);
   }
   return out;
-}
+});
 
 /** The structural rules on one detector record. */
-function detectorErrors(dir: string, d: Detector, where: string, known: { roles: Set<string>; sources: Set<string>; records: Set<string> }): string[] {
+const detectorErrors = (dir: string, d: Detector, where: string, known: { roles: Set<string>; sources: Set<string>; records: Set<string> }) => Effect.gen(function* () {
+  const fs = yield* VentureFs;
   const errors: string[] = [];
   const yesWhen: YesWhen = d.evidence?.scale?.yes_when === "below" ? "below" : "above";
   const c = d.criterion ?? {};
@@ -155,17 +163,17 @@ function detectorErrors(dir: string, d: Detector, where: string, known: { roles:
   if (r?.kind === "record" && !known.records.has(r.id) && !NON_MODEL_RECORDS.has(r.id)) errors.push(`${where}: resolver record ${r.id} is not a record type in the data model`);
   // assign_to (seam detectors): a role in the registers, a person the venture names, or a role template, the venture's or Naive's.
   const assign = d.assign_to;
-  if (assign && !known.roles.has(assign) && !existsSync(ventureFile(dir, `governance/roles/${assign}.json`)) && !existsSync(join(ROOT, "packages/naive/template/governance/roles", `${assign}.json`))) {
+  if (assign && !known.roles.has(assign) && !(yield* fs.exists(ventureFile(dir, `governance/roles/${assign}.json`))) && !(yield* fs.exists(join(ROOT, "packages/naive/template/governance/roles", `${assign}.json`)))) {
     errors.push(`${where}: assign_to ${assign} is not a role in the roles registers, a role template or a person the venture names`);
   }
   const sensor = d.evidence?.sensor ?? "";
   if (d.evidence?.kind === "person" && !known.roles.has(sensor)) errors.push(`${where}: sensor ${sensor} is not a role in the roles registers or a person the venture names`);
   const path = sensor.split(/\s/)[0];
-  if (d.evidence?.kind === "check" && /\.(m?js|ts)$/.test(path) && !existsSync(join(ROOT, path)) && !existsSync(ventureFile(dir, path))) {
+  if (d.evidence?.kind === "check" && /\.(m?js|ts)$/.test(path) && !(yield* fs.exists(join(ROOT, path))) && !(yield* fs.exists(ventureFile(dir, path)))) {
     errors.push(`${where}: sensor ${path} is not a file in Naive or the venture`);
   }
   return errors;
-}
+});
 
 /** The structural rules on one ledger: shape, chain, ids, detector, trials named and outcomes that fit. */
 export function ledgerErrors(id: string, text: string, where: string): { errors: string[]; lines: DetectorTrial[] } {
@@ -288,30 +296,37 @@ export function proposalText(d: Detector, c: Comparison): string {
 }
 
 /** Reads and checks one venture's detectors and ledgers. */
-export function checkVenture(dir: string): Report {
+export const readVenture = (dir: string) => Effect.gen(function* () {
+  const fs = yield* VentureFs;
   const errors: string[] = [], reports: DetectorReport[] = [], checked: string[] = [];
   const folder = ventureFile(dir, DETECTORS);
-  const files = existsSync(folder) ? readdirSync(folder) : [];
+  const files = yield* fs.list(folder);
   const ownIds = files.filter((f) => f.endsWith(".json")).map((f) => f.slice(0, -5));
-  const shippedIds = existsSync(TEMPLATE) ? readdirSync(TEMPLATE).filter((f) => f.endsWith(".json")).map((f) => f.slice(0, -5)) : [];
+  const shippedIds = (yield* fs.list(TEMPLATE)).filter((f) => f.endsWith(".json")).map((f) => f.slice(0, -5));
   const defaults = shippedIds.filter((id) => !ownIds.includes(id));
-  const known = { roles: rolesKnown(dir), sources: sourcesKnown(dir), records: new Set<string>(readDataModel().records.map((r: { id: string }) => r.id)) };
+  const known = { roles: yield* rolesKnown(dir), sources: yield* sourcesKnown(dir), records: new Set<string>(readDataModel().records.map((r: { id: string }) => r.id)) };
   checked.push("evidence sources against venture and knowledge/sources.json", "person resolvers and person sensors against the roles registers and the founders the venture names", "record resolvers against the data model (and draft)", "check sensors that name a module path against the files of Naive and the venture", "assign_to against the roles registers, the founders the venture names and the role templates", "not checked: producer resolvers and the sensors of founder-agent, accumulated and sequential detectors, which are free text");
-  const venture = (() => { try { const v = readJson(join(dir, "venture.json")); return isObj(v) && typeof v.id === "string" ? v.id : dir; } catch { return dir; } })();
+  const v = yield* readJson(join(dir, "venture.json")).pipe(Effect.orElseSucceed((): unknown => null));
+  const venture = isObj(v) && typeof v.id === "string" ? v.id : dir;
 
   for (const id of [...ownIds, ...defaults].sort()) {
     const own = ownIds.includes(id);
     const file = own ? join(folder, `${id}.json`) : join(TEMPLATE, `${id}.json`);
     const where = own ? `${DETECTORS}/${id}.json` : `${DETECTORS}/${id}.json (Naive's default)`;
-    let d: Detector;
-    try { d = readJson(file) as Detector; } catch (e) { errors.push(`${where}: not JSON (${e instanceof Error ? e.message : String(e)})`); continue; }
+    const read = yield* readJson(file).pipe(Effect.result);
+    if (read._tag === "Failure") {
+      const e = read.failure;
+      errors.push(`${where}: not JSON (${e._tag === "ParseError" && e.cause instanceof Error ? e.cause.message : e._tag === "IoError" ? `cannot ${e.op}` : e._tag})`);
+      continue;
+    }
+    const d = read.success as Detector;
     const bad = schemaErrors("detector.schema.json", d);
     for (const e of bad) errors.push(`${where}: ${e}`);
     if (d.id !== id) errors.push(`${where}: its id is ${d.id}, not its file name ${id}`);
-    errors.push(...detectorErrors(dir, d, where, known));
+    errors.push(...(yield* detectorErrors(dir, d, where, known)));
 
     const ledgerFile = join(folder, `${id}.trials.jsonl`);
-    const { errors: le, lines } = existsSync(ledgerFile) ? ledgerErrors(id, readFileSync(ledgerFile, "utf8"), `${DETECTORS}/${id}.trials.jsonl`) : { errors: [], lines: [] };
+    const { errors: le, lines } = (yield* fs.exists(ledgerFile)) ? ledgerErrors(id, yield* fs.readText(ledgerFile), `${DETECTORS}/${id}.trials.jsonl`) : { errors: [], lines: [] };
     errors.push(...le);
     const trials = resolvedTrials(lines);
     const count = lines.filter((l) => l.kind === "trial").length;
@@ -343,7 +358,12 @@ export function checkVenture(dir: string): Report {
     const id = f.slice(0, -".trials.jsonl".length);
     if (!ownIds.includes(id) && !shippedIds.includes(id)) errors.push(`${DETECTORS}/${f}: a ledger for ${id}, which neither the venture nor Naive defines`);
   }
-  return { venture, detectors: reports, defaults, errors, checked };
+  return { venture, detectors: reports, defaults, errors, checked } satisfies Report;
+});
+
+/** readVenture run on the disk, for callers that are not Effect yet. */
+export function checkVenture(dir: string): Report {
+  return runSync(readVenture(dir));
 }
 
 /** The decision id of a proposal: one per detector and line in force, so a rerun finds what it filed. */
@@ -360,7 +380,7 @@ export function proposeCriteria(dir: string, report: Report): Proposed[] {
     const id = proposalId(d);
     const file = decisionFile(dir, id);
     if (file) {
-      const prior = readJson(ventureFile(dir, file));
+      const prior = runSync(readJson(ventureFile(dir, file)));
       out.push({ detector: d.id, ok: true, result: { kept: id, file, status: isObj(prior) ? prior.status : undefined } });
       continue;
     }
@@ -394,12 +414,19 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const args = process.argv.slice(2);
   const flags = new Set(args.filter((a) => a.startsWith("--")));
   const [dir] = args.filter((a) => !a.startsWith("--"));
-  if (!dir || !existsSync(join(dir, "venture.json"))) { console.error("usage: node packages/naive/src/checks/check-detectors.ts <venture dir> [--json] [--propose]"); process.exit(2); }
-  const report = checkVenture(dir);
-  const proposed = flags.has("--propose") ? proposeCriteria(dir, report) : null;
-  if (flags.has("--json")) console.log(JSON.stringify({ ...report, ...(proposed ? { proposed } : {}) }, null, 2));
-  else print(report, proposed);
-  const failed = (proposed ?? []).filter((p) => !p.ok);
-  for (const p of failed) console.error(`could not propose for ${p.detector}: ${p.error}`);
-  process.exit(report.errors.length || failed.length ? 1 : 0);
+  const main = Effect.gen(function* () {
+    const fs = yield* VentureFs;
+    if (!dir || !(yield* fs.exists(join(dir, "venture.json")))) {
+      return yield* Effect.fail(new CannotRun({ message: "usage: node packages/naive/src/checks/check-detectors.ts <venture dir> [--json] [--propose]" }));
+    }
+    return { dir, report: yield* readVenture(dir) };
+  });
+  await runMain(Effect.map(main, ({ dir, report }) => {
+    const proposed = flags.has("--propose") ? proposeCriteria(dir, report) : null;
+    if (flags.has("--json")) console.log(JSON.stringify({ ...report, ...(proposed ? { proposed } : {}) }, null, 2));
+    else print(report, proposed);
+    const failed = (proposed ?? []).filter((p) => !p.ok);
+    for (const p of failed) console.error(`could not propose for ${p.detector}: ${p.error}`);
+    process.exitCode = report.errors.length || failed.length ? 1 : 0;
+  }));
 }
