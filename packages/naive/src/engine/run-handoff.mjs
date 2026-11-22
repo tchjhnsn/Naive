@@ -7,7 +7,7 @@
 // gives a verdict: --review <criterion>=pass|fail --by <role> --note "<what was judged>". The
 // result goes to <venture>/evidence/results/<handoff>-<timestamp>.json and is appended to
 // the handoff's `evidence`; nothing else in the handoff changes, so its status stays the
-// holder's call (and check-execution.mjs holds them to it).
+// holder's call (and check-execution.ts holds them to it).
 //
 // Hosted (NAIVE_RUNTIME=hosted, packages/naive/src/core/runtime.mjs), Naive never runs a tenant's shell on the
 // host: each check goes to the host's sandbox hook, and with none registered the run is refused.

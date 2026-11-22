@@ -17,49 +17,49 @@ export const brandCommands = (cmd) => [
   cmd("public/assets/facts", "packages/naive/src/engine/assets.mjs", "What code reads from each file in public/ (J-4): type from the bytes, width and height, icon sizes, bytes and sha256. Agents copy these, never guess them", { args: ["facts"] }),
 ];
 
-/** packages/naive/src/checks/lint-investors.mjs: its command routes, built with the route table's cmd(). */
+/** packages/naive/src/checks/lint-investors.ts: its command routes, built with the route table's cmd(). */
 export const investorsLintCommands = (cmd) => [
-  cmd("investors/lint", "packages/naive/src/checks/lint-investors.mjs", "Investors lint: a raise decision with no use of funds, terms that conflict with an alignment principle, and an investor update with unconfirmed numbers; fail-open unless naive.config.json investors_lint.rules.<id>.mode is fail-closed", { args: [] }),
+  cmd("investors/lint", "packages/naive/src/checks/lint-investors.ts", "Investors lint: a raise decision with no use of funds, terms that conflict with an alignment principle, and an investor update with unconfirmed numbers; fail-open unless naive.config.json investors_lint.rules.<id>.mode is fail-closed", { args: [] }),
 ];
 
-/** packages/naive/src/checks/lint-product.mjs: its command routes, built with the route table's cmd(). */
+/** packages/naive/src/checks/lint-product.ts: its command routes, built with the route table's cmd(). */
 export const productCommands = (cmd) => [
-  cmd("product/lint", "packages/naive/src/checks/lint-product.mjs", "Product alignment lint: a product offered to no ICP, a feature that serves no job of those ICPs, or a business model with no pricing record. Fail-open unless naive.config.json product_lint.rules.<id>.mode is fail-closed", { args: [] }),
+  cmd("product/lint", "packages/naive/src/checks/lint-product.ts", "Product alignment lint: a product offered to no ICP, a feature that serves no job of those ICPs, or a business model with no pricing record. Fail-open unless naive.config.json product_lint.rules.<id>.mode is fail-closed", { args: [] }),
 ];
 
-/** packages/naive/src/checks/lint-money.mjs: its command routes, built with the route table's cmd(). */
+/** packages/naive/src/checks/lint-money.ts: its command routes, built with the route table's cmd(). */
 export const moneyCommands = (cmd) => [
-  cmd("money/lint", "packages/naive/src/checks/lint-money.mjs", "Money lint: a transfer decision with no named approver, and an account with no owner. Fail-open unless naive.config.json money_lint.rules.<id>.mode is fail-closed. Reads records through ventureFile and does not move money.", { args: [] }),
+  cmd("money/lint", "packages/naive/src/checks/lint-money.ts", "Money lint: a transfer decision with no named approver, and an account with no owner. Fail-open unless naive.config.json money_lint.rules.<id>.mode is fail-closed. Reads records through ventureFile and does not move money.", { args: [] }),
 ];
 
-/** packages/naive/src/checks/lint-customers.mjs: its command routes, built with the route table's cmd(). */
+/** packages/naive/src/checks/lint-customers.ts: its command routes, built with the route table's cmd(). */
 export const customersLintCommands = (cmd) => [
-  cmd("customers/lint", "packages/naive/src/checks/lint-customers.mjs", "Customers lint: a customer that matches no ICP, and a promise to a customer that the product record, read by key, does not keep. Fail-open unless naive.config.json customers_lint.rules.<id>.mode is fail-closed", { args: [] }),
+  cmd("customers/lint", "packages/naive/src/checks/lint-customers.ts", "Customers lint: a customer that matches no ICP, and a promise to a customer that the product record, read by key, does not keep. Fail-open unless naive.config.json customers_lint.rules.<id>.mode is fail-closed", { args: [] }),
 ];
 
-/** packages/naive/src/checks/lint-validation.mjs: its command routes, built with the route table's cmd(). */
+/** packages/naive/src/checks/lint-validation.ts: its command routes, built with the route table's cmd(). */
 export const validationCommands = (cmd) => [
-  cmd("validation/lint", "packages/naive/src/checks/lint-validation.mjs", "Validation alignment lint: a claim with no evidence, evidence past its shelf life, an assumption graded only by an agent, and a decision made in Validation on Discovery-grade evidence; fail-open unless naive.config.json validation_lint.rules.<id>.mode is fail-closed", { args: [] }),
+  cmd("validation/lint", "packages/naive/src/checks/lint-validation.ts", "Validation alignment lint: a claim with no evidence, evidence past its shelf life, an assumption graded only by an agent, and a decision made in Validation on Discovery-grade evidence; fail-open unless naive.config.json validation_lint.rules.<id>.mode is fail-closed", { args: [] }),
 ];
 
-/** packages/naive/src/checks/lint-finance.mjs: its command routes, built with the route table's cmd(). */
+/** packages/naive/src/checks/lint-finance.ts: its command routes, built with the route table's cmd(). */
 export const financeCommands = (cmd) => [
-  cmd("finance/lint", "packages/naive/src/checks/lint-finance.mjs", "Finance lint: a spend decision with no runway impact, a price below cost, and a metric with no target for the current phase. Fail-open unless naive.config.json finance_lint.rules.<id>.mode is fail-closed", { args: [] }),
+  cmd("finance/lint", "packages/naive/src/checks/lint-finance.ts", "Finance lint: a spend decision with no runway impact, a price below cost, and a metric with no target for the current phase. Fail-open unless naive.config.json finance_lint.rules.<id>.mode is fail-closed", { args: [] }),
 ];
 
-/** packages/naive/src/checks/lint-legal.mjs: its command routes, built with the route table's cmd(). */
+/** packages/naive/src/checks/lint-legal.ts: its command routes, built with the route table's cmd(). */
 export const legalCommands = (cmd) => [
-  cmd("legal/lint", "packages/naive/src/checks/lint-legal.mjs", "Legal lint, not legal advice: a public claim with no source, and an agreement with no counterparty record. Fail-open unless naive.config.json legal_lint.rules.<id>.mode is fail-closed", { args: [] }),
+  cmd("legal/lint", "packages/naive/src/checks/lint-legal.ts", "Legal lint, not legal advice: a public claim with no source, and an agreement with no counterparty record. Fail-open unless naive.config.json legal_lint.rules.<id>.mode is fail-closed", { args: [] }),
 ];
 
-/** packages/naive/src/checks/lint-people.mjs: its command routes, built with the route table's cmd(). */
+/** packages/naive/src/checks/lint-people.ts: its command routes, built with the route table's cmd(). */
 export const peopleLintCommands = (cmd) => [
-  cmd("people/lint", "packages/naive/src/checks/lint-people.mjs", "People alignment lint: a role with no function it owns, a hire before the team plan names the role, and a decision owned by no person. Fail-open unless naive.config.json people_lint.rules.<id>.mode is fail-closed", { args: [] }),
+  cmd("people/lint", "packages/naive/src/checks/lint-people.ts", "People alignment lint: a role with no function it owns, a hire before the team plan names the role, and a decision owned by no person. Fail-open unless naive.config.json people_lint.rules.<id>.mode is fail-closed", { args: [] }),
 ];
 
-/** packages/naive/src/checks/lint-foundation.mjs: its command routes, built with the route table's cmd(). */
+/** packages/naive/src/checks/lint-foundation.ts: its command routes, built with the route table's cmd(). */
 export const foundationLintCommands = (cmd) => [
-  cmd("foundation/lint", "packages/naive/src/checks/lint-foundation.mjs", "Foundation lint: a mission that names no ICP, an ICP with no jobs, an alignment principle with no check, and a problem form no ICP has. Fail-open unless naive.config.json foundation_lint.rules.<id>.mode is fail-closed", { args: [] }),
+  cmd("foundation/lint", "packages/naive/src/checks/lint-foundation.ts", "Foundation lint: a mission that names no ICP, an ICP with no jobs, an alignment principle with no check, and a problem form no ICP has. Fail-open unless naive.config.json foundation_lint.rules.<id>.mode is fail-closed", { args: [] }),
 ];
 
 /** packages/naive/src/engine/caching.mjs: its command routes, built with the route table's cmd(). */

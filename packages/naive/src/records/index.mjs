@@ -18,7 +18,7 @@
 //   globRegExp(pattern)   a data-model glob (`*` within a folder, `**/` across folders) as a RegExp
 //   pathKind(path, model) the kind of a file at a logical path in a venture: record, log or derived (KINDS), or null
 //   recordsIn(root)       the same functions for another copy of the repository, such as a test's temp copy
-//                         (the EE_ROOT pattern of packages/naive/src/checks/check-data-model.mjs)
+//                         (the EE_ROOT pattern of packages/naive/src/checks/check-data-model.ts)
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { isAbsolute, join, resolve } from "node:path";

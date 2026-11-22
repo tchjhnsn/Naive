@@ -132,7 +132,7 @@ expect("J-4: alt text a person writes is confirmed as written", r.status === 0 &
   expect("J-2: an unknown license fails", has(e, /apple-icon\.png: the license is unknown/));
   expect("J-4: an image with no alt text fails unless decorative", has(e, /icon\.png: an image with no alt text/) && !has(e, /favicon\.ico: an image with no alt/));
   const c = await R("public/assets", "check");
-  expect("J-2: the public/assets route's check runs packages/naive/src/checks/check-assets.mjs and fails", !c.ok && c.result[0].check === "packages/naive/src/checks/check-assets.mjs");
+  expect("J-2: the public/assets route's check runs packages/naive/src/checks/check-assets.ts and fails", !c.ok && c.result[0].check === "packages/naive/src/checks/check-assets.ts");
   y.assets.find((z) => z.path === "public/logo.svg").credit = "Acme"; y.assets.find((z) => z.path === "public/apple-icon.png").license = "owned";
   y.assets.find((z) => z.path === "public/icon.png").alt = { text: "Acme mark, square", by: "agent" };
   await R("public/assets", "write", y);
@@ -169,7 +169,7 @@ const brand = {
   expect("Y-3: the brand is a marketing record written through the router", w.ok && w.result.written === "marketing/brand.json" && w.result.gate === "public-commitment", w.error);
   const c = checkBrand(dir);
   expect("Y-3, T-1, P-24, Y-4: a well-formed brand checks out", c.ok, c.errors);
-  expect("Y-3: the marketing/brand route's check runs packages/naive/src/checks/check-brand.mjs", (await R("marketing/brand", "check")).ok);
+  expect("Y-3: the marketing/brand route's check runs packages/naive/src/checks/check-brand.ts", (await R("marketing/brand", "check")).ok);
   const t = await R("marketing/brand/tokens", "run");
   expect("Y-3: tokens as W3C design tokens", t.ok && t.result.tokens.color.accent.$value === "#1d4e89" && t.result.tokens.font.body.$value[0] === "Inter", t.error);
   expect("Y-3: CSS custom properties on :root", /:root \{[\s\S]*--color-accent: #1d4e89;[\s\S]*--font-body: "Inter", system-ui, sans-serif;/.test(t.result.css), t.result.css);
@@ -359,7 +359,7 @@ const brand = {
 {
   expect("the brand check passes on the finished venture", checkBrand(dir).ok, checkBrand(dir).errors);
   expect("the assets check passes on the finished venture", checkAssets(dir).ok, checkAssets(dir).errors);
-  const p = spawnSync("node", [join(repo, "packages/naive/src/checks/check-provenance.mjs"), dir], { encoding: "utf8" });
+  const p = spawnSync("node", [join(repo, "packages/naive/src/checks/check-provenance.ts"), dir], { encoding: "utf8" });
   expect("every write and confirmation kept the provenance chain", p.status === 0, p.stdout + p.stderr);
   for (const f of ["marketing/brand.json", "public/assets.json", "glossary/finance.json", "raw/sources/cc-photo/source.json", "marketing/sitemap.json"]) {
     const map = { "marketing/brand.json": "marketing-brand.schema.json", "public/assets.json": "public-assets.schema.json", "glossary/finance.json": "glossary.schema.json", "raw/sources/cc-photo/source.json": "raw-source.schema.json", "marketing/sitemap.json": "marketing-sitemap.schema.json" };

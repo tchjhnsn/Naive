@@ -191,7 +191,7 @@ expect("an MCP write logs the harness that connected", (await handle({ jsonrpc: 
 (await http("PUT", "/ventures/tandem/purpose/validation/problem", (await call({ venture: "tandem", route: "purpose/validation/problem", action: "read" })).result, { "x-mentura-derived-from": "https://example.com/a, EE-026" }));
 expect("an API write logs derived_from from its header", entries(tandem).at(-1).derived_from?.join() === "https://example.com/a,EE-026" && entries(tandem).at(-1).agent.via === "api");
 expect("an accepted draft is logged as a person's accept", log.some((e) => e.activity === "accept" && e.agent.kind === "person" && e.entity === "governance/ownership.json"));
-const check = () => spawnSync("node", [join(root, "packages/naive/src/checks/check-provenance.mjs"), ws], { encoding: "utf8" });
+const check = () => spawnSync("node", [join(root, "packages/naive/src/checks/check-provenance.ts"), ws], { encoding: "utf8" });
 expect("check-provenance passes on the logs the tests wrote", check().status === 0);
 const lf = join(tandem, "provenance.jsonl"), logLines = readFileSync(lf, "utf8").split("\n");
 writeFileSync(lf, logLines.filter((_, i) => i !== 1).join("\n"));

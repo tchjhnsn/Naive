@@ -6,7 +6,7 @@ import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 
 const root = new URL("../../../..", import.meta.url).pathname;
-const check = join(root, "packages/naive/src/checks/check-data-packages.mjs");
+const check = join(root, "packages/naive/src/checks/check-data-packages.ts");
 let failed = 0;
 const t = (name, fn) => { try { fn(); console.log(`ok   ${name}`); } catch (e) { failed++; console.log(`FAIL ${name}: ${e.message}`); } };
 const ok = (c, m) => { if (!c) throw new Error(m ?? "assertion failed"); };

@@ -1,6 +1,6 @@
 # People lint
 
-TLA+ model of `packages/naive/src/checks/lint-people.mjs` (route `people/lint`). TLC checks every order of a team plan edit and a hire, and the exit code for one `people_lint.rules.<id>.mode` override at a time. The chart hides the mode changes (`CloseRole`, `CloseHire`, `CloseDecision`, `OpenRules`): the mode is not a label, so those steps stay in one chart state. The exit rule still checks them.
+TLA+ model of `packages/naive/src/checks/lint-people.ts` (route `people/lint`). TLC checks every order of a team plan edit and a hire, and the exit code for one `people_lint.rules.<id>.mode` override at a time. The chart hides the mode changes (`CloseRole`, `CloseHire`, `CloseDecision`, `OpenRules`): the mode is not a label, so those steps stay in one chart state. The exit rule still checks them.
 
 ## Regenerate
 
@@ -24,7 +24,7 @@ This run: 288 states, 12 chart states, 18 arrows. No rule broke.
 
 | Rule | TLC | Replay |
 |---|---|---|
-| RoleFiresOnFixture | PASS | `packages/naive/src/checks/lint-people-test.mjs`: a founder with no hat fires `role-no-function`, and only that rule |
+| RoleFiresOnFixture | PASS | `packages/naive/src/checks/lint-people-test.ts`: a founder with no hat fires `role-no-function`, and only that rule |
 | RoleStaysSilent | PASS | the same fixture after the hat is restored; a clean venture; an advisor |
 | HireFiresOnFixture | PASS | an operator, or a recruiting entry of kind hire, while the plan does not name the role |
 | HireWhileUnnamedFires | PASS | same fixture, before the plan edit |

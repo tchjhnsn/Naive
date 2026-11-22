@@ -6,7 +6,7 @@ Up: [library](../../README.md)
 
 The competitors package, a data package (signal library build item 6). It keeps master data for competitors: `competitors/<id>.json`, the person's own record, and `competitors/<id>/signals.json` beside it, what signals say about that competitor, which only the signal projector writes. Torian decided on 2026-11-07 that it is its own package and works without a paid library: its signal types and listeners are open and ship here, and a library such as Mentura's only feeds it more signals of the same types.
 
-The package owns the `competitor` and `competitor-signals` record types. They moved here from the purpose layer's manifest, which the data model allows because the package's `layer` is purpose, and `check-data-model.mjs` holds each type to one owner.
+The package owns the `competitor` and `competitor-signals` record types. They moved here from the purpose layer's manifest, which the data model allows because the package's `layer` is purpose, and `check-data-model.ts` holds each type to one owner.
 
 ## Where things are
 
@@ -36,7 +36,7 @@ A known competitor is a subject in the `competitors` collection. A venture turns
 
 - `node packages/naive/src/checks/competitors-package-test.ts` checks the package holds together: each listener hears a type the package ships, each project listener routes to a projection of that type, each case's signals match the type and its parts, each projection writes a record type the package owns with fields that record's schema has and names its subject field, only the person's master record is written once, and each expected record holds its subject and is valid once each entry names its signal. `node test.mjs` runs it.
 - `node packages/naive/src/engine/signals/render-test.ts` renders every case here through the real render (`renderCase` in [`render.ts`](../../../src/engine/signals/render.ts)) to its expected records. The test sits in that folder because only its own files and its front door may import the render.
-- `node packages/naive/src/checks/check-data-model.mjs` checks the manifest, its ownership of the two record types and its listeners; `node packages/naive/src/records/validate.mjs` validates the signal types.
+- `node packages/naive/src/checks/check-data-model.ts` checks the manifest, its ownership of the two record types and its listeners; `node packages/naive/src/records/validate.mjs` validates the signal types.
 
 ## How it connects
 

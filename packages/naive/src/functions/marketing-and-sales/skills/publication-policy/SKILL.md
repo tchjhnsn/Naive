@@ -21,7 +21,7 @@ description: >
 
 # Publication policy
 
-Governance layer (EE-025). Writes `publication-policy.json`; `check-publication.mjs` checks it and every handoff that publishes.
+Governance layer (EE-025). Writes `publication-policy.json`; `check-publication.ts` checks it and every handoff that publishes.
 
 ## The opinion: everything published passes the gate
 
@@ -49,7 +49,7 @@ Start from the destination, not the content. The same paragraph is held to diffe
 
 ## 3. Rights: who may publish what, by role or team
 
-Each channel has rules: a kind of content, the layers whose records it may draw on, who drafts and who approves. Approvers are roles or teams (a governance team, a marketing team). `check-publication.mjs` fails a rule with no person approving, and fails any agent role named as an approver.
+Each channel has rules: a kind of content, the layers whose records it may draw on, who drafts and who approves. Approvers are roles or teams (a governance team, a marketing team). `check-publication.ts` fails a rule with no person approving, and fails any agent role named as an approver.
 
 | Venture | A common shape |
 | --- | --- |

@@ -1,5 +1,5 @@
 // Evidence grading, adapted from GRADE (the GRADE Working Group's method for rating certainty of evidence). It
-// moved here from packages/naive/src/checks/check-validation.mjs, which re-exports it, so that engine code (the phase
+// moved here from packages/naive/src/checks/check-validation.ts, which re-exports it, so that engine code (the phase
 // gate, EE-156) can grade evidence without importing a checker. The rules are unchanged:
 //
 //   item grade: starts by kind (behavior high, commitment moderate, stated and desk research low, opinion very low),

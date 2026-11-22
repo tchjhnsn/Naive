@@ -34,7 +34,7 @@ const run = (cmd: string, args: string[], env: Record<string, string> = {}) =>
   spawnSync(cmd, args, { encoding: "utf8", cwd: root, env: { ...process.env, ...env } });
 
 const gate = (file: string, fn: string, extra: string[] = []) => {
-  const ran = run(process.execPath, [join(root, "packages/naive/src/checks/check-nouns.mjs"), "--package", file, "--function", fn, ...extra]);
+  const ran = run(process.execPath, [join(root, "packages/naive/src/checks/check-nouns.ts"), "--package", file, "--function", fn, ...extra]);
   let body: Verdict | null = null;
   try { body = JSON.parse(ran.stdout) as Verdict; } catch { body = null; }
   return { status: ran.status, stdout: ran.stdout, stderr: ran.stderr, body };
@@ -190,7 +190,7 @@ for (const [file, fn, , verdict, witness] of rows) {
     mkdirSync(dir);
     const file = join(dir, "founder-properties.json");
     writeFileSync(file, JSON.stringify(src));
-    const ran = run(process.execPath, [join(root, "packages/naive/src/checks/check-nouns.mjs"), "--package", file, "--function", "strategy", "--record"]);
+    const ran = run(process.execPath, [join(root, "packages/naive/src/checks/check-nouns.ts"), "--package", file, "--function", "strategy", "--record"]);
     let body: Verdict | null = null;
     try { body = JSON.parse(ran.stdout) as Verdict; } catch { body = null; }
     const side = join(dir, "founder-properties.provenance.jsonl");
@@ -220,7 +220,7 @@ for (const [file, fn, , verdict, witness] of rows) {
   cpSync(fix("pricing-admit.json"), file);
   const preload = join(dir, "no-validator.mjs");
   writeFileSync(preload, `import { useValidator, Validator } from ${JSON.stringify(new URL("../records/validate.mjs", import.meta.url).href)};\nuseValidator(new Validator(new Map()));\n`);
-  const ran = run(process.execPath, ["--import", pathToFileURL(preload).href, join(root, "packages/naive/src/checks/check-nouns.mjs"), "--package", file, "--function", "marketing-and-sales", "--record"]);
+  const ran = run(process.execPath, ["--import", pathToFileURL(preload).href, join(root, "packages/naive/src/checks/check-nouns.ts"), "--package", file, "--function", "marketing-and-sales", "--record"]);
   expect("a schema checker that cannot run is a tool error and records nothing", ran.status === 2 && !ran.stdout.includes("\"verdict\"") && !existsSync(join(dir, "pricing-admit.provenance.jsonl")));
 }
 {
@@ -238,7 +238,7 @@ for (const [file, fn, , verdict, witness] of rows) {
   writeFileSync(lock, "");
   const then = (Date.now() - 10000) / 1000;
   utimesSync(lock, then, then);
-  const ran = run(process.execPath, [join(root, "packages/naive/src/checks/check-nouns.mjs"), "--package", file, "--function", "marketing-and-sales", "--record"]);
+  const ran = run(process.execPath, [join(root, "packages/naive/src/checks/check-nouns.ts"), "--package", file, "--function", "marketing-and-sales", "--record"]);
   expect("a dead sidecar lock is taken and the gate still records", ran.status === 0 && existsSync(join(dir, "pricing-admit.provenance.jsonl")));
 }
 {
@@ -247,7 +247,7 @@ for (const [file, fn, , verdict, witness] of rows) {
   const file = join(dir, "pricing-admit.json");
   cpSync(fix("pricing-admit.json"), file);
   mkdirSync(join(dir, "pricing-admit.provenance.jsonl.lock"));
-  const ran = run(process.execPath, [join(root, "packages/naive/src/checks/check-nouns.mjs"), "--package", file, "--function", "marketing-and-sales", "--record"]);
+  const ran = run(process.execPath, [join(root, "packages/naive/src/checks/check-nouns.ts"), "--package", file, "--function", "marketing-and-sales", "--record"]);
   expect("a lock error exits 2 and records nothing", ran.status === 2 && !ran.stdout.includes("\"verdict\"") && !existsSync(join(dir, "pricing-admit.provenance.jsonl")));
 }
 
@@ -268,13 +268,13 @@ for (const [file, fn, , verdict, witness] of rows) {
   expect("the sidecar line matches the provenance schema", run(process.execPath, [join(root, "packages/naive/src/records/validate.mjs"), "--schema", "provenance-entry.schema.json", "--file", fresh]).status === 0);
   const body = createHash("sha256").update(readFileSync(file)).digest("hex");
   expect("the line's sha256 is the package body", line.sha256 === body);
-  const checked = run(process.execPath, [join(root, "packages/naive/src/checks/check-provenance.mjs"), "--package", file]);
+  const checked = run(process.execPath, [join(root, "packages/naive/src/checks/check-provenance.ts"), "--package", file]);
   expect("the sidecar chain holds", checked.status === 0);
   const tampered = once.replace(line.hash ?? "", "0".repeat(64));
   writeFileSync(side, tampered);
-  expect("an edited sidecar line breaks the chain", run(process.execPath, [join(root, "packages/naive/src/checks/check-provenance.mjs"), "--package", file]).status !== 0);
+  expect("an edited sidecar line breaks the chain", run(process.execPath, [join(root, "packages/naive/src/checks/check-provenance.ts"), "--package", file]).status !== 0);
   writeFileSync(side, once + once);
-  expect("the same gate line recorded twice fails", run(process.execPath, [join(root, "packages/naive/src/checks/check-provenance.mjs"), "--package", file]).status !== 0);
+  expect("the same gate line recorded twice fails", run(process.execPath, [join(root, "packages/naive/src/checks/check-provenance.ts"), "--package", file]).status !== 0);
 }
 {
   const dir = join(tmp, "order");
@@ -282,15 +282,15 @@ for (const [file, fn, , verdict, witness] of rows) {
   const file = join(dir, "pricing-admit.json");
   cpSync(fix("pricing-admit.json"), file);
   const referred = gate(file, "finance", ["--record"]);
-  expect("a gate can be the first line, with no earlier gate", referred.body?.verdict === "refer" && run(process.execPath, [join(root, "packages/naive/src/checks/check-provenance.mjs"), "--package", file]).status === 0 && readFileSync(join(dir, "pricing-admit.provenance.jsonl"), "utf8").trim().split("\n").length === 1);
+  expect("a gate can be the first line, with no earlier gate", referred.body?.verdict === "refer" && run(process.execPath, [join(root, "packages/naive/src/checks/check-provenance.ts"), "--package", file]).status === 0 && readFileSync(join(dir, "pricing-admit.provenance.jsonl"), "utf8").trim().split("\n").length === 1);
   const admitted = gate(file, "marketing-and-sales", ["--record"]);
   const text = readFileSync(join(dir, "pricing-admit.provenance.jsonl"), "utf8");
-  expect("a second function on the same body appends a second line", admitted.body?.verdict === "admit" && text.trim().split("\n").length === 2 && run(process.execPath, [join(root, "packages/naive/src/checks/check-provenance.mjs"), "--package", file]).status === 0);
+  expect("a second function on the same body appends a second line", admitted.body?.verdict === "admit" && text.trim().split("\n").length === 2 && run(process.execPath, [join(root, "packages/naive/src/checks/check-provenance.ts"), "--package", file]).status === 0);
   expect("re-running the second gate does not append", gate(file, "marketing-and-sales", ["--record"]).status === 0 && readFileSync(join(dir, "pricing-admit.provenance.jsonl"), "utf8") === text);
   const parsed = JSON.parse(readFileSync(file, "utf8")) as { title: string };
   parsed.title = "A different body";
   writeFileSync(file, JSON.stringify(parsed));
-  const warned = run(process.execPath, [join(root, "packages/naive/src/checks/check-provenance.mjs"), "--package", file]);
+  const warned = run(process.execPath, [join(root, "packages/naive/src/checks/check-provenance.ts"), "--package", file]);
   expect("a changed body is a warning, and the old line stays", warned.status === 0 && /different body/.test(warned.stderr));
 }
 
@@ -315,9 +315,9 @@ function sparse(edit: (_ontology: { nouns: Record<string, unknown>[] }) => void)
   return dir;
 }
 const noun = (ontology: { nouns: Record<string, unknown>[] }, name: string) => ontology.nouns.find((item) => item.noun === name);
-const check = (dir: string) => run(process.execPath, [join(root, "packages/naive/src/checks/check-nouns.mjs")], { EE_ROOT: dir });
+const check = (dir: string) => run(process.execPath, [join(root, "packages/naive/src/checks/check-nouns.ts")], { EE_ROOT: dir });
 
-expect("the repository ontology passes", run(process.execPath, [join(root, "packages/naive/src/checks/check-nouns.mjs")]).status === 0);
+expect("the repository ontology passes", run(process.execPath, [join(root, "packages/naive/src/checks/check-nouns.ts")]).status === 0);
 {
   const dir = sparse((o) => { const item = noun(o, "venture"); if (item) delete item.standard; });
   const ran = check(dir);
@@ -366,7 +366,7 @@ expect("the repository ontology passes", run(process.execPath, [join(root, "pack
 
 function spawnGate(file: string, fn: string): Promise<{ status: number | null }> {
   return new Promise((resolve) => {
-    const child = spawn(process.execPath, [join(root, "packages/naive/src/checks/check-nouns.mjs"), "--package", file, "--function", fn, "--record"], { cwd: root });
+    const child = spawn(process.execPath, [join(root, "packages/naive/src/checks/check-nouns.ts"), "--package", file, "--function", fn, "--record"], { cwd: root });
     child.on("close", (status) => resolve({ status }));
   });
 }
@@ -378,7 +378,7 @@ for (let i = 0; i < 15; i++) {
   cpSync(fix("pricing-admit.json"), file);
   await Promise.all(["finance", "marketing-and-sales", "products"].map((fn) => spawnGate(file, fn)));
   const side = join(dir, "pricing-admit.provenance.jsonl");
-  const checked = run(process.execPath, [join(root, "packages/naive/src/checks/check-provenance.mjs"), "--package", file]);
+  const checked = run(process.execPath, [join(root, "packages/naive/src/checks/check-provenance.ts"), "--package", file]);
   const count = existsSync(side) ? readFileSync(side, "utf8").trim().split("\n").length : 0;
   if (checked.status !== 0 || count !== 3) races++;
 }

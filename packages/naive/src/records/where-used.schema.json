@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "where-used.schema.json",
   "title": "Where-used list",
-  "description": "A venture's where-used list (<venture>/knowledge/where-used.json, EE-042): for each fact kept once in its system of record (a parent, such as a product's price), every place that repeats it (its children: a pricing page, a newsletter, a payment provider, a constant in code). Update the parent once and the children show what must follow. The framework checks live children offline and reports drift (packages/naive/src/checks/check-where-used.mjs); delivering the change into a vendor's system is the platform's (coexistence or centralized style). Written for a fast model to read: every field present.",
+  "description": "A venture's where-used list (<venture>/knowledge/where-used.json, EE-042): for each fact kept once in its system of record (a parent, such as a product's price), every place that repeats it (its children: a pricing page, a newsletter, a payment provider, a constant in code). Update the parent once and the children show what must follow. The framework checks live children offline and reports drift (packages/naive/src/checks/check-where-used.ts); delivering the change into a vendor's system is the platform's (coexistence or centralized style). Written for a fast model to read: every field present.",
   "type": "object",
   "required": ["facts"],
   "additionalProperties": false,

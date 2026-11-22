@@ -29,10 +29,10 @@ Naive has 13 functions (`packages/naive/src/functions/departments.json`), and Me
 | The 13 functions | `packages/naive/src/functions/departments.json` | The ids every role, record and lead portfolio must use |
 | Package ownership | `PACKAGE_FUNCTION` in `packages/naive/src/core/venture-paths.mjs` | Which record packages each function owns. Only 8 of 13 functions own a package today (strategy, products, marketing-and-sales, service-delivery, human-capital, finance, risk-and-compliance, external-relationships; it, customer-service, supply-chain, assets and capabilities own none) |
 | Role templates | `packages/naive/template/governance/roles/*.json` | `finance-lead`, `marketing-lead`, `product-design-lead` and others already exist as function-scoped roles. Their `function` field uses ids that `departments.json` does not list (`marketing`, `product`, `engineering`, `legal`, `people`, `validation`, `operations`) |
-| Delegation | `packages/naive/template/governance/delegation.json`, `check-delegation.mjs` | Grants from the founder down, never-redelegated classes, one-way doors |
-| Team plan and access | `people/team-plan` route, `packages/naive/src/engine/access.mjs`, `check-team.mjs` | Per-role read and write globs over routes; the router refuses a write outside them |
-| Handoffs | `operations/handoff/[id]` route, `check-ready.mjs`, `check-execution.mjs` | Handoffs already carry `role`, `claimed_by`, `status`, `decision_classes`, `done_criteria` and `evidence` |
-| Builder is not verifier | `packages/naive/src/checks/verify.mjs` | `independent(builder, verifier)` and `reviewIsIndependent` already enforce it for review criteria |
+| Delegation | `packages/naive/template/governance/delegation.json`, `check-delegation.ts` | Grants from the founder down, never-redelegated classes, one-way doors |
+| Team plan and access | `people/team-plan` route, `packages/naive/src/engine/access.mjs`, `check-team.ts` | Per-role read and write globs over routes; the router refuses a write outside them |
+| Handoffs | `operations/handoff/[id]` route, `check-ready.ts`, `check-execution.ts` | Handoffs already carry `role`, `claimed_by`, `status`, `decision_classes`, `done_criteria` and `evidence` |
+| Builder is not verifier | `packages/naive/src/checks/verify.ts` | `independent(builder, verifier)` and `reviewIsIndependent` already enforce it for review criteria |
 | Decision index | `packages/naive/src/engine/decision-index.mjs` | Ranks open decisions; a lead's proposals land here |
 | Detectors | `governance/detector/[id]`, `governance/detector-trial/[id]` | The record shape for a yes or no call and its ledger (SIGNAL_DETECTION_2026-11-07.md) |
 | Function agents | everything-ecosystem `platform/agents/` | `functionAgent(id)` derives the role `<function>-agent` and its write routes from Naive's data; the MCP shim gives any MCP harness one `agent_<function>` tool per staffed function |
@@ -55,7 +55,7 @@ A lead is a role, not a function. It owns no records of a function. It owns an o
 
 The portfolios cover all 13 functions once each. The research behind them is the cross-functional tables in the function research (section 6 of each file): finance's largest handoffs are human capital and marketing and sales, strategy meets every function at quarterly planning, and products sits between sales, support and IT.
 
-Measure kinds are only defaults. A venture binds a lead to concrete measure ids from `foundation/telos` (`measures[].id`) in the lead's plan. A lead bound to no measure is refused by `check-team.mjs` (proposed rule), because a lead with no outcome has no basis for choosing between tasks.
+Measure kinds are only defaults. A venture binds a lead to concrete measure ids from `foundation/telos` (`measures[].id`) in the lead's plan. A lead bound to no measure is refused by `check-team.ts` (proposed rule), because a lead with no outcome has no basis for choosing between tasks.
 
 **Open:** whether a measure may be bound to more than one lead. The proposal is one accountable lead per measure, others contributing, so a regression in a measure has exactly one lead to raise it.
 
@@ -112,7 +112,7 @@ flowchart LR
 
 ### Decision rights for a lead
 
-A lead gets grants from the chief of staff, which may re-delegate them: `accept-verified-work` (so it can accept a handoff it verified) and `defer-or-route` with scope `venture` (so it can decide which function agent takes which part). It holds no class in `never_redelegated` and no one-way door. `check-delegation.mjs` already refuses a grant that breaks either rule, so no new check is needed there.
+A lead gets grants from the chief of staff, which may re-delegate them: `accept-verified-work` (so it can accept a handoff it verified) and `defer-or-route` with scope `venture` (so it can decide which function agent takes which part). It holds no class in `never_redelegated` and no one-way door. `check-delegation.ts` already refuses a grant that breaks either rule, so no new check is needed there.
 
 This matches the function research. Strategy's note says almost all of its analysis is agent-fillable and almost none of its decisions are. Marketing and sales says every outbound act is a `public-commitment` or `legal-or-terms` decision unless a person delegated a bounded class of it. A lead prepares and verifies; a person decides.
 
@@ -128,7 +128,7 @@ Routing assumes no particular model or harness. The rule is code in Naive (`pack
 4. More than one function, all in one lead's portfolio: that lead.
 5. Functions across portfolios: the lead accountable for the measure the task serves. With no measure named, the chief of staff role decides (`defer-or-route`), which today means a person.
 6. The lead writes a plan entry and one handoff per function involved. Each handoff names the function agent's role, the decision classes it may use, done criteria, and a review criterion whose reviewer is the requesting lead.
-7. `check-ready.mjs` passes and is recorded, so the handoff is `ready`.
+7. `check-ready.ts` passes and is recorded, so the handoff is `ready`.
 8. The function agent claims it (item 5), works it, writes evidence and sets it `done`.
 9. The requesting lead verifies: it reruns the conformance criteria and judges the review criterion. It accepts, or sends it back with a reason, up to the handoff's `max_attempts`. After that it escalates to a person.
 
@@ -202,7 +202,7 @@ stateDiagram-v2
 
 ### The handoff claim
 
-Handoffs already have `claimed_by` and `check-execution.mjs` already refuses an `in-progress` handoff that is not claimed. Nothing makes a claim exclusive. The proposal is a `claim` action on `operations/handoff/[id]`:
+Handoffs already have `claimed_by` and `check-execution.ts` already refuses an `in-progress` handoff that is not claimed. Nothing makes a claim exclusive. The proposal is a `claim` action on `operations/handoff/[id]`:
 
 - It succeeds only when the handoff is `ready`, unclaimed, and its `role` equals the acting role. It sets `claimed_by` to the run id and `status` to `in-progress` in one write.
 - A second claim of the same handoff is refused, so two runs never work one handoff.
@@ -230,7 +230,7 @@ A seam is where two functions' records should agree and can drift. Each is a det
 | Pipeline against focus | marketing-and-sales, strategy | deal segments against the ICP primary | strategy-lead |
 | Claims against approved claims | marketing-and-sales, risk-and-compliance | publications against approved claims and consent rules | growth-lead |
 
-`check-where-used.mjs` already finds a child record that drifted from its parent. Where a seam is a parent and child, the detector's sensor is that check; where it is not, the seam needs its own small check.
+`check-where-used.ts` already finds a child record that drifted from its parent. Where a seam is a parent and child, the detector's sensor is that check; where it is not, the seam needs its own small check.
 
 **Open:** several compared records do not exist yet (deal promises, approved claims, IT tool records). Item 6 builds detectors only for seams whose records exist, and lists the rest as not built.
 
@@ -276,9 +276,9 @@ The plan, in order, one item per pull request. Items 1 to 3 and 5 to 7 are in Na
 
 | # | Item | Repo | What | Verifier |
 |---|---|---|---|---|
-| 1 | Function on record types; role ids match | Naive | A `function` field on each record entry in `packages/naive/src/records/data-model.json` (a `departments.json` id or `shared`); role template `function` values become `departments.json` ids or `all`; the systems catalog's `legal` key becomes `risk-and-compliance`; a check that every one resolves | the new check breaks on copies; `check-data-model.mjs`, `record-types.ts --check`, `check-delegation.mjs` pass |
-| 2 | Spend register and access matrix | Naive | `spend-register.schema.json`, the data model entry, the `finance/spend-register` route, the template's source map rules per field, and the `founder-to-finance-agent` grant | a write by any role but `finance-agent` is refused; `check-sources.mjs` refuses a tie on a register field |
-| 3 | Lead role templates and team-plan entries | Naive | Four lead templates with `portfolio` and default measure kinds, the `lead-plan` schema and `operations/lead/[id]` route, grants from the chief of staff, the routing rule as data, and `check-team.mjs` rules: a lead writes only its plan, `decisions/*` and handoffs, and is bound to a telos measure | `check-team.mjs` refuses a lead with a function's write route or no measure; `check-delegation.mjs` refuses a lead grant of a one-way door |
+| 1 | Function on record types; role ids match | Naive | A `function` field on each record entry in `packages/naive/src/records/data-model.json` (a `departments.json` id or `shared`); role template `function` values become `departments.json` ids or `all`; the systems catalog's `legal` key becomes `risk-and-compliance`; a check that every one resolves | the new check breaks on copies; `check-data-model.ts`, `record-types.ts --check`, `check-delegation.ts` pass |
+| 2 | Spend register and access matrix | Naive | `spend-register.schema.json`, the data model entry, the `finance/spend-register` route, the template's source map rules per field, and the `founder-to-finance-agent` grant | a write by any role but `finance-agent` is refused; `check-sources.ts` refuses a tie on a register field |
+| 3 | Lead role templates and team-plan entries | Naive | Four lead templates with `portfolio` and default measure kinds, the `lead-plan` schema and `operations/lead/[id]` route, grants from the chief of staff, the routing rule as data, and `check-team.ts` rules: a lead writes only its plan, `decisions/*` and handoffs, and is bound to a telos measure | `check-team.ts` refuses a lead with a function's write route or no measure; `check-delegation.ts` refuses a lead grant of a one-way door |
 | 4 | `leadAgent(id)` | everything-ecosystem | `platform/agents/lead-spec.ts` derives a lead from Naive's templates (no list of leads in Mentura), its run reads every record and writes handoffs, and the MCP shim adds `lead_<id>` tools and applies the routing rule for any MCP harness | an offline run with a scripted model writes a plan entry and handoffs and no function record; a single-function task routes to `agent_<function>` |
 | 5 | Handoff claim | Naive | The `claim` action, `requested_by`, and the router rules for who writes progress, evidence and verification | two claims race and one wins; a lead cannot accept a handoff it did not request; a claimant cannot verify its own work |
 | 6 | Seam detectors | Naive | Detector records for the seams whose records exist, their check sensors, and the decision a yes call opens for the right lead | each seam fires on a drifted copy and stays quiet on a clean one; a dismissed decision resolves a false alarm |

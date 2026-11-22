@@ -28,8 +28,8 @@ function slowRead(args: string[], delay: number): Promise<string> {
 }
 
 const RENDERS: [string, string[], string, string][] = [
-  ["check-nouns --md", ["packages/naive/src/checks/check-nouns.mjs", "--md"], "packages/naive/src/terms/ontology.md", "\n### System"],
-  ["check-data-model --md", ["packages/naive/src/checks/check-data-model.mjs", "--md"], "docs/design/LAYERS_AND_KITS_2026-10-27.md", "### Layer relationships"],
+  ["check-nouns --md", ["packages/naive/src/checks/check-nouns.ts", "--md"], "packages/naive/src/terms/ontology.md", "\n### System"],
+  ["check-data-model --md", ["packages/naive/src/checks/check-data-model.ts", "--md"], "docs/design/LAYERS_AND_KITS_2026-10-27.md", "### Layer relationships"],
 ];
 
 for (const [name, args, path, marker] of RENDERS) {

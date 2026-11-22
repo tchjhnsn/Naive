@@ -77,10 +77,10 @@ try {
   expect("mentura decide --reason --cite freezes the reason", c.status === 0 && json("marketing/decisions/channel.decision.json").provenance.reasons?.[0]?.citations?.[0]?.version === shaOf(v, "evidence/interviews.json"), c.stderr || c.stdout);
   const y = cli("decisions", "--venture", "rsn", "--why", "channel");
   expect("mentura decisions --why prints reasons with citations", y.status === 0 && /\[for\] Interviews came from communities/.test(y.stdout) && /cites evidence\/interviews\.json @[0-9a-f]{12} \(unchanged\)/.test(y.stdout), y.stderr || y.stdout);
-  const chk = spawnSync("node", [join(repo, "packages/naive/src/checks/check-reasons.mjs"), v], { encoding: "utf8" });
+  const chk = spawnSync("node", [join(repo, "packages/naive/src/checks/check-reasons.ts"), v], { encoding: "utf8" });
   expect("check-reasons passes while nothing changed", chk.status === 0, chk.stdout);
   writeFileSync(join(v, "evidence/interviews.json"), "{}\n");
-  const chk2 = spawnSync("node", [join(repo, "packages/naive/src/checks/check-reasons.mjs"), v], { encoding: "utf8" });
+  const chk2 = spawnSync("node", [join(repo, "packages/naive/src/checks/check-reasons.ts"), v], { encoding: "utf8" });
   expect("check-reasons reports the changed reason and exits 1", chk2.status === 1 && /the reason you decided channel changed: evidence\/interviews\.json/.test(chk2.stdout), chk2.stdout);
 
   // A stale decision stays stale: a stranger cannot clear it, and an agent's raw write cannot reopen it.

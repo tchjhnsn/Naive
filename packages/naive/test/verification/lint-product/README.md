@@ -1,6 +1,6 @@
 # Product lint
 
-TLA+ model of `packages/naive/src/checks/lint-product.mjs` (route `product/lint`). One product record is read through `ventureFile`, judged, then the run exits. ICP jobs and the pricing record are looked up by key. No step copies them onto the product.
+TLA+ model of `packages/naive/src/checks/lint-product.ts` (route `product/lint`). One product record is read through `ventureFile`, judged, then the run exits. ICP jobs and the pricing record are looked up by key. No step copies them onto the product.
 
 TLC 1.7.4 checked the model at 40 states and 40 steps. Every rule held. The chart draws 9 states and 14 arrows. It hides the `Done` stutter (10 steps), which stays in Exit 0 or Exit 1 and changes nothing.
 

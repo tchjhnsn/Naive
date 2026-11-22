@@ -95,16 +95,16 @@
     "evidence"
   ],
   "checks": [
-    "packages/naive/src/checks/check-team.mjs",
-    "packages/naive/src/checks/check-ready.mjs",
+    "packages/naive/src/checks/check-team.ts",
+    "packages/naive/src/checks/check-ready.ts",
     "packages/naive/src/engine/run-handoff.mjs",
-    "packages/naive/src/checks/check-execution.mjs",
-    "packages/naive/src/checks/check-departments.mjs",
+    "packages/naive/src/checks/check-execution.ts",
+    "packages/naive/src/checks/check-departments.ts",
     "packages/naive/src/functions/marketing-and-sales/marketing/site/presence.mjs",
     "packages/naive/src/functions/marketing-and-sales/marketing/site/plan.mjs",
     "packages/naive/src/engine/check-public.mjs",
-    "packages/naive/src/checks/check-brand.mjs",
-    "packages/naive/src/checks/check-assets.mjs"
+    "packages/naive/src/checks/check-brand.ts",
+    "packages/naive/src/checks/check-assets.ts"
   ],
   "gaps": [
     "No run-handoff skill: the handoff contract is prose (packages/naive/src/functions/capabilities/handoff-v2.md) beside three scripts in schema/ (check-ready, run-handoff, check-execution)",

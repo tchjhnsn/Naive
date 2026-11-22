@@ -151,4 +151,4 @@ Read the routes. A check that cannot fail tells you nothing. Each one below fail
 
 The first-ten check is the exercise, not a permanent cap. After ten have paid, more `paying` records still pass it. It fails while you have fewer than ten. That is the point: the list is not done when it merely exists.
 
-`naive check` does not grade this playbook. For the customers function it runs `packages/naive/src/checks/check-data-packages.mjs` (coverage and freshness). Run that after you write, and fix a failure before you treat the write as filed.
+`naive check` does not grade this playbook. For the customers function it runs `packages/naive/src/checks/check-data-packages.ts` (coverage and freshness). Run that after you write, and fix a failure before you treat the write as filed.

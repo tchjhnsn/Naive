@@ -53,7 +53,7 @@ Record each SAFE or note in `instruments` (amount, cap, discount, `converts_to`)
 | Right of first refusal and co-sale | On founder share sales | Covering transfers to family trusts |
 | Redemption | None | Investors' right to be bought out on a date |
 
-Record the rights each class or instrument grants in its `rights`. Board seats must match `board.json`, which `check-governance.mjs` checks.
+Record the rights each class or instrument grants in its `rights`. Board seats must match `board.json`, which `check-governance.ts` checks.
 
 ## 4. Before signing
 

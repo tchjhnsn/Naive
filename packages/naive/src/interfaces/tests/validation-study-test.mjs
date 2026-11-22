@@ -14,7 +14,7 @@ import { blocked, giveFeedback, manifest, status, unlock } from "../../engine/be
 import { route } from "../../engine/feedback-route.mjs";
 import { events, flush, record, refuse, ventureHash } from "../../engine/telemetry.mjs";
 import { summary } from "../../engine/bugs.mjs";
-import { check } from "../../checks/check-validation-study.mjs";
+import { check } from "../../checks/check-validation-study.ts";
 
 const repo = new URL("../../../../..", import.meta.url).pathname;
 let failed = 0;
@@ -83,7 +83,7 @@ const cfg = (c) => writeFileSync(join(dir, "naive.config.json"), json(c));
   expect("send without a person who set it sends nothing", (await flush(dir, { send })).sent === 0 && sent.length === 0);
   cfg({ telemetry: { enabled: true, send: true, set_by: { person: "Torian", at: "2026-10-30T10:00:00Z" } } });
   expect("a person turned sending on: waiting events are sent once", (await flush(dir, { send })).sent === 1 && (await flush(dir, { send })).sent === 0 && sent.length === 1);
-  expect("check-config accepts the telemetry and beta settings", spawnSync("node", [join(repo, "packages/naive/src/checks/check-config.mjs"), dir], { encoding: "utf8", env }).status === 0);
+  expect("check-config accepts the telemetry and beta settings", spawnSync("node", [join(repo, "packages/naive/src/checks/check-config.ts"), dir], { encoding: "utf8", env }).status === 0);
   rmSync(join(dir, "naive.config.json"));
 }
 

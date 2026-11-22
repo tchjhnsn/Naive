@@ -61,13 +61,13 @@
   ],
   "templates": [],
   "checks": [
-    "packages/naive/src/checks/check-validation.mjs",
-    "packages/naive/src/checks/check-sources.mjs",
-    "packages/naive/src/checks/check-where-used.mjs",
-    "packages/naive/src/checks/check-departments.mjs",
-    "packages/naive/src/checks/check-execution.mjs",
-    "packages/naive/src/checks/check-ready.mjs",
-    "packages/naive/src/checks/check-publication.mjs"
+    "packages/naive/src/checks/check-validation.ts",
+    "packages/naive/src/checks/check-sources.ts",
+    "packages/naive/src/checks/check-where-used.ts",
+    "packages/naive/src/checks/check-departments.ts",
+    "packages/naive/src/checks/check-execution.ts",
+    "packages/naive/src/checks/check-ready.ts",
+    "packages/naive/src/checks/check-publication.ts"
   ],
   "skill": null,
   "use_model": []

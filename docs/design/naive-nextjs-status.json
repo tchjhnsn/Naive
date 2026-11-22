@@ -1,5 +1,5 @@
 {
- "about": "Whether each concept in docs/design/NAIVE_NEXTJS_TRANSLATION_2026-10-28.md is built, and where the docs explain it. built: works end to end and is tested; partial: some of it works, the note or the page says what is missing; not built: the ledger describes it, the code does not have it; n/a: the ledger marks it as not converting. evidence names files in this repository; evidence_elsewhere names files in everything-ecosystem (the Mentura platform and the docs site), which this repository cannot check. Checked by packages/naive/src/checks/check-nextjs-status.mjs; the docs site's What's built page is generated from it (--docs <dir> --write).",
+ "about": "Whether each concept in docs/design/NAIVE_NEXTJS_TRANSLATION_2026-10-28.md is built, and where the docs explain it. built: works end to end and is tested; partial: some of it works, the note or the page says what is missing; not built: the ledger describes it, the code does not have it; n/a: the ledger marks it as not converting. evidence names files in this repository; evidence_elsewhere names files in everything-ecosystem (the Mentura platform and the docs site), which this repository cannot check. Checked by packages/naive/src/checks/check-nextjs-status.ts; the docs site's What's built page is generated from it (--docs <dir> --write).",
  "checked": "2026-10-29",
  "rows": [
   {
@@ -290,7 +290,7 @@
    "chapter": "Chapter 2: Project Structure",
    "status": "built",
    "evidence": [
-    "packages/naive/src/checks/check-ventures.mjs",
+    "packages/naive/src/checks/check-ventures.ts",
     "packages/naive/src/router/router.mjs"
    ],
    "page": "get-started/project-structure"
@@ -302,7 +302,7 @@
    "evidence": [
     "packages/naive/src/engine/naive-config.mjs",
     "packages/naive/src/records/naive-config.schema.json",
-    "packages/naive/src/checks/check-config.mjs",
+    "packages/naive/src/checks/check-config.ts",
     "packages/naive/src/functions/strategy/frameworks/idea-map/ideamap.mjs",
     "packages/naive/src/records/data-model.json",
     "packages/naive/src/interfaces/tests/gate-test.mjs"
@@ -355,7 +355,7 @@
    "chapter": "Chapter 2: Project Structure",
    "status": "built",
    "evidence": [
-    "packages/naive/src/checks/check-ventures.mjs",
+    "packages/naive/src/checks/check-ventures.ts",
     "packages/naive/src/router/router.mjs"
    ],
    "page": "get-started/project-structure"
@@ -378,7 +378,7 @@
    "chapter": "Chapter 2: Project Structure",
    "status": "built",
    "evidence": [
-    "packages/naive/src/checks/check-ventures.mjs",
+    "packages/naive/src/checks/check-ventures.ts",
     "packages/naive/src/router/router.mjs"
    ],
    "page": "get-started/project-structure"
@@ -393,7 +393,7 @@
    "chapter": "Chapter 2: Project Structure",
    "status": "built",
    "evidence": [
-    "packages/naive/src/checks/check-ventures.mjs",
+    "packages/naive/src/checks/check-ventures.ts",
     "packages/naive/src/router/router.mjs"
    ],
    "page": "get-started/project-structure"
@@ -403,7 +403,7 @@
    "chapter": "Chapter 2: Project Structure",
    "status": "built",
    "evidence": [
-    "packages/naive/src/checks/check-ventures.mjs",
+    "packages/naive/src/checks/check-ventures.ts",
     "packages/naive/src/router/router.mjs"
    ],
    "page": "get-started/layouts"
@@ -413,7 +413,7 @@
    "chapter": "Chapter 2: Project Structure",
    "status": "built",
    "evidence": [
-    "packages/naive/src/checks/check-ventures.mjs",
+    "packages/naive/src/checks/check-ventures.ts",
     "packages/naive/src/router/router.mjs"
    ],
    "page": "get-started/project-structure"
@@ -423,7 +423,7 @@
    "chapter": "Chapter 2: Project Structure",
    "status": "built",
    "evidence": [
-    "packages/naive/src/checks/check-ventures.mjs",
+    "packages/naive/src/checks/check-ventures.ts",
     "packages/naive/src/router/router.mjs"
    ],
    "page": "get-started/routes-and-records"
@@ -433,7 +433,7 @@
    "chapter": "Chapter 2: Project Structure",
    "status": "built",
    "evidence": [
-    "packages/naive/src/checks/check-ventures.mjs",
+    "packages/naive/src/checks/check-ventures.ts",
     "packages/naive/src/router/router.mjs"
    ],
    "page": "get-started/routes-and-records"
@@ -455,7 +455,7 @@
    "chapter": "Chapter 2: Project Structure",
    "status": "built",
    "evidence": [
-    "packages/naive/src/checks/check-ventures.mjs",
+    "packages/naive/src/checks/check-ventures.ts",
     "packages/naive/src/router/router.mjs"
    ],
    "page": "get-started/routes-and-records"
@@ -477,7 +477,7 @@
    "chapter": "Chapter 2: Project Structure",
    "status": "built",
    "evidence": [
-    "packages/naive/src/checks/check-ventures.mjs",
+    "packages/naive/src/checks/check-ventures.ts",
     "packages/naive/src/router/router.mjs"
    ],
    "page": "get-started/project-structure"
@@ -487,7 +487,7 @@
    "chapter": "Chapter 2: Project Structure",
    "status": "built",
    "evidence": [
-    "packages/naive/src/checks/check-ventures.mjs",
+    "packages/naive/src/checks/check-ventures.ts",
     "packages/naive/src/router/router.mjs"
    ],
    "page": "get-started/project-structure"
@@ -497,7 +497,7 @@
    "chapter": "Chapter 2: Project Structure",
    "status": "built",
    "evidence": [
-    "packages/naive/src/checks/check-ventures.mjs",
+    "packages/naive/src/checks/check-ventures.ts",
     "packages/naive/src/router/router.mjs"
    ],
    "page": "get-started/project-structure"
@@ -507,7 +507,7 @@
    "chapter": "Chapter 2: Project Structure",
    "status": "built",
    "evidence": [
-    "packages/naive/src/checks/check-ventures.mjs",
+    "packages/naive/src/checks/check-ventures.ts",
     "packages/naive/src/router/router.mjs"
    ],
    "page": "get-started/project-structure"
@@ -572,7 +572,7 @@
    "chapter": "Chapter 2: Project Structure",
    "status": "built",
    "evidence": [
-    "packages/naive/src/checks/check-ventures.mjs",
+    "packages/naive/src/checks/check-ventures.ts",
     "packages/naive/src/router/router.mjs"
    ],
    "page": "get-started/project-structure"
@@ -595,7 +595,7 @@
    "chapter": "Chapter 2: Project Structure",
    "status": "built",
    "evidence": [
-    "packages/naive/src/checks/check-ventures.mjs",
+    "packages/naive/src/checks/check-ventures.ts",
     "packages/naive/src/router/router.mjs"
    ],
    "page": "get-started/layouts"
@@ -605,7 +605,7 @@
    "chapter": "Chapter 2: Project Structure",
    "status": "built",
    "evidence": [
-    "packages/naive/src/checks/check-ventures.mjs",
+    "packages/naive/src/checks/check-ventures.ts",
     "packages/naive/src/router/router.mjs"
    ],
    "page": "get-started/project-structure"
@@ -642,7 +642,7 @@
    "chapter": "Chapter 2: Project Structure",
    "status": "built",
    "evidence": [
-    "packages/naive/src/checks/check-ventures.mjs",
+    "packages/naive/src/checks/check-ventures.ts",
     "packages/naive/src/router/router.mjs"
    ],
    "page": "get-started/project-structure"
@@ -652,7 +652,7 @@
    "chapter": "Chapter 2: Project Structure",
    "status": "built",
    "evidence": [
-    "packages/naive/src/checks/check-ventures.mjs",
+    "packages/naive/src/checks/check-ventures.ts",
     "packages/naive/src/router/router.mjs"
    ],
    "page": "get-started/project-structure"
@@ -686,7 +686,7 @@
    "chapter": "Chapter 2: Project Structure",
    "status": "built",
    "evidence": [
-    "packages/naive/src/checks/check-ventures.mjs",
+    "packages/naive/src/checks/check-ventures.ts",
     "packages/naive/src/router/router.mjs"
    ],
    "page": "get-started/project-structure"
@@ -1028,8 +1028,8 @@
    "chapter": "Chapter 5: Server and Client Components",
    "status": "built",
    "evidence": [
-    "packages/naive/src/checks/check-private.mjs",
-    "packages/naive/src/checks/check-data-model.mjs"
+    "packages/naive/src/checks/check-private.ts",
+    "packages/naive/src/checks/check-data-model.ts"
    ],
    "page": "get-started/agents-and-people"
   },
@@ -1050,8 +1050,8 @@
    "chapter": "Chapter 5: Server and Client Components",
    "status": "built",
    "evidence": [
-    "packages/naive/src/checks/check-private.mjs",
-    "packages/naive/src/checks/check-data-model.mjs"
+    "packages/naive/src/checks/check-private.ts",
+    "packages/naive/src/checks/check-data-model.ts"
    ],
    "page": "get-started/agents-and-people"
   },
@@ -1207,7 +1207,7 @@
    "chapter": "Chapter 5: Server and Client Components",
    "status": "built",
    "evidence": [
-    "packages/naive/src/checks/check-private.mjs"
+    "packages/naive/src/checks/check-private.ts"
    ],
    "page": "get-started/agents-and-people"
   },
@@ -1379,7 +1379,7 @@
    "chapter": "Chapter 6: Fetching Data",
    "status": "built",
    "evidence": [
-    "packages/naive/src/checks/check-private.mjs"
+    "packages/naive/src/checks/check-private.ts"
    ],
    "page": "get-started/routes-and-records"
   },
@@ -1846,7 +1846,7 @@
    "chapter": "Chapter 9: Revalidating",
    "status": "built",
    "evidence": [
-    "packages/naive/src/checks/check-where-used.mjs",
+    "packages/naive/src/checks/check-where-used.ts",
     "packages/naive/src/engine/decisions.mjs"
    ],
    "page": "get-started/writing-records"
@@ -1868,7 +1868,7 @@
    "chapter": "Chapter 9: Revalidating",
    "status": "built",
    "evidence": [
-    "packages/naive/src/checks/check-where-used.mjs",
+    "packages/naive/src/checks/check-where-used.ts",
     "packages/naive/src/engine/decisions.mjs"
    ],
    "page": "get-started/writing-records"
@@ -1948,7 +1948,7 @@
    "status": "built",
    "note": "Covered by P-14: ",
    "evidence": [
-    "packages/naive/src/checks/check-ventures.mjs",
+    "packages/naive/src/checks/check-ventures.ts",
     "packages/naive/src/router/router.mjs"
    ],
    "page": "get-started/routes-and-records"
@@ -2025,7 +2025,7 @@
    "evidence": [
     "packages/naive/src/engine/brand.mjs",
     "packages/naive/src/records/glossary.schema.json",
-    "packages/naive/src/checks/check-brand.mjs",
+    "packages/naive/src/checks/check-brand.ts",
     "packages/naive/src/router/router.mjs",
     "packages/naive/src/interfaces/tests/brand-test.mjs"
    ],
@@ -2084,7 +2084,7 @@
    "evidence": [
     "packages/naive/src/engine/assets.mjs",
     "packages/naive/src/records/public-assets.schema.json",
-    "packages/naive/src/checks/check-assets.mjs",
+    "packages/naive/src/checks/check-assets.ts",
     "packages/naive/src/router/brand.mjs",
     "packages/naive/src/interfaces/tests/brand-test.mjs"
    ],
@@ -2113,7 +2113,7 @@
    "evidence": [
     "packages/naive/src/engine/assets.mjs",
     "packages/naive/src/router/brand.mjs",
-    "packages/naive/src/checks/check-assets.mjs",
+    "packages/naive/src/checks/check-assets.ts",
     "packages/naive/src/interfaces/tests/brand-test.mjs"
    ],
    "page": "get-started/brand-and-assets",
@@ -2383,7 +2383,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/engine/gate.mjs",
-    "packages/naive/src/checks/check-config.mjs",
+    "packages/naive/src/checks/check-config.ts",
     "packages/naive/src/interfaces/tests/gate-test.mjs"
    ],
    "page": "get-started/the-gate",
@@ -2489,7 +2489,7 @@
    "evidence": [
     "packages/naive/src/engine/naive-config.mjs",
     "packages/naive/src/engine/gate.mjs",
-    "packages/naive/src/checks/check-config.mjs",
+    "packages/naive/src/checks/check-config.ts",
     "packages/naive/src/interfaces/tests/gate-test.mjs"
    ],
    "page": "get-started/the-gate",

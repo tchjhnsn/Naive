@@ -18,7 +18,7 @@ description: >
 
 # Validation score
 
-Purpose layer, validation kit (EE-026). Run `node packages/naive/src/checks/check-validation.mjs <venture dir> --score`.
+Purpose layer, validation kit (EE-026). Run `node packages/naive/src/checks/check-validation.ts <venture dir> --score`.
 
 ## How it works
 

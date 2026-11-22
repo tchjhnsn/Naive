@@ -2,7 +2,7 @@
 // ontology either belongs to the receiving function, or it does not, and then the verdict names
 // the function it does belong to. One verdict per package. No model call.
 //
-//   node packages/naive/src/checks/check-nouns.mjs --package <file> --function <id> [--record]
+//   node packages/naive/src/checks/check-nouns.ts --package <file> --function <id> [--record]
 //
 // G1 the handoff schema. G2 every term is a live noun. G3 the type noun's function is the
 // receiver, otherwise refer to its owner. G4 some term is owned by the receiver, and every term

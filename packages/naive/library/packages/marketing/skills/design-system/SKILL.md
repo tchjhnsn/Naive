@@ -42,4 +42,4 @@ Make the Design System artifact with the `choosing-artifacts` skill (`packages/n
 
 ## Check
 
-`naive check` runs `packages/naive/src/checks/check-brand.mjs` and `packages/naive/src/engine/design-system.mjs`. A component naming a token the brand lacks, or a choice resting on a retired input, fails.
+`naive check` runs `packages/naive/src/checks/check-brand.ts` and `packages/naive/src/engine/design-system.mjs`. A component naming a token the brand lacks, or a choice resting on a retired input, fails.

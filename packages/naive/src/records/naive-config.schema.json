@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "naive-config.schema.json",
   "title": "naive.config.json",
-  "description": "A venture's overrides to Naive's defaults, at the venture root (P-2, like next.config.js): the gate (fail-closed routes, rules over the router's path patterns, which package rules it imports), function owners, check settings (P-7, like eslint.config.mjs), thresholds, which System 1 questions run, pinned package versions (U-4) and how strictly the acting role is checked (M-18). Every field is optional; a missing one keeps the default in packages/naive/src/engine/naive-config.mjs. node packages/naive/src/checks/check-config.mjs <venture dir> checks it.",
+  "description": "A venture's overrides to Naive's defaults, at the venture root (P-2, like next.config.js): the gate (fail-closed routes, rules over the router's path patterns, which package rules it imports), function owners, check settings (P-7, like eslint.config.mjs), thresholds, which System 1 questions run, pinned package versions (U-4) and how strictly the acting role is checked (M-18). Every field is optional; a missing one keeps the default in packages/naive/src/engine/naive-config.mjs. node packages/naive/src/checks/check-config.ts <venture dir> checks it.",
   "type": "object",
   "additionalProperties": false,
   "properties": {
@@ -163,7 +163,7 @@
           "items": {
             "type": "string"
           },
-          "description": "Checks that do not run, by path (packages/naive/src/checks/check-telos.mjs)"
+          "description": "Checks that do not run, by path (packages/naive/src/checks/check-telos.ts)"
         },
         "warn": {
           "type": "array",
@@ -422,7 +422,7 @@
     "product_lint": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Per-rule mode for the product lint (packages/naive/src/checks/lint-product.mjs, route product/lint). A rule stays fail-open unless its mode is fail-closed.",
+      "description": "Per-rule mode for the product lint (packages/naive/src/checks/lint-product.ts, route product/lint). A rule stays fail-open unless its mode is fail-closed.",
       "properties": {
         "rules": {
           "type": "object",
@@ -461,7 +461,7 @@
     "premise_lint": {
       "type": "object",
       "additionalProperties": false,
-      "description": "The premise-attack linter (packages/naive/src/checks/premise-lint.mjs): each rule, one per aspect, is off, warn (the default) or error",
+      "description": "The premise-attack linter (packages/naive/src/checks/premise-lint.ts): each rule, one per aspect, is off, warn (the default) or error",
       "properties": {
         "rules": {
           "type": "object",
@@ -530,7 +530,7 @@
     "money_lint": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Per-rule mode for the money lint (packages/naive/src/checks/lint-money.mjs, route money/lint). A rule stays fail-open unless its mode is fail-closed.",
+      "description": "Per-rule mode for the money lint (packages/naive/src/checks/lint-money.ts, route money/lint). A rule stays fail-open unless its mode is fail-closed.",
       "properties": {
         "rules": {
           "type": "object",
@@ -574,7 +574,7 @@
     "validation_lint": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Per-rule mode for the validation lint (packages/naive/src/checks/lint-validation.mjs, route validation/lint). A rule stays fail-open unless its mode is fail-closed.",
+      "description": "Per-rule mode for the validation lint (packages/naive/src/checks/lint-validation.ts, route validation/lint). A rule stays fail-open unless its mode is fail-closed.",
       "properties": {
         "rules": {
           "type": "object",
@@ -596,7 +596,7 @@
     "finance_lint": {
       "type": "object",
       "additionalProperties": false,
-      "description": "finance/lint (packages/naive/src/checks/lint-finance.mjs). Each rule warns and stays fail-open unless its mode is fail-closed, which makes its findings exit 1.",
+      "description": "finance/lint (packages/naive/src/checks/lint-finance.ts). Each rule warns and stays fail-open unless its mode is fail-closed, which makes its findings exit 1.",
       "properties": {
         "rules": {
           "type": "object",
@@ -618,7 +618,7 @@
     "legal_lint": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Per-rule mode for the legal lint (packages/naive/src/checks/lint-legal.mjs, route legal/lint). A rule stays fail-open unless its mode is fail-closed.",
+      "description": "Per-rule mode for the legal lint (packages/naive/src/checks/lint-legal.ts, route legal/lint). A rule stays fail-open unless its mode is fail-closed.",
       "properties": {
         "rules": {
           "type": "object",
@@ -662,7 +662,7 @@
     "people_lint": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Per-rule mode for the people lint (packages/naive/src/checks/lint-people.mjs, route people/lint). A rule stays fail-open unless its mode is fail-closed.",
+      "description": "Per-rule mode for the people lint (packages/naive/src/checks/lint-people.ts, route people/lint). A rule stays fail-open unless its mode is fail-closed.",
       "properties": {
         "rules": {
           "type": "object",
