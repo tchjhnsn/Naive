@@ -46,6 +46,8 @@ export const REGISTRY: Registry = {
   "packages/naive/src/engine/beta-gate.mjs": plain("unlocks beta capabilities in order from feedback records; it decides access, not a term"),
   "packages/naive/src/engine/phase-gate.mjs": plain("gate strength (EE-156): grades each gate item's evidence by GRADE arithmetic, counts consenting interviews, compares levels with a policy's minimums and checks required fields are filled; it decides no term"),
   "packages/naive/src/engine/phase-gate-test.ts": plain("tests the gate strength ladders, policies and lifecycle enforcement on temp ventures"),
+  "packages/naive/src/engine/gate-calibration.ts": plain("gate calibration (EE-157): compares market and industry cell values with listed values and numeric thresholds, clamps a share of reachable buyers into interview counts and raises gate levels by rule; it decides no term"),
+  "packages/naive/src/engine/gate-calibration-test.ts": plain("tests gate calibration's counts, rules, validity windows, proposed decision, CLI and route on temp ventures"),
   "packages/naive/src/engine/check-artifacts.mjs": plain("artifacts name records that exist, and a changed source hash marks one stale"),
   "packages/naive/src/checks/check-assets.mjs": plain("each public asset has a source, a license, a credit and alt text"),
   "packages/naive/src/checks/check-boundary.mjs": plain("path text: no code names a module of an app that uses Naive, and registered connectors work offline"),

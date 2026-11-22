@@ -17,7 +17,8 @@
 // A record that is missing, or has a required field empty, is very low whatever else it holds.
 //
 // The policy is a preset (default standard) from naive.config.json phase_gates.preset, with per-item overrides under
-// phase_gates.items.<phase>.<item>. Scoring is pure; reading the venture is an Effect over VentureFs (EE-125), and
+// phase_gates.items.<phase>.<item>; phase_gates.count_levels replaces the interview counts per level and
+// phase_gates.staleness_months how old evidence may be before it drops a level (both proposed by gate-calibration.ts, EE-157). Scoring is pure; reading the venture is an Effect over VentureFs (EE-125), and
 // phaseGate runs it with runSync. Exit 0 for a report, 2 on a bad call.
 // A .mjs file because packages/naive/src/engine/lifecycle.mjs imports it and the router runs it as a command route.
 
@@ -40,13 +41,13 @@ import { CONFIG } from "./naive-config.mjs";
  * @typedef {{ items: GateItem[], presets: Record<string, Record<string, ItemPolicy>> }} PhasePolicies
  * @typedef {{ version: string, levels: Level[], count_levels: Record<string, number>, phases: Record<string, PhasePolicies> }} Policies
  * @typedef {{ preset: string, items: Record<string, ItemPolicy & { overridden?: boolean }> }} Policy
- * @typedef {{ phase_gates?: { preset?: string, enforce?: boolean, items?: Record<string, Record<string, Partial<ItemPolicy>>> } }} GateConfig
+ * @typedef {{ phase_gates?: { preset?: string, enforce?: boolean, count_levels?: Record<string, number>, staleness_months?: number, items?: Record<string, Record<string, Partial<ItemPolicy>>> } }} GateConfig
  * @typedef {{ file: string, value: Record<string, unknown> | null }} Found
  * @typedef {{ id?: string, icp?: string, consent?: { given?: boolean }, current_solutions?: unknown[] }} Interview
  * @typedef {{ id?: string, primary?: boolean }} Icp
  * @typedef {{
  *   records: Record<string, Found>, interviews: Interview[], icps: Icp[], countLevels: Record<string, number>,
- *   decidedBy?: string | null, levels?: Record<string, Level>, items?: GateItem[], today?: Date,
+ *   decidedBy?: string | null, levels?: Record<string, Level>, items?: GateItem[], today?: Date, staleMonths?: number,
  * }} GateContext
  * @typedef {{ level: Level, missing: string[], why: string[], next: string | null, pending?: boolean, count?: number }} Strength
  * @typedef {{ id: string, label: string, record: string | null, file: string | null, level: Level, min: Level, boundary: Boundary, passed: boolean, missing: string[], why: string[], next: string | null }} GateRow
@@ -129,7 +130,7 @@ export function itemStrength(item, ctx) {
   if (missing.length) return { level: "very low", missing, why: [`${missing.join(", ")} ${missing.length === 1 ? "is" : "are"} empty`], next: `fill ${missing.join(", ")} in ${found?.file}` };
 
   if (kind === "grade") {
-    const g = gradeRecord(rec, ctx.today ?? new Date());
+    const g = gradeRecord(rec, ctx.today ?? new Date(), ctx.staleMonths);
     const level = /** @type {Level} */ (g.level);
     const up = rank(level) < 3 ? /** @type {"low" | "moderate" | "high"} */ (at(rank(level) + 1)) : null;
     return { level, missing: [], why: [`evidence grades ${level}`, ...g.why], next: up ? `${up}: ${GRADE_NEXT[up]}` : null };
@@ -138,7 +139,7 @@ export function itemStrength(item, ctx) {
   if (kind === "count") {
     const n = countedInterviews(item.measure.of, ctx).length;
     const byCount = levelFromCount(n, ctx.countLevels);
-    const g = /** @type {Level} */ (gradeRecord(rec, ctx.today ?? new Date()).level);
+    const g = /** @type {Level} */ (gradeRecord(rec, ctx.today ?? new Date(), ctx.staleMonths).level);
     const level = rank(g) > rank(byCount) ? g : byCount;
     const why = [`${n} ${countNoun(item.measure.of)} (${byCount})`, ...(rank(g) > rank(byCount) ? [`the record's own evidence grades ${g}`] : [])];
     if (rank(level) >= 3) return { level, missing: [], why, next: null, count: n };
@@ -298,7 +299,7 @@ export const phaseGateEffect = (dir, opts = {}) => Effect.gen(function* () {
   }
 
   /** @type {GateContext} */
-  const ctx = { records, interviews: interviews.map((x) => /** @type {Interview} */ (x.value)), icps: icps.map((x) => /** @type {Icp} */ (x.value)), countLevels: policies.count_levels, decidedBy: opts.decidedBy ?? null, today: opts.today };
+  const ctx = { records, interviews: interviews.map((x) => /** @type {Interview} */ (x.value)), icps: icps.map((x) => /** @type {Icp} */ (x.value)), countLevels: { ...policies.count_levels, ...config.phase_gates?.count_levels }, staleMonths: config.phase_gates?.staleness_months, decidedBy: opts.decidedBy ?? null, today: opts.today };
   const items = scoreItems(def.items, policy, ctx);
   const authority = new Set(def.items.filter((i) => i.measure.kind === "authority").map((i) => i.id));
   const closed = items.filter((r) => r.boundary === "fail-closed" && !r.passed);
