@@ -13,20 +13,44 @@
   },
   "exports": {
     "./package.json": "./package.json",
-    "./src/*": "./packages/naive/src/*",
-    "./lean/*": "./packages/naive/lean/*",
-    "./schema/venture-paths.mjs": "./schema/venture-paths.mjs",
-    "./packages/*": "./packages/*",
-    "./template/*": "./packages/naive/template/*",
-    "./frameworks/*": "./frameworks/*",
-    "./library/*": "./packages/naive/library/*",
-    "./docs/*": "./docs/*"
+    "./src/*.d.ts": "./dist/packages/naive/src/*.d.ts",
+    "./src/*.ts": {
+      "types": "./packages/naive/src/*.ts",
+      "default": "./dist/packages/naive/src/*.js"
+    },
+    "./src/*": {
+      "types": "./packages/naive/src/*",
+      "default": "./dist/packages/naive/src/*"
+    },
+    "./lean/*": "./dist/packages/naive/lean/*",
+    "./schema/venture-paths.mjs": {
+      "types": "./schema/venture-paths.mjs",
+      "default": "./dist/schema/venture-paths.mjs"
+    },
+    "./packages/*.d.ts": "./dist/packages/*.d.ts",
+    "./packages/*.ts": {
+      "types": "./packages/*.ts",
+      "default": "./dist/packages/*.js"
+    },
+    "./packages/*": {
+      "types": "./packages/*",
+      "default": "./dist/packages/*"
+    },
+    "./template/*": "./dist/packages/naive/template/*",
+    "./frameworks/*": {
+      "types": "./frameworks/*",
+      "default": "./dist/frameworks/*"
+    },
+    "./library/*": "./dist/packages/naive/library/*",
+    "./docs/*": "./dist/docs/*"
   },
   "bin": {
-    "naive": "packages/naive/src/interfaces/cli/naive.mjs",
-    "mentura": "packages/naive/src/interfaces/cli/mentura.mjs"
+    "naive": "dist/packages/naive/src/interfaces/cli/naive.mjs",
+    "mentura": "dist/packages/naive/src/interfaces/cli/mentura.mjs"
   },
   "scripts": {
+    "build": "node scripts/build.ts",
+    "prepare": "node scripts/build.ts",
     "test": "node test.mjs",
     "lint": "eslint .",
     "typecheck": "node packages/naive/src/checks/check-types.ts"
@@ -35,6 +59,8 @@
     "AGENTS.md",
     "README.md",
     "LICENSE",
+    "dist/",
+    "!dist/.build-stamp",
     ".claude-plugin/plugin.json",
     "schema/",
     "scripts/diagnose-transcripts.mjs",

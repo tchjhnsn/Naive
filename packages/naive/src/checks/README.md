@@ -11,7 +11,7 @@ The checkers and lints. A checker reads a workspace, a venture or the repository
 | Path | Holds |
 |---|---|
 | [`check-assets.mjs`](./check-assets.mjs) | Checks each venture's public/ assets (packages/naive/src/engine/assets.mjs). |
-| [`check-boundary.mjs`](./check-boundary.mjs) | The boundary between Naive and the apps that use it (EE-041, EE-118). It skips `repos/`, the vendored reference source (AGENTS.md, Vendored repositories). |
+| [`check-boundary.mjs`](./check-boundary.mjs) | The boundary between Naive and the apps that use it (EE-041, EE-118). It skips `repos/`, the vendored reference source (AGENTS.md, Vendored repositories), and `dist/`, the compiled package (EE-159). |
 | [`check-brand.mjs`](./check-brand.mjs) | Checks each venture's brand (packages/naive/src/engine/brand.mjs). |
 | [`check-config.mjs`](./check-config.mjs) | Checks a venture's naive.config.json (P-2) and explains its gate. |
 | [`check-functions.ts`](./check-functions.ts) | Checks the 13 function modules: each manifest, decision matrix and workflow against its schema and against decision rights, delegation, the capability clusters, the module's skills and the routes its record types own. `--complete` also requires every piece and a venture record type per function. It reads files through VentureFs (EE-125) and exits 2 when a shared file it needs cannot be read. A step never writes the team plan (`people/team-plan.json`, `operations/team-plan.json`), which only a person writes |
@@ -32,6 +32,7 @@ The checkers and lints. A checker reads a workspace, a venture or the repository
 | [`check-docs-claims.mjs`](./check-docs-claims.mjs) | Checks that the docs describe only what is built. |
 | [`check-execution.mjs`](./check-execution.mjs) | Checks a venture's handoffs (operations, EE-038) and evidence records against its decision rights (EE-017). A handoff that names `requested_by` has every review judged by that requester, and only the requester verifies it. No evidence result passes with a measured value outside its limit, and no limit has its min above its max. |
 | [`check-docs-claims.mjs`](./check-docs-claims.mjs) | Checks that the docs describe only what is built. READMEs under `repos/` belong to vendored libraries and are not scanned. |
+| [`check-docs-claims.mjs`](./check-docs-claims.mjs) | Checks that the docs describe only what is built. READMEs under `repos/` belong to vendored libraries and are not scanned, nor are the copies in `dist/`, the compiled package (EE-159). |
 | [`check-execution.mjs`](./check-execution.mjs) | Checks a venture's handoffs (operations, EE-038) and evidence records against its decision rights (EE-017). A handoff that names `requested_by` has every review judged by that requester, and only the requester verifies it. |
 | [`check-governance.mjs`](./check-governance.mjs) | Checks each venture's ownership-and-control records (EE-022). |
 | [`check-integrations.mjs`](./check-integrations.mjs) | Checks every layer's tooling/integrations.json for the rules one entry's schema cannot state. |
