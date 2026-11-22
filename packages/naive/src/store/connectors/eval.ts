@@ -15,7 +15,7 @@
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdtempSync, readdirSync, rmSync, utimesSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { contract, FIXTURE, harness, OUTSIDE } from "./suite.ts";
+import { contract, FIXTURE, harness, OUTSIDE, type Make } from "./suite.ts";
 import { connect as fsConnect } from "./filesystem.ts";
 import { connect, registerConnector, registry } from "./index.ts";
 
@@ -23,12 +23,12 @@ const h = harness("connectors");
 const { expect, write, scratch, finish } = h;
 
 // The filesystem connector, in a plain folder.
-const fsMake = (git) => async ({ writes = "direct" } = {}) => {
+const fsMake = (git: boolean): Make => async ({ writes = "direct" } = {}) => {
   const d = mkdtempSync(join(scratch, "fs-"));
   write(join(d, "kb"), FIXTURE);
   write(d, OUTSIDE);
   if (git) {
-    const g = (...a) => spawnSync("git", ["-C", d, ...a], { encoding: "utf8" });
+    const g = (...a: string[]) => spawnSync("git", ["-C", d, ...a], { encoding: "utf8" });
     g("init", "-q"); g("add", "."); g("-c", "user.name=eval", "-c", "user.email=eval@example.com", "commit", "-qm", "fixture");
   }
   return { c: fsConnect({ id: "folder", root: join(d, "kb"), writes }), dir: d };
@@ -38,10 +38,10 @@ const gitT = await contract(h, "filesystem (git repository)", fsMake(true));
 {
   const fresh = await fsMake(true)();
   const r = await fresh.c.read("notes/beta.md");
-  const head = spawnSync("git", ["-C", fresh.dir, "rev-parse", "HEAD"], { encoding: "utf8" }).stdout.trim();
-  expect("filesystem (git repository): a committed, unchanged item gives the commit that last touched it", r.commit === head);
+  const head = spawnSync("git", ["-C", String(fresh.dir), "rev-parse", "HEAD"], { encoding: "utf8" }).stdout.trim();
+  expect("filesystem (git repository): a committed, unchanged item gives the commit that last touched it", r?.commit === head);
   await fresh.c.write("notes/beta.md", "changed\n");
-  expect("filesystem (git repository): a changed item gives no commit, since no commit holds that version", !(await fresh.c.read("notes/beta.md")).commit);
+  expect("filesystem (git repository): a changed item gives no commit, since no commit holds that version", !(await fresh.c.read("notes/beta.md"))?.commit);
   void gitT;
 }
 {

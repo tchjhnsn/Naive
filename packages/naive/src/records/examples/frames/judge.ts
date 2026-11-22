@@ -4,7 +4,7 @@
 // could rest on says "not on record", else no (0.1); the trade reads as a sequence.
 let input = "";
 for await (const c of process.stdin) input += c;
-const req = JSON.parse(input);
+const req: { state: { venture?: Record<string, unknown> }; questions: Record<string, unknown> } = JSON.parse(input);
 const unknown = Object.values(req.state.venture ?? {}).some((v) => v === "not on record");
 const answers = Object.fromEntries(Object.keys(req.questions).map((k) => [k, { noul: k.startsWith("dichotomy:") ? (k === "dichotomy:sequence" ? 0.9 : 0.1) : k === "premise:needs-outside-money" && unknown ? 0.5 : 0.1 }]));
 console.log(JSON.stringify({ model: "stand-in", answers }));

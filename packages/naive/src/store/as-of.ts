@@ -16,34 +16,38 @@
 // A .mjs file, not .ts, because the router will read through it (the researcher's read clamp, build plan item 7),
 // and Node does not strip types under node_modules, where an app that installs Naive keeps it.
 
-import { entries } from "../core/provenance.ts";
+import { entries, type Entry } from "../core/provenance.ts";
 import { hasBlob, readBlob } from "../core/blobs.ts";
 
-/** @typedef {{ at: string, entity: string, route?: string, activity: string, sha256: string, derived_from?: string[] }} Line */
+/** A provenance line, as far as an as-of read needs it. */
+type Line = Pick<Entry, "at" | "entity" | "route" | "activity" | "sha256" | "derived_from">;
+/** A transaction time: a Date, an ISO 8601 string or a number of milliseconds. */
+export type AsOf = Date | string | number;
+/** A record as it was at a transaction time. */
+export type AsOfRecord = { entity: string; at: string; activity: string; sha256: string; content: string };
 
 /** Milliseconds since the epoch for t: a Date, an ISO 8601 string or a number of milliseconds. */
-function cutOf(/** @type {Date | string | number} */ t) {
+function cutOf(t: AsOf): number {
   const ms = t instanceof Date ? t.getTime() : typeof t === "number" ? t : Date.parse(t);
   if (!Number.isFinite(ms)) throw new Error(`${String(t)} is not a time: pass a Date, an ISO 8601 string or milliseconds`);
   return ms;
 }
 
 /** The lines at or before the cut, in log order, without drafts. */
-function linesTo(/** @type {string} */ dir, /** @type {number} */ cut) {
-  return /** @type {Line[]} */ (entries(dir)).filter((l) => l.activity !== "draft" && Date.parse(l.at) <= cut);
+function linesTo(dir: string, cut: number): Line[] {
+  return entries(dir).filter((l) => l.activity !== "draft" && Date.parse(l.at) <= cut);
 }
 
 /** The path a route or path names as of the cut: the path itself when a line names it, else the entity of the last line through that route. */
-function entityOf(/** @type {Line[]} */ lines, /** @type {string} */ routeOrPath) {
+function entityOf(lines: Line[], routeOrPath: string): string {
   const p = String(routeOrPath).replace(/^\.\//, "");
   if (lines.some((l) => l.entity === p)) return p;
   return lines.findLast((l) => l.route === p && !l.entity.includes("#"))?.entity ?? p;
 }
 
 /** The line that holds a path's version at the end of these lines, or null when there is none or it was moved away. */
-function versionOf(/** @type {Line[]} */ lines, /** @type {string} */ entity) {
-  /** @type {Line | null} */
-  let found = null;
+function versionOf(lines: Line[], entity: string): Line | null {
+  let found: Line | null = null;
   for (const l of lines) {
     if (l.entity === entity) found = l;
     else if (l.activity === "move" && (l.derived_from ?? []).includes(entity)) found = null;
@@ -52,14 +56,11 @@ function versionOf(/** @type {Line[]} */ lines, /** @type {string} */ entity) {
 }
 
 /**
- * A record's content as of transaction time t, or null (see the header for when).
- * @param {string} dir the venture folder
- * @param {string} routeOrPath a logical path (foundation/problem.json), an address in another source
- *   (<source>://<path>), or a concrete route the record was written through (validation/solution, products/teapot)
- * @param {Date | string | number} t
- * @returns {{ entity: string, at: string, activity: string, sha256: string, content: string } | null}
+ * A record's content as of transaction time t, or null (see the header for when). `dir` is the venture folder, and
+ * `routeOrPath` a logical path (foundation/problem.json), an address in another source (<source>://<path>), or a
+ * concrete route the record was written through (validation/solution, products/teapot).
  */
-export function readAsOf(dir, routeOrPath, t) {
+export function readAsOf(dir: string, routeOrPath: string, t: AsOf): AsOfRecord | null {
   const lines = linesTo(dir, cutOf(t));
   const entity = entityOf(lines, routeOrPath);
   const line = versionOf(lines, entity);
@@ -68,15 +69,9 @@ export function readAsOf(dir, routeOrPath, t) {
   return bytes ? { entity, at: line.at, activity: line.activity, sha256: line.sha256, content: bytes.toString("utf8") } : null;
 }
 
-/**
- * Every path readAsOf answers for at transaction time t, sorted.
- * @param {string} dir
- * @param {Date | string | number} t
- * @returns {string[]}
- */
-export function pathsAsOf(dir, t) {
-  /** @type {Map<string, Line>} */
-  const at = new Map();
+/** Every path readAsOf answers for at transaction time t, sorted. */
+export function pathsAsOf(dir: string, t: AsOf): string[] {
+  const at = new Map<string, Line>();
   for (const l of linesTo(dir, cutOf(t))) {
     if (l.activity === "move") for (const from of l.derived_from ?? []) at.delete(from);
     at.set(l.entity, l);

@@ -16,22 +16,30 @@
 // with Promise methods, so their calls are wrapped with Effect.tryPromise.
 
 import { Effect } from "effect";
-import { address, isText, words } from "./contract.ts";
-import { connectAllEffect } from "./index.ts";
-import { CannotRun } from "../../core/effect/errors.ts";
-import { VentureFs, readJson } from "../../core/effect/fs.ts";
+import { address, isText, words, type Connector, type Listed } from "./contract.ts";
+import { asNaive, connectAllEffect, readTyped } from "./index.ts";
+import type { NaiveError } from "../../core/effect/errors.ts";
+import { VentureFs } from "../../core/effect/fs.ts";
 import { runMain, runPromise, runSync } from "../../core/effect/run.ts";
 import { ventureFile } from "../../core/venture-paths.ts";
+import type { RecordRoute } from "../../records/routes/routes.ts";
 
-/** @typedef {import("../../core/effect/errors.ts").NaiveError} NaiveError */
-/** @typedef {{ address: string, source: string, path: string, version: string, route: string | null, record: string | null, title: string, terms: string[] }} CatalogItem */
-/** @typedef {{ built_at: string, sources: { id: string, connector: string }[], items: CatalogItem[] }} Catalog */
+/** Where an item sits in the route table, when it is a record. */
+export type RouteOf = { route: string | null; record: string | null };
+export type CatalogItem = { address: string; source: string; path: string; version: string; title: string; terms: string[] } & RouteOf;
+export type Catalog = { built_at: string; sources: { id: string; connector: string }[]; items: CatalogItem[] };
+/** A connected source the catalog reads: its id and connector name, and the connector's list and read. */
+export type CatalogSource = { source: { id: string; connector: string }; connector: Pick<Connector, "list" | "read"> };
+export type BuildStats = { sources: number; items: number; read: number; reused: number; skipped: number; errors: string[] };
+/** A catalog search hit: the item without its words, with its score. */
+export type SearchHit = Omit<CatalogItem, "terms"> & { score: number };
+/** A live search hit, or a source whose search failed (source and error only). */
+export type LiveHit = { source: string; address?: string; path?: string; version?: string; route?: string | null; record?: string | null; error?: string };
 
 export const FILE = "_catalog/catalog.json";
 const MAX_BYTES = 1_000_000;
 
-/** @param {string} path @param {string} content */
-function title(path, content) {
+function title(path: string, content: string): string | undefined {
   if (path.endsWith(".json")) {
     try { const j = JSON.parse(content); const t = j && typeof j === "object" && !Array.isArray(j) ? j.name ?? j.title ?? j.statement ?? j.id : null; if (typeof t === "string") return t.slice(0, 160); } catch {}
   }
@@ -41,21 +49,16 @@ function title(path, content) {
   return h ? h[1].trim() : path.split("/").at(-1);
 }
 
-/** A connector call as an Effect: a tagged error passes through, anything else is CannotRun with its message. @template A @param {() => Promise<A>} f */
-const call = (f) => Effect.tryPromise({
-  try: f,
-  catch: (e) => (e && typeof e === "object" && "_tag" in e ? /** @type {NaiveError} */ (e) : new CannotRun({ message: e instanceof Error ? e.message : String(e), cause: e })),
-});
+/** A connector call as an Effect: a tagged error passes through, anything else is CannotRun with its message. */
+const call = <A>(f: () => Promise<A>): Effect.Effect<A, NaiveError> => Effect.tryPromise({ try: f, catch: asNaive });
 
 // Which route a file in a source belongs to, from the route table (lazy, so the catalog works
 // without the router for a plain folder).
-/** @type {{ r: { route: string, record: string, collection: string, files: string[] }, res: RegExp[] }[] | null} */
-let table = null;
-/** @param {string} path @returns {Effect.Effect<{ route: string | null, record: string | null }>} */
-const routeOf = (path) => Effect.gen(function* () {
+let table: { r: RecordRoute; res: RegExp[] }[] | null = null;
+const routeOf = (path: string): Effect.Effect<RouteOf> => Effect.gen(function* () {
   if (!table) {
     const { routes, glob } = yield* Effect.promise(() => import("../../records/routes/routes.ts"));
-    table = routes().filter((/** @type {{ kind: string, collection: string }} */ r) => r.kind === "record" && r.collection !== "list").map((/** @type {{ route: string, record: string, collection: string, files: string[] }} */ r) => ({ r, res: r.files.map((g) => glob(g)) }));
+    table = routes().flatMap((r) => (r.kind === "record" && r.collection !== "list" ? [{ r, res: r.files.map((g) => glob(g)) }] : []));
   }
   for (const { r, res } of table ?? []) {
     if (!res.some((re) => re.test(path))) continue;
@@ -70,29 +73,28 @@ const routeOf = (path) => Effect.gen(function* () {
   return { route: null, record: null };
 });
 
-/** The venture's catalog, or null when it has none, as an Effect. @param {string} dir @returns {Effect.Effect<Catalog | null, NaiveError, "naive/VentureFs">} */
-export const loadEffect = (dir) => Effect.gen(function* () {
+/** The venture's catalog, or null when it has none, as an Effect. The catalog is the file this module wrote. */
+export const loadEffect = (dir: string): Effect.Effect<Catalog | null, NaiveError, "naive/VentureFs"> => Effect.gen(function* () {
   const fs = yield* VentureFs;
   const f = ventureFile(dir, FILE);
-  return (yield* fs.exists(f)) ? /** @type {Catalog} */ (yield* readJson(f)) : null;
+  return (yield* fs.exists(f)) ? yield* readTyped<Catalog>(f) : null;
 });
 
-/** The venture's catalog, or null when it has none. @param {string} dir */
-export const load = (dir) => runSync(loadEffect(dir));
+/** The venture's catalog, or null when it has none. */
+export const load = (dir: string): Catalog | null => runSync(loadEffect(dir));
 
-/**
- * build as an Effect.
- * @param {string} dir @param {{ write?: boolean, sources?: { source: { id: string, connector: string }, connector: { list: Function, read: Function } }[] }} [opts]
- */
-export const buildEffect = (dir, { write = true, sources } = {}) => Effect.gen(function* () {
+/** What build takes: whether to write the catalog, and the connected sources to read instead of the venture's own. */
+export type BuildOptions = { write?: boolean; sources?: CatalogSource[] };
+
+/** build as an Effect. */
+export const buildEffect = (dir: string, { write = true, sources }: BuildOptions = {}): Effect.Effect<{ catalog: Catalog; stats: BuildStats }, NaiveError, "naive/VentureFs"> => Effect.gen(function* () {
   const fs = yield* VentureFs;
   const prior = new Map(((yield* loadEffect(dir))?.items ?? []).map((x) => [x.address, x]));
-  const conns = sources ?? (yield* connectAllEffect(dir));
-  /** @type {CatalogItem[]} */
-  const items = [];
-  const stats = { sources: conns.length, items: 0, read: 0, reused: 0, skipped: 0, errors: /** @type {string[]} */ ([]) };
+  const conns: CatalogSource[] = sources ?? (yield* connectAllEffect(dir));
+  const items: CatalogItem[] = [];
+  const stats: BuildStats = { sources: conns.length, items: 0, read: 0, reused: 0, skipped: 0, errors: [] };
   for (const { source, connector } of conns) {
-    const got = yield* Effect.result(call(() => /** @type {Promise<{ path: string, version: string }[]>} */ (connector.list())));
+    const got = yield* Effect.result(call((): Promise<Listed[]> => connector.list()));
     if (got._tag === "Failure") { stats.errors.push(`${source.id}: ${got.failure.message}`); continue; }
     for (const { path, version } of got.success) {
       const at = address(source.id, path);
@@ -101,49 +103,46 @@ export const buildEffect = (dir, { write = true, sources } = {}) => Effect.gen(f
       if (old && old.version === version) { items.push({ ...old, ...where }); stats.reused++; continue; }
       const bare = { address: at, source: source.id, path, version, ...where, title: String(path.split("/").at(-1)), terms: words(path) };
       if (!isText(path)) { items.push(bare); stats.skipped++; continue; }
-      const item = /** @type {{ content: string, version: string } | null} */ (yield* call(() => connector.read(path)));
+      const item = yield* call(() => connector.read(path));
       stats.read++;
       if (!item || item.content.length > MAX_BYTES || !isText(path, item.content)) { items.push(bare); continue; }
       items.push({ address: at, source: source.id, path, version: item.version, ...where, title: String(title(path, item.content)), terms: [...new Set(words(`${path}\n${item.content}`))].sort() });
     }
   }
   stats.items = items.length;
-  /** @type {Catalog} */
-  const catalog = { built_at: new Date().toISOString(), sources: conns.map(({ source }) => ({ id: source.id, connector: source.connector })), items };
+  const catalog: Catalog = { built_at: new Date().toISOString(), sources: conns.map(({ source }) => ({ id: source.id, connector: source.connector })), items };
   if (write) yield* fs.writeText(ventureFile(dir, FILE), JSON.stringify(catalog) + "\n");
   return { catalog, stats };
 });
 
-/** Builds or refreshes the catalog. Returns it with stats: items, read (items fetched), reused.
- * @param {string} dir @param {{ write?: boolean, sources?: { source: { id: string, connector: string }, connector: { list: Function, read: Function } }[] }} [opts] */
-export async function build(dir, opts = {}) { return runPromise(buildEffect(dir, opts)); }
+/** Builds or refreshes the catalog. Returns it with stats: items, read (items fetched), reused. */
+export async function build(dir: string, opts: BuildOptions = {}): Promise<{ catalog: Catalog; stats: BuildStats }> { return runPromise(buildEffect(dir, opts)); }
 
 /** Items holding every word of the query, best first: words in the title count double. */
-export function search(catalog, query, { limit = 20 } = {}) {
+export function search(catalog: Catalog, query: string, { limit = 20 }: { limit?: number } = {}): SearchHit[] {
   const q = words(query);
   if (!q.length) return [];
-  return catalog.items.map((x) => {
+  return catalog.items.map((x): (CatalogItem & { score: number }) | null => {
     const terms = new Set(x.terms), t = words(x.title).join(" ");
     if (!q.every((w) => terms.has(w) || x.terms.some((y) => y.startsWith(w)))) return null;
     return { score: q.reduce((s, w) => s + (terms.has(w) ? 2 : 1) + (t.includes(w) ? 2 : 0), 0), ...x };
-  }).filter(Boolean).sort((a, b) => b.score - a.score || a.address.localeCompare(b.address)).slice(0, limit)
+  }).filter((x): x is CatalogItem & { score: number } => x !== null).sort((a, b) => b.score - a.score || a.address.localeCompare(b.address)).slice(0, limit)
     .map(({ terms, ...x }) => x);
 }
 
-/** searchLive as an Effect: a source whose search fails gives an entry with its error. @param {string} dir @param {string} query @param {{ limit?: number }} [opts] */
-export const searchLiveEffect = (dir, query, { limit = 20 } = {}) => Effect.gen(function* () {
-  /** @type {object[]} */
-  const out = [];
+/** searchLive as an Effect: a source whose search fails gives an entry with its error. */
+export const searchLiveEffect = (dir: string, query: string, { limit = 20 }: { limit?: number } = {}): Effect.Effect<LiveHit[], NaiveError, "naive/VentureFs"> => Effect.gen(function* () {
+  const out: LiveHit[] = [];
   for (const { source, connector } of yield* connectAllEffect(dir)) {
-    const got = yield* Effect.result(call(() => /** @type {Promise<{ path: string, version: string }[]>} */ (connector.search(query, { limit }))));
+    const got = yield* Effect.result(call(() => connector.search(query, { limit })));
     if (got._tag === "Failure") { out.push({ source: source.id, error: got.failure.message }); continue; }
     for (const x of got.success) out.push({ address: address(source.id, x.path), source: source.id, path: x.path, version: x.version, ...(yield* routeOf(x.path)) });
   }
   return out;
 });
 
-/** Asks each source's own search instead of the catalog. @param {string} dir @param {string} query @param {{ limit?: number }} [opts] */
-export async function searchLive(dir, query, opts = {}) { return runPromise(searchLiveEffect(dir, query, opts)); }
+/** Asks each source's own search instead of the catalog. */
+export async function searchLive(dir: string, query: string, opts: { limit?: number } = {}): Promise<LiveHit[]> { return runPromise(searchLiveEffect(dir, query, opts)); }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const [dir] = process.argv.slice(2).filter((a, i, all) => !a.startsWith("--") && all[i - 1] !== "--search");
@@ -153,8 +152,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   await runMain(Effect.gen(function* () {
     if (i >= 0) {
       const q = process.argv[i + 1] ?? "";
-      /** @type {{ address?: string, title?: string, route?: string | null }[]} */
-      const hits = process.argv.includes("--live") ? yield* searchLiveEffect(dir, q) : search((yield* loadEffect(dir)) ?? (yield* buildEffect(dir)).catalog, q);
+      const hits: { address?: string; title?: string; route?: string | null }[] = process.argv.includes("--live") ? yield* searchLiveEffect(dir, q) : search((yield* loadEffect(dir)) ?? (yield* buildEffect(dir)).catalog, q);
       console.log(json ? JSON.stringify({ query: q, hits }, null, 2) : hits.map((h) => `${h.address}  ${h.title ?? ""}${h.route ? `  (${h.route})` : ""}`).join("\n") || "no items match");
     } else {
       const { stats } = yield* buildEffect(dir);

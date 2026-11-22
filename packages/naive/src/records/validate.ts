@@ -21,12 +21,15 @@ import { readFileSync, readdirSync } from "node:fs";
 import { join, relative } from "node:path";
 import { pathToFileURL } from "node:url";
 import { ROOT, RECORDS, recordPath, recordRelative } from "./index.ts";
+import type { DataModel } from "./types/records.d.ts";
 
-/** @typedef {{ [key: string]: Json }} JsonObject */
-/** @typedef {Json[]} JsonArray */
-/** @typedef {null | boolean | number | string | JsonArray | JsonObject} Json */
-/** @typedef {boolean | { [key: string]: Json }} Schema */
-/** @typedef {{ path: string, message: string }} Failure */
+export type JsonObject = { [key: string]: Json };
+export type JsonArray = Json[];
+export type Json = null | boolean | number | string | JsonArray | JsonObject;
+export type Schema = boolean | { [key: string]: Json };
+export type Failure = { path: string; message: string };
+/** A check's answer, shaped like spawnSync's so a caller swaps one line: status 0 valid, 1 invalid, 2 the checker failed. */
+export type CheckResult = { status: number; stdout: string; stderr: string };
 
 /** Keywords that only annotate: they never fail. */
 const ANNOTATIONS = new Set(["$schema", "$id", "$comment", "$defs", "definitions", "title", "description", "default", "examples", "deprecated", "readOnly", "writeOnly", "x-note", "note", "mappings"]);
@@ -35,12 +38,10 @@ const APPLIED = new Set(["$ref", "type", "enum", "const", "properties", "additio
   "items", "minItems", "maxItems", "uniqueItems", "contains", "minimum", "maximum", "exclusiveMinimum", "exclusiveMaximum", "minLength", "maxLength",
   "pattern", "allOf", "anyOf", "oneOf", "not", "if", "then", "else", "format"]);
 
-/** @param {unknown} v @returns {v is { [key: string]: Json }} */
-const isObject = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
+const isObject = (v: unknown): v is { [key: string]: Json } => typeof v === "object" && v !== null && !Array.isArray(v);
 
-/** JSON equality as JSON Schema defines it: 1 equals 1.0, true does not equal 1, key order does not matter.
- *  @param {Json} a @param {Json} b @returns {boolean} */
-export function equal(a, b) {
+/** JSON equality as JSON Schema defines it: 1 equals 1.0, true does not equal 1, key order does not matter. */
+export function equal(a: Json, b: Json): boolean {
   if (typeof a === "boolean" || typeof b === "boolean") return a === b;
   if (Array.isArray(a) || Array.isArray(b)) return Array.isArray(a) && Array.isArray(b) && a.length === b.length && a.every((x, i) => equal(x, b[i]));
   if (isObject(a) || isObject(b)) {
@@ -51,8 +52,7 @@ export function equal(a, b) {
   return a === b;
 }
 
-/** @param {Json} v @param {string} t */
-function typeOk(v, t) {
+function typeOk(v: Json, t: string): boolean {
   switch (t) {
     case "null": return v === null;
     case "boolean": return typeof v === "boolean";
@@ -65,8 +65,8 @@ function typeOk(v, t) {
   }
 }
 
-/** A calendar date in RFC 3339 full-date form, as Python's jsonschema checks "date". @param {string} s */
-function isDate(s) {
+/** A calendar date in RFC 3339 full-date form, as Python's jsonschema checks "date". */
+function isDate(s: string): boolean {
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s);
   if (!m) return false;
   const [y, mo, d] = [Number(m[1]), Number(m[2]), Number(m[3])];
@@ -75,19 +75,14 @@ function isDate(s) {
   return d <= days;
 }
 
-/** @param {Json} v */
-const show = (v) => JSON.stringify(v);
-/** @param {string} s */
-const codePoints = (s) => [...s].length;
+const show = (v: Json | undefined) => JSON.stringify(v);
+const codePoints = (s: string) => [...s].length;
 
-/** Every schema in a folder, registered by its $id (or file name), so one may $ref another by name.
- *  @param {string} [folder] @returns {Map<string, Schema>} */
-export function registryOf(folder = RECORDS) {
-  /** @type {Map<string, Schema>} */
-  const reg = new Map();
+/** Every schema in a folder, registered by its $id (or file name), so one may $ref another by name. */
+export function registryOf(folder: string = RECORDS): Map<string, Schema> {
+  const reg = new Map<string, Schema>();
   for (const f of readdirSync(folder).filter((n) => n.endsWith(".schema.json")).sort()) {
-    /** @type {Schema} */
-    const s = JSON.parse(readFileSync(join(folder, f), "utf8"));
+    const s: Schema = JSON.parse(readFileSync(join(folder, f), "utf8"));
     reg.set(isObject(s) && typeof s.$id === "string" ? s.$id : f, s);
     if (!reg.has(f)) reg.set(f, s);
   }
@@ -96,34 +91,29 @@ export function registryOf(folder = RECORDS) {
 
 /** A validator over a registry of schemas. */
 export class Validator {
-  /** @param {Map<string, Schema>} reg */
-  constructor(reg) {
+  readonly reg: Map<string, Schema>;
+  readonly regex: Map<string, RegExp>;
+  constructor(reg: Map<string, Schema>) {
     this.reg = reg;
-    /** @type {Map<string, RegExp>} */
     this.regex = new Map();
   }
 
-  /** Every failure of `value` against `schema`, which lives in the document `base`.
-   *  @param {Json} value @param {Schema} schema @param {string} base @returns {Failure[]} */
-  validate(value, schema, base) {
-    /** @type {Failure[]} */
-    const out = [];
+  /** Every failure of `value` against `schema`, which lives in the document `base`. */
+  validate(value: Json, schema: Schema, base: string): Failure[] {
+    const out: Failure[] = [];
     this.at(value, schema, base, [], out);
     return out;
   }
 
-  /** @param {string} ref @param {string} base @returns {{ schema: Schema, base: string }} */
-  resolve(ref, base) {
+  resolve(ref: string, base: string): { schema: Schema; base: string } {
     const [doc, frag = ""] = ref.split("#");
     const name = doc || base;
     const root = this.reg.get(name);
     if (root === undefined) throw new Error(`$ref ${ref}: no schema ${name}`);
-    /** @type {Json} */
-    let node = root;
+    let node: Json = root;
     for (const raw of frag.split("/").filter(Boolean)) {
       const key = decodeURIComponent(raw).replace(/~1/g, "/").replace(/~0/g, "~");
-      /** @type {Json | undefined} */
-      const next = Array.isArray(node) ? node[Number(key)] : isObject(node) ? node[key] : undefined;
+      const next: Json | undefined = Array.isArray(node) ? node[Number(key)] : isObject(node) ? node[key] : undefined;
       if (next === undefined) throw new Error(`$ref ${ref}: ${key} is not there`);
       node = next;
     }
@@ -131,23 +121,19 @@ export class Validator {
     return { schema: node, base: name };
   }
 
-  /** @param {string} p */
-  pattern(p) {
+  pattern(p: string): RegExp {
     let r = this.regex.get(p);
     if (!r) { r = new RegExp(p, "u"); this.regex.set(p, r); }
     return r;
   }
 
-  /** @param {Json} v @param {Schema} s @param {string} base @param {(string | number)[]} path @param {Failure[]} out */
-  at(v, s, base, path, out) {
+  at(v: Json, s: Schema, base: string, path: (string | number)[], out: Failure[]): void {
     const where = path.length ? path.join("/") : "(root)";
-    /** @param {string} message */
-    const fail = (message) => { out.push({ path: where, message }); };
+    const fail = (message: string) => { out.push({ path: where, message }); };
     if (s === true) return;
     if (s === false) { fail(`False schema does not allow ${show(v)}`); return; }
     for (const k of Object.keys(s)) if (!APPLIED.has(k) && !ANNOTATIONS.has(k)) throw new Error(`schema keyword ${k} is not supported by validate.ts`);
-    /** @param {Json | undefined} x @returns {Schema} */
-    const sub = (x) => (typeof x === "boolean" || isObject(x) ? x : true);
+    const sub = (x: Json | undefined): Schema => (typeof x === "boolean" || isObject(x) ? x : true);
 
     if (typeof s.$ref === "string") { const r = this.resolve(s.$ref, base); this.at(v, r.schema, r.base, path, out); }
     if (s.type !== undefined) {
@@ -211,17 +197,14 @@ export class Validator {
   }
 }
 
-/** @type {Validator | null} */
-let shared = null;
+let shared: Validator | null = null;
 
 /**
  * Sets the validator validateFile and validateValue use, and returns the one it replaces (null before the
  * first check). A host with schemas of its own passes a Validator over a registry that adds them; a test
- * passes one that cannot run, to prove a caller refuses rather than passes.
- * @param {Validator | null} next null goes back to Naive's own schemas
- * @returns {Validator | null}
+ * passes one that cannot run, to prove a caller refuses rather than passes. null goes back to Naive's own schemas.
  */
-export function useValidator(next) {
+export function useValidator(next: Validator | null): Validator | null {
   const prev = shared;
   shared = next;
   return prev;
@@ -230,26 +213,21 @@ export function useValidator(next) {
 /**
  * Validates one file against one schema, in this process: what `node validate.ts --schema <name> --file <path>`
  * does, with the same result shape as spawnSync so a caller swaps one line. status 0 valid, 1 invalid (stdout holds
- * one "path: message" line per failure), 2 the checker failed (stderr says why). `def` checks one $defs entry.
- * @param {string} name a schema file name, such as "venture.schema.json"
- * @param {string} file the JSON file to check
- * @param {{ def?: string }} [opts]
- * @returns {{ status: number, stdout: string, stderr: string }}
+ * one "path: message" line per failure), 2 the checker failed (stderr says why). `name` is a schema file name, such
+ * as "venture.schema.json", and `file` the JSON file to check. `def` checks one $defs entry.
  */
-export function validateFile(name, file, { def } = {}) {
+export function validateFile(name: string, file: string, { def }: { def?: string } = {}): CheckResult {
   try {
     shared ??= new Validator(registryOf());
     const schema = shared.reg.get(name);
     if (schema === undefined) return { status: 2, stdout: "", stderr: `no schema ${name}\n` };
-    /** @type {Schema} */
-    let target = schema;
+    let target: Schema = schema;
     if (def !== undefined) {
       const defs = isObject(schema) && isObject(schema.$defs) ? schema.$defs : {};
       if (!(def in defs)) return { status: 2, stdout: "", stderr: `${name} has no $defs entry ${def}\n` };
       target = { $ref: `${name}#/$defs/${def}` };
     }
-    /** @type {Json} */
-    let one;
+    let one: Json;
     try { one = JSON.parse(readFileSync(file, "utf8")); } catch (e) { return { status: 1, stdout: `(root): ${e instanceof Error ? e.message : String(e)}\n`, stderr: "" }; }
     const errs = shared.validate(one, target, name);
     return errs.length ? { status: 1, stdout: `${errs.map((e) => `${e.path}: ${e.message}`).join("\n")}\n`, stderr: "" } : { status: 0, stdout: "valid\n", stderr: "" };
@@ -260,16 +238,13 @@ export function validateFile(name, file, { def } = {}) {
 
 /**
  * Validates a value already in memory against one schema. Same result shape as validateFile.
- * @param {string} name @param {unknown} value
- * @returns {{ status: number, stdout: string, stderr: string }}
  */
-export function validateValue(name, value) {
+export function validateValue(name: string, value: unknown): CheckResult {
   try {
     shared ??= new Validator(registryOf());
     const schema = shared.reg.get(name);
     if (schema === undefined) return { status: 2, stdout: "", stderr: `no schema ${name}\n` };
-    /** @type {Json} */
-    const one = JSON.parse(JSON.stringify(value));
+    const one: Json = JSON.parse(JSON.stringify(value));
     const errs = shared.validate(one, schema, name);
     return errs.length ? { status: 1, stdout: `${errs.map((e) => `${e.path}: ${e.message}`).join("\n")}\n`, stderr: "" } : { status: 0, stdout: "valid\n", stderr: "" };
   } catch (e) {
@@ -277,19 +252,16 @@ export function validateValue(name, value) {
   }
 }
 
-/** Every record file in the repository with the schema and form that govern it: the more specific glob wins.
- *  @param {string} [root] @returns {{ file: string, schema: string, form: string }[]} */
-export function recordFiles(root = ROOT) {
-  /** @type {{ records: { schema?: string | null, form?: string, paths: string[] }[] }} */
-  const model = JSON.parse(readFileSync(join(RECORDS, "data-model.json"), "utf8"));
+/** Every record file in the repository with the schema and form that govern it: the more specific glob wins. */
+export function recordFiles(root: string = ROOT): { file: string; schema: string; form: string }[] {
+  const model: Pick<DataModel, "records"> = JSON.parse(readFileSync(join(RECORDS, "data-model.json"), "utf8"));
   const rules = model.records
     .filter((r) => r.schema && recordRelative(r.schema) !== null && ["json", "json-list", "json-lines"].includes(r.form ?? "json"))
     .map((r) => ({ schema: String(r.schema), form: r.form ?? "json", globs: r.paths }));
   // fs.globSync is looked up only here, in the whole-repository run, and never when a caller validates one record.
   const globSync = fs.globSync;
   if (typeof globSync !== "function") throw new Error("validating every record needs Node 22 or later (fs.globSync)");
-  /** @type {Map<string, { weight: number, schema: string, form: string }>} */
-  const best = new Map();
+  const best = new Map<string, { weight: number; schema: string; form: string }>();
   for (const r of rules) for (const g of r.globs) {
     const weight = g.replace(/\*\*\//g, "").replace(/\*/g, "").length;
     for (const rel of globSync(g, { cwd: root })) {
@@ -301,13 +273,10 @@ export function recordFiles(root = ROOT) {
   return [...best.entries()].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)).map(([file, x]) => ({ file, schema: x.schema, form: x.form }));
 }
 
-/** @param {string} stored */
-const nameOf = (stored) => relative(RECORDS, recordPath(stored));
+const nameOf = (stored: string) => relative(RECORDS, recordPath(stored));
 
-/** @param {string[]} argv @returns {number} */
-function main(argv) {
-  /** @param {string} n */
-  const opt = (n) => { const i = argv.indexOf(n); return i < 0 ? undefined : argv[i + 1]; };
+function main(argv: string[]): number {
+  const opt = (n: string) => { const i = argv.indexOf(n); return i < 0 ? undefined : argv[i + 1]; };
   if ((argv.includes("--schema") || argv.includes("--def")) && !argv.includes("--file")) {
     process.stderr.write("usage: node packages/naive/src/records/validate.ts --schema <name>.schema.json [--def <name>] --file <path>\n");
     return 2;
@@ -315,14 +284,12 @@ function main(argv) {
   const reg = registryOf(), v = new Validator(reg);
   const file = opt("--file");
   if (file !== undefined) {
-    /** @type {Json} */
-    let one;
+    let one: Json;
     try { one = JSON.parse(readFileSync(file, "utf8")); } catch (e) { console.log(`(root): ${e instanceof Error ? e.message : String(e)}`); return 1; }
     const name = opt("--schema") ?? "";
     const schema = reg.get(name);
     if (schema === undefined) { process.stderr.write(`no schema ${name}\n`); return 2; }
-    /** @type {Schema} */
-    let target = schema;
+    let target: Schema = schema;
     const def = opt("--def");
     if (def !== undefined) {
       const defs = isObject(schema) && isObject(schema.$defs) ? schema.$defs : {};
@@ -336,8 +303,7 @@ function main(argv) {
   let failed = 0, checked = 0;
   for (const { file: f, schema, form } of recordFiles()) {
     const name = nameOf(schema), rel = relative(ROOT, f);
-    /** @type {Json[]} */
-    let docs;
+    let docs: Json[];
     try {
       const text = readFileSync(f, "utf8");
       docs = form === "json-lines" ? text.split("\n").filter((l) => l.trim()).map((l) => JSON.parse(l)) : [JSON.parse(text)];

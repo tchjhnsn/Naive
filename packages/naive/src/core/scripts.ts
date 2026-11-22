@@ -23,9 +23,8 @@ export const UNITS = Object.freeze(["core", "records", "terms", "store", "engine
  * The absolute path of a script, by file name ("check-ventures.ts") or by name without the extension. A `.ts` name
  * also finds its `.mjs`, which is what the compiled package (dist/, EE-159) holds in its place, and a `.mjs` name
  * finds the `.ts` a module became when it was converted.
- * @param {string} name
  */
-export function naiveScript(name) {
+export function naiveScript(name: string): string {
   const file = /\.(mjs|ts|py)$/.test(name) ? name : `${name}.mjs`;
   const names = file.endsWith(".ts") ? [file, file.replace(/\.ts$/, ".mjs")] : file.endsWith(".mjs") ? [file, file.replace(/\.mjs$/, ".ts")] : [file];
   for (const unit of UNITS) for (const n of names) {

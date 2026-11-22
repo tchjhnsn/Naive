@@ -34,46 +34,59 @@ import { runSync } from "../../core/effect/run.ts";
 
 export { VersionConflict };
 
-export const METHODS = ["list", "read", "version", "search", "write"];
-export const WRITES = ["direct", "pull-request", "none"];
+export const METHODS = ["list", "read", "version", "search", "write"] as const;
+export const WRITES = ["direct", "pull-request", "none"] as const;
+/** How a connector's writes reach its source. */
+export type Writes = (typeof WRITES)[number];
+/** One item a list or search names. */
+export type Listed = { path: string; version: string };
+/** One item read whole. */
+export type Item = { path: string; content: string; version: string; commit?: string; permalink?: string };
+/** What a write may say: the version it started from, whether it appends, and a commit or pull request's words. */
+export type WriteOptions = { base?: string | null; append?: boolean; message?: string; title?: string };
+/** What a write answers: the item's new version, and the commit or the draft pull request that holds it. */
+export type Written = Listed & { commit?: string; pull_request?: { url: string; branch: string; [key: string]: unknown } };
+/** A connected connector as the contract has it: its id, how it writes, and the five methods, each a Promise. */
+export type Connector = {
+  id: string;
+  writes: Writes;
+  list: (prefix?: string) => Promise<Listed[]>;
+  read: (path: string) => Promise<Item | null>;
+  version: (path: string) => Promise<string | null>;
+  search: (query: string, opts?: { limit?: number }) => Promise<Listed[]>;
+  write: (path: string, content: string | Buffer, opts?: WriteOptions) => Promise<Written>;
+};
 
-/** The git blob SHA-1 of some content: what `git hash-object` prints. @param {string | Buffer} content */
-export const blobSha = (content) => {
+const isWrites = (w: unknown): w is Writes => WRITES.some((x) => x === w);
+
+/** The git blob SHA-1 of some content: what `git hash-object` prints. */
+export const blobSha = (content: string | Buffer): string => {
   const buf = Buffer.isBuffer(content) ? content : Buffer.from(content, "utf8");
   return createHash("sha1").update(`blob ${buf.length}\0`).update(buf).digest("hex");
 };
 
-/** @param {string} message */
-const outside = (message) => new Refused({ rule: "path-inside-source", message });
+const outside = (message: string) => new Refused({ rule: "path-inside-source", message });
 
-/**
- * A path inside a source, normalised; fails with Refused for one that is empty or leaves the root.
- * @param {unknown} p
- * @returns {Effect.Effect<string, Refused>}
- */
-export const safePathEffect = (p) => Effect.suspend(() => {
+/** A path inside a source, normalised; fails with Refused for one that is empty or leaves the root. */
+export const safePathEffect = (p: unknown): Effect.Effect<string, Refused> => Effect.suspend(() => {
   if (typeof p !== "string" || !p.length || p.includes("\0") || p.includes("\\") || p.startsWith("/")) return Effect.fail(outside(`${JSON.stringify(p)} is not a path inside the source`));
   const parts = p.split("/").filter((s) => s && s !== ".");
   if (!parts.length || parts.includes("..")) return Effect.fail(outside(`${p} is not a path inside the source`));
   return Effect.succeed(parts.join("/"));
 });
 
-/** A path inside a source, normalised, or a thrown Refused for one that is empty or leaves the root. @param {unknown} p */
-export const safePath = (p) => runSync(safePathEffect(p));
+/** A path inside a source, normalised, or a thrown Refused for one that is empty or leaves the root. */
+export const safePath = (p: unknown): string => runSync(safePathEffect(p));
 
 /**
  * Checks a write's options against the item's current version and content, before anything is
  * written. Fails with a VersionConflict for a stale base, and with Refused for a base that is not a
  * version or an append that would not add whole lines at a line boundary. Shared so every connector
- * refuses the same writes.
- * @param {string} path @param {string | null} current the version now, or null when missing
- * @param {string | null} stored the content now, or null when missing (used only for append)
- * @param {string | Buffer} content @param {{ base?: string | null, append?: boolean }} [opts]
- * @returns {Effect.Effect<void, VersionConflict | Refused>}
+ * refuses the same writes. `current` is the version now and `stored` the content now (used only for append), each
+ * null when the item is missing.
  */
-export const checkWriteEffect = (path, current, stored, content, { base, append } = {}) => Effect.suspend(/** @returns {Effect.Effect<void, VersionConflict | Refused>} */ () => {
-  /** @param {string} rule @param {string} message */
-  const refuse = (rule, message) => Effect.fail(new Refused({ rule, message }));
+export const checkWriteEffect = (path: string, current: string | null, stored: string | null, content: string | Buffer, { base, append }: Pick<WriteOptions, "base" | "append"> = {}): Effect.Effect<void, VersionConflict | Refused> => Effect.suspend((): Effect.Effect<void, VersionConflict | Refused> => {
+  const refuse = (rule: string, message: string) => Effect.fail(new Refused({ rule, message }));
   if (base !== undefined && base !== null && typeof base !== "string") return refuse("base-version", `${path}: base must be a version or null`);
   if (base !== undefined && base !== current) return Effect.fail(new VersionConflict(path, base, current));
   if (!append) return Effect.void;
@@ -83,29 +96,29 @@ export const checkWriteEffect = (path, current, stored, content, { base, append 
   return Effect.void;
 });
 
-/**
- * checkWriteEffect run at once: throws the VersionConflict or Refused.
- * @param {string} path @param {string | null} current @param {string | null} stored
- * @param {string | Buffer} content @param {{ base?: string | null, append?: boolean }} [opts]
- */
-export const checkWrite = (path, current, stored, content, opts = {}) => runSync(checkWriteEffect(path, current, stored, content, opts));
+/** checkWriteEffect run at once: throws the VersionConflict or Refused. */
+export const checkWrite = (path: string, current: string | null, stored: string | null, content: string | Buffer, opts: Pick<WriteOptions, "base" | "append"> = {}): void => runSync(checkWriteEffect(path, current, stored, content, opts));
 
-export const address = (sourceId, path) => `${sourceId}://${path}`;
+export const address = (sourceId: string, path: string): string => `${sourceId}://${path}`;
 
 /** Every word of the query, lowercased, appears in the text. */
-export const matches = (text, query) => {
+export const matches = (text: string, query: string): boolean => {
   const t = text.toLowerCase();
   return words(query).every((w) => t.includes(w));
 };
-export const words = (s) => String(s).toLowerCase().split(/[^\p{L}\p{N}]+/u).filter((w) => w.length > 1);
+export const words = (s: string): string[] => String(s).toLowerCase().split(/[^\p{L}\p{N}]+/u).filter((w) => w.length > 1);
 
 /** Text a catalog may index: small files that are not binary. */
-export const isText = (path, content) => !/\.(png|jpe?g|gif|webp|ico|pdf|zip|gz|woff2?|ttf|mp4|mov)$/i.test(path) && (content === undefined || !content.includes("\0"));
+export const isText = (path: string, content?: string): boolean => !/\.(png|jpe?g|gif|webp|ico|pdf|zip|gz|woff2?|ttf|mp4|mov)$/i.test(path) && (content === undefined || !content.includes("\0"));
 
 /** Checks an object has the contract's methods and a known `writes`. Returns the problems. */
-export function conformance(c) {
-  const problems = METHODS.filter((m) => typeof c?.[m] !== "function").map((m) => `no ${m}()`);
-  if (!WRITES.includes(c?.writes)) problems.push(`writes is ${c?.writes}, not one of ${WRITES.join(", ")}`);
-  if (typeof c?.id !== "string") problems.push("no id");
+export function conformance(c: unknown): string[] {
+  const get = (k: string): unknown => ((typeof c === "object" || typeof c === "function") && c !== null ? Reflect.get(c, k) : undefined);
+  const problems = METHODS.filter((m) => typeof get(m) !== "function").map((m) => `no ${m}()`);
+  if (!isWrites(get("writes"))) problems.push(`writes is ${String(get("writes"))}, not one of ${WRITES.join(", ")}`);
+  if (typeof get("id") !== "string") problems.push("no id");
   return problems;
 }
+
+/** Whether a module's connect() gave a connector the contract accepts: an id, a known `writes` and the five methods. */
+export const isConnector = (c: unknown): c is Connector => conformance(c).length === 0;

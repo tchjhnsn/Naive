@@ -16,7 +16,7 @@
 
 import { createHash } from "node:crypto";
 import { Effect } from "effect";
-import { ParseError } from "./effect/errors.ts";
+import { ParseError, type IoError, type NotFound } from "./effect/errors.ts";
 import { VentureFs } from "./effect/fs.ts";
 import { runSync } from "./effect/run.ts";
 import { ventureFile } from "./venture-paths.ts";
@@ -26,41 +26,33 @@ export const BLOBS = ".naive/blobs";
 const HEX = /^[0-9a-f]{64}$/;
 
 /** The SHA-256 of some bytes, in hex: the hash a provenance line records and a blob is named by. */
-export const blobHash = (/** @type {string | Buffer} */ bytes) => createHash("sha256").update(bytes).digest("hex");
+export const blobHash = (bytes: string | Buffer): string => createHash("sha256").update(bytes).digest("hex");
 
 /** The logical path of a blob in a venture: .naive/blobs/<first two hex characters>/<sha256>. */
-export function blobRel(/** @type {string} */ sha256) {
+export function blobRel(sha256: string): string {
   if (typeof sha256 !== "string" || !HEX.test(sha256)) throw new Error(`${sha256} is not a SHA-256 in lowercase hex`);
   return `${BLOBS}/${sha256.slice(0, 2)}/${sha256}`;
 }
 
 /** The absolute path of a blob in a venture. */
-export const blobFile = (/** @type {string} */ dir, /** @type {string} */ sha256) => ventureFile(dir, blobRel(sha256));
+export const blobFile = (dir: string, sha256: string): string => ventureFile(dir, blobRel(sha256));
 
-/**
- * Is the blob for this hash in the venture's store?
- * @param {string} dir
- * @param {string} sha256
- * @returns {Effect.Effect<boolean, never, "naive/VentureFs">}
- */
-export const hasBlobEffect = (dir, sha256) => Effect.gen(function* () {
+/** Is the blob for this hash in the venture's store? */
+export const hasBlobEffect = (dir: string, sha256: string): Effect.Effect<boolean, never, "naive/VentureFs"> => Effect.gen(function* () {
   if (!HEX.test(sha256)) return false;
   const fs = yield* VentureFs;
   return yield* fs.exists(blobFile(dir, sha256));
 });
 
 /** Is the blob for this hash in the venture's store? */
-export const hasBlob = (/** @type {string} */ dir, /** @type {string} */ sha256) => runSync(hasBlobEffect(dir, sha256));
+export const hasBlob = (dir: string, sha256: string): boolean => runSync(hasBlobEffect(dir, sha256));
 
 /**
  * Stores bytes under their SHA-256 and succeeds with the hash. An existing blob is left as it is. The bytes go to a
  * temporary file beside the blob first and are renamed into place, so a reader never sees half a blob; the
- * temporary file is removed whether or not the rename happened.
- * @param {string} dir the venture folder
- * @param {string | Buffer} bytes
- * @returns {Effect.Effect<string, import("./effect/errors.ts").IoError, "naive/VentureFs">}
+ * temporary file is removed whether or not the rename happened. `dir` is the venture folder.
  */
-export const writeBlobEffect = (dir, bytes) => Effect.gen(function* () {
+export const writeBlobEffect = (dir: string, bytes: string | Buffer): Effect.Effect<string, IoError, "naive/VentureFs"> => Effect.gen(function* () {
   const fs = yield* VentureFs;
   const sha256 = blobHash(bytes);
   const f = blobFile(dir, sha256);
@@ -75,20 +67,15 @@ export const writeBlobEffect = (dir, bytes) => Effect.gen(function* () {
 
 /**
  * Stores bytes under their SHA-256 and returns the hash. Throws an IoError when the store cannot be written.
- * @param {string} dir the venture folder
- * @param {string | Buffer} bytes
- * @returns {string}
+ * `dir` is the venture folder.
  */
-export const writeBlob = (dir, bytes) => runSync(writeBlobEffect(dir, bytes));
+export const writeBlob = (dir: string, bytes: string | Buffer): string => runSync(writeBlobEffect(dir, bytes));
 
 /**
  * The bytes stored under a hash. Fails with NotFound when the venture has no such blob or the hash is not one,
  * and with ParseError when the file there does not hash to its name (a damaged blob is never served).
- * @param {string} dir
- * @param {string} sha256
- * @returns {Effect.Effect<Buffer, import("./effect/errors.ts").IoError | import("./effect/errors.ts").NotFound | ParseError, "naive/VentureFs">}
  */
-export const readBlobEffect = (dir, sha256) => Effect.gen(function* () {
+export const readBlobEffect = (dir: string, sha256: string): Effect.Effect<Buffer, IoError | NotFound | ParseError, "naive/VentureFs"> => Effect.gen(function* () {
   if (typeof sha256 !== "string" || !HEX.test(sha256)) return yield* Effect.fail(new ParseError({ path: String(sha256), cause: "not a SHA-256 in lowercase hex" }));
   const fs = yield* VentureFs;
   const f = blobFile(dir, sha256);
@@ -100,10 +87,7 @@ export const readBlobEffect = (dir, sha256) => Effect.gen(function* () {
 /**
  * The bytes stored under a hash, or null when the venture has no such blob, or the file there does not hash to its
  * name (a damaged blob is treated as missing, never served).
- * @param {string} dir
- * @param {string} sha256
- * @returns {Buffer | null}
  */
-export function readBlob(dir, sha256) {
+export function readBlob(dir: string, sha256: string): Buffer | null {
   return runSync(Effect.catchTags(readBlobEffect(dir, sha256), { NotFound: () => Effect.succeed(null), ParseError: () => Effect.succeed(null) }));
 }

@@ -14,56 +14,48 @@
 //   git       a git working copy: (args, opts) => { status, stdout, stderr }, answered at once (the same shape as spawnSync)
 // Imports nothing in the repository.
 
-import { spawnSync } from "node:child_process";
+import { spawnSync, type SpawnSyncOptions } from "node:child_process";
 
 /** Whether this process runs hosted: NAIVE_RUNTIME=hosted. */
-export const isHosted = () => process.env.NAIVE_RUNTIME === "hosted";
+export const isHosted = (): boolean => process.env.NAIVE_RUNTIME === "hosted";
 
-/** @typedef {{ status: number | null, stdout: string, stderr: string, error?: Error }} CommandResult */
-/** @typedef {(args: string[], input?: string) => CommandResult | Promise<CommandResult>} CommandHook */
-/** @typedef {(command: string, opts: { cwd: string }) => CommandResult | Promise<CommandResult>} SandboxHook */
-/** @typedef {(args: string[], opts?: import("node:child_process").SpawnSyncOptions) => CommandResult} GitHook */
-/** @typedef {{ judge: CommandHook, site: CommandHook, trace: CommandHook, sandbox: SandboxHook, git: GitHook }} Hooks */
+export type CommandResult = { status: number | null; stdout: string; stderr: string; error?: Error };
+export type CommandHook = (args: string[], input?: string) => CommandResult | Promise<CommandResult>;
+export type SandboxHook = (command: string, opts: { cwd: string }) => CommandResult | Promise<CommandResult>;
+export type GitHook = (args: string[], opts?: SpawnSyncOptions) => CommandResult;
+export type Hooks = { judge: CommandHook; site: CommandHook; trace: CommandHook; sandbox: SandboxHook; git: GitHook };
+export type HookName = keyof Hooks;
 
 /** The hooks a host can register, and the environment variable each stands in for (null when none does). */
 export const HOOKS = Object.freeze({ judge: "NAIVE_JUDGE_CMD", site: "NAIVE_SITE_CMD", trace: "NAIVE_TRACE_CMD", sandbox: null, git: null });
 
-/** @type {Partial<Hooks>} */
-const registered = {};
+const registered: { [K in HookName]: Hooks[K] | undefined } = { judge: undefined, site: undefined, trace: undefined, sandbox: undefined, git: undefined };
 
-/**
- * Registers a host hook. A hosted host calls this at start, the way it registers connectors.
- * @template {keyof Hooks} K
- * @param {K} name @param {Hooks[K]} fn
- */
-export function registerHook(name, fn) {
+/** Registers a host hook. A hosted host calls this at start, the way it registers connectors. */
+export function registerHook<K extends HookName>(name: K, fn: Hooks[K]): void {
   if (!(name in HOOKS)) throw new Error(`no host hook ${name}: the hooks are ${Object.keys(HOOKS).join(", ")}`);
   if (typeof fn !== "function") throw new Error(`the ${name} hook is a function`);
   registered[name] = fn;
 }
 
 /** Removes every registered hook (tests). */
-export function clearHooks() {
-  for (const k of Object.keys(registered)) delete registered[/** @type {keyof Hooks} */ (k)];
+export function clearHooks(): void {
+  registered.judge = registered.site = registered.trace = undefined;
+  registered.sandbox = undefined;
+  registered.git = undefined;
 }
 
-/**
- * The hook the host registered, when hosted. Undefined on a laptop, so laptop code never sees one.
- * @template {keyof Hooks} K
- * @param {K} name @returns {Hooks[K] | undefined}
- */
-export const hostHook = (name) => (isHosted() ? /** @type {Hooks[K] | undefined} */ (registered[name]) : undefined);
+/** The hook the host registered, when hosted. Undefined on a laptop, so laptop code never sees one. */
+export const hostHook = <K extends HookName>(name: K): Hooks[K] | undefined => (isHosted() ? registered[name] : undefined);
 
-/**
- * An environment command (NAIVE_JUDGE_CMD and the like): its value on a laptop, ignored when hosted.
- * @param {string} name
- */
-export const envCommand = (name) => (isHosted() ? undefined : process.env[name]);
+/** An environment command (NAIVE_JUDGE_CMD and the like): its value on a laptop, ignored when hosted. */
+export const envCommand = (name: string): string | undefined => (isHosted() ? undefined : process.env[name]);
 
 /** A feature refused in hosted mode. Its message names the feature and why. */
 export class HostedRefusal extends Error {
-  /** @param {string} feature @param {string} why */
-  constructor(feature, why) {
+  readonly code: "NAIVE_HOSTED_REFUSED";
+  readonly feature: string;
+  constructor(feature: string, why: string) {
     super(`${feature} is refused in hosted mode (NAIVE_RUNTIME=hosted): ${why}`);
     this.name = "HostedRefusal";
     this.code = "NAIVE_HOSTED_REFUSED";
@@ -72,10 +64,10 @@ export class HostedRefusal extends Error {
 }
 
 /**
- * The refusal for a feature whose hook the host did not register.
- * @param {string} feature @param {keyof Hooks} hook @param {string} [why] what the feature would reach for without the hook
+ * The refusal for a feature whose hook the host did not register. `why` is what the feature would reach for
+ * without the hook.
  */
-export function missingHook(feature, hook, why) {
+export function missingHook(feature: string, hook: HookName, why?: string): HostedRefusal {
   const env = HOOKS[hook];
   const reason = why ?? (env ? `${env} is ignored` : `it would reach outside the tenant`);
   return new HostedRefusal(feature, `${reason}, and the host registered no ${hook} hook (registerHook("${hook}", fn) in packages/naive/src/core/runtime.ts)`);
@@ -85,16 +77,15 @@ export function missingHook(feature, hook, why) {
  * Runs git for a feature. On a laptop this is spawnSync("git", args, opts). Hosted, it goes to the host's git
  * working copy, or, with none registered, answers the way a missing git does (status null, with `error` set
  * to the refusal), so a caller's no-git path runs and a caller that needs git can say why.
- * @param {string} feature @param {string[]} args @param {import("node:child_process").SpawnSyncOptions} [opts]
- * @returns {CommandResult}
  */
-export function git(feature, args, opts = {}) {
-  if (!isHosted()) return /** @type {CommandResult} */ (/** @type {unknown} */ (spawnSync("git", args, opts)));
+export function git(feature: string, args: string[], opts: SpawnSyncOptions = {}): CommandResult {
+  // spawnSync returns Buffers without an encoding; every caller that reads stdout or stderr passes one.
+  if (!isHosted()) return spawnSync("git", args, opts) as unknown as CommandResult;
   const hook = registered.git;
   if (hook) return hook(args, opts);
   const error = missingHook(feature, "git", "it runs git");
   return { status: null, stdout: "", stderr: error.message, error };
 }
 
-/** The refusal a git result carries, if it was refused. @param {CommandResult} r */
-export const refusedBy = (r) => (r.error instanceof HostedRefusal ? r.error : null);
+/** The refusal a git result carries, if it was refused. */
+export const refusedBy = (r: CommandResult): HostedRefusal | null => (r.error instanceof HostedRefusal ? r.error : null);

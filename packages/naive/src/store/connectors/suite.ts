@@ -10,19 +10,38 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { createHash } from "node:crypto";
-import { blobSha, conformance } from "./contract.ts";
+import { blobSha, conformance, type Connector } from "./contract.ts";
 
-export function harness(name) {
+/** A connector the suite runs: the contract's, with `writes` as the connector gives it (the suite checks it). */
+export type SuiteConnector = Omit<Connector, "writes"> & { writes: string };
+/**
+ * What a connector's make() gives: the connected connector, and for a connector that writes by pull request, where
+ * reads come from (base), where a write lands (later) and the pull requests it opened (pulls).
+ */
+export type Made = {
+  c: SuiteConnector;
+  base?: (path: string) => string | null;
+  later?: (path: string, branch: string) => string | null;
+  pulls?: () => { draft?: boolean; [key: string]: unknown }[];
+  [key: string]: unknown;
+};
+export type Make = (opts?: { writes?: string }) => Promise<Made>;
+export type Harness = ReturnType<typeof harness>;
+
+/** A thrown value's message, as `e.message` reads it. */
+const messageOf = (e: unknown): unknown => (typeof e === "object" && e !== null && "message" in e ? e.message : undefined);
+
+export function harness(name: string) {
   let failed = 0, passed = 0, skipped = 0;
   const scratch = mkdtempSync(join(tmpdir(), `mentura-${name}-`));
   return {
     scratch,
-    expect: (n, ok, detail = "") => { console.log(`${ok ? "ok  " : "FAIL"} ${n}${!ok && detail ? `\n       ${detail}` : ""}`); ok ? passed++ : failed++; },
-    throws: async (f, re) => { try { await f(); return false; } catch (e) { return re ? re.test(e.message) : true; } },
-    skip: (why) => { console.log(`skip ${why}`); skipped++; },
-    gitHash: (content) => spawnSync("git", ["hash-object", "--stdin"], { input: content, encoding: "utf8" }).stdout.trim(),
-    write: (root, files) => { for (const [p, c] of Object.entries(files)) { mkdirSync(dirname(join(root, p)), { recursive: true }); writeFileSync(join(root, p), c); } },
-    finish: () => {
+    expect: (n: string, ok: boolean, detail: string = ""): void => { console.log(`${ok ? "ok  " : "FAIL"} ${n}${!ok && detail ? `\n       ${detail}` : ""}`); if (ok) passed++; else failed++; },
+    throws: async (f: () => unknown, re?: RegExp): Promise<boolean> => { try { await f(); return false; } catch (e) { return re ? re.test(String(messageOf(e))) : true; } },
+    skip: (why: string): void => { console.log(`skip ${why}`); skipped++; },
+    gitHash: (content: string): string => spawnSync("git", ["hash-object", "--stdin"], { input: content, encoding: "utf8" }).stdout.trim(),
+    write: (root: string, files: Record<string, string>): void => { for (const [p, c] of Object.entries(files)) { mkdirSync(dirname(join(root, p)), { recursive: true }); writeFileSync(join(root, p), c); } },
+    finish: (): never => {
       rmSync(scratch, { recursive: true, force: true });
       console.log(`\n${passed} passed, ${failed} failing${skipped ? `, ${skipped} skipped` : ""}`);
       process.exit(failed ? 1 : 0);
@@ -31,18 +50,18 @@ export function harness(name) {
 }
 
 // The fixture: three items under the source's root, one outside it that must never show.
-export const FIXTURE = {
+export const FIXTURE: Readonly<Record<string, string>> = {
   "notes/alpha.md": "# Alpha\n\nThe kettle pilot ran in October with nine households.\n",
   "notes/beta.md": "# Beta\n\nPricing interviews: most would pay monthly.\n",
   "records/item.json": JSON.stringify({ id: "item", name: "Item one", tags: ["fixture"] }, null, 2) + "\n",
 };
-export const OUTSIDE = { "other/secret.md": "# Outside\n\nkettle text outside the root\n" };
+export const OUTSIDE: Readonly<Record<string, string>> = { "other/secret.md": "# Outside\n\nkettle text outside the root\n" };
 export const UNICODE = "# Café ☕\n\nLine one\nLine two with ünïcode, emoji 🫖 and a tab\tend\n";
 
 // ---- Contract ----------------------------------------------------------------------------------
 // make() gives { c, base(path) -> content on the branch or folder reads come from, later(path) ->
 // content where a write lands (the folder, or the pull request's branch), pulls() }.
-export async function contract({ expect, throws, gitHash }, name, make) {
+export async function contract({ expect, throws, gitHash }: Pick<Harness, "expect" | "throws" | "gitHash">, name: string, make: Make): Promise<Made> {
   console.log(`\n# contract: ${name}`);
   const t = await make();
   const { c } = t;
@@ -65,16 +84,18 @@ export async function contract({ expect, throws, gitHash }, name, make) {
     const w = await c.write("notes/gamma.md", UNICODE);
     expect(`${name}: a direct write lands in place and returns the new version`, w.version === blobSha(UNICODE) && (await c.read("notes/gamma.md"))?.content === UNICODE);
     const w2 = await c.write("notes/alpha.md", FIXTURE["notes/alpha.md"] + "Added.\n");
-    expect(`${name}: overwriting changes the version`, w2.version !== a.version && (await c.version("notes/alpha.md")) === w2.version);
+    expect(`${name}: overwriting changes the version`, w2.version !== a?.version && (await c.version("notes/alpha.md")) === w2.version);
     expect(`${name}: a written item is listed`, (await c.list()).some((x) => x.path === "notes/gamma.md"));
     await versions({ expect, throws }, name, c);
   } else if (c.writes === "pull-request") {
+    const { base, later, pulls } = t;
+    if (!base || !later || !pulls) throw new Error(`${name}: a connector that writes by pull request gives base, later and pulls from make()`);
     const w = await c.write("notes/gamma.md", UNICODE, { message: "Add gamma" });
-    expect(`${name}: a write opens a draft pull request and returns its link and the new version`, /\/pull\/\d+$/.test(w.pull_request?.url ?? "") && w.version === blobSha(UNICODE) && t.pulls().at(-1)?.draft === true, JSON.stringify(w));
-    expect(`${name}: the branch reads come from is unchanged until the pull request is merged`, (await c.read("notes/gamma.md")) === null && t.base("notes/gamma.md") === null);
-    expect(`${name}: the pull request's branch holds the exact content`, t.later("notes/gamma.md", w.pull_request.branch) === UNICODE);
+    expect(`${name}: a write opens a draft pull request and returns its link and the new version`, /\/pull\/\d+$/.test(w.pull_request?.url ?? "") && w.version === blobSha(UNICODE) && pulls().at(-1)?.draft === true, JSON.stringify(w));
+    expect(`${name}: the branch reads come from is unchanged until the pull request is merged`, (await c.read("notes/gamma.md")) === null && base("notes/gamma.md") === null);
+    expect(`${name}: the pull request's branch holds the exact content`, later("notes/gamma.md", w.pull_request?.branch ?? "") === UNICODE);
     const w2 = await c.write("notes/alpha.md", FIXTURE["notes/alpha.md"] + "Added.\n");
-    expect(`${name}: overwriting an existing item opens its own pull request`, w2.pull_request.branch !== w.pull_request.branch && t.later("notes/alpha.md", w2.pull_request.branch).endsWith("Added.\n") && t.base("notes/alpha.md") === FIXTURE["notes/alpha.md"]);
+    expect(`${name}: overwriting an existing item opens its own pull request`, w2.pull_request?.branch !== w.pull_request?.branch && !!later("notes/alpha.md", w2.pull_request?.branch ?? "")?.endsWith("Added.\n") && base("notes/alpha.md") === FIXTURE["notes/alpha.md"]);
   }
   const ro = await make({ writes: "none" });
   expect(`${name}: a read-only source refuses writes`, await throws(() => ro.c.write("notes/x.md", "x"), /read-only/));
@@ -87,24 +108,27 @@ export async function contract({ expect, throws, gitHash }, name, make) {
 // chain built by appends stays whole. A host relies on these to commit a working copy safely.
 
 /** A line of a hash chain, the way provenance chains its lines: each names the hash of the one before. */
-export const chainLine = (prev, n) => {
+export const chainLine = (prev: string, n: number): string => {
   const body = { n, prev };
   return JSON.stringify({ ...body, hash: createHash("sha256").update(JSON.stringify(body)).digest("hex") }) + "\n";
 };
 /** Whether a log's lines form one unbroken chain from genesis. */
-export const chainIntact = (text) => {
+export const chainIntact = (text: string): boolean => {
   let prev = "genesis";
   for (const l of text.split("\n").filter(Boolean)) {
-    const e = JSON.parse(l);
+    const e: { n?: unknown; prev?: unknown; hash?: unknown } = JSON.parse(l);
     if (e.prev !== prev || e.hash !== createHash("sha256").update(JSON.stringify({ n: e.n, prev: e.prev })).digest("hex")) return false;
-    prev = e.hash;
+    prev = String(e.hash);
   }
   return true;
 };
-const lastHash = (text) => JSON.parse(text.trim().split("\n").at(-1)).hash;
+const lastHash = (text: string): string => { const line: { hash: string } = JSON.parse(text.trim().split("\n").at(-1) ?? ""); return line.hash; };
 
-export async function versions({ expect, throws }, name, c) {
-  const conflict = async (f, current) => { try { await f(); return false; } catch (e) { return e?.code === "version-conflict" && e.current === current; } };
+export async function versions({ expect, throws }: Pick<Harness, "expect" | "throws">, name: string, c: SuiteConnector): Promise<void> {
+  const conflict = async (f: () => unknown, current: string | null) => {
+    try { await f(); return false; }
+    catch (e) { return typeof e === "object" && e !== null && "code" in e && e.code === "version-conflict" && "current" in e && e.current === current; }
+  };
   const beta = FIXTURE["notes/beta.md"];
   const v0 = await c.version("notes/beta.md");
   const w = await c.write("notes/beta.md", beta + "One.\n", { base: v0 });

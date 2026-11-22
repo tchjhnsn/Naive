@@ -16,41 +16,102 @@ import {
   investorsLintCommands, legalCommands, moneyCommands, peopleLintCommands, productCommands, validationCommands,
 } from "./commands.ts";
 import { readDataModel, venturePaths } from "../index.ts";
+import type {
+  DataModel, DecisionRights, DepartmentCatalog, Layer, LeanCanvas, PhaseModule, RouteAliases, TeamPlan, Venture, VentureAnatomy,
+} from "../types/records.d.ts";
+
+/** One record type in the data model. */
+type DataModelRecord = DataModel["records"][number];
+/** A skill a layer or package manifest names. */
+export type ManifestSkill = Layer["skills"][number];
+/**
+ * A layer manifest (layer.schema.json) or a venture package manifest (packages/naive/library/packages/<name>/package.json,
+ * which has no schema yet), as the route table reads it: with the path it came from, and its name also as `kit`.
+ */
+export type KitManifest = KitFile & { path: string; name: string; kit: string };
+/** A manifest file's fields the route table and the router read; a layer's name is `name`, an older package's `kit`. */
+type KitFile = {
+  name?: string; kit?: string; records?: string[]; skills?: ManifestSkill[]; skill?: ManifestSkill;
+  template_dir?: string; purpose?: string; references?: string; gaps?: string[]; gates?: unknown[]; extends?: { package?: string; command?: string };
+  [key: string]: unknown;
+};
+/** A phase as the route table lists it. */
+export type Phase = Pick<PhaseModule, "id" | "name" | "question" | "binding_constraint"> & { gate: string };
+/** The fields every route has. */
+type RouteBase = { route: string; actions: string[]; groups: string[]; note: string };
+/**
+ * A route to a record type: a whole record, a collection's list or one item of it, or the recipe route. Command
+ * fields are absent, so code that reads one on any route gets undefined.
+ */
+export type RecordRoute = RouteBase & {
+  kind: "record"; record: string; layer: DataModelRecord["layer"]; kit: string | null; package: string | null; kit_path: string | null;
+  schema: string | null; form: NonNullable<DataModelRecord["form"]>; checks: string[]; template: string | null; decision_class: string | null;
+  files: string[]; collection?: "list" | "item"; view_of?: string; writer?: Exclude<DataModelRecord["writer"], "any">;
+  function?: DataModelRecord["function"]; recipe?: true;
+  script?: undefined; args?: undefined; value_flag?: undefined; internal?: undefined; as_is?: undefined; needs?: undefined; venture_arg?: undefined;
+};
+/** What a command route may add: the arguments its script takes, how input reaches it, or the router's own handler. */
+export type CommandExtra = {
+  args?: string[]; value_flag?: string; internal?: string; as_is?: boolean; needs?: string[]; venture_arg?: string; actions?: string[];
+};
+/** A route that runs a script, or one the router answers itself (`internal`). Record fields are absent. */
+export type CommandRoute = RouteBase & Omit<CommandExtra, "actions"> & {
+  kind: "command"; script: string | null;
+  record?: undefined; layer?: undefined; kit?: undefined; package?: undefined; kit_path?: undefined; schema?: undefined; form?: undefined;
+  checks?: undefined; template?: undefined; decision_class?: undefined; files?: undefined; collection?: undefined; view_of?: undefined;
+  writer?: undefined; function?: undefined; recipe?: undefined;
+};
+/** One entry of the route table. */
+export type Route = RecordRoute | CommandRoute;
+/** Builds a command route; the function modules' command lists (./commands.ts) take it. */
+export type Cmd = (route: string, script: string | null, note: string, extra?: CommandExtra) => CommandRoute;
+/** A concrete route matched to its table entry. */
+export type Resolved = { r: Route | null; params: { id?: string; pattern?: string }; alias: RouteAliases["aliases"][number] | undefined };
+/** The gate on a record route. */
+export type Gate = { class: string; owner: string | null; level: DecisionRights["classes"][number]["level"]; drafts: boolean };
+/** A venture under a workspace. A venture.json that cannot be read is listed by its folder, as broken. */
+export type VentureEntry =
+  | { id: string; name: string; phase: Venture["phase"]; path: string; dir: string; broken?: undefined }
+  | { id: string; name: null; phase: null; path: string; dir: string; broken: true };
+/** need-now.json: per record type, its prior for each phase, and the prior from which need-now suggests it. It has no schema. */
+type NeedNowPriors = { suggest: number; records: Record<string, { base?: Partial<Record<string, number>> } | undefined> };
+type DecisionClass = DecisionRights["classes"][number];
 
 export const repo = fileURLToPath(new URL("../../../../..", import.meta.url));
-export const load = (p) => JSON.parse(readFileSync(p, "utf8"));
+/** A JSON file Naive ships or a venture keeps, read as the type its schema gives it; unknown when no type is named. */
+export const load = <T = unknown>(p: string): T => JSON.parse(readFileSync(p, "utf8"));
 // The workspace is MENTURA_WORKSPACE, else the current directory: a framework never defaults to a folder of its own.
-export const defaultWorkspace = () => process.env.MENTURA_WORKSPACE ?? process.cwd();
+export const defaultWorkspace = (): string => process.env.MENTURA_WORKSPACE ?? process.cwd();
 // The phases, read from the phase modules (packages/naive/src/phases/<id>/phase.json, EE-126) in lifecycle order. Read
 // here as data rather than through packages/naive/src/phases/phases.mjs, because the phases unit comes after records.
 const phasesDir = join(repo, "packages/naive/src/phases");
-export const PHASES = (existsSync(phasesDir) ? readdirSync(phasesDir) : []).filter((d) => existsSync(join(phasesDir, d, "phase.json")))
-  .map((d) => load(join(phasesDir, d, "phase.json"))).sort((a, b) => a.step - b.step)
+export const PHASES: Phase[] = (existsSync(phasesDir) ? readdirSync(phasesDir) : []).filter((d) => existsSync(join(phasesDir, d, "phase.json")))
+  .map((d) => load<PhaseModule>(join(phasesDir, d, "phase.json"))).sort((a, b) => a.step - b.step)
   .map(({ id, name, question, gate, binding_constraint }) => ({ id, name, question, gate: gate.name, binding_constraint }));
 
-export const glob = (g) => new RegExp("^" + g.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*\*\//g, "\0").replace(/\*\*/g, "\u0001").replace(/\*/g, "[^/]*").replace(/\0/g, "(?:[^/]+/)*").replace(/\u0001/g, ".*") + "$");
+export const glob = (g: string): RegExp => new RegExp("^" + g.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*\*\//g, "\0").replace(/\*\*/g, "\u0001").replace(/\*/g, "[^/]*").replace(/\0/g, "(?:[^/]+/)*").replace(/\u0001/g, ".*") + "$");
 // A venture's files, stopping at a nested venture (which has its own records) and skipping dot and private folders.
-export const files = (d, base = d) => existsSync(d) ? readdirSync(d, { withFileTypes: true }).flatMap((e) =>
+export const files = (d: string, base: string = d): string[] => existsSync(d) ? readdirSync(d, { withFileTypes: true }).flatMap((e) =>
   e.name.startsWith(".") ? [] : e.isDirectory() ? (existsSync(join(d, e.name, "venture.json")) || (d === base && e.name.startsWith("_")) ? [] : files(join(d, e.name), base)) : [join(d, e.name).slice(base.length + 1)]) : [];
 
-export const skillsOf = (k) => (k.skills?.length ? k.skills : k.skill ? [k.skill] : []);
+export const skillsOf = (k: Pick<KitManifest, "skills" | "skill">): ManifestSkill[] => (k.skills?.length ? k.skills : k.skill ? [k.skill] : []);
 
 /** Layer manifests and any package that owns record types. `kit` is the name, kept so the board still groups routes. */
-export function kits() {
+export function kits(): KitManifest[] {
   const model = readDataModel();
   const paths = [...model.layers.map((l) => `packages/naive/src/records/layers/${l}/layer.json`), "packages/naive/src/records/layer.json"];
   const pkgDir = join(repo, "packages/naive/library", "packages");
   if (existsSync(pkgDir)) for (const d of readdirSync(pkgDir)) if (existsSync(join(pkgDir, d, "package.json"))) paths.push(`packages/naive/library/packages/${d}/package.json`);
   return paths.filter((p) => existsSync(join(repo, p))).map((p) => {
-    const k = load(join(repo, p));
-    const name = k.name ?? k.kit;
+    const k = load<KitFile>(join(repo, p));
+    const name = k.name ?? k.kit ?? "";
     return { path: p, ...k, name, kit: name };
   }).filter((k) => k.path.endsWith("/layer.json") || (k.records ?? []).length);
 }
 
-const needNowPriors = () => load(join(repo, "packages/naive/src/engine/need-now.json"));
+const needNowPriors = () => load<NeedNowPriors>(join(repo, "packages/naive/src/engine/need-now.json"));
 // The template folders of the function modules, in the order departments.json lists the functions.
-const FUNCTION_TEMPLATES_OF = () => load(join(repo, "packages/naive/src/functions/departments.json")).departments.map((d) => `packages/naive/src/functions/${d.id}/templates`).filter((d) => existsSync(join(repo, d)));
+const FUNCTION_TEMPLATES_OF = () => load<DepartmentCatalog>(join(repo, "packages/naive/src/functions/departments.json")).departments.map((d) => `packages/naive/src/functions/${d.id}/templates`).filter((d) => existsSync(join(repo, d)));
 
 /** The first segment of a recipe route: recipes/<pattern>. */
 export const RECIPES = "recipes";
@@ -64,13 +125,13 @@ const CLAIMS = new Set(["handoff"]);
 
 /** The route table, generated from packages/naive/src/records/data-model.json, the kit manifests and packages/naive/src/engine/need-now.json. */
 // Caching hook (F-12): built once per action and shared.
-export function routes() { return memo("routes", buildRoutes); }
-function buildRoutes() {
+export function routes(): Route[] { return memo("routes", buildRoutes); }
+function buildRoutes(): Route[] {
   const model = readDataModel();
   const ks = kits();
-  const owner = new Map(ks.flatMap((k) => k.records.map((r) => [r, k])));
+  const owner = new Map(ks.flatMap((k) => (k.records ?? []).map((r): [string, KitManifest] => [r, k])));
   const N = needNowPriors();
-  const out = [];
+  const out: Route[] = [];
   for (const r of model.records.filter((x) => x.level === "venture" && x.id !== "venture")) {
     const k = owner.get(r.id);
     const sub = k?.path.match(/(?:^|\/)kits\/([^/]+)\//)?.[1] ?? (k?.path.startsWith("packages/naive/library/packages/") && r.id.startsWith(`${k.name}-`) ? k.name : null);
@@ -83,18 +144,18 @@ function buildRoutes() {
     const layerManifest = k?.path?.startsWith("packages/naive/src/records/layers/");
     const tdirs = k?.template_dir ? [k.template_dir] : !k || k.path.startsWith("packages/naive/library/packages/") ? []
       : layerManifest ? FUNCTION_TEMPLATES_OF() : [join(dirname(k.path), "templates")];
-    const pick = (tdir) => existsSync(join(repo, tdir)) ? readdirSync(join(repo, tdir)).filter((f) => f === `${short}.md` || (f.startsWith(`${short}-`) && f.endsWith(".md"))).sort((a, b) => (a === `${short}.md` ? -1 : b === `${short}.md` ? 1 : a.localeCompare(b)))[0] : null;
-    const found = tdirs.map((tdir) => [tdir, pick(tdir)]).find(([, n]) => n);
+    const pick = (tdir: string) => existsSync(join(repo, tdir)) ? readdirSync(join(repo, tdir)).filter((f) => f === `${short}.md` || (f.startsWith(`${short}-`) && f.endsWith(".md"))).sort((a, b) => (a === `${short}.md` ? -1 : b === `${short}.md` ? 1 : a.localeCompare(b)))[0] : null;
+    const found = tdirs.map((tdir): [string, string | null | undefined] => [tdir, pick(tdir)]).find(([, n]) => n);
     const template = found ? `${found[0]}/${found[1]}` : null;
-    const checks = [...new Set((r.refs ?? []).map((x) => x.checked_by).filter((c) => c && /^packages\/naive\/src\/[a-z]+\/check-[a-z-]+\.(mjs|ts)$/.test(c) && c !== "packages/naive/src/checks/check-data-model.ts"))];
+    const checks = [...new Set((r.refs ?? []).map((x) => x.checked_by).filter((c): c is string => !!c && /^packages\/naive\/src\/[a-z]+\/check-[a-z-]+\.mjs$/.test(c) && c !== "packages/naive/src/checks/check-data-model.ts"))];
     const legacy = [r.layer === "system" ? "system" : r.layer, sub, short].filter(Boolean).join("/");
     const base = PACKAGE_ROUTE[r.id] ?? legacy;
     const form = r.form ?? "json";
     const groups = PHASES.map((p) => p.id).filter((p) => (N.records[r.id]?.base?.[p] ?? 0) >= N.suggest).map((p) => `(${p})`);
-    const common = { kind: "record", record: r.id, layer: r.layer, kit: k?.name ?? null, package: k?.path?.startsWith("packages/naive/library/packages/") ? k.name : null, kit_path: k?.path ?? null, schema: r.schema, form, checks, template,
+    const common = { kind: "record" as const, record: r.id, layer: r.layer, kit: k?.name ?? null, package: k?.path?.startsWith("packages/naive/library/packages/") ? k.name : null, kit_path: k?.path ?? null, schema: r.schema, form, checks, template,
       decision_class: r.decision_class ?? null, groups, note: r.note ?? "", ...(r.view_of ? { view_of: r.view_of } : {}), ...(r.writer && r.writer !== "any" ? { writer: r.writer } : {}),
       // writer function: the route carries the record type's function, so the gate knows the one agent role, <function>-agent, that may write it.
-      ...(r.writer === "function" ? { function: r.function } : {}) };
+      ...(r.writer === "function" ? { function: r.function } : {}) } satisfies Omit<RecordRoute, "route" | "files" | "actions" | "collection">;
     // A collection's one wildcard is a whole id at the start of a path segment (products/*.json, accounts/*/account.json).
     const collection = filesOf.length >= 1 && filesOf.every((p) => (p.match(/\*/g) ?? []).length === 1 && /(^|\/)\*[./]/.test(p) && !p.includes("**"));
     const concrete = filesOf.every((f) => !f.includes("*"));
@@ -103,8 +164,8 @@ function buildRoutes() {
     const prose = r.writer === "person" && (form === "prose" || form === "markdown");
     const writable = !!(((r.schema && form === "json") || prose) && (collection || concrete));
     if (collection) {
-      out.push({ ...common, route: base, files: filesOf, collection: "list", actions: ["read", "view", "layout", ...(checks.length ? ["check"] : []), ...(template ? ["template"] : [])] });
-      out.push({ ...common, route: `${base}/[id]`, files: filesOf, collection: "item",
+      out.push({ ...common, route: base, files: filesOf, collection: "list" as const, actions: ["read", "view", "layout", ...(checks.length ? ["check"] : []), ...(template ? ["template"] : [])] });
+      out.push({ ...common, route: `${base}/[id]`, files: filesOf, collection: "item" as const,
         actions: ["read", "view", "layout", ...(writable ? ["write"] : []), ...(APPENDS.has(r.id) ? ["append"] : []), ...(CLAIMS.has(r.id) ? ["claim"] : []), ...(checks.length ? ["check"] : []), ...(template ? ["template"] : [])] });
     } else {
       out.push({ ...common, route: base, files: filesOf,
@@ -120,7 +181,7 @@ function buildRoutes() {
     schema: recipe.schema, form: recipe.form ?? "typescript", checks: [], template: null, decision_class: null, groups: [], recipe: true, route: `${RECIPES}/[...pattern]`, files: [],
     note: "One recipe's experiments (autoresearch build plan item 6): read gives the tip (the source a write edits from and its sha), the live recipe and the dev evaluations spent under the plan; write takes { source, base } and scores it inside the write. A keep is held as a draft for an agent (the evidence package's gate rule) and lands live for a person; a discard or fail is refused with its verdict; a retry returns the logged line and spends nothing. accept (a person only, build plan item 8) runs the one-bit holdout check and writes the held tip live on a pass, or over a failed check with { over_holdout: true }, which is logged; monitor scores the forward points since the live recipe changed against the one before it and proposes a rollback decision on a regression",
     actions: ["read", "write", "accept", "monitor", "layout"] });
-  const cmd = (route, script, note, extra = {}) => ({ route, kind: "command", actions: ["run", "view", "layout"], script, groups: [], note, ...extra });
+  const cmd: Cmd = (route, script, note, extra = {}) => ({ route, kind: "command", actions: ["run", "view", "layout"], script, groups: [], note, ...extra });
   out.push(
     cmd("system/package", "packages/naive/src/router/orchestration/venture-package.mjs", "The venture package (EE-067, EE-069): the core packages open now and the handoffs, each record confirmed, to review or to write, what moves on its own and what waits, and what completion unlocks; --write renders the view and records a version. Assumes a solo founder or small founding team in Discovery and Validation; agents are a package enhancement"),
     cmd("system/need-now", "packages/naive/src/engine/need-now.mjs", "What the venture needs now, soon, or should hold back (EE-028)"),
@@ -138,11 +199,11 @@ function buildRoutes() {
     cmd("purpose/ideas", "packages/naive/src/functions/strategy/frameworks/idea-map/ideamap.mjs", "The founder's idea dump mapped onto Naive's conventions: each idea verbatim with its departments, records and whether it exists, where the ideas cluster, what the dump never mentions, and what it says about whether a product exists (EE-059)"),
     // The Lean Canvas, the venture's shared kernel (EE-155): the whole canvas, and each box at its own route.
     cmd("identity/lean-canvas", "packages/naive/src/engine/lean-canvas.mjs", "The Lean Canvas as the venture's shared kernel (EE-155): nine boxes, each a reference to a record its owning function writes, with status, what filling it unlocks and the roadmap (the current gate's evidence first)"),
-    ...load(join(repo, "packages/naive/src/functions/strategy/lean-canvas.json")).boxes.map((/** @type {{ id: string, label: string, record: string }} */ b) =>
+    ...load<LeanCanvas>(join(repo, "packages/naive/src/functions/strategy/lean-canvas.json")).boxes.map((b) =>
       cmd(`identity/lean-canvas/${b.id}`, "packages/naive/src/engine/lean-canvas.mjs", `One box of the Lean Canvas, ${b.label}: the ${b.record} record it references, its owner, status and what it unlocks (EE-155)`, { args: ["--box", b.id] })),
     // The Venture Anatomy Matrix (EE-157): the whole matrix, and each sub-matrix at its own route.
     cmd("identity/venture-anatomy", "packages/naive/src/engine/venture-anatomy.ts", "The Venture Anatomy Matrix, the venture's architecture description after ISO/IEC/IEEE 42010 (EE-157): eleven sub-matrices, each with its owner, cells known, estimated or unknown, the confidence share, Regulation S-K coverage and nesting"),
-    ...load(join(repo, "packages/naive/src/functions/strategy/venture-anatomy.json")).submatrices.map((/** @type {{ id: string, label: string, record: string | null }} */ s) =>
+    ...load<VentureAnatomy>(join(repo, "packages/naive/src/functions/strategy/venture-anatomy.json")).submatrices.map((s) =>
       cmd(`identity/venture-anatomy/${s.id}`, "packages/naive/src/engine/venture-anatomy.ts", `One sub-matrix of the Venture Anatomy Matrix, ${s.label}: the ${s.record ?? "(not built)"} records it reads, its owner, cells by status and the S-K items it covers (EE-157)`, { args: ["--sub", s.id] })),
     cmd("purpose/foundation", "packages/naive/src/engine/foundation.mjs", "The venture's strategic foundation by the Five Ws and How plus whether, each confirmed, drafted by an agent, waiting as a draft, or missing (EE-051)"),
     cmd("purpose/validation/score", "packages/naive/src/checks/check-validation.ts", "Held (EE-050): the single validation score from graded evidence (EE-026); purpose/validation/assess replaces it for the problem", { args: ["--score"] }),
@@ -186,19 +247,19 @@ function buildRoutes() {
 }
 
 /** Route groups: (phase) gathers the routes need-now suggests in that phase. The path is unchanged. */
-export function groups() {
+export function groups(): { group: string; phase: Phase["id"]; question: string; gate: string; routes: string[] }[] {
   const rs = routes();
   return PHASES.map((p) => ({ group: `(${p.id})`, phase: p.id, question: p.question, gate: p.gate, routes: rs.filter((r) => r.groups.includes(`(${p.id})`)).map((r) => r.route) }));
 }
 
 // Aliases for renamed routes (stability): packages/naive/src/router/route-aliases.json, or MENTURA_ROUTE_ALIASES.
-function aliases() {
+function aliases(): RouteAliases["aliases"] {
   const f = process.env.MENTURA_ROUTE_ALIASES ?? join(repo, "packages/naive/src/router/route-aliases.json");
-  return existsSync(f) ? load(f).aliases : [];
+  return existsSync(f) ? load<RouteAliases>(f).aliases : [];
 }
 
 /** Matches a concrete route (purpose/product/kettle) to its table entry and params. Follows aliases. */
-export function resolve(route) {
+export function resolve(route: string): Resolved {
   const rs = routes();
   const alias = aliases().find((a) => a.from === route || route.startsWith(`${a.from}/`));
   const concrete = alias ? alias.to + route.slice(alias.from.length) : route;
@@ -216,14 +277,14 @@ export function resolve(route) {
   return { r: null, params: {}, alias };
 }
 
-const walkVentures = (d) => readdirSync(d, { withFileTypes: true }).flatMap((e) => e.name === "node_modules" || e.name.startsWith(".") || e.name.startsWith("_") ? []
+const walkVentures = (d: string): string[] => readdirSync(d, { withFileTypes: true }).flatMap((e) => e.name === "node_modules" || e.name.startsWith(".") || e.name.startsWith("_") ? []
   : e.isDirectory() ? walkVentures(join(d, e.name)) : e.name === "venture.json" ? [d] : []);
 
 /**
  * Finds a venture folder ([...venture]): by id, or by its folder path under the workspace or its
  * ventures/ folder, so a nested venture can be named studio/print.
  */
-export function ventureDir(id, workspace = defaultWorkspace()) {
+export function ventureDir(id: string | null | undefined, workspace: string = defaultWorkspace()): string | null {
   if (!id) return null;
   if (id.includes("/")) {
     for (const base of [workspace, join(workspace, "ventures")]) {
@@ -233,27 +294,27 @@ export function ventureDir(id, workspace = defaultWorkspace()) {
     return null;
   }
   // A broken venture.json is found by its folder name, so its global error can answer (E-8, packages/naive/src/router/boundaries.mjs).
-  for (const d of walkVentures(workspace)) { let vid; try { vid = load(join(d, "venture.json")).id; } catch { vid = basename(d); } if (vid === id) return d; }
+  for (const d of walkVentures(workspace)) { let vid; try { vid = load<Venture>(join(d, "venture.json")).id; } catch { vid = basename(d); } if (vid === id) return d; }
   return null;
 }
 
 /** The ventures under a workspace: id, name, phase, path (the [...venture] segment) and folder. */
-export function ventures(workspace = defaultWorkspace()) {
+export function ventures(workspace: string = defaultWorkspace()): VentureEntry[] {
   const root = existsSync(join(workspace, "ventures")) ? join(workspace, "ventures") : workspace;
-  return walkVentures(workspace).map((d) => { let v; try { v = load(join(d, "venture.json")); } catch { return { id: basename(d), name: null, phase: null, path: relative(root, d), dir: d, broken: true }; } return { id: v.id, name: v.name, phase: v.phase, path: relative(root, d), dir: d }; });
+  return walkVentures(workspace).map((d): VentureEntry => { let v; try { v = load<Venture>(join(d, "venture.json")); } catch { return { id: basename(d), name: null, phase: null, path: relative(root, d), dir: d, broken: true }; } return { id: v.id, name: v.name, phase: v.phase, path: relative(root, d), dir: d }; });
 }
 
 // The venture's decision rights: the template, tightened by the venture's own file.
-function decisionRights(dir) {
-  const t = load(join(repo, "packages/naive/template/governance/decision-rights.json"));
+function decisionRights(dir: string): Map<string, DecisionClass> {
+  const t = load<DecisionRights>(join(repo, "packages/naive/template/governance/decision-rights.json"));
   const classes = new Map(t.classes.map((c) => [c.id, c]));
   const own = join(ventureFile(dir, "governance/decision-rights.json"));
-  if (existsSync(own)) for (const c of load(own).classes) classes.set(c.id, { ...classes.get(c.id), ...c, level: classes.get(c.id)?.level === "escalate" ? "escalate" : c.level });
+  if (existsSync(own)) for (const c of load<DecisionRights>(own).classes) classes.set(c.id, { ...classes.get(c.id), ...c, level: classes.get(c.id)?.level === "escalate" ? "escalate" : c.level });
   return classes;
 }
 
 /** The gate on a record: its decision class from the data model, and whether an agent's write is a draft. */
-export function gateOf(r, dir) {
+export function gateOf(r: { decision_class?: string | null }, dir?: string | null): Gate | null {
   if (!r.decision_class) return null;
   const c = dir ? decisionRights(dir).get(r.decision_class) : null;
   const level = c?.level ?? "escalate";
@@ -261,17 +322,17 @@ export function gateOf(r, dir) {
 }
 
 // Robots: a team-plan role may list the routes it may read and write (globs over routes).
-export function allowed(dir, actorId, action, route) {
+export function allowed(dir: string | null | undefined, actorId: string | null | undefined, action: string, route: string): boolean {
   if (!actorId || !dir) return true;
   const plan = [join(ventureFile(dir, "people/team-plan.json")), join(ventureFile(dir, "operations/team-plan.json"))].find((p) => existsSync(p));
   if (!plan) return true;
-  const role = load(plan).roles.find((x) => x.id === actorId);
+  const role = load<TeamPlan>(plan).roles.find((x) => x.id === actorId);
   if (!role?.routes) return true;
   const list = action === "write" ? role.routes.write ?? [] : role.routes.read ?? ["**"];
   return list.some((g) => glob(g).test(route));
 }
 
-const PACKAGE_ROUTE = {
+const PACKAGE_ROUTE: Readonly<Record<string, string>> = {
   "validation-problem": "foundation/problem", icp: "foundation/icp", telos: "foundation/telos", alignment: "foundation/alignment",
   goal: "foundation/goals", requirement: "foundation/requirements", "exit-criteria": "foundation/exit-criteria", constraints: "foundation/constraints", "venture-core": "foundation/core",
   "validation-solution": "validation/solution", "validation-pricing": "validation/pricing", "validation-plan": "validation/plan", "validation-go-to-market": "validation/go-to-market",

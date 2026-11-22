@@ -15,11 +15,15 @@
 import { spawnSync } from "node:child_process";
 import { isHosted } from "./runtime.ts";
 
-/** The environment variable that names a system's sync command. @param {string} system */
-export const syncVariable = (system) => `NAIVE_SYNC_${String(system).toUpperCase().replace(/[^A-Z0-9]+/g, "_")}`;
+/** What a sync command's last stdout line said it did. */
+export type SyncSaid = { address?: string; fixture?: boolean; said?: string };
+export type SyncResult = { ran: false } | ({ ran: true; ok: true } & SyncSaid) | { ran: true; ok: false; error?: string };
 
-/** The sync command named for a system, or null. @param {string} system @param {NodeJS.ProcessEnv} [env] */
-export function syncCommand(system, env = process.env) {
+/** The environment variable that names a system's sync command. */
+export const syncVariable = (system: string): string => `NAIVE_SYNC_${String(system).toUpperCase().replace(/[^A-Z0-9]+/g, "_")}`;
+
+/** The sync command named for a system, or null. */
+export function syncCommand(system: string, env: NodeJS.ProcessEnv = process.env): string | null {
   if (isHosted()) return null; // hosted, NAIVE_SYNC_* is ignored: reaching a system is the host's own work
   const c = env[syncVariable(system)];
   return c && c.trim() ? c.trim() : null;
@@ -27,17 +31,13 @@ export function syncCommand(system, env = process.env) {
 
 /**
  * Runs a system's sync command for a venture. `ran` is false when no command is named.
- * @param {string} system @param {string} dir
- * @param {{ env?: NodeJS.ProcessEnv }} [opts]
- * @returns {{ ran: false } | { ran: true, ok: boolean, address?: string, fixture?: boolean, said?: string, error?: string }}
  */
-export function sync(system, dir, { env = process.env } = {}) {
+export function sync(system: string, dir: string, { env = process.env }: { env?: NodeJS.ProcessEnv } = {}): SyncResult {
   const command = syncCommand(system, env);
   if (!command) return { ran: false };
   const r = spawnSync(`${command} --venture ${JSON.stringify(dir)}`, { shell: true, encoding: "utf8", env });
   if (r.status !== 0) return { ran: true, ok: false, error: (r.stderr || r.stdout || r.error?.message || "the sync command failed").trim().split("\n").at(-1) };
-  /** @type {{ address?: string, fixture?: boolean, said?: string }} */
-  let said = {};
+  let said: SyncSaid = {};
   try {
     const last = String(r.stdout).trim().split("\n").at(-1) ?? "";
     const j = last.startsWith("{") ? JSON.parse(last) : null;

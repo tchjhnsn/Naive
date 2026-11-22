@@ -19,40 +19,36 @@
 
 import { basename, dirname, join } from "node:path";
 import { Effect } from "effect";
-import { blobSha, checkWriteEffect, isText, matches, safePathEffect } from "./contract.ts";
-import { Refused } from "../../core/effect/errors.ts";
+import { blobSha, checkWriteEffect, isText, matches, safePathEffect, type Connector, type Item, type Listed, type WriteOptions } from "./contract.ts";
+import { Refused, type NaiveError } from "../../core/effect/errors.ts";
 import { VentureFs } from "../../core/effect/fs.ts";
 import { runPromise, runSync } from "../../core/effect/run.ts";
 import { layoutOf, logicalFiles, ventureFile } from "../../core/venture-paths.ts";
 import { git as runGit } from "../../core/runtime.ts";
 
-/** @typedef {import("../../core/effect/errors.ts").NaiveError} NaiveError */
-/** @typedef {{ path: string, version: string }} Listed */
-/** @typedef {{ path: string, content: string, version: string, commit?: string }} Item */
-/** @typedef {{ base?: string | null, append?: boolean, message?: string, title?: string }} WriteOptions */
+/** The filesystem connector with Effect methods. Each needs VentureFs and fails with a tagged error. */
+export type EffectConnector = {
+  id: string; kind: "filesystem"; writes: string; root: string;
+  list: (prefix?: string) => Effect.Effect<Listed[], NaiveError, "naive/VentureFs">;
+  read: (p: string) => Effect.Effect<Item | null, NaiveError, "naive/VentureFs">;
+  version: (p: string) => Effect.Effect<string | null, NaiveError, "naive/VentureFs">;
+  search: (query: string, opts?: { limit?: number }) => Effect.Effect<Listed[], NaiveError, "naive/VentureFs">;
+  write: (p: string, content: string | Buffer, opts?: WriteOptions) => Effect.Effect<Listed, NaiveError, "naive/VentureFs">;
+};
 /**
- * The filesystem connector with Effect methods. Each needs VentureFs and fails with a tagged error.
- * @typedef {{
- *   id: string, kind: "filesystem", writes: string, root: string,
- *   list: (prefix?: string) => Effect.Effect<Listed[], NaiveError, "naive/VentureFs">,
- *   read: (p: string) => Effect.Effect<Item | null, NaiveError, "naive/VentureFs">,
- *   version: (p: string) => Effect.Effect<string | null, NaiveError, "naive/VentureFs">,
- *   search: (query: string, opts?: { limit?: number }) => Effect.Effect<Listed[], NaiveError, "naive/VentureFs">,
- *   write: (p: string, content: string | Buffer, opts?: WriteOptions) => Effect.Effect<Listed, NaiveError, "naive/VentureFs">,
- * }} EffectConnector
+ * The filesystem connector as the contract has it, with its kind and root. `writes` is the option as given, so a
+ * value the contract does not know fails conformance where the connector is connected, as it always has.
  */
+export type FilesystemConnector = Omit<Connector, "writes"> & { kind: "filesystem"; writes: string; root: string };
+/** What connect takes: the source id, its folder, how it writes, and whether the folder is a venture. */
+export type FilesystemOptions = { id?: string; root?: string; writes?: string; venture?: boolean };
 
 const SKIP = new Set(["node_modules"]);
 const LOCK_STALE_MS = 30_000;
 const LOCK_TRIES = 200;
 
-/**
- * Runs an Effect while holding an exclusive lock file for the item f it writes.
- * @template A, E
- * @param {string} f @param {Effect.Effect<A, E, "naive/VentureFs">} use
- * @returns {Effect.Effect<A, E | NaiveError, "naive/VentureFs">}
- */
-const withLock = (f, use) => Effect.gen(function* () {
+/** Runs an Effect while holding an exclusive lock file for the item f it writes. */
+const withLock = <A, E>(f: string, use: Effect.Effect<A, E, "naive/VentureFs">): Effect.Effect<A, E | NaiveError, "naive/VentureFs"> => Effect.gen(function* () {
   const fs = yield* VentureFs;
   const lock = join(dirname(f), `.${basename(f)}.lock`);
   for (let i = 0; ; i++) {
@@ -66,22 +62,16 @@ const withLock = (f, use) => Effect.gen(function* () {
   return yield* Effect.ensuring(use, Effect.ignore(fs.remove(lock)));
 });
 
-/**
- * The filesystem connector, its methods written as Effects.
- * @param {{ id?: string, root?: string, writes?: string, venture?: boolean }} [opts]
- * @returns {Effect.Effect<EffectConnector, Refused>}
- */
-export const connectEffects = ({ id = "venture", root, writes = "direct", venture = false } = {}) => Effect.suspend(() => {
+/** The filesystem connector, its methods written as Effects. */
+export const connectEffects = ({ id = "venture", root, writes = "direct", venture = false }: FilesystemOptions = {}): Effect.Effect<EffectConnector, Refused> => Effect.suspend((): Effect.Effect<EffectConnector, Refused> => {
   if (!root) return Effect.fail(new Refused({ rule: "filesystem-options", message: "the filesystem connector needs a root folder" }));
   if (writes === "pull-request") return Effect.fail(new Refused({ rule: "filesystem-options", message: "the filesystem connector writes direct or none" }));
   const top = root;
 
-  /** @param {string} d @param {string} [rel] @returns {Effect.Effect<string[], NaiveError, "naive/VentureFs">} */
-  const walk = (d, rel = "") => Effect.gen(function* () {
+  const walk = (d: string, rel = ""): Effect.Effect<string[], NaiveError, "naive/VentureFs"> => Effect.gen(function* () {
     const fs = yield* VentureFs;
     if (!(yield* fs.exists(d))) return [];
-    /** @type {string[]} */
-    const out = [];
+    const out: string[] = [];
     for (const name of yield* fs.list(d)) {
       if (name.startsWith(".") || SKIP.has(name)) continue;
       const r = rel ? `${rel}/${name}` : name;
@@ -97,37 +87,31 @@ export const connectEffects = ({ id = "venture", root, writes = "direct", ventur
   // A venture in the structured layout (EE-086) keeps its records in knowledge/ and meta/: read and write them
   // by their logical paths, and list them that way, so routes never see the layout.
   const structured = venture && layoutOf(top) !== "flat"; // structured (EE-086) or src (EE-118 step 8)
-  /** @param {string} p */
-  const file = (p) => Effect.map(safePathEffect(p), (safe) => (structured ? ventureFile(top, safe) : join(top, safe)));
-  /** @returns {Effect.Effect<string[], NaiveError, "naive/VentureFs">} */
-  const listed = () => structured
+  const file = (p: string) => Effect.map(safePathEffect(p), (safe) => (structured ? ventureFile(top, safe) : join(top, safe)));
+  const listed = (): Effect.Effect<string[], NaiveError, "naive/VentureFs"> => structured
     ? Effect.sync(() => logicalFiles(top).filter((r) => !r.split("/").some((s) => s.startsWith(".")) && !r.startsWith("_") && !r.startsWith("node_modules/")))
     : walk(top);
-  /** @param {...string} args */
-  const git = (...args) => runGit("reading a record's last commit", ["-C", top, ...args], { encoding: "utf8" });
-  /** @param {string} p @param {string} content */
-  const lastCommit = (p, content) => Effect.sync(() => {
+  const git = (...args: string[]) => runGit("reading a record's last commit", ["-C", top, ...args], { encoding: "utf8" });
+  const lastCommit = (p: string, content: string) => Effect.sync(() => {
     const tracked = git("ls-files", "-s", "--", p);
     if (tracked.status !== 0 || !tracked.stdout) return null;
     if (String(tracked.stdout).split(/\s+/)[1] !== blobSha(content) || git("diff", "--quiet", "HEAD", "--", p).status !== 0) return null;
     return String(git("log", "-1", "--format=%H", "--", p).stdout).trim() || null;
   });
-  /** The file's bytes when it is a file, else null. @param {string} f */
-  const bytesOf = (f) => Effect.gen(function* () {
+  /** The file's bytes when it is a file, else null. */
+  const bytesOf = (f: string) => Effect.gen(function* () {
     const fs = yield* VentureFs;
     const st = yield* fs.stat(f);
     return st && !st.isDirectory ? yield* fs.readBytes(f) : null;
   });
 
-  /** @type {EffectConnector} */
-  const c = {
+  const c: EffectConnector = {
     id, kind: "filesystem", writes, root: top,
     list: (prefix = "") => Effect.gen(function* () {
       const fs = yield* VentureFs;
       const pre = prefix ? yield* safePathEffect(prefix) : "";
       const paths = (yield* listed()).filter((p) => !pre || p === pre || p.startsWith(`${pre}/`)).sort();
-      /** @type {Listed[]} */
-      const out = [];
+      const out: Listed[] = [];
       for (const path of paths) out.push({ path, version: blobSha(yield* fs.readBytes(yield* file(path))) });
       return out;
     }),
@@ -146,8 +130,7 @@ export const connectEffects = ({ id = "venture", root, writes = "direct", ventur
     }),
     search: (query, { limit = 50 } = {}) => Effect.gen(function* () {
       const fs = yield* VentureFs;
-      /** @type {Listed[]} */
-      const out = [];
+      const out: Listed[] = [];
       for (const path of (yield* listed()).sort()) {
         if (out.length >= limit) break;
         const content = yield* fs.readText(yield* file(path));
@@ -179,23 +162,15 @@ export const connectEffects = ({ id = "venture", root, writes = "direct", ventur
   return Effect.succeed(c);
 });
 
-/**
- * The filesystem connector as the contract has it: each method returns a Promise.
- * @param {{ id?: string, root?: string, writes?: string, venture?: boolean }} [opts]
- */
-export function connect(opts = {}) {
+/** The filesystem connector as the contract has it: each method returns a Promise. */
+export function connect(opts: FilesystemOptions = {}): FilesystemConnector {
   const c = runSync(connectEffects(opts));
   return {
     id: c.id, kind: c.kind, writes: c.writes, root: c.root,
-    /** @param {string} [prefix] */
     list: (prefix) => runPromise(c.list(prefix)),
-    /** @param {string} p */
     read: (p) => runPromise(c.read(p)),
-    /** @param {string} p */
     version: (p) => runPromise(c.version(p)),
-    /** @param {string} query @param {{ limit?: number }} [o] */
     search: (query, o) => runPromise(c.search(query, o)),
-    /** @param {string} p @param {string | Buffer} content @param {WriteOptions} [o] */
     write: (p, content, o) => runPromise(c.write(p, content, o)),
   };
 }

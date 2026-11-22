@@ -15,16 +15,33 @@
 //                        reads that field from there and writes it there (index.mjs,
 //                        attributeSources), so the record's own file never holds a second copy.
 
+import type { KnowledgeSources } from "../../records/types/records.d.ts";
+
 export const ANY = "*";
-export const CONTEXT = ["phase", "product", "account", "actor"];
-export const FIELDS = ["record", "attribute", ...CONTEXT];
+export const CONTEXT = ["phase", "product", "account", "actor"] as const;
+export const FIELDS = ["record", "attribute", ...CONTEXT] as const;
+const NARROWING = ["attribute", ...CONTEXT] as const;
+
+/** One rule a source map states (knowledge/sources.json `rules`). */
+export type SourceRule = NonNullable<KnowledgeSources["rules"]>[number];
+/** A `records` shorthand entry read as a rule that matches anything. It names no owner. */
+export type ShorthandRule = {
+  record: string; attribute: typeof ANY; phase: typeof ANY; product: typeof ANY; account: typeof ANY; actor: typeof ANY;
+  system_of_record: string; owner?: undefined; survivorship?: undefined; note?: undefined; shorthand: true;
+};
+export type Rule = (SourceRule & { shorthand?: undefined }) | ShorthandRule;
+/** The part of a source map resolution reads. */
+export type SourceMap = Partial<Pick<KnowledgeSources, "records" | "rules">>;
+/** What a read or write is about. A field left out matches only "*". */
+export type RuleQuery = { record: string; attribute?: string; phase?: string; product?: string; account?: string; actor?: string };
+export type Resolution = { rule: Rule; specificity: number; ties: Rule[] };
 
 /** How many fields of a rule narrow it (the record type itself always matches). */
-export const specificity = (rule) => ["attribute", ...CONTEXT].filter((k) => rule[k] !== ANY).length;
+export const specificity = (rule: Rule | SourceRule): number => NARROWING.filter((k) => rule[k] !== ANY).length;
 
 /** The rules a map states, the `records` shorthand included as rules that match anything. */
-export function rulesOf(map) {
-  const short = Object.entries(map.records ?? {}).map(([record, system_of_record]) => ({ record, attribute: ANY, phase: ANY, product: ANY, account: ANY, actor: ANY, system_of_record, shorthand: true }));
+export function rulesOf(map: SourceMap): Rule[] {
+  const short = Object.entries(map.records ?? {}).map(([record, system_of_record]): ShorthandRule => ({ record, attribute: ANY, phase: ANY, product: ANY, account: ANY, actor: ANY, system_of_record, shorthand: true }));
   return [...(map.rules ?? []), ...short];
 }
 
@@ -33,9 +50,9 @@ export function rulesOf(map) {
  * A field left out of the query matches only "*" in a rule, so a rule narrowed to a product never
  * applies to a read that names no product. Returns { rule, specificity, ties } or null.
  */
-export function resolve(map, query) {
+export function resolve(map: SourceMap, query: RuleQuery): Resolution | null {
   const q = { attribute: ANY, ...query };
-  const fits = (rule) => rule.record === q.record && ["attribute", ...CONTEXT].every((k) => rule[k] === ANY || rule[k] === q[k]);
+  const fits = (rule: Rule) => rule.record === q.record && NARROWING.every((k) => rule[k] === ANY || rule[k] === q[k]);
   const hits = rulesOf(map).filter(fits).map((rule) => ({ rule, specificity: specificity(rule) - (rule.shorthand ? 0.5 : 0) }));
   if (!hits.length) return null;
   hits.sort((a, b) => b.specificity - a.specificity);
