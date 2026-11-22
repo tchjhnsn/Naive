@@ -29,4 +29,4 @@ The assets package ([`packages/naive/library/packages/assets/`](./packages/asset
 
 The foundation package lists `packages/naive/src/records/validate.mjs` among its checks: records are validated in JavaScript, with no Python.
 
-The validation package also owns the validation plan (`validation-plan`, `validation/plan.json`, EE-156): the assumptions not yet demonstrated, each with the gate item it bears on, its test, the result that counts as passing and a date. The discovery gate's validation-plan item reads it. Its route is `purpose/validation/plan`, derived from its path; the short name `validation/plan` that its siblings have is not built.
+The validation package also owns the validation plan (`validation-plan`, `validation/plan.json`, EE-156): the assumptions not yet demonstrated, each with the gate item it bears on, its test, the result that counts as passing and a date. The discovery gate's validation-plan item reads it. Its route is `validation/plan`.

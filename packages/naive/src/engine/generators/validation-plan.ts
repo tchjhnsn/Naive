@@ -3,8 +3,8 @@
 // the result that counts as passing (decided before the test) and a date. The generator derives each assumption's id
 // from its statement unless one is given, starts its status at open, and refuses an item that no phase gate in
 // packages/naive/src/phases/gate-policies.json names. uncovered lists the gate items a plan does not yet name, which
-// is what the discovery gate's validation-plan item measures. The draft goes to the write chain at purpose/validation/plan
-// (validation/plan.json), the route the route table derives for it until routes.mjs gives it a short name.
+// is what the discovery gate's validation-plan item measures. The draft goes to the write chain at validation/plan
+// (validation/plan.json).
 import { join } from "node:path";
 import { cli, drop, questions, readJson, repo, schemaOf, slug, validate } from "./generate.mjs";
 import type { PhaseGatePolicies, ValidationPlan } from "../../records/types/records.d.ts";
@@ -37,7 +37,7 @@ export function draft(a: { assumptions?: Partial<Assumption>[], updated?: string
   const rec = drop({ venture: v0?.id ?? "venture", updated: a.updated ?? new Date().toISOString().slice(0, 10), assumptions }) as ValidationPlan;
   const v = validate(record, rec);
   const unknown = items.size ? assumptions.filter((x) => !items.has(x.item)).map((x) => `assumption ${x.id}: no phase gate names the item ${x.item}`) : [];
-  return { ok: v.ok && !unknown.length, record, route: "purpose/validation/plan", draft: rec, errors: [...v.errors, ...unknown] };
+  return { ok: v.ok && !unknown.length, record, route: "validation/plan", draft: rec, errors: [...v.errors, ...unknown] };
 }
 
 /** The gate items of a phase that no open or passed assumption in the plan names. */

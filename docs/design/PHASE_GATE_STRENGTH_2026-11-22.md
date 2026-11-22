@@ -110,4 +110,3 @@ Every threshold here, the count levels, the presets and the weights in the stric
 - Links from each item to the market and industry anatomy matrices.
 - Gates for the later phases (validation, beachhead, scale, platform). Only discovery has items.
 - `--propose` for fail-open shortfalls: filing each named open risk as an open decision.
-- The short route `validation/plan` that the other validation records have. The plan is reached today at the derived route `purpose/validation/plan`.
