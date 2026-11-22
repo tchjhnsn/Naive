@@ -23,6 +23,8 @@
 // An import is a relative specifier in `import ... from`, `export ... from`, `import "..."`, `import("...")` or
 // `require("...")` in a tracked .mjs, .js, .cjs, .ts or .tsx file, whose target exists. A specifier that names no file
 // (an example inside a string or a comment) is not an edge. Bare specifiers (npm packages) are not edges between units.
+// A type-only `import type ... from` or `export type ... from` is not an edge either: type stripping erases it, so it
+// loads nothing at run time (core reads record shapes from packages/naive/src/records/types/records.d.ts this way).
 
 import { spawnSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
@@ -35,6 +37,10 @@ export type Finding = { readonly rule: "acyclic" | "one-version" | "leaf" | "pri
 
 const CODE = /\.(mjs|cjs|js|ts|tsx)$/;
 const SPECIFIER = /(?:\bfrom\s*|\bimport\s*\(\s*|\brequire\s*\(\s*|\bimport\s+)["'](\.{1,2}\/[^"']+)["']/g;
+const TYPE_ONLY = /\b(?:import|export)\s+type\s+[^;]*?\bfrom\s*["'][^"']+["']/g;
+
+/** The relative specifiers a file's text imports at run time: SPECIFIER matches less type-only imports and exports. */
+export const specifiers = (text: string): IterableIterator<RegExpMatchArray> => text.replace(TYPE_ONLY, "").matchAll(SPECIFIER);
 
 function tracked(root: string): string[] {
   const out = spawnSync("git", ["ls-files"], { cwd: root, encoding: "utf8" });
@@ -62,7 +68,7 @@ export function graph(root: string, files = tracked(root)): Graph {
     const full = join(root, file);
     if (!existsSync(full)) continue;
     const from = unitOf(file);
-    for (const m of readFileSync(full, "utf8").matchAll(SPECIFIER)) {
+    for (const m of specifiers(readFileSync(full, "utf8"))) {
       const target = normalize(join(dirname(file), m[1]));
       if (target.startsWith("..")) continue; // outside the repository
       if (!existsSync(join(root, target))) continue; // names no file: an example in a string or a comment
@@ -137,7 +143,7 @@ export function checkLeaves(root: string, leaves: Readonly<Record<string, string
     const code = files.filter((f) => inside(f) && CODE.test(f) && existsSync(join(root, f)));
     if (!code.length) out.push({ rule: "leaf", detail: `${leaf} holds no code; remove it from leaves in scripts/dependency-rules.json` });
     for (const file of code) {
-      for (const m of readFileSync(join(root, file), "utf8").matchAll(SPECIFIER)) {
+      for (const m of specifiers(readFileSync(join(root, file), "utf8"))) {
         const target = normalize(join(dirname(file), m[1]));
         if (inside(target)) continue;
         if (!target.startsWith("..") && !existsSync(join(root, target))) continue; // names no file
@@ -161,7 +167,7 @@ export function checkPrivate(root: string, folders: Readonly<Record<string, stri
     const doors = new Set(frontDoors(folder));
     for (const file of files) {
       if (!CODE.test(file) || file.includes("node_modules/") || inside(file) || doors.has(file) || !existsSync(join(root, file))) continue;
-      for (const m of readFileSync(join(root, file), "utf8").matchAll(SPECIFIER)) {
+      for (const m of specifiers(readFileSync(join(root, file), "utf8"))) {
         const target = normalize(join(dirname(file), m[1]));
         if (!inside(target) || !existsSync(join(root, target))) continue;
         out.push({ rule: "private", detail: `${file} imports ${target}, but ${folder} is private: only its own files and ${folder}.ts may import it (${folders[folder]})` });

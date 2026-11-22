@@ -44,6 +44,16 @@ test("imports between units are edges, imports inside a unit and npm packages ar
   assert.deepEqual(cycles(g), []);
 });
 
+test("a type-only import or export is not an edge, a mixed import is", () => {
+  const r = repo({
+    "a/x.ts": `import type { T } from "../b/t.d.ts";\nexport type { U } from "../c/u.ts";\nimport { type V, w } from "../d/w.ts";`,
+    "b/t.d.ts": "export type T = 1;",
+    "c/u.ts": "export type U = 1;",
+    "d/w.ts": "export type V = 1; export const w = 1;",
+  });
+  assert.deepEqual([...graph(r.dir, r.paths).get("a")!], [["d", 1]]);
+});
+
 test("acyclic: a new cycle fails", () => {
   const r = repo({ "a/x.ts": `import "../b/y.ts";`, "b/y.ts": `import "../a/x.ts";` });
   assert.deepEqual(checkCycles(cycles(graph(r.dir, r.paths)), { known_cycles: [] }).map((f) => f.detail), ["new cycle: a b"]);
