@@ -30,6 +30,7 @@ flowchart LR
 | [`beachhead/phase.json`](./beachhead/phase.json) | Repeatability. |
 | [`scale/phase.json`](./scale/phase.json) | Market leadership with healthy margins. |
 | [`platform/phase.json`](./platform/phase.json) | Others build on it. |
+| [`gate-policies.json`](./gate-policies.json) | How strict each phase gate is (EE-156): the eight discovery gate items (customer, problem, alternatives, solution-fit, channel, economic-signal, validation-plan, decision), each with what proves it and how its strength is measured on the evidence levels very low to high (adapted from GRADE, through [`evidence-grade.mjs`](../engine/evidence-grade.mjs)), and the presets lenient, standard and strict, which give each item a minimum level and a boundary: fail-closed refuses the phase change, fail-open passes and names the shortfall as an open risk. Its schema is `packages/naive/src/records/phase-gate-policies.schema.json` and its generator [`phase-gate-policies.ts`](../engine/generators/phase-gate-policies.ts). Every threshold is an unvalidated prior. Design: `docs/design/PHASE_GATE_STRENGTH_2026-11-22.md`. |
 
 ## Run and test
 
@@ -43,4 +44,5 @@ flowchart LR
 
 ## Not built
 
+- Gate policies cover discovery only; the later phases have no gate items yet.
 - The lifecycle does not yet check a phase module's gate evidence; it clears a gate on the venture's exit criteria and its playbook's evidence.
