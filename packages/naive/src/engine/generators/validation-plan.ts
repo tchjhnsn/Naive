@@ -6,7 +6,7 @@
 // is what the discovery gate's validation-plan item measures. The draft goes to the write chain at validation/plan
 // (validation/plan.json).
 import { join } from "node:path";
-import { cli, drop, questions, readJson, repo, schemaOf, slug, validate } from "./generate.mjs";
+import { cli, drop, questions, readJson, repo, schemaOf, slug, validate } from "./generate.ts";
 import type { PhaseGatePolicies, ValidationPlan } from "../../records/types/records.d.ts";
 
 export const record = "validation-plan";

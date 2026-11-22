@@ -11,11 +11,11 @@ import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
-import { call } from "../../router/router.mjs";
-import { ledgerPath, verify } from "../../router/detection-ledger.mjs";
-import { approve } from "../../engine/decisions.mjs";
-import { detectorFor } from "../../engine/detectors.mjs";
-import { validateValue } from "../../records/validate.mjs";
+import { call } from "../../router/router.ts";
+import { ledgerPath, verify } from "../../router/detection-ledger.ts";
+import { approve } from "../../engine/decisions.ts";
+import { detectorFor } from "../../engine/detectors.ts";
+import { validateValue } from "../../records/validate.ts";
 import { NOT_BUILT, SEAMS, toolsAgainstSpend } from "../../checks/check-seams.ts";
 import { ACT, DISMISS, decisionId, outcomeOf, run } from "../../router/orchestration/seams.ts";
 import { draft as connectionDraft } from "../../engine/generators/connection.ts";
@@ -44,7 +44,7 @@ const line = (id: string, over: Partial<SpendRegister> = {}): SpendRegister => (
 
 function venture(id: string, connections: Connection[], spend: SpendRegister[]): string {
   const dir = join(ws, `ventures/${id}`);
-  const made = node("packages/naive/src/engine/init-venture.mjs", dir, id);
+  const made = node("packages/naive/src/engine/init-venture.ts", dir, id);
   if (made.status !== 0) throw new Error(made.stderr || made.stdout);
   for (const c of connections) put(join(dir, `it/connections/${c.id}.json`), c);
   for (const s of spend) put(join(dir, `finance/spend/${s.id}.json`), s);
@@ -60,7 +60,7 @@ try {
   // The shipped detector and the sensor, without a venture.
   const shipped = detectorFor(undefined, DETECTOR)?.detector;
   expect("the shipped seam detector names the finance lead, the costly tier and both functions' records as sources",
-    shipped?.assign_to === "finance-lead" && shipped.tier === "costly" && shipped.costs.miss === 3 && shipped.costs.false_alarm === 1
+    shipped?.assign_to === "finance-lead" && shipped.tier === "costly" && shipped.costs?.miss === 3 && shipped.costs?.false_alarm === 1
       && JSON.stringify(shipped.evidence.sources.map((s: { records: string }) => s.records)) === JSON.stringify(["it/connections/[id]", "finance/spend/[id]"]), JSON.stringify(shipped));
   expect("the shipped seam detector matches detector.schema.json", validateValue("detector.schema.json", shipped).status === 0);
   expect("tools against spend is the one built seam, and the others are listed as not built with the record they miss",
@@ -109,7 +109,7 @@ try {
     JSON.stringify(decisions));
   expect("each decision matches decision-record.schema.json and offers act and dismiss",
     decisions.every((d) => validateValue("decision-record.schema.json", d).status === 0 && JSON.stringify(d.options) === JSON.stringify([ACT, DISMISS])));
-  expect("the decisions are listed by the decision matrix", node("packages/naive/src/engine/decisions.mjs", dir, "--json").stdout.includes(r.called[0].decision ?? "no decision"));
+  expect("the decisions are listed by the decision matrix", node("packages/naive/src/engine/decisions.ts", dir, "--json").stdout.includes(r.called[0].decision ?? "no decision"));
 
   const again = await run(dir);
   expect("a rerun files nothing new and keeps the three decisions", again.ok && again.called.length === 0 && again.kept.length === 3 && ledger(dir).length === 3, JSON.stringify(again));
@@ -138,6 +138,7 @@ try {
   // A venture's own copy of the detector moves the line.
   const own = venture("own-line", [connection("slack", "connected")], []);
   const d = structuredClone(shipped);
+  if (!d) throw new Error(`no shipped detector ${DETECTOR}`);
   d.criterion.yes = { value: 2, set_by: "founder" };
   put(join(own, `governance/detectors/${DETECTOR}.json`), d);
   const ownRun = await run(own);

@@ -48,7 +48,7 @@
       "label": "Rho",
       "kind": "bank and spend",
       "address": "sandbox, or live with RHO_API_TOKEN",
-      "connect": "the app's sync command, named in NAIVE_SYNC_RHO (packages/naive/src/core/sync.mjs): accounts, transactions and a summary, as pointers in money/"
+      "connect": "the app's sync command, named in NAIVE_SYNC_RHO (packages/naive/src/core/sync.ts): accounts, transactions and a summary, as pointers in money/"
     },
     "google-drive": {
       "label": "Google Drive",

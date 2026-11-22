@@ -3,7 +3,7 @@
 // guarantees it. The generator derives the id from the counterparty unless one is given and starts the status at
 // proposed, since signing is the founder's decision. noticeDate gives the last day notice can be given. The draft goes
 // to the write chain for assets/leases/<id>.json, which only the assets agent (assets-agent) or a person may write.
-import { cli, drop, questions, schemaOf, slug, validate } from "./generate.mjs";
+import { cli, drop, questions, schemaOf, slug, validate } from "./generate.ts";
 import type { Lease } from "../../records/types/records.d.ts";
 
 export const record = "lease";

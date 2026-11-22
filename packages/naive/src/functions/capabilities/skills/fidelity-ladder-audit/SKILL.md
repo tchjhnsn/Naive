@@ -51,7 +51,7 @@ grep -rn "ENTITY_TYPES\|EntityType =" <repo>/packages <repo>/apps --include=*.ts
 ### Step 2 · Run the census
 
 ```bash
-node ladder-census.mjs <components-dir> --json out.json
+node ladder-census.ts <components-dir> --json out.json
 ```
 
 It reports three sections:
@@ -67,7 +67,7 @@ The default lexicon is the *specified* vocabulary. Codebases drift from it, and 
 Scan the third section for recurring nouns the lexicon missed, then re-run:
 
 ```bash
-node ladder-census.mjs <components-dir> --objects Rep,Post,Event,Vault
+node ladder-census.ts <components-dir> --objects Rep,Post,Event,Vault
 ```
 
 **A ladder found only on the second pass is itself a finding** — it means the component names and the data model use different words for the same object.

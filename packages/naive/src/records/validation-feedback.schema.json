@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "validation-feedback.schema.json",
   "title": "Beta feedback",
-  "description": "One tester's answers at one beta checkpoint, at <venture>/validation/feedback/<id>.json. The beta gate (packages/naive/src/engine/beta-gate.mjs) unlocks the next capability only once this record exists for the previous one. routed_to is where the feedback went and routing how that was decided.",
+  "description": "One tester's answers at one beta checkpoint, at <venture>/validation/feedback/<id>.json. The beta gate (packages/naive/src/engine/beta-gate.ts) unlocks the next capability only once this record exists for the previous one. routed_to is where the feedback went and routing how that was decided.",
   "type": "object",
   "required": ["id", "tester", "capability", "checkpoint", "answers", "at"],
   "additionalProperties": false,

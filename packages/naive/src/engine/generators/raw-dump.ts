@@ -3,7 +3,7 @@
 // raw/dump/<id>.md: frontmatter with id, captured, channel and person, then the text unchanged. The id is the
 // capture time plus a short suffix, as naive capture makes it. Raw is immutable, so the route refuses a write to a
 // capture that exists; a new capture is a new file.
-import { cli } from "./generate.mjs";
+import { cli } from "./generate.ts";
 
 export const record = "raw-dump";
 export const describe = () => ({ record, ask: [

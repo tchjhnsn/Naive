@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "decision-impact.schema.json",
   "title": "Decision impact",
-  "description": "The impact map of a merged decision version (packages/naive/src/engine/impact.mjs), written beside the decision as decisions/<id>.impact.json: for each venture function, the records that depend on what the merge changed (by provenance, the where-used list and data-model refs), which of them were marked stale, an agent's note, and the open follow-up decisions proposed. Naive proposes; a person decides.",
+  "description": "The impact map of a merged decision version (packages/naive/src/engine/impact.ts), written beside the decision as decisions/<id>.impact.json: for each venture function, the records that depend on what the merge changed (by provenance, the where-used list and data-model refs), which of them were marked stale, an agent's note, and the open follow-up decisions proposed. Naive proposes; a person decides.",
   "type": "object",
   "required": ["decision", "version", "functions", "built_at"],
   "additionalProperties": false,

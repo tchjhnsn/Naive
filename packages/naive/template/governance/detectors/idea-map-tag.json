@@ -2,7 +2,7 @@
   "id": "idea-map-tag",
   "title": "Tag an idea from a System 1 answer",
   "description": "The idea map tags an idea with a department or record when the System 1 answer's score is at or above the line.",
-  "call_site": "packages/naive/src/functions/strategy/frameworks/idea-map/ideamap.mjs fromAnswers, read through naive.config.json thresholds.idea-map",
+  "call_site": "packages/naive/src/functions/strategy/frameworks/idea-map/ideamap.ts fromAnswers, read through naive.config.json thresholds.idea-map",
   "tier": "low",
   "question": {
     "verb": "tag",

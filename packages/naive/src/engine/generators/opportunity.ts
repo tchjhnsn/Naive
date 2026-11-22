@@ -4,7 +4,7 @@
 // (won or lost) needs an outcome with its reason and who gave it. The buyer is an account or customer record id, never
 // contact details. The draft goes to the write chain for sales/opportunities/<id>.json, which only the marketing and
 // sales agent (marketing-and-sales-agent) or a person may write.
-import { cli, drop, questions, schemaOf, slug, validate } from "./generate.mjs";
+import { cli, drop, questions, schemaOf, slug, validate } from "./generate.ts";
 import type { Opportunity } from "../../records/types/records.d.ts";
 
 export const record = "opportunity";

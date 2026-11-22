@@ -6,8 +6,8 @@ import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
-import { ventureFile } from "../core/venture-paths.mjs";
-import { routes } from "../records/routes/routes.mjs";
+import { ventureFile } from "../core/venture-paths.ts";
+import { routes } from "../records/routes/routes.ts";
 import type { Finding } from "./lint-money.ts";
 
 const repo = new URL("../../../..", import.meta.url).pathname;
@@ -236,19 +236,19 @@ const secret = { id: "txn", amount: { amount: 919191, currency: "USD" }, note: "
     id: "fixture", name: "Fixture", parent: null, phase: "discovery", owner: "self", status: "active",
     layers: { purpose: false, knowledge: false, operations: false, evidence: false, governance: false, interface: false },
   }));
-  const okRun = spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.mjs"), "money/lint", "run", "--venture", "fixture", "--workspace", ws, "--json"], { encoding: "utf8" });
+  const okRun = spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.ts"), "money/lint", "run", "--venture", "fixture", "--workspace", ws, "--json"], { encoding: "utf8" });
   let parsed = null;
   try { parsed = JSON.parse(okRun.stdout); } catch { parsed = null; }
   expect("mentura money/lint run on a clean venture exits 0", okRun.status === 0 && parsed?.ok === true && parsed.result?.findings?.length === 0, okRun.stdout + okRun.stderr);
   writeFileSync(join(dir, "naive.config.json"), JSON.stringify({ money_lint: { rules: { "account-no-owner": { mode: "fail-closed" } } } }));
   mkdirSync(join(dir, "money"));
   writeFileSync(join(dir, "money/operating.json"), JSON.stringify({ id: "operating", name: "Operating" }));
-  const closed = spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.mjs"), "money/lint", "run", "--venture", "fixture", "--workspace", ws, "--json"], { encoding: "utf8" });
+  const closed = spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.ts"), "money/lint", "run", "--venture", "fixture", "--workspace", ws, "--json"], { encoding: "utf8" });
   expect("mentura money/lint run exits 1 when a fail-closed rule has a finding", closed.status === 1 && /account-no-owner/.test(closed.stderr + closed.stdout), closed.stdout + closed.stderr);
-  const check = spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/naive.mjs"), "check"], { cwd: dir, encoding: "utf8" });
+  const check = spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/naive.ts"), "check"], { cwd: dir, encoding: "utf8" });
   expect("naive check runs money lint and a fail-closed finding fails it", /FAIL\s+lint-money:/.test(check.stdout) && check.status !== 0, check.stdout);
   writeFileSync(join(dir, "money/operating.json"), JSON.stringify({ id: "operating", name: "Operating", owner: "Ada Lovelace" }));
-  const checkOk = spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/naive.mjs"), "check"], { cwd: dir, encoding: "utf8" });
+  const checkOk = spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/naive.ts"), "check"], { cwd: dir, encoding: "utf8" });
   expect("naive check reports money lint passing when the account has an owner", /pass\s+lint-money:/.test(checkOk.stdout), checkOk.stdout);
   rmSync(ws, { recursive: true, force: true });
 }

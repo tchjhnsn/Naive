@@ -4,7 +4,7 @@
 //
 //   departments.json                       the id, label, APQC category, governance and operations sides
 //   data-model.json (function field)       the record types the function owns, so the write reach it should get
-//   routes() (records/routes)              the write routes of those record types (functionWrites in ./reach.mjs,
+//   routes() (records/routes)              the write routes of those record types (functionWrites in ./reach.ts,
 //                                          the same list the router enforces)
 //   PACKAGE_FUNCTION (core/venture-paths)  the record packages the function owns, which the researcher reads
 //   PLANS (engine/access)                  the team-plan files, so no derived reach ever includes the team plan
@@ -35,11 +35,11 @@
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join, relative } from "node:path";
-import { PACKAGE_FUNCTION } from "../../core/venture-paths.mjs";
-import { readDataModel, venturePaths } from "../../records/index.mjs";
-import { PLANS, routeGlob } from "../access.mjs";
-import { routes } from "../../records/routes/routes.mjs";
-import { functionWrites } from "./reach.mjs";
+import { PACKAGE_FUNCTION } from "../../core/venture-paths.ts";
+import { readDataModel, venturePaths } from "../../records/index.ts";
+import { PLANS, routeGlob } from "../access.ts";
+import { routes } from "../../records/routes/routes.ts";
+import { functionWrites } from "./reach.ts";
 // Paths inside this copy of Naive, as everything-ecosystem's naivePath gave them for the installed package.
 const naiveRoot = new URL("../../../../../", import.meta.url).pathname;
 export const naivePath = (rel: string): string => join(naiveRoot, rel);

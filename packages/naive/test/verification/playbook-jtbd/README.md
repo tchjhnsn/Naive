@@ -1,6 +1,6 @@
 # Jobs playbook, checked
 
-The model is the template in `packages/naive/library/packages/foundation/playbooks/jtbd.md`. One profile moves from the records the venture already has, through a draft, to a founder accept. TLC 2.19 (tla2tools 1.7.4) checked it. The replay drives `packages/naive/src/router/router.mjs` `resolve` and `call` on a fixture venture.
+The model is the template in `packages/naive/library/packages/foundation/playbooks/jtbd.md`. One profile moves from the records the venture already has, through a draft, to a founder accept. TLC 2.19 (tla2tools 1.7.4) checked it. The replay drives `packages/naive/src/router/router.ts` `resolve` and `call` on a fixture venture.
 
 The chart hides `Park`. That action is true only in the end states (stopped, check failed, accepted) and changes nothing, so the chart has no arrow for it. The earlier playbook run hid 12 of those steps. No other step is hidden.
 
@@ -13,7 +13,7 @@ TLA2TOOLS=/path/to/tla2tools.jar JAVA=/usr/bin/java \
   /path/to/statechart/scripts/statechart \
   packages/naive/test/verification/playbook-jtbd/JtbdPlaybook.tla \
   --config packages/naive/test/verification/playbook-jtbd/JtbdPlaybook.cfg \
-  --view packages/naive/test/verification/playbook-jtbd/view.mjs \
+  --view packages/naive/test/verification/playbook-jtbd/view.ts \
   --out /tmp/jtbd-chart
 ```
 
@@ -31,7 +31,7 @@ sh png.sh packages/naive/test/verification/playbook-jtbd/out/chart.svg
 Replay the rules on a fixture venture.
 
 ```sh
-node packages/naive/test/verification/playbook-jtbd/replay.mjs
+node packages/naive/test/verification/playbook-jtbd/replay.ts
 ```
 
 ## Rules
@@ -42,7 +42,7 @@ Playbook config (`Probe = FALSE`): the earlier run reported 36 states and 40 ste
 | --- | --- | --- | --- |
 | EveryRouteReal | Every step's route is one `resolve` accepts. `none` is only the start. | PASS | `resolve` accepts `foundation/problem` read, `foundation/icp` read, `foundation/icp/shop-owners` as `foundation/icp/[id]` write, `product` read, `product/ledger` as `product/[id]` read, and `purpose/foundation` run. `foundation/icp` offers no write. |
 | ReadsAreProvided | A step uses a record only when the venture already has it. `product/[id]` is used only when a card is present. A stop on a missing problem or profile names the route and does not use its fields. | PASS | With no product card, `product` and `product/ledger` read as `not_found`, and the replay does not read a `job` field. `foundation/problem` reads back the record the fixture wrote, and `foundation/icp` lists the profile under its id. After a real `product/ledger` write, the read returns `job` `Close the books`. |
-| CheckMatchesJobs | The check passes only for a progress sentence, and fails for a blank or a copy. Both results are on the chart: "Check failed" and "Check passed, waiting for you". | PASS | On the fixture, empty `jobs`, a blank string, a copy of `who`, a copy of a trait, and a copy of the product's `job` each fail. A progress sentence passes. `node packages/naive/src/engine/foundation.mjs` exits 0 when a bad `problem_forms` id sits only in a draft, because it reads live records. It exits 1 when a live profile names `not-a-form`. |
+| CheckMatchesJobs | The check passes only for a progress sentence, and fails for a blank or a copy. Both results are on the chart: "Check failed" and "Check passed, waiting for you". | PASS | On the fixture, empty `jobs`, a blank string, a copy of `who`, a copy of a trait, and a copy of the product's `job` each fail. A progress sentence passes. `node packages/naive/src/engine/foundation.ts` exits 0 when a bad `problem_forms` id sits only in a draft, because it reads live records. It exits 1 when a live profile names `not-a-form`. |
 | NotLiveUntilYouAccept | An agent's write is a draft. The founder accepts only after the check passed. | PASS | A write of `foundation/icp` is refused. An agent write of `foundation/icp/shop-owners` returns `draft: true`, and the live `jobs` stay `[]`. With two profiles drafted, `purpose/foundation` reports `icp` as `draft`, and still does after one accept. `mentura accept foundation/icp/<id> --confirm foundation/icp/<id>` on both leaves no `pending_draft`, the live job is the progress sentence, and `purpose/foundation` reports `confirmed`. |
 
 ## Probe
@@ -62,4 +62,4 @@ The model is one profile. The playbook loops every profile `foundation/icp` list
 
 ## Covered code
 
-`packages/naive/library/packages/foundation/playbooks/jtbd.md`. `packages/naive/src/router/router.mjs` `resolve` and `call` for the routes in the table. `packages/naive/src/engine/foundation.mjs` for a `problem_forms` id the problem record lacks. `packages/naive/src/records/icp-profile.schema.json` `jobs`. `packages/naive/src/interfaces/cli/mentura.mjs` `accept` for `foundation/icp/<id>`. Confirmed on this branch before the pull request, by the commands above.
+`packages/naive/library/packages/foundation/playbooks/jtbd.md`. `packages/naive/src/router/router.ts` `resolve` and `call` for the routes in the table. `packages/naive/src/engine/foundation.ts` for a `problem_forms` id the problem record lacks. `packages/naive/src/records/icp-profile.schema.json` `jobs`. `packages/naive/src/interfaces/cli/mentura.ts` `accept` for `foundation/icp/<id>`. Confirmed on this branch before the pull request, by the commands above.

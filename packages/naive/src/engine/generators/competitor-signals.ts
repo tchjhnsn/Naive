@@ -3,7 +3,7 @@
 // (writer projection in the data model), so the generator asks a person nothing: it drafts the record the projector
 // starts from, for one competitor and the time of its first salient signal. Folding signals into it is the pure
 // render, a later build item.
-import { cli, validate } from "./generate.mjs";
+import { cli, validate } from "./generate.ts";
 import type { CompetitorSignals } from "../../records/types/records.d.ts";
 
 export const record = "competitor-signals";

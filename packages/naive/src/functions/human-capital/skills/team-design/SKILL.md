@@ -21,7 +21,7 @@ Operations layer, governance tier (EE-029). Writes `operations/team-plan.json`; 
 
 ## Push agents to their limit, and find the loops that need a person
 
-1. **List the work** the current and next phase need, from the need-now score (`node packages/naive/src/engine/need-now.mjs <venture>`) and the validation team record's skills.
+1. **List the work** the current and next phase need, from the need-now score (`node packages/naive/src/engine/need-now.ts <venture>`) and the validation team record's skills.
 2. **Look up each task** in the capability register (`packages/naive/src/functions/human-capital/capabilities/agent-capabilities.json`):
    - `can`: an agent role does it.
    - `can-with-review`: an agent does it; name the person who reviews (`human_loop`).

@@ -12,7 +12,7 @@
     "extends": { "type": "string", "description": "A venture file: repo-relative path to the template it customizes. The template's never_redelegated and one_way_doors bind the venture too, and an extends that cannot be honored is refused. Grants are not inherited" },
     "note": { "type": "string" },
     "root": { "type": "string", "description": "The chief delegator's role id (founder)" },
-    "founder": { "type": "array", "items": { "type": "string", "minLength": 1 }, "minItems": 1, "uniqueItems": true, "description": "The people who hold the root role, by name. Only they approve a one-way publication (packages/naive/src/engine/publish.mjs) or merge as the founder (packages/naive/src/engine/decisions.mjs). The template leaves it out; a venture names its own founders" },
+    "founder": { "type": "array", "items": { "type": "string", "minLength": 1 }, "minItems": 1, "uniqueItems": true, "description": "The people who hold the root role, by name. Only they approve a one-way publication (packages/naive/src/engine/publish.ts) or merge as the founder (packages/naive/src/engine/decisions.ts). The template leaves it out; a venture names its own founders" },
     "never_redelegated": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
     "one_way_doors": { "type": "array", "items": { "type": "string" }, "uniqueItems": true, "description": "Irreversible classes; they stay with the founder" },
     "grants": {

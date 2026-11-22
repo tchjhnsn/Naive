@@ -38,11 +38,11 @@
 import { createHash } from "node:crypto";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
-import { globRegExp, readDataModel, venturePaths } from "../records/index.mjs";
-import { validateValue } from "../records/validate.mjs";
+import { globRegExp, readDataModel, venturePaths } from "../records/index.ts";
+import { validateValue } from "../records/validate.ts";
 import { canonicalJson } from "../core/signal-id.ts";
-import { lineHash } from "../core/provenance.mjs";
-import { hasBlob, readBlob } from "../core/blobs.mjs";
+import { lineHash } from "../core/provenance.ts";
+import { hasBlob, readBlob } from "../core/blobs.ts";
 import { lintRecipe, recipeExports, runRecipes } from "../engine/recipes/sandbox.ts";
 import { loadSignals } from "../engine/recipes/eval-set.ts";
 import { recipeInput } from "../engine/recipes/outcomes.ts";

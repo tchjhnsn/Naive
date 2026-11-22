@@ -7,15 +7,15 @@
 //     turned traces.content on; a provenance line that names a span no trace file holds.
 //   warnings: a span whose parent is in no trace file of the venture (it may have been written by another
 //     process that has not flushed yet); an agent's provenance line with no span, in a venture with traces on.
-// The schema of each line is checked by packages/naive/src/records/validate.mjs.
+// The schema of each line is checked by packages/naive/src/records/validate.ts.
 //
 //   node packages/naive/src/checks/check-traces.ts <workspace or venture dir>
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { SPAN_KINDS, sessions, spanHash, traceFile, tracing } from "../core/instrumentation.mjs";
-import { LOG } from "../core/provenance.mjs";
-import { ventureFile } from "../core/venture-paths.mjs";
+import { SPAN_KINDS, sessions, spanHash, traceFile, tracing } from "../core/instrumentation.ts";
+import { LOG } from "../core/provenance.ts";
+import { ventureFile } from "../core/venture-paths.ts";
 import type { ProvenanceEntry, TraceSpan } from "../records/types/records.d.ts";
 
 const CONTENT = /^(gen_ai\.(input|output)\.messages|gen_ai\.system_instructions|gen_ai\.tool\.call\.(arguments|result)|naive\.(input|output))$/;

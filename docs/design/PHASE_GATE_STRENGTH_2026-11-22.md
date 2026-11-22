@@ -8,7 +8,7 @@ A phase gate that only asks whether records exist lets a venture leave discovery
 
 A password meter solves the same problem for passwords: it rates strength on a short ladder, says what is missing, and leaves the site to decide how strict to be. EE-156 does that for each gate item. Each item has an evidence ladder from very low to high, adapted from GRADE (the GRADE Working Group's method for rating certainty of evidence). A policy gives each item a minimum level and a boundary. Fail-closed refuses the phase change when the item falls short. Fail-open lets it pass and names the shortfall as an open risk.
 
-Interviews are the strongest common proof, but not the only one. Under the grading rules in `packages/naive/src/engine/evidence-grade.mjs`, behavior evidence from the target audience with five or more cases starts and stays high, and desk research from three distinct sources reaches moderate, because three consistent sources raise a record one level.
+Interviews are the strongest common proof, but not the only one. Under the grading rules in `packages/naive/src/engine/evidence-grade.ts`, behavior evidence from the target audience with five or more cases starts and stays high, and desk research from three distinct sources reaches moderate, because three consistent sources raise a record one level.
 
 ## The ladder
 
@@ -62,7 +62,7 @@ flowchart TD
   R -->|no| VL["very low"]
   R -->|yes| K{"measure.kind"}
   K -->|count| C["count the evidence<br/>map by count_levels"]
-  K -->|grade| G["gradeRecord on cited evidence<br/>evidence-grade.mjs"]
+  K -->|grade| G["gradeRecord on cited evidence<br/>evidence-grade.ts"]
   K -->|coverage| P["share of open items<br/>the validation plan names"]
   K -->|authority| A{"a person changed<br/>the phase?"}
   A -->|yes| H["high"]

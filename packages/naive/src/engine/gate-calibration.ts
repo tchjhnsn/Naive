@@ -21,15 +21,15 @@ import { join } from "node:path";
 import { CannotRun, NotFound, Refused, SchemaInvalid } from "../core/effect/errors.ts";
 import { readJson, VentureFs } from "../core/effect/fs.ts";
 import { runMain, runSync } from "../core/effect/run.ts";
-import { ventureFile } from "../core/venture-paths.mjs";
-import { ROOT } from "../phases/phases.mjs";
-import { readDataModel, readSchema, venturePaths } from "../records/index.mjs";
-import { validateValue } from "../records/validate.mjs";
+import { ventureFile } from "../core/venture-paths.ts";
+import { ROOT } from "../phases/phases.ts";
+import { readDataModel, readSchema, venturePaths } from "../records/index.ts";
+import { validateValue } from "../records/validate.ts";
 import type { AnatomyCellEnumCell, AnatomyCellNumberCell, GateCalibration, IndustryAnatomy, MarketAnatomy, PhaseGatePolicies } from "../records/types/records.d.ts";
-import { LEVELS } from "./evidence-grade.mjs";
-import { decisionFile, propose } from "./decisions.mjs";
-import { CONFIG } from "./naive-config.mjs";
-import { DEFAULT_PRESET, POLICIES } from "./phase-gate.mjs";
+import { LEVELS } from "./evidence-grade.ts";
+import { decisionFile, propose } from "./decisions.ts";
+import { CONFIG } from "./naive-config.ts";
+import { DEFAULT_PRESET, POLICIES } from "./phase-gate.ts";
 
 /** The rules file. */
 export const RULES = "packages/naive/src/phases/gate-calibration.json";
@@ -99,7 +99,7 @@ const at = (i: number): Level => { const l = LEVELS[Math.max(0, Math.min(LEVELS.
  * switch to the data model's once it lists the record types; until then the paths are the ones the schemas name.
  */
 export function anatomyGlobs(): Record<Anatomy, string[]> {
-  const model: { records: { id: string, schema?: string, paths?: string[] }[] } = readDataModel();
+  const model: { records: { id: string, schema?: string | null, paths?: string[] }[] } = readDataModel();
   const of = (schema: string, fallback: string): string[] => {
     const r = model.records.find((x) => typeof x.schema === "string" && x.schema.endsWith(`/${schema}`));
     const g: string[] = r ? venturePaths(r) : [];

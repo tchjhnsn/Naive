@@ -1,4 +1,4 @@
-// Tests the researcher's read clamp (packages/naive/src/router/reads-as-of.mjs; everything-ecosystem
+// Tests the researcher's read clamp (packages/naive/src/router/reads-as-of.ts; everything-ecosystem
 // docs/design/AUTORESEARCH_RECORDS_2026-11-06.md, build plan item 7): a <function>-researcher role reads through the
 // router and the agent filesystem only as of its cut. No read answers with anything written after the cut, a list
 // holds only what existed then, a signal observed after the cut is left out, a researcher read with no cut is
@@ -11,11 +11,11 @@ import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
-import { call } from "../../router/router.mjs";
+import { call } from "../../router/router.ts";
 import { glob, ls, read, readRaw } from "../../router/agent-files.ts";
-import { record } from "../../core/provenance.mjs";
-import { blobHash } from "../../core/blobs.mjs";
-import { cutFor, inEval, isResearcher } from "../../router/reads-as-of.mjs";
+import { record } from "../../core/provenance.ts";
+import { blobHash } from "../../core/blobs.ts";
+import { cutFor, inEval, isResearcher } from "../../router/reads-as-of.ts";
 
 const repo = new URL("../../../../../", import.meta.url).pathname;
 let failed = 0;
@@ -23,7 +23,7 @@ const expect = (name: string, ok: boolean, detail = ""): void => { console.log(`
 const ws = mkdtempSync(join(tmpdir(), "reads-as-of-test-"));
 const env: NodeJS.ProcessEnv = { ...process.env, MENTURA_WORKSPACE: ws };
 delete process.env.MENTURA_READS_AS_OF; delete process.env.MENTURA_ACTOR_ID;
-const cli = (...a: string[]) => spawnSync(process.execPath, [join(repo, "packages/naive/src/interfaces/cli/mentura.mjs"), ...a], { encoding: "utf8", env });
+const cli = (...a: string[]) => spawnSync(process.execPath, [join(repo, "packages/naive/src/interfaces/cli/mentura.ts"), ...a], { encoding: "utf8", env });
 const pause = (ms: number) => new Promise((ok) => setTimeout(ok, ms));
 const solution = (statement: string) => ({ venture: "clamp", statement, alternatives: ["a receptionist"], evidence: [] });
 const RESEARCHER = "strategy-researcher";

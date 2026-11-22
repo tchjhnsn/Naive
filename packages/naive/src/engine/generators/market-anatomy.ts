@@ -4,8 +4,8 @@
 // draft is the whole sub-matrix. The id is primary unless given, and the segment is "unknown" until someone names it.
 // Init writes markets/primary.json through it. The draft goes to the write chain at markets/<id>.
 import { join } from "node:path";
-import { cli, drop, questions, readJson, schemaOf, slug, validate } from "./generate.mjs";
-import { allCells } from "./anatomy-cells.mjs";
+import { cli, drop, questions, readJson, schemaOf, slug, validate } from "./generate.ts";
+import { allCells } from "./anatomy-cells.ts";
 import type { AnatomyCellEnumCell, AnatomyCellNumberCell } from "../../records/types/records.d.ts";
 
 type Cell = AnatomyCellNumberCell | AnatomyCellEnumCell;

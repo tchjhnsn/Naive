@@ -13,7 +13,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { signalId } from "../../core/signal-id.ts";
-import { record } from "../../core/provenance.mjs";
+import { record } from "../../core/provenance.ts";
 import { planRecipe } from "../../engine/recipes/eval-set.ts";
 import { knobsIn, setKnob } from "../../engine/recipes/knobs.ts";
 import { search } from "../../router/orchestration/recipe-search.ts";

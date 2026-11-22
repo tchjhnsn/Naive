@@ -23,9 +23,9 @@
 import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
-import { PACKAGE_FUNCTION, ventureFile } from "../core/venture-paths.mjs";
-import { globRegExp, pathKind, recordsIn, venturePaths } from "../records/index.mjs";
-import { validateValue } from "../records/validate.mjs";
+import { PACKAGE_FUNCTION, ventureFile } from "../core/venture-paths.ts";
+import { globRegExp, pathKind, recordsIn, venturePaths } from "../records/index.ts";
+import { validateValue } from "../records/validate.ts";
 import type { DataModel, DecisionRights, DepartmentCatalog, Layer } from "../records/types/records.d.ts";
 
 /** A record type with the repository files its paths match, which this check adds. */
@@ -82,7 +82,7 @@ for (const r of types.values()) for (const ref of r.refs ?? []) {
 }
 // Kinds (hosted working copy design, section 2): an append-only record type is a log, and a log is append-only.
 for (const r of types.values()) if ((r.form === "json-lines") !== (r.kind === "log")) errors.push(`${r.id}: kind ${r.kind ?? "record"} with form ${r.form ?? "json"}; a record type is a log exactly when its form is json-lines`);
-// A typescript record (a recipe) is a .ts file. Its schema governs what the module exports, so validate.mjs never reads it.
+// A typescript record (a recipe) is a .ts file. Its schema governs what the module exports, so validate.ts never reads it.
 for (const r of types.values()) if (r.form === "typescript" && r.paths.some((p) => !p.endsWith(".ts"))) errors.push(`${r.id}: form typescript, so every path ends in .ts`);
 // settles (autoresearch design, "The metric"): only a projected type is scored, and each field it scores or forecasts
 // is a top-level property of its schema, scored one way only; a forecast field is a number (a probability).
@@ -183,7 +183,9 @@ for (const t of types.keys()) if (!owner.has(t)) errors.push(`${t}: no layer or 
 // and a record type a package owns names the package's function or null.
 const DEPARTMENTS = "packages/naive/src/functions/departments.json";
 const functionIds = new Set<string>(existsSync(join(root, DEPARTMENTS)) ? load<DepartmentCatalog>(DEPARTMENTS).departments.map((x) => x.id) : []);
-const schemaIds: string[] = records.readSchema("data-model").properties.records.items.properties.function?.enum?.filter((x: string | null): x is string => x !== null) ?? [];
+// The parsed schema is read at a module boundary: cast once to the path this check walks.
+type DataModelSchema = { properties: { records: { items: { properties: { function?: { enum?: (string | null)[] } } } } } };
+const schemaIds: string[] = (records.readSchema("data-model") as DataModelSchema).properties.records.items.properties.function?.enum?.filter((x: string | null): x is string => x !== null) ?? [];
 for (const f of schemaIds) if (!functionIds.has(f)) errors.push(`packages/naive/src/records/data-model.schema.json: function ${f} is not an id in ${DEPARTMENTS}`);
 for (const f of functionIds) if (!schemaIds.includes(f)) errors.push(`packages/naive/src/records/data-model.schema.json: function lists no ${f}, an id in ${DEPARTMENTS}`);
 for (const [pkg, f] of Object.entries(PACKAGE_FUNCTION)) if (!functionIds.has(f)) errors.push(`PACKAGE_FUNCTION: ${pkg} names ${f}, which is not an id in ${DEPARTMENTS}`);
@@ -191,7 +193,7 @@ for (const r of types.values()) {
   // The type requires function, but a record type in the file may leave it out: that is what this finds.
   if (!("function" in (r as object))) { errors.push(`${r.id}: names no function; give an id in ${DEPARTMENTS}, or null when several functions share it`); continue; }
   if (r.function !== null && !functionIds.has(r.function)) { errors.push(`${r.id}: function ${r.function} is not an id in ${DEPARTMENTS}`); continue; }
-  // writer function: only <function>-agent or a person writes it (writerRule in packages/naive/src/engine/gate.mjs), so it needs a function.
+  // writer function: only <function>-agent or a person writes it (writerRule in packages/naive/src/engine/gate.ts), so it needs a function.
   if (r.writer === "function" && r.function === null) errors.push(`${r.id}: writer function needs a function, since only <function>-agent or a person writes it`);
   // The first venture path is where records are written; later ones are older places still read.
   const folder = venturePaths(r)[0]?.split("/")[0], pf = folder && (PACKAGE_FUNCTION as Readonly<Record<string, string>>)[folder];
