@@ -10,7 +10,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { addCounts, type ApplicationDate, cellStatuses, isApplicationDate, confidenceOf, countOf, coverageOf, problems, problemsOf, statusAt, submatrix, ventureAnatomy, viewOf } from "./venture-anatomy.ts";
 import { leanCanvas } from "./lean-canvas.mjs";
-import { CannotRun } from "../core/effect/errors.mjs";
+import { CannotRun } from "../core/effect/errors.ts";
 import { draft as draftMarket } from "./generators/market-anatomy.ts";
 import type { VentureAnatomy } from "../records/types/records.d.ts";
 

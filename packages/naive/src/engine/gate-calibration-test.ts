@@ -11,7 +11,7 @@ import { dirname, join } from "node:path";
 import { calibrate, calibration, cellAt, decisionId, isIsoDate, parsePreset, parseRules, proposeCalibration, RULES } from "./gate-calibration.ts";
 import type { IsoDate, Rules } from "./gate-calibration.ts";
 import type { AnatomyCellEnumCell, AnatomyCellNumberCell, IndustryAnatomy, MarketAnatomy, PhaseGatePolicies } from "../records/types/records.d.ts";
-import { runSync } from "../core/effect/run.mjs";
+import { runSync } from "../core/effect/run.ts";
 import { gradeItem } from "./evidence-grade.mjs";
 import { phaseGate, POLICIES } from "./phase-gate.mjs";
 import { ventureFile } from "../core/venture-paths.mjs";
