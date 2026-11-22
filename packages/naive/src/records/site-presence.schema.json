@@ -227,7 +227,8 @@
           "enum": [
             "founder",
             "record",
-            "inferred"
+            "inferred",
+            "site"
           ]
         },
         "cite": {

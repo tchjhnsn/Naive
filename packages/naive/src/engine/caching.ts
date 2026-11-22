@@ -37,11 +37,10 @@ import { createHash } from "node:crypto";
 import type { BinaryLike, Hash } from "node:crypto";
 import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { entries as provEntries } from "../core/provenance.ts";
+import { entries as provEntries, type Entry as ProvEntry } from "../core/provenance.ts";
 import { ventureFile } from "../core/venture-paths.ts";
 import { envCommand, hostHook, isHosted, missingHook } from "../core/runtime.ts";
 import type { CommandResult } from "../core/runtime.ts";
-import type { ProvenanceEntry } from "../records/types/records.d.ts";
 
 /** A life by profile name, or { revalidate, expire } in seconds (stale is how long a stale value may be served). */
 export type LifeInput = string | { stale?: number; revalidate?: number; expire?: number | null } | null | undefined;
@@ -451,7 +450,7 @@ type AnswerPart = { route: string; kind: string; [k: string]: unknown };
 // Whether a record is confirmed: the last provenance entry for its file was a person's (a write, an
 // accept or a confirm), or an agent wrote it and nobody has confirmed it since.
 function confirmation(dir: string, file: string) {
-  const all: ProvenanceEntry[] = provEntries(dir);
+  const all: ProvEntry[] = provEntries(dir);
   const es = all.filter((e) => e.entity === file);
   const last = es.at(-1);
   if (!last) return { kind: "unlogged", note: "written outside the router; its history is in git" };

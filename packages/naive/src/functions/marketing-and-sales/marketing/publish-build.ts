@@ -69,8 +69,10 @@ function variants(dir: string) {
     if (!existsSync(root)) continue;
     for (const name of readdirSync(root, { recursive: true }).map(String).filter((n) => n.endsWith(".mdx"))) {
       const text = readFileSync(join(root, name), "utf8");
+      // Only publish is read as a boolean (check-public.ts), so variant_of and approved_by are strings when present.
       const { meta } = frontmatter(text);
-      if (meta.variant_of) out.push({ file: `${d}/${name}`, variant_of: meta.variant_of, approved: meta.publish === true && !!meta.approved_by, approved_by: meta.approved_by ?? null, sha256: sha(text) });
+      const approvedBy = typeof meta.approved_by === "string" ? meta.approved_by : null;
+      if (typeof meta.variant_of === "string" && meta.variant_of) out.push({ file: `${d}/${name}`, variant_of: meta.variant_of, approved: meta.publish === true && !!approvedBy, approved_by: approvedBy, sha256: sha(text) });
     }
   }
   return out;

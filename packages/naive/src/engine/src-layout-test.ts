@@ -39,7 +39,7 @@ expect("logical paths resolve where the files went", ventureFile(dir, "foundatio
   && existsSync(ventureFile(dir, "decisions/statement-problem.decision.json")) && logical(dir, physical(dir, "people/people.json")) === "people/people.json");
 expect("a structured venture's k-base/ and meta/ empty into src/ and the top", layoutOf(viaStructured) === "src" && !existsSync(join(viaStructured, "k-base")) && !existsSync(join(viaStructured, "meta"))
   && existsSync(join(viaStructured, "provenance.jsonl")) && existsSync(join(viaStructured, "README.md")));
-expect("the provenance log keeps its chain and records the move", entries(dir).length === before + 1 && /src layout/.test(entries(dir).at(-1).note));
+expect("the provenance log keeps its chain and records the move", entries(dir).length === before + 1 && /src layout/.test(String(entries(dir).at(-1)?.note)));
 const again = naive("upgrade", dir, "--layout", "src");
 expect("a venture on the src layout is left alone", again.status === 0 && /already on the src layout/.test(again.stdout));
 const back = naive("upgrade", dir, "--layout", "structured");

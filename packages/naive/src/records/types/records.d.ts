@@ -3286,7 +3286,7 @@ export type NaiveConfig = {
     [key: string]: string | {
       version: string;
       early?: boolean;
-      channel?: "stable" | "canary";
+      channel?: "stable" | "canary" | "experimental";
     };
   };
   /** How the acting role is checked on every action (M-18) */
@@ -3327,7 +3327,9 @@ export type NaiveConfig = {
     };
   };
   /** What starts the next step on an event (packages/naive/src/router/orchestration/triggers.ts) */
-  triggers?: unknown[];
+  triggers?: Trigger[];
+  /** Trigger ids switched off: a person answering a failed run with off adds its id here, and the trigger stays off until the id is removed (packages/naive/src/router/orchestration/triggers.ts) */
+  triggers_off?: string[];
   /** The venture's own signal listeners (signal library design): each joins a signal type to one consumer with that consumer's criterion. A listener here replaces any listener of the same id from a package, a frame or a kit. packages/naive/src/engine/signals.ts merges them and naive signals pull evaluates them */
   listeners?: (Listener & {
     consumer: unknown;
@@ -5256,7 +5258,7 @@ export type SitePresence = {
   /** Who the site is for and where that comes from: the founder's words, the venture's ICP record, or inferred from the home page; and the customer types Jev placed it in */
   icp: {
     text: string;
-    source: "founder" | "record" | "inferred";
+    source: "founder" | "record" | "inferred" | "site";
     cite: string;
     types: {
       id: string;

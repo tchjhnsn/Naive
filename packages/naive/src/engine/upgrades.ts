@@ -22,7 +22,7 @@ import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, renameS
 import { dirname, isAbsolute, join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { agentFromEnv, record } from "../core/provenance.ts";
-import { routes, glob } from "../records/routes/routes.ts";
+import { routes, glob, type RecordRoute } from "../records/routes/routes.ts";
 import { CONFIG, pins, readConfig, writeConfig } from "./naive-config.ts";
 import { packages as packageFit } from "./packages.ts";
 import { seedPrograms } from "./research-programs.ts";
@@ -348,7 +348,7 @@ export function runChecks(vdir: string, { reg = registry() }: { reg?: Registry }
   const files = Object.keys(snapshot(vdir, { skipPrivate: true })).filter((f) => f.endsWith(".json"));
   const bad: string[] = [];
   let n = 0;
-  for (const r of routes().filter((x: { kind: string, schema?: string, form?: string }) => x.kind === "record" && x.schema && (x.form ?? "json") === "json")) {
+  for (const r of routes().filter((x): x is RecordRoute & { schema: string } => x.kind === "record" && !!x.schema && (x.form ?? "json") === "json")) {
     for (const f of files.filter((f) => r.files.some((g: string) => glob(g).test(f)))) {
       n++;
       const v = validateFile(schemaNameOf(r.schema), ventureFile(vdir, f));

@@ -105,7 +105,7 @@ export function questionsFor<Q extends { questions?: object }>(request: Q, confi
 }
 
 /** System 1 answers limited to the questions that run (an answer to a question turned off is ignored). */
-export function answersFor(answers: Record<string, unknown> | null | undefined, config: NaiveConfig | null | undefined, framework: string) {
+export function answersFor<T>(answers: Record<string, T> | null | undefined, config: NaiveConfig | null | undefined, framework: string): Record<string, T> {
   return Object.fromEntries(Object.entries(answers ?? {}).filter(([k]) => questionOn(config, framework, k)));
 }
 

@@ -72,7 +72,7 @@ export function notify(dir: string, { source, paths, version, at = now(), via = 
     for (const fact of load(wu).facts ?? []) {
       const { r, params } = resolveRoute(fact.parent.route);
       if (!r || r.kind !== "record") continue;
-      const files = (r.collection === "item" ? r.files.map((f: string) => f.replace("*", params.id)) : r.files).filter((f: string) => !f.includes("*"));
+      const files = (r.collection === "item" ? r.files.map((f: string) => f.replace("*", String(params.id))) : r.files).filter((f: string) => !f.includes("*"));
       if (!files.some((f: string) => items.includes(f) || items.includes(address(source, f)))) continue;
       for (const c of fact.children) readers.set(c.source === LOCAL ? c.path : address(c.source, c.path), { via: "where-used", reads: fact.parent.route, fact: fact.id });
     }

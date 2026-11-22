@@ -19,12 +19,12 @@ import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { decisionFile, propose, recordOf } from "./decisions.ts";
 import { HOME } from "./packages.ts";
-import { entries as provenance } from "../core/provenance.ts";
+import { entries as provenance, type Entry } from "../core/provenance.ts";
 import { mark, notify } from "./stale.ts";
 import { layoutOf, logicalFiles, ventureFile } from "../core/venture-paths.ts";
 import { readDataModel } from "../records/index.ts";
 
-import type { DataModel, DecisionImpact, DecisionRecord, ProvenanceEntry } from "../records/types/records.d.ts";
+import type { DataModel, DecisionImpact, DecisionRecord } from "../records/types/records.d.ts";
 
 /** What a merge of a decision touches, as impact() returns it. */
 export type ImpactSummary = { file: string; affected: number; functions: { function: string; affected: number; proposed: string[] }[] };
@@ -64,7 +64,7 @@ function byRefs(dir: string, changed: string[], list?: string[]): string[] {
   const types = new Set(changed.map((f) => recordOf(f)).filter(Boolean));
   const dependents = new Set(MODEL.records.filter((r) => r.level === "venture" && (r.refs ?? []).some((x) => types.has(x.to))).map((r) => r.id));
   if (!dependents.size) return [];
-  return (list ?? files(dir)).filter((f) => !changed.includes(f) && !f.endsWith(".decision.json") && !f.endsWith(".impact.json") && dependents.has(recordOf(f)));
+  return (list ?? files(dir)).filter((f) => !changed.includes(f) && !f.endsWith(".decision.json") && !f.endsWith(".impact.json") && dependents.has(recordOf(f) ?? ""));
 }
 
 /** The structural impact of any decision, open or decided, without side effects: nothing is marked stale,
@@ -72,10 +72,10 @@ function byRefs(dir: string, changed: string[], list?: string[]): string[] {
  *  the records that read them (provenance derived_from) or refer to their type (data-model refs), and
  *  the functions those fall in. packages/naive/src/engine/decision-index.ts scores open decisions with it.
  */
-export function structural(dir: string, d: Pick<DecisionRecord, "merged" | "applies_to" | "decides">, { all }: { all?: { provenance?: ProvenanceEntry[]; files?: string[] } } = {}) {
+export function structural(dir: string, d: Pick<DecisionRecord, "merged" | "applies_to"> & { decides?: { path?: string } }, { all }: { all?: { provenance?: Entry[]; files?: string[] } } = {}) {
   const changed = [...new Set([...(d.merged?.files ?? []), ...(d.applies_to ?? []).map((t) => t.file), ...(d.decides?.path ? [d.decides.path] : [])])];
   if (!changed.length) return { changed, records: [], functions: [] };
-  const log: ProvenanceEntry[] = all?.provenance ?? provenance(dir);
+  const log: Entry[] = all?.provenance ?? provenance(dir);
   const readers = log.filter((e) => (e.derived_from ?? []).some((x) => changed.includes(x))).map((e) => e.entity).filter((f) => !changed.includes(f) && !f.includes("://"));
   const records = [...new Set([...readers, ...byRefs(dir, changed, all?.files)])].sort();
   const functions = [...new Set([...changed, ...records].map(functionOf).filter((f) => f !== null))].sort((a, b) => FUNCTIONS.indexOf(a) - FUNCTIONS.indexOf(b));

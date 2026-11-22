@@ -17,9 +17,11 @@ export const FOUNDER = "founder";
 
 /** A roadmap as found: its record, plus the package it lives in and its file when read from the library. */
 export type FoundRoadmap = DecisionRoadmap & { package?: string; file?: string };
+/** A roadmap read from the library, which always knows its package and file. */
+export type LibraryRoadmap = DecisionRoadmap & { package: string; file: string };
 
 const dirOf = (pkg: string) => join(repo, "packages/naive/library", "packages", pkg, "roadmaps");
-export function roadmaps(): FoundRoadmap[] {
+export function roadmaps(): LibraryRoadmap[] {
   if (!existsSync(join(repo, "packages/naive/library", "packages"))) return [];
   return readdirSync(join(repo, "packages/naive/library", "packages")).filter((p) => existsSync(dirOf(p))).flatMap((p) =>
     readdirSync(dirOf(p)).filter((f) => f.endsWith(".json")).map((f) => ({ ...load(join(dirOf(p), f)), package: p, file: `packages/naive/library/packages/${p}/roadmaps/${f}` })));

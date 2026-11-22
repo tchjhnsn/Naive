@@ -31,7 +31,7 @@ export function shaOf(dir: string, ref: string): string | null {
 
 /** Reasons with every local citation's version set to the file's sha256 now. With keep, a version
  *  already given is kept (citing time was earlier); without, it is recomputed (freezing at approval). */
-export function stamp(dir: string, reasons: DecisionRecordReason[] | undefined, { keep = true }: { keep?: boolean } = {}): DecisionRecordReason[] {
+export function stamp<R extends Pick<DecisionRecordReason, "citations">>(dir: string, reasons: R[] | undefined, { keep = true }: { keep?: boolean } = {}): R[] {
   return (reasons ?? []).map((r) => ({ ...r, ...(r.citations ? { citations: r.citations.map((c) => {
     if (keep && c.version) return c;
     const v = shaOf(dir, c.ref);
@@ -53,7 +53,7 @@ export function changedReasons(dir: string, d: Reasoned) {
 }
 
 /** The citation refs a list of reasons supplies, deduplicated, in order. */
-export const citesOf = (reasons: DecisionRecordReason[] | undefined): string[] => [...new Set((reasons ?? []).flatMap((r) => (r.citations ?? []).map((c) => c.ref)))];
+export const citesOf = (reasons: Pick<DecisionRecordReason, "citations">[] | undefined): string[] => [...new Set((reasons ?? []).flatMap((r) => (r.citations ?? []).map((c) => c.ref)))];
 
 /** Reasons parsed from CLI arguments: --reason (for), --against, --context each start one; each
  *  --cite <ref> (with an optional following --locator) attaches to the reason before it. */

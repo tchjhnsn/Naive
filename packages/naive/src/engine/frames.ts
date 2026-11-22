@@ -106,7 +106,7 @@ const money = (m: { amount: number; currency: string } | null | undefined) => (m
 export async function props(dir: string) {
   const { decisions } = await import("./decisions.ts");
   const v = load(join(dir, "venture.json"));
-  const ds: { id: string; status?: string; answer?: string }[] = decisions(dir).decisions;
+  const ds: { id: string; status?: string; answer?: string | null }[] = decisions(dir).decisions;
   const answer = (id: string) => { const d = ds.find((x) => x.id === id); return d?.status === "decided" ? d.answer : null; };
   const sum = existsSync(join(ventureFile(dir, "money/_summary.json"))) ? load(join(ventureFile(dir, "money/_summary.json"))) : null;
   const own = existsSync(join(ventureFile(dir, "governance/ownership.json"))) ? load(join(ventureFile(dir, "governance/ownership.json"))) : null;

@@ -22,10 +22,13 @@ export async function install(dir: string, id: string, { agentId = "roadmaps", h
   const proposed: { step: string, id: string, question: string, door: string, decided_by: string, awaiting: string }[] = [], kept: { step: string, id: string, why: string }[] = [];
   for (const [i, s] of ordered(r).entries()) {
     const f = frameOf(s.frame);
+    // check(r) above refuses a step whose frame does not exist, so f is always found here.
+    if (!f) return { ok: false as const, error: `${r.id}: step ${s.id} names no frame ${s.frame}` };
     for (const e of f.emits) {
       const existing = decisions(dir).decisions.find((d: { id: string }) => d.id === e.id);
       if (existing?.status === "decided") { kept.push({ step: s.id, id: e.id, why: "decided already" }); continue; }
-      const after = (s.depends_on ?? []).length ? ` After: ${s.depends_on.join(", ")}.` : "";
+      const deps = s.depends_on ?? [];
+      const after = deps.length ? ` After: ${deps.join(", ")}.` : "";
       const note = `Step ${i + 1} of ${r.steps.length} in the ${r.id} roadmap (${r.version}), from the frame ${f.id}. A ${s.door} door, decided by ${s.decided_by}${s.merged_by ? `, merged by ${s.merged_by}` : ""}.${after}${s.requires?.length ? ` Requires: ${s.requires.join(", ")}.` : ""}`;
       const needed = s.needed_in ?? e.needed_in;
       const res = propose(dir, { id: e.id, question: e.question, ...(e.options?.length ? { options: e.options } : {}), ...(e.layer ? { layer: e.layer } : {}), ...(needed ? { needed_in: needed } : {}), note }, { agentId, via: "cli", harness, model });

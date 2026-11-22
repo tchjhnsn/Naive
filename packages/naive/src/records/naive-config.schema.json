@@ -244,7 +244,8 @@
               "channel": {
                 "enum": [
                   "stable",
-                  "canary"
+                  "canary",
+                  "experimental"
                 ]
               }
             }
@@ -392,7 +393,17 @@
     },
     "triggers": {
       "type": "array",
+      "items": {
+        "$ref": "trigger.schema.json"
+      },
       "description": "What starts the next step on an event (packages/naive/src/router/orchestration/triggers.ts)"
+    },
+    "triggers_off": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Trigger ids switched off: a person answering a failed run with off adds its id here, and the trigger stays off until the id is removed (packages/naive/src/router/orchestration/triggers.ts)"
     },
     "listeners": {
       "type": "array",

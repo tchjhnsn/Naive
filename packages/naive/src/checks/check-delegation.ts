@@ -93,7 +93,9 @@ if (leads.length) {
   }
 }
 const live = (g: Grant) => liveGrant(g, today);
-const SCOPE = new RegExp(readSchema("delegation").properties.grants.items.properties.scope.pattern);
+// The parsed schema is read at a module boundary: cast once to the one pattern this check takes from it.
+type DelegationSchema = { properties: { grants: { items: { properties: { scope: { pattern: string } } } } } };
+const SCOPE = new RegExp((readSchema("delegation") as DelegationSchema).properties.grants.items.properties.scope.pattern);
 const name = (g: Grant, i: number) => `grant/${g.id ?? i}`;
 
 d.grants.forEach((g, i) => {

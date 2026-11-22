@@ -198,8 +198,9 @@ t("a cycle stated through broader and narrower is one cycle; a self link, a miss
 });
 
 t("the schemas, the term engine and Lean name the same relations", () => {
-  const idea = readSchema("founder-idea");
-  const graph = readSchema("idea-graph");
+  // Parsed schemas, cast once to the paths this test compares.
+  const idea = readSchema("founder-idea") as { $defs: Record<"relation" | "attachment", { enum: string[] }> };
+  const graph = readSchema("idea-graph") as { properties: { edges: { items: { properties: { relation: { $ref: string } } } } } };
   ok(JSON.stringify(idea.$defs.relation.enum) === JSON.stringify(namesBetween("idea")), `relation enum ${idea.$defs.relation.enum}`);
   ok(JSON.stringify(idea.$defs.attachment.enum) === JSON.stringify(namesBetween("scope")), `attachment enum ${idea.$defs.attachment.enum}`);
   ok(graph.properties.edges.items.properties.relation.$ref === "founder-idea.schema.json#/$defs/relation", "graph edges share the relation list");

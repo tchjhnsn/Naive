@@ -190,7 +190,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   if (a === "split") json(split(readFileSync(b, "utf8")));
   // Gate group hook (P-2): the venture's naive.config.json says which System 1 questions run and the tag threshold.
   else if (a === "request") json(questionsFor(request(split(readFileSync(join(b, DUMP), "utf8")), ventureOf(b)), configFor(b), "idea-map"));
-  else if (a === "answers") { const cfg = configFor(b); json(fromAnswers(answersFor((load(c) as { answers?: JevAnswers }).answers ?? load(c), cfg, "idea-map"), threshold(cfg, "idea-map", CONVENTIONS.threshold))); }
+  else if (a === "answers") { const cfg = configFor(b); json(fromAnswers(answersFor((load(c) as { answers?: JevAnswers }).answers ?? (load(c) as JevAnswers), cfg, "idea-map"), threshold(cfg, "idea-map", CONVENTIONS.threshold))); }
   else if (a === "write") {
     const ideas = split(readFileSync(join(b, DUMP), "utf8"));
     mkdirSync(join(b, dirname(MAP)), { recursive: true });

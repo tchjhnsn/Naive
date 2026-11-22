@@ -38,7 +38,7 @@ import { dirname, isAbsolute, join, relative, resolve as resolvePath } from "nod
 import { agentFromEnv, entries as provEntries, record as prov } from "../core/provenance.ts";
 import { files as ventureFiles, glob, resolve as resolveRoute, routes } from "../records/routes/routes.ts";
 import { connect, LOCAL, sourcesOf } from "../store/connectors/index.ts";
-import { decisions as decisionMatrix, PHASES } from "./decisions.ts";
+import { decisions as decisionMatrix, PHASES, type RankedDecision } from "./decisions.ts";
 import { ventureFile } from "../core/venture-paths.ts";
 import { validateFile } from "../records/validate.ts";
 import type { FreshnessLog, FreshnessProfiles, FreshnessProfilesProfile, ProvenanceEntry, WhereUsed } from "../records/types/records.d.ts";
@@ -50,7 +50,7 @@ const resolveR = (route: string): { r: RouteEntry | null; params: { id?: string;
 type Agent = ReturnType<typeof agentFromEnv>;
 type Target = NonNullable<FreshnessLog["target"]>;
 type RecordFile = { path: string; record: string; route: string; package: string | null; layer: string | undefined };
-type Reason = { kind: string; since: string; note: string; dependency?: string; pivot?: boolean };
+type Reason = { kind: string; since: string; note: string; dependency?: string | null; pivot?: boolean };
 type Item = RecordFile & { checked_at: number; basis: string; changed_at: number; depends_on: string[]; profile: string; reasons: Reason[]; hole: boolean;
   revalidate_at: string | null; expire_at: string | null; reuse_for: number | null; state: "fresh" | "stale" | "expired"; precise: boolean; fix: string | null };
 type Outcome<R> = { ok: boolean; error?: string; suggest?: string[]; or?: string; blocked?: string[]; result?: R };
@@ -274,7 +274,9 @@ export async function freshness(dir: string, { now, light = false }: { now?: str
   // Decisions made before their parent last changed are stale (EE-057).
   if (!light) {
     try {
-      const ds: { id: string; file?: string; parent?: string; render?: string; decided_at?: string; provenance?: { approved_at?: string } }[] = decisionMatrix(dir, t).decisions;
+      // A resolved decision does not carry its record's decided_at (decisions.ts resolves it away), so the
+      // fallback below always reads undefined and only provenance.approved_at dates the parent.
+      const ds: (RankedDecision & { decided_at?: undefined })[] = decisionMatrix(dir, t).decisions;
       for (const d of ds.filter((x) => x.render === "stale" && x.file)) {
         const i = byPath.get(d.file ?? "");
         const up = ds.find((x) => x.id === d.parent);

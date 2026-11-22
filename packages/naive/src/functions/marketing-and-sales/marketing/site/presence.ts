@@ -51,7 +51,7 @@ export type JevAnswers = Record<string, { noul?: number } | undefined>;
 /** The venture's facts that weigh the audiences other than customers: raising, hiring, contributors. */
 export type Facts = Record<string, boolean>;
 /** Who the site is for: the text Jev classifies, where it comes from, and the ICP the records state. */
-export type Icp = { text: string; source?: string; says?: string[]; cite?: string; stated?: string[] };
+export type Icp = { text: string; source?: SitePresence["icp"]["source"]; says?: string[]; cite?: string; stated?: string[] };
 /** A customer type the ICP is, and how sure. */
 type TypeOfIcp = { id: string; label: string; p: number };
 /** One audience's claim on an item. */
@@ -95,7 +95,7 @@ export function factsOf(dir: string | null | undefined, flags: Record<string, un
 // type it. The ICP the venture's records state is kept beside it, unscored, for a later clarity check
 // (stated versus seen).
 const SAYS = /\b(?:built for|made for|designed for|for (?:teams|companies|businesses|developers|founders|clinics|owners|people|creators|agencies|startups|enterprises|schools|families)|trusted by|helps?|serving|used by|loved by)\b[^.\n]{0,140}/gi;
-export function icpOf(dir: string | null | undefined, site: Site | null | undefined) {
+export function icpOf(dir: string | null | undefined, site: Site | null | undefined): Icp {
   const ok = (site?.pages ?? []).filter((p) => !p.error);
   const home = ok.find((p) => p.depth === 0);
   const who = ok.filter((p) => /customer|solution|who|industr|use-case|about|for-/i.test(p.path));

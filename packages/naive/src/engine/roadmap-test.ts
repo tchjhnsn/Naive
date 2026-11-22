@@ -19,11 +19,13 @@ const expect = (name: string, ok: unknown, detail = "") => { console.log(`${ok ?
 const valid = (schema: string, file: string) => spawnSync(process.execPath, [join(repo, "packages/naive/src/records/validate.ts"), "--schema", schema, "--file", file], { encoding: "utf8" });
 
 // ---- roadmaps ----
-const brand = roadmapOf("brand");
-expect("the brand roadmap is in packages/naive/library/packages/marketing and passes its check", brand?.package === "marketing" && check(brand).length === 0, check(brand ?? {}).join("; "));
+const found = roadmapOf("brand");
+if (!found) throw new Error("no brand roadmap in packages/naive/library/packages");
+const brand = found;
+expect("the brand roadmap is in packages/naive/library/packages/marketing and passes its check", brand.package === "marketing" && check(brand).length === 0, check(brand).join("; "));
 for (const r of roadmaps()) { const v = valid("decision-roadmap.schema.json", join(repo, r.file)); expect(`${r.file} matches its schema`, v.status === 0, v.stdout + v.stderr); }
-expect("the brand roadmap runs ethos to stand, and the stand is the founder's one-way door", ordered(brand).map((s) => s.id).join() === "ethos,audiences,tagline,visual-identity,first-campaign,stand" && brand.steps.find((s: { id: string }) => s.id === "stand").door === "one-way");
-const bad = (patch: Record<string, Record<string, unknown>>) => check({ ...brand, steps: brand.steps.map((s: { id: string }) => patch[s.id] ? { ...s, ...patch[s.id] } : s) });
+expect("the brand roadmap runs ethos to stand, and the stand is the founder's one-way door", ordered(brand).map((s) => s.id).join() === "ethos,audiences,tagline,visual-identity,first-campaign,stand" && brand.steps.find((s) => s.id === "stand")?.door === "one-way");
+const bad = (patch: Record<string, Record<string, unknown>>) => check({ ...brand, steps: brand.steps.map((s) => patch[s.id] ? { ...s, ...patch[s.id] } : s) });
 expect("a cycle is rejected", bad({ ethos: { depends_on: ["stand"] } }).some((e) => /cycle/.test(e)));
 expect("an unknown frame is rejected", bad({ ethos: { frame: "no-such-frame" } }).some((e) => /does not have/.test(e)));
 expect("a step with no decider is rejected", bad({ tagline: { decided_by: "" } }).some((e) => /no decider/.test(e)));
@@ -44,7 +46,7 @@ expect("nothing is decided: every brand decision is open, drafted by an agent", 
 expect("the stand says it is a one-way door for the founder", /one-way door, decided by founder/.test(readFileSync(ventureFile(dir, "decisions/brand-stand.decision.json"), "utf8")));
 approve(dir, "brand-ethos", { by: "maya", answer: "Work should leave people more capable" });
 r = await install(dir, "brand");
-expect("installing again keeps a decision already made", r.ok && r.result.kept.some((k) => k.id === "brand-ethos") && decisions(dir).decisions.find((d: Dec) => d.id === "brand-ethos").status === "decided", JSON.stringify(r.result?.kept));
+expect("installing again keeps a decision already made", r.ok && r.result.kept.some((k) => k.id === "brand-ethos") && decisions(dir).decisions.find((d: Dec) => d.id === "brand-ethos")?.status === "decided", JSON.stringify(r.result?.kept));
 expect("an unknown roadmap is refused", !(await install(dir, "nope")).ok);
 
 // ---- playbooks ----

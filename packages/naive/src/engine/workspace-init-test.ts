@@ -135,10 +135,10 @@ await t("ics export round trip", async () => {
   const back = fromICS(text);
   const list = await events(ws, { from: "2026-11-01", to: "2026-11-30" });
   ok(back.length === list.length, `${back.length} vs ${list.length}`);
-  for (const e of list) { const b = back.find((x) => x.uid === e.uid); ok(b && b.title === e.title && b.start === e.start && b.timeZone === e.timeZone && b.calendar === e.calendar, JSON.stringify([e, b])); }
+  for (const e of list) { const b = back.find((x) => x?.uid === e.uid); ok(b && b.title === e.title && b.start === e.start && b.timeZone === e.timeZone && b.calendar === e.calendar, JSON.stringify([e, b])); }
   const tricky = [{ uid: "x", title: "Comma, semicolon; backslash \\ and a long title ".repeat(3), start: "2026-11-02T08:00:00", timeZone: "Europe/London", duration: "PT1H", calendar: "default" }];
   const rt = fromICS(toICS(tricky))[0];
-  ok(rt.title === tricky[0].title && rt.duration === "PT1H", JSON.stringify(rt));
+  ok(rt?.title === tricky[0].title && rt?.duration === "PT1H", JSON.stringify(rt));
 });
 
 await t("create-venture's own workspace gets the same clock and calendar", () => {

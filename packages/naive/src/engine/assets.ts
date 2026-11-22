@@ -21,9 +21,9 @@
 import { createHash } from "node:crypto";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { extname, join } from "node:path";
-import { entries } from "../core/provenance.ts";
+import { entries, type Entry } from "../core/provenance.ts";
 import { ventureFile } from "../core/venture-paths.ts";
-import type { ProvenanceEntry, PublicAssets, PublicAssetsFacts, RawSource } from "../records/types/records.d.ts";
+import type { PublicAssets, PublicAssetsFacts, RawSource } from "../records/types/records.d.ts";
 
 /** What code reads from a file's bytes: the register's facts without filled_at. */
 export type Facts = Omit<PublicAssetsFacts, "filled_at">;
@@ -141,7 +141,7 @@ export function facts(dir: string) {
 
 /** Which alt texts a person has confirmed, from the provenance log. */
 export function confirmedAlts(dir: string) {
-  const all: ProvenanceEntry[] = entries(dir);
+  const all: Entry[] = entries(dir);
   return new Set(all.filter((e) => e.activity === "confirm" && e.agent?.kind === "person" && e.statement?.startsWith("alt-")).map((e) => e.statement));
 }
 

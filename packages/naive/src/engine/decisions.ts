@@ -27,9 +27,9 @@ import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, isAbsolute, join, relative } from "node:path";
-import { FRAME, foundation } from "./foundation.ts";
+import { FRAME, foundation, type StatementReport } from "./foundation.ts";
 import { actingAgent, agentFromEnv, record as prov } from "../core/provenance.ts";
-import { glob as routeFileGlob, routes } from "../records/routes/routes.ts";
+import { glob as routeFileGlob, routes, type RecordRoute } from "../records/routes/routes.ts";
 // Caching hook (F-12): the decision list is computed once per router action (packages/naive/src/engine/caching.ts).
 import { memo } from "./caching.ts";
 import { roles as ventureRoles } from "./venture-type.ts";
@@ -57,13 +57,15 @@ type Entry = Omit<DecisionRecord, "layer" | "decides" | "boundary" | "parent"> &
   statement_status?: string;
 };
 /** One foundation statement as foundation.ts reports it, with its status. */
-type FoundationStatement = { id: string; record: string | null; status: string; derived_from?: string; agent_wrote?: boolean; path?: string };
 /** A delegation grant. */
 type Grant = Delegation["grants"][number];
 /** A person in people/people.json. */
 type Person = People["people"][number];
 /** What ownScore reads from a decision. */
-export type Scorable = Pick<ResolvedDecision, "id" | "status"> & Partial<Pick<ResolvedDecision, "render" | "boundary" | "due" | "stale_because" | "reasons_changed" | "unlocks" | "part_of" | "awaiting" | "outcomes" | "reasons">>;
+// status is optional and outcomes need only a total: a docket scenario (docket-eval.ts) ranks decisions that carry
+// no status and count outcomes without due dates, and ownScore reads nothing more.
+export type Scorable = Pick<ResolvedDecision, "id"> & Partial<Pick<ResolvedDecision, "status" | "render" | "boundary" | "due" | "stale_because" | "reasons_changed" | "unlocks" | "part_of" | "awaiting" | "reasons">>
+  & { outcomes?: Pick<NonNullable<ResolvedDecision["outcomes"]>, "total"> };
 /** A boundary once inheritance is resolved. */
 export type Boundary = "fail-closed" | "fail-open";
 /** How a decision renders in the matrix. */
@@ -154,7 +156,7 @@ function decisionsAt(dir: string, now = Date.parse(process.env.DECISIONS_NOW ?? 
   const venture: Venture = load(join(dir, "venture.json"));
   const phase = PHASES.indexOf(venture.phase);
   const productOnly = venture.kind === "product";
-  const report: { statements: FoundationStatement[] }[] = foundation(dir);
+  const report: { statements: StatementReport[] }[] = foundation(dir);
   const statements = report.flatMap((q) => q.statements);
   const settled = statements.filter((s) => s.status !== "planned").every((s) => s.status === "confirmed");
   const errors: string[] = [];
@@ -194,7 +196,8 @@ function decisionsAt(dir: string, now = Date.parse(process.env.DECISIONS_NOW ?? 
   for (const s of statements.filter((x) => !["confirmed", "planned"].includes(x.status) && !x.derived_from && !covered.has(x.id))) {
     const question = ({ missing: `Write the ${s.id} statement`, draft: `Accept the agent's draft of the ${s.id} statement`, agent: `Confirm the ${s.id} statement${s.agent_wrote ? " an agent wrote" : ""}` } as Record<string, string>)[s.status] ?? `Confirm the ${s.id} statement (${s.status})`;
     list.push({ id: `foundation-${s.id}`, question, source: "foundation", statement_status: s.status, layer: MODEL.records.find((r) => r.id === s.record)?.layer ?? "purpose",
-      decides: { record: s.record, ...(s.path ? { path: s.path } : {}) }, parent: "venture", part_of: "foundation", boundary: "inherit", status: "open", needed_in: venture.phase });
+      // Only a planned statement comes back without a record (foundation.ts statement()), and planned ones are skipped above.
+      decides: { record: s.record ?? null, ...(s.path ? { path: s.path } : {}) }, parent: "venture", part_of: "foundation", boundary: "inherit", status: "open", needed_in: venture.phase });
   }
   const statementFor = (record: string | null | undefined) => list.find((x) => x.part_of === "foundation" && x.status === "open" && x.decides?.record === record);
   // An agent's draft of a gated record waits for a person to accept it.
@@ -274,7 +277,7 @@ function decisionsAt(dir: string, now = Date.parse(process.env.DECISIONS_NOW ?? 
 
 // The route that writes a venture-relative file, for the commands a founder runs.
 function routeOf(path: string | undefined, record: string | null | undefined): string | null {
-  const r = routes().find((x: { kind: string; collection?: string; files: string[]; record?: string; view_of?: string }) => x.kind === "record" && (path ? x.collection !== "list" && x.files.some((g) => routeFileGlob(g).test(path)) : (x.record === record || x.view_of === record) && x.collection !== "item"));
+  const r = routes().find((x): x is RecordRoute => x.kind === "record" && (path ? x.collection !== "list" && x.files.some((g) => routeFileGlob(g).test(path)) : (x.record === record || x.view_of === record) && x.collection !== "item"));
   if (!r) return null;
   return r.collection === "item" && path ? r.route.replace("[id]", (path.split("/").at(-1) ?? "").replace(/\.json$/, "")) : r.route;
 }
@@ -575,7 +578,8 @@ export function mayMerge(dir: string, d: Pick<DecisionRecord, "id" | "class" | "
   if (oneWay.has(d.class)) return { ok: false, error: `${d.id} is a ${d.class} decision, a one-way door: it is never delegated, only the founder merges it` };
   const cls = d.class;
   const held = (del?.grants ?? []).filter((g) => g.to === role && g.may_merge === true && (g.classes ?? []).includes(cls) && liveGrant(g, today));
-  if (!held.length) return { ok: false, error: `no live grant in governance/delegation.json lets ${role} merge ${d.class} decisions: only the founder merges ${d.id}` };
+  // A held grant came from del, so del is set whenever held is not empty.
+  if (!held.length || !del) return { ok: false, error: `no live grant in governance/delegation.json lets ${role} merge ${d.class} decisions: only the founder merges ${d.id}` };
   const backed = held.filter((g: Grant) => grantBacked(del, g, today).ok);
   if (!backed.length) return { ok: false, error: `${role}'s grant exceeds its grantor's authority (${grantBacked(del, held[0], today).why}): only the founder merges ${d.id}` };
   const targets = (d.applies_to ?? []).map((t) => t.file);

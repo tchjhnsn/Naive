@@ -29,7 +29,7 @@ for (const v of readdirSync(join(ws, "ventures"))) {
 }
 expect("the venture is structured: k-base/, meta/ and README.md", layoutOf(dir) === "structured" && existsSync(join(dir, "k-base/decisions")) && existsSync(join(dir, "meta/provenance.jsonl")) && existsSync(join(dir, "README.md")) && !existsSync(join(dir, "profile.md")));
 expect("logical paths resolve where the files went", ventureFile(dir, "provenance.jsonl") === join(dir, "meta/provenance.jsonl") && existsSync(ventureFile(dir, "decisions/statement-problem.decision.json")));
-expect("the provenance log keeps its chain and records the move", entries(dir).length === before + 1 && /structured layout/.test(entries(dir).at(-1).note));
+expect("the provenance log keeps its chain and records the move", entries(dir).length === before + 1 && /structured layout/.test(String(entries(dir).at(-1)?.note)));
 expect("hats leave people/ for venture.json functions", !readdirSync(join(ws, "ventures/northstar/k-base/people/founders")).some((f) => "hats" in JSON.parse(readFileSync(join(ws, "ventures/northstar/k-base/people/founders", f), "utf8"))));
 const again = naive("upgrade", dir, "--layout", "structured");
 expect("a structured venture is left alone", again.status === 0 && /already on the structured layout/.test(again.stdout));

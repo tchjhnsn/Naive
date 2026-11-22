@@ -14,6 +14,7 @@
 
 import { readFileSync } from "node:fs";
 import { rankDocket } from "./docket.ts";
+import type { Render } from "./decisions.ts";
 
 const FILE = new URL("../records/examples/docket-scenarios.json", import.meta.url).pathname;
 const NOW = Date.parse("2026-10-29T12:00:00Z");
@@ -21,7 +22,7 @@ const TITLE: Record<string, string> = { foundation: "Foundation", validation: "V
 
 // docket-scenarios.json has no schema (the data model lists it as an example file), so its shape is named here.
 /** One open decision in a scenario, before it is resolved. */
-type ScenarioDecision = { id: string; question: string; function: string; state: string; unlocks?: string[]; drafted?: boolean; held_by?: string; outcomes?: number; due_in_hours?: number; foundation?: boolean };
+type ScenarioDecision = { id: string; question: string; function: string; state: Render; unlocks?: string[]; drafted?: boolean; held_by?: string; outcomes?: number; due_in_hours?: number; foundation?: boolean };
 /** The right next step: its decision and function. */
 type Expected = { decision: string; function: string };
 /** A venture state with its expected next step, or a day of states with one expected step each. */
@@ -34,11 +35,11 @@ function resolve(decisions: ScenarioDecision[], settled: Set<string>) {
   const open = decisions.filter((d) => !settled.has(d.id));
   return open.map((d) => {
     const held = d.held_by && !settled.has(d.held_by);
-    const render = d.state === "waiting" ? (held ? "waiting" : "now") : d.state;
+    const render: Render = d.state === "waiting" ? (held ? "waiting" : "now") : d.state;
     return { id: d.id, question: d.question, source: "file", render, ...(held ? { held_by: d.held_by } : {}),
       ...(d.due_in_hours != null ? { due: new Date(NOW + d.due_in_hours * 36e5).toISOString() } : {}),
-      ...(d.unlocks?.length ? { unlocks: d.unlocks } : {}), ...(d.foundation ? { part_of: "foundation" } : {}),
-      ...(d.drafted ? { awaiting: "approval" } : {}), ...(d.outcomes ? { outcomes: { total: d.outcomes, pending: d.outcomes } } : {}),
+      ...(d.unlocks?.length ? { unlocks: d.unlocks } : {}), ...(d.foundation ? { part_of: "foundation" as const } : {}),
+      ...(d.drafted ? { awaiting: "approval" as const } : {}), ...(d.outcomes ? { outcomes: { total: d.outcomes, pending: d.outcomes } } : {}),
       function: { id: d.function, title: TITLE[d.function] ?? d.function } };
   });
 }

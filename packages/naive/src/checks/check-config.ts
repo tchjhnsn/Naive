@@ -66,9 +66,9 @@ export function check(dir: string): { errors: string[], warnings: string[], note
 export function explain(dir: string, route: string, { actor = "agent", role, confidence }: { actor?: string, role?: string, confidence?: number } = {}) {
   const { r, params } = resolve(route);
   if (!r || r.kind !== "record" || !r.actions.includes("write")) throw new Error(`${route} is not a writable record route`);
-  const concrete = r.collection === "item" ? r.route.replace("[id]", params.id) : r.route;
+  const concrete = r.collection === "item" ? r.route.replace("[id]", String(params.id)) : r.route;
   const cls = gateOf(r, dir);
-  const files = (r.collection === "item" ? r.files.map((x: string) => x.replace("*", params.id)) : r.files);
+  const files = (r.collection === "item" ? r.files.map((x: string) => x.replace("*", String(params.id))) : r.files);
   const exists = files.some((x: string) => existsSync(ventureFile(dir, x)));
   const verdict = evaluate({ config: configFor(dir), dir, route: concrete, table: r.route, record: r.record, actor, role, confidence, exists, decisionOwner: cls?.owner ?? undefined });
   return { route: concrete, record: r.record, actor, role: role ?? null, confidence: confidence ?? null, decision_class: cls ? { class: cls.class, level: cls.level, drafts: cls.drafts && actor !== "person" } : null, gate: verdict };

@@ -35,7 +35,7 @@ export type DocketDecision = Parameters<typeof ownScore>[0] & {
 /** A function of the venture, by id and title. */
 type Fn = { id: string; title: string };
 /** What a founder does to settle a decision, as decisions.ts proposes it. */
-type Action = { kind: string; confirm?: string; route?: string; statement?: string };
+type Action = { kind: string; confirm?: string | null; route?: string | null; statement?: string };
 /** One decision on the docket. */
 export type Row = { id: string; question: string; function: string; function_id: string; render: string; own: number; value: number; holds: string[]; why: string[]; action: Action | null; dominant?: boolean };
 

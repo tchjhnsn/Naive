@@ -183,7 +183,9 @@ for (const t of types.keys()) if (!owner.has(t)) errors.push(`${t}: no layer or 
 // and a record type a package owns names the package's function or null.
 const DEPARTMENTS = "packages/naive/src/functions/departments.json";
 const functionIds = new Set<string>(existsSync(join(root, DEPARTMENTS)) ? load<DepartmentCatalog>(DEPARTMENTS).departments.map((x) => x.id) : []);
-const schemaIds: string[] = records.readSchema("data-model").properties.records.items.properties.function?.enum?.filter((x: string | null): x is string => x !== null) ?? [];
+// The parsed schema is read at a module boundary: cast once to the path this check walks.
+type DataModelSchema = { properties: { records: { items: { properties: { function?: { enum?: (string | null)[] } } } } } };
+const schemaIds: string[] = (records.readSchema("data-model") as DataModelSchema).properties.records.items.properties.function?.enum?.filter((x: string | null): x is string => x !== null) ?? [];
 for (const f of schemaIds) if (!functionIds.has(f)) errors.push(`packages/naive/src/records/data-model.schema.json: function ${f} is not an id in ${DEPARTMENTS}`);
 for (const f of functionIds) if (!schemaIds.includes(f)) errors.push(`packages/naive/src/records/data-model.schema.json: function lists no ${f}, an id in ${DEPARTMENTS}`);
 for (const [pkg, f] of Object.entries(PACKAGE_FUNCTION)) if (!functionIds.has(f)) errors.push(`PACKAGE_FUNCTION: ${pkg} names ${f}, which is not an id in ${DEPARTMENTS}`);

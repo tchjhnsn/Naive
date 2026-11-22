@@ -59,7 +59,7 @@ expect("kit-to-package rewrites the where-used parent route", json(join(a, "know
 const rel: Awaited<ReturnType<typeof upgrade>>["release"] = json(join(a, `.release/upgrade-${reg.framework}.json`));
 expect("the release record lists each migration, the packages pinned and the guides", rel.from === "0.1.0" && rel.migrations.map((m) => m.id).join() === "package-layout,kit-to-package,icp-profiles,telos-to-goals" && rel.guides.length === 2 && rel.packages.length > 5);
 const log = entries(a);
-expect("each move, rewrite and pin is a provenance line, and the chain holds", log.some((e) => e.activity === "move" && e.entity === "people/team-plan.json") && log.some((e) => e.activity === "write" && e.entity === "people/team-plan.json" && e.agent.id === "naive-upgrade") && log.some((e) => e.entity === "naive.config.json") && run("packages/naive/src/checks/check-provenance.ts", [a]).status === 0);
+expect("each move, rewrite and pin is a provenance line, and the chain holds", log.some((e) => e.activity === "move" && e.entity === "people/team-plan.json") && log.some((e) => e.activity === "write" && e.entity === "people/team-plan.json" && e.agent?.id === "naive-upgrade") && log.some((e) => e.entity === "naive.config.json") && run("packages/naive/src/checks/check-provenance.ts", [a]).status === 0);
 const read = mentura(["purpose/validation/problem", "read", "--venture", "alpha"]);
 expect("an old route still resolves through its alias, with a deprecation note", read.status === 0 && /purpose\/validation\/problem is now foundation\/problem/.test(read.stderr), read.stderr);
 const again = naive(["upgrade", a]);
