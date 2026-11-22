@@ -59,6 +59,14 @@ await t("a foundation answer becomes the statement's proposal, and the goal is p
   ok(find("discovery-goal")?.status === "open");
 });
 
+await t("the docket carries each decision's statement and options from its record", async () => {
+  const docket: { id: string, statement: string | null, options: string[] }[] = (await tool("mentura_setup", { venture: "acme" })).result.state.docket;
+  const st = docket.find((d) => d.id === "statement-problem");
+  ok(st?.statement === "problem", JSON.stringify(st));
+  const withOptions = decisions(dir).decisions.filter((d) => d.options?.length);
+  ok(withOptions.every((d) => docket.find((x) => x.id === d.id)?.options.length !== 0 || !docket.some((x) => x.id === d.id)), JSON.stringify(withOptions.map((d) => d.id)));
+});
+
 await t("an empty answer or an unknown question is refused", async () => {
   ok(!(await tool("mentura_setup_answer", { venture: "acme", id: "product-exists", answer: "  " })).ok);
   ok(!(await tool("mentura_setup_answer", { venture: "acme", id: "no-such-question", answer: "x" })).ok);

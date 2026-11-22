@@ -122,6 +122,8 @@ The engine's modules (decisions, freshness, generators, lifecycle, upgrades, use
 
 ## Decision scores
 
+A resolved decision in `decisions.ts` keeps its record's `options`, `statement`, `version`, `applies_to` and `decided_at`, so setup, the merge prompt and freshness read them from the matrix.
+
 `ownScore` in `decisions.ts` scores an open decision for the docket and the decision index. A due date within three days dominates; one from three to fourteen days out still counts, less the further it is (24 at five days, 9 at fourteen). An open fail-closed decision adds 15, because the work behind it waits until a person decides it.
 
 ## The decision queue

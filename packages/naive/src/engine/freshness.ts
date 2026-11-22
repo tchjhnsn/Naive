@@ -274,9 +274,7 @@ export async function freshness(dir: string, { now, light = false }: { now?: str
   // Decisions made before their parent last changed are stale (EE-057).
   if (!light) {
     try {
-      // A resolved decision does not carry its record's decided_at (decisions.ts resolves it away), so the
-      // fallback below always reads undefined and only provenance.approved_at dates the parent.
-      const ds: (RankedDecision & { decided_at?: undefined })[] = decisionMatrix(dir, t).decisions;
+      const ds: RankedDecision[] = decisionMatrix(dir, t).decisions;
       for (const d of ds.filter((x) => x.render === "stale" && x.file)) {
         const i = byPath.get(d.file ?? "");
         const up = ds.find((x) => x.id === d.parent);

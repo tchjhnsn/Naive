@@ -92,6 +92,11 @@ export type ResolvedDecision = {
   decides?: Decides;
   file?: string;
   answer?: string | null;
+  options?: DecisionRecord["options"];
+  statement?: DecisionRecord["statement"];
+  version?: DecisionRecord["version"];
+  applies_to?: DecisionRecord["applies_to"];
+  decided_at?: DecisionRecord["decided_at"];
   ideas?: string[];
   awaiting?: "approval";
   provenance?: DecisionRecord["provenance"];
@@ -262,7 +267,7 @@ function decisionsAt(dir: string, now = Date.parse(process.env.DECISIONS_NOW ?? 
     const lane = boundary === "fail-open" ? "async" : "sync";
     return { id: d.id, question: d.question, source: d.source, layer: d.layer, parent: d.parent, boundary, lane, needed_in: d.needed_in ?? null, status: d.status, render, firmness,
       ...((render === "waiting" || (overdue && holder)) && holder ? { held_by: holder.id } : {}),
-      ...(d.due ? { due: d.due, due_in_hours: Math.round((Date.parse(d.due) - now) / 36e5) } : {}), ...(d.part_of ? { part_of: d.part_of } : {}), ...(d.decides ? { decides: d.decides } : {}), ...(d.file ? { file: d.file } : {}), ...(d.answer ? { answer: d.answer } : {}), ...(d.ideas?.length ? { ideas: d.ideas } : {}),
+      ...(d.due ? { due: d.due, due_in_hours: Math.round((Date.parse(d.due) - now) / 36e5) } : {}), ...(d.part_of ? { part_of: d.part_of } : {}), ...(d.decides ? { decides: d.decides } : {}), ...(d.file ? { file: d.file } : {}), ...(d.answer ? { answer: d.answer } : {}), ...(d.options?.length ? { options: d.options } : {}), ...(d.statement ? { statement: d.statement } : {}), ...(d.version ? { version: d.version } : {}), ...(d.applies_to?.length ? { applies_to: d.applies_to } : {}), ...(d.decided_at ? { decided_at: d.decided_at } : {}), ...(d.ideas?.length ? { ideas: d.ideas } : {}),
       ...(d.status === "open" && d.answer && d.provenance?.drafted_by?.kind === "agent" ? { awaiting: "approval" } : {}),
       ...(d.provenance ? { provenance: d.provenance } : {}),
       ...(d.reasons?.length ? { reasons: d.reasons } : {}),
