@@ -12,7 +12,7 @@ import tseslint from "typescript-eslint";
 export default tseslint.config(
   {
     // `.lake` is Lake's build cache (Mathlib under packages/naive/lean/). It is not Naive's code.
-    ignores: ["**/node_modules/**", "**/.next/**", "**/.source/**", "**/_catalog/**", "**/.naive/**", "**/.lake/**", "**/next-env.d.ts"],
+    ignores: ["**/node_modules/**", "**/.next/**", "**/.source/**", "**/_catalog/**", "**/.naive/**", "**/.lake/**", "**/next-env.d.ts", "repos/**"],
   },
   {
     files: ["**/*.{mjs,js,cjs,jsx}"],
