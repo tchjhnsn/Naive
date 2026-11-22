@@ -33,9 +33,9 @@
 
 import { Effect } from "effect";
 import { join } from "node:path";
-import { CannotRun, SchemaInvalid } from "../core/effect/errors.mjs";
-import { readJson, VentureFs } from "../core/effect/fs.mjs";
-import { runMain, runSync } from "../core/effect/run.mjs";
+import { CannotRun, SchemaInvalid } from "../core/effect/errors.ts";
+import { readJson, VentureFs } from "../core/effect/fs.ts";
+import { runMain, runSync } from "../core/effect/run.ts";
 import { ventureFile } from "../core/venture-paths.mjs";
 import { globRegExp, readDataModel, readSchema, venturePaths } from "../records/index.mjs";
 import { validateValue } from "../records/validate.mjs";

@@ -5,7 +5,7 @@ import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { runSync } from "../core/effect/run.mjs";
+import { runSync } from "../core/effect/run.ts";
 import { byCross, crossScore, GATE_LIFT, MEASURE_LIFT, measuresOf, ownerOf, rankingContextEffect, rankItems, themesOf, VENTURE } from "./decision-queue.mjs";
 import type { Item, RankingContext } from "./decision-queue.mjs";
 import { rebuild } from "./decision-index.mjs";

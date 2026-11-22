@@ -5,8 +5,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { Effect } from "effect";
-import { MemoryFs } from "../core/effect/fs.mjs";
-import { runSync } from "../core/effect/run.mjs";
+import { MemoryFs } from "../core/effect/fs.ts";
+import { runSync } from "../core/effect/run.ts";
 import { loadPhase, loadPhases, phasePriors, phaseWeights } from "../phases/phases.mjs";
 import { draft } from "../engine/generators/phase-module.ts";
 
