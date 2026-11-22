@@ -10,8 +10,8 @@
 import { Effect } from "effect";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { NotFound, SchemaInvalid } from "../core/effect/errors.mjs";
-import { readJson, VentureFs } from "../core/effect/fs.mjs";
+import { NotFound, SchemaInvalid } from "../core/effect/errors.ts";
+import { readJson, VentureFs } from "../core/effect/fs.ts";
 
 /** The repository root this module ships in. A check on a copy passes its own root. */
 export const ROOT = fileURLToPath(new URL("../../../..", import.meta.url));
@@ -29,7 +29,7 @@ export const phasesDir = (root = ROOT) => join(root, "packages/naive/src/phases"
  *   note?: string,
  * }} PhaseModule
  * @typedef {{ root?: string }} Opts
- * @typedef {import("../core/effect/errors.mjs").IoError | import("../core/effect/errors.mjs").ParseError | NotFound | SchemaInvalid} LoadError
+ * @typedef {import("../core/effect/errors.ts").IoError | import("../core/effect/errors.ts").ParseError | NotFound | SchemaInvalid} LoadError
  */
 
 /**

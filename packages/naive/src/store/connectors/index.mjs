@@ -21,12 +21,12 @@ import { isAbsolute, join, resolve } from "node:path";
 import { Effect } from "effect";
 import { conformance } from "./contract.mjs";
 import { ANY, resolve as resolveRule } from "./resolve.mjs";
-import { CannotRun, Refused } from "../../core/effect/errors.mjs";
-import { VentureFs, readJson } from "../../core/effect/fs.mjs";
-import { runPromise, runSync } from "../../core/effect/run.mjs";
+import { CannotRun, Refused } from "../../core/effect/errors.ts";
+import { VentureFs, readJson } from "../../core/effect/fs.ts";
+import { runPromise, runSync } from "../../core/effect/run.ts";
 import { ventureFile } from "../../core/venture-paths.mjs";
 
-/** @typedef {import("../../core/effect/errors.mjs").NaiveError} NaiveError */
+/** @typedef {import("../../core/effect/errors.ts").NaiveError} NaiveError */
 /** @typedef {{ id: string, connector?: string, root?: string, writes?: string, implicit?: boolean, [k: string]: unknown }} Source */
 /** @typedef {Record<string, string>} Rule */
 /** @typedef {{ sources: Source[], records: Record<string, string>, rules: Rule[], mapped: boolean }} SourceMap */

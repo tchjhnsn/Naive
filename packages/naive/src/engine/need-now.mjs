@@ -18,7 +18,7 @@ import { catalog } from "./departments.mjs";
 import { ventureFile } from "../core/venture-paths.mjs";
 import { scale } from "./canonical.mjs";
 import { readDataModel, venturePaths } from "../records/index.mjs";
-import { runSync } from "../core/effect/run.mjs";
+import { runSync } from "../core/effect/run.ts";
 import { loadPhases } from "../phases/phases.mjs";
 
 const root = new URL("../../../..", import.meta.url).pathname;
