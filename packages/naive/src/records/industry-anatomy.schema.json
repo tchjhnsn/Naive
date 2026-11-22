@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "industry-anatomy.schema.json",
+  "title": "Industry anatomy matrix",
+  "description": "The industry a venture's market sits in, described on standard dimensions (Porter's five forces, regulation, cost of error, capital intensity, clockspeed) so that how strict its phase gates should be is derived from it rather than fixed (EE-157). Cells hold a value with status known, estimated or unknown (never null), cited evidence and a date. Kept per venture for now; shared across ventures in Mentura later.",
+  "type": "object",
+  "required": ["venture", "id", "name", "cells"],
+  "additionalProperties": false,
+  "properties": {
+    "venture": { "type": "string" },
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$", "description": "Often the NAICS code, such as naics-541511" },
+    "name": { "type": "string" },
+    "naics": { "type": "string", "pattern": "^[0-9]{2,6}$", "description": "The North American Industry Classification System code" },
+    "updated": { "type": "string", "format": "date" },
+    "cells": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "regulation": { "$ref": "market-anatomy.schema.json#/$defs/enumCell", "description": "none, light, licensed or heavy" },
+        "cost_of_error": { "$ref": "market-anatomy.schema.json#/$defs/enumCell", "description": "What a wrong product costs its user: reversible, costly, harmful or safety-critical" },
+        "capital_intensity": { "$ref": "market-anatomy.schema.json#/$defs/enumCell", "description": "low, medium or high: what it costs to build and run before revenue" },
+        "time_to_revenue_days": { "$ref": "market-anatomy.schema.json#/$defs/numberCell", "description": "Typical days from start to first revenue for a new entrant" },
+        "clockspeed": { "$ref": "market-anatomy.schema.json#/$defs/enumCell", "description": "slow, medium or fast: how fast products and processes change (Fine 1998)" },
+        "supplier_power": { "$ref": "market-anatomy.schema.json#/$defs/enumCell", "description": "low, medium or high (Porter 1979)" },
+        "buyer_power": { "$ref": "market-anatomy.schema.json#/$defs/enumCell", "description": "low, medium or high (Porter 1979)" },
+        "threat_of_entrants": { "$ref": "market-anatomy.schema.json#/$defs/enumCell", "description": "low, medium or high (Porter 1979)" },
+        "threat_of_substitutes": { "$ref": "market-anatomy.schema.json#/$defs/enumCell", "description": "low, medium or high (Porter 1979)" },
+        "rivalry": { "$ref": "market-anatomy.schema.json#/$defs/enumCell", "description": "low, medium or high (Porter 1979)" }
+      }
+    }
+  }
+}
