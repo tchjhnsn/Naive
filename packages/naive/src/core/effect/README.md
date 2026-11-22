@@ -58,7 +58,7 @@ stateDiagram-v2
 ## Run and test
 
 - `node packages/naive/src/core/effect/effect-test.ts` tests the errors, both file systems, the runners and the venture runtime: a runtime on `MemoryFs` reads and writes without touching the disk, a disposed runtime has released its layer and refuses to run, and two ventures' runtimes stay separate. `node test.ts` runs it.
-- `node packages/naive/src/core/effect/config-test.ts` tests `NaiveConfig`: the file layer on `MemoryFs`, a missing and a broken file, fixed configs, the runtime's override, and the engine reading through it unchanged.
+- `node packages/naive/src/core/effect/config-test.ts` tests `NaiveConfig`: the file layer on `MemoryFs`, a missing and a broken file, fixed configs and the runtime's override; `node packages/naive/src/engine/naive-config-test.ts` tests the engine reading through it unchanged.
 - `node packages/naive/src/core/provenance-effect-test.ts` tests the provenance and blob Effects on `MemoryFs`.
 
 ## How it connects

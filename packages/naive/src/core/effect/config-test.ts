@@ -1,14 +1,10 @@
 // Tests the NaiveConfig service (phase 3 of docs/design/TYPESCRIPT_AND_EFFECT_RUNTIME_2026-11-22.md): the file layer
 // over MemoryFs and over disk, fixed configs, the venture runtime's override, and the engine reading through it.
 import assert from "node:assert/strict";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
 import { Effect, Exit, Layer } from "effect";
 import { configOf, NaiveConfigFile, NaiveConfigOf } from "./config.ts";
 import { MemoryFs, NodeFs } from "./fs.ts";
 import { ventureRuntime } from "./runtime.ts";
-import { configFor, rawConfig, readConfig } from "../../engine/naive-config.ts";
 
 const results: [string, boolean][] = [];
 const test = async (name: string, fn: () => void | Promise<void>) => {
@@ -48,21 +44,6 @@ await test("the venture runtime reads the config through its own VentureFs, and 
   const fixed = ventureRuntime("/v", { fs: NodeFs, config: NaiveConfigOf({ "/v": { thresholds: { confidence: 0.9 } } }) });
   assert.deepEqual(await fixed.runPromise(configOf("/v")), { thresholds: { confidence: 0.9 } });
   await fixed.dispose();
-});
-
-await test("the engine reads through the service with its old shapes and messages", () => {
-  const dir = mkdtempSync(join(tmpdir(), "naive-config-"));
-  try {
-    writeFileSync(join(dir, "venture.json"), "{}");
-    assert.deepEqual(rawConfig(dir), {});
-    assert.deepEqual(rawConfig(undefined), {});
-    writeFileSync(join(dir, "naive.config.json"), '{"thresholds":{"confidence":0.8}}');
-    assert.deepEqual(readConfig(dir), { thresholds: { confidence: 0.8 } });
-    assert.equal(configFor(dir).thresholds.confidence, 0.8);
-    assert.deepEqual(configFor(dir).checks, { off: [], warn: [] });
-    writeFileSync(join(dir, "naive.config.json"), "{ nope");
-    assert.throws(() => rawConfig(dir), /^Error: naive\.config\.json is not valid JSON: /);
-  } finally { rmSync(dir, { recursive: true, force: true }); }
 });
 
 for (const [name, ok] of results) console.log(`${ok ? "pass" : "FAIL"}  ${name}`);
