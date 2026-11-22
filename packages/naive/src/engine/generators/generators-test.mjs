@@ -18,6 +18,9 @@ import * as triage from "./triage.ts";
 import * as opportunity from "./opportunity.ts";
 import * as supportPolicy from "./support-policy.ts";
 import * as supportCase from "./support-case.ts";
+import * as validationPlan from "./validation-plan.ts";
+import * as gatePolicies from "./phase-gate-policies.ts";
+import { readFileSync } from "node:fs";
 
 let fails = 0;
 const t = (name, ok) => { console.log(`${ok ? "pass" : "FAIL"}  ${name}`); if (!ok) fails++; };
@@ -26,7 +29,7 @@ writeFileSync(join(v, "venture.json"), JSON.stringify({ id: "kettle" }));
 mkdirSync(join(v, "product/bugs"), { recursive: true });
 writeFileSync(join(v, "product/bugs/save-loses-draft.json"), "{}");
 
-for (const g of [bug, glossary, reference, traceSpan, detector, detectorTrial, connection, capabilityCluster, leadPlan, rawDump, triage, opportunity, supportPolicy, supportCase]) t(`${g.record}: describe asks at least one required field`, g.describe().ask.some((q) => q.required));
+for (const g of [bug, glossary, reference, traceSpan, detector, detectorTrial, connection, capabilityCluster, leadPlan, rawDump, triage, opportunity, supportPolicy, supportCase, validationPlan, gatePolicies]) t(`${g.record}: describe asks at least one required field`, g.describe().ask.some((q) => q.required));
 
 const b = bug.draft({ title: "Save loses draft", severity: "P1", found_in: "0.6.0", repro: "open, type, save" }, { venture: v });
 t("bug: draft passes the schema", b.ok);
@@ -124,6 +127,19 @@ t("support-policy: escalations a person gave are kept", supportPolicy.draft({ ..
 const sc = supportCase.draft({ opened: "2026-11-21T09:30:00Z", channel: "email", kind: "complaint", summary: "Charged twice this month" });
 t("support-case: draft starts at new with its id from the date and passes the schema", sc.ok && sc.route === "support/cases/2026-11-21-charged-twice-this-month" && sc.draft.status === "new" && sc.draft.resolved === null);
 t("support-case: a refund with no decision fails the schema", !validate("support-case", { ...sc.draft, refund: { amount: 20, currency: "USD" } }).ok);
+
+const plan = validationPlan.draft({ assumptions: [{ statement: "Clinic owners pay for scheduling", item: "economic-signal", test: "Ask five owners for a deposit", pass: "Two of five pay", by: "2026-12-31" }] }, { venture: v });
+t("validation-plan: draft takes the venture id, opens each assumption and passes the schema", plan.ok && plan.draft.venture === "kettle" && plan.draft.assumptions[0].status === "open" && plan.draft.assumptions[0].id === "clinic-owners-pay-for-scheduling");
+t("validation-plan: an item no phase gate names is refused", !validationPlan.draft({ assumptions: [{ ...plan.draft.assumptions[0], item: "vibes" }] }).ok);
+t("validation-plan: uncovered lists the scored discovery items the plan does not name", plan.ok && !validationPlan.uncovered(plan.draft).includes("economic-signal") && validationPlan.uncovered(plan.draft).includes("problem") && !validationPlan.uncovered(plan.draft).includes("decision"));
+const shipped = JSON.parse(readFileSync(new URL("../../phases/gate-policies.json", import.meta.url), "utf8"));
+const gp = gatePolicies.draft(shipped);
+t("phase-gate-policies: the shipped policies redraft and pass", gp.ok);
+const presets = shipped.phases.discovery.presets;
+t("phase-gate-policies: strictness ranks lenient below standard below strict", gatePolicies.strictness(presets.lenient) < gatePolicies.strictness(presets.standard) && gatePolicies.strictness(presets.standard) < gatePolicies.strictness(presets.strict));
+const { decision: _d, ...short } = presets.standard;
+t("phase-gate-policies: a preset missing an item is refused", !gatePolicies.draft({ ...shipped, phases: { discovery: { ...shipped.phases.discovery, presets: { standard: short } } } }).ok);
+t("phase-gate-policies: an item naming an unknown record type is refused", !gatePolicies.draft({ ...shipped, phases: { discovery: { ...shipped.phases.discovery, items: [{ ...shipped.phases.discovery.items[0], record: "nope" }, ...shipped.phases.discovery.items.slice(1)] } } }).ok);
 
 console.log(fails ? `${fails} failed` : "record generators: all pass");
 process.exitCode = fails ? 1 : 0;

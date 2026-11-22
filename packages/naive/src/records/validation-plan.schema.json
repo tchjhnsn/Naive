@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "validation-plan.schema.json",
+  "title": "Validation plan",
+  "description": "The assumptions a venture has not yet demonstrated, each with the test that would settle it, the result that counts as passing and a date (EE-156). The discovery gate's validation-plan item reads it: every gate item below high must be named by an assumption.",
+  "type": "object",
+  "required": ["venture", "assumptions"],
+  "properties": {
+    "venture": { "type": "string" },
+    "updated": { "type": "string", "format": "date" },
+    "assumptions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "statement", "item", "test", "pass", "by"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+          "statement": { "type": "string", "description": "What must be true, stated so a test can show it false" },
+          "item": { "type": "string", "pattern": "^[a-z0-9-]+$", "description": "The gate item it bears on, such as problem or economic-signal" },
+          "test": { "type": "string", "description": "How it will be tested" },
+          "pass": { "type": "string", "description": "The result that counts as passing, decided before the test" },
+          "by": { "type": "string", "format": "date" },
+          "status": { "enum": ["open", "passed", "failed", "dropped"], "default": "open" }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}
