@@ -1,0 +1,18 @@
+{
+  "id": "intake",
+  "function": "risk-and-compliance",
+  "title": "Learn the venture's legal duties and risks",
+  "trigger": { "kind": "intake" },
+  "reads": ["venture", "foundation/constraints", "governance/ownership", "governance/decision-rights", "legal/obligations", "legal/risks", "assets/leases", "it/connections/[id]"],
+  "steps": [
+    { "id": "read-what-exists", "do": "Read the venture, its constraints, ownership, leases and connections, the obligations register and the risk register, and list what is missing, most needed first: duties that cannot be cured if missed (an 83(b) window), then dated filings, then risks." },
+    { "id": "ask-entity", "do": "Ask the founder the venture's legal form, where it is registered and when, and whether any founder holds stock subject to vesting, and record each duty that follows (franchise tax, annual report, registered agent, 83(b) within 30 days of a grant) as an obligation.", "skill": "compliance-calendar", "ask": true, "writes": ["legal/obligations/[id]"], "raises": ["ownership-or-control"] },
+    { "id": "ask-data-and-contracts", "do": "Ask whether the venture collects personal data, raises money, employs anyone or works in a regulated field, and which contracts have notice or renewal dates, and record each duty that follows as an obligation.", "skill": "compliance-calendar", "ask": true, "writes": ["legal/obligations/[id]"], "raises": ["legal-or-terms"] },
+    { "id": "draft-risks", "do": "Draft the five to ten risks that could hurt the venture most, each with a cause, a consequence, likelihood and impact as 90% ranges and a proposed treatment, and ask the founder to name an owner for each.", "skill": "risk-register", "ask": true, "writes": ["legal/risks/[id]"] },
+    { "id": "summarize", "do": "Tell the founder the next five deadlines and the top three risks by expected loss, each citing its record, and raise which risks to treat first to the finance lead.", "raises": ["set-priorities"] }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/records/validate.mjs" },
+    { "id": "no-uncurable-gap", "kind": "review", "check": "Does every duty that cannot be cured if missed (such as an 83(b) election) have an obligation with an owner and a due date, and does every risk have a person owner?", "reviewer": "finance-lead" }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "function": "assets",
+  "rows": [
+    { "class": "domain-fact", "level": "decide", "examples": ["Record that the laptop tagged mbp-01 is now held by Sam", "Mark the spare monitor as in storage", "Record a lease's notice days from the signed document"] },
+    { "class": "spend-money", "level": "escalate", "examples": ["Buy a laptop for the new hire", "Pay a year of coworking up front", "Repair a broken 3D printer"] },
+    { "class": "cancel-or-downgrade", "level": "escalate", "examples": ["Move from a dedicated desk to a hot desk", "End the equipment rental when the project closes"] },
+    { "class": "legal-or-terms", "level": "escalate", "examples": ["Sign a 24-month office lease", "Renew a lease that auto-renews, or give notice instead", "Accept an equipment finance agreement"] },
+    { "class": "ownership-or-control", "level": "escalate", "examples": ["A founder contributes their own workstation to the venture"] },
+    { "class": "irreversible-data-change", "level": "escalate", "examples": ["Wipe and recycle a laptop that holds customer data", "Sell an old phone after a factory reset"] },
+    { "class": "set-priorities", "level": "recommend", "approver": "finance-lead", "examples": ["Which equipment purchases to defer while runway is under nine months"] }
+  ]
+}

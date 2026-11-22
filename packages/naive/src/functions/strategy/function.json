@@ -1,0 +1,10 @@
+{
+  "id": "strategy",
+  "purpose": "Decide what the venture is for, whom it serves and what it will not do, and check those choices against the evidence on a fixed cadence.",
+  "intake": "intake",
+  "measures": [
+    "learning",
+    "impact"
+  ],
+  "clusters": []
+}

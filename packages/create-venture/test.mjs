@@ -37,6 +37,11 @@ t("--yes creates a venture with the recommended defaults, installs the framework
   ok(venture.layout === "structured" && existsSync(join(v, "k-base/foundation")) && existsSync(join(v, "meta/provenance.jsonl")), "the structured layout: k-base/ and meta/");
   ok(existsSync(join(v, "node_modules/.bin/naive")), "naive is installed in the venture");
   ok(existsSync(join(v, ".git")), "a git repository");
+  // naive#70: from a clone the pin is the repository at a commit, never a path on this machine.
+  const pin = load(join(v, "package.json")).devDependencies["naive-framework"];
+  ok(/^git\+https:\/\/\S+#[0-9a-f]{40}$/.test(pin) || (pin.startsWith("file:") && !/^[0-9a-f]{40}$/.test(spawnSync("git", ["rev-parse", "HEAD"], { cwd: repo, encoding: "utf8" }).stdout.trim())), pin);
+  // naive#68: with no --name the founder is "Founder", not the git user.
+  ok(load(join(v, "k-base/people/people.json")).people[0].name === "Founder", JSON.stringify(load(join(v, "k-base/people/people.json")).people));
 });
 
 t("the first venture is My first venture, in a workspace named Naive workspace; both can be named", () => {
@@ -82,7 +87,10 @@ t("installed from the registry, the venture depends on the framework by version,
   for (const d of [repo, join(repo, "packages/create-venture")]) ok(spawnSync("npm", ["pack", "--pack-destination", packs], { cwd: d, env, encoding: "utf8" }).status === 0, `npm pack in ${d}`);
   const tgz = (n) => join(packs, readdirSync(packs).find((f) => f.startsWith(`${n}-`)));
   writeFileSync(join(proj, "package.json"), "{}\n");
-  const i = spawnSync("npm", ["install", "--offline", tgz("naive-framework"), tgz("create-venture")], { cwd: proj, env, encoding: "utf8" });
+  // The framework's runtime dependencies (effect, EE-125) come packed from this checkout's node_modules, so the install stays offline.
+  const deps = Object.keys(load(join(repo, "package.json")).dependencies ?? {});
+  for (const d of deps) ok(spawnSync("npm", ["pack", "--pack-destination", packs], { cwd: join(repo, "node_modules", d), env, encoding: "utf8" }).status === 0, `npm pack ${d}`);
+  const i = spawnSync("npm", ["install", "--offline", tgz("naive-framework"), tgz("create-venture"), ...deps.map(tgz)], { cwd: proj, env, encoding: "utf8" });
   ok(i.status === 0, i.stderr);
   const r = spawnSync("node", [join(proj, "node_modules/.bin/create-venture"), "from-registry", "--yes", "--skip-install", "--no-git"], { cwd: base, env, encoding: "utf8" });
   ok(r.status === 0, r.stderr + r.stdout);
@@ -227,7 +235,7 @@ t("outside a venture, naive says how to name one", () => {
 
 t("naive upgrade --framework reinstalls the framework with the venture's package manager", () => {
   const r = naive(["upgrade", "--framework"], v);
-  ok(r.status === 0 && /updating the framework: npm install --save-dev file:/.test(r.stdout), r.stdout + r.stderr);
+  ok(r.status === 0 && /updating the framework: (npm install --save-dev file:|pinned git\+https:\/\/\S+#[0-9a-f]{40})/.test(r.stdout), r.stdout + r.stderr);
 });
 
 t("naive build and start say plainly when the release scripts are missing, and otherwise run them", () => {

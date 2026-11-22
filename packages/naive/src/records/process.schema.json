@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "process.schema.json",
+  "title": "Process",
+  "description": "One recurring business process in the venture's process catalog, at capabilities/processes/<id>.json (route capabilities/processes/[id]): its purpose and one owner, what starts it, its suppliers, inputs, outputs and customers (SIPOC), its working procedure as steps with the control points marked, and three health measures (cycle time, rework rate, first-pass yield). It follows APQC PCF 13.1 (manage business processes: assign process ownership 13.1.1, define processes and control points 13.1.3, measure process performance 13.1.4). The capabilities function owns it, and only its agent (capabilities-agent) or a person writes it (writer function). A process that crosses functions names each one.",
+  "type": "object",
+  "required": ["id", "name", "purpose", "owner", "trigger", "status"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$", "description": "The process's id, the file name without .json" },
+    "name": { "type": "string", "minLength": 1 },
+    "purpose": { "type": "string", "minLength": 1, "description": "What the process is for, in a sentence" },
+    "owner": { "type": "string", "minLength": 1, "description": "The one role or person accountable for it, by role id or name. A process with two owners has none" },
+    "trigger": { "type": "string", "minLength": 1, "description": "What starts a run: an event, a schedule or a request" },
+    "functions": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "enum": ["strategy", "products", "marketing-and-sales", "supply-chain", "service-delivery", "customer-service", "human-capital", "it", "finance", "assets", "risk-and-compliance", "external-relationships", "capabilities"] },
+      "description": "The functions the process crosses, as packages/naive/src/functions/departments.json ids"
+    },
+    "suppliers": { "type": "array", "items": { "type": "string" } },
+    "inputs": { "type": "array", "items": { "type": "string" } },
+    "outputs": { "type": "array", "items": { "type": "string" } },
+    "customers": { "type": "array", "items": { "type": "string" }, "description": "Who receives the outputs, inside or outside the venture" },
+    "steps": {
+      "type": "array",
+      "description": "The working procedure, in order",
+      "items": {
+        "type": "object",
+        "required": ["id", "do"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+          "do": { "type": "string", "minLength": 1 },
+          "by": { "type": "string", "description": "The role that does it" },
+          "control_point": { "type": "boolean", "description": "True when the step checks or approves before work goes on (APQC 13.1.3.3)" }
+        }
+      }
+    },
+    "measures": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "runs": { "type": "integer", "minimum": 0, "description": "Runs counted in the window" },
+        "cycle_time_days": { "type": ["number", "null"], "minimum": 0, "description": "Median days from trigger to done" },
+        "rework_rate": { "type": ["number", "null"], "minimum": 0, "maximum": 1, "description": "Share of runs reopened" },
+        "first_pass_yield": { "type": ["number", "null"], "minimum": 0, "maximum": 1, "description": "Share of runs whose done-criteria passed on the first try" },
+        "as_of": { "type": "string", "format": "date" }
+      }
+    },
+    "status": { "enum": ["draft", "active", "retired"] },
+    "last_reviewed": { "type": ["string", "null"], "format": "date" },
+    "note": { "type": "string" }
+  }
+}

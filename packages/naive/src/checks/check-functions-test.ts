@@ -1,0 +1,51 @@
+// Breaks check-functions.ts on copies of the repository: each rule fails when its file is wrong, and the real
+// repository passes without --complete.
+import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { spawnSync } from "node:child_process";
+
+const repo = new URL("../../../..", import.meta.url).pathname;
+const check = join(repo, "packages/naive/src/checks/check-functions.ts");
+let failed = 0;
+const expect = (name: string, ok: boolean, detail = "") => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${detail.slice(0, 800)}`}`); if (!ok) failed++; };
+const run = (root: string, ...a: string[]) => spawnSync("node", [check, "--root", root, ...a], { encoding: "utf8" });
+
+const real = run(repo);
+expect("the repository's function modules pass", real.status === 0, real.stdout + real.stderr);
+
+const copy = (): string => {
+  const d = mkdtempSync(join(tmpdir(), "check-functions-"));
+  for (const p of ["packages/naive/src/functions", "packages/naive/src/records", "packages/naive/template/governance"]) cpSync(join(repo, p), join(d, p), { recursive: true });
+  return d;
+};
+type Row = { class: string, level: string, examples: string[] };
+type Step = { writes?: string[], raises?: string[], skill?: string };
+type Doc = { rows: Row[], steps: Step[], intake?: string, clusters?: string[] };
+const edit = (root: string, rel: string, f: (j: Doc) => void) => { const p = join(root, rel); const j = JSON.parse(readFileSync(p, "utf8")) as Doc; f(j); writeFileSync(p, JSON.stringify(j, null, 2) + "\n"); };
+const FIN = "packages/naive/src/functions/finance";
+const cases: [string, (d: string) => void, RegExp][] = [
+  ["a one-way door that is not escalate fails", (d) => edit(d, `${FIN}/decisions.json`, (j) => { const row = j.rows.find((r) => r.class === "ownership-or-control"); if (row) row.level = "decide"; }), /ownership-or-control is a one-way door or never redelegated/],
+  ["a class decision-rights does not have fails", (d) => edit(d, `${FIN}/decisions.json`, (j) => { j.rows.push({ class: "made-up", level: "decide", examples: ["x"] }); }), /made-up is not in decision-rights/],
+  ["a step that writes outside the function's reach fails", (d) => edit(d, `${FIN}/workflows/intake.json`, (j) => { j.steps[0].writes = ["foundation/problem"]; }), /outside the function's write reach/],
+  ["a step that raises a class with no row fails", (d) => edit(d, `${FIN}/workflows/intake.json`, (j) => { j.steps[0].raises = ["production-ship"]; }), /raises production-ship, which decisions.json has no row for/],
+  ["a step that loads a missing skill fails", (d) => edit(d, `${FIN}/workflows/intake.json`, (j) => { j.steps[0].skill = "no-such-skill"; }), /skills\/ does not have/],
+  ["an intake that is not a workflow fails", (d) => edit(d, `${FIN}/function.json`, (j) => { j.intake = "missing"; }), /intake missing is not a workflow/],
+  ["an unknown capability cluster fails", (d) => edit(d, `${FIN}/function.json`, (j) => { j.clusters = ["vendor-x"]; }), /cluster vendor-x is not in capability-clusters/],
+  ["an agent.md that names another role fails", (d) => writeFileSync(join(d, `${FIN}/agent.md`), "---\nrole: strategy-agent\nfunction: finance\n---\n"), /does not name role: finance-agent/],
+];
+for (const [name, breakIt, want] of cases) {
+  const d = copy();
+  try { breakIt(d); const r = run(d); expect(name, r.status === 1 && want.test(r.stdout), r.stdout + r.stderr); }
+  finally { rmSync(d, { recursive: true, force: true }); }
+}
+const complete = run(repo, "--complete");
+expect("every one of the 13 modules is complete", complete.status === 0 && /13 checked, every one complete/.test(complete.stdout), complete.stdout);
+{
+  const d = copy();
+  try { rmSync(join(d, `${FIN}/agent.md`)); const r = run(d, "--complete"); expect("--complete names a missing piece", r.status === 1 && /finance\/agent.md: missing/.test(r.stdout), r.stdout); }
+  finally { rmSync(d, { recursive: true, force: true }); }
+}
+
+if (failed) { console.log(`\n${failed} failing`); process.exit(1); }
+console.log("function modules check: all passed");

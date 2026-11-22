@@ -1,0 +1,12 @@
+{
+  "function": "customer-service",
+  "rows": [
+    { "class": "domain-fact", "level": "decide", "examples": ["Tag a case with the contact reason billing-question", "Mark a case resolved once the customer confirms the fix worked", "Record that a case repeats one from last week"] },
+    { "class": "defer-or-route", "level": "decide", "examples": ["Send a reproducible defect to products as a handoff", "Pass a customer's interest in a bigger plan to marketing and sales"] },
+    { "class": "set-priorities", "level": "recommend", "approver": "growth-lead", "examples": ["Which contact reason to remove first: fix the product, change the policy or write an article", "Pull the founder onto support this week because replies are running past target"] },
+    { "class": "public-commitment", "level": "escalate", "examples": ["Send the reply drafted for a customer's question", "Post an outage notice on the status page", "Reply in public to a review", "Change the response targets or channels in the support policy"] },
+    { "class": "spend-money", "level": "escalate", "examples": ["Refund a customer's last month", "Give a one-month credit after an outage"] },
+    { "class": "legal-or-terms", "level": "escalate", "examples": ["Change the refund rule", "Settle a dispute or a chargeback with a customer", "Answer a complaint that threatens legal action"] },
+    { "class": "irreversible-data-change", "level": "escalate", "examples": ["Delete a customer's data at their request", "Close and remove a customer's account"] }
+  ]
+}

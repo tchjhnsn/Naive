@@ -277,7 +277,10 @@ const uuid = "e087c27d-08ac-4948-ad1a-b23d923db95e";
   const p = spawnSync("npm", ["pack", "--silent", "--pack-destination", pack], { cwd: repo, encoding: "utf8" });
   assert.equal(p.status, 0, p.stderr);
   writeFileSync(join(pack, "package.json"), "{}");
-  const i = spawnSync("npm", ["install", "--offline", "--no-audit", "--no-fund", join(pack, p.stdout.trim())], { cwd: pack, encoding: "utf8" });
+  // The framework's runtime dependencies (effect, EE-125) come packed from this checkout's node_modules, so the install stays offline.
+  const deps = Object.keys(JSON.parse(readFileSync(join(repo, "package.json"), "utf8")).dependencies ?? {})
+    .map((d) => join(pack, spawnSync("npm", ["pack", "--silent", "--pack-destination", pack], { cwd: join(repo, "node_modules", d), encoding: "utf8" }).stdout.trim()));
+  const i = spawnSync("npm", ["install", "--offline", "--no-audit", "--no-fund", join(pack, p.stdout.trim()), ...deps], { cwd: pack, encoding: "utf8" });
   assert.equal(i.status, 0, i.stderr);
   const naive = join(pack, "node_modules/.bin/naive");
   const w = spawnSync(naive, ["workspace", "init", "ws", "--venture", "Kettle", "--skip-install"], { cwd: pack, env, encoding: "utf8" });

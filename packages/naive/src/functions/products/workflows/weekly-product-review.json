@@ -1,0 +1,18 @@
+{
+  "id": "weekly-product-review",
+  "function": "products",
+  "title": "Review discovery, bugs and the next build each week",
+  "trigger": { "kind": "schedule", "cadence": "weekly" },
+  "reads": ["product", "product/bugs", "validation/interviews", "validation/feedback", "validation/product-market-fit", "operations/handoff", "foundation/telos"],
+  "steps": [
+    { "id": "triage-bugs", "do": "Give every new bug a priority from P0 to P3 with its steps to reproduce, and list open P0 and P1 bugs.", "writes": ["product/bugs/[id]"] },
+    { "id": "check-touchpoints", "do": "Count this week's customer interviews, usability sessions and calls, and flag the week if there were none.", "skill": "four-risks-review" },
+    { "id": "check-build-handoffs", "do": "For each handoff proposed as a build, check that all four risks have evidence; one that lacks it goes back as a discovery task.", "skill": "four-risks-review" },
+    { "id": "read-fit", "do": "Read retention and the product-market fit survey against the telos, and when the evidence contradicts the current direction, prepare a continue, stop or change decision for the founder with the evidence.", "raises": ["continue-or-stop", "change-direction"] },
+    { "id": "propose-order", "do": "Propose the order of next week's product work to the product lead, with the bug or evidence behind each item.", "raises": ["set-priorities"] }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/records/validate.mjs" },
+    { "id": "build-has-evidence", "kind": "review", "check": "Does every build handoff proposed this week cite evidence for value, usability, feasibility and viability?", "reviewer": "product-lead" }
+  ]
+}

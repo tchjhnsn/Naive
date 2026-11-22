@@ -1,0 +1,7 @@
+{
+  "id": "finance",
+  "purpose": "Know where the venture's money comes from, where it goes and how long it lasts, and keep who owns what written down.",
+  "intake": "intake",
+  "measures": ["revenue", "cost_or_time_saved"],
+  "clusters": ["money-and-books", "signatures-and-privileged-records"]
+}

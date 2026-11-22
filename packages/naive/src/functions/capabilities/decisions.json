@@ -1,0 +1,52 @@
+{
+  "function": "capabilities",
+  "rows": [
+    {
+      "class": "domain-fact",
+      "level": "decide",
+      "examples": [
+        "Record that the weekly outreach process ran 6 times with 2 reworks",
+        "Record a postmortem's timeline"
+      ]
+    },
+    {
+      "class": "implementation-detail",
+      "level": "decide",
+      "examples": [
+        "Reword a step in an agent-run procedure",
+        "Add a checklist item to a release procedure"
+      ]
+    },
+    {
+      "class": "set-priorities",
+      "level": "recommend",
+      "approver": "strategy-lead",
+      "examples": [
+        "Which bottleneck to improve this cycle",
+        "Which recurring work to write a procedure for first"
+      ]
+    },
+    {
+      "class": "irreversible-data-change",
+      "level": "escalate",
+      "examples": [
+        "Archive or delete stale knowledge records",
+        "Drop a process record that other records cite"
+      ]
+    },
+    {
+      "class": "contradicts-ledger",
+      "level": "escalate",
+      "examples": [
+        "A corrective action that would undo a decision in force"
+      ]
+    },
+    {
+      "class": "legal-or-terms",
+      "level": "escalate",
+      "examples": [
+        "Remove a control point that a contract or regulation requires"
+      ]
+    }
+  ]
+}
