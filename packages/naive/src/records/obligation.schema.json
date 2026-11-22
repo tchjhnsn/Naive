@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "obligation.schema.json",
+  "title": "Compliance obligation",
+  "description": "One entry of the venture's obligations register, its compliance calendar (ISO 37301:2021 clause 4.5, compliance obligations; APQC 11.2.2.2, identify applicable requirements), at legal/obligations/<id>.json (route legal/obligations/[id]): one duty the venture must meet by a date, such as a franchise tax, an annual report, a Form D, an 83(b) election, a licence renewal or a contract's notice date, with who imposes it, who owns it and what proves it was met. The agent prepares; a person files, signs and pays. The risk-and-compliance function owns it, and only the risk-and-compliance agent (role risk-and-compliance-agent) or a person writes it (writer function in packages/naive/src/records/data-model.json).",
+  "type": "object",
+  "required": ["id", "title", "kind", "authority", "basis", "recurrence", "due_date", "prep_days", "owner", "status"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$", "description": "The obligation's id, the file name without .json" },
+    "title": { "type": "string", "minLength": 1 },
+    "kind": { "enum": ["filing", "tax", "election", "renewal", "report", "notice", "privacy-request", "other"] },
+    "authority": { "type": "string", "minLength": 1, "description": "Who imposes it: a regulator, a tax authority, a court or a counterparty" },
+    "basis": { "type": "string", "minLength": 1, "description": "The law, rule or contract clause it comes from, cited" },
+    "recurrence": { "enum": ["once", "monthly", "quarterly", "annual"] },
+    "due_date": { "type": "string", "format": "date", "description": "The next date it must be met" },
+    "prep_days": { "type": "integer", "minimum": 0, "description": "Days it takes to prepare. The calendar raises it at least twice this many days before the due date" },
+    "owner": { "type": "string", "minLength": 1, "description": "The person who files, signs or pays, by people record id or role" },
+    "fee": {
+      "type": "object",
+      "required": ["amount", "currency"],
+      "additionalProperties": false,
+      "properties": { "amount": { "type": "number", "minimum": 0 }, "currency": { "type": "string", "pattern": "^[A-Z]{3}$" } }
+    },
+    "cure": { "enum": ["curable", "late-fee", "not-curable"], "description": "What a miss costs: curable, a late fee, or not curable at all (a missed 83(b) window)" },
+    "status": { "enum": ["upcoming", "met", "missed", "not-applicable"] },
+    "last_met": { "type": ["string", "null"], "format": "date" },
+    "evidence": { "type": "string", "description": "What proves it was met: a filing receipt, a proof of mailing or an evidence record" },
+    "note": { "type": "string" }
+  }
+}

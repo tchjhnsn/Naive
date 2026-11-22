@@ -3,12 +3,24 @@
   "purpose": "Say why the venture exists and what it offers: core product, ambition, product cards, accounts, and each product's role by phase (Product Anatomy).",
   "skills": [
     {
+      "id": "pipeline-review",
+      "path": "packages/naive/src/functions/marketing-and-sales/skills/pipeline-review/SKILL.md"
+    },
+    {
+      "id": "budget-and-runway",
+      "path": "packages/naive/src/functions/finance/skills/budget-and-runway/SKILL.md"
+    },
+    {
       "id": "ambition-tier",
       "path": "packages/naive/src/functions/strategy/skills/ambition-tier/SKILL.md"
     },
     {
       "id": "telos",
       "path": "packages/naive/src/functions/strategy/skills/telos/SKILL.md"
+    },
+    {
+      "id": "strategy-review",
+      "path": "packages/naive/src/functions/strategy/skills/strategy-review/SKILL.md"
     },
     {
       "id": "validation-score",

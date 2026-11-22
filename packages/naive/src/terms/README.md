@@ -43,3 +43,5 @@ The ontology has seven top categories, each mapped to a BFO class: information a
 - `node packages/naive/src/terms/engine-test.ts` tests the engine.
 
 The operating-rules loader and the ontology gate check a module or a handoff against its schema with `validateFile` from [`packages/naive/src/records/validate.mjs`](../records/README.md). A checker that cannot run is still a tool error, never a verdict; the tests prove it with a validator that has no schemas (`useValidator`).
+
+`bypass-guard-test.ts` registers `check-functions.ts` and its test as plain checks: they compare ids and apply a fixed rule (one-way doors and never-redelegated classes are escalate), so nothing symbolic needs the engine.

@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "raise.schema.json",
+  "title": "Raise",
+  "description": "One fundraise run as a bounded project, at investor-relations/raises/<id>.json (route investor-relations/raises/[id]): the ask and the milestone it pays for, the opening and stop dates, the securities exemption it relies on, the materials investors see, the target investors with each one's pipeline status, and every meeting with its follow-up. It follows APQC PCF 12.1 (build investor relationships) and the practice that a venture is either raising or not, with a start, a target and a stop date (Graham, How to Raise Money, 2013). The external-relationships function owns it, and only its agent (external-relationships-agent) or a person writes it (writer function). Investors are named by investor record id (investors/<id>.json); the raise never copies their contact details. Accepting a term sheet is never recorded here as done by an agent: it is an ownership-or-control decision a person takes.",
+  "type": "object",
+  "required": ["id", "title", "status", "ask", "milestone"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$", "description": "The raise's id, the file name without .json, such as pre-seed-2027" },
+    "title": { "type": "string", "minLength": 1 },
+    "status": { "enum": ["planned", "open", "closed", "abandoned"], "description": "planned: not yet meeting investors about it. open: between opens and closes. closed: money committed and signed. abandoned: stopped without closing" },
+    "ask": {
+      "type": "object",
+      "required": ["amount", "currency", "instrument"],
+      "additionalProperties": false,
+      "properties": {
+        "amount": { "type": "number", "minimum": 0, "description": "The amount the venture asks for" },
+        "minimum": { "type": "number", "minimum": 0, "description": "The least that still reaches the milestone" },
+        "currency": { "type": "string", "pattern": "^[A-Z]{3}$", "description": "ISO 4217 code, such as USD" },
+        "instrument": { "enum": ["safe", "convertible-note", "priced-equity", "grant", "debt", "revenue-based", "other"] },
+        "terms": { "type": "string", "description": "Proposed terms in a sentence (cap, discount, valuation), as proposed, never as agreed" }
+      }
+    },
+    "milestone": { "type": "string", "minLength": 1, "description": "What the money reaches that changes the venture's value, in a sentence" },
+    "exemption": { "enum": ["reg-d-506b", "reg-d-506c", "reg-cf", "reg-a", "non-us", "none", "unknown"], "description": "The securities exemption the raise relies on (US Regulation D Rules 506(b) and 506(c), Regulation Crowdfunding, Regulation A). Under 506(b) nothing public may say the venture is raising (Rule 502(c))" },
+    "opens": { "type": ["string", "null"], "format": "date", "description": "The day the raise opens" },
+    "closes": { "type": ["string", "null"], "format": "date", "description": "The stop date: the raise closes or stops on it, whatever was committed" },
+    "materials": {
+      "type": "array",
+      "description": "What investors see, by path or link; a person approves each before it is sent",
+      "items": {
+        "type": "object",
+        "required": ["kind", "ref", "status"],
+        "additionalProperties": false,
+        "properties": {
+          "kind": { "enum": ["deck", "memo", "one-pager", "financial-model", "data-room", "other"] },
+          "ref": { "type": "string", "minLength": 1, "description": "A venture path or a link" },
+          "status": { "enum": ["draft", "approved", "retired"] }
+        }
+      }
+    },
+    "targets": {
+      "type": "array",
+      "description": "The investors this raise approaches, with each one's status in the pipeline",
+      "items": {
+        "type": "object",
+        "required": ["investor", "status"],
+        "additionalProperties": false,
+        "properties": {
+          "investor": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$", "description": "An investor record id (investors/<id>.json)" },
+          "status": { "enum": ["to-contact", "contacted", "meeting", "diligence", "term-sheet", "committed", "passed"] },
+          "priority": { "type": "integer", "minimum": 1, "description": "1 is approached first" },
+          "warm_path": { "type": "string", "description": "Who can introduce the venture, by name or people record id" },
+          "amount": { "type": "number", "minimum": 0, "description": "The amount committed or discussed, in the ask's currency" }
+        }
+      }
+    },
+    "meetings": {
+      "type": "array",
+      "description": "Every meeting with an investor about this raise, in date order",
+      "items": {
+        "type": "object",
+        "required": ["investor", "date", "kind"],
+        "additionalProperties": false,
+        "properties": {
+          "investor": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+          "date": { "type": "string", "format": "date" },
+          "kind": { "enum": ["intro", "pitch", "partner-meeting", "diligence", "follow-up", "relationship"] },
+          "notes": { "type": "string" },
+          "promised": { "type": "string", "description": "What the founder said would be true by the next meeting, with its date, so the next meeting can grade it (Suster, lines, not dots)" },
+          "follow_up": {
+            "type": "object",
+            "required": ["action", "due", "done"],
+            "additionalProperties": false,
+            "properties": {
+              "action": { "type": "string", "minLength": 1 },
+              "due": { "type": "string", "format": "date" },
+              "done": { "type": "boolean" }
+            }
+          }
+        }
+      }
+    },
+    "decision": { "type": "string", "description": "The id of the decision record that accepts or declines the terms, once a person takes it" },
+    "note": { "type": "string" }
+  }
+}

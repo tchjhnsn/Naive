@@ -36,3 +36,5 @@ The ways a person, or an agent, works with a venture: the `naive` and `mentura` 
 - Calls: [`router`](../router/router.mjs).
 
 `naive dev` checks each record as it is saved with `validateFile` from [`packages/naive/src/records/validate.mjs`](../records/README.md), and `naive info` no longer reports a Python version, because nothing here needs one.
+
+`naive upgrade --framework` moves a git pin (`git+https://...#<sha>`, which create-venture writes from a clone) to the commit of the Naive running it and installs from that clone with `npm install --no-save`, so the update needs no network.

@@ -1,0 +1,7 @@
+{
+  "id": "risk-and-compliance",
+  "purpose": "Know every legal deadline the venture must meet and the few risks that could hurt it most, and bring each to the founder before it is too late to act.",
+  "intake": "intake",
+  "measures": ["compliance_met", "cost_or_time_saved"],
+  "clusters": ["signatures-and-privileged-records"]
+}

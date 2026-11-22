@@ -265,8 +265,14 @@ const PACKAGE_ROUTE = {
   "decision-record": "decisions",
   "validation-interview": "validation/interviews", "validation-feedback": "validation/feedback", bug: "product/bugs",
   customer: "customers", investor: "investors", "money-account": "money", "raw-source": "raw/sources", triage: "raw/triage",
-  "spend-register": "finance/spend", "lead-plan": "operations/lead",
+  "spend-register": "finance/spend", budget: "finance/budget", "lead-plan": "operations/lead",
+  "fixed-asset": "assets/register", lease: "assets/leases", risk: "legal/risks", obligation: "legal/obligations",
   people: "people", founder: "people/founders", "fund-thesis": "fund/thesis", "fund-terms": "fund/terms", deal: "deals",
   connection: "it/connections",
+  supplier: "supply-chain/suppliers", "purchase-order": "supply-chain/purchase-orders",
+  "service-offer": "service-delivery/offers", engagement: "service-delivery/engagements",
+  opportunity: "sales/opportunities", "support-policy": "support/policy", "support-case": "support/cases",
+  raise: "investor-relations/raises", "stakeholder-update": "investor-relations/updates",
+  process: "capabilities/processes", postmortem: "capabilities/postmortems",
   ...BRAND_ROUTES, // Brand hook: marketing/brand, public/assets, glossary (packages/naive/src/engine/brand.mjs).
 };

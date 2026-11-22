@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "function-module.schema.json",
+  "title": "Function module manifest",
+  "description": "The manifest of one function module, at packages/naive/src/functions/<id>/function.json. A function module is one of the 13 functions in packages/naive/src/functions/departments.json, as a folder: this manifest, the agent's instructions (agent.md), its workflows (workflows/<id>.json), its decision matrix (decisions.json), its skills and templates. What the manifest does not hold is derived, never typed twice: the record types the function owns come from the function field in data-model.json, its lead from the portfolios of the lead role templates, and its agent's write reach from the routes of the packages it owns. packages/naive/src/checks/check-functions.ts checks a module against all of it.",
+  "type": "object",
+  "required": ["id", "purpose", "intake", "measures", "clusters"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z][a-z-]*$", "description": "A departments.json id, the same as the folder's name." },
+    "purpose": { "type": "string", "minLength": 1, "description": "What the function is for, in one plain sentence a founder reads." },
+    "intake": { "type": "string", "pattern": "^[a-z0-9-]+$", "description": "The id of the workflow the function's agent runs first in a venture: it asks the person only what the function's records are missing, most needed first." },
+    "measures": {
+      "type": "array",
+      "description": "The telos measure kinds the function's work moves (foundation/telos measures[].kind), so a lead can weigh it.",
+      "items": { "type": "string", "pattern": "^[a-z_]+$" },
+      "uniqueItems": true
+    },
+    "clusters": {
+      "type": "array",
+      "description": "The capability clusters (packages/naive/src/functions/it/capability-clusters.json ids) whose outside systems the function relies on. Empty when GitHub plus Naive is enough.",
+      "items": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+      "uniqueItems": true
+    },
+    "note": { "type": "string" }
+  }
+}

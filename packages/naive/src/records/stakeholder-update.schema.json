@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "stakeholder-update.schema.json",
+  "title": "Stakeholder update",
+  "description": "One investor or board update for one period, at investor-relations/updates/<id>.json (route investor-relations/updates/[id]), in the common investor update format: a headline, metrics defined the same way every time with their source, highlights, lowlights, at most three asks and runway (APQC PCF 12.1.3 communicate with shareholders, 12.3.1 report results to the board). The external-relationships function owns it, and only its agent (external-relationships-agent) or a person writes it (writer function). The agent drafts; a person approves and sends it, because sending outside on the venture's behalf is a public-commitment decision.",
+  "type": "object",
+  "required": ["id", "period", "audience", "status", "headline", "metrics", "highlights", "lowlights", "asks"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$", "description": "The update's id, the file name without .json, such as 2027-03" },
+    "period": { "type": "string", "pattern": "^[0-9]{4}-(0[1-9]|1[0-2]|Q[1-4])$", "description": "The month (2027-03) or quarter (2027-Q1) it covers" },
+    "audience": { "enum": ["investors", "board", "advisors", "investors-and-board"] },
+    "status": { "enum": ["draft", "approved", "sent"], "description": "draft: written by the agent. approved: a person approved it. sent: a person sent it" },
+    "headline": { "type": "string", "minLength": 1, "description": "The most important change since the last update, in one sentence" },
+    "metrics": {
+      "type": "array",
+      "description": "The same metrics as last period, each with its source record so a reader can check it",
+      "items": {
+        "type": "object",
+        "required": ["name", "value", "source"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "value": { "type": ["number", "string"] },
+          "previous": { "type": ["number", "string", "null"] },
+          "unit": { "type": "string" },
+          "source": { "type": "string", "minLength": 1, "description": "The route or record the figure came from" }
+        }
+      }
+    },
+    "highlights": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "lowlights": { "type": "array", "items": { "type": "string", "minLength": 1 }, "description": "What went wrong or is at risk. Bad news goes here first, before anyone hears it elsewhere" },
+    "asks": { "type": "array", "maxItems": 3, "items": { "type": "string", "minLength": 1 }, "description": "At most three asks, each specific enough to act on in a day" },
+    "runway_months": { "type": ["number", "null"], "minimum": 0, "description": "Months of runway, from the money summary" },
+    "approved_by": { "type": "string", "description": "The person who approved it" },
+    "sent_on": { "type": ["string", "null"], "format": "date" },
+    "note": { "type": "string" }
+  }
+}
