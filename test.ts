@@ -22,6 +22,7 @@ type Result = { ok: boolean, output: string };
 const steps: Step[] = [
   ["schema records are valid (validate.ts)", "node", ["packages/naive/src/records/validate.ts"]],
   ["validate.ts agrees with Python's jsonschema: same verdicts and failing paths on every record and its mutants", "node", ["packages/naive/src/records/validate-test.ts"]],
+  ["RecordValidator and record views: every example record decodes, a broken one fails with the validator lines, an unknown schema cannot run, another registry", "node", ["packages/naive/src/records/record-validator-test.ts"]],
   ["checker tests (with cases that must fail)", "node", ["packages/naive/src/checks/test.ts"]],
   ["ventures: examples", "node", ["packages/naive/src/checks/check-ventures.ts", "packages/naive/src/records/examples/workspace"]],
   ["nouns", "node", ["packages/naive/src/checks/check-nouns.ts"]],
