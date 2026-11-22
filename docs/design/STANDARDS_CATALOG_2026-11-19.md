@@ -7,14 +7,14 @@ ai-model: claude
 authority: advisory
 status: DRAFT
 tags: [naive, terms, standards, ontology, shared-kernel, ee-124]
-description: "The catalog of outside standards: one record per standard under packages/naive/src/terms/standards/, saying what we take from it, its status, which nouns and record types use it and the gaps found in it, checked across files by standards-test.ts (EE-131)."
+description: "The catalog of outside standards: one record per standard under packages/naive/src/terms/standards/, saying what we take from it, its status, which nouns and record types use it and the gaps found in it, checked across files by standards-test.ts (EE-150)."
 ---
 
 # Catalog of outside standards
 
 ## Goal
 
-Torian asked where the citations and the catalog of standards we use are kept, and chose to keep them in Naive now and move them with the shared kernel later (EE-131). The goal is one place that says, for each outside standard, what we take from it, whether we adopted it, map to it, are considering it or rejected it, which of our nouns and record types rest on it, and where it falls short. Those gaps are where our own design goes further.
+Torian asked where the citations and the catalog of standards we use are kept, and chose to keep them in Naive now and move them with the shared kernel later (EE-150). The goal is one place that says, for each outside standard, what we take from it, whether we adopted it, map to it, are considering it or rejected it, which of our nouns and record types rest on it, and where it falls short. Those gaps are where our own design goes further.
 
 ## Two shapes
 

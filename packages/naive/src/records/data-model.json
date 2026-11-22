@@ -967,7 +967,7 @@
       "paths": [
         "packages/naive/src/terms/standards/*.json"
       ],
-      "note": "One outside standard per file (EE-131): what we take from it, its status (adopted, mapped, considered, rejected), the nouns and record types that use it and the gaps found in it. Names, users and status are checked by packages/naive/src/terms/standards-test.ts"
+      "note": "One outside standard per file (EE-150): what we take from it, its status (adopted, mapped, considered, rejected), the nouns and record types that use it and the gaps found in it. Names, users and status are checked by packages/naive/src/terms/standards-test.ts"
     },
     {
       "id": "golden-ruling",
