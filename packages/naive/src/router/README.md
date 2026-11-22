@@ -32,7 +32,7 @@ A write whose record has a `venture` field naming another venture is refused bef
 | [`route-aliases.json`](./route-aliases.json) | Renamed routes and where they went, so old routes keep resolving. |
 | [`router.mjs`](./router.mjs) | The routes' actions, shared by the CLI, the MCP server and the HTTP API (EE-030, EE-032). A record is written as JSON and checked against its schema, except prose a person owns (`writer: "person"` with form prose or markdown, a research program): its input is the whole text as `{ "text": "..." }`, it is kept only in the venture's own folder, meets the venture's gate, lands live, and its provenance line keeps the bytes in the blob store. A research program's id must be a function in `packages/naive/src/functions/departments.json`, and its `template` action returns that function's starter. |
 | [`vitals.mjs`](./vitals.mjs) | Agent vitals (N-6). |
-| [`writes-test.mjs`](./writes-test.mjs) | Tests for the writes group of the Next.js translation (M-3, M-9, M-17, E-5, E-6, E-8, P-3, P-15, P-17, P-22, P-28, P-32, P-36, P-37, L-6, L-9, L-10, O-1, O-2, O-3) on a venture made in a temp folder. |
+| [`writes-test.mjs`](./writes-test.mjs) | Tests for the writes group of the Next.js translation (M-3, M-9, M-17, E-5, E-6, E-8, P-3, P-15, P-17, P-22, P-28, P-32, P-36, P-37, L-6, L-9, L-10, O-1, O-2, O-3) on a venture made in a temp folder. Its framework copy links the repository's `node_modules`, so `effect` (EE-125) resolves there. |
 | [`writes.mjs`](./writes.mjs) | What a write answers, what a layout offers, and the wrapper the router puts around every call (Next.js translation M-3, M-9, M-17; it also wires in packages/naive/src/router/reads.mjs, packages/naive/src/router/boundarie |
 
 ## Run and test
