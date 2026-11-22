@@ -9,6 +9,8 @@ import { Effect } from "effect";
 import { asKind, inSession } from "../core/effect/tracer.ts";
 import { ventureRuntime } from "../core/effect/runtime.ts";
 import { sessions, spans, withSpan } from "../core/instrumentation.ts";
+import { recordProvenance } from "../core/effect/provenance.ts";
+import { entries } from "../core/provenance.ts";
 import { checkVenture } from "./check-traces.ts";
 
 const results: [string, boolean][] = [];
@@ -88,6 +90,25 @@ await test("with traces off nothing is written and the run still answers", async
   await rt.dispose();
   assert.deepEqual(sessions(dir), []);
   rmSync(dir, { recursive: true });
+});
+
+await test("a provenance line written inside an Effect span names it, and none is named with traces off", async () => {
+  for (const on of [true, false]) {
+    const dir = venture(on);
+    writeFileSync(join(dir, "a.json"), "{}");
+    const rt = ventureRuntime(dir);
+    await rt.runPromise(recordProvenance(dir, { entity: "a.json", activity: "write", agent: { kind: "agent", via: "cli" } }).pipe(Effect.withSpan("write a", { attributes: inSession("s5") })));
+    await rt.dispose();
+    const [line] = entries(dir);
+    if (on) {
+      const [s] = spans(dir, "s5");
+      assert.equal(line.span?.span_id, s.span_id);
+      assert.equal(line.span?.session, "s5");
+    } else assert.equal(line.span, undefined);
+    const report = checkVenture(dir);
+    assert.deepEqual(report.errors, []);
+    rmSync(dir, { recursive: true });
+  }
 });
 
 for (const [name, ok] of results) console.log(`${ok ? "pass" : "FAIL"}  ${name}`);
