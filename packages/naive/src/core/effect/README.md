@@ -37,9 +37,9 @@ flowchart LR
 
 ## How it connects
 
-- Called by: the modules moved to Effect.
+- Called by: the modules moved to Effect: so far the checks `check-functions.ts`, `check-connections.ts`, `check-seams.ts` and `check-detectors.ts` in [`checks/`](../../checks/README.md).
 - Calls: `effect` and Node built-ins only.
 
 ## Not built
 
-- No existing unit is written in Effect yet; each moves in its own pull request.
+- The router, the store, the engine and the rest of the checks are not written in Effect yet; each unit moves in its own pull request.
