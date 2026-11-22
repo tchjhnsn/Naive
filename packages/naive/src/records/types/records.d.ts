@@ -2056,6 +2056,101 @@ export type FundThesis = {
   why_now?: string;
 };
 
+/** How a venture's phase gate thresholds follow from its market and industry (EE-157): rules as data, each with an id, the anatomy cells it reads (market.<cell> or industry.<cell>), a plain reason and the mark that its numbers are unvalidated priors. Read by packages/naive/src/engine/gate-calibration.ts against the presets in packages/naive/src/phases/gate-policies.json. */
+export type GateCalibration = {
+  version: string;
+  note?: string;
+  prior: GateCalibrationPrior;
+  count_levels: {
+    id: GateCalibrationId;
+    reads: GateCalibrationReads;
+    prior: GateCalibrationPrior;
+    /** The share of reachable buyers that moderate asks for, before clamping */
+    share: number;
+    moderate_min: number;
+    moderate_max: number;
+    high_factor: number;
+    low: number;
+    default: GateCalibrationCountLevels;
+    /** Customer types that keep the default counts */
+    keep_default_for: string[];
+    reason: string;
+  };
+  staleness: {
+    default_months: number;
+    prior: GateCalibrationPrior;
+  };
+  rules: {
+    id: GateCalibrationId;
+    reads: GateCalibrationReads;
+    /** The rule fires when any condition is met */
+    when: GateCalibrationCondition[];
+    raise?: {
+      items: GateCalibrationItems;
+      levels: number;
+      boundary?: GateCalibrationBoundary;
+    };
+    floor?: {
+      items: GateCalibrationItems;
+      min?: GateCalibrationLevel;
+      boundary?: GateCalibrationBoundary;
+    };
+    staleness_months?: number;
+    notes?: string[];
+    prior: GateCalibrationPrior;
+    reason: string;
+  }[];
+  override: {
+    id: GateCalibrationId;
+    reads: GateCalibrationReads;
+    reason_required: boolean;
+    second_person_when: GateCalibrationCondition[];
+    prior: GateCalibrationPrior;
+    reason: string;
+  };
+  problem_confirmation: {
+    id: GateCalibrationId;
+    reads: GateCalibrationReads;
+    business: string;
+    consumer: string;
+    unknown: string;
+    business_types: string[];
+    consumer_types: string[];
+    prior: GateCalibrationPrior;
+    reason: string;
+  };
+};
+
+export type GateCalibrationLevel = "very low" | "low" | "moderate" | "high";
+
+export type GateCalibrationBoundary = "fail-open" | "fail-closed";
+
+export type GateCalibrationId = string;
+
+export type GateCalibrationCell = string;
+
+/** Every threshold is an unvalidated prior until evidence calibrates it */
+export type GateCalibrationPrior = "unvalidated";
+
+export type GateCalibrationReads = GateCalibrationCell[];
+
+/** Gate item ids, as in gate-policies.json */
+export type GateCalibrationItems = GateCalibrationId[];
+
+/** Met when the cell is valid and its value is one of in, or above gt, or at least gte */
+export type GateCalibrationCondition = {
+  cell: GateCalibrationCell;
+  in?: string[];
+  gt?: number;
+  gte?: number;
+};
+
+export type GateCalibrationCountLevels = {
+  low: number;
+  moderate: number;
+  high: number;
+};
+
 /** A package's own terms, at glossary/<package>.json (Y-2, the scoping idea of CSS Modules): each term stays local to the package unless export is true, so an agent working in another package sees only exported terms. Two packages exporting one term with different meanings fail packages/naive/src/checks/check-brand.mjs. Version 0.x, unevaluated. */
 export type Glossary = {
   /** The package whose terms these are; the file is glossary/<package>.json */
@@ -2830,7 +2925,7 @@ export type ListenerOperand = string | number | boolean | null | (string | numbe
   ids: string;
 };
 
-/** One market a venture sells into, described on standard dimensions so that what counts as enough evidence can be derived from it rather than fixed (EE-157). Each cell holds a value with its status (known, estimated or unknown, and unknown is never null), its cited evidence graded like any validation evidence, and when it was true (valid_from, valid_to). The calibration in packages/naive/src/engine/gate-calibration.mjs reads it to propose the venture's phase gate thresholds. */
+/** One market a venture sells into, described on standard dimensions so that what counts as enough evidence can be derived from it rather than fixed (EE-157). Each cell holds a value with its status (known, estimated or unknown, and unknown is never null), its cited evidence graded like any validation evidence, and when it was true (valid_from, valid_to). The calibration in packages/naive/src/engine/gate-calibration.ts reads it to propose the venture's phase gate thresholds. */
 export type MarketAnatomy = {
   venture: string;
   id: string;
@@ -3327,6 +3422,14 @@ export type NaiveConfig = {
     preset?: "lenient" | "standard" | "strict";
     /** When true, each fail-closed shortfall blocks lifecycle advance unless a person overrides it with a reason */
     enforce?: boolean;
+    /** The minimum count of consenting interviews that reaches each level, in place of count_levels in packages/naive/src/phases/gate-policies.json (5 for moderate, 10 for high). packages/naive/src/engine/gate-calibration.ts proposes them from the venture's market (EE-157) */
+    count_levels?: {
+      low?: number;
+      moderate?: number;
+      high?: number;
+    };
+    /** Evidence collected more than this many months ago drops one level when the gate grades it; default 18. packages/naive/src/engine/gate-calibration.ts proposes 9 for a fast industry or an emerging market (EE-157) */
+    staleness_months?: number;
     /** Per phase, per gate item: the minimum evidence level and the boundary */
     items?: {
       [key: string]: {

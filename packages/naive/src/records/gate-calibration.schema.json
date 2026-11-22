@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "gate-calibration.schema.json",
+  "title": "Phase gate calibration rules",
+  "description": "How a venture's phase gate thresholds follow from its market and industry (EE-157): rules as data, each with an id, the anatomy cells it reads (market.<cell> or industry.<cell>), a plain reason and the mark that its numbers are unvalidated priors. Read by packages/naive/src/engine/gate-calibration.ts against the presets in packages/naive/src/phases/gate-policies.json.",
+  "type": "object",
+  "required": ["version", "prior", "count_levels", "staleness", "rules", "override", "problem_confirmation"],
+  "additionalProperties": false,
+  "$defs": {
+    "level": { "enum": ["very low", "low", "moderate", "high"] },
+    "boundary": { "enum": ["fail-open", "fail-closed"] },
+    "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+    "cell": { "type": "string", "pattern": "^(market|industry)\\.[a-z][a-z0-9_]*$" },
+    "prior": { "const": "unvalidated", "description": "Every threshold is an unvalidated prior until evidence calibrates it" },
+    "reads": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/cell" } },
+    "items": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/id" }, "description": "Gate item ids, as in gate-policies.json" },
+    "condition": {
+      "type": "object",
+      "required": ["cell"],
+      "additionalProperties": false,
+      "description": "Met when the cell is valid and its value is one of in, or above gt, or at least gte",
+      "properties": {
+        "cell": { "$ref": "#/$defs/cell" },
+        "in": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+        "gt": { "type": "number" },
+        "gte": { "type": "number" }
+      }
+    },
+    "countLevels": {
+      "type": "object",
+      "required": ["low", "moderate", "high"],
+      "additionalProperties": false,
+      "properties": { "low": { "type": "integer", "minimum": 1 }, "moderate": { "type": "integer", "minimum": 1 }, "high": { "type": "integer", "minimum": 1 } }
+    }
+  },
+  "properties": {
+    "version": { "type": "string" },
+    "note": { "type": "string" },
+    "prior": { "$ref": "#/$defs/prior" },
+    "count_levels": {
+      "type": "object",
+      "required": ["id", "reads", "prior", "share", "moderate_min", "moderate_max", "high_factor", "low", "default", "keep_default_for", "reason"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "reads": { "$ref": "#/$defs/reads" },
+        "prior": { "$ref": "#/$defs/prior" },
+        "share": { "type": "number", "exclusiveMinimum": 0, "maximum": 1, "description": "The share of reachable buyers that moderate asks for, before clamping" },
+        "moderate_min": { "type": "integer", "minimum": 1 },
+        "moderate_max": { "type": "integer", "minimum": 1 },
+        "high_factor": { "type": "number", "minimum": 1 },
+        "low": { "type": "integer", "minimum": 1 },
+        "default": { "$ref": "#/$defs/countLevels" },
+        "keep_default_for": { "type": "array", "items": { "type": "string" }, "description": "Customer types that keep the default counts" },
+        "reason": { "type": "string" }
+      }
+    },
+    "staleness": {
+      "type": "object",
+      "required": ["default_months", "prior"],
+      "additionalProperties": false,
+      "properties": { "default_months": { "type": "number", "exclusiveMinimum": 0 }, "prior": { "$ref": "#/$defs/prior" } }
+    },
+    "rules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "reads", "when", "prior", "reason"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "$ref": "#/$defs/id" },
+          "reads": { "$ref": "#/$defs/reads" },
+          "when": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/condition" }, "description": "The rule fires when any condition is met" },
+          "raise": {
+            "type": "object",
+            "required": ["items", "levels"],
+            "additionalProperties": false,
+            "properties": { "items": { "$ref": "#/$defs/items" }, "levels": { "type": "integer", "minimum": 1 }, "boundary": { "$ref": "#/$defs/boundary" } }
+          },
+          "floor": {
+            "type": "object",
+            "required": ["items"],
+            "additionalProperties": false,
+            "properties": { "items": { "$ref": "#/$defs/items" }, "min": { "$ref": "#/$defs/level" }, "boundary": { "$ref": "#/$defs/boundary" } }
+          },
+          "staleness_months": { "type": "number", "exclusiveMinimum": 0 },
+          "notes": { "type": "array", "items": { "type": "string" } },
+          "prior": { "$ref": "#/$defs/prior" },
+          "reason": { "type": "string" }
+        }
+      }
+    },
+    "override": {
+      "type": "object",
+      "required": ["id", "reads", "reason_required", "second_person_when", "prior", "reason"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "reads": { "$ref": "#/$defs/reads" },
+        "reason_required": { "type": "boolean" },
+        "second_person_when": { "type": "array", "items": { "$ref": "#/$defs/condition" } },
+        "prior": { "$ref": "#/$defs/prior" },
+        "reason": { "type": "string" }
+      }
+    },
+    "problem_confirmation": {
+      "type": "object",
+      "required": ["id", "reads", "business", "consumer", "unknown", "business_types", "consumer_types", "prior", "reason"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "reads": { "$ref": "#/$defs/reads" },
+        "business": { "type": "string" },
+        "consumer": { "type": "string" },
+        "unknown": { "type": "string" },
+        "business_types": { "type": "array", "items": { "type": "string" } },
+        "consumer_types": { "type": "array", "items": { "type": "string" } },
+        "prior": { "$ref": "#/$defs/prior" },
+        "reason": { "type": "string" }
+      }
+    }
+  }
+}

@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "market-anatomy.schema.json",
   "title": "Market anatomy matrix",
-  "description": "One market a venture sells into, described on standard dimensions so that what counts as enough evidence can be derived from it rather than fixed (EE-157). Each cell holds a value with its status (known, estimated or unknown, and unknown is never null), its cited evidence graded like any validation evidence, and when it was true (valid_from, valid_to). The calibration in packages/naive/src/engine/gate-calibration.mjs reads it to propose the venture's phase gate thresholds.",
+  "description": "One market a venture sells into, described on standard dimensions so that what counts as enough evidence can be derived from it rather than fixed (EE-157). Each cell holds a value with its status (known, estimated or unknown, and unknown is never null), its cited evidence graded like any validation evidence, and when it was true (valid_from, valid_to). The calibration in packages/naive/src/engine/gate-calibration.ts reads it to propose the venture's phase gate thresholds.",
   "type": "object",
   "required": [
     "venture",
