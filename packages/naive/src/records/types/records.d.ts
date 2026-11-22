@@ -3206,6 +3206,22 @@ export type NaiveConfig = {
       };
     };
   };
+  /** How strict each phase gate is (EE-156, packages/naive/src/engine/phase-gate.mjs, route system/phase-gate): a preset from packages/naive/src/phases/gate-policies.json, per-item overrides, and whether lifecycle advance refuses a fail-closed shortfall. Without enforce the gate is reported only. */
+  phase_gates?: {
+    /** The policy preset; default standard */
+    preset?: "lenient" | "standard" | "strict";
+    /** When true, each fail-closed shortfall blocks lifecycle advance unless a person overrides it with a reason */
+    enforce?: boolean;
+    /** Per phase, per gate item: the minimum evidence level and the boundary */
+    items?: {
+      [key: string]: {
+        [key: string]: {
+          min?: "very low" | "low" | "moderate" | "high";
+          boundary?: "fail-open" | "fail-closed";
+        };
+      };
+    };
+  };
 };
 
 export type NaiveConfigRule = {
@@ -5714,6 +5730,31 @@ export type ValidationOperationsReadiness = {
     scored: string;
     note?: string;
   };
+};
+
+/** The assumptions a venture has not yet demonstrated, each with the test that would settle it, the result that counts as passing and a date (EE-156). The discovery gate's validation-plan item reads it: every gate item below high must be named by an assumption. */
+export type ValidationPlan = {
+  venture: string;
+  /**
+   * @format date
+   */
+  updated?: string;
+  assumptions: {
+    id: string;
+    /** What must be true, stated so a test can show it false */
+    statement: string;
+    /** The gate item it bears on, such as problem or economic-signal */
+    item: string;
+    /** How it will be tested */
+    test: string;
+    /** The result that counts as passing, decided before the test */
+    pass: string;
+    /**
+     * @format date
+     */
+    by: string;
+    status?: "open" | "passed" | "failed" | "dropped";
+  }[];
 };
 
 /** The pricing sub-score (EE-026), at <venture>/purpose/validation/pricing.json: the price model and points, who pays, and cited evidence that the buyer pays it. */

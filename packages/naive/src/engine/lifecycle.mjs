@@ -16,6 +16,10 @@
 // lifecycle_playbook; packages/naive/src/functions/products/frameworks/product-anatomy/playbooks/). With none named, product-first is
 // read and its evidence is reported only, so a venture that never chose keeps today's behavior. A venture
 // that names a playbook cannot pass a gate until a met exit criterion supplies each piece of its evidence.
+//
+// Gate strength (EE-156): lifecycle() also reports the phase gate's items on their evidence ladders
+// (packages/naive/src/engine/phase-gate.mjs) as phase_gate. With naive.config.json phase_gates.enforce true, each
+// fail-closed shortfall joins blocking, so advance refuses without --override; otherwise it is reported only.
 
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -29,6 +33,7 @@ import { exitCriteria } from "./canonical.mjs";
 import { validateFile } from "../records/validate.mjs";
 import { runSync } from "../core/effect/run.mjs";
 import { loadPhases } from "../phases/phases.mjs";
+import { meter, phaseGate } from "./phase-gate.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "../../../..");
 const load = (f) => JSON.parse(readFileSync(f, "utf8"));
@@ -40,8 +45,12 @@ export const playbookOf = (id) => playbooks().find((p) => p.id === id) ?? null;
 // Exit criteria are canonical records (foundation/exit-criteria/<phase>.json), read through packages/naive/src/engine/canonical.mjs;
 // a venture not yet migrated by telos-to-goals falls back to its telos's phases.
 
-/** Where the venture is in the lifecycle and what stands between it and the next phase. */
-export function lifecycle(dir) {
+/**
+ * Where the venture is in the lifecycle and what stands between it and the next phase.
+ * @param {string} dir
+ * @param {{ decidedBy?: string | null }} [opts] the person deciding the phase change, for the gate's authority item
+ */
+export function lifecycle(dir, { decidedBy } = {}) {
   const v = load(join(dir, "venture.json"));
   const i = PHASES.findIndex((p) => p.id === v.phase);
   const ec = exitCriteria(dir, v.phase);
@@ -62,6 +71,8 @@ export function lifecycle(dir) {
     ...(!pb && chosen ? [`no lifecycle playbook ${v.lifecycle_playbook}`] : []),
     ...missing.map((e) => `the ${pb.id} playbook clears ${v.phase} on ${e.statement}; no met exit criterion supplies it`),
   ];
+  const gate = phaseGate(dir, { decidedBy });
+  if (gate.enforce) blocking.push(...gate.blocking.map((b) => `gate strength: ${b}`));
   const cur = PHASES[i] ? { ...PHASES[i], gate: ph?.gate ?? PHASES[i].gate } : null;
   return {
     venture: v.id, phase: v.phase, step: i + 1, of: PHASES.length,
@@ -71,6 +82,7 @@ export function lifecycle(dir) {
     source: ec.source, file: ec.file,
     telos: ec.source === "telos" ? ec.file : null,
     exit_criteria: criteria,
+    phase_gate: gate,
     ready: criteria.length > 0 && blocking.length === 0,
     blocking,
   };
@@ -115,7 +127,7 @@ export function meet(dir, id, { evidence, by } = {}) {
 export function advance(dir, to, { reason, override, by, now } = {}) {
   const agent = by ?? agentFromEnv("person", "cli");
   if (agent.kind !== "person") return { ok: false, error: "a phase change is a person's decision; an agent can suggest it, never make it" };
-  const l = lifecycle(dir);
+  const l = lifecycle(dir, { decidedBy: agent.id ?? "person" });
   const from = PHASES.findIndex((p) => p.id === l.phase), target = PHASES.findIndex((p) => p.id === to);
   if (target < 0) return { ok: false, error: `${to} is not a phase (${PHASES.map((p) => p.id).join(", ")})` };
   if (target === from) return { ok: false, error: `${l.venture} is already in ${to}` };
@@ -124,7 +136,7 @@ export function advance(dir, to, { reason, override, by, now } = {}) {
   if (target > from && !l.ready && !override) return { ok: false, error: `the ${l.current.gate} gate is not passed: ${l.blocking.join("; ")}. Meet them with naive phase --meet <id>, or pass --override "<why>"`, result: l };
   const why = [reason, override && `gate overridden: ${override}`].filter(Boolean).join("; ");
   const r = changePhase(dir, to, { reason: why || `${l.current.gate} passed`, by: agent, now });
-  if (r.ok) r.result.gate = { phase: l.phase, gate: l.current.gate, passed: l.ready, overridden: override ?? null };
+  if (r.ok) r.result.gate = { phase: l.phase, gate: l.current.gate, passed: l.ready, overridden: override ?? null, strength: l.phase_gate.strictness ? { preset: l.phase_gate.preset, enforced: l.phase_gate.enforce, ready: l.phase_gate.ready, passed: l.phase_gate.passed, risks: l.phase_gate.risks } : null };
   return r;
 }
 
@@ -134,6 +146,8 @@ const text = (l) => [
   l.current ? `  Gate: ${l.current.gate}${l.playbook ? ` (${l.playbook.id} playbook${l.playbook.chosen ? "" : ", the default"})` : ""}` : "",
   ...l.gate_evidence.map((e) => `  ${e.met ? "✓" : "○"} evidence ${e.id}: ${e.statement}${e.met ? `  (from ${e.met_by.join(", ")})` : ""}`),
   ...(l.exit_criteria.length ? l.exit_criteria.map((c) => `  ${c.met ? "✓" : "○"} ${c.id}: ${c.statement}${c.met ? `  (met ${c.met.at.slice(0, 10)} by ${c.met.by})` : ""}`) : [`  ○ ${l.blocking[0]}`]),
+  ...(l.phase_gate?.strictness ? [`  Gate strength (${l.phase_gate.preset} policy, ${l.phase_gate.enforce ? "enforced" : "reported only"}):`,
+    ...l.phase_gate.items.map((r) => `    ${r.passed ? "✓" : "○"} ${meter(r.level)} ${r.label}: ${r.level} / needs ${r.min}, ${r.boundary}`)] : []),
   l.next ? `Next: ${l.next.name}, ${l.next.question}${l.ready ? "  Ready: naive phase " + l.next.id : ""}` : "This is the last phase.",
 ].filter(Boolean).join("\n");
 

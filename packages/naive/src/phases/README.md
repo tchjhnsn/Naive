@@ -24,6 +24,7 @@ flowchart LR
 | Path | Holds |
 |---|---|
 | [`phases.mjs`](./phases.mjs) | The loader, in Effect (EE-125) through `VentureFs`: `loadPhase(id)` and `loadPhases()` (in lifecycle order) check each file's shape (the whole of `packages/naive/src/records/phase-module.schema.json` is the check's job) and fail with `NotFound` or `SchemaInvalid`; `phaseWeights(phase)` gives each function's weight; `phaseGateRecords(phase)` gives the record types its gate asks for as exit evidence, in the gate's order, which the decision queue raises (EE-155); `phasePriors(phase)` derives the phase's need-now priors for record types and functions. Callers that are not Effect run them with `runSync`. |
+| [`gate-policies.json`](./gate-policies.json) | How strict each phase gate is (EE-156): per gate item, what proves it, how its strength is measured (grade, count, coverage, authority) and the fields it requires, plus the presets lenient, standard and strict, each giving every item a minimum level and a boundary (fail-closed or fail-open). Only discovery has items so far. Read by [`phase-gate.mjs`](../engine/phase-gate.mjs). |
 | [`discovery/phase.json`](./discovery/phase.json) | Problem-solution fit. |
 | [`validation/phase.json`](./validation/phase.json) | Product-market fit: retention holds. |
 | [`beachhead/phase.json`](./beachhead/phase.json) | Repeatability. |

@@ -109,6 +109,7 @@ const steps = [
   ["decision index: open-decision impact, phase weight and requirements, updates equal to a rebuild, rank history", "node", ["packages/naive/src/interfaces/tests/decision-index-test.mjs"]],
   ["decision queue: owning function, per-function index, cross-function score by phase weight and bound measures, themes, the queue in the index (EE-127)", "node", ["packages/naive/src/engine/decision-queue-test.ts"]],
   ["lean canvas: the shared kernel, owners from the data model, the gate-first roadmap, unlocks, each box at its own route (EE-155)", "node", ["packages/naive/src/engine/lean-canvas-test.ts"]],
+  ["gate strength: evidence ladders per gate item, policies and presets, enforcement in the lifecycle, the CLI and the route (EE-156)", "node", ["packages/naive/src/engine/phase-gate-test.ts"]],
   ["decision impact: a merge maps what depends on it across functions, marks it stale, proposes follow-ups", "node", ["packages/naive/src/engine/decision-impact-test.mjs"]],
   ["decision reasons: cited reasons frozen at approval; a changed citation makes the decision stale", "node", ["packages/naive/src/interfaces/tests/decision-reasons-test.mjs"]],
   ["publication: examples", "node", ["packages/naive/src/checks/check-publication.mjs", "packages/naive/src/records/examples/workspace"]],

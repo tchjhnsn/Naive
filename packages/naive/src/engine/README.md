@@ -147,6 +147,18 @@ flowchart LR
 
 [`lean-canvas.mjs`](./lean-canvas.mjs) resolves the Lean Canvas, the venture's shared kernel (EE-155), from [`../functions/strategy/lean-canvas.json`](../functions/strategy/lean-canvas.json): nine boxes, each a reference to a record attribute (read through `statement` in [`foundation.mjs`](./foundation.mjs), so it copies nothing), its owner (the function the data model gives its record type), its status and value, the files it points at, and what filling it unlocks (the phase gate that asks for its record, the function workflows that read it, the record types whose refs point at it). The roadmap puts the current gate's evidence first, in the gate's order, then the next gate's, then the rest. Route `identity/lean-canvas` gives the whole canvas and `identity/lean-canvas/<box>` one box. The decision queue raises a decision that settles a record the phase's gate asks for (`GATE_LIFT`, 2) and breaks equal scores in the gate's order. `node packages/naive/src/engine/lean-canvas-test.ts` tests it. Not built: a view that draws the canvas, and writing a box from the canvas (a box is written at its record's own route).
 
+[`phase-gate.mjs`](./phase-gate.mjs) measures gate strength (EE-156): each item of the current phase gate, from [`../phases/gate-policies.json`](../phases/gate-policies.json), on an evidence ladder (very low, low, moderate, high) the way a password meter has one, against the minimum and boundary the venture's policy sets. A fail-closed item below its minimum refuses the phase change; a fail-open one passes and is reported as an open risk. The measures: `grade` is the record's evidence grade from [`evidence-grade.mjs`](./evidence-grade.mjs) (adapted from GRADE, so desk research from three independent sources reaches moderate); `count` is the higher of the level its consenting interviews reach (`count_levels`) and the record's own grade; `coverage` is the share of the other items below high that an open or passed assumption in `validation/plan.json` names; `authority` is high only when a person decides. A missing record or an empty required field is very low. The policy is a preset (lenient, standard by default, strict) from `phase_gates.preset` in `naive.config.json`, with per-item overrides under `phase_gates.items`; `strictness` scores a policy from 0 to 100 and names the nearest preset. Each item carries a `next` hint: how many more interviews, what evidence reaches the next level, which items still need an assumption, or which fields are empty. Scoring is pure (`levelFromCount`, `itemStrength`, `policyFor`, `strictness`, `scoreItems`); reading the venture is `phaseGateEffect` over `VentureFs`, and `phaseGate` runs it. `node packages/naive/src/engine/phase-gate.mjs <venture dir> [--preset <name>] [--json]` prints a meter per item (route `system/phase-gate`). [`lifecycle.mjs`](./lifecycle.mjs) reports it as `phase_gate`, and with `phase_gates.enforce` true each fail-closed shortfall joins `blocking`, so `advance` refuses without `--override`; `advance` passes the acting person as the decision. `node packages/naive/src/engine/phase-gate-test.ts` tests it. Not built: gate policies for the phases after discovery (they report no policy and never block).
+
+```mermaid
+flowchart LR
+  GP["phases/gate-policies.json<br/>items, presets"] --> PG["phase-gate.mjs"]
+  CFG["naive.config.json<br/>phase_gates"] --> PG
+  REC["venture records<br/>icp, validation/*, interviews, plan"] --> PG
+  EG["evidence-grade.mjs"] --> PG
+  PG -->|phase_gate, blocking when enforced| LC["lifecycle.mjs advance"]
+  PG --> RT["route system/phase-gate"]
+```
+
 ## Agents
 
 The function and lead agent specs live in [`agents/`](./agents/README.md) (EE-124).
