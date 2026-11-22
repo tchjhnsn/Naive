@@ -66,6 +66,7 @@ t("the venture's package.json has the four scripts and the framework", () => {
   const p = load(join(v, "package.json"));
   ok(["dev", "build", "start", "check"].every((s) => p.scripts[s] === `naive ${s}`));
   ok(p.devDependencies["naive-framework"]);
+  ok(p.engines?.node === ">=22.19.0", "the venture declares the framework's Node floor (EE-158)");
 });
 
 t("the idea dump is saved verbatim as raw/dump.md and recorded in provenance", () => {
