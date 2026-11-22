@@ -31,28 +31,29 @@ import { ROOT } from "../phases/phases.mjs";
 import { readDataModel, venturePaths } from "../records/index.ts";
 import { gradeRecord, LEVELS } from "./evidence-grade.ts";
 import { CONFIG } from "./naive-config.ts";
+import type { NaiveConfig, PhaseGatePolicies, PhaseGatePoliciesLevel } from "../records/types/records.d.ts";
 
-/**
- * @typedef {"very low" | "low" | "moderate" | "high"} Level
- * @typedef {"fail-open" | "fail-closed"} Boundary
- * @typedef {{ kind: "grade" | "count" | "coverage" | "authority", of?: string }} Measure
- * @typedef {{ id: string, label: string, ask?: string, record: string | null, measure: Measure, requires: string[] }} GateItem
- * @typedef {{ min: Level, boundary: Boundary }} ItemPolicy
- * @typedef {{ items: GateItem[], presets: Record<string, Record<string, ItemPolicy>> }} PhasePolicies
- * @typedef {{ version: string, levels: Level[], count_levels: Record<string, number>, phases: Record<string, PhasePolicies> }} Policies
- * @typedef {{ preset: string, items: Record<string, ItemPolicy & { overridden?: boolean }> }} Policy
- * @typedef {{ phase_gates?: { preset?: string, enforce?: boolean, count_levels?: Record<string, number>, staleness_months?: number, items?: Record<string, Record<string, Partial<ItemPolicy>>> } }} GateConfig
- * @typedef {{ file: string, value: Record<string, unknown> | null }} Found
- * @typedef {{ id?: string, icp?: string, consent?: { given?: boolean }, current_solutions?: unknown[] }} Interview
- * @typedef {{ id?: string, primary?: boolean }} Icp
- * @typedef {{
- *   records: Record<string, Found>, interviews: Interview[], icps: Icp[], countLevels: Record<string, number>,
- *   decidedBy?: string | null, levels?: Record<string, Level>, items?: GateItem[], today?: Date, staleMonths?: number,
- * }} GateContext
- * @typedef {{ level: Level, missing: string[], why: string[], next: string | null, pending?: boolean, count?: number }} Strength
- * @typedef {{ id: string, label: string, record: string | null, file: string | null, level: Level, min: Level, boundary: Boundary, passed: boolean, missing: string[], why: string[], next: string | null }} GateRow
- * @typedef {{ preset?: string, phase?: string, decidedBy?: string | null, root?: string, today?: Date }} GateOpts
- */
+export type Level = PhaseGatePoliciesLevel;
+export type Boundary = "fail-open" | "fail-closed";
+export type Policies = PhaseGatePolicies;
+export type PhasePolicies = Policies["phases"][string];
+/** One gate item. The gate never reads `ask`, so a caller may leave it out. */
+export type GateItem = Omit<PhasePolicies["items"][number], "ask"> & { ask?: string };
+export type Measure = GateItem["measure"];
+export type ItemPolicy = { min: Level, boundary: Boundary };
+export type Policy = { preset: string, items: Record<string, ItemPolicy & { overridden?: boolean }> };
+export type GateConfig = Pick<NaiveConfig, "phase_gates">;
+export type Found = { file: string, value: Record<string, unknown> | null };
+/** What the gate reads of an interview file, which it does not validate. */
+export type Interview = { id?: string, icp?: string, consent?: { given?: boolean }, current_solutions?: unknown[] };
+export type Icp = { id?: string, primary?: boolean };
+export type GateContext = {
+  records: Record<string, Found>, interviews: Interview[], icps: Icp[], countLevels: Record<string, number>,
+  decidedBy?: string | null, levels?: Record<string, Level>, items?: GateItem[], today?: Date, staleMonths?: number,
+};
+export type Strength = { level: Level, missing: string[], why: string[], next: string | null, pending?: boolean, count?: number };
+export type GateRow = { id: string, label: string, record: string | null, file: string | null, level: Level, min: Level, boundary: Boundary, passed: boolean, missing: string[], why: string[], next: string | null };
+export type GateOpts = { preset?: string, phase?: string, decidedBy?: string | null, root?: string, today?: Date };
 
 /** The policy file. */
 export const POLICIES = "packages/naive/src/phases/gate-policies.json";
@@ -63,21 +64,13 @@ const PLAN_FALLBACK = "validation/plan.json";
 /** How much a fail-open item counts toward strictness against a fail-closed one. */
 export const OPEN_WEIGHT = 0.25;
 
-/** @param {string} l */
-const rank = (l) => LEVELS.indexOf(l);
-/** @param {number} i @returns {Level} */
-const at = (i) => /** @type {Level} */ (LEVELS[Math.max(0, Math.min(LEVELS.length - 1, i))]);
-/** @param {unknown} v */
-const empty = (v) => v == null || v === "" || (Array.isArray(v) && v.length === 0) || (typeof v === "object" && !Array.isArray(v) && Object.keys(/** @type {object} */ (v)).length === 0);
+const rank = (l: string) => LEVELS.indexOf(l);
+const at = (i: number): Level => LEVELS[Math.max(0, Math.min(LEVELS.length - 1, i))] as Level;
+const empty = (v: unknown) => v == null || v === "" || (Array.isArray(v) && v.length === 0) || (typeof v === "object" && !Array.isArray(v) && Object.keys(v as object).length === 0);
 
-/**
- * The level a count of interviews reaches, by the minimum counts in count_levels.
- * @param {number} n
- * @param {Record<string, number>} countLevels
- * @returns {Level}
- */
-export function levelFromCount(n, countLevels) {
-  for (const l of ["high", "moderate", "low"]) if (typeof countLevels[l] === "number" && n >= countLevels[l]) return /** @type {Level} */ (l);
+/** The level a count of interviews reaches, by the minimum counts in count_levels. */
+export function levelFromCount(n: number, countLevels: Record<string, number>): Level {
+  for (const l of ["high", "moderate", "low"]) if (typeof countLevels[l] === "number" && n >= countLevels[l]) return l as Level;
   return "very low";
 }
 
@@ -88,12 +81,8 @@ export const GRADE_NEXT = Object.freeze({
   high: "add behavior from the target audience with a sample of 5 or more (what they paid, used or switched)",
 });
 
-/**
- * Which interviews count for a count measure: consenting ones, filtered by what the measure counts.
- * @param {string | undefined} of
- * @param {GateContext} ctx
- */
-export function countedInterviews(of, ctx) {
+/** Which interviews count for a count measure: consenting ones, filtered by what the measure counts. */
+export function countedInterviews(of: string | undefined, ctx: GateContext) {
   const consenting = ctx.interviews.filter((i) => i.consent?.given === true);
   if (of === "interviews-with-primary-icp") {
     const ids = ctx.icps.filter((p) => p.primary === true).map((p) => p.id);
@@ -104,18 +93,14 @@ export function countedInterviews(of, ctx) {
   return consenting;
 }
 
-/** @param {string | undefined} of */
-const countNoun = (of) => of === "interviews-with-primary-icp" ? "consenting interviews with someone who fits the primary ICP"
+const countNoun = (of: string | undefined) => of === "interviews-with-primary-icp" ? "consenting interviews with someone who fits the primary ICP"
   : of === "interviews-with-current-solutions" ? "consenting interviews that record how the person copes today (current_solutions)" : "consenting interviews";
 
 /**
  * The strength of one gate item. Pure: ctx holds the records already read. For a coverage item, ctx.levels holds the
  * other items' levels and ctx.items the phase's items.
- * @param {GateItem} item
- * @param {GateContext} ctx
- * @returns {Strength}
  */
-export function itemStrength(item, ctx) {
+export function itemStrength(item: GateItem, ctx: GateContext): Strength {
   const kind = item.measure.kind;
   if (kind === "authority") {
     const who = typeof ctx.decidedBy === "string" && ctx.decidedBy.trim() ? ctx.decidedBy.trim() : null;
@@ -131,25 +116,25 @@ export function itemStrength(item, ctx) {
 
   if (kind === "grade") {
     const g = gradeRecord(rec, ctx.today ?? new Date(), ctx.staleMonths);
-    const level = /** @type {Level} */ (g.level);
-    const up = rank(level) < 3 ? /** @type {"low" | "moderate" | "high"} */ (at(rank(level) + 1)) : null;
+    const level = g.level as Level;
+    const up = rank(level) < 3 ? (at(rank(level) + 1) as "low" | "moderate" | "high") : null;
     return { level, missing: [], why: [`evidence grades ${level}`, ...g.why], next: up ? `${up}: ${GRADE_NEXT[up]}` : null };
   }
 
   if (kind === "count") {
     const n = countedInterviews(item.measure.of, ctx).length;
     const byCount = levelFromCount(n, ctx.countLevels);
-    const g = /** @type {Level} */ (gradeRecord(rec, ctx.today ?? new Date(), ctx.staleMonths).level);
+    const g = gradeRecord(rec, ctx.today ?? new Date(), ctx.staleMonths).level as Level;
     const level = rank(g) > rank(byCount) ? g : byCount;
     const why = [`${n} ${countNoun(item.measure.of)} (${byCount})`, ...(rank(g) > rank(byCount) ? [`the record's own evidence grades ${g}`] : [])];
     if (rank(level) >= 3) return { level, missing: [], why, next: null, count: n };
     const up = at(rank(level) + 1);
     const need = Math.max(1, (ctx.countLevels[up] ?? 0) - n);
-    return { level, missing: [], why, count: n, next: `${up}: ${need} more ${countNoun(item.measure.of)}, or ${GRADE_NEXT[/** @type {"low" | "moderate" | "high"} */ (up)]} on the record` };
+    return { level, missing: [], why, count: n, next: `${up}: ${need} more ${countNoun(item.measure.of)}, or ${GRADE_NEXT[up as "low" | "moderate" | "high"]} on the record` };
   }
 
   // coverage: the other items below high, each named by an open or passed assumption.
-  const assumptions = /** @type {{ item?: string, status?: string }[]} */ (Array.isArray(rec.assumptions) ? rec.assumptions : []);
+  const assumptions = (Array.isArray(rec.assumptions) ? rec.assumptions : []) as { item?: string, status?: string }[];
   const named = new Set(assumptions.filter((a) => (a.status ?? "open") === "open" || a.status === "passed").map((a) => a.item));
   const others = (ctx.items ?? []).filter((i) => i.id !== item.id && i.measure.kind !== "authority" && i.measure.kind !== "coverage" && rank(ctx.levels?.[i.id] ?? "very low") < 3);
   const unnamed = others.filter((i) => !named.has(i.id)).map((i) => i.id);
@@ -162,21 +147,15 @@ export function itemStrength(item, ctx) {
  * The policy for a phase: a preset (opts preset, else naive.config.json phase_gates.preset, else standard), then
  * per-item overrides from phase_gates.items.<phase>.<item>. Null when the phase has no gate policy. Throws on an
  * unknown preset.
- * @param {Policies} policies
- * @param {string} phase
- * @param {GateConfig} [config]
- * @param {string} [preset]
- * @returns {Policy | null}
  */
-export function policyFor(policies, phase, config = {}, preset) {
+export function policyFor(policies: Policies, phase: string, config: GateConfig = {}, preset?: string): Policy | null {
   const def = policies.phases[phase];
   if (!def) return null;
   const name = preset ?? config.phase_gates?.preset ?? DEFAULT_PRESET;
   const base = def.presets[name];
   if (!base) throw new Error(`no gate preset ${name}; the presets are ${Object.keys(def.presets).join(", ")}`);
   const over = config.phase_gates?.items?.[phase] ?? {};
-  /** @type {Policy["items"]} */
-  const items = {};
+  const items: Policy["items"] = {};
   for (const item of def.items) {
     const o = over[item.id] ?? {};
     const p = base[item.id] ?? { min: "very low", boundary: "fail-open" };
@@ -185,8 +164,7 @@ export function policyFor(policies, phase, config = {}, preset) {
   return { preset: name, items };
 }
 
-/** @param {Record<string, ItemPolicy>} items */
-const score = (items) => {
+const score = (items: Record<string, ItemPolicy>) => {
   const xs = Object.values(items);
   if (!xs.length) return 0;
   const sum = xs.reduce((s, p) => s + (rank(p.min) / 3) * (p.boundary === "fail-closed" ? 1 : OPEN_WEIGHT), 0);
@@ -196,53 +174,36 @@ const score = (items) => {
 /**
  * How strict a policy is, 0 to 100: each item's minimum level over 3, weighted 1 when fail-closed and 0.25 when
  * fail-open, averaged. The label names the nearest preset when presets are given.
- * @param {{ items: Record<string, ItemPolicy> }} policy
- * @param {Record<string, Record<string, ItemPolicy>>} [presets]
- * @returns {{ score: number, label: string }}
  */
-export function strictness(policy, presets = {}) {
+export function strictness(policy: { items: Record<string, ItemPolicy> }, presets: Record<string, Record<string, ItemPolicy>> = {}): { score: number, label: string } {
   const s = score(policy.items);
   let label = "custom", best = Infinity;
   for (const [name, items] of Object.entries(presets)) { const d = Math.abs(score(items) - s); if (d < best) { best = d; label = name; } }
   return { score: s, label };
 }
 
-/**
- * Scores a phase's items against its policy. Pure.
- * @param {GateItem[]} items
- * @param {Policy} policy
- * @param {GateContext} ctx
- * @returns {GateRow[]}
- */
-export function scoreItems(items, policy, ctx) {
-  /** @type {Record<string, Level>} */
-  const levels = {};
-  /** @type {Map<string, Strength>} */
-  const strengths = new Map();
+/** Scores a phase's items against its policy. Pure. */
+export function scoreItems(items: GateItem[], policy: Policy, ctx: GateContext): GateRow[] {
+  const levels: Record<string, Level> = {};
+  const strengths: Map<string, Strength> = new Map();
   for (const item of items.filter((i) => i.measure.kind !== "coverage")) { const s = itemStrength(item, ctx); strengths.set(item.id, s); levels[item.id] = s.level; }
   for (const item of items.filter((i) => i.measure.kind === "coverage")) strengths.set(item.id, itemStrength(item, { ...ctx, levels, items }));
   return items.map((item) => {
-    const s = /** @type {Strength} */ (strengths.get(item.id));
+    const s = strengths.get(item.id) as Strength;
     const p = policy.items[item.id];
     const passed = item.measure.kind === "authority" ? !s.pending : rank(s.level) >= rank(p.min);
     return { id: item.id, label: item.label, record: item.record, file: item.record ? ctx.records[item.record]?.file ?? null : null, level: s.level, min: p.min, boundary: p.boundary, passed, missing: s.missing, why: s.why, next: passed ? null : s.next };
   });
 }
 
-/** @param {GateRow} r @param {string} preset */
-const sentence = (r, preset) => r.why[0]?.startsWith("pending")
+const sentence = (r: GateRow, preset: string) => r.why[0]?.startsWith("pending")
   ? `${r.id} (${r.label}): ${r.why[0]}`
   : `${r.id} (${r.label}) is ${r.level}; the ${preset} policy needs ${r.min}, ${r.boundary}${r.next ? `. Next: ${r.next}` : ""}`;
 
-/**
- * Every venture file of a record type, as logical paths; a collection's glob is listed.
- * @param {string} dir
- * @param {string[]} globs
- */
-const filesFor = (dir, globs) => Effect.gen(function* () {
+/** Every venture file of a record type, as logical paths; a collection's glob is listed. */
+const filesFor = (dir: string, globs: string[]) => Effect.gen(function* () {
   const fs = yield* VentureFs;
-  /** @type {string[]} */
-  const out = [];
+  const out: string[] = [];
   for (const g of globs) {
     const star = g.indexOf("*");
     if (star < 0) { if (yield* fs.exists(ventureFile(dir, g))) out.push(g); continue; }
@@ -256,38 +217,32 @@ const filesFor = (dir, globs) => Effect.gen(function* () {
 /**
  * Reads what the gate needs from a venture and returns the report. A phase with no gate policy returns policy null
  * and never blocks.
- * @param {string} dir
- * @param {GateOpts} [opts]
  */
-export const phaseGateEffect = (dir, opts = {}) => Effect.gen(function* () {
+export const phaseGateEffect = (dir: string, opts: GateOpts = {}) => Effect.gen(function* () {
   const fs = yield* VentureFs;
   const root = opts.root ?? ROOT;
-  const policies = /** @type {Policies} */ (yield* readJson(join(root, POLICIES)));
-  const venture = /** @type {{ id: string, phase: string }} */ (yield* readJson(join(dir, "venture.json")));
+  const policies = (yield* readJson(join(root, POLICIES))) as Policies;
+  const venture = (yield* readJson(join(dir, "venture.json"))) as { id: string, phase: string };
   const phase = opts.phase ?? venture.phase;
   const cfgFile = ventureFile(dir, CONFIG);
-  const config = /** @type {GateConfig} */ ((yield* fs.exists(cfgFile)) ? yield* readJson(cfgFile) : {});
+  const config = ((yield* fs.exists(cfgFile)) ? yield* readJson(cfgFile) : {}) as GateConfig;
   const policy = policyFor(policies, phase, config, opts.preset);
   if (!policy) return { venture: venture.id, phase, policy: null, preset: null, enforce: false, strictness: null, items: [], ready: true, passed: true, blocking: [], risks: [] };
   const def = policies.phases[phase];
 
-  const model = /** @type {{ records: { id: string, paths?: string[] }[] }} */ (readDataModel());
-  /** @param {string} type */
-  const globsOf = (type) => { const r = model.records.find((x) => x.id === type); const g = r ? venturePaths(r) : []; return g.length ? g : type === "validation-plan" ? [PLAN_FALLBACK] : []; };
-  /** @param {string} file */
-  const read = (file) => Effect.map(readJson(ventureFile(dir, file)), (v) => /** @type {Record<string, unknown>} */ (v));
-  /** @param {string} type */
-  const all = (type) => Effect.gen(function* () {
+  const model = readDataModel() as { records: { id: string, paths?: string[] }[] };
+  const globsOf = (type: string) => { const r = model.records.find((x) => x.id === type); const g = r ? venturePaths(r) : []; return g.length ? g : type === "validation-plan" ? [PLAN_FALLBACK] : []; };
+  const read = (file: string) => Effect.map(readJson(ventureFile(dir, file)), (v) => v as Record<string, unknown>);
+  const all = (type: string) => Effect.gen(function* () {
     const files = yield* filesFor(dir, globsOf(type));
     return yield* Effect.forEach(files, (f) => Effect.map(read(f), (value) => ({ file: f, value })));
   });
 
   const icps = yield* all("icp");
   const interviews = yield* all("validation-interview");
-  /** @type {Record<string, Found>} */
-  const records = {};
+  const records: Record<string, Found> = {};
   for (const type of new Set(def.items.map((i) => i.record).filter((x) => typeof x === "string"))) {
-    const t = /** @type {string} */ (type);
+    const t = type as string;
     if (t === "icp") {
       const live = icps.filter((x) => x.value.status !== "retired");
       const primary = live.find((x) => x.value.primary === true) ?? live[0];
@@ -298,8 +253,7 @@ export const phaseGateEffect = (dir, opts = {}) => Effect.gen(function* () {
     records[t] = found[0] ?? { file: globsOf(t)[0] ?? t, value: null };
   }
 
-  /** @type {GateContext} */
-  const ctx = { records, interviews: interviews.map((x) => /** @type {Interview} */ (x.value)), icps: icps.map((x) => /** @type {Icp} */ (x.value)), countLevels: { ...policies.count_levels, ...config.phase_gates?.count_levels }, staleMonths: config.phase_gates?.staleness_months, decidedBy: opts.decidedBy ?? null, today: opts.today };
+  const ctx: GateContext = { records, interviews: interviews.map((x) => x.value as Interview), icps: icps.map((x) => x.value as Icp), countLevels: { ...policies.count_levels, ...config.phase_gates?.count_levels }, staleMonths: config.phase_gates?.staleness_months, decidedBy: opts.decidedBy ?? null, today: opts.today };
   const items = scoreItems(def.items, policy, ctx);
   const authority = new Set(def.items.filter((i) => i.measure.kind === "authority").map((i) => i.id));
   const closed = items.filter((r) => r.boundary === "fail-closed" && !r.passed);
@@ -315,21 +269,14 @@ export const phaseGateEffect = (dir, opts = {}) => Effect.gen(function* () {
   };
 });
 
-/**
- * The gate report as plain values.
- * @param {string} dir
- * @param {GateOpts} [opts]
- */
-export const phaseGate = (dir, opts = {}) => runSync(phaseGateEffect(dir, opts));
+/** The gate report as plain values. */
+export const phaseGate = (dir: string, opts: GateOpts = {}) => runSync(phaseGateEffect(dir, opts));
 
-/** A meter of four cells for a level, password-meter style: `[##  ]` is low. @param {string} level */
-export const meter = (level) => `[${"#".repeat(rank(level) + 1).padEnd(4, " ")}]`;
+/** A meter of four cells for a level, password-meter style: `[##  ]` is low. */
+export const meter = (level: string) => `[${"#".repeat(rank(level) + 1).padEnd(4, " ")}]`;
 
-/**
- * The report as text, one meter per item.
- * @param {ReturnType<typeof phaseGate>} g
- */
-export function gateText(g) {
+/** The report as text, one meter per item. */
+export function gateText(g: ReturnType<typeof phaseGate>) {
   if (!g.strictness) return `${g.venture}: ${g.phase} has no gate policy, so the gate never blocks.`;
   const lines = [`${g.venture}: the ${g.phase} gate under the ${g.preset} policy (strictness ${g.strictness.score} of 100, nearest ${g.strictness.label})${g.enforce ? ", enforced" : ", reported only"}`];
   for (const r of g.items) {
@@ -344,7 +291,7 @@ export function gateText(g) {
 if (import.meta.url === `file://${process.argv[1]}`) {
   const args = process.argv.slice(2);
   const dir = args[0];
-  const flag = (/** @type {string} */ n) => { const i = args.indexOf(n); return i > 0 ? args[i + 1] : undefined; };
+  const flag = (n: string) => { const i = args.indexOf(n); return i > 0 ? args[i + 1] : undefined; };
   const usage = "usage: node packages/naive/src/engine/phase-gate.ts <venture dir> [--preset <name>] [--json]";
   if (!dir || dir.startsWith("--") || !runSync(Effect.flatMap(VentureFs, (fs) => fs.exists(join(dir, "venture.json"))))) { console.error(usage); process.exit(2); }
   const preset = flag("--preset");
@@ -353,7 +300,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     const g = phaseGate(dir, { preset });
     console.log(args.includes("--json") ? JSON.stringify(g, null, 2) : gateText(g));
   } catch (e) {
-    console.error(String(/** @type {{ message?: string }} */ (e).message ?? e));
+    console.error(String((e as { message?: string }).message ?? e));
     process.exit(2);
   }
 }

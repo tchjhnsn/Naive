@@ -12,18 +12,22 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { entries } from "../core/provenance.ts";
 import { cmp, registry, snapshot, updateFramework } from "./upgrades.ts";
+import type { upgrade } from "./upgrades.ts";
 import { rewriteRoute } from "./migrations/kit-to-package.ts";
 
 const repo = new URL("../../../..", import.meta.url).pathname;
 let failed = 0;
-const expect = (name, ok, detail = "") => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${detail}`}`); if (!ok) failed++; };
+type TriggerRun = { n: number, trigger: string, outcome: string, entity?: string, activity?: string, error: string, status?: string, decision: string, event?: unknown, retry_of?: number };
+type Pkg = { id: string, in?: string, early?: boolean };
+type Result = { passed: boolean };
+const expect = (name: string, ok: unknown, detail = "") => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${detail}`}`); if (!ok) failed++; };
 const ws = mkdtempSync(join(tmpdir(), "upgrades-test-"));
-const run = (script, args, env = {}) => spawnSync("node", [join(repo, script), ...args], { cwd: repo, encoding: "utf8", env: { ...process.env, MENTURA_WORKSPACE: ws, ...env } });
-const naive = (args, env) => run("packages/naive/src/interfaces/cli/naive.mjs", args, env);
-const mentura = (args, env) => run("packages/naive/src/interfaces/cli/mentura.mjs", args, env);
-const make = (id, extra = []) => { const d = join(ws, id); const r = run("packages/naive/src/engine/init-venture.ts", [d, id, ...extra]); if (r.status !== 0) throw new Error(r.stderr); return d; };
-const json = (f) => JSON.parse(readFileSync(f, "utf8"));
-const put = (venture, route, rec, extra = []) => { const f = join(ws, `${venture}-${route.replace(/\//g, "-")}.json`); writeFileSync(f, JSON.stringify(rec)); return mentura([route, "write", "--venture", venture, "--input", f, "--as", "person", ...extra]); };
+const run = (script: string, args: string[], env: Record<string, string> = {}) => spawnSync("node", [join(repo, script), ...args], { cwd: repo, encoding: "utf8", env: { ...process.env, MENTURA_WORKSPACE: ws, ...env } });
+const naive = (args: string[], env?: Record<string, string>) => run("packages/naive/src/interfaces/cli/naive.mjs", args, env);
+const mentura = (args: string[], env?: Record<string, string>) => run("packages/naive/src/interfaces/cli/mentura.mjs", args, env);
+const make = (id: string, extra: string[] = []) => { const d = join(ws, id); const r = run("packages/naive/src/engine/init-venture.ts", [d, id, ...extra]); if (r.status !== 0) throw new Error(r.stderr); return d; };
+const json = (f: string) => JSON.parse(readFileSync(f, "utf8"));
+const put = (venture: string, route: string, rec: unknown, extra: string[] = []) => { const f = join(ws, `${venture}-${route.replace(/\//g, "-")}.json`); writeFileSync(f, JSON.stringify(rec)); return mentura([route, "write", "--venture", venture, "--input", f, "--as", "person", ...extra]); };
 const reg = registry();
 
 // U-1 and U-2: naive upgrade, the migrations, the pins.
@@ -52,7 +56,7 @@ const plan2 = json(join(a, "people/team-plan.json"));
 expect("kit-to-package rewrites team-plan access to package routes", plan2.roles[0].routes.write.join() === "validation/solution,product/*", JSON.stringify(plan2.roles[0].routes));
 expect("a route glob that spans several packages is escalated, not rewritten", plan2.roles[0].routes.read[0] === "purpose/**" && /purpose\/\*\* spans routes/.test(up.stdout));
 expect("kit-to-package rewrites the where-used parent route", json(join(a, "knowledge/where-used.json")).facts[0].parent.route === "product/alpha-app");
-const rel = json(join(a, `.release/upgrade-${reg.framework}.json`));
+const rel: Awaited<ReturnType<typeof upgrade>>["release"] = json(join(a, `.release/upgrade-${reg.framework}.json`));
 expect("the release record lists each migration, the packages pinned and the guides", rel.from === "0.1.0" && rel.migrations.map((m) => m.id).join() === "package-layout,kit-to-package,icp-profiles,telos-to-goals" && rel.guides.length === 2 && rel.packages.length > 5);
 const log = entries(a);
 expect("each move, rewrite and pin is a provenance line, and the chain holds", log.some((e) => e.activity === "move" && e.entity === "people/team-plan.json") && log.some((e) => e.activity === "write" && e.entity === "people/team-plan.json" && e.agent.id === "naive-upgrade") && log.some((e) => e.entity === "naive.config.json") && run("packages/naive/src/checks/check-provenance.ts", [a]).status === 0);
@@ -60,12 +64,12 @@ const read = mentura(["purpose/validation/problem", "read", "--venture", "alpha"
 expect("an old route still resolves through its alias, with a deprecation note", read.status === 0 && /purpose\/validation\/problem is now foundation\/problem/.test(read.stderr), read.stderr);
 const again = naive(["upgrade", a]);
 expect("a second upgrade has nothing to do", again.status === 0 && /nothing to upgrade/.test(again.stdout) && entries(a).length === log.length, again.stdout);
-expect("rewriteRoute leaves routes no alias covers alone", rewriteRoute("governance/founder-agreement") === null && rewriteRoute("**") === null && rewriteRoute("purpose/icp").to === "foundation/icp");
+expect("rewriteRoute leaves routes no alias covers alone", rewriteRoute("governance/founder-agreement") === null && rewriteRoute("**") === null && rewriteRoute("purpose/icp")?.to === "foundation/icp");
 expect("versions compare numerically", cmp("0.10.0", "0.9.1") > 0 && cmp("0.3.0", "0.3.0") === 0);
 
 // U-1 in git: files move with git mv, so history follows them.
 const g = make("gamma");
-const git = (...x) => execFileSync("git", ["-c", "user.name=t", "-c", "user.email=t@example.com", ...x], { cwd: g, encoding: "utf8" });
+const git = (...x: string[]) => execFileSync("git", ["-c", "user.name=t", "-c", "user.email=t@example.com", ...x], { cwd: g, encoding: "utf8" });
 git("init", "-q"); git("add", "-A"); git("commit", "-qm", "before");
 naive(["upgrade", g]);
 expect("in a git repository, moves are git renames", /^R\s+pillars\/brand\.md -> marketing\/brand\.md/m.test(git("status", "--porcelain")), git("status", "--porcelain"));
@@ -108,18 +112,18 @@ expect("adopting a package needs the venture on the installed framework first", 
 naive(["upgrade", b]);
 const fin = naive(["upgrade", b, "--adopt", "finance"]);
 const pk = JSON.parse(run("packages/naive/src/router/orchestration/venture-package.mjs", [b, "--json"]).stdout);
-expect("a later phase's package adopted early opens now in the venture package", fin.status === 0 && pk.core.find((p) => p.id === "finance")?.in === "now" && pk.core.find((p) => p.id === "finance").early === true && json(join(b, "naive.config.json")).packages.finance.early === true, fin.stdout + fin.stderr);
+expect("a later phase's package adopted early opens now in the venture package", fin.status === 0 && pk.core.find((p: Pkg) => p.id === "finance")?.in === "now" && pk.core.find((p: Pkg) => p.id === "finance").early === true && json(join(b, "naive.config.json")).packages.finance.early === true, fin.stdout + fin.stderr);
 expect("a package that already fits the phase needs no adoption", /already fits this phase/.test(naive(["upgrade", b, "--adopt", "foundation"]).stdout));
 const legal = naive(["upgrade", b, "--adopt", "legal"]);
 expect("an experimental package needs the canary channel", legal.status === 1 && /experimental/.test(legal.stderr) && /--canary/.test(legal.stderr));
 naive(["upgrade", b, "--canary"]);
 const legal2 = naive(["upgrade", b, "--adopt", "legal"]);
 const pk2 = JSON.parse(run("packages/naive/src/router/orchestration/venture-package.mjs", [b, "--json"]).stdout);
-expect("on canary an experimental package Naive does not model can be adopted, and opens", legal2.status === 0 && pk2.core.some((p) => p.id === "legal" && p.in === "now") && !pk2.not_modeled.some((p) => p.id === "legal"));
+expect("on canary an experimental package Naive does not model can be adopted, and opens", legal2.status === 0 && pk2.core.some((p: Pkg) => p.id === "legal" && p.in === "now") && !pk2.not_modeled.some((p: Pkg) => p.id === "legal"));
 expect("the stable channel is refused while an experimental package is adopted", naive(["upgrade", b, "--stable"]).status === 1);
 naive(["upgrade", b, "--drop", "legal"]);
 const stable = naive(["upgrade", b, "--stable"]);
-expect("after dropping it, the venture goes back to stable and the package is held again", stable.status === 0 && !JSON.parse(run("packages/naive/src/router/orchestration/venture-package.mjs", [b, "--json"]).stdout).core.some((p) => p.id === "legal"));
+expect("after dropping it, the venture goes back to stable and the package is held again", stable.status === 0 && !JSON.parse(run("packages/naive/src/router/orchestration/venture-package.mjs", [b, "--json"]).stdout).core.some((p: Pkg) => p.id === "legal"));
 
 // U-3, the framework part: a staged upgrade lands only when its checks pass and a person confirms.
 const s = make("staged");
@@ -133,7 +137,7 @@ expect("--stage on a venture with nothing to upgrade is refused", naive(["upgrad
 
 // U-1: updating the installed framework is a fast-forward of its checkout.
 const up1 = join(ws, "naive-upstream"), inst = join(ws, "naive-installed");
-const gitIn = (d, ...x) => execFileSync("git", ["-c", "user.name=t", "-c", "user.email=t@example.com", ...x], { cwd: d, encoding: "utf8" });
+const gitIn = (d: string, ...x: string[]) => execFileSync("git", ["-c", "user.name=t", "-c", "user.email=t@example.com", ...x], { cwd: d, encoding: "utf8" });
 mkdirSync(join(up1, "packages/naive/src/engine"), { recursive: true });
 writeFileSync(join(up1, "packages/naive/src/engine/upgrades.json"), JSON.stringify({ ...reg, framework: "0.3.0" }));
 gitIn(up1, "init", "-q"); gitIn(up1, "add", "-A"); gitIn(up1, "commit", "-qm", "0.3.0");
@@ -160,30 +164,30 @@ writeFileSync(join(t, "naive.config.json"), JSON.stringify(tc, null, 2));
 await new Promise((r) => setTimeout(r, 20));
 put("tick", "foundation/problem", { venture: "tick", statement: "Bakeries throw away a fifth of their bread", segment: "Neighbourhood bakeries", evidence: [] });
 let rep = JSON.parse(mentura(["triggers", "--venture", "tick", "--json"]).stdout);
-expect("an event (a record written) starts its trigger's next step", rep.runs.some((r) => r.trigger === "assess" && r.outcome === "ran" && r.entity === "foundation/problem.json"), JSON.stringify(rep.runs));
-expect("only events after the trigger was configured start it", !rep.runs.some((r) => r.activity === "move"));
+expect("an event (a record written) starts its trigger's next step", rep.runs.some((r: TriggerRun) => r.trigger === "assess" && r.outcome === "ran" && r.entity === "foundation/problem.json"), JSON.stringify(rep.runs));
+expect("only events after the trigger was configured start it", !rep.runs.some((r: TriggerRun) => r.activity === "move"));
 put("tick", "foundation/icp/bakers", { venture: "tick", id: "bakers", who: "Bakery owners" });
 rep = JSON.parse(mentura(["triggers", "--venture", "tick", "--json"]).stdout);
-const broken = rep.runs.find((r) => r.trigger === "broken"), thrown = rep.runs.find((r) => r.trigger === "throws");
+const broken = rep.runs.find((r: TriggerRun) => r.trigger === "broken"), thrown = rep.runs.find((r: TriggerRun) => r.trigger === "throws");
 expect("a failed run is recorded with its error", broken?.outcome === "failed" && /no route nowhere/.test(broken.error), JSON.stringify(broken));
 expect("a run that throws is recorded as uncaught, not lost", thrown?.outcome === "uncaught" && thrown.status === "raised", JSON.stringify(thrown));
 const dfile = join(t, `decisions/${broken.decision}.decision.json`);
 const dec = existsSync(dfile) ? json(dfile) : {};
 expect("each failure is raised as an open decision for the founder, failing open", dec.status === "open" && dec.boundary === "fail-open" && dec.options.join() === "Retry,Skip this event,Turn the trigger off");
-const held = JSON.parse(run("packages/naive/src/engine/decisions.ts", [t, "--json"]).stdout).decisions.find((x) => x.id === broken.decision);
-expect("the failure holds nothing else: it fails open and nothing waits on it", held?.boundary === "fail-open" && held.render === "now" && !JSON.parse(run("packages/naive/src/engine/decisions.ts", [t, "--json"]).stdout).decisions.some((x) => x.held_by === broken.decision));
+const held = JSON.parse(run("packages/naive/src/engine/decisions.ts", [t, "--json"]).stdout).decisions.find((x: { id: string }) => x.id === broken.decision);
+expect("the failure holds nothing else: it fails open and nothing waits on it", held?.boundary === "fail-open" && held.render === "now" && !JSON.parse(run("packages/naive/src/engine/decisions.ts", [t, "--json"]).stdout).decisions.some((x: { held_by?: string }) => x.held_by === broken.decision));
 tc.triggers[1].run.route = "purpose/validation/assess"; tc.triggers[1].run.action = "run"; tc.triggers[1].run.input = { as_is: true };
 writeFileSync(join(t, "naive.config.json"), JSON.stringify(tc, null, 2));
 const retry = mentura(["decide", broken.decision, "--venture", "tick", "--by", "Founder", "--answer", "Retry", "--confirm", broken.decision]);
 rep = JSON.parse(mentura(["triggers", "--venture", "tick", "--json"]).stdout);
-const retried = json(join(t, ".naive/triggers.json")).runs.find((r) => r.retry_of === broken.n);
+const retried = json(join(t, ".naive/triggers.json")).runs.find((r: TriggerRun) => r.retry_of === broken.n);
 expect("deciding Retry reruns the failed step on the same event", retry.status === 0 && retried?.outcome === "ran" && retried.event === broken.event, JSON.stringify(retried));
-expect("the settled failure says how it was settled", json(join(t, ".naive/triggers.json")).runs.find((r) => r.n === broken.n).status === "retried");
+expect("the settled failure says how it was settled", json(join(t, ".naive/triggers.json")).runs.find((r: TriggerRun) => r.n === broken.n).status === "retried");
 mentura(["decide", thrown.decision, "--venture", "tick", "--by", "Founder", "--answer", "Turn the trigger off", "--confirm", thrown.decision]);
 expect("deciding to turn it off turns that trigger off", json(join(t, "naive.config.json")).triggers_off?.includes("throws"));
 put("tick", "foundation/icp", { venture: "tick", profiles: [{ id: "bakers", who: "Bakery owners in towns" }] });
 rep = JSON.parse(mentura(["triggers", "--venture", "tick", "--json"]).stdout);
-expect("a trigger turned off no longer runs", rep.runs.filter((r) => r.trigger === "throws").length === 1 && rep.triggers.find((x) => x.id === "throws").enabled === false);
+expect("a trigger turned off no longer runs", rep.runs.filter((r: TriggerRun) => r.trigger === "throws").length === 1 && rep.triggers.find((x: { id: string }) => x.id === "throws").enabled === false);
 expect("no failure is left open", rep.open.length === 0, JSON.stringify(rep.open));
 // A crash of the runner itself (here a kit manifest that is not JSON) is kept by the hook and raised next time.
 const badKits = join(ws, "bad-kits");
@@ -198,11 +202,11 @@ expect("the crash is kept for the next run", existsSync(join(t, ".naive/trigger-
 writeFileSync(join(t, "naive.config.json"), JSON.stringify(tc2, null, 2));
 run("packages/naive/src/router/orchestration/triggers.mjs", [t, "--fire"]);
 rep = JSON.parse(mentura(["triggers", "--venture", "tick", "--json"]).stdout);
-expect("the next run raises the crash as a decision", rep.open.some((o) => o.trigger === "runner" && /JSON/.test(o.error)), JSON.stringify(rep.open));
+expect("the next run raises the crash as a decision", rep.open.some((o: TriggerRun) => o.trigger === "runner" && /JSON/.test(o.error)), JSON.stringify(rep.open));
 writeFileSync(join(t, ".naive/triggers.json"), "{ not json");
 run("packages/naive/src/router/orchestration/triggers.mjs", [t, "--fire"]);
 rep = JSON.parse(mentura(["triggers", "--venture", "tick", "--json"]).stdout);
-expect("an unreadable trigger state is kept aside and raised, not silently reset", rep.open.some((o) => /could not be read; it is kept at/.test(o.error)), JSON.stringify(rep.open));
+expect("an unreadable trigger state is kept aside and raised, not silently reset", rep.open.some((o: TriggerRun) => /could not be read; it is kept at/.test(o.error)), JSON.stringify(rep.open));
 
 // V-9: a system of record notifies, and the summaries that read it are stale until written again.
 const v = make("vee", ["--layers", "purpose"]);
@@ -225,7 +229,7 @@ expect("a read of a stale summary says it is stale, since when and why", /"stale
 expect("mentura stale lists what is stale", /stale\s+product\/vee-app\.json/.test(mentura(["stale", "--venture", "vee"]).stdout));
 await new Promise((r) => setTimeout(r, 5));
 put("vee", "product/vee-app", { id: "vee-app", name: "Vee", description: "For Acme, renamed" }, ["--derived-from", "crm://customers/acme.json"]);
-expect("writing the summary again makes it fresh", !/"stale"/.test(mentura(["product/vee-app", "read", "--venture", "vee"]).stdout) && !JSON.parse(mentura(["stale", "--venture", "vee", "--json"]).stdout).some((x) => x.file === "product/vee-app.json"));
+expect("writing the summary again makes it fresh", !/"stale"/.test(mentura(["product/vee-app", "read", "--venture", "vee"]).stdout) && !JSON.parse(mentura(["stale", "--venture", "vee", "--json"]).stdout).some((x: { file: string }) => x.file === "product/vee-app.json"));
 expect("a source the venture does not have is refused", mentura(["notify", "--venture", "vee", "--source", "ramp", "--path", "x.json"]).status === 1);
 expect("a change nothing reads marks nothing", /nothing reads what changed/.test(mentura(["notify", "--venture", "vee", "--source", "crm", "--path", "customers/zed.json"]).stdout));
 
@@ -236,21 +240,21 @@ writeFileSync(join(ws, "app-hooks-test.mjs"), `process.exit(process.cwd() === ${
 writeFileSync(platformAdapter, JSON.stringify({ name: "mentura", title: "Mentura (stand-in)", kind: "platform", reads: ["knowledge/sources.json"], files: [], skills: null, verify: ["packages/naive/src/store/connectors/eval.ts", "app-hooks-test.mjs"], sources: [], note: "A stand-in for the app's platform adapter" }));
 const withPlatform = { NAIVE_PLATFORM_ADAPTER: platformAdapter };
 const list = JSON.parse(mentura(["adapters", "--json"], withPlatform).stdout);
-expect("Mentura is listed as the platform adapter beside the harness adapters", list[0]?.name === "mentura" && list[0].kind === "platform" && ["claude-code", "codex", "cursor"].every((x) => list.some((l) => l.name === x && l.kind === "harness")));
+expect("Mentura is listed as the platform adapter beside the harness adapters", list[0]?.name === "mentura" && list[0].kind === "platform" && ["claude-code", "codex", "cursor"].every((x) => list.some((l: { name: string, kind: string }) => l.name === x && l.kind === "harness")));
 const h = make("harnessed");
 naive(["upgrade", h]);
 const ad = mentura(["adapt", "claude-code", "--venture", "harnessed"]);
 expect("mentura adapt writes Claude Code's entry file and copies the open packages' skills", ad.status === 0 && readFileSync(join(h, "CLAUDE.md"), "utf8") === "@AGENTS.md\n" && existsSync(join(h, ".claude/skills/problem-validation/SKILL.md")), ad.stdout + ad.stderr);
 expect("adapting the platform adapter into a venture is refused", mentura(["adapt", "mentura", "--venture", "harnessed"], withPlatform).status === 1);
-expect("without NAIVE_PLATFORM_ADAPTER only the harness adapters are listed", JSON.parse(mentura(["adapters", "--json"]).stdout).every((l) => l.kind === "harness"));
+expect("without NAIVE_PLATFORM_ADAPTER only the harness adapters are listed", JSON.parse(mentura(["adapters", "--json"]).stdout).every((l: { kind: string }) => l.kind === "harness"));
 for (const name of ["claude-code", "codex", "cursor"]) {
   const r = JSON.parse(mentura(["adapters", "verify", name, "--json"]).stdout)[0];
-  expect(`the ${name} adapter is verified: it passes the framework's adapter tests`, r.verified, JSON.stringify(r.results.filter((x) => !x.passed)));
+  expect(`the ${name} adapter is verified: it passes the framework's adapter tests`, r.verified, JSON.stringify(r.results.filter((x: Result) => !x.passed)));
 }
 if (!process.env.NAIVE_SKIP_PLATFORM_VERIFY) {
   const m = mentura(["adapters", "verify", "mentura", "--json"], withPlatform);
   const mr = JSON.parse(m.stdout)[0];
-  expect("a platform adapter is verified when it passes the tests it names: a framework test (the connector contract) and the app's own, relative to the adapter file and run from its folder", mr.verified && mr.results.length === 2, JSON.stringify(mr.results.filter((x) => !x.passed)));
+  expect("a platform adapter is verified when it passes the tests it names: a framework test (the connector contract) and the app's own, relative to the adapter file and run from its folder", mr.verified && mr.results.length === 2, JSON.stringify(mr.results.filter((x: Result) => !x.passed)));
 }
 
 console.log(failed ? `\n${failed} failing` : "\nall passing");

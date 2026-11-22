@@ -19,18 +19,22 @@ import { leaks } from "./check-leaks.ts";
 import { findSecrets } from "./redact.ts";
 import { schemaFile } from "../records/index.ts";
 import { validateFile } from "../records/validate.ts";
+import type { Framework } from "../records/types/records.d.ts";
+
+/** A framework a venture or workspace can use, and where it lives. */
+export type FrameworkEntry = { id: string, title: string, source: "built-in" | "workspace", root: string, dir: string, framework: Framework, playbook: string | null, shadows?: boolean };
 
 const repo = new URL("../../../..", import.meta.url).pathname;
-const load = (p) => JSON.parse(readFileSync(p, "utf8"));
+const load = (p: string) => JSON.parse(readFileSync(p, "utf8"));
 const ID = /^[a-z0-9-]+$/;
 
-const inRoot = (root, source) => {
+const inRoot = (root: string, source: FrameworkEntry["source"]): FrameworkEntry[] => {
   const dir = join(root, "frameworks");
   if (!existsSync(dir)) return [];
   return readdirSync(dir, { withFileTypes: true })
     .filter((e) => e.isDirectory() && existsSync(join(dir, e.name, "framework.json")))
     .map((e) => {
-      const f = load(join(dir, e.name, "framework.json"));
+      const f: Framework = load(join(dir, e.name, "framework.json"));
       return { id: f.id, title: f.title, source, root, dir: join(dir, e.name), framework: f,
         playbook: f.playbook ?? (existsSync(join(dir, e.name, "playbook.md")) ? `frameworks/${e.name}/playbook.md` : null) };
     });
@@ -38,8 +42,7 @@ const inRoot = (root, source) => {
 
 // Every framework a venture or workspace can use: the built-in ones and the workspace's own.
 // A workspace framework with a built-in's id is listed as shadowing it and does not replace it.
-/** @returns {{ workspace: string | null, frameworks: *[] }} */
-export function listFrameworks(from = process.cwd()) {
+export function listFrameworks(from = process.cwd()): { workspace: string | null, frameworks: FrameworkEntry[] } {
   const ws = findWorkspace(resolve(from));
   const builtin = inRoot(repo, "built-in");
   const own = ws && resolve(ws) !== resolve(repo) ? inRoot(ws, "workspace") : [];
@@ -48,13 +51,12 @@ export function listFrameworks(from = process.cwd()) {
 }
 
 // The framework with this id, wherever it lives: a built-in one first, then the workspace's.
-export function resolveFramework(id, from = process.cwd()) {
+export function resolveFramework(id: string, from = process.cwd()) {
   const all = listFrameworks(from).frameworks;
   return all.find((f) => f.id === id && f.source === "built-in") ?? all.find((f) => f.id === id) ?? null;
 }
 
-/** @param {string} id @param {string} [from] @param {{ title?: string, owner?: string }} [opts] */
-export function newFramework(id, from = process.cwd(), { title, owner } = {}) {
+export function newFramework(id: string, from: string = process.cwd(), { title, owner }: { title?: string, owner?: string } = {}) {
   if (!ID.test(id ?? "")) throw new Error(`framework id must be lowercase letters, digits and dashes: ${id}`);
   const ws = findWorkspace(resolve(from));
   if (!ws) throw new Error("no naive-workspace.json or workspace.json here or above: a founder's frameworks live in the workspace");
@@ -63,7 +65,7 @@ export function newFramework(id, from = process.cwd(), { title, owner } = {}) {
   mkdirSync(dir, { recursive: true });
   const name = title ?? id.split("-").map((w) => w[0].toUpperCase() + w.slice(1)).join(" ");
   const today = new Date().toISOString().slice(0, 10);
-  const fw = {
+  const fw: Framework = {
     id, title: name,
     purpose: "What this framework helps you think through, in one or two sentences.",
     vocabulary: {},
@@ -75,17 +77,17 @@ export function newFramework(id, from = process.cwd(), { title, owner } = {}) {
     owner: owner ?? "founder", visibility: "internal", status: "draft",
   };
   writeFileSync(join(dir, "framework.json"), JSON.stringify(fw, null, 2) + "\n");
-  const front = (type) => `---\ntype: ${type}\nsource: human\ncreated: ${today}\ntags: [naive, framework, ${id}]\nstatus: draft\n---\n\n`;
+  const front = (type: string) => `---\ntype: ${type}\nsource: human\ncreated: ${today}\ntags: [naive, framework, ${id}]\nstatus: draft\n---\n\n`;
   writeFileSync(join(dir, "template.md"), `${front("template")}# ${name}\n\nFill one section per frame.\n\n## The first question the framework asks.\n\n<answer>\n`);
   writeFileSync(join(dir, "playbook.md"), `${front("playbook")}# ${name}: playbook\n\nWhen to run it, and the steps.\n\n## When\n\n## Steps\n\n1. \n\n## Example\n`);
   return { dir, framework: fw };
 }
 
 // Schema and maps_to: validate.ts, then check-frameworks over the workspace.
-export function checkUserFrameworks(id, from = process.cwd()) {
+export function checkUserFrameworks(id: string | undefined, from = process.cwd()) {
   const { workspace: ws, frameworks } = listFrameworks(from);
   const own = frameworks.filter((f) => f.source === "workspace" && (!id || f.id === id));
-  const errors = [];
+  const errors: string[] = [];
   if (id && !frameworks.some((f) => f.id === id)) errors.push(`no framework ${id}`);
   if (!ws || !own.length) return { checked: [], errors };
   const name = basename(schemaFile("framework"));
@@ -95,7 +97,7 @@ export function checkUserFrameworks(id, from = process.cwd()) {
     else if (r.status !== 0) errors.push(...basicSchema(f.framework).map((e) => `frameworks/${f.id}/framework.json: ${e}`));
   }
   const ids = new Set(own.map((f) => f.id));
-  errors.push(...checkFrameworks(ws).errors.filter((e) => [...ids].some((i) => e.startsWith(`frameworks/${i}`))));
+  errors.push(...checkFrameworks(ws).errors.filter((e: string) => [...ids].some((i) => e.startsWith(`frameworks/${i}`))));
   for (const f of own) {
     if (!f.playbook) errors.push(`frameworks/${f.id}: no playbook (playbook.md or a playbook path)`);
     else if (!existsSync(join(ws, f.playbook))) errors.push(`frameworks/${f.id}: ${f.playbook} not found`);
@@ -104,21 +106,21 @@ export function checkUserFrameworks(id, from = process.cwd()) {
 }
 
 // Without python jsonschema: the required fields and the enums.
-function basicSchema(f) {
-  const e = [];
-  for (const k of ["id", "title", "frames", "maps_to"]) if (f[k] === undefined) e.push(`'${k}' is a required property`);
+function basicSchema(f: Framework) {
+  const e: string[] = [];
+  for (const k of ["id", "title", "frames", "maps_to"] as const) if (f[k] === undefined) e.push(`'${k}' is a required property`);
   if (f.visibility && !["internal", "public"].includes(f.visibility)) e.push(`visibility ${f.visibility} is not internal or public`);
   if (f.status && !["draft", "stable"].includes(f.status)) e.push(`status ${f.status} is not draft or stable`);
   return e;
 }
 
-export function publishFramework(id, from = process.cwd(), { dryRun = false } = {}) {
+export function publishFramework(id: string, from = process.cwd(), { dryRun = false } = {}) {
   const f = listFrameworks(from).frameworks.find((x) => x.id === id && x.source === "workspace");
   if (!f) return { code: 1, message: `no framework ${id} in the workspace's frameworks/` };
   if (!dryRun) return { code: 2, message: "where frameworks are published is not decided yet; run with --dry-run to pack and check the bundle" };
   const { errors } = checkUserFrameworks(id, from);
   if (errors.length) return { code: 1, message: `fix these before publishing:\n${errors.join("\n")}` };
-  const files = {};
+  const files: Record<string, string> = {};
   for (const name of readdirSync(f.dir).filter((n) => !n.startsWith("."))) files[name] = readFileSync(join(f.dir, name), "utf8");
   const bundle = { kind: "naive-framework", id, version: 1, owner: f.framework.owner ?? null, visibility: f.framework.visibility ?? "internal", status: f.framework.status ?? "draft", files };
   const out = join(f.root, ".naive/publish/frameworks", `${id}.json`);
@@ -128,7 +130,7 @@ export function publishFramework(id, from = process.cwd(), { dryRun = false } = 
   const problems = findSecrets(text).map((s) => `looks like a secret (${s.kind}) in the bundle`);
   // The leak check, except for the canonical routes the framework maps to: those are its contract, not a venture's records.
   const routes = (f.framework.maps_to ?? []).map((m) => m.canonical_route).filter(Boolean);
-  const found = leaks([out]).filter((l) => l.severity !== "warn" && !routes.some((r) => r === l.text || r.startsWith(`${l.text}/`)));
+  const found = leaks([out]).filter((l: { severity?: string, text: string }) => l.severity !== "warn" && !routes.some((r) => r === l.text || r.startsWith(`${l.text}/`)));
   const leakRun = found.length ? "failed" : "passed";
   for (const l of found) problems.push(`packages/naive/src/engine/check-leaks.ts: ${l.pattern} "${l.text}" (${l.why})`);
   if (f.framework.visibility !== "public") problems.push(`visibility is ${f.framework.visibility ?? "internal"}: set it to public before publishing for real`);
@@ -138,7 +140,7 @@ export function publishFramework(id, from = process.cwd(), { dryRun = false } = 
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const [sub, ...args] = process.argv.slice(2);
-  const opt = (n) => { const i = args.indexOf(`--${n}`); return i >= 0 ? args[i + 1] : undefined; };
+  const opt = (n: string) => { const i = args.indexOf(`--${n}`); return i >= 0 ? args[i + 1] : undefined; };
   const pos = args.filter((a, i) => !a.startsWith("--") && !["--title", "--owner"].includes(args[i - 1]));
   try {
     if (sub === "list") {
@@ -164,5 +166,5 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       console.error("usage: user-frameworks.ts list|new <id>|check [<id>]|publish <id> --dry-run");
       process.exit(2);
     }
-  } catch (e) { console.error(e.message); process.exit(1); }
+  } catch (e) { console.error((e as Error).message); process.exit(1); }
 }

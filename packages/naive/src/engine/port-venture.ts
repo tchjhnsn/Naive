@@ -21,28 +21,36 @@
 
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, readlinkSync, realpathSync, renameSync, statSync, writeFileSync } from "node:fs";
+import { type Dirent, existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, readlinkSync, realpathSync, renameSync, statSync, writeFileSync } from "node:fs";
 import { basename, dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { agentFromEnv, record } from "../core/provenance.ts";
 import { CODEBASE, ventureFile } from "../core/venture-paths.ts";
 import { envCommand, git as runGit, hostHook, refusedBy } from "../core/runtime.ts";
+import type { KnowledgeSources } from "../records/types/records.d.ts";
+
+/** One planned move in .release/port-plan.json. */
+export type PortItem = ReturnType<typeof measure> & { action: string, from: string, to: string, source: string, identity: { dev: number, ino: number }, reason?: string,
+  git?: ReturnType<typeof git>, links?: ReturnType<typeof linksInto>, busy?: ReturnType<typeof busy>, warnings?: string[], done?: string };
+/** The venture's port plan. */
+export type PortPlan = { venture: string, items: PortItem[], at?: string };
 
 export const PLAN = ".release/port-plan.json";
 export const TRACE = ".release/port-trace.json";
 const MAP = "knowledge/sources.json";
-const slug = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^[^a-z]+|-$/g, "") || "folder";
-const inside = (a, b) => a === b || a.startsWith(b + sep);
-const real = (p) => { try { return realpathSync(p); } catch { return resolve(p); } };
+const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^[^a-z]+|-$/g, "") || "folder";
+const inside = (a: string, b: string) => a === b || a.startsWith(b + sep);
+const real = (p: string) => { try { return realpathSync(p); } catch { return resolve(p); } };
 
 // Files and bytes under a folder, without following links, to show the size of what moves, and a
 // manifest hash (each path with its size, never its contents) for the provenance entry.
-function measure(root) {
+function measure(root: string) {
   let files = 0, bytes = 0;
-  const lines = [];
+  const lines: string[] = [];
   const stack = [root];
   while (stack.length) {
     const d = stack.pop();
-    let list = [];
+    if (d === undefined) break;
+    let list: Dirent[] = [];
     try { list = readdirSync(d, { withFileTypes: true }); } catch { continue; }
     for (const e of list) {
       const p = join(d, e.name);
@@ -55,13 +63,13 @@ function measure(root) {
 
 // Symbolic links under `roots` (to `depth` levels, skipping node_modules) whose target is inside `src`.
 // A link inside `src` that points inside it with a relative path keeps working, so only absolute ones count.
-export function linksInto(src, roots, depth = 4) {
-  const out = [];
-  const seen = new Set();
-  const visit = (d, n) => {
+export function linksInto(src: string, roots: string[], depth = 4) {
+  const out: { link: string, target: string }[] = [];
+  const seen = new Set<string>();
+  const visit = (d: string, n: number) => {
     if (n > depth || seen.has(d)) return;
     seen.add(d);
-    let list = [];
+    let list: Dirent[] = [];
     try { list = readdirSync(d, { withFileTypes: true }); } catch { return; }
     for (const e of list) {
       if (e.name === "node_modules" || e.name === ".git") continue;
@@ -79,11 +87,11 @@ export function linksInto(src, roots, depth = 4) {
 
 // The git facts a move touches: whether the folder is a repository, its other worktrees, and how
 // many changes are uncommitted (the move keeps them; it is only said).
-function git(src) {
+function git(src: string) {
   const g = join(src, ".git");
   if (!existsSync(g)) return null;
   if (statSync(g).isFile()) return { linked: true, worktrees: [], uncommitted: null };
-  const run = (...a) => runGit("porting a git repository", ["-C", src, ...a], { encoding: "utf8" });
+  const run = (...a: string[]) => runGit("porting a git repository", ["-C", src, ...a], { encoding: "utf8" });
   const list = run("worktree", "list", "--porcelain");
   const refused = refusedBy(list);
   if (refused) throw refused;
@@ -94,11 +102,11 @@ function git(src) {
 }
 
 // Processes whose working directory is inside the folder (macOS and Linux lsof).
-export function busy(src) {
+export function busy(src: string) {
   const r = spawnSync("lsof", ["-d", "cwd", "-Fpcn"], { encoding: "utf8" });
   if (r.error || !r.stdout) return [];
-  const out = [];
-  let p = null, c = null;
+  const out: { pid: number, command: string | null, cwd: string }[] = [];
+  let p: string | null = null, c: string | null = null;
   for (const l of r.stdout.split("\n")) {
     if (l[0] === "p") p = l.slice(1);
     else if (l[0] === "c") c = l.slice(1);
@@ -107,16 +115,11 @@ export function busy(src) {
   return out;
 }
 
-const readPlan = (dir) => existsSync(ventureFile(dir, PLAN)) ? JSON.parse(readFileSync(ventureFile(dir, PLAN), "utf8")) : null;
-const readMap = (dir) => existsSync(ventureFile(dir, MAP)) ? JSON.parse(readFileSync(ventureFile(dir, MAP), "utf8")) : { sources: [], records: {} };
+const readPlan = (dir: string): PortPlan | null => existsSync(ventureFile(dir, PLAN)) ? JSON.parse(readFileSync(ventureFile(dir, PLAN), "utf8")) : null;
+const readMap = (dir: string): KnowledgeSources => existsSync(ventureFile(dir, MAP)) ? JSON.parse(readFileSync(ventureFile(dir, MAP), "utf8")) : { sources: [], records: {} };
 
-/**
- * The planned move of `folder` into the venture at `dir`. Reads both, writes neither.
- * @param {string} folder
- * @param {string} dir
- * @param {{ to?: string, links?: string[] }} [opts]
- */
-export function planOne(folder, dir, { to, links = [] } = {}) {
+/** The planned move of `folder` into the venture at `dir`. Reads both, writes neither. */
+export function planOne(folder: string, dir: string, { to, links = [] }: { to?: string, links?: string[] } = {}) {
   if (!existsSync(folder) || !lstatSync(folder).isDirectory()) throw new Error(`${folder} is not a directory`);
   if (!existsSync(join(dir, "venture.json"))) throw new Error(`${dir} is not a venture: create one first with naive init`);
   const src = real(folder);
@@ -124,10 +127,9 @@ export function planOne(folder, dir, { to, links = [] } = {}) {
   if (inside(v, src)) throw new Error("the venture cannot sit inside the folder it ports");
   const dest = resolve(v, to ?? join(CODEBASE, basename(src)));
   const s = statSync(src);
-  const item = /** @type {ReturnType<typeof measure> & { action: string, from: string, to: string, source: string, identity: { dev: number, ino: number }, reason?: string,
-    git?: ReturnType<typeof git>, links?: ReturnType<typeof linksInto>, busy?: ReturnType<typeof busy>, warnings?: string[] }} */ ({ action: "move", from: src, to: dest, source: slug(basename(src)), identity: { dev: s.dev, ino: s.ino }, ...measure(src) });
-  const warnings = [];
-  const leave = (why) => Object.assign(item, { action: "leave", reason: why });
+  const item: PortItem = { action: "move", from: src, to: dest, source: slug(basename(src)), identity: { dev: s.dev, ino: s.ino }, ...measure(src) };
+  const warnings: string[] = [];
+  const leave = (why: string) => Object.assign(item, { action: "leave", reason: why });
   if (existsSync(dest)) leave(`${dest} already exists; a port never overwrites`);
   else if (inside(dest, src)) leave("the destination is inside the folder itself");
   else if (!inside(dest, v)) warnings.push("the destination is outside the venture folder; sources.json will name it by absolute path");
@@ -150,9 +152,9 @@ export function planOne(folder, dir, { to, links = [] } = {}) {
 }
 
 /** Adds (or replaces) one folder's item in the venture's plan and writes it. */
-export function plan(folder, dir, opts = {}) {
+export function plan(folder: string, dir: string, opts: { to?: string, links?: string[] } = {}) {
   const item = planOne(folder, dir, opts);
-  const p = readPlan(dir) ?? { venture: JSON.parse(readFileSync(join(dir, "venture.json"), "utf8")).id, items: [] };
+  const p: PortPlan = readPlan(dir) ?? { venture: JSON.parse(readFileSync(join(dir, "venture.json"), "utf8")).id, items: [] };
   const others = p.items.filter((i) => i.from !== item.from && i.action === "move" && !i.done);
   if (others.some((i) => i.source === item.source)) Object.assign(item, { action: "leave", reason: `another planned move already uses the source id ${item.source}` });
   if (others.some((i) => i.to === item.to)) Object.assign(item, { action: "leave", reason: `another planned move already goes to ${item.to}` });
@@ -164,7 +166,7 @@ export function plan(folder, dir, opts = {}) {
 }
 
 /** Carries out the plan as the founder left it. Checks every item before moving any. */
-export function apply(dir, p, { agent = agentFromEnv("person", "cli"), evenIfBusy = false } = {}) {
+export function apply(dir: string, p: PortPlan, { agent = agentFromEnv("person", "cli"), evenIfBusy = false } = {}) {
   const moves = p.items.filter((i) => i.action === "move" && !i.done);
   const ids = new Set(readMap(dir).sources.map((s) => s.id));
   for (const i of moves) {
@@ -176,7 +178,7 @@ export function apply(dir, p, { agent = agentFromEnv("person", "cli"), evenIfBus
     const b = busy(i.from);
     if (b.length && !evenIfBusy) throw new Error(`${b.length} process${b.length === 1 ? " is" : "es are"} working inside ${i.from} (${b.map((x) => `${x.command} ${x.pid}`).join(", ")}); stop them or add --even-if-busy`);
   }
-  const done = [];
+  const done: PortItem[] = [];
   for (const i of moves) {
     mkdirSync(dirname(i.to), { recursive: true });
     renameSync(i.from, i.to);
@@ -185,7 +187,7 @@ export function apply(dir, p, { agent = agentFromEnv("person", "cli"), evenIfBus
     map.sources.push({ id: i.source, connector: "filesystem", writes: "none", root, note: `source of truth, moved here unchanged from ${i.from} by naive port` });
     mkdirSync(dirname(ventureFile(dir, MAP)), { recursive: true });
     writeFileSync(ventureFile(dir, MAP), JSON.stringify(map, null, 2) + "\n");
-    record(dir, /** @type {Parameters<typeof record>[1]} */ ({ entity: root, activity: "port", agent, derived_from: [`file://${i.from}`], sha256: measure(i.to).manifest, note: `moved unchanged (${i.files} files); named in sources.json as source ${i.source}` }));
+    record(dir, ({ entity: root, activity: "port", agent, derived_from: [`file://${i.from}`], sha256: measure(i.to).manifest, note: `moved unchanged (${i.files} files); named in sources.json as source ${i.source}` }) as Parameters<typeof record>[1]);
     i.done = new Date().toISOString();
     done.push(i);
     writeFileSync(ventureFile(dir, PLAN), JSON.stringify(p, null, 2) + "\n");
@@ -194,7 +196,7 @@ export function apply(dir, p, { agent = agentFromEnv("person", "cli"), evenIfBus
 }
 
 // One run as a trace for an exporter: the run, and a child per item.
-function trace(dir, name, inputs, start, items, error) {
+function trace(dir: string, name: string, inputs: Record<string, unknown>, start: string, items: PortItem[], error?: string) {
   const end = new Date().toISOString();
   const t = { name, run_type: "chain", start, end, inputs, outputs: { items: items.map(({ from, to, action, done }) => ({ from, to, action, done })) }, ...(error ? { error } : {}),
     tags: ["naive", "port"], children: items.map((i) => ({ name: `${i.action} ${basename(i.from)}`, run_type: "tool", start, end, inputs: { from: i.from, to: i.to },
@@ -204,7 +206,7 @@ function trace(dir, name, inputs, start, items, error) {
   // Hosted, NAIVE_TRACE_CMD is ignored and the host's trace hook ships it, if it registered one.
   const hook = hostHook("trace");
   if (hook) {
-    Promise.resolve(hook([ventureFile(dir, TRACE)], "")).then((p) => console.log(p.status === 0 ? `Trace: ${p.stdout.trim()}` : `Trace upload failed: ${(p.stderr || p.stdout).trim()}`));
+    Promise.resolve(hook([ventureFile(dir, TRACE)], "")).then((p: { status: number | null, stdout: string, stderr: string }) => console.log(p.status === 0 ? `Trace: ${p.stdout.trim()}` : `Trace upload failed: ${(p.stderr || p.stdout).trim()}`));
     return;
   }
   const exporter = envCommand("NAIVE_TRACE_CMD")?.trim().split(/\s+/);
@@ -214,12 +216,12 @@ function trace(dir, name, inputs, start, items, error) {
   }
 }
 
-const mb = (b) => `${(b / 1024 / 1024).toFixed(1)} MB`;
+const mb = (b: number) => `${(b / 1024 / 1024).toFixed(1)} MB`;
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const args = process.argv.slice(2);
-  const opt = (k) => { const i = args.indexOf(`--${k}`); return i < 0 ? undefined : args[i + 1]; };
-  const all = (k) => args.flatMap((a, i) => a === `--${k}` ? [args[i + 1]] : []);
+  const opt = (k: string) => { const i = args.indexOf(`--${k}`); return i < 0 ? undefined : args[i + 1]; };
+  const all = (k: string) => args.flatMap((a, i) => a === `--${k}` ? [args[i + 1]] : []);
   const VALUED = new Set(["--venture", "--to", "--links", "--confirm", "--from"]);
   const folder = opt("from") ?? args.find((a, i) => !a.startsWith("--") && !VALUED.has(args[i - 1]));
   const dir = opt("venture");
@@ -235,7 +237,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       for (const i of d) console.log(`moved  ${i.from}  ->  ${i.to}   (${i.files} files, unchanged; source ${i.source})`);
       for (const i of d.filter((x) => x.git?.worktrees.length)) console.log(`\nrepair its worktrees: git -C ${i.to} worktree repair`);
       console.log(`\nmoved ${d.length} folder${d.length === 1 ? "" : "s"}. Trace: ${relative(process.cwd(), ventureFile(dir, TRACE))}`);
-    } catch (e) { trace(dir, "naive port apply", { venture: dir }, start, p.items, e.message); console.error(e.message); process.exit(1); }
+    } catch (e) { trace(dir, "naive port apply", { venture: dir }, start, p.items, (e as Error).message); console.error((e as Error).message); process.exit(1); }
   } else {
     if (!folder) { console.error("name the folder to port: naive port <folder>"); process.exit(2); }
     try {
@@ -248,6 +250,6 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       const n = p.items.filter((i) => i.action === "move" && !i.done).length;
       console.log(`\n${n} folder${n === 1 ? "" : "s"} to move, unchanged. Nothing has moved yet.`);
       console.log(`Read ${relative(process.cwd(), ventureFile(dir, PLAN))}, set any item's action to leave, then run with --apply --confirm port.`);
-    } catch (e) { trace(dir, "naive port plan", { folder, venture: dir }, start, [], e.message); console.error(e.message); process.exit(1); }
+    } catch (e) { trace(dir, "naive port plan", { folder, venture: dir }, start, [], (e as Error).message); console.error((e as Error).message); process.exit(1); }
   }
 }

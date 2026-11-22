@@ -27,14 +27,14 @@ import { accept, adopt, check, CONFIRM, draft, drop, guide, plan, registry, reje
 import { kitFor } from "./kits.ts";
 
 const argv = process.argv.slice(2);
-const has = (n) => argv.includes(`--${n}`);
-const opt = (n) => { const i = argv.indexOf(`--${n}`); return i >= 0 && argv[i + 1] && !argv[i + 1].startsWith("--") ? argv[i + 1] : undefined; };
+const has = (n: string) => argv.includes(`--${n}`);
+const opt = (n: string) => { const i = argv.indexOf(`--${n}`); return i >= 0 && argv[i + 1] && !argv[i + 1].startsWith("--") ? argv[i + 1] : undefined; };
 const valued = new Set(["guide", "adopt", "drop", "confirm", "by"]);
 const dirArg = argv.find((a, i) => !a.startsWith("--") && !(i > 0 && valued.has(argv[i - 1].slice(2))));
 const json = has("json");
-const say = (x, text) => console.log(json ? JSON.stringify(x, null, 2) : text);
-const fail = (e) => { console.error(e.message ?? String(e)); process.exit(1); };
-const usage = () => { console.error("usage: node packages/naive/src/engine/upgrade-venture.ts <venture dir> [--check | --guide [version] | --canary | --stable | --adopt <package> | --drop <package> | --stage | --agent | --status | --accept --confirm upgrade | --reject] [--json]\n       node packages/naive/src/engine/upgrade-venture.ts --framework [<venture dir>]"); process.exit(2); };
+const say = (x: unknown, text: string) => console.log(json ? JSON.stringify(x, null, 2) : text);
+function fail(e: unknown): never { console.error((e as Error).message ?? String(e)); process.exit(1); }
+function usage(): never { console.error("usage: node packages/naive/src/engine/upgrade-venture.ts <venture dir> [--check | --guide [version] | --canary | --stable | --adopt <package> | --drop <package> | --stage | --agent | --status | --accept --confirm upgrade | --reject] [--json]\n       node packages/naive/src/engine/upgrade-venture.ts --framework [<venture dir>]"); process.exit(2); }
 
 if (has("framework")) {
   const r = updateFramework();
@@ -50,21 +50,23 @@ if (!dirArg || !existsSync(join(dirArg, "venture.json"))) usage();
 const dir = resolve(dirArg);
 const id = JSON.parse(readFileSync(join(dir, "venture.json"), "utf8")).id;
 
+const guideVersion = opt("guide"), adoptName = opt("adopt"), dropName = opt("drop");
+
 try {
   if (has("guide")) {
     const reg = registry();
-    const versions = opt("guide") ? [opt("guide")] : plan(dir).steps.map((s) => s.version);
+    const versions = guideVersion ? [guideVersion] : plan(dir).steps.map((s) => s.version);
     if (!versions.length) { say({ guides: [] }, `${id} is on Naive ${reg.framework}: no guide to read`); process.exit(0); }
     const gs = versions.map((v) => guide(v, { reg }) ?? { version: v, path: null, text: `Naive ${v} has no guide.` });
     say(gs, gs.map((g) => `${g.path ? `# ${g.path}\n\n` : ""}${g.text.replace(/^---\n[\s\S]*?\n---\n\n?/, "")}`).join("\n"));
   } else if (has("canary") || has("stable")) {
     const r = setChannel(dir, has("canary") ? "canary" : "stable");
     say(r, r.changed ? `${id} is on the ${r.channel} channel` : `${id} was already on the ${r.channel} channel`);
-  } else if (opt("adopt")) {
-    const r = adopt(dir, opt("adopt"));
+  } else if (adoptName) {
+    const r = adopt(dir, adoptName);
     say(r, r.changed ? `adopted ${r.name} ${r.version} early${r.channel === "experimental" ? " (experimental)" : ""}: it opens now in the venture package` : r.note);
-  } else if (opt("drop")) {
-    const r = drop(dir, opt("drop"));
+  } else if (dropName) {
+    const r = drop(dir, dropName);
     say(r, `dropped ${r.name}: it fits by its phase again`);
   } else if (has("stage")) {
     await stage(dir);
@@ -100,7 +102,7 @@ try {
   }
 } catch (e) { fail(e); }
 
-function report(d) {
+function report(d: ReturnType<typeof check>) {
   if (json) { console.log(JSON.stringify(d, null, 2)); return; }
   console.log(`staged upgrade of ${id} from Naive ${d.from} to ${d.to}${d.by && d.by !== "naive" ? `, worked by ${d.by}` : ""}: ${d.status}`);
   if (d.changes) console.log(`changes   ${d.changes.added.length} added, ${d.changes.changed.length} changed, ${d.changes.removed.length} removed`);

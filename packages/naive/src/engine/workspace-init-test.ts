@@ -14,15 +14,15 @@ import { ventureFile } from "../core/venture-paths.ts";
 const repo = new URL("../../../..", import.meta.url).pathname;
 const naive = join(repo, "packages/naive/src/interfaces/cli/naive.mjs");
 const base = mkdtempSync(join(tmpdir(), "workspace-init-"));
-const env = /** @type {NodeJS.ProcessEnv} */ ({ ...process.env, XDG_CONFIG_HOME: join(base, ".config"), MENTURA_AGENT_CMD: `node ${join(repo, "packages/naive/src/records/examples/migrate/agent.ts")}`, CREATE_VENTURE_PROMPTS: "" });
+const env = ({ ...process.env, XDG_CONFIG_HOME: join(base, ".config"), MENTURA_AGENT_CMD: `node ${join(repo, "packages/naive/src/records/examples/migrate/agent.ts")}`, CREATE_VENTURE_PROMPTS: "" }) as NodeJS.ProcessEnv;
 delete env.MENTURA_WORKSPACE;
-const sh = (args, opts = {}) => spawnSync("node", [naive, ...args], { cwd: base, env, encoding: "utf8", ...opts });
-const load = (f) => JSON.parse(readFileSync(f, "utf8"));
+const sh = (args: string[], opts: { cwd?: string, input?: string, env?: NodeJS.ProcessEnv } = {}) => spawnSync("node", [naive, ...args], { cwd: base, env, encoding: "utf8", ...opts });
+const load = (f: string) => JSON.parse(readFileSync(f, "utf8"));
 let failed = 0;
-const t = async (name, fn) => { try { await fn(); console.log(`ok    ${name}`); } catch (e) { failed++; console.log(`FAIL  ${name}\n      ${e.message}`); } };
-const ok = (c, m) => { if (!c) throw new Error(m ?? "assertion failed"); };
+const t = async (name: string, fn: () => unknown) => { try { await fn(); console.log(`ok    ${name}`); } catch (e) { failed++; console.log(`FAIL  ${name}\n      ${(e as Error).message}`); } };
+const ok = (c: unknown, m?: string) => { if (!c) throw new Error(m ?? "assertion failed"); };
 const FLAGS = ["--skip-install", "--no-git", "--layout", "flat"];
-const validate = (schema, file) => spawnSync(process.execPath, [join(repo, "packages/naive/src/records/validate.ts"), "--schema", schema, "--file", file], { encoding: "utf8" });
+const validate = (schema: string, file: string) => spawnSync(process.execPath, [join(repo, "packages/naive/src/records/validate.ts"), "--schema", schema, "--file", file], { encoding: "utf8" });
 
 await t("init refuses without a venture to create, port or migrate", () => {
   const r = sh(["workspace", "init", "empty"]);
@@ -218,7 +218,7 @@ await t("one bad date is skipped and named, and the rest of the calendar still s
   const ws = join(base, "dates");
   ok(sh(["workspace", "init", ws, "--venture", "Kettle", "--time-zone", "America/Chicago", ...FLAGS]).status === 0);
   addEvent(ws, { title: "Good one", start: "2026-11-03T09:00", uid: "good" });
-  const ev = (uid, o) => writeFileSync(join(ws, "calendar/events", `${uid}.json`), JSON.stringify({ "@type": "Event", uid, title: uid, duration: "PT1H", calendar: "default", ...o }));
+  const ev = (uid: string, o: Record<string, unknown>) => writeFileSync(join(ws, "calendar/events", `${uid}.json`), JSON.stringify({ "@type": "Event", uid, title: uid, duration: "PT1H", calendar: "default", ...o }));
   ev("soon", { start: "soon", timeZone: "America/Chicago" });
   ev("mars", { start: "2026-11-03T09:00:00", timeZone: "Mars/Olympus" });
   const dd = ventureFile(join(ws, "kettle"), "decisions");
@@ -252,7 +252,7 @@ await t("from a packed npm install: naive workspace init makes the workspace and
   // The compiled package (EE-159): Node refuses to strip types under node_modules, so the installed source of a .ts
   // module does not load, and the same module through the package's exports does, with type stripping off entirely.
   const noStrip = { ...env, NODE_OPTIONS: "--no-experimental-strip-types" };
-  const importIn = (spec) => spawnSync(process.execPath, ["--input-type=module", "-e", `const m = await import(${JSON.stringify(spec)}); console.log(typeof m.run);`], { cwd: app, env: noStrip, encoding: "utf8" });
+  const importIn = (spec: string) => spawnSync(process.execPath, ["--input-type=module", "-e", `const m = await import(${JSON.stringify(spec)}); console.log(typeof m.run);`], { cwd: app, env: noStrip, encoding: "utf8" });
   const source = importIn(join(app, "node_modules/naive-framework/packages/naive/src/terms/engine.ts"));
   ok(source.status !== 0 && /ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING|ERR_UNKNOWN_FILE_EXTENSION/.test(source.stderr), `the installed source loads: ${source.stderr}`);
   const compiled = importIn("naive-framework/src/terms/engine.ts");

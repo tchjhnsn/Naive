@@ -18,22 +18,27 @@ import { join } from "node:path";
 import { frontmatter } from "./publish-lint.ts";
 import { ventureFile } from "../core/venture-paths.ts";
 
+/** One field's entry in a record's visibility sidecar. */
+export type SidecarField = { visibility?: string, level?: string, sha256?: string, approved_by?: string, approved_at?: string, proposed?: { visibility: string, sha256: string, by: string, at: string } };
+/** A field's visibility now, and why when it differs from what was declared. */
+export type Visibility = { visibility: string, declared: string | null, level?: string | null, stale?: string, approved_by?: string };
+
 export const LEVELS = ["public", "variant", "internal", "confidential"];
-const load = (f) => JSON.parse(readFileSync(f, "utf8"));
-export const hash = (v) => createHash("sha256").update(typeof v === "string" ? v : JSON.stringify(v)).digest("hex");
-const get = (o, path) => path.split(".").reduce((x, k) => (x == null ? undefined : x[k]), o);
+const load = (f: string) => JSON.parse(readFileSync(f, "utf8"));
+export const hash = (v: unknown) => createHash("sha256").update(typeof v === "string" ? v : JSON.stringify(v)).digest("hex");
+const get = (o: unknown, path: string) => path.split(".").reduce<unknown>((x, k) => (x == null ? undefined : (x as Record<string, unknown>)[k]), o);
 
 /** The visibility sidecar of a venture-relative record path (foundation/problem.json), or {}. */
-export function sidecar(dir, rel) {
+export function sidecar(dir: string, rel: string): Record<string, SidecarField> {
   const f = ventureFile(dir, rel.replace(/\.json$/, ".visibility.json"));
   return existsSync(f) ? load(f).fields ?? {} : {};
 }
 
 /** One field's visibility now: its declared level, demoted to variant when the approved wording changed. */
-export function visibilityOf(dir, rel, field) {
+export function visibilityOf(dir: string, rel: string, field: string): Visibility {
   const v = sidecar(dir, rel)[field];
-  if (!v || !LEVELS.includes(v.visibility)) return { visibility: "internal", declared: null };
-  if (v.visibility !== "public") return { visibility: v.visibility, declared: v.visibility, level: v.level ?? null };
+  if (!v || !LEVELS.includes(v.visibility ?? "")) return { visibility: "internal", declared: null };
+  if (v.visibility !== "public") return { visibility: v.visibility ?? "internal", declared: v.visibility ?? null, level: v.level ?? null };
   const f = ventureFile(dir, rel);
   const value = existsSync(f) ? get(load(f), field) : undefined;
   if (value === undefined) return { visibility: "internal", declared: "public", stale: "the field is missing" };
@@ -44,30 +49,31 @@ export function visibilityOf(dir, rel, field) {
 }
 
 /** Whether an approver id names a known person: an id or name in the venture's people/people.json. */
-export function isPerson(dir, id) {
+export function isPerson(dir: string, id: unknown) {
   if (!id || typeof id !== "string") return false;
   const f = ventureFile(dir, "people/people.json");
   if (!existsSync(f)) return false;
-  try { return (load(f).people ?? []).some((p) => p.id === id || p.name === id); } catch { return false; }
+  try { return (load(f).people ?? []).some((p: { id?: string, name?: string }) => p.id === id || p.name === id); } catch { return false; }
 }
 
 /** A record as the public may see it: each top-level field that is public or has an approved variant. */
-export function publicView(dir, rel, rec) {
+export function publicView(dir: string, rel: string, rec: unknown) {
   if (!rec || typeof rec !== "object" || Array.isArray(rec)) return null;
-  return Object.fromEntries(Object.keys(rec).map((k) => [k, publicValue(dir, rel, k)]).filter(([, v]) => v).map(([k, v]) => [k, /** @type {*} */ (v).value]));
+  return Object.fromEntries(Object.keys(rec).map((k) => [k, publicValue(dir, rel, k)] as const).filter((e): e is readonly [string, NonNullable<ReturnType<typeof publicValue>>] => Boolean(e[1])).map(([k, v]) => [k, v.value]));
 }
 
-/** A person approves a field as public: pins its current wording by sha256 in the record's sidecar. An
+/**
+ *  A person approves a field as public: pins its current wording by sha256 in the record's sidecar. An
  *  agent may only propose (proposed: "public"), which leaves the field as it was. Returns the sidecar entry.
- *  @param {string} dir @param {string} rel @param {string} field @param {{ by?: string, propose?: boolean, agentId?: string }} [opts] */
-export function setPublic(dir, rel, field, { by, propose = false, agentId } = {}) {
+ */
+export function setPublic(dir: string, rel: string, field: string, { by, propose = false, agentId }: { by?: string, propose?: boolean, agentId?: string } = {}) {
   const f = ventureFile(dir, rel);
   if (!existsSync(f)) return { ok: false, error: `no record ${rel}` };
   const value = get(load(f), field);
   if (value === undefined) return { ok: false, error: `${rel} has no field ${field}` };
   const sf = ventureFile(dir, rel.replace(/\.json$/, ".visibility.json"));
   const side = existsSync(sf) ? load(sf) : {};
-  const fields = side.fields ?? {};
+  const fields: Record<string, SidecarField> = side.fields ?? {};
   const at = new Date().toISOString().replace(/\.\d+Z$/, "Z");
   if (propose) fields[field] = { ...(fields[field] ?? { visibility: "internal" }), proposed: { visibility: "public", sha256: hash(value), by: agentId ?? "agent", at } };
   else {
@@ -79,7 +85,7 @@ export function setPublic(dir, rel, field, { by, propose = false, agentId } = {}
 }
 
 /** The approved public variant of a field: an MDX file whose frontmatter has variant_of: <rel>#<field> and publish: true. */
-export function variantOf(dir, rel, field, contentDirs = ["marketing/content", "operations/marketing/content"]) {
+export function variantOf(dir: string, rel: string, field: string, contentDirs = ["marketing/content", "operations/marketing/content"]) {
   for (const d of contentDirs) {
     const root = ventureFile(dir, d);
     if (!existsSync(root)) continue;
@@ -93,7 +99,7 @@ export function variantOf(dir, rel, field, contentDirs = ["marketing/content", "
 }
 
 /** What a public component may show for a field: its own wording when public, its approved variant when variant, else null. */
-export function publicValue(dir, rel, field) {
+export function publicValue(dir: string, rel: string, field: string) {
   const v = visibilityOf(dir, rel, field);
   if (v.visibility === "public") return { value: get(load(ventureFile(dir, rel)), field), from: "field", approved_by: v.approved_by };
   if (v.visibility === "variant") { const x = variantOf(dir, rel, field); return x ? { value: x.value, from: x.file, approved_by: x.approved_by } : null; }
@@ -116,7 +122,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 // else, so existence is not revealed.
 export const CONFIDENTIAL_LEVELS = ["C1", "C2", "C3", "C4"];
 
-export function confidentialityOf(dir, rel) {
+export function confidentialityOf(dir: string, rel: string): { level: string, access: string[] } | null {
   // Only a record file has a sidecar; a log such as freshness.jsonl has none, and must not be read as one.
   if (!/\.(json|md|mdx)$/.test(rel) || /\.visibility\.json$/.test(rel)) return null;
   const f = ventureFile(dir, rel.replace(/\.(json|md|mdx)$/, ".visibility.json"));
@@ -124,13 +130,8 @@ export function confidentialityOf(dir, rel) {
   return r?.visibility === "confidential" ? { level: CONFIDENTIAL_LEVELS.includes(r.level) ? r.level : "C2", access: r.access ?? [] } : null;
 }
 
-/**
- * Whether this actor may know the record exists. actor: "person" or "agent"; id: their person or role id.
- * @param {string} dir
- * @param {string} rel
- * @param {{ actor?: string, id?: string }} [opts]
- */
-export function mayKnow(dir, rel, { actor = "agent", id } = {}) {
+/** Whether this actor may know the record exists. actor: "person" or "agent"; id: their person or role id. */
+export function mayKnow(dir: string, rel: string, { actor = "agent", id }: { actor?: string, id?: string } = {}) {
   const c = confidentialityOf(dir, rel);
   if (!c || c.level === "C1") return true;
   if (!id || !c.access.includes(id)) return false;

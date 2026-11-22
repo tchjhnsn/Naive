@@ -20,11 +20,11 @@ import { git, isHosted } from "../core/runtime.ts";
 import { exitCriteria } from "./canonical.ts";
 import { readDataModel, venturePaths } from "../records/index.ts";
 
-const load = (p) => JSON.parse(readFileSync(p, "utf8"));
-const day = (d) => d ? d.slice(0, 10) : null;
-const days = (a, b) => a && b ? Math.round((new Date(b).getTime() - new Date(a).getTime()) / 864e5) : null;
+const load = (p: string) => JSON.parse(readFileSync(p, "utf8"));
+const day = (d: string | null | undefined): string | null => d ? d.slice(0, 10) : null;
+const days = (a: string | null, b: string | null | undefined) => a && b ? Math.round((new Date(b).getTime() - new Date(a).getTime()) / 864e5) : null;
 
-function firstSeen(file) {
+function firstSeen(file: string): string | null {
   try {
     const args = ["log", "--diff-filter=A", "--follow", "--format=%as", "--", file];
     const log = isHosted() ? git("dating a record by its first commit", args, { cwd: dirname(file), encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }) : null;
@@ -35,20 +35,20 @@ function firstSeen(file) {
   return day(statSync(file).mtime.toISOString());
 }
 
-const files = (d, base = d) => existsSync(d) ? readdirSync(d, { withFileTypes: true }).flatMap((e) =>
+const files = (d: string, base = d): string[] => existsSync(d) ? readdirSync(d, { withFileTypes: true }).flatMap((e) =>
   e.isDirectory() ? files(join(d, e.name), base) : [join(d, e.name).slice(base.length + 1)]) : [];
-const glob = (g) => new RegExp("^" + g.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*\*\//g, "\0").replace(/\*/g, "[^/]*").replace(/\0/g, "(?:[^/]+/)*") + "$");
+const glob = (g: string) => new RegExp("^" + g.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*\*\//g, "\0").replace(/\*/g, "[^/]*").replace(/\0/g, "(?:[^/]+/)*") + "$");
 
-export function timeToReady(dir) {
+export function timeToReady(dir: string) {
   const model = readDataModel();
   const v = load(join(dir, "venture.json"));
   const start = day(v.opened) ?? firstSeen(join(dir, "venture.json"));
   const here = files(dir);
-  const where = (type) => {
-    const rels = venturePaths(model.records.find((r) => r.id === type));
-    return here.filter((x) => rels.some((g) => glob(g).test(x)));
+  const where = (type: string): string[] => {
+    const rels = venturePaths(model.records.find((r: { id: string }) => r.id === type));
+    return here.filter((x) => rels.some((g: string) => glob(g).test(x)));
   };
-  const seen = (type) => { const fs = where(type); return fs.length ? fs.map((f) => firstSeen(ventureFile(dir, f))).sort()[0] : null; };
+  const seen = (type: string) => { const fs = where(type); return fs.length ? fs.map((f) => firstSeen(ventureFile(dir, f))).sort()[0] : null; };
 
   // Running.
   const nn = needNow(dir);
@@ -66,7 +66,7 @@ export function timeToReady(dir) {
   const runningOn = missing.length ? null : Object.values(conditions).sort().at(-1);
 
   // Layers.
-  const layers = {};
+  const layers: Record<string, { dates: string[], missing: string[] }> = {};
   for (const row of nn.rows.filter((r) => r.status === "held" || r.status === "suggest now")) {
     const l = row.layer ?? "system";
     if (l !== "system" && v.layers && !v.layers[l] && row.status !== "held") continue; // a layer the venture turned off (or never turned on) is not asked for
@@ -81,7 +81,7 @@ export function timeToReady(dir) {
 
   // MAD tiers.
   const opsFile = where("validation-operations-readiness")[0];
-  const tiers = opsFile ? load(ventureFile(dir, opsFile)).tiers.map((t) => ({ tier: t.tier, ready_on: t.ready_on ?? null, days: days(start, t.ready_on) })) : [];
+  const tiers = opsFile ? load(ventureFile(dir, opsFile)).tiers.map((t: { tier: string, ready_on?: string }) => ({ tier: t.tier, ready_on: t.ready_on ?? null, days: days(start, t.ready_on) })) : [];
 
   return { venture: v.id, phase: nn.phase, started: start, running: { on: runningOn, days: days(start, runningOn), missing, conditions }, layers: layerRows, tiers };
 }

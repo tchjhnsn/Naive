@@ -7,7 +7,7 @@ import { join } from "node:path";
 import { assign, canRead, capture, checkWorkspace, crossRead, inbox, loadWorkspace } from "./workspace.ts";
 
 const root = mkdtempSync(join(tmpdir(), "naive-ws-"));
-const put = (f, o) => { mkdirSync(join(root, f, ".."), { recursive: true }); writeFileSync(join(root, f), typeof o === "string" ? o : JSON.stringify(o)); };
+const put = (f: string, o: unknown) => { mkdirSync(join(root, f, ".."), { recursive: true }); writeFileSync(join(root, f), typeof o === "string" ? o : JSON.stringify(o)); };
 put("naive-workspace.json", { schema: "everything-ecosystem", schema_version: "0.5.0", name: "Naive workspace", ventures: ["bees", "boats"], settings: { cross_venture_reads: true, route_threshold: 0.5 } });
 put("bees/venture.json", { id: "bees", name: "Bees" });
 put("bees/foundation/problem.json", { statement: "Beekeepers lose hives to mites every winter and cannot track colony health" });
@@ -16,7 +16,7 @@ put("boats/foundation/problem.json", { statement: "Sailors cannot find marina be
 put("boats/artifacts/deck.json", { published: true, title: "Harbor deck" });
 put("boats/artifacts/draft.json", { published: false });
 put("boats/_private/artifacts/x.json", { published: true });
-let pass = 0; const t = (n, f) => { f(); pass++; console.log(`pass  ${n}`); };
+let pass = 0; const t = (n: string, f: () => void) => { f(); pass++; console.log(`pass  ${n}`); };
 const w = loadWorkspace(root);
 
 t("the workspace file matches its schema; settings default when absent", () => {
@@ -34,10 +34,12 @@ t("cross-venture reads: published artifacts only, never records or _private", ()
   assert.equal(canRead(w, "bees", "boats", "foundation/problem.json").ok, false);
   assert.equal(canRead(w, "bees", "boats", "_private/artifacts/x.json").ok, false);
   assert.equal(canRead({ ...w, settings: { ...w.settings, cross_venture_reads: false } }, "bees", "boats", "artifacts/deck.json").ok, false);
-  assert.equal(crossRead(w, "bees", "boats", "artifacts/deck.json").artifact.title, "Harbor deck");
+  const deck = crossRead(w, "bees", "boats", "artifacts/deck.json");
+  assert.ok(deck.ok);
+  assert.equal(deck.artifact.title, "Harbor deck");
   assert.match(readFileSync(join(root, "meta/provenance.jsonl"), "utf8"), /cross-venture-read/);
 });
-let r;
+let r: ReturnType<typeof capture>;
 t("naive capture keeps the whole text in raw/ and routes sure chunks to a venture inbox", () => {
   r = capture(w, "Mites killed three hives this winter; colony health tracking for beekeepers.\n\nSomething about lunch tomorrow.");
   assert.match(readFileSync(join(root, r.raw), "utf8"), /lunch tomorrow/);
@@ -54,7 +56,7 @@ t("naive inbox lists waiting chunks; assign moves one and logs the choice", () =
   assert.equal(JSON.parse(readFileSync(join(root, "meta/routing-log.jsonl"), "utf8").trim()).chosen, "boats");
 });
 t("the CLI runs capture and inbox from inside a venture", () => {
-  const cli = (...a) => spawnSync("node", [new URL("../interfaces/cli/naive.mjs", import.meta.url).pathname, ...a], { cwd: join(root, "bees"), encoding: "utf8" });
+  const cli = (...a: string[]) => spawnSync("node", [new URL("../interfaces/cli/naive.mjs", import.meta.url).pathname, ...a], { cwd: join(root, "bees"), encoding: "utf8" });
   assert.match(cli("capture", "harbor moorings").stdout, /kept raw\//);
   assert.equal(cli("inbox", "list").status, 0);
   assert.equal(cli("read", "boats", "foundation/problem.json").status, 1);

@@ -26,19 +26,19 @@ import { DEFAULT_NAME, WORKSPACE_FILE, ensureWorkspace, findWorkspace, loadWorks
 
 const repo = new URL("../../../..", import.meta.url).pathname;
 export const FIRST_VENTURE = "My first venture";
-const slug = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-const title = (s) => s.replace(/[-_]+/g, " ").replace(/^\w/, (c) => c.toUpperCase());
+const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+const title = (s: string) => s.replace(/[-_]+/g, " ").replace(/^\w/, (c) => c.toUpperCase());
 
 const argv = process.argv.slice(2);
-const opt = (n) => { const i = argv.indexOf(`--${n}`); return i >= 0 ? argv[i + 1] : undefined; };
-const flag = (n) => argv.includes(`--${n}`);
+const opt = (n: string) => { const i = argv.indexOf(`--${n}`); return i >= 0 ? argv[i + 1] : undefined; };
+const flag = (n: string) => argv.includes(`--${n}`);
 const valued = new Set(["name", "time-zone", "venture", "port", "migrate", "venture-name", "type", "role", "founder", "layout", "confirm"]);
 const positional = argv.filter((a, i) => !a.startsWith("--") && !(i > 0 && valued.has(argv[i - 1].slice(2))));
-const fail = (m, code = 1) => { console.error(m); process.exit(code); };
+function fail(m: string, code = 1): never { console.error(m); process.exit(code); }
 
 const modes = ["venture", "port", "migrate"].filter((m) => opt(m) !== undefined);
 if (modes.length > 1) fail(`choose one way to bring the first venture in: --venture, --port or --migrate (got ${modes.map((m) => `--${m}`).join(" and ")})`, 2);
-let mode = modes[0];
+let mode: string | undefined = modes[0];
 let ventureName = mode === "venture" ? opt("venture") : opt("venture-name");
 let wsName = opt("name");
 
@@ -47,16 +47,16 @@ if (!mode) {
   if (!interactive) fail("a workspace always has a venture: pass --venture \"<name>\" to create one, --port <folder> to move an existing folder in, or --migrate <project> to rewrite a project as records", 2);
   const piped = !process.stdin.isTTY ? readFileSync(0, "utf8").split("\n") : null;
   const rl = piped ? null : createInterface({ input: process.stdin, output: process.stdout });
-  const ask = async (q, d) => { const p = `? ${q} (${d}) `; const a = piped ? (process.stdout.write(p + "\n"), piped.shift() ?? "") : await rl.question(p); return a.trim() || d; };
+  const ask = async (q: string, d: string) => { const p = `? ${q} (${d}) `; const a = piped ? (process.stdout.write(p + "\n"), piped.shift() ?? "") : rl ? await rl.question(p) : ""; return a.trim() || d; };
   wsName ??= await ask("What is your workspace named?", DEFAULT_NAME);
   const how = await ask("Start with a new venture, port a folder in, or migrate a project in? new / port / migrate", "new");
   if (how === "port" || how === "migrate") { mode = how; argv.push(`--${how}`, await ask(`Which folder?`, ".")); }
   else { mode = "venture"; ventureName = await ask("What is your first venture named?", FIRST_VENTURE); }
   rl?.close();
 }
-const source = mode === "venture" ? null : resolve(opt(mode));
+const source = mode === "venture" ? null : resolve(opt(mode ?? "") ?? "");
 if (source && !existsSync(source)) fail(`no folder at ${source} to ${mode}`);
-ventureName ??= mode === "venture" ? FIRST_VENTURE : title(basename(source));
+ventureName ??= source === null ? FIRST_VENTURE : title(basename(source));
 wsName ??= DEFAULT_NAME;
 
 const root = resolve(positional[0] ?? slug(wsName));
@@ -66,15 +66,15 @@ if (mode === "port" && (vdir === source || vdir.startsWith(source + sep))) fail(
 // A workspace left without a venture by a failed init is finished by running init again; one that holds a venture is not re-initiated.
 try {
   if (findWorkspace(root) === root && loadWorkspace(root).ws.ventures?.length) fail(`${root} is already a workspace (${WORKSPACE_FILE}); add a venture to it with create-venture, or rename it with naive workspace rename`);
-} catch (e) { fail(e.message); }
+} catch (e) { fail((e as Error).message); }
 
 // 1. The workspace, its clock and its calendar.
 let w;
-try { w = ensureWorkspace(root, { name: wsName, timeZone: opt("time-zone"), owner: slug(opt("founder") ?? "") || "founder" }); } catch (e) { fail(e.message, 2); }
+try { w = ensureWorkspace(root, { name: wsName, timeZone: opt("time-zone"), owner: slug(opt("founder") ?? "") || "founder" }); } catch (e) { fail((e as Error).message, 2); }
 console.log(`Created ${w.ws.name} at ${root}: clock in ${w.ws.timeZone}, calendar in calendar/ (calendars/default.json)`);
 
 // 2. The venture, by create-venture, inside the workspace.
-const pass = [["type"], ["role"], ["layout"], ["founder", "name"]].flatMap(([k, as]) => (opt(k) !== undefined ? [`--${as ?? k}`, opt(k)] : []));
+const pass = [["type"], ["role"], ["layout"], ["founder", "name"]].flatMap(([k, as]) => { const v = opt(k); return v !== undefined ? [`--${as ?? k}`, v] : []; });
 const fresh = !existsSync(vdir);
 const cv = spawnSync("node", [join(repo, "packages/create-venture/index.mjs"), vdir, "--venture-name", ventureName, "--yes", ...pass,
   ...(flag("skip-install") ? ["--skip-install"] : []), ...(flag("no-git") ? ["--no-git"] : [])], { encoding: "utf8", cwd: root, env: { ...process.env, CREATE_VENTURE_PROMPTS: "" } });
@@ -87,13 +87,13 @@ if (cv.status !== 0) {
 console.log(`Created the venture ${ventureName} at ${vdir}`);
 
 // 3. Port or migrate into it.
-const run = (script, args) => spawnSync("node", [join(repo, script), ...args], { stdio: "inherit", cwd: root }).status ?? 1;
-if (mode === "port") {
+const run = (script: string, args: string[]) => spawnSync("node", [join(repo, script), ...args], { stdio: "inherit", cwd: root }).status ?? 1;
+if (mode === "port" && source) {
   if (run("packages/naive/src/engine/port-venture.ts", [source, "--venture", vdir]) !== 0) fail("the port plan failed; the workspace and venture are kept");
   if (flag("apply")) {
     if (run("packages/naive/src/engine/port-venture.ts", ["--venture", vdir, "--apply", "--confirm", "port"]) !== 0) process.exit(1);
   } else console.log(`\nNothing moved yet. Review the plan, then: naive port --venture ${vdir} --apply --confirm port`);
-} else if (mode === "migrate") {
+} else if (mode === "migrate" && source) {
   if (run("packages/naive/src/router/orchestration/migrate-venture.mjs", ["--from", source, "--venture", vdir]) !== 0) fail("the migration plan failed; the workspace and venture are kept");
   console.log(`\nDecide the proposed decisions, then: naive migrate --venture ${vdir} --apply`);
 }

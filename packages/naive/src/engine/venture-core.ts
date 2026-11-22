@@ -1,7 +1,10 @@
 // foundation/core, a view of venture.json: the fields a founder writes, each with the foundation statement
 // it answers, if any. Everything else in the file stays out of reach of this route.
 
-const FIELDS = {
+// venture.json as this view reads it: top-level fields, and the sections that hold the rest.
+type VentureFields = { [field: string]: unknown, core?: Record<string, unknown>, brand?: Record<string, unknown> };
+
+const FIELDS: Record<string, { section: "core" | "brand" | null, statement: string | null }> = {
   promise: { section: "core", statement: "mission" },
   competence: { section: "core", statement: "competence" },
   tagline: { section: "brand", statement: "tagline" },
@@ -9,7 +12,7 @@ const FIELDS = {
 };
 
 /** The view's values, leaving out an empty one (a venture past discovery starts with empty strings). */
-export function coreOf(venture) {
+export function coreOf(venture: VentureFields) {
   return Object.fromEntries(Object.entries(FIELDS).flatMap(([k, f]) => {
     const value = f.section ? venture[f.section]?.[k] : venture[k];
     return value ? [[k, value]] : [];
@@ -17,7 +20,7 @@ export function coreOf(venture) {
 }
 
 /** The venture with the given fields set. A new core starts with an empty promise, which its schema requires. */
-export function withCore(venture, input) {
+export function withCore(venture: VentureFields, input: Record<string, unknown>): VentureFields {
   const out = { ...venture };
   for (const [k, v] of Object.entries(input)) {
     const { section } = FIELDS[k];
@@ -27,4 +30,4 @@ export function withCore(venture, input) {
   return out;
 }
 
-export const statementsIn = (input) => Object.keys(input).map((k) => FIELDS[k].statement).filter(Boolean);
+export const statementsIn = (input: Record<string, unknown>) => Object.keys(input).map((k) => FIELDS[k].statement).filter(Boolean);

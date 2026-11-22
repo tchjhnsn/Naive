@@ -23,10 +23,10 @@ import { join } from "node:path";
 import { ventureFile } from "../core/venture-paths.ts";
 
 const repo = new URL("../../../..", import.meta.url).pathname;
-const load = (f) => JSON.parse(readFileSync(f, "utf8"));
+const load = (f: string) => JSON.parse(readFileSync(f, "utf8"));
 
 /** The private folders Naive knows, and what each holds (P-22). Any other _folder is private too. */
-export const PRIVATE = {
+export const PRIVATE: Record<string, string> = {
   _drafts: "writes held for a person to accept; Naive writes it, at the venture root only",
   _private: "never sent to a model and never released",
   _notes: "the founder's working notes beside a package; never routed",
@@ -34,7 +34,9 @@ export const PRIVATE = {
 };
 
 /** Names reserved for Naive conventions (P-32). in_use: Naive gives them a meaning today; future: kept free for a convention to come. */
-export const RESERVED = {
+/** A folder shape the router gives a meaning. */
+type Shape = { re: RegExp, name: string, rule: string };
+export const RESERVED: { in_use: Record<string, string>, future: Record<string, string>, shapes: Shape[] } = {
   in_use: {
     "AGENTS.md": "a layout: instructions for agents in this folder and below",
     "venture.json": "a venture's manifest; a folder holding one is a nested venture",
@@ -66,18 +68,20 @@ export const RESERVED = {
 const DATA_PACKAGES = ["customers", "investors", "money"];
 
 /** Whether a segment is private (P-22). */
-export const isPrivate = (segment) => segment.startsWith("_");
+export const isPrivate = (segment: string) => segment.startsWith("_");
 
 /** Whether a route's file pattern may reach a venture file: every private segment of the file is named, as it is, in the pattern (P-22). */
-export function routable(file, pattern) {
+export function routable(file: string, pattern: string) {
   const ps = pattern.split("/");
   return file.split("/").every((s, i) => !isPrivate(s) || ps[i] === s);
 }
 
 // Every entry under a folder, as venture-relative paths, stopping at nested ventures and dot folders other than reserved ones.
-function walk(dir, sub = "") {
+/** One entry under a venture folder. */
+type Entry = { path: string, dir: boolean, venture?: boolean };
+function walk(dir: string, sub = ""): Entry[] {
   const d = ventureFile(dir, sub);
-  return readdirSync(d, { withFileTypes: true }).flatMap((e) => {
+  return readdirSync(d, { withFileTypes: true }).flatMap((e): Entry[] => {
     const rel = sub ? `${sub}/${e.name}` : e.name;
     if (e.isDirectory()) {
       if (e.name === ".git" || e.name === "node_modules") return [];
@@ -89,12 +93,12 @@ function walk(dir, sub = "") {
 }
 
 /** Checks a venture folder's private folders and reserved names. { errors, warnings, private } */
-export function structure(dir) {
-  const errors = [], warnings = [], privateFolders = [];
+export function structure(dir: string) {
+  const errors: string[] = [], warnings: string[] = [], privateFolders: { folder: string, holds: string }[] = [];
   if (!existsSync(join(dir, "venture.json"))) return { errors: [`${dir} has no venture.json`], warnings, private: privateFolders };
   for (const e of walk(dir)) {
     const segs = e.path.split("/");
-    const name = segs.at(-1), parent = segs.slice(0, -1).join("/");
+    const name = segs.at(-1) ?? "", parent = segs.slice(0, -1).join("/");
     if (e.venture) continue;
     if (e.dir && isPrivate(name)) privateFolders.push({ folder: `${e.path}/`, holds: PRIVATE[name] ?? "private: never routed, never released (P-22)" });
     if (e.dir && name === "_drafts" && parent) errors.push(`${e.path}/: _drafts/ is reserved for the venture root, where Naive writes held drafts (P-32)`);
@@ -116,47 +120,47 @@ export function structure(dir) {
 }
 
 const PACKAGE_NAMES = () => existsSync(join(repo, "packages/naive/library", "packages")) ? readdirSync(join(repo, "packages/naive/library", "packages")).filter((n) => existsSync(join(repo, "packages/naive/library", "packages", n, "package.json"))) : [];
-const pkgOf = (n) => load(join(repo, "packages/naive/library", "packages", n, "package.json"));
-const FUNCTIONS = () => load(join(repo, "packages/naive/src/functions/departments.json")).departments.map((d) => d.id);
+const pkgOf = (n: string) => load(join(repo, "packages/naive/library", "packages", n, "package.json"));
+const FUNCTIONS = () => load(join(repo, "packages/naive/src/functions/departments.json")).departments.map((d: { id: string }) => d.id);
 
 /**
  * The manifest venture.json declares (P-3), with what is derived when it does not declare it:
  * identity, phase, governance, function owners, and the packages and kits in use.
  */
-export async function manifest(dir) {
+export async function manifest(dir: string) {
   const v = load(join(dir, "venture.json"));
   const names = PACKAGE_NAMES();
-  let derived = null;
+  let derived: string[] | null = null;
   if (!v.packages) {
     // The packages that fit the phase now, plus every package that already holds a record.
     const { packages } = await import("./packages.ts");
     const p = packages(dir);
-    const holding = names.filter((n) => { const k = pkgOf(n); return (k.records ?? []).length && existsSync(ventureFile(dir, n)) && readdirSync(ventureFile(dir, n)).some((f) => /\.(json|md|mdx)$/.test(f)); });
-    derived = [...new Set([...p.core.filter((x) => x.in === "now").map((x) => x.id), ...holding])];
+    const holding = names.filter((n: string) => { const k = pkgOf(n); return (k.records ?? []).length && existsSync(ventureFile(dir, n)) && readdirSync(ventureFile(dir, n)).some((f) => /\.(json|md|mdx)$/.test(f)); });
+    derived = [...new Set<string>([...p.core.filter((x: { in: string }) => x.in === "now").map((x: { id: string }) => x.id), ...holding])];
   }
-  const used = v.packages ?? derived;
-  const owners = v.functions ?? {};
-  const fnOf = (n) => { const k = names.includes(n) ? pkgOf(n) : {}; return k.function ?? k.department ?? null; };
+  const used: string[] = v.packages ?? derived;
+  const owners: Record<string, { owner?: string }> = v.functions ?? {};
+  const fnOf = (n: string): string | null => { const k = names.includes(n) ? pkgOf(n) : {}; return k.function ?? k.department ?? null; };
   const solo = !(v.members?.length);
-  const functions = [...new Set(used.map(fnOf).filter(Boolean))].map((f) => ({ function: f, owner: owners[f]?.owner ?? (solo ? "the founder" : null), declared: !!owners[f], packages: used.filter((n) => fnOf(n) === f) }));
+  const functions = [...new Set(used.map(fnOf).filter((f): f is string => Boolean(f)))].map((f): { function: string, owner: string | null | undefined, declared: boolean, packages: string[] } => ({ function: f, owner: owners[f]?.owner ?? (solo ? "the founder" : null), declared: !!owners[f], packages: used.filter((n) => fnOf(n) === f) }));
   for (const [f, o] of Object.entries(owners)) if (!functions.some((x) => x.function === f)) functions.push({ function: f, owner: o.owner, declared: true, packages: [] });
   return {
     identity: { id: v.id, name: v.name, kind: v.kind ?? "venture", parent: v.parent, owner: v.owner, status: v.status },
     phase: v.phase,
     governance: { governed_by: v.governed_by ?? null, legal_form: v.form?.legal_form ?? "none", members: v.members ?? [], decision_rights: existsSync(join(ventureFile(dir, "governance/decision-rights.json"))) ? "governance/decision-rights.json" : "the framework's template" },
     functions,
-    packages: { declared: !!v.packages, list: used.map((n) => ({ name: n, kind: names.includes(n) ? pkgOf(n).kind : null, known: names.includes(n) })) },
-    kits: (v.kits ?? []).map((k) => ({ ...k, note: "a kit is Mentura's; the framework checks only that it names a package the venture uses" })),
+    packages: { declared: !!v.packages, list: used.map((n: string) => ({ name: n, kind: names.includes(n) ? pkgOf(n).kind : null, known: names.includes(n) })) },
+    kits: (v.kits ?? []).map((k: Record<string, unknown>) => ({ ...k, note: "a kit is Mentura's; the framework checks only that it names a package the venture uses" })),
   };
 }
 
 /** Errors in what venture.json declares (P-3): unknown packages and functions, kits extending a package not in use, an owner missing. */
-export function checkManifest(dir) {
+export function checkManifest(dir: string) {
   const v = load(join(dir, "venture.json"));
   const names = PACKAGE_NAMES(), fns = FUNCTIONS();
-  const errors = [];
+  const errors: string[] = [];
   for (const n of v.packages ?? []) if (!names.includes(n)) errors.push(`venture.json packages: ${n} is not a Naive package (one of ${names.join(", ")})`);
-  for (const [f, o] of Object.entries(v.functions ?? {})) {
+  for (const [f, o] of Object.entries<{ owner?: string } | null>(v.functions ?? {})) {
     if (!fns.includes(f)) errors.push(`venture.json functions: ${f} is not a function (one of ${fns.join(", ")})`);
     if (!o?.owner) errors.push(`venture.json functions: ${f} has no owner; every function has one accountable owner`);
   }

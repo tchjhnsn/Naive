@@ -9,7 +9,7 @@ import { checkUserFrameworks, listFrameworks, newFramework, publishFramework, re
 const ws = mkdtempSync(join(tmpdir(), "naive-fw-"));
 writeFileSync(join(ws, "naive-workspace.json"), JSON.stringify({ schema: "everything-ecosystem", schema_version: "0.5.0", ventures: ["v"] }));
 mkdirSync(join(ws, "v"));
-const cli = (...a) => spawnSync("node", [new URL("../interfaces/cli/naive.mjs", import.meta.url).pathname, ...a], { cwd: join(ws, "v"), encoding: "utf8" });
+const cli = (...a: string[]) => spawnSync("node", [new URL("../interfaces/cli/naive.mjs", import.meta.url).pathname, ...a], { cwd: join(ws, "v"), encoding: "utf8" });
 
 // new scaffolds the three files, and list marks built-in and workspace frameworks
 newFramework("now-what", join(ws, "v"), { owner: "Torian" });
@@ -17,7 +17,7 @@ for (const f of ["framework.json", "template.md", "playbook.md"]) assert.ok(exis
 const all = listFrameworks(join(ws, "v")).frameworks;
 assert.ok(all.some((f) => f.id === "telos" && f.source === "built-in"));
 assert.ok(all.some((f) => f.id === "now-what" && f.source === "workspace"));
-assert.equal(resolveFramework("now-what", join(ws, "v")).source, "workspace", "a venture resolves a workspace framework like a built-in one");
+assert.equal(resolveFramework("now-what", join(ws, "v"))?.source, "workspace", "a venture resolves a workspace framework like a built-in one");
 assert.throws(() => newFramework("now-what", ws), /already exists/);
 assert.throws(() => newFramework("Bad Id", ws), /lowercase/);
 assert.match(cli("framework", "list").stdout, /\[workspace\] now-what/);
@@ -47,7 +47,7 @@ assert.deepEqual(Object.keys(bundle.files).sort(), ["framework.json", "playbook.
 assert.equal(publishFramework("now-what", ws).code, 2);
 assert.equal(cli("framework", "publish", "now-what").status, 2);
 writeFileSync(join(ws, "frameworks/now-what/playbook.md"), "Copy governance/board into the deck.\n");
-assert.match(publishFramework("now-what", ws, { dryRun: true }).problems.join("\n"), /record-path "governance\/board"/, "a record path the framework does not map to is still a leak");
+assert.match((publishFramework("now-what", ws, { dryRun: true }).problems ?? []).join("\n"), /record-path "governance\/board"/, "a record path the framework does not map to is still a leak");
 writeFileSync(join(ws, "frameworks/now-what/playbook.md"), "token: ghp_" + "a".repeat(36) + "\n");
 assert.equal(publishFramework("now-what", ws, { dryRun: true }).code, 1, "a secret in the bundle fails the dry run");
 console.log("user frameworks: list, new, check and publish --dry-run behave");

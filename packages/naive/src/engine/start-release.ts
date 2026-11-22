@@ -15,14 +15,15 @@ import { svg } from "./release-card.ts";
 import { answer, readRelease } from "./release-read.ts";
 
 const args = process.argv.slice(2);
-const opt = (n) => { const i = args.indexOf(`--${n}`); return i >= 0 ? args[i + 1] : undefined; };
-const values = new Set(["port", "get", "now"].flatMap((n) => (opt(n) !== undefined ? [opt(n)] : [])));
+const opt = (n: string) => { const i = args.indexOf(`--${n}`); return i >= 0 ? args[i + 1] : undefined; };
+const values = new Set(["port", "get", "now"].flatMap((n) => { const v = opt(n); return v !== undefined ? [v] : []; }));
 const dir = args.find((a) => !a.startsWith("--") && !values.has(a));
 if (!dir || !existsSync(join(dir, "venture.json"))) { console.error("usage: node packages/naive/src/engine/start-release.ts <venture dir> [--port n] | --get <path>"); process.exit(2); }
 if (!readRelease(dir)) { console.error(`no release in ${dir}: run node packages/naive/src/router/orchestration/build-release.mjs ${dir} first`); process.exit(1); }
 
-if (opt("get") !== undefined) {
-  const a = answer(dir, "GET", opt("get"), { draw: svg });
+const get = opt("get");
+if (get !== undefined) {
+  const a = answer(dir, "GET", get, { draw: svg });
   process.stdout.write(a.body);
   process.exit(a.status < 400 ? 0 : 1);
 }
@@ -30,12 +31,12 @@ if (opt("get") !== undefined) {
 const port = opt("port") === undefined ? 4330 : Number(opt("port"));
 if (!Number.isInteger(port) || port < 0 || port > 65535) { console.error(`--port ${opt("port")} is not a port`); process.exit(2); }
 const server = createServer((req, res) => {
-  const a = answer(dir, req.method, req.url ?? "/", { draw: svg });
+  const a = answer(dir, req.method ?? "", req.url ?? "/", { draw: svg });
   res.writeHead(a.status, { "content-type": a.type, "cache-control": "no-cache", ...(a.allow ? { allow: a.allow } : {}) });
   res.end(req.method === "HEAD" ? undefined : a.body);
 });
 server.listen(port, "127.0.0.1", () => {
   const m = readRelease(dir);
-  console.log(`serving release ${m.release} of ${m.venture} read-only at http://127.0.0.1:${/** @type {import("node:net").AddressInfo} */ (server.address()).port}/`);
+  console.log(`serving release ${m?.release} of ${m?.venture} read-only at http://127.0.0.1:${(server.address() as import("node:net").AddressInfo).port}/`);
 });
 for (const s of ["SIGINT", "SIGTERM"]) process.on(s, () => server.close(() => process.exit(0)));

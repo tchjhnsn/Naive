@@ -6,7 +6,7 @@
 import { existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
-export function* walk(dir, depth = 0) {
+export function* walk(dir: string, depth = 0): Generator<string> {
   if (depth > 6 || !existsSync(dir)) return;
   for (const e of readdirSync(dir, { withFileTypes: true })) {
     if ([".git", "node_modules", ".naive", "raw"].includes(e.name)) continue;
@@ -15,15 +15,21 @@ export function* walk(dir, depth = 0) {
     else yield p;
   }
 }
-export function* transcriptFiles(dir) {
+export function* transcriptFiles(dir: string): Generator<string> {
   for (const p of [...walk(dir)].filter((p) => p.endsWith(".jsonl")).sort()) yield p;
 }
 
 // The human's own words in one transcript line, or null: no tool results, meta lines, commands or reminders.
-export function humanText(entry) {
+// A transcript line as parsed: unchecked, so every field is read with care.
+type TranscriptLine = {
+  type?: unknown, isMeta?: unknown, isSidechain?: unknown, isCompactSummary?: unknown, isVisibleInTranscriptOnly?: unknown,
+  message?: { role?: unknown, content?: unknown },
+};
+
+export function humanText(entry: TranscriptLine | null | undefined): string | null {
   if (entry?.type !== "user" || entry.isMeta || entry.isSidechain || entry.isCompactSummary || entry.isVisibleInTranscriptOnly || entry.message?.role !== "user") return null;
   const c = entry.message.content;
-  const parts = typeof c === "string" ? [c] : Array.isArray(c) ? c.filter((b) => b?.type === "text").map((b) => b.text) : [];
+  const parts = typeof c === "string" ? [c] : Array.isArray(c) ? c.filter((b: { type?: unknown, text?: unknown } | null) => b?.type === "text").map((b: { text?: unknown }) => b.text) : [];
   const text = parts.join("\n")
     .replace(/<system-reminder>[\s\S]*?<\/system-reminder>/g, "")
     .replace(/<(command-[a-z-]+|local-command-[a-z-]+|bash-[a-z-]+|task-notification|user-prompt-submit-hook|ide_[a-z_]+)>[\s\S]*?<\/\1>/g, "")

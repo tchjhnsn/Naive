@@ -11,14 +11,15 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { entries } from "../core/provenance.ts";
 import { ventureFile } from "../core/venture-paths.ts";
+import type { PortItem } from "./port-venture.ts";
 
 const repo = new URL("../../../..", import.meta.url).pathname;
 let failed = 0;
-const expect = (name, ok, detail = "") => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${detail}`}`); if (!ok) failed++; };
-const naive = (...a) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/naive.mjs"), ...a], { encoding: "utf8" });
-const git = (d, ...a) => spawnSync("git", ["-C", d, ...a], { encoding: "utf8", env: { ...process.env, GIT_AUTHOR_NAME: "t", GIT_AUTHOR_EMAIL: "t@t", GIT_COMMITTER_NAME: "t", GIT_COMMITTER_EMAIL: "t@t" } });
+const expect = (name: string, ok: unknown, detail = "") => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${detail}`}`); if (!ok) failed++; };
+const naive = (...a: string[]) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/naive.mjs"), ...a], { encoding: "utf8" });
+const git = (d: string, ...a: string[]) => spawnSync("git", ["-C", d, ...a], { encoding: "utf8", env: { ...process.env, GIT_AUTHOR_NAME: "t", GIT_AUTHOR_EMAIL: "t@t", GIT_COMMITTER_NAME: "t", GIT_COMMITTER_EMAIL: "t@t" } });
 // Every file under a folder with its bytes' hash and mode, .git included, so a move can be compared.
-const tree = (d, r = "") => readdirSync(join(d, r), { withFileTypes: true }).flatMap((e) => e.isDirectory() ? tree(d, join(r, e.name))
+const tree = (d: string, r = ""): string[] => readdirSync(join(d, r), { withFileTypes: true }).flatMap((e) => e.isDirectory() ? tree(d, join(r, e.name))
   : e.isSymbolicLink() ? [`${join(r, e.name)} link`] : [`${join(r, e.name)} ${createHash("sha256").update(readFileSync(join(d, r, e.name))).digest("hex")} ${statSync(join(d, r, e.name)).mode}`]).sort();
 
 const ws = realpathSync(mkdtempSync(join(tmpdir(), "port-test-")));
@@ -45,13 +46,13 @@ const p1 = naive("port", app, "--venture", dir, "--links", join(ws, "code"));
 const p2 = naive("port", notes, "--venture", dir);
 expect("port writes a plan", p1.status === 0 && p2.status === 0 && existsSync(ventureFile(dir, ".release/port-plan.json")), p1.stderr + p2.stderr);
 const planned = JSON.parse(readFileSync(ventureFile(dir, ".release/port-plan.json"), "utf8"));
-const item = (f) => planned.items.find((i) => i.from === f);
+const item = (f: string) => planned.items.find((i: PortItem) => i.from === f);
 expect("one run per folder adds to one plan", planned.items.length === 2 && item(app)?.action === "move" && item(notes)?.action === "move");
 expect("a folder goes to the venture's codebase/ under its own name", item(app).to === join(dir, "codebase", "app") && item(notes).to === join(dir, "codebase", "notes"));
 expect("writing the plan moves nothing", existsSync(app) && existsSync(notes) && !existsSync(join(dir, "codebase")));
-expect("the plan names the repository's worktree", item(app).git?.worktrees.some((w) => w.endsWith("app-side")) && /worktree repair/.test(item(app).warnings.join(" ")));
+expect("the plan names the repository's worktree", item(app).git?.worktrees.some((w: string) => w.endsWith("app-side")) && /worktree repair/.test(item(app).warnings.join(" ")));
 expect("the plan says uncommitted work moves with it", /2 uncommitted changes/.test(item(app).warnings.join(" ")));
-expect("the plan names a link into the folder that would break", item(app).links.some((l) => l.link === join(ws, "code", "app-src")));
+expect("the plan names a link into the folder that would break", item(app).links.some((l: { link: string }) => l.link === join(ws, "code", "app-src")));
 expect("the plan opens no file: nothing of what is inside is in it", !/NOT_A_REAL_KEY|Mondays/.test(JSON.stringify(planned)));
 const again = naive("port", app, "--venture", dir);
 expect("planning a folder twice replaces its item", JSON.parse(readFileSync(ventureFile(dir, ".release/port-plan.json"), "utf8")).items.length === 2, again.stderr);
@@ -73,7 +74,7 @@ expect("each folder is gone from where it was", !existsSync(app) && !existsSync(
 expect("every file arrives byte for byte, .git and uncommitted work included", JSON.stringify(tree(join(dir, "codebase/app"))) === JSON.stringify(before.app) && JSON.stringify(tree(join(dir, "codebase/notes"))) === JSON.stringify(before.notes));
 expect("the repository's history is unchanged", git(join(dir, "codebase/app"), "rev-parse", "HEAD").stdout === before.head);
 const sources = JSON.parse(readFileSync(ventureFile(dir, "knowledge/sources.json"), "utf8"));
-expect("each folder is a read-only filesystem source, by its path in the venture", ["app", "notes"].every((id) => sources.sources.some((s) => s.id === id && s.connector === "filesystem" && s.writes === "none" && s.root === `codebase/${id}` && /source of truth/.test(s.note))));
+expect("each folder is a read-only filesystem source, by its path in the venture", ["app", "notes"].every((id) => sources.sources.some((s: { id: string, connector: string, writes: string, root: string, note: string }) => s.id === id && s.connector === "filesystem" && s.writes === "none" && s.root === `codebase/${id}` && /source of truth/.test(s.note))));
 const log = entries(dir).filter((e) => e.activity === "port");
 expect("every move is in provenance with the path it came from", log.some((e) => e.entity === "codebase/app" && e.derived_from?.[0] === `file://${app}`) && log.some((e) => e.entity === "codebase/notes"));
 expect("apply says how to repair the worktree", /worktree repair/.test(a.stdout));
@@ -89,7 +90,7 @@ expect("applying twice moves nothing more", twice.status === 0 && /moved 0 folde
 const other = join(ws, "other", "notes");
 mkdirSync(other, { recursive: true });
 const clash = naive("port", other, "--venture", dir);
-const cp = JSON.parse(readFileSync(ventureFile(dir, ".release/port-plan.json"), "utf8")).items.find((i) => i.from === other);
+const cp = JSON.parse(readFileSync(ventureFile(dir, ".release/port-plan.json"), "utf8")).items.find((i: PortItem) => i.from === other);
 expect("a port never overwrites: the item is left, with the reason", clash.status === 0 && cp?.action === "leave" && /never overwrites/.test(cp.reason));
 
 // A folder replaced by another of the same name after the plan is refused.

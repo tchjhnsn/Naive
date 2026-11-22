@@ -19,12 +19,19 @@
 import { appendFileSync, existsSync, mkdirSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 import { leaks } from "./check-leaks.ts";
+import type { NaiveConfig } from "../records/types/records.d.ts";
+
+type PublishLint = NonNullable<NaiveConfig["publish_lint"]>;
+export type Level = "off" | "warn" | "error";
+/** A page's frontmatter: every value a string or a list, and publish a boolean. */
+export type Meta = { [key: string]: string | string[] | boolean };
+export type LintConfig = { rules: Record<string, Level>, marks: string[], waived: NonNullable<PublishLint["waived"]> };
 
 const repo = new URL("../../../..", import.meta.url).pathname;
-const load = (f) => { try { return JSON.parse(readFileSync(f, "utf8")); } catch { return null; } };
+const load = (f: string) => { try { return JSON.parse(readFileSync(f, "utf8")); } catch { return null; } };
 
-export const LEVELS = ["off", "warn", "error"];
-export const RULES = [
+export const LEVELS: Level[] = ["off", "warn", "error"];
+export const RULES: { id: string, level: Level, description: string }[] = [
   { id: "copy-distance", level: "warn", description: "Marketing content copies a run of words from the internal record it is a variant of" },
   { id: "leaks", level: "error", description: "Public text carries an internal term (packages/naive/src/engine/internal-terms.json)" },
   { id: "brand", level: "warn", description: "The brand lint (packages/naive/src/engine/brand-lint.ts) found something" },
@@ -35,7 +42,7 @@ export const RULES = [
 ];
 export const MARKS = ["Nike", "Just Do It", "Apple", "Amazon"];
 
-const SECRETS = [
+const SECRETS: [string, RegExp][] = [
   ["aws-access-key", /\bAKIA[0-9A-Z]{16}\b/g],
   ["openai-or-anthropic-key", /\bsk-(?:ant-)?[A-Za-z0-9_-]{20,}\b/g],
   ["github-token", /\bgh[pousr]_[A-Za-z0-9]{30,}\b/g],
@@ -49,49 +56,49 @@ const PHONE = /(?<![\w.])(?:\+?1[\s.-]?)?\(?\d{3}\)?[\s.-]\d{3}[\s.-]\d{4}(?![\w
 const CLAIM_NUMBER = /(\$\s?\d|\d[\d,.]*\s?(%|x\b|percent|k\b|m\b|million|billion|thousand|times|customers|users|clients|teams|companies|founders|people))/i;
 const CLAIM_CUSTOMER = /\b(customers?|trusted by|used by|loved by|chosen by)\b/i;
 
-const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-const walk = (p) => statSync(p).isDirectory() ? readdirSync(p).filter((n) => !n.startsWith(".")).flatMap((n) => walk(join(p, n))) : [p];
-const mask = (s) => s.length <= 8 ? "****" : `${s.slice(0, 4)}...${"*".repeat(4)}`;
+const esc = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const walk = (p: string): string[] => statSync(p).isDirectory() ? readdirSync(p).filter((n) => !n.startsWith(".")).flatMap((n) => walk(join(p, n))) : [p];
+const mask = (s: string) => s.length <= 8 ? "****" : `${s.slice(0, 4)}...${"*".repeat(4)}`;
 
 /** Frontmatter with list support: { meta, body }. sources may be `[a, b]` or a block of `- a` lines. */
-export function frontmatter(text) {
+export function frontmatter(text: string): { meta: Meta, body: string } {
   const m = text.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/);
   if (!m) return { meta: {}, body: text };
-  const meta = {}; let key = null;
+  const meta: Meta = {}; let key: string | null = null;
   for (const line of m[1].split("\n")) {
     const kv = line.match(/^([A-Za-z_]+):\s*(.*)$/), item = line.match(/^\s+-\s+(.*)$/);
     if (kv) {
       key = kv[1]; const v = kv[2].trim();
       meta[key] = v.startsWith("[") ? v.slice(1, -1).split(",").map((s) => s.trim().replace(/^["']|["']$/g, "")).filter(Boolean)
         : v === "" ? [] : v.replace(/^["']|["']$/g, "");
-    } else if (item && key && Array.isArray(meta[key])) meta[key].push(item[1].trim().replace(/^["']|["']$/g, ""));
+    } else if (item && key) { const list = meta[key]; if (Array.isArray(list)) list.push(item[1].trim().replace(/^["']|["']$/g, "")); }
   }
   if (typeof meta.publish === "string") meta.publish = meta.publish === "true";
   return { meta, body: m[2] };
 }
 
 /** The publish_lint section of the venture's naive.config.json, with the defaults filled in. */
-export function configFor(venture) {
-  const pl = (venture && load(join(venture, "naive.config.json"))?.publish_lint) || {};
-  const rules = Object.fromEntries(RULES.map((r) => [r.id, LEVELS.includes(pl.rules?.[r.id]) ? pl.rules[r.id] : r.level]));
+export function configFor(venture?: string): LintConfig {
+  const pl: PublishLint & { rules?: Record<string, Level> } = (venture && load(join(venture, "naive.config.json"))?.publish_lint) || {};
+  const rules = Object.fromEntries(RULES.map((r): [string, Level] => { const set = pl.rules?.[r.id]; return [r.id, set && LEVELS.includes(set) ? set : r.level]; }));
   return { rules, marks: pl.marks ?? MARKS, waived: pl.waived ?? [] };
 }
 
-const visible = (body) => body.replace(/\{\/\*[\s\S]*?\*\/\}/g, "").replace(/<!--[\s\S]*?-->/g, "");
-const lineOf = (text, idx) => text.slice(0, idx).split("\n").length;
+const visible = (body: string) => body.replace(/\{\/\*[\s\S]*?\*\/\}/g, "").replace(/<!--[\s\S]*?-->/g, "");
+const lineOf = (text: string, idx: number) => text.slice(0, idx).split("\n").length;
 
 // A source counts when it is a URL or a file in the venture (or next to the page).
-function sourceOk(src, file, venture) {
+function sourceOk(src: string, file: string, venture: string | undefined) {
   if (/^https?:\/\//.test(src)) return true;
   return [venture && join(venture, src), join(dirname(file), src), resolve(src)].some((p) => p && existsSync(p));
 }
 
-function textStages(file, text, cfg, venture) {
-  const out = [], { meta, body } = frontmatter(text), vis = visible(body);
-  const add = (rule, idx, found, message) => out.push({ rule, file, line: lineOf(text, text.length - body.length + Math.max(0, body.indexOf(found))), text: found, message, published: meta.publish === true });
+function textStages(file: string, text: string, cfg: LintConfig, venture: string | undefined) {
+  const out: Finding[] = [], { meta, body } = frontmatter(text), vis = visible(body);
+  const add = (rule: string, idx: number | undefined, found: string, message: string) => out.push({ rule, file, line: lineOf(text, text.length - body.length + Math.max(0, body.indexOf(found))), text: found, message, published: meta.publish === true });
 
   // claims
-  const sources = Array.isArray(meta.sources) ? meta.sources : meta.sources ? [meta.sources] : [];
+  const sources = Array.isArray(meta.sources) ? meta.sources : typeof meta.sources === "string" && meta.sources ? [meta.sources] : [];
   const good = sources.filter((s) => sourceOk(s, file, venture));
   if (!good.length) {
     for (const sentence of vis.replace(/^#+.*$/gm, "").split(/(?<=[.!?])\s+|\n/).map((s) => s.replace(/<[^>]+>|\|/g, " ")).map((s) => s.trim()).filter(Boolean)) {
@@ -107,20 +114,16 @@ function textStages(file, text, cfg, venture) {
   for (const m of vis.matchAll(PHONE)) add("personal-data", m.index, m[0], "carries a phone number");
   // secrets: on the whole file, frontmatter included, and never echoed
   for (const [kind, re] of SECRETS) for (const m of text.matchAll(re))
-    out.push({ rule: "secrets", file, line: lineOf(text, m.index), text: mask(m[0]), message: `carries something shaped like a ${kind}: remove it and rotate it`, published: meta.publish === true });
+    out.push({ rule: "secrets", file, line: lineOf(text, m.index ?? 0), text: mask(m[0]), message: `carries something shaped like a ${kind}: remove it and rotate it`, published: meta.publish === true });
   return out;
 }
 
-/** @typedef {{ rule: string, file: string, line?: number, text: string, message: string, published: boolean, severity?: string, term_severity?: string, waived?: boolean }} Finding */
+export type Finding = { rule: string, file: string, line?: number, text: string, message: string, published: boolean, severity?: string, term_severity?: string, waived?: boolean };
 
-/**
- * Runs every stage in order. Returns { ok, findings, stages }.
- * @param {string[]} paths
- * @param {{ venture?: string }} [opts]
- */
-export async function check(paths, { venture } = {}) {
-  const cfg = configFor(venture), findings = /** @type {Finding[]} */ ([]), stages = [];
-  const on = (r) => cfg.rules[r] !== "off";
+/** Runs every stage in order. Returns { ok, findings, stages }. */
+export async function check(paths: string[], { venture }: { venture?: string } = {}) {
+  const cfg = configFor(venture), findings = ([]) as Finding[], stages: string[] = [];
+  const on = (r: string) => cfg.rules[r] !== "off";
   const files = paths.filter(existsSync).flatMap(walk).filter((f) => /\.(mdx?|html|txt)$/.test(f));
   const publishedOf = new Map(files.map((f) => [resolve(f), frontmatter(readFileSync(f, "utf8")).meta.publish === true]));
 
@@ -130,7 +133,7 @@ export async function check(paths, { venture } = {}) {
     if (existsSync(join(venture, CONTENT))) {
       stages.push("copy-distance");
       const given = new Set(files.map((f) => resolve(f)));
-      for (const r of pub(venture).errors.filter((r) => given.has(resolve(venture, r.file)))) for (const e of r.errors.filter((e) => e.startsWith("copies")))
+      for (const r of pub(venture).errors.filter((r: { file: string }) => given.has(resolve(venture, r.file)))) for (const e of r.errors.filter((e: string) => e.startsWith("copies")))
         findings.push({ rule: "copy-distance", file: join(venture, r.file), text: "", message: e, published: r.publish === true });
     }
   }
@@ -160,34 +163,31 @@ export async function check(paths, { venture } = {}) {
   return { ok: !findings.some((f) => f.severity === "error" && !f.waived), stages, findings };
 }
 
-export const logFile = (venture, log) => log ?? join(venture ?? process.cwd(), ".naive", "lint-findings.jsonl");
+export const logFile = (venture: string | undefined, log: string | undefined) => log ?? join(venture ?? process.cwd(), ".naive", "lint-findings.jsonl");
 
-export function append(file, findings, at = new Date().toISOString()) {
+export function append(file: string, findings: Finding[], at = new Date().toISOString()) {
   mkdirSync(dirname(file), { recursive: true });
   appendFileSync(file, findings.map((f) => JSON.stringify({ at, ...f }) + "\n").join(""));
 }
 
-/**
- * The loop: which rules are waived most often, and leaks found in files already published.
- * @param {string} file
- * @param {{ venture?: string }} [opts]
- */
-export function report(file, { venture } = {}) {
-  const rows = existsSync(file) ? readFileSync(file, "utf8").split("\n").filter(Boolean).map((l) => { try { return JSON.parse(l); } catch { return null; } }).filter(Boolean) : [];
+/** The loop: which rules are waived most often, and leaks found in files already published. */
+export function report(file: string, { venture }: { venture?: string } = {}) {
+  const rows: (Finding & { at: string })[] = existsSync(file) ? readFileSync(file, "utf8").split("\n").filter(Boolean).map((l) => { try { return JSON.parse(l); } catch { return null; } }).filter(Boolean) : [];
   const { waived } = configFor(venture);
-  const isWaived = (f) => f.waived || waived.some((w) => w.rule === f.rule && (!w.file || w.file === f.file) && (!w.text || w.text === f.text));
-  const counts = {};
+  const isWaived = (f: Finding) => f.waived || waived.some((w) => w.rule === f.rule && (!w.file || w.file === f.file) && (!w.text || w.text === f.text));
+  const counts: Record<string, { rule: string, findings: number, waived: number }> = {};
   for (const f of rows) { const c = counts[f.rule] ??= { rule: f.rule, findings: 0, waived: 0 }; c.findings++; if (isWaived(f)) c.waived++; }
-  const seen = new Set();
+  const seen = new Set<string>();
   const afterPublish = rows.filter((f) => ["leaks", "secrets"].includes(f.rule) && f.published).filter((f) => { const k = `${f.rule}|${f.file}|${f.text}`; return !seen.has(k) && seen.add(k); });
   return { runs: new Set(rows.map((r) => r.at)).size, findings: rows.length, most_waived: Object.values(counts).filter((c) => c.waived).sort((a, b) => b.waived - a.waived || a.rule.localeCompare(b.rule)), leaks_after_publish: afterPublish };
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const argv = process.argv.slice(2);
-  const val = (n) => { const i = argv.indexOf(`--${n}`); return i >= 0 ? argv[i + 1] : undefined; };
-  const venture = val("venture") ? resolve(val("venture")) : undefined;
-  const json = argv.includes("--json"), log = logFile(venture, val("log") && resolve(val("log")));
+  const val = (n: string) => { const i = argv.indexOf(`--${n}`); return i >= 0 ? argv[i + 1] : undefined; };
+  const ventureArg = val("venture"), logArg = val("log");
+  const venture = ventureArg ? resolve(ventureArg) : undefined;
+  const json = argv.includes("--json"), log = logFile(venture, logArg && resolve(logArg));
   const args = argv.filter((a, i) => !a.startsWith("--") && !["--venture", "--log"].includes(argv[i - 1]));
   if (args[0] === "check") args.shift();
   if (argv.includes("--report")) {

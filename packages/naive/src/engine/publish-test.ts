@@ -12,10 +12,10 @@ import { checkVenture } from "./check-publications.ts";
 
 const dir = mkdtempSync(join(tmpdir(), "publish-"));
 let failed = 0;
-const expect = (name, ok, detail = "") => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${detail}`}`); if (!ok) failed++; };
-const refused = async (fn, match) => { try { await fn(); return false; } catch (e) { return e instanceof Refused && (!match || match.test(e.message)); } };
-const w = (rel, text) => { mkdirSync(join(dir, rel, ".."), { recursive: true }); writeFileSync(join(dir, rel), typeof text === "string" ? text : JSON.stringify(text, null, 2)); };
-const load = (rel) => JSON.parse(readFileSync(join(dir, rel), "utf8"));
+const expect = (name: string, ok: unknown, detail = "") => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${detail}`}`); if (!ok) failed++; };
+const refused = async (fn: () => unknown, match?: RegExp) => { try { await fn(); return false; } catch (e) { return e instanceof Refused && (!match || match.test(e.message)); } };
+const w = (rel: string, text: unknown) => { mkdirSync(join(dir, rel, ".."), { recursive: true }); writeFileSync(join(dir, rel), typeof text === "string" ? text : JSON.stringify(text, null, 2)); };
+const load = (rel: string) => JSON.parse(readFileSync(join(dir, rel), "utf8"));
 const decisions = () => readdirSync(join(dir, "decisions")).map((f) => load(`decisions/${f}`));
 
 w("venture.json", { id: "t", name: "t", parent: null, phase: "discovery", owner: "self", status: "active", layers: {} });
@@ -32,7 +32,7 @@ const b = build(dir, "site");
 expect("build compiles the channel's approved MDX into the artifact's output", b.sources.length === 1 && readFileSync(join(dir, b.output), "utf8").includes("Founders lose weeks"));
 expect("the output has no MDX comments and passes the leak check", b.leaks.length === 0 && !readFileSync(join(dir, b.output), "utf8").includes("internal:"));
 const art = load("artifacts/site.json");
-expect("the artifact is built from the MDX and the record it varies, with the output's sha256", art.built_from.some((x) => x.record === "foundation/problem.json") && art.output.sha256 === b.sha256);
+expect("the artifact is built from the MDX and the record it varies, with the output's sha256", art.built_from.some((x: { record: string }) => x.record === "foundation/problem.json") && art.output.sha256 === b.sha256);
 w("marketing/content/leak.mdx", "---\npublish: true\napproved_by: Torian\nchannel: x\n---\nSee foundation/icp.json and EE-012.\n");
 const bx = build(dir, "x");
 expect("build runs check-leaks on the output and reports leaks", bx.leaks.length >= 2);
@@ -52,7 +52,7 @@ expect("with no governance/delegation.json, --by alone does not make a founder",
 rmSync(bare, { recursive: true, force: true });
 
 // The CLI: naive publish check goes to the publish lint, everything else to the gate.
-const naive = (...a) => spawnSync("node", [new URL("../interfaces/cli/naive.mjs", import.meta.url).pathname, ...a], { encoding: "utf8" });
+const naive = (...a: string[]) => spawnSync("node", [new URL("../interfaces/cli/naive.mjs", import.meta.url).pathname, ...a], { encoding: "utf8" });
 w("pages/secret.mdx", "---\ntitle: Secret\n---\nUse key sk-ant-abcdefghijklmnopqrstuvwxyz123456 to start.\n");
 const lc = naive("publish", "check", join(dir, "pages/secret.mdx"), "--venture", dir);
 expect("naive publish check runs the publish lint", lc.status === 1 && /ERROR\s+secrets/.test(lc.stderr) && !/no channel/.test(lc.stderr), lc.stderr);
@@ -91,15 +91,15 @@ expect("a stale artifact is refused until it is rebuilt", await refused(() => pu
 w("marketing/content/home.mdx", "---\nvariant_of: foundation/problem.json#statement\npublish: true\napproved_by: Torian\nchannel: site\n---\nFounders lose weeks to decisions a day would settle.\n");
 const b2 = build(dir, "site");
 const p2 = await publish(dir, "site", { by: "Torian" });
-expect("republishing keeps the previous version", p2.entry.sha256 === b2.sha256 && p2.entry.previous[0].sha256 === b.sha256 && !p2.entry.stale);
+expect("republishing keeps the previous version", p2.entry.sha256 === b2.sha256 && p2.entry.previous?.[0].sha256 === b.sha256 && !p2.entry.stale);
 
 // Rollback
 const r = await rollback(dir, "site", { by: "Torian" });
-expect("rollback restores the previous version and keeps the undone one", r.entry.sha256 === b.sha256 && r.entry.previous[0].sha256 === b2.sha256 && load(r.decision).publish.action === "rollback");
+expect("rollback restores the previous version and keeps the undone one", r.entry.sha256 === b.sha256 && r.entry.previous?.[0].sha256 === b2.sha256 && load(r.decision).publish.action === "rollback");
 expect("check-publications passes after a rollback", checkVenture(dir).errors.length === 0, JSON.stringify(checkVenture(dir).errors));
 
 // Embargo
-const m = manifest(dir); m.entries.find((e) => e.channel === "site").not_before = "2999-01-01T00:00:00Z"; w("governance/publications.json", m);
+const m = manifest(dir); const site = m.entries.find((e) => e.channel === "site"); if (site) site.not_before = "2999-01-01T00:00:00Z"; w("governance/publications.json", m);
 build(dir, "site");
 expect("an embargoed publish is refused before not_before", await refused(() => publish(dir, "site", { by: "Torian" }), /embargoed/));
 expect("after not_before it goes", !(await refused(() => publish(dir, "site", { by: "Torian", now: new Date("3000-01-01") }))));

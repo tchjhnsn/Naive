@@ -3,7 +3,7 @@
 // or its checks pass.
 
 /** "clear" once a person confirmed it or its checks passed. Otherwise "agent". */
-export function provenanceOf({ use_model, confirmed, checksPass }) {
+export function provenanceOf({ use_model, confirmed, checksPass }: { use_model?: unknown, confirmed?: boolean, checksPass?: boolean }): "clear" | "agent" {
   if (!Array.isArray(use_model) || use_model.length === 0) return "clear";
   if (confirmed || checksPass) return "clear";
   return "agent";

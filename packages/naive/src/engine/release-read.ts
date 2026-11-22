@@ -17,6 +17,24 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join, normalize } from "node:path";
 import { ventureFile } from "../core/venture-paths.ts";
+import type { Card } from "./release-card.ts";
+
+/** A route as a release holds it: in the release, a hole, or left out. */
+export type ReleaseRoute = { route: string, in: string, kind?: string, why?: string, live?: unknown, collection?: string };
+/** A named hole: what stays live, and where to read it. */
+export type ReleaseHole = { kind: string, route?: string, route_template?: string, name?: string, why?: string, live?: unknown, file?: string, field?: string };
+/** A frozen record in the release. */
+export type ReleaseRecord = { file: string, record?: string, route?: string, route_template: string, id?: string, as_of?: string, confirmed_by?: string, withheld_fields?: string[], sha256?: string };
+/** An open package in the release: what it froze, what stays live, and what it still lacks. */
+export type ReleasePackage = { id: string, title?: string, releasable?: boolean, frozen: string[], holes: string[], gaps: string[], blockers?: string[], shell: number | null };
+/** The release manifest, .release/release.json. */
+export type ReleaseManifest = {
+  release: string, venture: string, name?: string, phase?: string, built_at?: string, now?: string,
+  routes: ReleaseRoute[], holes: ReleaseHole[], records: ReleaseRecord[], commands?: Record<string, { built_from: unknown, result: unknown }>,
+  key?: unknown, left_out?: { file: string, why: string, fix?: string }[], withheld?: { private_records: number, private_folder_files: number },
+  packages: ReleasePackage[], items: Record<string, string[]>, incremental?: { route: string, file: string, from: string, at: string }[],
+  cache?: { key_hash: string, fresh: boolean, hits: number, misses: number, previous_key?: unknown },
+};
 
 export const RELEASE_DIR = ".release";
 export const MANIFEST = ".release/release.json";
@@ -24,24 +42,24 @@ export const CARD = ".release/card.json";
 export const RECORDS = ".release/records";
 
 /** The release manifest of a venture, or null when it has none. */
-export function readRelease(dir) {
+export function readRelease(dir: string): ReleaseManifest | null {
   const f = ventureFile(dir, MANIFEST);
   return existsSync(f) ? JSON.parse(readFileSync(f, "utf8")) : null;
 }
 
 /** The frozen copy of one record in a release, as text, or null. */
-export function frozenText(dir, file) {
+export function frozenText(dir: string, file: string) {
   const rel = normalize(file);
   if (rel.startsWith("..") || rel.startsWith("/")) return null;
   const f = join(ventureFile(dir, RECORDS), rel);
   return existsSync(f) ? readFileSync(f, "utf8") : null;
 }
 
-const parse = (file, text) => file.endsWith(".json") ? JSON.parse(text) : text;
-const json = (status, body) => ({ status, type: "application/json; charset=utf-8", body: JSON.stringify(body, null, 2) + "\n" });
+const parse = (file: string, text: string | null): unknown => text === null ? null : file.endsWith(".json") ? JSON.parse(text) : text;
+const json = (status: number, body: unknown) => ({ status, type: "application/json; charset=utf-8", body: JSON.stringify(body, null, 2) + "\n" });
 
 /** The index a reader starts from. */
-export function index(m) {
+export function index(m: ReleaseManifest) {
   return { release: m.release, venture: m.venture, name: m.name, phase: m.phase, built_at: m.built_at, now: m.now,
     routes: m.routes.filter((r) => r.in === "release").map((r) => r.route),
     holes: m.holes.map((h) => ({ kind: h.kind, route: h.route, name: h.name, why: h.why })),
@@ -50,7 +68,7 @@ export function index(m) {
 }
 
 /** What a route holds in a release: { status, body }. Matches a concrete route (product/kettle) to its entry. */
-export function resolveRoute(dir, m, route) {
+export function resolveRoute(dir: string, m: ReleaseManifest, route: string) {
   route = route.replace(/^\/+|\/+$/g, "");
   const exact = m.routes.find((r) => r.route === route);
   const entry = exact ?? m.routes.find((r) => r.route.endsWith("/[id]") && route.startsWith(r.route.slice(0, -4)) && !route.slice(r.route.length - 4).includes("/"));
@@ -66,8 +84,8 @@ export function resolveRoute(dir, m, route) {
     return out === undefined ? { status: 404, body: { route, empty: true, why: entry.why ?? "not in this release" } } : { status: 200, body: { route, frozen: true, built_from: out.built_from, result: out.result } };
   }
   const recs = m.records.filter((r) => r.route_template === entry.route);
-  const fieldHoles = (r) => m.holes.filter((h) => h.kind === "attribute" && h.file === r.file).map((h) => h.field);
-  const one = (r) => ({ file: r.file, as_of: r.as_of, confirmed_by: r.confirmed_by, ...(fieldHoles(r).length ? { live_fields: fieldHoles(r) } : {}), record: parse(r.file, frozenText(dir, r.file)) });
+  const fieldHoles = (r: ReleaseRecord) => m.holes.filter((h) => h.kind === "attribute" && h.file === r.file).map((h) => h.field);
+  const one = (r: ReleaseRecord) => ({ file: r.file, as_of: r.as_of, confirmed_by: r.confirmed_by, ...(fieldHoles(r).length ? { live_fields: fieldHoles(r) } : {}), record: parse(r.file, frozenText(dir, r.file)) });
   if (entry.collection === "list") {
     const items = m.records.filter((r) => r.route_template === `${entry.route}/[id]`);
     return { status: 200, body: { route, items: Object.fromEntries(items.map((r) => [r.id, one(r)])), holes } };
@@ -86,12 +104,11 @@ export function resolveRoute(dir, m, route) {
 /**
  * Answers one request against a venture's release. draw, when given, turns the card's data into an
  * image (the interface's job, O-7): draw(card) -> SVG text.
- * @param {string} dir
- * @param {string} method
- * @param {string} path
- * @param {{ draw?: (card: *) => string }} [opts]
  */
-export function answer(dir, method, path, { draw } = {}) {
+/** One answer: an HTTP status, a content type and the body, with allow on a 405. */
+export type Answer = { status: number, type: string, body: string, allow?: string };
+
+export function answer(dir: string, method: string, path: string, { draw }: { draw?: (_card: Card) => string } = {}): Answer {
   if (method !== "GET" && method !== "HEAD") return { ...json(405, { error: "a release is read-only: only GET and HEAD" }), allow: "GET, HEAD" };
   const m = readRelease(dir);
   if (!m) return json(503, { error: `no release in ${dir}: run node packages/naive/src/router/orchestration/build-release.mjs ${dir} first` });

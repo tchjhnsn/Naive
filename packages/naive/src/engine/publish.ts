@@ -30,46 +30,50 @@ import { artifacts } from "./check-artifacts.ts";
 import { leaks } from "./check-leaks.ts";
 import { check, frontmatter } from "./publish-lint.ts";
 import { record } from "../core/provenance.ts";
+import type { PublicationPolicy, Publications } from "../records/types/records.d.ts";
 
-const load = (f) => JSON.parse(readFileSync(f, "utf8"));
-const save = (f, x) => { mkdirSync(dirname(f), { recursive: true }); writeFileSync(f, JSON.stringify(x, null, 2) + "\n"); };
-const shaFile = (f) => createHash("sha256").update(readFileSync(f)).digest("hex");
+/** A publishing channel as the gate reads it; kind is read loosely, since older policies name kinds the schema no longer lists. */
+export type Channel = Pick<PublicationPolicy["channels"][number], "id" | "name"> & { kind?: string };
+export type Entry = Publications["entries"][number];
+/** What governance/delegation.json says about publishing: the founders, and the roles two-way publications are delegated to. */
+type PublishDelegation = { founder?: string[], delegations?: { class?: string, door?: string, role: string, people?: string[], max_exposure?: string }[] };
+type Reversibility = { how: string, takes?: string };
+
+const load = (f: string) => JSON.parse(readFileSync(f, "utf8"));
+const save = (f: string, x: unknown) => { mkdirSync(dirname(f), { recursive: true }); writeFileSync(f, JSON.stringify(x, null, 2) + "\n"); };
+const shaFile = (f: string) => createHash("sha256").update(readFileSync(f)).digest("hex");
 const CONTENT = ["marketing/content", "operations/marketing/content"];
 const ONE_WAY_KINDS = new Set(["social", "newsletter", "email", "app-store", "press", "launch"]);
 const EXPOSURE = ["low", "medium", "high"];
 
 export class Refused extends Error {}
-const refuse = (m) => { throw new Refused(m); };
+function refuse(m: string): never { throw new Refused(m); }
 
-export const policy = (dir) => { const f = ventureFile(dir, "governance/publication-policy.json"); return existsSync(f) ? load(f) : null; };
-export const manifestPath = (dir) => ventureFile(dir, "governance/publications.json");
-export const manifest = (dir) => existsSync(manifestPath(dir)) ? load(manifestPath(dir)) : { entries: [] };
-const channelOf = (dir, id) => policy(dir)?.channels?.find((c) => c.id === id) ?? refuse(`no channel ${id} in governance/publication-policy.json`);
+export const policy = (dir: string): { channels?: Channel[] } | null => { const f = ventureFile(dir, "governance/publication-policy.json"); return existsSync(f) ? load(f) : null; };
+export const manifestPath = (dir: string) => ventureFile(dir, "governance/publications.json");
+export const manifest = (dir: string): Publications => existsSync(manifestPath(dir)) ? load(manifestPath(dir)) : { entries: [] };
+const channelOf = (dir: string, id: string) => policy(dir)?.channels?.find((c) => c.id === id) ?? refuse(`no channel ${id} in governance/publication-policy.json`);
 
 /** The approved public MDX variants for a channel, in path order: { file, meta, body }. */
-export function sources(dir, channel) {
-  const out = [];
+export function sources(dir: string, channel: string) {
+  const out: ({ file: string } & ReturnType<typeof frontmatter>)[] = [];
   for (const d of CONTENT) {
     const root = ventureFile(dir, d);
     if (!existsSync(root)) continue;
     for (const name of readdirSync(root, { recursive: true }).map(String).filter((n) => n.endsWith(".mdx")).sort()) {
       const fm = frontmatter(readFileSync(join(root, name), "utf8"));
-      if (fm.meta.publish !== true || !fm.meta.approved_by?.length) continue;
+      const approved = fm.meta.approved_by;
+      if (fm.meta.publish !== true || typeof approved === "boolean" || !approved?.length) continue;
       const channels = fm.meta.channel ?? [];
-      if (!(Array.isArray(channels) ? channels : channels.split(",").map((s) => s.trim())).includes(channel)) continue;
+      if (!(Array.isArray(channels) ? channels : typeof channels === "string" ? channels.split(",").map((s) => s.trim()) : []).includes(channel)) continue;
       out.push({ file: `${d}/${name}`, ...fm });
     }
   }
   return out;
 }
 
-/**
- * naive publish build: compile the channel's MDX into one artifact output and leak-check it.
- * @param {string} dir
- * @param {string} channel
- * @param {{ artifact?: string }} [opts]
- */
-export function build(dir, channel, { artifact } = {}) {
+/** naive publish build: compile the channel's MDX into one artifact output and leak-check it. */
+export function build(dir: string, channel: string, { artifact }: { artifact?: string } = {}) {
   const ch = channelOf(dir, channel);
   const id = artifact ?? manifest(dir).entries.find((e) => e.channel === channel)?.artifact ?? channel;
   const srcs = sources(dir, channel);
@@ -85,7 +89,8 @@ export function build(dir, channel, { artifact } = {}) {
   const from = new Map();
   for (const s of srcs) {
     from.set(s.file, shaFile(ventureFile(dir, s.file)));
-    const rec = s.meta.variant_of?.split("#")[0];
+    const variant = s.meta.variant_of;
+    const rec = typeof variant === "string" ? variant.split("#")[0] : undefined;
     if (rec && existsSync(ventureFile(dir, rec))) from.set(rec, shaFile(ventureFile(dir, rec)));
   }
   const aFile = ventureFile(dir, `artifacts/${id}.json`);
@@ -96,10 +101,10 @@ export function build(dir, channel, { artifact } = {}) {
   return { artifact: id, output: rel, sha256: sha, sources: srcs.map((s) => s.file), leaks: found };
 }
 
-function delegation(dir) { const f = ventureFile(dir, "governance/delegation.json"); return existsSync(f) ? load(f) : null; }
+function delegation(dir: string): PublishDelegation | null { const f = ventureFile(dir, "governance/delegation.json"); return existsSync(f) ? load(f) : null; }
 
 /** Whether this person, acting as this role, may approve this door at this exposure. */
-export function mayApprove(dir, { by, as = "founder", door, exposure }) {
+export function mayApprove(dir: string, { by, as = "founder", door, exposure }: { by?: string, as?: string, door: string, exposure: string }): { ok: boolean, why?: string, role?: string } {
   if (!by) return { ok: false, why: "a person must approve: pass --by <name>" };
   if ((process.env.MENTURA_ACTOR ?? "person") === "agent") return { ok: false, why: "an agent never approves a publication" };
   const d = delegation(dir);
@@ -117,14 +122,10 @@ export function mayApprove(dir, { by, as = "founder", door, exposure }) {
   return { ok: true, role: as };
 }
 
-const stamp = (t) => t.replace(/[-:.]/g, "").toLowerCase();
+const stamp = (t: string) => t.replace(/[-:.]/g, "").toLowerCase();
 
-/**
- * @param {string} dir
- * @param {{ channel: string, artifact: string, sha256: string, url?: string, action: string, door: string, exposure: string, who?: string[],
- *   reversibility: { how: string, takes?: string }, as: string, by?: string, ok: boolean, why?: string, not_before?: string }} d
- */
-function decide(dir, { channel, artifact, sha256, url, action, door, exposure, who, reversibility, as, by, ok, why, not_before }) {
+function decide(dir: string, { channel, artifact, sha256, url, action, door, exposure, who, reversibility, as, by, ok, why, not_before }: { channel: string, artifact: string, sha256: string, url?: string, action: string, door: string, exposure: string, who?: string[],
+  reversibility: Reversibility, as: string, by?: string, ok: boolean, why?: string, not_before?: string }) {
   const at = new Date().toISOString();
   const v = load(ventureFile(dir, "venture.json"));
   const file = `decisions/publications.${channel}-${stamp(at)}.decision.json`;
@@ -146,16 +147,17 @@ function decide(dir, { channel, artifact, sha256, url, action, door, exposure, w
   return file;
 }
 
-function defaults(ch, door, reversibility) {
-  const d = door ?? (ONE_WAY_KINDS.has(ch.kind) ? "one-way" : "two-way");
+function defaults(ch: Channel, door: string | undefined, reversibility: string | undefined): { door: string, reversibility: Reversibility } {
+  const d = door ?? (ONE_WAY_KINDS.has(ch.kind ?? "") ? "one-way" : "two-way");
   return { door: d, reversibility: reversibility ? { how: reversibility } : d === "one-way"
     ? { how: "a correction or retraction; copies, caches and indexes may keep the old version", takes: "cannot be fully undone" }
     : { how: "naive publish rollback restores the previous version", takes: "minutes" } };
 }
 
-/** naive publish <channel>: the gate. Returns { decision, entry } or throws Refused (the decision is still written).
- *  @param {string} dir @param {string} channel @param {{ by?: string, as?: string, door?: string, exposure?: string, who?: string[], reversibility?: string, url?: string, now?: Date }} [opts] */
-export async function publish(dir, channel, { by, as = "founder", door, exposure = "low", who = [], reversibility, url, now = new Date() } = {}) {
+/**
+ *  naive publish <channel>: the gate. Returns { decision, entry } or throws Refused (the decision is still written).
+ */
+export async function publish(dir: string, channel: string, { by, as = "founder", door, exposure = "low", who = [], reversibility, url, now = new Date() }: { by?: string, as?: string, door?: string, exposure?: string, who?: string[], reversibility?: string, url?: string, now?: Date } = {}) {
   const ch = channelOf(dir, channel);
   if (!EXPOSURE.includes(exposure)) refuse(`exposure is low, medium or high, not ${exposure}`);
   const m = manifest(dir);
@@ -168,12 +170,12 @@ export async function publish(dir, channel, { by, as = "founder", door, exposure
   if (!out || !existsSync(out)) refuse(`artifact ${id} has no built output: run naive publish build ${channel}`);
   const sha = shaFile(out);
   if (sha !== a.output.sha256) refuse(`the output of ${id} changed after it was built: rebuild it`);
-  const state = artifacts(dir).find((x) => x.id === id)?.state;
+  const state = artifacts(dir).find((x: { id: string }) => x.id === id)?.state;
   if (state !== "fresh") refuse(`artifact ${id} is ${state}: a record it was built from changed; rebuild and re-lint it`);
   const found = leaks([out], { venture: dir });
-  if (found.length) refuse(`the output carries internal text (${found.map((l) => l.pattern).join(", ")})`);
+  if (found.length) refuse(`the output carries internal text (${found.map((l: { pattern: string }) => l.pattern).join(", ")})`);
   // The publish lint on the MDX the output was built from, where each file's sources still sit in its frontmatter.
-  const lint = await check(a.built_from.map((b) => b.record).filter((r) => r.endsWith(".mdx")).map((r) => ventureFile(dir, r)), { venture: dir });
+  const lint = await check(a.built_from.map((b: { record: string }) => b.record).filter((r: string) => r.endsWith(".mdx")).map((r: string) => ventureFile(dir, r)), { venture: dir });
   const errors = lint.findings.filter((f) => f.severity === "error" && !f.waived);
   if (errors.length) refuse(`the publish lint found ${errors.map((f) => `${f.rule} in ${f.file}`).join(", ")}: run naive publish check`);
   if (entry?.not_before && now < new Date(entry.not_before)) refuse(`embargoed until ${entry.not_before}`);
@@ -188,30 +190,26 @@ export async function publish(dir, channel, { by, as = "founder", door, exposure
   const at = new Date().toISOString();
   if (!entry) { entry = { channel, artifact: id }; m.entries.push(entry); }
   if (entry.sha256 && entry.sha256 !== sha) entry.previous = [{ sha256: entry.sha256, output: `.release/publish/${channel}/versions/${entry.sha256}.md`, approved_by: entry.approved_by, at: entry.at, decision: entry.decision }, ...(entry.previous ?? [])];
-  Object.assign(entry, { url: url ?? entry.url, kind: entry.kind ?? kindOf(ch), sources: a.built_from.map((b) => b.record).filter((r) => r.endsWith(".mdx")), output: kept, sha256: sha, approved_by: by, at, decision, door: d.door });
+  Object.assign(entry, { url: url ?? entry.url, kind: entry.kind ?? kindOf(ch), sources: a.built_from.map((b: { record: string }) => b.record).filter((r: string) => r.endsWith(".mdx")), output: kept, sha256: sha, approved_by: by, at, decision, door: d.door });
   delete entry.stale;
   save(manifestPath(dir), m);
   save(aFile, { ...a, published: true, ...(entry.url ? { url: entry.url } : {}) });
-  record(dir, /** @type {Parameters<typeof record>[1]} */ ({ entity: kept, activity: "publish", agent: { kind: "person", via: "cli", id: by }, derived_from: [a.output.path], decision, sha256: sha, note: `published ${id} on ${channel}${entry.url ? ` at ${entry.url}` : ""} (${d.door} door)` }));
+  record(dir, ({ entity: kept, activity: "publish", agent: { kind: "person", via: "cli", id: by }, derived_from: [a.output.path], decision, sha256: sha, note: `published ${id} on ${channel}${entry.url ? ` at ${entry.url}` : ""} (${d.door} door)` }) as Parameters<typeof record>[1]);
   return { decision, entry };
 }
 
-function kindOf(ch) {
-  return { "docs-site": "docs", site: "site", blog: "site", social: "social", newsletter: "newsletter", email: "email", "app-store": "app-store", "claude-artifact": "claude-artifact" }[ch.kind] ?? "other";
+function kindOf(ch: Channel): NonNullable<Entry["kind"]> {
+  return ({ "docs-site": "docs", site: "site", blog: "site", social: "social", newsletter: "newsletter", email: "email", "app-store": "app-store", "claude-artifact": "claude-artifact" } as Record<string, NonNullable<Entry["kind"]>>)[ch.kind ?? ""] ?? "other";
 }
 
-/**
- * naive publish rollback: restore the previous version (a two-way door).
- * @param {string} dir
- * @param {string} channel
- * @param {{ by?: string, as?: string }} [opts]
- */
-export function rollback(dir, channel, { by, as = "founder" } = {}) {
+/** naive publish rollback: restore the previous version (a two-way door). */
+export function rollback(dir: string, channel: string, { by, as = "founder" }: { by?: string, as?: string } = {}) {
   channelOf(dir, channel);
   const m = manifest(dir);
   const entry = m.entries.find((e) => e.channel === channel);
   const prev = entry?.previous?.[0];
-  if (!prev) refuse(`nothing to roll back to on ${channel}`);
+  // An entry has a live sha256 whenever it has a previous version.
+  if (!entry || !prev || !entry.sha256) refuse(`nothing to roll back to on ${channel}`);
   if (!existsSync(ventureFile(dir, prev.output ?? ""))) refuse(`the previous version's output ${prev.output} is gone`);
   const gate = mayApprove(dir, { by, as, door: "two-way", exposure: "low" });
   const decision = decide(dir, { channel, artifact: entry.artifact, sha256: prev.sha256, url: entry.url, action: "rollback", door: "two-way", exposure: "low",
@@ -219,17 +217,17 @@ export function rollback(dir, channel, { by, as = "founder" } = {}) {
   if (!gate.ok) refuse(`${gate.why} (the decision waits open in ${decision})`);
   const undone = { sha256: entry.sha256, output: entry.output, approved_by: entry.approved_by, at: entry.at, decision: entry.decision };
   Object.assign(entry, { sha256: prev.sha256, output: prev.output, approved_by: by, at: new Date().toISOString(), decision });
-  entry.previous = [undone, ...entry.previous.slice(1)];
+  entry.previous = [undone, ...(entry.previous ?? []).slice(1)];
   save(manifestPath(dir), m);
-  record(dir, /** @type {Parameters<typeof record>[1]} */ ({ entity: prev.output, activity: "rollback", agent: { kind: "person", via: "cli", id: by }, decision, sha256: prev.sha256, note: `rolled ${channel} back from ${undone.sha256.slice(0, 12)} to ${prev.sha256.slice(0, 12)}` }));
+  record(dir, ({ entity: prev.output, activity: "rollback", agent: { kind: "person", via: "cli", id: by }, decision, sha256: prev.sha256, note: `rolled ${channel} back from ${undone.sha256.slice(0, 12)} to ${prev.sha256.slice(0, 12)}` }) as Parameters<typeof record>[1]);
   return { decision, entry };
 }
 
 /** Republish on change: every manifest entry whose artifact went stale is marked stale and listed. */
-export function stale(dir, { mark = true } = {}) {
-  const states = new Map(artifacts(dir).map((a) => [a.id, a]));
+export function stale(dir: string, { mark = true } = {}) {
+  const states = new Map(artifacts(dir).map((a: { id: string, state?: string, changed?: string[], missing?: string[] }) => [a.id, a] as const));
   const m = manifest(dir);
-  const out = [];
+  const out: { channel: string, artifact: string, changed: string[] }[] = [];
   for (const e of m.entries) {
     const a = states.get(e.artifact);
     const isStale = a?.state === "stale" || a?.state === "broken";
@@ -242,7 +240,7 @@ export function stale(dir, { mark = true } = {}) {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const [dir, sub, ...rest] = process.argv.slice(2);
-  const opt = (n) => { const i = rest.indexOf(`--${n}`); return i >= 0 ? rest[i + 1] : undefined; };
+  const opt = (n: string) => { const i = rest.indexOf(`--${n}`); return i >= 0 ? rest[i + 1] : undefined; };
   const pos = rest.filter((a, i) => !a.startsWith("--") && !(rest[i - 1] ?? "").startsWith("--"));
   const who = opt("who")?.split(",").map((s) => s.trim()).filter(Boolean);
   try {
@@ -255,7 +253,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     } else if (sub === "publish" || sub === "rollback") {
       const f = sub === "publish" ? publish : rollback;
       const r = await f(dir, pos[0], { by: opt("by"), as: opt("as"), door: opt("door"), exposure: opt("exposure"), who, reversibility: opt("reversibility"), url: opt("url") });
-      console.log(`${sub === "publish" ? "published" : "rolled back"} ${r.entry.artifact} on ${r.entry.channel} (${r.entry.sha256.slice(0, 12)}), approved by ${r.entry.approved_by}; decision ${r.decision}`);
+      console.log(`${sub === "publish" ? "published" : "rolled back"} ${r.entry.artifact} on ${r.entry.channel} (${(r.entry.sha256 ?? "").slice(0, 12)}), approved by ${r.entry.approved_by}; decision ${r.decision}`);
     } else if (sub === "status") {
       const s = new Set(stale(dir).map((x) => x.channel));
       for (const e of manifest(dir).entries.filter((e) => !pos[0] || e.channel === pos[0]))

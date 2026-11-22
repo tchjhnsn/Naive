@@ -17,9 +17,10 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, relative } from "node:path";
 import { ventureFile } from "../core/venture-paths.ts";
 import { HostedRefusal, git, hostHook, isHosted, missingHook } from "../core/runtime.ts";
+import type { Evidence, Handoff } from "../records/types/records.d.ts";
 
 const root = new URL("../../../..", import.meta.url).pathname;
-const trim = (s) => s.trim().split("\n").slice(-12).join("\n");
+const trim = (s: string) => s.trim().split("\n").slice(-12).join("\n");
 
 // The Naive the criteria ran against: its commit, marked when uncommitted. Hosted without a git working copy,
 // the package version.
@@ -37,20 +38,18 @@ function naiveVersion() {
 /**
  * Runs one handoff's done-criteria and writes the evidence. Throws a HostedRefusal when hosted with bash
  * criteria and no sandbox hook, and an Error when a review verdict lacks its reviewer or note.
- * @param {string} dir @param {string} id
- * @param {{ runner?: string, review?: string, by?: string, note?: string, log?: (line: string) => void }} [opts]
  */
-export async function runHandoff(dir, id, { runner = "local", review, by, note, log = console.log } = {}) {
+export async function runHandoff(dir: string, id: string, { runner = "local", review, by, note, log = console.log }: { runner?: string, review?: string, by?: string, note?: string, log?: (_line: string) => void } = {}) {
   const [reviewId, verdict] = (review ?? "").split("=");
   const hPath = join(ventureFile(dir, "operations/handoffs"), `${id}.json`);
-  const h = JSON.parse(readFileSync(hPath, "utf8"));
+  const h: Handoff = JSON.parse(readFileSync(hPath, "utf8"));
   const sandbox = hostHook("sandbox");
   if (isHosted() && !sandbox && h.done_criteria.some((d) => d.kind !== "review")) {
     throw missingHook("running a handoff's bash done-criteria", "sandbox", "Naive never runs a tenant's shell on the host");
   }
   const version = naiveVersion();
 
-  const results = [];
+  const results: Evidence["results"] = [];
   for (const c of h.done_criteria.filter((d) => d.kind === "review" && d.id === reviewId)) {
     if (!["pass", "fail"].includes(verdict) || !by || !note) throw new Error("a review needs --review <id>=pass|fail, --by <role> and --note");
     results.push({ criterion: c.id, kind: "review", passed: verdict === "pass", by, command: c.check, output: note });
@@ -65,7 +64,7 @@ export async function runHandoff(dir, id, { runner = "local", review, by, note, 
 
   const at = new Date().toISOString().replace(/\.\d+Z$/, "Z");
   const eid = `${h.id}-${at.replace(/[-:TZ]/g, "").slice(0, 14)}`;
-  const ev = { id: eid, subject: { kind: "handoff", id: h.id, version }, ran_at: at, runner, results, passed: results.every((r) => r.passed) };
+  const ev: Evidence = { id: eid, subject: { kind: "handoff", id: h.id, version }, ran_at: at, runner, results, passed: results.every((r) => r.passed) };
   mkdirSync(join(ventureFile(dir, "evidence/results")), { recursive: true });
   const ePath = join(ventureFile(dir, "evidence/results"), `${eid}.json`);
   writeFileSync(ePath, JSON.stringify(ev, null, 2) + "\n");
@@ -78,14 +77,14 @@ export async function runHandoff(dir, id, { runner = "local", review, by, note, 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const [dir, id] = process.argv.slice(2);
   if (!dir || !id) { console.error("usage: node packages/naive/src/engine/run-handoff.ts <venture dir> <handoff id> [--runner <id>]"); process.exit(2); }
-  const opt = (k) => process.argv.includes(k) ? process.argv[process.argv.indexOf(k) + 1] : undefined;
+  const opt = (k: string) => process.argv.includes(k) ? process.argv[process.argv.indexOf(k) + 1] : undefined;
   try {
     const { evidence: ev, path: ePath, pending } = await runHandoff(dir, id, { runner: opt("--runner"), review: opt("--review"), by: opt("--by"), note: opt("--note") });
     console.log(`${ev.passed ? "every criterion run passed" : "some criteria failed"}${pending.length ? `; review still owed: ${pending.join(", ")}` : ""}: ${relative(process.cwd(), ePath)}`);
     process.exit(ev.passed ? 0 : 1);
   } catch (e) {
-    if (!(e instanceof HostedRefusal) && !String(e?.message).startsWith("a review needs")) throw e;
-    console.error(e.message);
+    if (!(e instanceof HostedRefusal) && !String((e as Error | undefined)?.message).startsWith("a review needs")) throw e;
+    console.error((e as Error).message);
     process.exit(2);
   }
 }

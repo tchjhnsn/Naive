@@ -6,17 +6,18 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { check, configFor, report } from "./publish-lint.ts";
+import type { Finding } from "./publish-lint.ts";
 
 const repo = new URL("../../../..", import.meta.url).pathname;
 let failed = 0;
-const expect = (name, ok, detail) => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${JSON.stringify(detail)}`}`); if (!ok) failed++; };
+const expect = (name: string, ok: unknown, detail?: unknown) => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${JSON.stringify(detail)}`}`); if (!ok) failed++; };
 
 const ws = mkdtempSync(join(tmpdir(), "publish-lint-"));
 const v = join(ws, "acme");
-const w = (rel, x) => { mkdirSync(join(v, rel, ".."), { recursive: true }); writeFileSync(join(v, rel), typeof x === "string" ? x : JSON.stringify(x, null, 2)); };
-const page = (meta, body) => `---\n${meta}\n---\n${body}\n`;
-const rules = (fs) => fs.map((f) => f.rule);
-const cli = (args) => spawnSync("node", [join(repo, "packages/naive/src/engine/publish-lint.ts"), "check", ...args], { encoding: "utf8" });
+const w = (rel: string, x: unknown) => { mkdirSync(join(v, rel, ".."), { recursive: true }); writeFileSync(join(v, rel), typeof x === "string" ? x : JSON.stringify(x, null, 2)); };
+const page = (meta: string, body: string) => `---\n${meta}\n---\n${body}\n`;
+const rules = (fs: Finding[]) => fs.map((f) => f.rule);
+const cli = (args: string[]) => spawnSync("node", [join(repo, "packages/naive/src/engine/publish-lint.ts"), "check", ...args], { encoding: "utf8" });
 
 try {
   w("venture.json", { id: "acme", name: "Acme", type: "software-startup", parent: null, owner: "self", status: "active", layers: {}, phase: "discovery" });
@@ -34,7 +35,7 @@ try {
   w("pages/personal.mdx", page("title: Personal", "Write to jane.doe@example.com or call (555) 123-4567."));
   w("pages/secret.mdx", page("title: Secret", "Use key sk-ant-abcdefghijklmnopqrstuvwxyz123456 to start."));
 
-  const run = async (f) => (await check([join(v, "pages", f)], { venture: v })).findings;
+  const run = async (f: string) => (await check([join(v, "pages", f)], { venture: v })).findings;
 
   expect("clean page has no findings", (await run("clean.mdx")).length === 0, await run("clean.mdx"));
   const lk = await run("leak.mdx");

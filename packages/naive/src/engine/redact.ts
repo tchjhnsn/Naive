@@ -5,8 +5,7 @@
 const SECRET_NAME = String.raw`[A-Za-z0-9_-]*(?:api[_-]?key|access[_-]?key|private[_-]?key|secret|token|password|passwd|passphrase|pwd)(?:[_-]?(?:key|value|string|base))*|pass|[A-Za-z0-9]+(?:[_-][A-Za-z0-9]+)*[_-](?:key|pass)`;
 const QUOTED = String.raw`\\"(?:[^"\\]|\\[^"])*\\"|"[^"]*"|'[^']*'`;
 
-/** @type {[string, RegExp][]} */
-const PATTERNS = [
+const PATTERNS: [string, RegExp][] = [
   ["private-key", /-----BEGIN [A-Z ]*PRIVATE KEY(?: BLOCK)?-----[\s\S]*?(?:-----END [A-Z ]*PRIVATE KEY(?: BLOCK)?-----|$)/g],
   ["langsmith-key", /\blsv2_(?:pt|sk)_[A-Za-z0-9_]{16,}/g],
   ["anthropic-key", /\bsk-ant-[A-Za-z0-9_-]{16,}/g],
@@ -39,8 +38,8 @@ const PATTERNS = [
   ["base64", /(?<![A-Za-z0-9+/_-])[A-Za-z0-9+/_-]{40,}={0,2}(?![A-Za-z0-9+/_-])/g],
 ];
 
-export function findSecrets(text) {
-  const found = [];
+export function findSecrets(text: unknown) {
+  const found: { kind: string, index: number | undefined }[] = [];
   for (const [kind, re] of PATTERNS) for (const m of String(text).matchAll(re)) found.push({ kind, index: m.index });
   return found;
 }
@@ -48,12 +47,18 @@ export function findSecrets(text) {
 const SECRET = "[REDACTED:secret]";
 const KEEP_PREFIX = new Set(["url-credentials", "cookie", "cli-flag", "cli-user", "mysql-password", "sshpass-password", "password-line"]);
 
-export function redact(text) {
+// A replacer gets the match and its capture groups. Every pattern's replacement is one, so String.replace takes them all alike;
+// the plain label has no $ in it, so returning it is the same as passing it as a replacement string.
+type Replacer = (_match: string, ..._groups: string[]) => string;
+
+export function redact(text: unknown) {
   let out = String(text);
-  for (const [kind, re] of PATTERNS) out = out.replace(re, /** @type {*} */ (
-    KEEP_PREFIX.has(kind) ? (_, prefix) => `${prefix}${SECRET}${kind === "url-credentials" ? "@" : ""}`
-    : kind === "assignment" ? (_, q, name, sep) => `${q}${name}${q}${sep}${q ? `${q}${SECRET}${q}`.replace(/'/g, '"') : SECRET}`
-    : kind === "authorization" ? (_, q, name, value) => `${q}${name}${q}: ${/^\\?["']/.test(value) ? `"${SECRET}"` : SECRET}`
-    : `[REDACTED:${kind}]`));
+  for (const [kind, re] of PATTERNS) {
+    const replacer: Replacer = KEEP_PREFIX.has(kind) ? (_, prefix) => `${prefix}${SECRET}${kind === "url-credentials" ? "@" : ""}`
+      : kind === "assignment" ? (_, q, name, sep) => `${q}${name}${q}${sep}${q ? `${q}${SECRET}${q}`.replace(/'/g, '"') : SECRET}`
+      : kind === "authorization" ? (_, q, name, value) => `${q}${name}${q}: ${/^\\?["']/.test(value) ? `"${SECRET}"` : SECRET}`
+      : () => `[REDACTED:${kind}]`;
+    out = out.replace(re, replacer);
+  }
   return out;
 }

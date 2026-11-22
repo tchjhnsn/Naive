@@ -11,13 +11,16 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ventureFile } from "../core/venture-paths.ts";
 
-const esc = (s) => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-const day = (t) => (t ? String(t).slice(0, 10) : "");
+/** The release card's data, .release/card.json. */
+export type Card = { name: string, phase: string, release: string, built_at?: string, confirmed_by: string[], headline: { label: string, value?: unknown, unit?: string, as_of?: string }[] };
+
+const esc = (s: unknown) => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+const day = (t: unknown) => (t ? String(t).slice(0, 10) : "");
 
 /** The card as SVG text. */
-export function svg(card) {
+export function svg(card: Card) {
   const nums = card.headline.filter((h) => h.label !== "Live holes").slice(0, 4);
-  const cell = (h, i) => {
+  const cell = (h: Card["headline"][number], i: number) => {
     const x = 60 + i * 275;
     return `<text x="${x}" y="330" font-size="64" font-weight="700" fill="#111">${esc(h.value)}${h.unit ? `<tspan font-size="24"> ${esc(h.unit)}</tspan>` : ""}</text>
   <text x="${x}" y="370" font-size="22" fill="#333">${esc(h.label)}</text>
