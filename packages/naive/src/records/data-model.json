@@ -542,6 +542,21 @@
       "note": "Validation sub-score: price model, points, buyer and evidence they pay (EE-026)"
     },
     {
+      "id": "validation-plan",
+      "layer": "purpose",
+      "function": "strategy",
+      "level": "venture",
+      "schema": "packages/naive/src/records/validation-plan.schema.json",
+      "generator": "packages/naive/src/engine/generators/validation-plan.ts",
+      "paths": [
+        "instance/**/validation/plan.json",
+        "packages/naive/src/records/examples/**/validation/plan.json",
+        "instance/**/purpose/validation/plan.json",
+        "packages/naive/src/records/examples/**/purpose/validation/plan.json"
+      ],
+      "note": "The assumptions not yet demonstrated, each with its test, the result that counts as passing and a date; the discovery gate's validation-plan item reads it (EE-156)"
+    },
+    {
       "id": "validation-go-to-market",
       "layer": "purpose",
       "function": "strategy",
@@ -2576,6 +2591,21 @@
         { "field": "gate.evidence[].source", "to": "data-model", "checked_by": "packages/naive/src/checks/check-phases.ts" }
       ],
       "note": "A lifecycle phase as a module (EE-126): its question, stage gate and exit evidence, the function workflows active in it and the weights that rank decisions across functions. No agent and no records owned; need-now priors are derived from need-now.json and departments.json"
+    },
+    {
+      "id": "phase-gate-policies",
+      "layer": "operations",
+      "function": "strategy",
+      "level": "method",
+      "schema": "packages/naive/src/records/phase-gate-policies.schema.json",
+      "generator": "packages/naive/src/engine/generators/phase-gate-policies.ts",
+      "paths": [
+        "packages/naive/src/phases/gate-policies.json"
+      ],
+      "refs": [
+        { "field": "phases.items.record", "to": "(record types)", "checked_by": "packages/naive/src/engine/generators/phase-gate-policies.ts" }
+      ],
+      "note": "How strict each phase gate is (EE-156): per item, what proves it and its evidence ladder (very low to high), and the lenient, standard and strict presets giving each item's minimum level and whether it fails closed or open. Thresholds are unvalidated priors"
     },
     {
       "id": "function-decisions",

@@ -18,6 +18,8 @@ A record's template is `<record>.md`, or one whose name starts `<record>-`, in i
 
 `defaultWorkspace()` is `MENTURA_WORKSPACE`, else the current directory. The framework never defaults to a folder of its own. A venture's decision rights start from the template's, `packages/naive/template/governance/decision-rights.json`, tightened by the venture's own file. A record type's venture-relative paths come from `venturePaths` in [`packages/naive/src/records`](../README.md).
 
+The command routes `routes.mjs` adds itself include `system/phase-gate` (EE-156), which runs `packages/naive/src/engine/phase-gate.mjs`: each item of the current phase gate on its evidence ladder against the venture's policy.
+
 `packages/naive/src/router/router.mjs` re-exports everything in `routes.mjs`, so code that imports the route table from the router keeps working. New code below the router imports `packages/naive/src/records/routes/routes.mjs`.
 
 ## Run and test
