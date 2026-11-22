@@ -1,24 +1,24 @@
 #!/usr/bin/env node
 // naive start (I-17, C-12): serves a venture's release read-only over local HTTP. No router: it reads
-// <venture>/.release/ and nothing else (packages/naive/src/engine/release-read.mjs), as a CDN serves a static shell. It
+// <venture>/.release/ and nothing else (packages/naive/src/engine/release-read.ts), as a CDN serves a static shell. It
 // reads the manifest on each request, so an item added with build-release --add shows at once (C-18).
-// It listens on 127.0.0.1 only. The paths are listed in packages/naive/src/engine/release-read.mjs; /card.svg is the
-// release card drawn by packages/naive/src/engine/release-card.mjs.
+// It listens on 127.0.0.1 only. The paths are listed in packages/naive/src/engine/release-read.ts; /card.svg is the
+// release card drawn by packages/naive/src/engine/release-card.ts.
 //
-//   node packages/naive/src/engine/start-release.mjs <venture dir> [--port n]     serve; --port 0 picks a free port (default 4330)
-//   node packages/naive/src/engine/start-release.mjs <venture dir> --get <path>   answer one path and exit, without a server
+//   node packages/naive/src/engine/start-release.ts <venture dir> [--port n]     serve; --port 0 picks a free port (default 4330)
+//   node packages/naive/src/engine/start-release.ts <venture dir> --get <path>   answer one path and exit, without a server
 
 import { existsSync } from "node:fs";
 import { createServer } from "node:http";
 import { join } from "node:path";
-import { svg } from "./release-card.mjs";
-import { answer, readRelease } from "./release-read.mjs";
+import { svg } from "./release-card.ts";
+import { answer, readRelease } from "./release-read.ts";
 
 const args = process.argv.slice(2);
 const opt = (n) => { const i = args.indexOf(`--${n}`); return i >= 0 ? args[i + 1] : undefined; };
 const values = new Set(["port", "get", "now"].flatMap((n) => (opt(n) !== undefined ? [opt(n)] : [])));
 const dir = args.find((a) => !a.startsWith("--") && !values.has(a));
-if (!dir || !existsSync(join(dir, "venture.json"))) { console.error("usage: node packages/naive/src/engine/start-release.mjs <venture dir> [--port n] | --get <path>"); process.exit(2); }
+if (!dir || !existsSync(join(dir, "venture.json"))) { console.error("usage: node packages/naive/src/engine/start-release.ts <venture dir> [--port n] | --get <path>"); process.exit(2); }
 if (!readRelease(dir)) { console.error(`no release in ${dir}: run node packages/naive/src/router/orchestration/build-release.mjs ${dir} first`); process.exit(1); }
 
 if (opt("get") !== undefined) {

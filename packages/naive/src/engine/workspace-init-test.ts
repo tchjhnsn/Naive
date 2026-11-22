@@ -1,7 +1,7 @@
 // naive workspace init, rename, the clock and the calendar (Torian, 2026-10-30): a workspace starts with
 // its clock and calendar and always holds a venture, created, ported or migrated in.
 //
-//   node packages/naive/src/engine/workspace-init-test.mjs
+//   node packages/naive/src/engine/workspace-init-test.ts
 
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";

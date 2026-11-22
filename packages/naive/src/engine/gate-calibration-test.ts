@@ -13,7 +13,7 @@ import type { IsoDate, Rules } from "./gate-calibration.ts";
 import type { AnatomyCellEnumCell, AnatomyCellNumberCell, IndustryAnatomy, MarketAnatomy, PhaseGatePolicies } from "../records/types/records.d.ts";
 import { runSync } from "../core/effect/run.ts";
 import { gradeItem } from "./evidence-grade.ts";
-import { phaseGate, POLICIES } from "./phase-gate.mjs";
+import { phaseGate, POLICIES } from "./phase-gate.ts";
 import { ventureFile } from "../core/venture-paths.ts";
 import { validateFile, validateValue } from "../records/validate.ts";
 

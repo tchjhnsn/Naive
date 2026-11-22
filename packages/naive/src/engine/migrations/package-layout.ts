@@ -3,7 +3,7 @@
 // with a plain rename otherwise. A file with no clear new home is archived under _private/ and
 // escalated for a person, never guessed. Old routes keep resolving through packages/naive/src/router/route-aliases.json.
 //
-// Every change goes through ctx (packages/naive/src/engine/upgrades.mjs), so a dry run (--check) reports the same moves
+// Every change goes through ctx (packages/naive/src/engine/upgrades.ts), so a dry run (--check) reports the same moves
 // without touching anything, and the upgrader records each one in provenance.
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
@@ -11,7 +11,7 @@ import { join } from "node:path";
 import { ventureFile } from "../../core/venture-paths.ts";
 import { layoutOf } from "../../core/venture-paths.ts";
 
-/** The part of the upgrade context (packages/naive/src/engine/upgrades.mjs) this migration uses. */
+/** The part of the upgrade context (packages/naive/src/engine/upgrades.ts) this migration uses. */
 type Ctx = {
   at: string; moved: [string, string][]; escalated: string[];
   write(rel: string, text: string, opts?: { activity?: string; note?: string; derived_from?: string[]; log?: boolean }): void;

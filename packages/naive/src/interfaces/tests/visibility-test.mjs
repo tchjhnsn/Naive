@@ -6,9 +6,9 @@ import { spawnSync } from "node:child_process";
 import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { hash, variantOf, visibilityOf } from "../../engine/visibility.mjs";
+import { hash, variantOf, visibilityOf } from "../../engine/visibility.ts";
 import { refusals } from "../../checks/check-visibility.ts";
-import { context } from "../../engine/upgrades.mjs";
+import { context } from "../../engine/upgrades.ts";
 import * as telosToGoals from "../../engine/migrations/telos-to-goals.ts";
 
 const repo = new URL("../../../../..", import.meta.url).pathname;

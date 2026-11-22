@@ -28,12 +28,12 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, realpathSync, renameS
 import { homedir } from "node:os";
 import { basename, dirname, join, relative, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
-import { redact } from "../packages/naive/src/engine/redact.mjs";
-import { listFrameworks } from "../packages/naive/src/engine/user-frameworks.mjs";
-import { findWorkspace } from "../packages/naive/src/engine/workspace.mjs";
+import { redact } from "../packages/naive/src/engine/redact.ts";
+import { listFrameworks } from "../packages/naive/src/engine/user-frameworks.ts";
+import { findWorkspace } from "../packages/naive/src/engine/workspace.ts";
 import { localDate, zoneOf } from "../packages/naive/src/engine/clock.ts";
 import { ventureFile } from "../packages/naive/src/core/venture-paths.ts";
-import { humanText, transcriptFiles, walk } from "../packages/naive/src/engine/transcripts.mjs";
+import { humanText, transcriptFiles, walk } from "../packages/naive/src/engine/transcripts.ts";
 
 export { humanText, transcriptFiles };
 

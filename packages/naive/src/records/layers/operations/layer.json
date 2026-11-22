@@ -97,7 +97,7 @@
   "checks": [
     "packages/naive/src/checks/check-team.ts",
     "packages/naive/src/checks/check-ready.ts",
-    "packages/naive/src/engine/run-handoff.mjs",
+    "packages/naive/src/engine/run-handoff.ts",
     "packages/naive/src/checks/check-execution.ts",
     "packages/naive/src/checks/check-departments.ts",
     "packages/naive/src/functions/marketing-and-sales/marketing/site/presence.mjs",

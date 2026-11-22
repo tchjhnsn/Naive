@@ -14,7 +14,7 @@
 // request and passes the answers back.
 
 import { line } from "./detectors.ts";
-import { split, terms } from "./workspace.mjs";
+import { split, terms } from "./workspace.ts";
 
 export const MODEL = "jev-latest";
 export const ACCEPT = 0.95;

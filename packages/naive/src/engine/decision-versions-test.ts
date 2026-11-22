@@ -7,7 +7,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { approve, merge, propose, rollback } from "./decisions.ts";
-import { staleOf } from "./stale.mjs";
+import { staleOf } from "./stale.ts";
 import { Validator, useValidator } from "../records/validate.ts";
 
 let failed = 0;

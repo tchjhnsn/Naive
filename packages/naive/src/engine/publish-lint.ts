@@ -12,8 +12,8 @@
 // The feedback loop: every run appends its findings to .naive/lint-findings.jsonl (the venture's, else the
 // working directory's). A finding is waived by listing it under publish_lint.waived ({ rule, file, text? }).
 //
-//   node packages/naive/src/engine/publish-lint.mjs check <file or folder>... [--venture <dir>] [--json] [--log <file>]
-//   node packages/naive/src/engine/publish-lint.mjs check --report [--venture <dir>] [--json] [--log <file>]
+//   node packages/naive/src/engine/publish-lint.ts check <file or folder>... [--venture <dir>] [--json] [--log <file>]
+//   node packages/naive/src/engine/publish-lint.ts check --report [--venture <dir>] [--json] [--log <file>]
 //       the rules most often waived, and the leaks found in files already published
 
 import { appendFileSync, existsSync, mkdirSync, readdirSync, readFileSync, statSync } from "node:fs";

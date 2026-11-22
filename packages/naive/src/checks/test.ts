@@ -212,7 +212,7 @@ valBroken("duplicate evidence ids fail", (d) => edit(problemOf(d), (p: Validatio
 
 // time-to-ready: running, and ready per layer and tier (the telos's Option B measure).
 {
-  const { timeToReady } = await import(join(root, "packages/naive/src/engine/time-to-ready.mjs"));
+  const { timeToReady } = await import(join(root, "packages/naive/src/engine/time-to-ready.ts"));
   const r = timeToReady(tandem);
   expect("time-to-ready: a venture with no live product is not running yet", !r.running.on && r.running.missing.includes("product_offered"));
   expect("time-to-ready: layers the venture turned off are not asked for", !r.layers.some((l: { layer: string }) => l.layer === "interface"));

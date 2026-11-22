@@ -9,7 +9,7 @@
 //   3. venture.json's ambition becomes foundation/goals/scale.json (kind scale) and leaves venture.json.
 //   4. A canonical record already there is escalated, never overwritten.
 //
-// Every change goes through ctx (packages/naive/src/engine/upgrades.mjs).
+// Every change goes through ctx (packages/naive/src/engine/upgrades.ts).
 
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -17,7 +17,7 @@ import { ventureFile } from "../../core/venture-paths.ts";
 import { split, telosFile } from "../../../../../frameworks/telos/adapter.mjs";
 import { toScaleGoal } from "../../../../../frameworks/ambition-tier/adapter.mjs";
 
-/** The part of the upgrade context (packages/naive/src/engine/upgrades.mjs) this migration uses. */
+/** The part of the upgrade context (packages/naive/src/engine/upgrades.ts) this migration uses. */
 type Ctx = { write(rel: string, text: string, opts?: { activity?: string; note?: string; derived_from?: string[]; log?: boolean }): void; mv(from: string, to: string): void; escalate(msg: string): void; note(msg: string): void };
 /** One canonical record to write: its file, the record, where it came from and the provenance note. */
 type Out = { file: string; rec: unknown; from: string; note: string };

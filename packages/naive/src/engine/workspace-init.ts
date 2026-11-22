@@ -4,7 +4,7 @@
 // as it is (--port), or an existing project is migrated in as records (--migrate). Without one of the
 // three it refuses, except at a terminal, where it asks and offers "My first venture".
 //
-//   node packages/naive/src/engine/workspace-init.mjs [<dir>] [--name "<workspace name>"] [--time-zone <IANA zone>]
+//   node packages/naive/src/engine/workspace-init.ts [<dir>] [--name "<workspace name>"] [--time-zone <IANA zone>]
 //        (--venture "<venture name>" | --port <folder> | --migrate <project>)
 //        [--venture-name "<name>"] [--type <type>] [--role <role>] [--founder "<your name>"] [--layout flat]
 //        [--apply --confirm port] [--skip-install] [--no-git]
@@ -12,7 +12,7 @@
 // The workspace is named "Naive workspace" unless --name says otherwise (rename it later with naive
 // workspace rename). <dir> defaults to a folder named after the workspace in the current directory.
 // The venture is made by create-venture (packages/create-venture/index.mjs), so both ways in match; a
-// port or migrate then plans the move or the rewrite into that venture (packages/naive/src/engine/port-venture.mjs,
+// port or migrate then plans the move or the rewrite into that venture (packages/naive/src/engine/port-venture.ts,
 // packages/naive/src/router/orchestration/migrate-venture.mjs). A port moves files only with --apply --confirm port. If the venture cannot be
 // made, its half-made folder is removed and the workspace kept; the same command run again finishes it.
 // A folder that was already there is left alone, and the message names it. What can be refused from the
@@ -22,7 +22,7 @@ import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync, rmSync } from "node:fs";
 import { basename, join, resolve, sep } from "node:path";
 import { createInterface } from "node:readline/promises";
-import { DEFAULT_NAME, WORKSPACE_FILE, ensureWorkspace, findWorkspace, loadWorkspace } from "./workspace.mjs";
+import { DEFAULT_NAME, WORKSPACE_FILE, ensureWorkspace, findWorkspace, loadWorkspace } from "./workspace.ts";
 
 const repo = new URL("../../../..", import.meta.url).pathname;
 export const FIRST_VENTURE = "My first venture";
@@ -89,9 +89,9 @@ console.log(`Created the venture ${ventureName} at ${vdir}`);
 // 3. Port or migrate into it.
 const run = (script, args) => spawnSync("node", [join(repo, script), ...args], { stdio: "inherit", cwd: root }).status ?? 1;
 if (mode === "port") {
-  if (run("packages/naive/src/engine/port-venture.mjs", [source, "--venture", vdir]) !== 0) fail("the port plan failed; the workspace and venture are kept");
+  if (run("packages/naive/src/engine/port-venture.ts", [source, "--venture", vdir]) !== 0) fail("the port plan failed; the workspace and venture are kept");
   if (flag("apply")) {
-    if (run("packages/naive/src/engine/port-venture.mjs", ["--venture", vdir, "--apply", "--confirm", "port"]) !== 0) process.exit(1);
+    if (run("packages/naive/src/engine/port-venture.ts", ["--venture", vdir, "--apply", "--confirm", "port"]) !== 0) process.exit(1);
   } else console.log(`\nNothing moved yet. Review the plan, then: naive port --venture ${vdir} --apply --confirm port`);
 } else if (mode === "migrate") {
   if (run("packages/naive/src/router/orchestration/migrate-venture.mjs", ["--from", source, "--venture", vdir]) !== 0) fail("the migration plan failed; the workspace and venture are kept");

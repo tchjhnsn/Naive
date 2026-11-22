@@ -138,14 +138,14 @@ function validateFile(file, schema) {
  * @returns {Promise<{ ok: boolean, reached: "venture" | "package" | null, venture: { ok: boolean, error?: string, recovery?: string[], errors?: string[], fix?: string, warnings?: any[] }, packages: { package: string, ok: boolean, error?: string, records: { record: string, route: string, file: string, ok: boolean, error?: string, fix?: { schema?: string, template?: string, skills: string[] } }[], checks: { check: string, passed: boolean, output: string }[] }[], contained?: string[], proceeds: string[] }>}
  */
 export async function boundaries(dir, { only = null } = {}) {
-  const { structure, checkManifest, manifest } = await import("../engine/structure.mjs");
+  const { structure, checkManifest, manifest } = await import("../engine/structure.ts");
   const { routes, glob } = await import("./router.mjs");
-  const { routable } = await import("../engine/structure.mjs");
+  const { routable } = await import("../engine/structure.ts");
   const h = ventureHealth(dir);
   if (h) return { ok: false, reached: "venture", venture: { ok: false, error: h.problem, recovery: h.recovery }, packages: [], proceeds: [] };
   const s = structure(dir);
   const verrors = [...s.errors, ...checkManifest(dir)];
-  const venture = { ok: !verrors.length, ...(verrors.length ? { errors: verrors, fix: "node packages/naive/src/engine/structure.mjs " + dir } : {}), warnings: s.warnings };
+  const venture = { ok: !verrors.length, ...(verrors.length ? { errors: verrors, fix: "node packages/naive/src/engine/structure.ts " + dir } : {}), warnings: s.warnings };
   const m = await manifest(dir);
   // Asked for by name, a package is checked whether or not the venture lists it.
   const names = only ? only.filter((n) => existsSync(join(repo, "packages/naive/library", "packages", n, "package.json"))) : m.packages.list.filter((p) => p.known).map((p) => p.name);

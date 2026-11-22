@@ -27,7 +27,7 @@ const put = (dir, rel, x) => { mkdirSync(join(dir, rel, ".."), { recursive: true
 const acme = init("acme");
 const other = init("other");
 const { call, ventures } = await import("./router.mjs");
-const { structure, manifest, checkManifest, routable } = await import("../engine/structure.mjs");
+const { structure, manifest, checkManifest, routable } = await import("../engine/structure.ts");
 const { boundaries, recover, ventureHealth, frameworkHealth } = await import("./boundaries.mjs");
 const c = (route, action, extra = {}) => call({ venture: "acme", route, action, workspace: ws, ...extra });
 
@@ -146,8 +146,8 @@ let s2 = structure(acme);
 expect("P-32: a name reserved for a later convention warns", s2.warnings.some((w) => /marketing\/layout\.md: layout\.md is reserved/.test(w)), s2.warnings);
 expect("P-32: _streams outside a data package is an error", s2.errors.some((e) => /marketing\/_streams\/: _streams\/ belongs directly under a data package/.test(e)), s2.errors);
 expect("P-32: naive.config.json away from the root is an error", s2.errors.some((e) => /validation\/naive\.config\.json/.test(e)), s2.errors);
-const cliS = spawnSync("node", [join(repo, "packages/naive/src/engine/structure.mjs"), acme], { encoding: "utf8" });
-expect("P-32: node packages/naive/src/engine/structure.mjs exits 1 on a misused reserved name", cliS.status === 1 && /_streams/.test(cliS.stderr), cliS.stdout + cliS.stderr);
+const cliS = spawnSync("node", [join(repo, "packages/naive/src/engine/structure.ts"), acme], { encoding: "utf8" });
+expect("P-32: node packages/naive/src/engine/structure.ts exits 1 on a misused reserved name", cliS.status === 1 && /_streams/.test(cliS.stderr), cliS.stdout + cliS.stderr);
 rmSync(join(acme, "marketing/layout.md")); rmSync(join(acme, "marketing/_streams"), { recursive: true }); rmSync(join(acme, "validation/naive.config.json"));
 
 // P-36: route groups.

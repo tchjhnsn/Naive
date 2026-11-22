@@ -11,7 +11,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { entries } from "../core/provenance.ts";
-import { cmp, registry, snapshot, updateFramework } from "./upgrades.mjs";
+import { cmp, registry, snapshot, updateFramework } from "./upgrades.ts";
 import { rewriteRoute } from "./migrations/kit-to-package.ts";
 
 const repo = new URL("../../../..", import.meta.url).pathname;

@@ -4,7 +4,7 @@ import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { checkUserFrameworks, listFrameworks, newFramework, publishFramework, resolveFramework } from "./user-frameworks.mjs";
+import { checkUserFrameworks, listFrameworks, newFramework, publishFramework, resolveFramework } from "./user-frameworks.ts";
 
 const ws = mkdtempSync(join(tmpdir(), "naive-fw-"));
 writeFileSync(join(ws, "naive-workspace.json"), JSON.stringify({ schema: "everything-ecosystem", schema_version: "0.5.0", ventures: ["v"] }));

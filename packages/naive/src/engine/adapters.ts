@@ -1,6 +1,6 @@
 // Adapter files (Z-4): what an adapter writes into a venture. adapt() writes the entry files a harness
 // reads and copies the skills of the packages open now; refresh() re-adapts every adapter a venture
-// has, after an upgrade (packages/naive/src/engine/upgrades.mjs). It records what it wrote in <venture>/.naive/adapters.json
+// has, after an upgrade (packages/naive/src/engine/upgrades.ts). It records what it wrote in <venture>/.naive/adapters.json
 // and never overwrites a file it did not write, or one a person changed since: it keeps theirs and says so.
 // Verifying an adapter runs routes, so verify() and the command line stay in packages/naive/src/interfaces/adapters.mjs.
 

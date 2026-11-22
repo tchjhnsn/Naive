@@ -3,8 +3,8 @@
 // the answers; below the threshold it is uncertain, and the founder picks from the list instead. Without a
 // judge command there is no model call at all: the list is the way to choose.
 //
-//   node packages/naive/src/engine/venture-type.mjs list
-//   node packages/naive/src/engine/venture-type.mjs classify "<a few words about the venture>"
+//   node packages/naive/src/engine/venture-type.ts list
+//   node packages/naive/src/engine/venture-type.ts classify "<a few words about the venture>"
 //
 // The judge is MENTURA_TYPE_CMD, else NAIVE_JUDGE_CMD: a command the app that hosts Naive names (such as
 // its Jev client), which reads the request on stdin and prints {answers}. Tests use a stand-in.
@@ -64,5 +64,5 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   if (cmd === "list") for (const t of types()) console.log(`${t.id.padEnd(18)} ${t.label}: ${t.description}`);
   else if (cmd === "classify" && words.length) {
     try { console.log(JSON.stringify(classify(words.join(" ")), null, 2)); } catch (e) { console.error(e.message); process.exit(1); }
-  } else { console.error('usage: node packages/naive/src/engine/venture-type.mjs list | classify "<a few words>"'); process.exit(2); }
+  } else { console.error('usage: node packages/naive/src/engine/venture-type.ts list | classify "<a few words>"'); process.exit(2); }
 }

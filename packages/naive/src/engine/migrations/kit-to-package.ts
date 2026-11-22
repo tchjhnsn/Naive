@@ -10,7 +10,7 @@
 //      (validation/solution), so access and locks keep meaning what they meant. A glob that spans
 //      routes now in several packages (purpose/**) cannot be rewritten safely and is escalated.
 //
-// Every change goes through ctx (packages/naive/src/engine/upgrades.mjs).
+// Every change goes through ctx (packages/naive/src/engine/upgrades.ts).
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -20,7 +20,7 @@ import { kit } from "../kits.ts";
 export const id = "kit-to-package";
 export const describe = "Moves Naive packages out of naive.config.json kits into packages, and rewrites layer and kit routes inside records (decision unlocks, team-plan access, where-used parents) to package routes";
 
-/** The part of the upgrade context (packages/naive/src/engine/upgrades.mjs) this migration uses. */
+/** The part of the upgrade context (packages/naive/src/engine/upgrades.ts) this migration uses. */
 type Ctx = {
   config: { kits?: string[]; packages?: Record<string, unknown>; [key: string]: unknown };
   write(rel: string, text: string, opts?: { note?: string }): void;

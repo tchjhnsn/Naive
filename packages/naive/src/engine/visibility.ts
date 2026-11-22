@@ -10,12 +10,12 @@
 // Approving a field as public pins its wording: when the field's value no longer hashes to the
 // approved sha256, it is treated as variant until a person approves the new wording.
 //
-//   node packages/naive/src/engine/visibility.mjs <venture dir> <record path> [--json]   each field's visibility
+//   node packages/naive/src/engine/visibility.ts <venture dir> <record path> [--json]   each field's visibility
 
 import { createHash } from "node:crypto";
 import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { frontmatter } from "./publish-lint.mjs";
+import { frontmatter } from "./publish-lint.ts";
 import { ventureFile } from "../core/venture-paths.ts";
 
 export const LEVELS = ["public", "variant", "internal", "confidential"];
@@ -102,7 +102,7 @@ export function publicValue(dir, rel, field) {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const [dir, rel] = process.argv.slice(2);
-  if (!dir || !rel) { console.error("usage: node packages/naive/src/engine/visibility.mjs <venture dir> <record path> [--json]"); process.exit(2); }
+  if (!dir || !rel) { console.error("usage: node packages/naive/src/engine/visibility.ts <venture dir> <record path> [--json]"); process.exit(2); }
   const f = ventureFile(dir, rel);
   const fields = existsSync(f) ? Object.keys(load(f)) : [];
   const out = Object.fromEntries(fields.map((k) => [k, visibilityOf(dir, rel, k)]));

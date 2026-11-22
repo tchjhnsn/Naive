@@ -101,12 +101,12 @@ const id = slug(basename(dir));
 if (!id) fail(`${basename(dir)} has no letters or digits to make a venture id from`);
 if (existsSync(dir) && readdirSync(dir).length) fail(`${dir} already exists and is not empty. create-venture only creates new ventures; to bring an existing project in, create one here and run naive port or naive migrate.`);
 // A workspace file that does not parse stops here, before the venture folder is made.
-const { ensureWorkspace, addVenture, findWorkspace, loadWorkspace } = await import(join(framework, "packages/naive/src/engine/workspace.mjs"));
+const { ensureWorkspace, addVenture, findWorkspace, loadWorkspace } = await import(join(framework, "packages/naive/src/engine/workspace.ts"));
 let ownWorkspace = null;
 if (!flag("no-workspace")) try { ownWorkspace = findWorkspace(dirname(dir)); if (ownWorkspace) loadWorkspace(ownWorkspace); } catch (e) { fail(e.message); }
 
 // The framework's registries: venture types, roles and functions (EE-082).
-const { types: TYPES, roles: ROLES, classify, canClassify } = await import(join(framework, "packages/naive/src/engine/venture-type.mjs")).then((m) => ({ types: m.types(), roles: m.roles(), classify: m.classify, canClassify: m.canClassify }));
+const { types: TYPES, roles: ROLES, classify, canClassify } = await import(join(framework, "packages/naive/src/engine/venture-type.ts")).then((m) => ({ types: m.types(), roles: m.roles(), classify: m.classify, canClassify: m.canClassify }));
 const DEPARTMENTS = JSON.parse(readFileSync(join(framework, "packages/naive/src/functions/departments.json"), "utf8")).departments;
 const deptLabel = (d) => DEPARTMENTS.find((x) => x.id === d)?.label ?? d;
 const roleOf = (r) => ROLES.find((x) => x.id === r);
@@ -340,7 +340,7 @@ if (!flag("no-git") && spawnSync("git", ["--version"]).status === 0 && spawnSync
 // naive-workspace.json above the venture lists it; with none, the venture's parent folder becomes the
 // workspace, named "Naive workspace" until the founder renames it, with an AGENTS.md for rules that hold
 // across every venture. --no-workspace leaves the parent folder as it is.
-// The workspace's file, AGENTS.md, folders, clock (its timeZone) and calendar come from packages/naive/src/engine/workspace.mjs,
+// The workspace's file, AGENTS.md, folders, clock (its timeZone) and calendar come from packages/naive/src/engine/workspace.ts,
 // the same code naive workspace init runs, so both ways in make the same workspace.
 let workspace = null;
 if (!flag("no-workspace")) {

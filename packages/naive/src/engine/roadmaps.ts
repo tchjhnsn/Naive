@@ -4,8 +4,8 @@
 // the founder sees first. A decision already made is kept, so switching roadmaps mid-way re-orders only
 // what remains. Steps are proposed from the frame itself; judging a frame's premises is naive frame's job.
 //
-//   node packages/naive/src/engine/roadmaps.mjs list
-//   node packages/naive/src/engine/roadmaps.mjs install <venture dir> <roadmap id>
+//   node packages/naive/src/engine/roadmaps.ts list
+//   node packages/naive/src/engine/roadmaps.ts install <venture dir> <roadmap id>
 
 import { existsSync } from "node:fs";
 import { join, resolve } from "node:path";
@@ -16,7 +16,7 @@ import { frameOf } from "./frames.ts";
  *  @param {string} dir @param {string} id @param {{ agentId?: string, harness?: string, model?: string }} [opts] */
 export async function install(dir, id, { agentId = "roadmaps", harness, model } = {}) {
   const r = roadmapOf(id);
-  if (!r) return { ok: false, error: `no roadmap ${id}; node packages/naive/src/engine/roadmaps.mjs list shows them` };
+  if (!r) return { ok: false, error: `no roadmap ${id}; node packages/naive/src/engine/roadmaps.ts list shows them` };
   const bad = check(r);
   if (bad.length) return { ok: false, error: bad.join("\n") };
   const { propose, decisions } = await import("./decisions.ts");
@@ -42,7 +42,7 @@ if (process.argv[1] && resolve(process.argv[1]) === new URL(import.meta.url).pat
   const show = (r) => { console.log(JSON.stringify(r.ok === undefined ? r : r.ok ? r.result : { error: r.error }, null, 2)); process.exit(r.ok === false ? 1 : 0); };
   if (cmd === "list") show(roadmaps().map((r) => ({ id: r.id, title: r.title, package: r.package, version: r.version, steps: r.steps.length })));
   else if (cmd === "install") {
-    if (!a || !existsSync(join(a, "venture.json")) || !b) { console.error("usage: node packages/naive/src/engine/roadmaps.mjs install <venture dir> <roadmap id>"); process.exit(2); }
+    if (!a || !existsSync(join(a, "venture.json")) || !b) { console.error("usage: node packages/naive/src/engine/roadmaps.ts install <venture dir> <roadmap id>"); process.exit(2); }
     show(await install(resolve(a), b));
-  } else { console.error("usage: node packages/naive/src/engine/roadmaps.mjs list|install"); process.exit(2); }
+  } else { console.error("usage: node packages/naive/src/engine/roadmaps.ts list|install"); process.exit(2); }
 }

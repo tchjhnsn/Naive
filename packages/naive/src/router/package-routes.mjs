@@ -125,7 +125,7 @@ export async function packageState(dir, name, venture) {
 
 /** The overview's @packages slot (P-17): each package in use, and the default a package with nothing in it shows. */
 export async function packageSlots(dir, venture) {
-  const { manifest } = await import("../engine/structure.mjs");
+  const { manifest } = await import("../engine/structure.ts");
   const m = await manifest(dir);
   const out = [];
   for (const { name, known } of m.packages.list) {
@@ -167,7 +167,7 @@ export async function specialCall({ venture, route, action, workspace }) {
   const dir = venture ? ventureDir(venture, workspace) : null;
   if (!dir && !(action === "layout" && sp.kind !== "venture")) return { ok: false, error: `no venture ${venture}` };
   if (sp.kind === "venture") {
-    const { manifest } = await import("../engine/structure.mjs");
+    const { manifest } = await import("../engine/structure.ts");
     const { boundaries } = await import("./boundaries.mjs");
     if (action === "check") { const b = await boundaries(dir); return { ok: b.ok, result: b }; }
     const m = await manifest(dir);

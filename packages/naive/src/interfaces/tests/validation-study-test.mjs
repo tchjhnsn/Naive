@@ -12,7 +12,7 @@ import { join } from "node:path";
 import { call, resolve } from "../../router/router.mjs";
 import { blocked, giveFeedback, manifest, status, unlock } from "../../engine/beta-gate.ts";
 import { route } from "../../engine/feedback-route.ts";
-import { events, flush, record, refuse, ventureHash } from "../../engine/telemetry.mjs";
+import { events, flush, record, refuse, ventureHash } from "../../engine/telemetry.ts";
 import { summary } from "../../engine/bugs.ts";
 import { check } from "../../checks/check-validation-study.ts";
 

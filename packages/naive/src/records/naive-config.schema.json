@@ -77,7 +77,7 @@
     "telemetry": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Usage telemetry (packages/naive/src/engine/telemetry.mjs, packages/naive/src/records/telemetry.schema.json), opt-in: enabled writes events to .naive/telemetry.jsonl; send lets them leave the machine, and counts only with set_by naming the person who turned it on.",
+      "description": "Usage telemetry (packages/naive/src/engine/telemetry.ts, packages/naive/src/records/telemetry.schema.json), opt-in: enabled writes events to .naive/telemetry.jsonl; send lets them leave the machine, and counts only with set_by naming the person who turned it on.",
       "properties": {
         "enabled": {
           "type": "boolean"
@@ -293,7 +293,7 @@
     "publish_lint": {
       "type": "object",
       "additionalProperties": false,
-      "description": "The publish lint (packages/naive/src/engine/publish-lint.mjs): each rule off, warn or error, the marks to flag, and findings a person waived",
+      "description": "The publish lint (packages/naive/src/engine/publish-lint.ts): each rule off, warn or error, the marks to flag, and findings a person waived",
       "properties": {
         "rules": {
           "type": "object",
@@ -684,7 +684,7 @@
     "phase_gates": {
       "type": "object",
       "additionalProperties": false,
-      "description": "How strict each phase gate is (EE-156, packages/naive/src/engine/phase-gate.mjs, route system/phase-gate): a preset from packages/naive/src/phases/gate-policies.json, per-item overrides, and whether lifecycle advance refuses a fail-closed shortfall. Without enforce the gate is reported only.",
+      "description": "How strict each phase gate is (EE-156, packages/naive/src/engine/phase-gate.ts, route system/phase-gate): a preset from packages/naive/src/phases/gate-policies.json, per-item overrides, and whether lifecycle advance refuses a fail-closed shortfall. Without enforce the gate is reported only.",
       "properties": {
         "preset": {
           "enum": [

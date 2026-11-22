@@ -25,7 +25,7 @@ import { agentFromEnv, record } from "../core/provenance.ts";
 import { routes, glob } from "../records/routes/routes.ts";
 import { CONFIG, pins, readConfig, writeConfig } from "./naive-config.ts";
 import { packages as packageFit } from "./packages.ts";
-import { seedPrograms } from "./research-programs.mjs";
+import { seedPrograms } from "./research-programs.ts";
 import { ventureFile } from "../core/venture-paths.ts";
 import { git as runGit, isHosted, refusedBy } from "../core/runtime.ts";
 import { schemaNameOf } from "../records/index.ts";
@@ -172,7 +172,7 @@ export async function upgrade(dir, { reg = registry(), dry = false, git = true }
       for (const w of ctx.writes.filter((x) => x.log)) record(dir, /** @type {Parameters<typeof record>[1]} */ ({ entity: w.path, activity: w.activity, agent, derived_from: w.derived_from, note: `${m.id}: ${w.note ?? "rewritten"}`, decision: m.decision ?? undefined }));
     }
     // Research programs (autoresearch design): each listed function's starter, copied only where programs/<function>.md
-    // is missing, so a founder's program is never touched (packages/naive/src/engine/research-programs.mjs).
+    // is missing, so a founder's program is never touched (packages/naive/src/engine/research-programs.ts).
     const programs = seedPrograms(dir, { dry });
     if (!dry) for (const x of programs) record(dir, /** @type {Parameters<typeof record>[1]} */ ({ entity: x.path, activity: "write", agent, derived_from: [x.template], note: `starter research program for ${x.function}, copied because it was missing; the venture's copy is the founder's from now on` }));
     // Pins (U-1, U-4): the framework, the channel, and every package the venture uses.

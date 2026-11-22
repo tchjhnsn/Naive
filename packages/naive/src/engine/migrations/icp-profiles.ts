@@ -8,12 +8,12 @@
 //   2. The old file is archived at _private/archive/icp.json, never deleted.
 //   3. A profile with no id, or two profiles with one id, is escalated, never guessed.
 //
-// Every change goes through ctx (packages/naive/src/engine/upgrades.mjs).
+// Every change goes through ctx (packages/naive/src/engine/upgrades.ts).
 
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
-/** The part of the upgrade context (packages/naive/src/engine/upgrades.mjs) this migration uses. */
+/** The part of the upgrade context (packages/naive/src/engine/upgrades.ts) this migration uses. */
 type Ctx = { write(rel: string, text: string, opts?: { activity?: string; note?: string; derived_from?: string[]; log?: boolean }): void; mv(from: string, to: string): void; escalate(msg: string): void; note(msg: string): void };
 type Profile = Record<string, unknown> & { id?: string };
 

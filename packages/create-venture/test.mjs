@@ -195,7 +195,7 @@ t("described in a few words, a model picks the type, and the founder confirms it
 t("without a model key, describing it falls back to the list; an unclear description is uncertain", () => {
   const r = create(["listed", "--describe", "a newsletter about cafes", "--yes", "--skip-install", "--no-git"]);
   ok(r.status === 1 && /pass --type/.test(r.stderr), r.stderr);
-  const u = spawnSync("node", [join(repo, "packages/naive/src/engine/venture-type.mjs"), "classify", "something hard to name"], { env: { ...env, MENTURA_TYPE_CMD: `node ${join(repo, "packages/naive/src/records/examples/venture-type/jev.ts")}` }, encoding: "utf8" });
+  const u = spawnSync("node", [join(repo, "packages/naive/src/engine/venture-type.ts"), "classify", "something hard to name"], { env: { ...env, MENTURA_TYPE_CMD: `node ${join(repo, "packages/naive/src/records/examples/venture-type/jev.ts")}` }, encoding: "utf8" });
   ok(u.status === 0 && JSON.parse(u.stdout).uncertain === true, u.stdout);
 });
 
@@ -244,7 +244,7 @@ t("naive upgrade --framework reinstalls the framework with the venture's package
 });
 
 t("naive build and start say plainly when the release scripts are missing, and otherwise run them", () => {
-  for (const [c, script] of [["build", "packages/naive/src/router/orchestration/build-release.mjs"], ["start", "packages/naive/src/engine/start-release.mjs"]]) {
+  for (const [c, script] of [["build", "packages/naive/src/router/orchestration/build-release.mjs"], ["start", "packages/naive/src/engine/start-release.ts"]]) {
     const has = existsSync(join(repo, script));
     if (has) continue;
     const r = naive([c], v);

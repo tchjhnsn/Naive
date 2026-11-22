@@ -31,7 +31,7 @@ import { entries, record } from "../../core/provenance.ts";
 import { ventureFile } from "../../core/venture-paths.ts";
 import { decisionFile, propose } from "../../engine/decisions.ts";
 import { verify } from "../../engine/freshness.ts";
-import { mark } from "../../engine/stale.mjs";
+import { mark } from "../../engine/stale.ts";
 import { LOCAL, connect, sourcesOf } from "../../store/connectors/index.ts";
 import * as S from "../../engine/signals.ts";
 import type { Change, Facts, Library, Merged, ProvLine, Pulled, Rendered, Typed } from "../../engine/signals.ts";

@@ -9,7 +9,7 @@ import { join } from "node:path";
 import { approve, decisions, merge, propose } from "./decisions.ts";
 import { impact } from "./impact.ts";
 import { record } from "../core/provenance.ts";
-import { stale } from "./stale.mjs";
+import { stale } from "./stale.ts";
 import type { DecisionImpact } from "../records/types/records.d.ts";
 
 let failed = 0;

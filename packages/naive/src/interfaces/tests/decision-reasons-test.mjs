@@ -8,7 +8,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { call } from "../../router/router.mjs";
 import { approve, decisions, propose } from "../../engine/decisions.ts";
-import { changedReasons, reasonsFromArgs, shaOf } from "../../engine/reasons.mjs";
+import { changedReasons, reasonsFromArgs, shaOf } from "../../engine/reasons.ts";
 
 const repo = new URL("../../../../..", import.meta.url).pathname;
 let failed = 0;

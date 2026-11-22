@@ -6,7 +6,7 @@ import { spawnSync } from "node:child_process";
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { context } from "../../engine/upgrades.mjs";
+import { context } from "../../engine/upgrades.ts";
 import * as telosToGoals from "../../engine/migrations/telos-to-goals.ts";
 import * as structured from "../../engine/migrations/structured-layout.ts";
 import { physical } from "../../core/venture-paths.ts";

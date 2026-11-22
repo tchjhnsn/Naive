@@ -14,10 +14,10 @@ import { syncCommand } from "../../core/sync.ts";
 import { ventureFile } from "../../core/venture-paths.ts";
 import { activity } from "../../engine/activity.ts";
 import { judge } from "../../engine/caching.ts";
-import { planOne } from "../../engine/port-venture.mjs";
-import { runHandoff } from "../../engine/run-handoff.mjs";
-import { updateFramework } from "../../engine/upgrades.mjs";
-import { canClassify, classify } from "../../engine/venture-type.mjs";
+import { planOne } from "../../engine/port-venture.ts";
+import { runHandoff } from "../../engine/run-handoff.ts";
+import { updateFramework } from "../../engine/upgrades.ts";
+import { canClassify, classify } from "../../engine/venture-type.ts";
 import { ventureHealth } from "../../router/boundaries.mjs";
 import { runAgent } from "../../router/orchestration/migrate-venture.mjs";
 import { connect } from "../../store/connectors/filesystem.ts";
@@ -57,7 +57,7 @@ ok("laptop: NAIVE_SYNC_* names the sync command", syncCommand("rho") === "echo s
 ok("laptop: a judge command can classify a type", canClassify());
 const laptopRun = await runHandoff(dir, "h1", { log: () => {} });
 ok("laptop: run-handoff runs a bash criterion", laptopRun.evidence.passed && !String(laptopRun.evidence.subject.version).startsWith("naive-framework@"));
-const laptopCli = spawnSync("node", [join(repo, "packages/naive/src/engine/run-handoff.mjs"), dir, "h1"], { encoding: "utf8", env: { ...process.env } });
+const laptopCli = spawnSync("node", [join(repo, "packages/naive/src/engine/run-handoff.ts"), dir, "h1"], { encoding: "utf8", env: { ...process.env } });
 ok("laptop: the run-handoff command passes and writes evidence", laptopCli.status === 0 && laptopCli.stdout.includes("pass c1") && laptopCli.stdout.includes("every criterion run passed"), `${laptopCli.status} ${laptopCli.stdout}${laptopCli.stderr}`);
 let laptopActivity = "ran";
 try { activity({ root: dir, dir: join(ws, "transcripts") }); } catch (e) { laptopActivity = e instanceof Error ? e.message : String(e); }
@@ -79,7 +79,7 @@ ok("hosted: reading a site refuses without a site hook", HOSTED.test(read) && re
 const ran = await refusal(() => runHandoff(dir, "h1", { log: () => {} }));
 ok("hosted: run-handoff refuses bash done-criteria without a sandbox", HOSTED.test(ran) && ran.startsWith("running a handoff's bash done-criteria") && ran.includes("Naive never runs a tenant's shell on the host") && ran.includes('registerHook("sandbox", fn)'), ran);
 
-const cli = spawnSync("node", [join(repo, "packages/naive/src/engine/run-handoff.mjs"), dir, "h1"], { encoding: "utf8", env: { ...process.env } });
+const cli = spawnSync("node", [join(repo, "packages/naive/src/engine/run-handoff.ts"), dir, "h1"], { encoding: "utf8", env: { ...process.env } });
 ok("hosted: the run-handoff command exits 2 with the refusal", cli.status === 2 && HOSTED.test(cli.stderr), `${cli.status} ${cli.stderr}`);
 
 const transcripts = await refusal(() => activity({ root: dir, dir: join(homedir(), ".claude/projects") }));

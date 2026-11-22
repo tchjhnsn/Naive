@@ -32,10 +32,10 @@ import { actingAgent, agentFromEnv, record as prov } from "../core/provenance.ts
 import { glob as routeFileGlob, routes } from "../records/routes/routes.ts";
 // Caching hook (F-12): the decision list is computed once per router action (packages/naive/src/engine/caching.ts).
 import { memo } from "./caching.ts";
-import { roles as ventureRoles } from "./venture-type.mjs";
+import { roles as ventureRoles } from "./venture-type.ts";
 import { impact } from "./impact.ts";
-import { mark } from "./stale.mjs";
-import { changedReasons, citesOf, stamp } from "./reasons.mjs";
+import { mark } from "./stale.ts";
+import { changedReasons, citesOf, stamp } from "./reasons.ts";
 import { grantBacked, layoutOf, liveGrant, logicalFiles, readDelegation, scopeWithin, ventureFile } from "../core/venture-paths.ts";
 import { readDataModel, schemaNameOf, venturePaths } from "../records/index.ts";
 import { validateFile } from "../records/validate.ts";

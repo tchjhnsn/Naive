@@ -2,7 +2,7 @@
 // (C-11): the confirmed records frozen in, and named holes for what stays live. Everything here
 // reads <venture>/.release/ and nothing else, so a release can be read after the venture's records
 // change, on a machine with no router, or handed to an investor as files. It never imports
-// packages/naive/src/router/router.mjs; packages/naive/src/engine/releases-test.mjs checks that.
+// packages/naive/src/router/router.mjs; packages/naive/src/engine/releases-test.ts checks that.
 //
 // The answer to a path is { status, type, body }:
 //   /                    the release index: venture, phase, release id, routes in the release, holes

@@ -2,8 +2,8 @@
 // The venture folder's structure (Next.js translation P-3, P-22, P-32): what venture.json declares,
 // which folders are private, and which names Naive reserves.
 //
-//   node packages/naive/src/engine/structure.mjs <venture dir> [--json]      check the structure; exit 1 on an error
-//   node packages/naive/src/engine/structure.mjs manifest <venture dir>      print the manifest venture.json declares
+//   node packages/naive/src/engine/structure.ts <venture dir> [--json]      check the structure; exit 1 on an error
+//   node packages/naive/src/engine/structure.ts manifest <venture dir>      print the manifest venture.json declares
 //
 // P-3 venture.json is Naive's package.json: identity, phase, governance, the function owners, and the
 //      packages and kits the venture uses (EE-071). packages and kits are declared the way
@@ -170,12 +170,12 @@ export function checkManifest(dir) {
 if (import.meta.url === `file://${process.argv[1]}`) {
   const args = process.argv.slice(2);
   if (args[0] === "manifest") {
-    if (!args[1] || !existsSync(join(args[1], "venture.json"))) { console.error("usage: node packages/naive/src/engine/structure.mjs manifest <venture dir>"); process.exit(2); }
+    if (!args[1] || !existsSync(join(args[1], "venture.json"))) { console.error("usage: node packages/naive/src/engine/structure.ts manifest <venture dir>"); process.exit(2); }
     console.log(JSON.stringify(await manifest(args[1]), null, 2));
     process.exit(0);
   }
   const dir = args.find((a) => !a.startsWith("--"));
-  if (!dir || !existsSync(dir) || !statSync(dir).isDirectory()) { console.error("usage: node packages/naive/src/engine/structure.mjs <venture dir> [--json] | manifest <venture dir>"); process.exit(2); }
+  if (!dir || !existsSync(dir) || !statSync(dir).isDirectory()) { console.error("usage: node packages/naive/src/engine/structure.ts <venture dir> [--json] | manifest <venture dir>"); process.exit(2); }
   const s = structure(dir);
   if (existsSync(join(dir, "venture.json"))) s.errors.push(...checkManifest(dir));
   if (args.includes("--json")) console.log(JSON.stringify(s, null, 2));

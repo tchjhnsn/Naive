@@ -4,7 +4,7 @@ import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { assign, canRead, capture, checkWorkspace, crossRead, inbox, loadWorkspace } from "./workspace.mjs";
+import { assign, canRead, capture, checkWorkspace, crossRead, inbox, loadWorkspace } from "./workspace.ts";
 
 const root = mkdtempSync(join(tmpdir(), "naive-ws-"));
 const put = (f, o) => { mkdirSync(join(root, f, ".."), { recursive: true }); writeFileSync(join(root, f), typeof o === "string" ? o : JSON.stringify(o)); };

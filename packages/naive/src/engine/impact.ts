@@ -3,7 +3,7 @@
 // (applies_to), every function of the venture that depends on those records is shown what follows:
 //
 //   1. deterministic: the records that depend on the changed files are found from what is already
-//      recorded (provenance derived_from and the where-used list, through stale.mjs notify(); and the
+//      recorded (provenance derived_from and the where-used list, through stale.ts notify(); and the
 //      refs in packages/naive/src/records/data-model.json: a record whose type refers to a changed record's type), and
 //      marked stale through the existing revalidation marks;
 //   2. the map is written to <decision folder>/<id>.impact.json (packages/naive/src/records/decision-impact.schema.json);
@@ -20,7 +20,7 @@ import { dirname, join } from "node:path";
 import { decisionFile, propose, recordOf } from "./decisions.ts";
 import { HOME } from "./packages.ts";
 import { entries as provenance } from "../core/provenance.ts";
-import { mark, notify } from "./stale.mjs";
+import { mark, notify } from "./stale.ts";
 import { layoutOf, logicalFiles, ventureFile } from "../core/venture-paths.ts";
 import { readDataModel } from "../records/index.ts";
 

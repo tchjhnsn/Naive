@@ -5,11 +5,11 @@
 // of truth (a read-only filesystem source) and logs the move in provenance.jsonl with the path it came
 // from. Migrate (rewriting a project into the Naive convention) is the other way in.
 //
-//   node packages/naive/src/engine/port-venture.mjs <folder> --venture <dir> [--to <path>] [--links <dir> ...]
+//   node packages/naive/src/engine/port-venture.ts <folder> --venture <dir> [--to <path>] [--links <dir> ...]
 //        adds the move to the plan at <venture>/.release/port-plan.json and prints it; moves nothing.
 //        The folder goes to <venture>/codebase/<its name> unless --to says where (relative to the venture
 //        or absolute). Run once per folder: each run adds or replaces that folder's item.
-//   node packages/naive/src/engine/port-venture.mjs --venture <dir> --apply --confirm port [--even-if-busy]
+//   node packages/naive/src/engine/port-venture.ts --venture <dir> --apply --confirm port [--even-if-busy]
 //        carries out every planned move the founder left as move; any item can be set to leave first
 //
 // The plan says what a move would break: worktrees of a git repository (they point at its old path
@@ -223,7 +223,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const VALUED = new Set(["--venture", "--to", "--links", "--confirm", "--from"]);
   const folder = opt("from") ?? args.find((a, i) => !a.startsWith("--") && !VALUED.has(args[i - 1]));
   const dir = opt("venture");
-  if (!dir) { console.error("usage: node packages/naive/src/engine/port-venture.mjs <folder> --venture <dir> [--to <path>] | --venture <dir> --apply --confirm port"); process.exit(2); }
+  if (!dir) { console.error("usage: node packages/naive/src/engine/port-venture.ts <folder> --venture <dir> [--to <path>] | --venture <dir> --apply --confirm port"); process.exit(2); }
   const start = new Date().toISOString();
   if (args.includes("--apply")) {
     if (opt("confirm") !== "port") { console.error("type --confirm port to carry out the plan"); process.exit(1); }

@@ -9,7 +9,7 @@
 //   tier ready: the operations-readiness record's ready_on per MAD tier.
 // A record's date is when git first saw the file, else the file's own updated or opened date.
 //
-//   node packages/naive/src/engine/time-to-ready.mjs <venture dir> [--json]
+//   node packages/naive/src/engine/time-to-ready.ts <venture dir> [--json]
 
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
@@ -88,7 +88,7 @@ export function timeToReady(dir) {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const dir = process.argv[2];
-  if (!dir || !existsSync(join(dir, "venture.json"))) { console.error("usage: node packages/naive/src/engine/time-to-ready.mjs <venture dir> [--json]"); process.exit(2); }
+  if (!dir || !existsSync(join(dir, "venture.json"))) { console.error("usage: node packages/naive/src/engine/time-to-ready.ts <venture dir> [--json]"); process.exit(2); }
   const r = timeToReady(dir);
   if (process.argv.includes("--json")) { console.log(JSON.stringify(r, null, 2)); process.exit(0); }
   console.log(`${r.venture}: started ${r.started}, phase ${r.phase}`);

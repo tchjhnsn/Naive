@@ -30,5 +30,5 @@ The files a new venture starts from, laid out the way the venture holds them (EE
 
 ## Run and test
 
-- `node packages/naive/src/engine/src-layout-test.mjs` moves the example workspace onto the src layout and runs the venture checks on it.
+- `node packages/naive/src/engine/src-layout-test.ts` moves the example workspace onto the src layout and runs the venture checks on it.
 - `naive upgrade <venture dir> --layout src` moves an existing venture, flat or structured, onto this layout; `--check` says what would move.

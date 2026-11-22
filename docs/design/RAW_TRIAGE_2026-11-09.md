@@ -85,7 +85,7 @@ A raw entry is a record, so it has a route, a schema and provenance like every o
 | `raw/sources/[id]/text.md` | The reference's text or transcript, or the founder's note when there is no text | `raw-source-text` (new) |
 | `raw/triage/[id].json` | One triage run over one entry: every question, its answer and probability, the model, the line used, what was filed and what was held | `triage` (new) |
 
-The id is the capture time plus a short random suffix, as `naive capture` makes it today (`packages/naive/src/engine/workspace.mjs`). `naive capture` keeps working on a filesystem workspace; on a tenant store, the same command writes the row through the router.
+The id is the capture time plus a short random suffix, as `naive capture` makes it today (`packages/naive/src/engine/workspace.ts`). `naive capture` keeps working on a filesystem workspace; on a tenant store, the same command writes the row through the router.
 
 **Open:** whether `raw-dump` replaces the single `raw/dump.md` the data model lists today (`instance/**/raw/dump.md`). The proposal is yes: one file per capture, and the old single dump is read as one capture during an upgrade.
 
@@ -106,7 +106,7 @@ Naive holds the questions as data in `packages/naive/src/engine/triage.ts` and b
 | Step | Question | Primitive | Decides |
 |---|---|---|---|
 | Kind | Is this the founder's own idea? Is it a reference to someone else's work? | Noul, Noul | idea, reference, or idea citing a reference (both yes) |
-| Split | none: code splits paragraphs (`split` in `workspace.mjs`) | code | fragments |
+| Split | none: code splits paragraphs (`split` in `workspace.ts`) | code | fragments |
 | Venture | For each fragment and each venture: is this fragment mainly about that venture? | Noul per venture | the venture, or none (a new idea) |
 | Functions | For each fragment and each of the 13 functions: does it touch this function? | Noul per function | the functions, for the routing rule |
 | Duplicate | For each fragment and each candidate idea (the closest existing ideas by shared terms, at most five): does it say the same thing? | Noul per candidate | new idea, or a builds-on relation to the existing one |

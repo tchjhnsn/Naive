@@ -45,7 +45,7 @@ if (!["flat", "structured", "src"].includes(layout)) { console.error(`unknown la
 const structured = layout === "structured";
 const ventureTypes: VentureTypes = JSON.parse(readFileSync(join(here, "venture-types.json"), "utf8"));
 const vtype = typeId ? ventureTypes.types.find((t) => t.id === typeId) : null;
-if (typeId && !vtype) { console.error(`unknown venture type ${typeId}: see node packages/naive/src/engine/venture-type.mjs list`); process.exit(2); }
+if (typeId && !vtype) { console.error(`unknown venture type ${typeId}: see node packages/naive/src/engine/venture-type.ts list`); process.exit(2); }
 const [dir, id] = args;
 if (!dir || !id) { console.error("usage: node packages/naive/src/engine/init-venture.ts <dir> <id> [--phase discovery] [--parent <id>] [--legal-form llc] [--layout flat|structured|src]"); process.exit(2); }
 if (!layers[phase]) { console.error(`unknown phase ${phase}: one of ${Object.keys(layers).join(", ")}`); process.exit(2); }

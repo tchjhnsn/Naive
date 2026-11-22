@@ -5,7 +5,7 @@
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { context } from "../../engine/upgrades.mjs";
+import { context } from "../../engine/upgrades.ts";
 import * as mig from "../../engine/migrations/telos-to-goals.ts";
 import { lifecycle, meet } from "../../engine/lifecycle.ts";
 import { exitCriteria, scale } from "../../engine/canonical.ts";

@@ -6,7 +6,7 @@ import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
-import { itemStrength, levelFromCount, meter, phaseGate, policyFor, strictness } from "./phase-gate.mjs";
+import { itemStrength, levelFromCount, meter, phaseGate, policyFor, strictness } from "./phase-gate.ts";
 import { advance, lifecycle } from "./lifecycle.ts";
 import { ventureFile } from "../core/venture-paths.ts";
 
@@ -131,11 +131,11 @@ const moved = advance(reported, "validation", { by: person });
 expect("report-only: advance goes on, with the gate's risks in the result", moved.ok && gateOf(moved)?.strength?.ready === false, moved.error);
 
 // ---- The CLI and the route ----
-const cli = node(["packages/naive/src/engine/phase-gate.mjs", fresh, "--preset", "standard"]);
+const cli = node(["packages/naive/src/engine/phase-gate.ts", fresh, "--preset", "standard"]);
 expect("the CLI prints a meter per item and exits 0 for a report", cli.status === 0 && /\[# {3}\] A named customer: very low \/ needs moderate, fail-closed/.test(cli.stdout), cli.stdout + cli.stderr);
-const bad = node(["packages/naive/src/engine/phase-gate.mjs", fresh, "--preset", "nope"]);
+const bad = node(["packages/naive/src/engine/phase-gate.ts", fresh, "--preset", "nope"]);
 expect("an unknown preset is a bad call (exit 2)", bad.status === 2, bad.stderr);
-expect("no venture is a bad call (exit 2)", node(["packages/naive/src/engine/phase-gate.mjs"]).status === 2);
+expect("no venture is a bad call (exit 2)", node(["packages/naive/src/engine/phase-gate.ts"]).status === 2);
 const route = node(["packages/naive/src/interfaces/cli/mentura.mjs", "system/phase-gate", "run", "--venture", "fresh"], { MENTURA_WORKSPACE: ws });
 let routed: { preset?: string, items?: unknown[] } = {};
 try { routed = JSON.parse(route.stdout); } catch { routed = {}; }

@@ -1,6 +1,6 @@
 // Telemetry for the plugin beta and Mentura, one schema for both (packages/naive/src/records/telemetry.schema.json).
 //
-//   import { record, flush } from "./telemetry.mjs"
+//   import { record, flush } from "./telemetry.ts"
 //   record(dir, { name, capability, session, duration_ms, outcome })   appends one event to .naive/telemetry.jsonl
 //   flush(dir, { send })                                                 sends what is waiting, only when allowed
 //

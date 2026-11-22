@@ -87,7 +87,7 @@ import { basename, join, relative, resolve } from "node:path";
 import { asRouted, findVenture } from "./find-venture.mjs";
 import { logical } from "../../core/venture-paths.ts";
 import { ventureFile } from "../../core/venture-paths.ts";
-import { checkWorkspace, ensureWorkspace, findWorkspace } from "../../engine/workspace.mjs";
+import { checkWorkspace, ensureWorkspace, findWorkspace } from "../../engine/workspace.ts";
 import { schemaNameOf } from "../../records/index.ts";
 import { naiveScript, PACKAGE_ROOT } from "../../core/scripts.ts";
 import { validateFile } from "../../records/validate.ts";
@@ -229,7 +229,7 @@ if (cmd === "dev") await dev(here());
 else if (cmd === "check") process.exit(check(here()));
 else if (cmd === "types") {
   // What create-venture can make, for an agent to offer the founder: each type with its roles, by name.
-  const { roles, types } = await import("../../engine/venture-type.mjs");
+  const { roles, types } = await import("../../engine/venture-type.ts");
   const R = new Map(roles().map((r) => [r.id, r.name]));
   console.log(JSON.stringify(types().map((t) => ({ id: t.id, label: t.label, description: t.description, examples: t.examples, roles: t.roles.map((r) => ({ id: r, name: R.get(r) })), default_role: t.default_role, first_decisions: t.decisions })), null, 2));
 }
@@ -244,12 +244,12 @@ else if (cmd === "mcp") {
 }
 else if (cmd === "info") info(findVenture() ?? (opt("venture") && existsSync(join(resolve(opt("venture")), "venture.json")) ? resolve(opt("venture")) : null));
 else if (cmd === "build" || cmd === "start") {
-  // The release itself is written and served by packages/naive/src/router/orchestration/build-release.mjs and packages/naive/src/engine/start-release.mjs.
-  const script = cmd === "build" ? "packages/naive/src/router/orchestration/build-release.mjs" : "packages/naive/src/engine/start-release.mjs";
+  // The release itself is written and served by packages/naive/src/router/orchestration/build-release.mjs and packages/naive/src/engine/start-release.ts.
+  const script = cmd === "build" ? "packages/naive/src/router/orchestration/build-release.mjs" : "packages/naive/src/engine/start-release.ts";
   if (!existsSync(join(repo, script))) { console.error(`naive ${cmd} runs ${script}, which this version of Naive does not have yet`); process.exit(1); }
   process.exit(run(script, [here(), ...rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture")]));
 } else if (cmd === "upgrade") {
-  // Outside a venture with none named, upgrade-venture.mjs prints its usage.
+  // Outside a venture with none named, upgrade-venture.ts prints its usage.
   const dir = rest[0] && !rest[0].startsWith("--") ? resolve(rest[0]) : (opt("venture") ? here() : findVenture());
   if (dir && rest.includes("--framework") && upgradeFramework(dir) !== 0) process.exit(1);
   // --layout src (EE-118 step 8) or structured (EE-086): move a venture onto that layout. No logical path changes,
@@ -270,9 +270,9 @@ else if (cmd === "build" || cmd === "start") {
     }
     process.exit(0);
   }
-  // Flags (--check, --guide, --adopt, --canary, --agent, --accept, --confirm) pass through to upgrade-venture.mjs; --framework and --venture are handled here.
+  // Flags (--check, --guide, --adopt, --canary, --agent, --accept, --confirm) pass through to upgrade-venture.ts; --framework and --venture are handled here.
   const flags = rest.filter((a, i) => !(i === 0 && !a.startsWith("--")) && a !== "--framework" && a !== "--venture" && rest[i - 1] !== "--venture");
-  process.exit(run("packages/naive/src/engine/upgrade-venture.mjs", dir ? [dir, ...flags] : flags));
+  process.exit(run("packages/naive/src/engine/upgrade-venture.ts", dir ? [dir, ...flags] : flags));
 } else if (cmd === "frame") {
   // The decision library (packages/naive/src/engine/frames.ts): naive frame "<the founder's words>" runs the frame those words fit.
   const sub = rest[0];
@@ -280,9 +280,9 @@ else if (cmd === "build" || cmd === "start") {
   const words = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture" && a !== "--frame" && rest[i - 1] !== "--frame" && a !== "--lookup" && rest[i - 1] !== "--lookup").join(" ");
   process.exit(run("packages/naive/src/engine/frames.ts", ["run", here(), ...(opt("frame") ? [opt("frame")] : []), ...(words ? ["--text", words] : []), ...(opt("lookup") ? ["--lookup", opt("lookup")] : [])]));
 } else if (cmd === "roadmap") {
-  // Decision roadmaps (packages/naive/src/engine/roadmaps.mjs): naive roadmap install <id> proposes each step's decisions, open.
-  if (rest[0] === "install") process.exit(run("packages/naive/src/engine/roadmaps.mjs", ["install", here(), rest[1]]));
-  process.exit(run("packages/naive/src/engine/roadmaps.mjs", ["list"]));
+  // Decision roadmaps (packages/naive/src/engine/roadmaps.ts): naive roadmap install <id> proposes each step's decisions, open.
+  if (rest[0] === "install") process.exit(run("packages/naive/src/engine/roadmaps.ts", ["install", here(), rest[1]]));
+  process.exit(run("packages/naive/src/engine/roadmaps.ts", ["list"]));
 } else if (cmd === "phase") {
   // The venture development lifecycle (packages/naive/src/engine/lifecycle.ts): where the venture is, its gate, and moving on.
   // naive phase | naive phase --meet <criterion> [--evidence <text>] | naive phase <next> [--reason] [--override]
@@ -295,44 +295,44 @@ else if (cmd === "build" || cmd === "start") {
 } else if (cmd === "publish") {
   const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
   if (args[0] === "check") {
-    // The publish lint (packages/naive/src/engine/publish-lint.mjs). Inside a venture, --venture defaults to it.
+    // The publish lint (packages/naive/src/engine/publish-lint.ts). Inside a venture, --venture defaults to it.
     const v = opt("venture") ?? findVenture();
-    process.exit(run("packages/naive/src/engine/publish-lint.mjs", [...args, ...(v ? ["--venture", v] : [])]));
+    process.exit(run("packages/naive/src/engine/publish-lint.ts", [...args, ...(v ? ["--venture", v] : [])]));
   }
-  // The publishing gate (packages/naive/src/engine/publish.mjs): build, publish, rollback, status.
+  // The publishing gate (packages/naive/src/engine/publish.ts): build, publish, rollback, status.
   const sub = ["build", "rollback", "status"].includes(args[0]) ? args.shift() : "publish";
-  process.exit(run("packages/naive/src/engine/publish.mjs", [here(), sub, ...args]));
+  process.exit(run("packages/naive/src/engine/publish.ts", [here(), sub, ...args]));
 } else if (cmd === "port" || cmd === "migrate") {
   // Inside a venture, --venture defaults to it.
   const args = rest.includes("--venture") ? rest : [...rest, "--venture", here()];
-  process.exit(run(cmd === "migrate" ? "packages/naive/src/router/orchestration/migrate-venture.mjs" : "packages/naive/src/engine/port-venture.mjs", args));
+  process.exit(run(cmd === "migrate" ? "packages/naive/src/router/orchestration/migrate-venture.mjs" : "packages/naive/src/engine/port-venture.ts", args));
 } else if (cmd === "capture" || cmd === "inbox" || cmd === "read") {
-  // The workspace (packages/naive/src/engine/workspace.mjs): the one above the venture this runs in, else above this folder.
+  // The workspace (packages/naive/src/engine/workspace.ts): the one above the venture this runs in, else above this folder.
   const venture = opt("venture") ? here() : findVenture();
   const ws = findWorkspace(venture ?? process.cwd());
   if (!ws) { console.error("no naive-workspace.json here or above"); process.exit(1); }
   const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
   // naive read names the venture this session is in as the one reading.
   const from = venture ? JSON.parse(readFileSync(join(venture, "venture.json"), "utf8")).id ?? basename(venture) : "";
-  process.exit(run("packages/naive/src/engine/workspace.mjs", cmd === "read" ? ["read", ws, from, ...args] : [cmd, ws, ...args]));
+  process.exit(run("packages/naive/src/engine/workspace.ts", cmd === "read" ? ["read", ws, from, ...args] : [cmd, ws, ...args]));
 } else if (cmd === "framework") {
-  // A founder's own frameworks (packages/naive/src/engine/user-frameworks.mjs): the workspace above the venture, else above this folder.
+  // A founder's own frameworks (packages/naive/src/engine/user-frameworks.ts): the workspace above the venture, else above this folder.
   const from = opt("venture") ? here() : process.cwd();
   const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
   const [sub = "list", ...more] = args;
-  process.exit(run("packages/naive/src/engine/user-frameworks.mjs", [sub, ...more, from]));
+  process.exit(run("packages/naive/src/engine/user-frameworks.ts", [sub, ...more, from]));
 } else if (cmd === "diagnose") {
   process.exit(run("scripts/diagnose-transcripts.mjs", rest));
 } else if (cmd === "activity") {
   process.exit(run("packages/naive/src/engine/activity.ts", rest));
 } else if (cmd === "workspace") {
-  // A workspace (packages/naive/src/engine/workspace-init.mjs): made with its clock, calendar and first venture; renamed in place.
+  // A workspace (packages/naive/src/engine/workspace-init.ts): made with its clock, calendar and first venture; renamed in place.
   const [sub, ...args] = rest;
-  if (sub === "init") process.exit(run("packages/naive/src/engine/workspace-init.mjs", args));
+  if (sub === "init") process.exit(run("packages/naive/src/engine/workspace-init.ts", args));
   if (sub === "rename") {
     const ws = findWorkspace(opt("workspace") ?? process.cwd());
     if (!ws) { console.error("no naive-workspace.json here or above"); process.exit(1); }
-    process.exit(run("packages/naive/src/engine/workspace.mjs", ["rename", ws, ...args.filter((a, i) => a !== "--workspace" && args[i - 1] !== "--workspace")]));
+    process.exit(run("packages/naive/src/engine/workspace.ts", ["rename", ws, ...args.filter((a, i) => a !== "--workspace" && args[i - 1] !== "--workspace")]));
   }
   console.error("naive workspace init [<dir>] [--name <name>] (--venture <name> | --port <folder> | --migrate <project>)\nnaive workspace rename <name>");
   process.exit(2);

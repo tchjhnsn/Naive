@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 // A founder's own frameworks for thinking and their playbooks, kept in the workspace beside the built-in ones.
 //
-//   node packages/naive/src/engine/user-frameworks.mjs list    [<from dir>] [--json]
-//   node packages/naive/src/engine/user-frameworks.mjs new     <id> [<from dir>] [--title <t>] [--owner <who>]
-//   node packages/naive/src/engine/user-frameworks.mjs check   [<id>] [<from dir>]
-//   node packages/naive/src/engine/user-frameworks.mjs publish <id> [<from dir>] --dry-run
+//   node packages/naive/src/engine/user-frameworks.ts list    [<from dir>] [--json]
+//   node packages/naive/src/engine/user-frameworks.ts new     <id> [<from dir>] [--title <t>] [--owner <who>]
+//   node packages/naive/src/engine/user-frameworks.ts check   [<id>] [<from dir>]
+//   node packages/naive/src/engine/user-frameworks.ts publish <id> [<from dir>] --dry-run
 //
 // A workspace keeps them at frameworks/<id>/{framework.json, template.md, playbook.md}, next to naive-workspace.json
 // (or workspace.json). Each has the shape of packages/naive/src/records/framework.schema.json, and maps_to must target canonical routes,
@@ -14,9 +14,9 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { basename, dirname, join, resolve } from "node:path";
 import { check as checkFrameworks } from "./check-frameworks.ts";
-import { findWorkspace } from "./workspace.mjs";
+import { findWorkspace } from "./workspace.ts";
 import { leaks } from "./check-leaks.ts";
-import { findSecrets } from "./redact.mjs";
+import { findSecrets } from "./redact.ts";
 import { schemaFile } from "../records/index.ts";
 import { validateFile } from "../records/validate.ts";
 
@@ -161,7 +161,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       (r.code === 0 ? console.log : console.error)(r.message);
       process.exit(r.code);
     } else {
-      console.error("usage: user-frameworks.mjs list|new <id>|check [<id>]|publish <id> --dry-run");
+      console.error("usage: user-frameworks.ts list|new <id>|check [<id>]|publish <id> --dry-run");
       process.exit(2);
     }
   } catch (e) { console.error(e.message); process.exit(1); }

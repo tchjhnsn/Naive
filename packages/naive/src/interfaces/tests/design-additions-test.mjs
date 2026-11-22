@@ -2,7 +2,7 @@
 // Layout, private and typegen are tested beside the router and check-private.
 
 import { readFileSync } from "node:fs";
-import { provenanceOf } from "../../engine/use-model.mjs";
+import { provenanceOf } from "../../engine/use-model.ts";
 import { hold, packageGates } from "../../engine/gate.ts";
 import { judge } from "../../router/router.mjs";
 

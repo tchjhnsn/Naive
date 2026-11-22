@@ -1,6 +1,6 @@
 // Tests the compiled package's build (scripts/build.ts, EE-159): which files are compiled, the renaming of string
 // literals that name a compiled .ts file, and the refusal of a relative import that names no file. The packed
-// install tests (packages/naive/src/engine/workspace-init-test.mjs, packages/create-venture/test.mjs) prove that the
+// install tests (packages/naive/src/engine/workspace-init-test.ts, packages/create-venture/test.mjs) prove that the
 // result runs from node_modules.
 //
 //   node scripts/build-test.ts

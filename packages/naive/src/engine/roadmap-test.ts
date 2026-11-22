@@ -8,7 +8,7 @@ import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:f
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { check, ordered, roadmapOf, roadmaps } from "./check-roadmap.ts";
-import { install } from "./roadmaps.mjs";
+import { install } from "./roadmaps.ts";
 import { ventureFile } from "../core/venture-paths.ts";
 import { advance, lifecycle, meet, playbookOf, playbooks } from "./lifecycle.ts";
 

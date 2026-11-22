@@ -81,13 +81,13 @@ import { call, draftOf, files, glob, groups, repo, routes, routesMd, ventureDir,
 import { agentFromEnv, entries, record } from "../../core/provenance.ts";
 import { FRAME, filesOf, statementFiles } from "../../engine/foundation.ts";
 import { approve, decisionFile, decisions, merge, propose, rollback } from "../../engine/decisions.ts";
-import { reasonsFromArgs, whyLines } from "../../engine/reasons.mjs";
+import { reasonsFromArgs, whyLines } from "../../engine/reasons.ts";
 import { impact } from "../../engine/impact.ts";
 // Gate group hook (X-2): held drafts kept side by side.
 import { pick as pickDraft, settle as settleDraft } from "../../engine/gate-drafts.ts";
 import { asRouted, findVenture } from "./find-venture.mjs";
 import { ventureFile } from "../../core/venture-paths.ts";
-import { setPublic, visibilityOf } from "../../engine/visibility.mjs";
+import { setPublic, visibilityOf } from "../../engine/visibility.ts";
 
 // The danger zone (EE-051): a foundation statement is accepted or confirmed only when the person types
 // its name, at the prompt or with --confirm <name>.
@@ -165,8 +165,8 @@ if (["triggers", "stale", "notify", "adapt", "adapters"].includes(cmd)) {
   if (cmd !== "adapters" && !d) { console.error(opt("venture") ? `no venture ${opt("venture")}` : `mentura ${cmd} needs --venture <id>`); process.exit(2); }
   const pass = (...names) => names.flatMap((n) => argv.flatMap((a, i) => (a === `--${n}` ? [a, ...(argv[i + 1] && !argv[i + 1].startsWith("--") ? [argv[i + 1]] : [])] : [])));
   const args = cmd === "triggers" ? ["packages/naive/src/router/orchestration/triggers.mjs", d, ...pass("fire", "json")]
-    : cmd === "stale" ? ["packages/naive/src/engine/stale.mjs", d, ...pass("json")]
-    : cmd === "notify" ? ["packages/naive/src/engine/stale.mjs", d, "--notify", ...pass("source", "path", "version", "json")]
+    : cmd === "stale" ? ["packages/naive/src/engine/stale.ts", d, ...pass("json")]
+    : cmd === "notify" ? ["packages/naive/src/engine/stale.ts", d, "--notify", ...pass("source", "path", "version", "json")]
     : cmd === "adapt" ? ["packages/naive/src/interfaces/adapters.mjs", "adapt", action ?? "", d, ...pass("json")]
     : ["packages/naive/src/interfaces/adapters.mjs", ...positional.slice(1), ...pass("json")];
   const p = spawnSync("node", [join(repo, args[0]), ...args.slice(1)], { stdio: "inherit" });
@@ -188,7 +188,7 @@ if (cmd === "upgrade" || cmd === "migrate") {
   const v = opt("venture");
   const d = v && ventureDir(v, workspace);
   if (!d) usage();
-  const p = spawnSync("node", [join(repo, "packages/naive/src/engine/upgrade-venture.mjs"), d], { stdio: "inherit" });
+  const p = spawnSync("node", [join(repo, "packages/naive/src/engine/upgrade-venture.ts"), d], { stdio: "inherit" });
   process.exit(p.status ?? 1);
 }
 
@@ -460,5 +460,5 @@ if (r.ok && r.needs_input && !flag("json")) {
 }
 if (!r.ok) { console.error(r.error ?? JSON.stringify(r.result, null, 2)); process.exit(1); }
 if (r.deprecated) console.error(`note: ${r.deprecated}`);
-const extra = ["not_found", "pending_draft", "fix", "needs_input", "errors", "filtered_out", "hierarchy", "stale"].some((k) => r[k]); // stale: V-9 (packages/naive/src/engine/stale.mjs)
+const extra = ["not_found", "pending_draft", "fix", "needs_input", "errors", "filtered_out", "hierarchy", "stale"].some((k) => r[k]); // stale: V-9 (packages/naive/src/engine/stale.ts)
 out(flag("json") || extra ? r : r.result);

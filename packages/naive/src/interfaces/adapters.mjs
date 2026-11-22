@@ -12,7 +12,7 @@
 //
 // adapt() records what it wrote in <venture>/.naive/adapters.json and never overwrites a file it did not
 // write, or one a person changed since: it keeps theirs and says so. An upgrade refreshes the adapters
-// a venture has (packages/naive/src/engine/upgrades.mjs), so the skill copies follow the installed packages. adapt() and
+// a venture has (packages/naive/src/engine/upgrades.ts), so the skill copies follow the installed packages. adapt() and
 // refresh() are in packages/naive/src/engine/adapters.ts, because they write files and run no route; this module re-exports
 // them, and keeps verify(), which runs routes, and the command line.
 
@@ -34,7 +34,7 @@ async function harnessSuite(a) {
   try {
     const dir = join(ws, "adapted");
     const init = spawnSync("node", [join(repo, "packages/naive/src/engine/init-venture.ts"), dir, "adapted"], { encoding: "utf8" });
-    const up = spawnSync("node", [join(repo, "packages/naive/src/engine/upgrade-venture.mjs"), dir], { encoding: "utf8" });
+    const up = spawnSync("node", [join(repo, "packages/naive/src/engine/upgrade-venture.ts"), dir], { encoding: "utf8" });
     t("a new venture is created and upgraded to the installed framework", init.status === 0 && up.status === 0, init.stderr + up.stderr);
     const first = await adapt(dir, a.name);
     t("every entry file is written with the adapter's text", a.files.every((f) => existsSync(ventureFile(dir, f.path)) && readFileSync(ventureFile(dir, f.path), "utf8") === f.text), JSON.stringify(first.written));

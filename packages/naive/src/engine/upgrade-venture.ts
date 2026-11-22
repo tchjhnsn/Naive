@@ -1,29 +1,29 @@
 #!/usr/bin/env node
 // naive upgrade: moves one venture onto the installed Naive, like next upgrade and its codemods
-// (EE-076, U-1 to U-6). The work is in packages/naive/src/engine/upgrades.mjs; this is its command line.
+// (EE-076, U-1 to U-6). The work is in packages/naive/src/engine/upgrades.ts; this is its command line.
 //
-//   node packages/naive/src/engine/upgrade-venture.mjs <venture dir>                 run the migrations and pin the framework and packages
-//   node packages/naive/src/engine/upgrade-venture.mjs <venture dir> --check         say what it would do; change nothing
-//   node packages/naive/src/engine/upgrade-venture.mjs <venture dir> --guide [x.y.z] the guide for each version it crosses, or for one
-//   node packages/naive/src/engine/upgrade-venture.mjs <venture dir> --canary|--stable   the channel (experimental packages need canary)
-//   node packages/naive/src/engine/upgrade-venture.mjs <venture dir> --adopt <package>   adopt a later phase's package now
-//   node packages/naive/src/engine/upgrade-venture.mjs <venture dir> --drop <package>    undo that
-//   node packages/naive/src/engine/upgrade-venture.mjs <venture dir> --stage         upgrade a copy under .naive/upgrade/ and run the checks
-//   node packages/naive/src/engine/upgrade-venture.mjs <venture dir> --agent         the same, with an agent working the copy (a Mentura kit)
-//   node packages/naive/src/engine/upgrade-venture.mjs <venture dir> --status        the staged upgrade and its checks
-//   node packages/naive/src/engine/upgrade-venture.mjs <venture dir> --accept --confirm upgrade   land a staged upgrade whose checks pass
-//   node packages/naive/src/engine/upgrade-venture.mjs <venture dir> --reject        discard it
-//   node packages/naive/src/engine/upgrade-venture.mjs --framework [<venture dir>]   update the installed framework first (git pull --ff-only)
+//   node packages/naive/src/engine/upgrade-venture.ts <venture dir>                 run the migrations and pin the framework and packages
+//   node packages/naive/src/engine/upgrade-venture.ts <venture dir> --check         say what it would do; change nothing
+//   node packages/naive/src/engine/upgrade-venture.ts <venture dir> --guide [x.y.z] the guide for each version it crosses, or for one
+//   node packages/naive/src/engine/upgrade-venture.ts <venture dir> --canary|--stable   the channel (experimental packages need canary)
+//   node packages/naive/src/engine/upgrade-venture.ts <venture dir> --adopt <package>   adopt a later phase's package now
+//   node packages/naive/src/engine/upgrade-venture.ts <venture dir> --drop <package>    undo that
+//   node packages/naive/src/engine/upgrade-venture.ts <venture dir> --stage         upgrade a copy under .naive/upgrade/ and run the checks
+//   node packages/naive/src/engine/upgrade-venture.ts <venture dir> --agent         the same, with an agent working the copy (a Mentura kit)
+//   node packages/naive/src/engine/upgrade-venture.ts <venture dir> --status        the staged upgrade and its checks
+//   node packages/naive/src/engine/upgrade-venture.ts <venture dir> --accept --confirm upgrade   land a staged upgrade whose checks pass
+//   node packages/naive/src/engine/upgrade-venture.ts <venture dir> --reject        discard it
+//   node packages/naive/src/engine/upgrade-venture.ts --framework [<venture dir>]   update the installed framework first (git pull --ff-only)
 //
 // Files move with git mv when git tracks them. Provenance is appended, never rewritten. Old routes keep
 // resolving through packages/naive/src/router/route-aliases.json. Each function listed in venture.json departments gets
-// its starter research program at programs/<function>.md when that file is missing (packages/naive/src/engine/research-programs.mjs).
+// its starter research program at programs/<function>.md when that file is missing (packages/naive/src/engine/research-programs.ts).
 // --json prints the result as JSON.
 
 import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { accept, adopt, check, CONFIRM, draft, drop, guide, plan, registry, reject, setChannel, stage, updateFramework, upgrade } from "./upgrades.mjs";
+import { accept, adopt, check, CONFIRM, draft, drop, guide, plan, registry, reject, setChannel, stage, updateFramework, upgrade } from "./upgrades.ts";
 import { kitFor } from "./kits.ts";
 
 const argv = process.argv.slice(2);
@@ -34,7 +34,7 @@ const dirArg = argv.find((a, i) => !a.startsWith("--") && !(i > 0 && valued.has(
 const json = has("json");
 const say = (x, text) => console.log(json ? JSON.stringify(x, null, 2) : text);
 const fail = (e) => { console.error(e.message ?? String(e)); process.exit(1); };
-const usage = () => { console.error("usage: node packages/naive/src/engine/upgrade-venture.mjs <venture dir> [--check | --guide [version] | --canary | --stable | --adopt <package> | --drop <package> | --stage | --agent | --status | --accept --confirm upgrade | --reject] [--json]\n       node packages/naive/src/engine/upgrade-venture.mjs --framework [<venture dir>]"); process.exit(2); };
+const usage = () => { console.error("usage: node packages/naive/src/engine/upgrade-venture.ts <venture dir> [--check | --guide [version] | --canary | --stable | --adopt <package> | --drop <package> | --stage | --agent | --status | --accept --confirm upgrade | --reject] [--json]\n       node packages/naive/src/engine/upgrade-venture.ts --framework [<venture dir>]"); process.exit(2); };
 
 if (has("framework")) {
   const r = updateFramework();

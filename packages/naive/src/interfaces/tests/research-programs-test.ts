@@ -19,8 +19,8 @@ import { blobHash, hasBlob } from "../../core/blobs.ts";
 import { readAsOf } from "../../store/as-of.ts";
 import { writerRule } from "../../engine/gate.ts";
 import { catalog } from "../../engine/departments.ts";
-import { functionsOf, seedPrograms, templateOf } from "../../engine/research-programs.mjs";
-import { upgrade } from "../../engine/upgrades.mjs";
+import { functionsOf, seedPrograms, templateOf } from "../../engine/research-programs.ts";
+import { upgrade } from "../../engine/upgrades.ts";
 import { draft as draftProgram } from "../../engine/generators/research-program.ts";
 
 const repo = new URL("../../../../../", import.meta.url).pathname;

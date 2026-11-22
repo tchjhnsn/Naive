@@ -162,11 +162,11 @@
    "status": "partial",
    "evidence": [
     "packages/naive/src/router/orchestration/build-release.mjs",
-    "packages/naive/src/engine/start-release.mjs",
-    "packages/naive/src/engine/releases-test.mjs"
+    "packages/naive/src/engine/start-release.ts",
+    "packages/naive/src/engine/releases-test.ts"
    ],
    "page": "get-started/releases",
-   "note": "The release scripts are built: node packages/naive/src/router/orchestration/build-release.mjs <venture dir> [--port n] (--port is accepted and ignored) and node packages/naive/src/engine/start-release.mjs <venture dir> [--port n] [--get <path>]. Wiring the naive build and naive start commands to them is another session's job, as are naive dev and naive check, so the row as a whole is partial from this group."
+   "note": "The release scripts are built: node packages/naive/src/router/orchestration/build-release.mjs <venture dir> [--port n] (--port is accepted and ignored) and node packages/naive/src/engine/start-release.ts <venture dir> [--port n] [--get <path>]. Wiring the naive build and naive start commands to them is another session's job, as are naive dev and naive check, so the row as a whole is partial from this group."
   },
   {
    "id": "I-18",
@@ -280,7 +280,7 @@
    "evidence": [
     "packages/naive/src/interfaces/cli/naive.mjs",
     "packages/create-venture/test.mjs",
-    "packages/naive/src/engine/upgrade-venture.mjs"
+    "packages/naive/src/engine/upgrade-venture.ts"
    ],
    "page": "get-started/install",
    "note": "naive upgrade --framework reinstalls the framework with the venture's package manager, then moves the venture onto the new layout"
@@ -315,7 +315,7 @@
    "chapter": "Chapter 2: Project Structure",
    "status": "built",
    "evidence": [
-    "packages/naive/src/engine/structure.mjs",
+    "packages/naive/src/engine/structure.ts",
     "packages/naive/src/records/venture.schema.json",
     "packages/naive/src/router/package-routes.mjs",
     "packages/naive/src/router/writes-test.mjs"
@@ -517,7 +517,7 @@
    "chapter": "Chapter 2: Project Structure",
    "status": "built",
    "evidence": [
-    "packages/naive/src/engine/structure.mjs",
+    "packages/naive/src/engine/structure.ts",
     "packages/naive/src/router/router.mjs",
     "packages/naive/src/router/writes-test.mjs"
    ],
@@ -547,9 +547,9 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/router/orchestration/releases.mjs",
-    "packages/naive/src/engine/release-card.mjs",
-    "packages/naive/src/engine/start-release.mjs",
-    "packages/naive/src/engine/releases-test.mjs"
+    "packages/naive/src/engine/release-card.ts",
+    "packages/naive/src/engine/start-release.ts",
+    "packages/naive/src/engine/releases-test.ts"
    ],
    "page": "get-started/releases",
    "note": "The cover card is .release/card.json. It is served at /card.json, and at /card.svg as a 1200x630 SVG (link-preview size) drawn by the interface."
@@ -616,7 +616,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/router/orchestration/releases.mjs",
-    "packages/naive/src/engine/releases-test.mjs"
+    "packages/naive/src/engine/releases-test.ts"
    ],
    "page": "get-started/releases",
    "note": "Only confirmed records ship. Drafts, _private/, raw inputs, notes and readmes (files that are not records), agent-written records, and records hand-edited after confirmation (sha256 mismatch) never enter. Private records are withheld by count only, and private_fields are stripped by name. left_out lists each excluded non-private file with the reason."
@@ -626,11 +626,11 @@
    "chapter": "Chapter 2: Project Structure",
    "status": "built",
    "evidence": [
-    "packages/naive/src/engine/structure.mjs",
+    "packages/naive/src/engine/structure.ts",
     "packages/naive/src/router/writes-test.mjs"
    ],
    "page": "get-started/project-structure",
-   "note": "RESERVED has in-use names and future names (layout.md, template.md, error.md, loading.md, not-found.md, default.md, page.md, .naive, @slot, [param]). node packages/naive/src/engine/structure.mjs <venture> errors on misuse of in-use names (_drafts/.release/naive.config.json/provenance.jsonl away from the root, _streams outside a data package, a (group) folder holding records) and warns on future names."
+   "note": "RESERVED has in-use names and future names (layout.md, template.md, error.md, loading.md, not-found.md, default.md, page.md, .naive, @slot, [param]). node packages/naive/src/engine/structure.ts <venture> errors on misuse of in-use names (_drafts/.release/naive.config.json/provenance.jsonl away from the root, _streams outside a data package, a (group) folder holding records) and warns on future names."
   },
   {
    "id": "P-33",
@@ -979,8 +979,8 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/router/orchestration/releases.mjs",
-    "packages/naive/src/engine/release-read.mjs",
-    "packages/naive/src/engine/releases-test.mjs"
+    "packages/naive/src/engine/release-read.ts",
+    "packages/naive/src/engine/releases-test.ts"
    ],
    "page": "get-started/releases",
    "note": "Collection items known at build time are enumerated in manifest.items, one frozen entry each. List routes serve them and item routes serve each one. Items unknown at build time fall back as C-18 describes."
@@ -1515,7 +1515,7 @@
     "packages/naive/src/records/trigger.schema.json",
     "packages/naive/src/records/kit.schema.json",
     "packages/naive/src/core/provenance.ts",
-    "packages/naive/src/engine/upgrades-test.mjs"
+    "packages/naive/src/engine/upgrades-test.ts"
    ],
    "evidence_elsewhere": [
     "platform/kits/validation-kickoff/kit.json",
@@ -1694,7 +1694,7 @@
    "evidence": [
     "packages/naive/src/router/orchestration/releases.mjs",
     "packages/naive/src/router/orchestration/build-release.mjs",
-    "packages/naive/src/engine/releases-test.mjs"
+    "packages/naive/src/engine/releases-test.ts"
    ],
    "page": "get-started/releases",
    "note": "Build walks the venture and freezes what it finds, with no step of its own and no model call (the test's stand-in agent is never called). Now is an input (--now) recorded in the manifest. The release id is a content hash, so the same records give the same id at any --now."
@@ -1705,8 +1705,8 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/router/orchestration/releases.mjs",
-    "packages/naive/src/engine/release-read.mjs",
-    "packages/naive/src/engine/releases-test.mjs"
+    "packages/naive/src/engine/release-read.ts",
+    "packages/naive/src/engine/releases-test.ts"
    ],
    "page": "get-started/releases",
    "note": "The .release/release.json manifest holds the records a person confirmed, frozen in with sha256, as_of and confirmed_by, with copies in .release/records/. It also names live holes: open decisions, _streams/, money accounts, attributes mastered in another source, and command routes that read runtime data."
@@ -1716,9 +1716,9 @@
    "chapter": "Chapter 8: Caching",
    "status": "built",
    "evidence": [
-    "packages/naive/src/engine/start-release.mjs",
-    "packages/naive/src/engine/release-read.mjs",
-    "packages/naive/src/engine/releases-test.mjs"
+    "packages/naive/src/engine/start-release.ts",
+    "packages/naive/src/engine/release-read.ts",
+    "packages/naive/src/engine/releases-test.ts"
    ],
    "page": "get-started/releases",
    "note": "start-release reads only .release/. The test follows its imports to check none of them reaches packages/naive/src/router/router.mjs. It still serves as built after the venture's records change. The investor handoff is the --export output (Z-3)."
@@ -1730,7 +1730,7 @@
    "evidence": [
     "packages/naive/src/router/orchestration/releases.mjs",
     "packages/naive/src/router/orchestration/build-release.mjs",
-    "packages/naive/src/engine/releases-test.mjs"
+    "packages/naive/src/engine/releases-test.ts"
    ],
    "page": "get-started/releases",
    "note": "Every package that is open now (packages/naive/src/engine/packages.ts) must be releasable. A required record blocks the build, with exit 1 and the file and fix command named, if it is any of these: an agent's unconfirmed write, a draft with nothing confirmed behind it, changed since its last provenance entry, or failing its schema. check-provenance and check-private must also pass. A refused build leaves the previous release untouched. Missing records are reported as gaps and do not block. An unconfirmed optional record is left out of the release instead of blocking."
@@ -1741,8 +1741,8 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/router/orchestration/releases.mjs",
-    "packages/naive/src/engine/release-read.mjs",
-    "packages/naive/src/engine/releases-test.mjs"
+    "packages/naive/src/engine/release-read.ts",
+    "packages/naive/src/engine/releases-test.ts"
    ],
    "page": "get-started/releases",
    "note": "Each hole is the smallest live unit: one decision, one stream, one money account, or one field (an attribute mastered elsewhere is cut from an otherwise frozen record and served as live_fields). Each package reports its shell share (frozen over frozen plus holes), and each hole says how to move it (to_freeze)."
@@ -1775,7 +1775,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/router/orchestration/releases.mjs",
-    "packages/naive/src/engine/releases-test.mjs"
+    "packages/naive/src/engine/releases-test.ts"
    ],
    "page": "get-started/releases",
    "note": "There are three stores. The release lives in .release/, which is meant for git. The local cache lives in .naive/cache/release.json and gets its own .gitignore. The third is the agent's session, which belongs to the harness. Naive builds nothing for it. The key is the framework version, a hash of every package definition, and MENTURA_MODEL. Changing any of them starts the cache fresh and changes the release key. A rebuild with nothing changed has 0 misses. The cache holds schema validations and frozen command answers."
@@ -1786,9 +1786,9 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/router/orchestration/releases.mjs",
-    "packages/naive/src/engine/release-read.mjs",
+    "packages/naive/src/engine/release-read.ts",
     "packages/naive/src/router/orchestration/build-release.mjs",
-    "packages/naive/src/engine/releases-test.mjs"
+    "packages/naive/src/engine/releases-test.ts"
    ],
    "page": "get-started/releases",
    "note": "An item not known at build time answers 404 with the release's known items and the --add command. build-release --add <route> freezes that one item. Every other entry and frozen file is left untouched (the test checks mtimes) and the change is recorded in manifest.incremental. The server picks the item up at once. Adding an unconfirmed item, or one already in the release, is refused."
@@ -1902,9 +1902,9 @@
    "chapter": "Chapter 9: Revalidating",
    "status": "built",
    "evidence": [
-    "packages/naive/src/engine/stale.mjs",
+    "packages/naive/src/engine/stale.ts",
     "packages/naive/src/router/router.mjs",
-    "packages/naive/src/engine/upgrades-test.mjs"
+    "packages/naive/src/engine/upgrades-test.ts"
    ],
    "evidence_elsewhere": [
     "platform/webhooks/server.mjs",
@@ -1984,7 +1984,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/router/orchestration/triggers.mjs",
-    "packages/naive/src/engine/upgrades-test.mjs"
+    "packages/naive/src/engine/upgrades-test.ts"
    ],
    "page": "get-started/bringing-a-project-in",
    "note": "A failed or uncaught run is stored in .naive/triggers.json and raised as a fail-open decision trigger-<id>-failed-<n> with options Retry / Skip this event / Turn the trigger off. Deciding settles it. A runner crash is logged by the provenance hook and raised on the next run. An unreadable state file is moved aside and raised."
@@ -2228,11 +2228,11 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/router/orchestration/releases.mjs",
-    "packages/naive/src/engine/release-card.mjs",
-    "packages/naive/src/engine/releases-test.mjs"
+    "packages/naive/src/engine/release-card.ts",
+    "packages/naive/src/engine/releases-test.ts"
    ],
    "page": "get-started/releases",
-   "note": "cardOf builds the card from the release's records: name, phase, and headline numbers, each with its as_of and who confirmed it. The numbers are confirmed records, products, customers, evidence, decisions made, the price from validation-pricing, and live holes. Drawing is in packages/naive/src/engine/release-card.mjs, and the release itself holds no SVG, CSS or HTML."
+   "note": "cardOf builds the card from the release's records: name, phase, and headline numbers, each with its as_of and who confirmed it. The numbers are confirmed records, products, customers, evidence, decisions made, the price from validation-pricing, and live holes. Drawing is in packages/naive/src/engine/release-card.ts, and the release itself holds no SVG, CSS or HTML."
   },
   {
    "id": "H-1",
@@ -2275,7 +2275,7 @@
    "status": "built",
    "evidence": [
     "packages/naive/src/router/orchestration/releases.mjs",
-    "packages/naive/src/engine/releases-test.mjs"
+    "packages/naive/src/engine/releases-test.ts"
    ],
    "page": "get-started/releases",
    "note": "Command routes are classified by following their script's relative imports. Code that reads the clock, calls a model, reaches the network or reads _streams makes the route a live hole, and the hole says why. A route that takes input per call is also a hole. Other routes (currently purpose/foundation, system/need-now, system/time-to-ready, system/robots, operations/marketing/public) run at build time through router.call on a shadow copy that holds only the confirmed records, and their answers are frozen in. The detection is a static text scan, not a sandbox: it is conservative but could miss an indirect clock read."
@@ -2287,8 +2287,8 @@
    "note": "Covered by O-7: cardOf builds the card from the release's records: name, phase, and headline numbers, each with its as_of and who confirmed it. The numbers are confirmed records, products, customers, evidence, decisi",
    "evidence": [
     "packages/naive/src/router/orchestration/releases.mjs",
-    "packages/naive/src/engine/release-card.mjs",
-    "packages/naive/src/engine/releases-test.mjs"
+    "packages/naive/src/engine/release-card.ts",
+    "packages/naive/src/engine/releases-test.ts"
    ],
    "page": "get-started/releases"
   },
@@ -2411,7 +2411,7 @@
    "evidence": [
     "packages/naive/src/router/orchestration/releases.mjs",
     "packages/naive/src/router/orchestration/build-release.mjs",
-    "packages/naive/src/engine/releases-test.mjs"
+    "packages/naive/src/engine/releases-test.ts"
    ],
    "page": "get-started/releases",
    "note": "build-release --export <dir> writes README.md, release.json and card.json, plus records/ as JSON and Markdown. The export has no holes: only their count, and no hole names. Every number and record carries its date. It never writes into a non-empty folder. PDF or site rendering is left to an interface, as the ledger says."
@@ -2426,7 +2426,7 @@
     "packages/naive/src/interfaces/adapters/codex.json",
     "packages/naive/src/interfaces/adapters/cursor.json",
     "packages/naive/src/records/adapter.schema.json",
-    "packages/naive/src/engine/upgrades-test.mjs"
+    "packages/naive/src/engine/upgrades-test.ts"
    ],
    "evidence_elsewhere": [
     "platform/adapter.json"
@@ -2444,10 +2444,10 @@
    "chapter": "Chapter 18: Upgrading",
    "status": "built",
    "evidence": [
-    "packages/naive/src/engine/upgrades.mjs",
-    "packages/naive/src/engine/upgrade-venture.mjs",
+    "packages/naive/src/engine/upgrades.ts",
+    "packages/naive/src/engine/upgrade-venture.ts",
     "packages/naive/src/engine/naive-config.ts",
-    "packages/naive/src/engine/upgrades-test.mjs"
+    "packages/naive/src/engine/upgrades-test.ts"
    ],
    "page": "get-started/upgrading",
    "note": "naive upgrade runs every migration from the venture's pinned version (0.1.0 when it has no pin) up to the installed one. It dry-runs first, so a conflict aborts before anything moves. It records provenance, pins naive.config.json, writes .release/upgrade-<v>.json and is idempotent. --check changes nothing. --framework updates the installed checkout with git pull --ff-only."
@@ -2461,7 +2461,7 @@
     "packages/naive/src/records/upgrade-registry.schema.json",
     "packages/naive/src/engine/migrations/package-layout.ts",
     "packages/naive/src/engine/migrations/kit-to-package.ts",
-    "packages/naive/src/engine/upgrades-test.mjs"
+    "packages/naive/src/engine/upgrades-test.ts"
    ],
    "page": "get-started/upgrading",
    "note": "Migrations are Naive's codemods. They are listed per version in a registry. kit-to-package rewrites decision unlock routes, team-plan role globs and where-used parents. A glob that spans moved routes is escalated, not rewritten."
@@ -2471,7 +2471,7 @@
    "chapter": "Chapter 18: Upgrading",
    "status": "built",
    "evidence": [
-    "packages/naive/src/engine/upgrades.mjs"
+    "packages/naive/src/engine/upgrades.ts"
    ],
    "evidence_elsewhere": [
     "platform/kits/agent-upgrade/kit.json",
@@ -2500,10 +2500,10 @@
    "chapter": "Chapter 18: Upgrading",
    "status": "built",
    "evidence": [
-    "packages/naive/src/engine/upgrades.mjs",
+    "packages/naive/src/engine/upgrades.ts",
     "packages/naive/src/engine/packages.ts",
     "packages/naive/src/engine/upgrades.json",
-    "packages/naive/src/engine/upgrades-test.mjs"
+    "packages/naive/src/engine/upgrades-test.ts"
    ],
    "page": "get-started/upgrading",
    "note": "--adopt pins a package with early:true, and packages() then opens it now. The experimental packages (legal, operations, relationships, counsel) need --canary. --stable is refused while one of them is adopted."
@@ -2515,8 +2515,8 @@
    "evidence": [
     "docs/upgrades/0.2.0.md",
     "docs/upgrades/0.3.0.md",
-    "packages/naive/src/engine/upgrades.mjs",
-    "packages/naive/src/engine/upgrades-test.mjs"
+    "packages/naive/src/engine/upgrades.ts",
+    "packages/naive/src/engine/upgrades-test.ts"
    ],
    "page": "get-started/upgrading",
    "note": "Each version has a guide with a 'By hand' section. --guide [v] prints one version's guide, or with no version every guide the next upgrade crosses. The agent-run upgrade gets the guides in its prompt."

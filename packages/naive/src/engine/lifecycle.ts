@@ -18,7 +18,7 @@
 // that names a playbook cannot pass a gate until a met exit criterion supplies each piece of its evidence.
 //
 // Gate strength (EE-156): lifecycle() also reports the phase gate's items on their evidence ladders
-// (packages/naive/src/engine/phase-gate.mjs) as phase_gate. With naive.config.json phase_gates.enforce true, each
+// (packages/naive/src/engine/phase-gate.ts) as phase_gate. With naive.config.json phase_gates.enforce true, each
 // fail-closed shortfall joins blocking, so advance refuses without --override; otherwise it is reported only.
 
 import { spawnSync } from "node:child_process";
@@ -33,7 +33,7 @@ import { exitCriteria } from "./canonical.ts";
 import { validateFile } from "../records/validate.ts";
 import { runSync } from "../core/effect/run.ts";
 import { loadPhases } from "../phases/phases.mjs";
-import { meter, phaseGate } from "./phase-gate.mjs";
+import { meter, phaseGate } from "./phase-gate.ts";
 import type { ExitCriteria, LifecyclePlaybook, Telos } from "../records/types/records.d.ts";
 
 type Criterion = ExitCriteria["criteria"][number];

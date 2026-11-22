@@ -1,7 +1,7 @@
 // Imports one department into a venture (EE-047, EE-048): lists it in venture.json `departments`
 // and creates its folders, the operations side always and the governance side when the venture's
 // governance layer is on, and the function's starter research program at programs/<function>.md when the venture
-// has none (packages/naive/src/engine/research-programs.mjs). Nothing else is created, so a venture holds only what it uses.
+// has none (packages/naive/src/engine/research-programs.ts). Nothing else is created, so a venture holds only what it uses.
 //
 //   node packages/naive/src/engine/add-department.ts <venture dir> <department id> [--group]
 //
@@ -12,7 +12,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { catalog, foldersOf } from "./departments.ts";
-import { seedPrograms } from "./research-programs.mjs";
+import { seedPrograms } from "./research-programs.ts";
 import { ventureFile } from "../core/venture-paths.ts";
 import type { Venture } from "../records/types/records.d.ts";
 

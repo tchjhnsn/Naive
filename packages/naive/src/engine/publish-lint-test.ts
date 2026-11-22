@@ -1,11 +1,11 @@
-// Tests for the publish lint pipeline (packages/naive/src/engine/publish-lint.mjs): one fixture per stage, rule levels from
+// Tests for the publish lint pipeline (packages/naive/src/engine/publish-lint.ts): one fixture per stage, rule levels from
 // naive.config.json, exit codes, the findings log and the --report loop.
 
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { check, configFor, report } from "./publish-lint.mjs";
+import { check, configFor, report } from "./publish-lint.ts";
 
 const repo = new URL("../../../..", import.meta.url).pathname;
 let failed = 0;
@@ -16,7 +16,7 @@ const v = join(ws, "acme");
 const w = (rel, x) => { mkdirSync(join(v, rel, ".."), { recursive: true }); writeFileSync(join(v, rel), typeof x === "string" ? x : JSON.stringify(x, null, 2)); };
 const page = (meta, body) => `---\n${meta}\n---\n${body}\n`;
 const rules = (fs) => fs.map((f) => f.rule);
-const cli = (args) => spawnSync("node", [join(repo, "packages/naive/src/engine/publish-lint.mjs"), "check", ...args], { encoding: "utf8" });
+const cli = (args) => spawnSync("node", [join(repo, "packages/naive/src/engine/publish-lint.ts"), "check", ...args], { encoding: "utf8" });
 
 try {
   w("venture.json", { id: "acme", name: "Acme", type: "software-startup", parent: null, owner: "self", status: "active", layers: {}, phase: "discovery" });

@@ -21,7 +21,7 @@ writeFileSync(join(ws, "agent-called.mjs"), `import { writeFileSync } from "node
 const run = (args, extra = {}, input) => spawnSync("node", args, { cwd: repo, env: { ...env, ...extra }, encoding: "utf8", input });
 const mentura = (...a) => run([join(repo, "packages/naive/src/interfaces/cli/mentura.mjs"), ...a]);
 const build = (dir, ...a) => run([join(repo, "packages/naive/src/router/orchestration/build-release.mjs"), dir, ...a]);
-const start = (dir, ...a) => run([join(repo, "packages/naive/src/engine/start-release.mjs"), dir, ...a]);
+const start = (dir, ...a) => run([join(repo, "packages/naive/src/engine/start-release.ts"), dir, ...a]);
 const get = (dir, path) => { const r = start(dir, "--get", path); let body = null; try { body = JSON.parse(r.stdout); } catch { body = r.stdout; } return { status: r.status, body }; };
 const writeJson = (f, o) => { mkdirSync(dirname(f), { recursive: true }); writeFileSync(f, JSON.stringify(o, null, 2) + "\n"); };
 const manifest = (dir) => JSON.parse(readFileSync(join(dir, ".release/release.json"), "utf8"));
@@ -128,8 +128,8 @@ expect("C-10: building called no model", !existsSync(join(ws, "AGENT_CALLED")));
 const card = JSON.parse(readFileSync(join(dir, ".release/card.json"), "utf8"));
 const price = card.headline.find((h) => h.label === "Price");
 expect("P-25, O-7: the release card holds name, phase, headline numbers with their dates, and who confirmed them", card.name === "kettle" && card.phase === "discovery" && card.release === m.release && price?.value === 49 && price.unit === "USD per month" && card.headline.every((h) => h.as_of) && card.confirmed_by.length > 0, JSON.stringify(card.headline));
-const svg = run([join(repo, "packages/naive/src/engine/release-card.mjs"), dir]);
-expect("O-7: packages/naive/src/engine/release-card.mjs draws the card; the release holds no picture or styles", svg.status === 0 && svg.stdout.startsWith("<svg") && svg.stdout.includes("kettle") && svg.stdout.includes("49") && !tree(join(dir, ".release")).some((f) => /\.(svg|css|html|png)$/.test(f)), svg.stderr);
+const svg = run([join(repo, "packages/naive/src/engine/release-card.ts"), dir]);
+expect("O-7: packages/naive/src/engine/release-card.ts draws the card; the release holds no picture or styles", svg.status === 0 && svg.stdout.startsWith("<svg") && svg.stdout.includes("kettle") && svg.stdout.includes("49") && !tree(join(dir, ".release")).some((f) => /\.(svg|css|html|png)$/.test(f)), svg.stderr);
 
 // C-17: stores and keys.
 expect("C-17: the cache lives in .naive/, ignored by git, never in the release", existsSync(join(dir, ".naive/cache/release.json")) && readFileSync(join(dir, ".naive/.gitignore"), "utf8").includes("*") && !tree(join(dir, ".release")).some((f) => f.includes(".naive")));
@@ -149,8 +149,8 @@ expect("the log still checks after building", provCheck.status === 0, provCheck.
 
 // ---- C-12: read without the router ----
 const imports = (f, seen = new Set()) => { if (seen.has(f)) return seen; seen.add(f); for (const x of readFileSync(f, "utf8").matchAll(/(?:from|import\()\s*["'](\.{1,2}\/[^"']+)["']/g)) imports(resolve(dirname(f), x[1]), seen); return seen; };
-const served = [...imports(join(repo, "packages/naive/src/engine/start-release.mjs"))].map((f) => f.slice(repo.length));
-expect("C-12: start-release reads the release without the router (no import reaches packages/naive/src/router/router.mjs)", !served.includes("packages/naive/src/router/router.mjs") && served.includes("packages/naive/src/engine/release-read.mjs"), served.join(", "));
+const served = [...imports(join(repo, "packages/naive/src/engine/start-release.ts"))].map((f) => f.slice(repo.length));
+expect("C-12: start-release reads the release without the router (no import reaches packages/naive/src/router/router.mjs)", !served.includes("packages/naive/src/router/router.mjs") && served.includes("packages/naive/src/engine/release-read.ts"), served.join(", "));
 let g = get(dir, "/");
 expect("C-12: the index names the release, its routes and its holes", g.status === 0 && g.body.release === base.release && g.body.routes.includes("foundation/problem") && g.body.holes.length === base.holes.length, JSON.stringify(g.body).slice(0, 300));
 g = get(dir, "/foundation/problem");
@@ -172,9 +172,9 @@ writeJson(join(ws, "problem.json"), problem);
 mentura("foundation/problem", "write", "--venture", "kettle", "--input", join(ws, "problem.json"), "--as", "person");
 
 // The server itself.
-const server = spawn("node", [join(repo, "packages/naive/src/engine/start-release.mjs"), dir, "--port", "0"], { cwd: repo, env });
+const server = spawn("node", [join(repo, "packages/naive/src/engine/start-release.ts"), dir, "--port", "0"], { cwd: repo, env });
 const port = await new Promise((ok) => { let out = ""; server.stdout.on("data", (d) => { out += d; const x = out.match(/127\.0\.0\.1:(\d+)/); if (x) ok(Number(x[1])); }); setTimeout(() => ok(null), 8000); });
-expect("I-17: node packages/naive/src/engine/start-release.mjs <venture dir> --port n serves on 127.0.0.1", !!port);
+expect("I-17: node packages/naive/src/engine/start-release.ts <venture dir> --port n serves on 127.0.0.1", !!port);
 if (port) {
   const at = (p, o) => fetch(`http://127.0.0.1:${port}${p}`, o);
   const idx = /** @type {{ release: string }} */ (await at("/").then((r) => r.json()));

@@ -17,7 +17,7 @@ import type { Framework } from "../records/types/records.d.ts";
 export const CANONICAL = ["foundation/goals", "foundation/requirements", "foundation/exit-criteria", "foundation/constraints"];
 const canonical = (route: string) => CANONICAL.some((c) => route === c || route === `${c}/[id]` || (route.startsWith(`${c}/`) && !route.slice(c.length + 1).includes("/")));
 const FRAMEWORK_ONLY = [/telos\.json/, /\.ambition\b/];
-const ALWAYS_ALLOWED = ["packages/naive/src/engine/canonical.ts", "packages/naive/src/engine/check-frameworks.ts", "packages/naive/src/engine/upgrades.mjs", "packages/naive/src/records/validate.ts"];
+const ALWAYS_ALLOWED = ["packages/naive/src/engine/canonical.ts", "packages/naive/src/engine/check-frameworks.ts", "packages/naive/src/engine/upgrades.ts", "packages/naive/src/records/validate.ts"];
 
 export function check(root: string) {
   const errors: string[] = [];

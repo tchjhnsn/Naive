@@ -3,7 +3,7 @@
 // convention (EE-076). An agent reads the project's text and proposes records in the shape of
 // Naive's own schemas; nothing lands until a person decides, one decision per function; then each
 // record is written through the router, so its schema, gates and provenance all apply. Port (files
-// kept as they are) is the other way in: packages/naive/src/engine/port-venture.mjs.
+// kept as they are) is the other way in: packages/naive/src/engine/port-venture.ts.
 //
 //   node packages/naive/src/router/orchestration/migrate-venture.mjs --from <project> --venture <new venture dir>
 //        the agent writes the plan to <venture>/.release/migrate-plan.json and proposes the decisions

@@ -28,7 +28,7 @@ import { dirname, join } from "node:path";
 import { ventureFile } from "../core/venture-paths.ts";
 import { artifacts } from "./check-artifacts.ts";
 import { leaks } from "./check-leaks.ts";
-import { check, frontmatter } from "./publish-lint.mjs";
+import { check, frontmatter } from "./publish-lint.ts";
 import { record } from "../core/provenance.ts";
 
 const load = (f) => JSON.parse(readFileSync(f, "utf8"));
@@ -246,7 +246,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const pos = rest.filter((a, i) => !a.startsWith("--") && !(rest[i - 1] ?? "").startsWith("--"));
   const who = opt("who")?.split(",").map((s) => s.trim()).filter(Boolean);
   try {
-    if (!dir || !sub) { console.error("usage: node packages/naive/src/engine/publish.mjs <venture dir> build|publish|rollback|status <channel> [options]"); process.exit(2); }
+    if (!dir || !sub) { console.error("usage: node packages/naive/src/engine/publish.ts <venture dir> build|publish|rollback|status <channel> [options]"); process.exit(2); }
     if (sub === "build") {
       const r = build(dir, pos[0], { artifact: opt("artifact") });
       for (const l of r.leaks) console.error(`FAIL  ${l.file}: ${l.pattern} "${l.text}" (${l.why})`);

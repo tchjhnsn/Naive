@@ -14,8 +14,8 @@
 // read), and a summary is fresh again once it is written after the mark. Marks live in
 // <venture>/.naive/stale.json, never in the records.
 //
-//   node packages/naive/src/engine/stale.mjs <venture dir> [--json]                                   what is stale now
-//   node packages/naive/src/engine/stale.mjs <venture dir> --notify --source <id> --path <p> [--path <q>] [--version <v>]
+//   node packages/naive/src/engine/stale.ts <venture dir> [--json]                                   what is stale now
+//   node packages/naive/src/engine/stale.ts <venture dir> --notify --source <id> --path <p> [--path <q>] [--version <v>]
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -115,7 +115,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const a = process.argv.slice(2);
   const dir = a[0];
   const all = (n) => a.flatMap((x, i) => (x === `--${n}` ? [a[i + 1]] : []));
-  if (!dir || !existsSync(join(dir, "venture.json"))) { console.error("usage: node packages/naive/src/engine/stale.mjs <venture dir> [--json] | --notify --source <id> --path <p> [--version <v>]"); process.exit(2); }
+  if (!dir || !existsSync(join(dir, "venture.json"))) { console.error("usage: node packages/naive/src/engine/stale.ts <venture dir> [--json] | --notify --source <id> --path <p> [--version <v>]"); process.exit(2); }
   try {
     if (a.includes("--notify")) {
       const r = notify(dir, { source: all("source")[0], paths: all("path"), version: all("version")[0], via: "cli" });

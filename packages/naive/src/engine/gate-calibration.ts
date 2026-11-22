@@ -29,7 +29,7 @@ import type { AnatomyCellEnumCell, AnatomyCellNumberCell, GateCalibration, Indus
 import { LEVELS } from "./evidence-grade.ts";
 import { decisionFile, propose } from "./decisions.ts";
 import { CONFIG } from "./naive-config.ts";
-import { DEFAULT_PRESET, POLICIES } from "./phase-gate.mjs";
+import { DEFAULT_PRESET, POLICIES } from "./phase-gate.ts";
 
 /** The rules file. */
 export const RULES = "packages/naive/src/phases/gate-calibration.json";

@@ -2,7 +2,7 @@
 // venture's static shell (C-11): every record a person confirmed, frozen in as it was confirmed,
 // with named holes for what must stay live (open decisions, streams, money, attributes another
 // system of record masters, and answers computed per call). It is written to <venture>/.release/
-// and read without the router (packages/naive/src/engine/release-read.mjs, packages/naive/src/engine/start-release.mjs).
+// and read without the router (packages/naive/src/engine/release-read.ts, packages/naive/src/engine/start-release.ts).
 //
 //   build(dir, { now })        check every open package can be released and write the release
 //   add(dir, route, { now })   add one new item to the release without rebuilding the rest (C-18)
@@ -42,7 +42,7 @@ import { agentFromEnv, entries as provEntries, record as prov } from "../../core
 import { attributeSources, connect } from "../../store/connectors/index.ts";
 import { FRAME, confirmedIn } from "../../engine/foundation.ts";
 import { HOME, packages } from "../../engine/packages.ts";
-import { CARD, MANIFEST, RECORDS, RELEASE_DIR, frozenText, readRelease } from "../../engine/release-read.mjs";
+import { CARD, MANIFEST, RECORDS, RELEASE_DIR, frozenText, readRelease } from "../../engine/release-read.ts";
 import { ventureFile } from "../../core/venture-paths.ts";
 import { schemaNameOf } from "../../records/index.ts";
 import { validateFile } from "../../records/validate.ts";
@@ -367,7 +367,7 @@ export function cardOf(dir, m) {
   headline.push({ label: "Live holes", value: m.holes.length, as_of: m.now, confirmed_by: [] });
   return { venture: m.venture, name: m.name, phase: m.phase, release: m.release, built_at: m.built_at, headline,
     confirmed_by: people(m.records), packages: m.packages.map((p) => ({ title: p.title, shell: p.shell, gaps: p.gaps.length })),
-    note: "Assembled by code from the release's records. It is drawn by packages/naive/src/engine/release-card.mjs." };
+    note: "Assembled by code from the release's records. It is drawn by packages/naive/src/engine/release-card.ts." };
 }
 
 function checks(dir) {

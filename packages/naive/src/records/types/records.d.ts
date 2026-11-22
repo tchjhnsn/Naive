@@ -1023,7 +1023,7 @@ export type Delegation = {
   note?: string;
   /** The chief delegator's role id (founder) */
   root: string;
-  /** The people who hold the root role, by name. Only they approve a one-way publication (packages/naive/src/engine/publish.mjs) or merge as the founder (packages/naive/src/engine/decisions.ts). The template leaves it out; a venture names its own founders */
+  /** The people who hold the root role, by name. Only they approve a one-way publication (packages/naive/src/engine/publish.ts) or merge as the founder (packages/naive/src/engine/decisions.ts). The template leaves it out; a venture names its own founders */
   founder?: string[];
   never_redelegated?: string[];
   /** Irreversible classes; they stay with the founder */
@@ -1841,7 +1841,7 @@ export type Frame = {
   }[];
 };
 
-/** A framework for thinking, at frameworks/<id>/framework.json: its vocabulary, its questions (frames), a template and how each of its answers lands in canonical records (maps_to). A framework reads and writes the canonical schema and never changes it (Torian, 2026-10-30). packages/naive/src/engine/check-frameworks.ts checks that every maps_to targets a canonical route. A founder's own frameworks sit in the workspace's frameworks/ folder with the same shape, plus template.md and playbook.md (packages/naive/src/engine/user-frameworks.mjs). */
+/** A framework for thinking, at frameworks/<id>/framework.json: its vocabulary, its questions (frames), a template and how each of its answers lands in canonical records (maps_to). A framework reads and writes the canonical schema and never changes it (Torian, 2026-10-30). packages/naive/src/engine/check-frameworks.ts checks that every maps_to targets a canonical route. A founder's own frameworks sit in the workspace's frameworks/ folder with the same shape, plus template.md and playbook.md (packages/naive/src/engine/user-frameworks.ts). */
 export type Framework = {
   id: string;
   title: string;
@@ -3227,7 +3227,7 @@ export type NaiveConfig = {
       };
     };
   };
-  /** Usage telemetry (packages/naive/src/engine/telemetry.mjs, packages/naive/src/records/telemetry.schema.json), opt-in: enabled writes events to .naive/telemetry.jsonl; send lets them leave the machine, and counts only with set_by naming the person who turned it on. */
+  /** Usage telemetry (packages/naive/src/engine/telemetry.ts, packages/naive/src/records/telemetry.schema.json), opt-in: enabled writes events to .naive/telemetry.jsonl; send lets them leave the machine, and counts only with set_by naming the person who turned it on. */
   telemetry?: {
     enabled?: boolean;
     send?: boolean;
@@ -3301,7 +3301,7 @@ export type NaiveConfig = {
   };
   /** Mentura kits whose automations this venture turns on */
   kits?: string[];
-  /** The publish lint (packages/naive/src/engine/publish-lint.mjs): each rule off, warn or error, the marks to flag, and findings a person waived */
+  /** The publish lint (packages/naive/src/engine/publish-lint.ts): each rule off, warn or error, the marks to flag, and findings a person waived */
   publish_lint?: {
     rules?: { [K in "copy-distance" | "leaks" | "brand" | "claims" | "marks" | "personal-data" | "secrets"]?: "off" | "warn" | "error" };
     marks?: string[];
@@ -3416,7 +3416,7 @@ export type NaiveConfig = {
       };
     };
   };
-  /** How strict each phase gate is (EE-156, packages/naive/src/engine/phase-gate.mjs, route system/phase-gate): a preset from packages/naive/src/phases/gate-policies.json, per-item overrides, and whether lifecycle advance refuses a fail-closed shortfall. Without enforce the gate is reported only. */
+  /** How strict each phase gate is (EE-156, packages/naive/src/engine/phase-gate.ts, route system/phase-gate): a preset from packages/naive/src/phases/gate-policies.json, per-item overrides, and whether lifecycle advance refuses a fail-closed shortfall. Without enforce the gate is reported only. */
   phase_gates?: {
     /** The policy preset; default standard */
     preset?: "lenient" | "standard" | "strict";
@@ -5578,7 +5578,7 @@ export type TeamPlan = {
   }[];
 };
 
-/** One usage event, one line of <venture>/.naive/telemetry.jsonl; the one schema the plugin beta and Mentura share. Opt-in only (telemetry.enabled in naive.config.json). An event carries no record contents and no _private path: only which capability ran, when, for how long and how it ended. It leaves the machine only when telemetry.send is true and a person set it (packages/naive/src/engine/telemetry.mjs). */
+/** One usage event, one line of <venture>/.naive/telemetry.jsonl; the one schema the plugin beta and Mentura share. Opt-in only (telemetry.enabled in naive.config.json). An event carries no record contents and no _private path: only which capability ran, when, for how long and how it ended. It leaves the machine only when telemetry.send is true and a person set it (packages/naive/src/engine/telemetry.ts). */
 export type Telemetry = {
   /** The event, e.g. route.write, beta.unlock */
   name: string;
@@ -6367,7 +6367,7 @@ export type Venture = {
   };
   /** The departments this venture imports, by id from packages/naive/src/functions/departments.json (EE-047). Only these get folders; the rest are not in the venture at all until need-now suggests them and the builder adds them (EE-048). */
   departments?: string[];
-  /** The Naive packages this venture uses, by name from packages/naive/library/packages/ (EE-071), the way package.json lists dependencies (Next.js translation P-3). Left out, the manifest derives them: the core packages that fit the phase now plus any package holding records. Checked by packages/naive/src/engine/structure.mjs. */
+  /** The Naive packages this venture uses, by name from packages/naive/library/packages/ (EE-071), the way package.json lists dependencies (Next.js translation P-3). Left out, the manifest derives them: the core packages that fit the phase now plus any package holding records. Checked by packages/naive/src/engine/structure.ts. */
   packages?: string[];
   /** The Mentura kits this venture uses (EE-071). Each names the one package it extends, which the venture must use; the kit itself lives on the platform. */
   kits?: {

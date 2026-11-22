@@ -1,12 +1,12 @@
 // A stand-in channel builder for the publish build tests: writes artifact/foundation.html under
 // NAIVE_PUBLISH_OUT, the venture's strategic foundation (packages/naive/src/engine/foundation.ts) with each statement's
-// status. A statement's words reach the page only through packages/naive/src/engine/visibility.mjs publicValue; every other
+// status. A statement's words reach the page only through packages/naive/src/engine/visibility.ts publicValue; every other
 // statement shows as not yet public.
 
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { filesOf, foundation } from "../../../../engine/foundation.ts";
-import { publicValue } from "../../../../engine/visibility.mjs";
+import { publicValue } from "../../../../engine/visibility.ts";
 
 const venture = process.env.NAIVE_VENTURE, out = process.env.NAIVE_PUBLISH_OUT;
 if (!venture || !out) throw new Error("NAIVE_VENTURE and NAIVE_PUBLISH_OUT must be set");

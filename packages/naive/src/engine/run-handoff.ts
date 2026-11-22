@@ -1,6 +1,6 @@
 // Runs a handoff's done-criteria and writes the result as evidence (EE-017).
 //
-//   node packages/naive/src/engine/run-handoff.mjs <venture dir> <handoff id> [--runner <session or job id>]
+//   node packages/naive/src/engine/run-handoff.ts <venture dir> <handoff id> [--runner <session or job id>]
 //
 // Each conformance and self-proof criterion's `check` is run as a shell command from the
 // repository root; exit code 0 passes. A review criterion is recorded only when its reviewer
@@ -77,7 +77,7 @@ export async function runHandoff(dir, id, { runner = "local", review, by, note, 
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const [dir, id] = process.argv.slice(2);
-  if (!dir || !id) { console.error("usage: node packages/naive/src/engine/run-handoff.mjs <venture dir> <handoff id> [--runner <id>]"); process.exit(2); }
+  if (!dir || !id) { console.error("usage: node packages/naive/src/engine/run-handoff.ts <venture dir> <handoff id> [--runner <id>]"); process.exit(2); }
   const opt = (k) => process.argv.includes(k) ? process.argv[process.argv.indexOf(k) + 1] : undefined;
   try {
     const { evidence: ev, path: ePath, pending } = await runHandoff(dir, id, { runner: opt("--runner"), review: opt("--review"), by: opt("--by"), note: opt("--note") });

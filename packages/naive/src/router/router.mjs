@@ -37,7 +37,7 @@
 //
 // Partial adoption: a route needs only its own record and what its kit reads.
 
-import { mayKnow, publicView } from "../engine/visibility.mjs";
+import { mayKnow, publicView } from "../engine/visibility.ts";
 import { execFileSync, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
@@ -68,17 +68,17 @@ import { instrumented, judgment } from "../core/instrumentation.ts";
 import { around } from "./writes.mjs";
 import { contain } from "./boundaries.mjs";
 import { packageSlots } from "./package-routes.mjs";
-import { routable } from "../engine/structure.mjs";
+import { routable } from "../engine/structure.ts";
 // Brand hook (Y-2..Y-4, J-2..J-4, T-1, T-2, P-24, P-26): routes, commands and layout context from packages/naive/src/engine/brand.ts.
 import { brandLayout } from "../engine/brand.ts";
 // Investors lint hook: investors/lint (packages/naive/src/checks/lint-investors.ts).
 // Customers lint: a customer that matches no ICP, and a promise the product record does not keep.
 // Legal lint hook: legal/lint (packages/naive/src/checks/lint-legal.ts). A lint, not legal advice.
 // Upgrades hook (V-9): a read says when what the record reads changed in its system of record.
-import { staleOf } from "../engine/stale.mjs";
+import { staleOf } from "../engine/stale.ts";
 import { ventureFile } from "../core/venture-paths.ts";
-import { isFunction, templateOf } from "../engine/research-programs.mjs";
-import { coreOf, statementsIn, withCore } from "../engine/venture-core.mjs";
+import { isFunction, templateOf } from "../engine/research-programs.ts";
+import { coreOf, statementsIn, withCore } from "../engine/venture-core.ts";
 import { telosView } from "../../../../frameworks/telos/adapter.mjs";
 import { migrated, scale } from "../engine/canonical.ts";
 import { schemaNameOf } from "../records/index.ts";
@@ -375,7 +375,7 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
     const hidden = (x) => { try { const v = parseWith(x); return !v || !Object.keys(v).length; } catch { return true; } };
     if (actor === "public" && r.collection === "item" && items.every(hidden)) return absent();
     const data = Object.fromEntries(items.map((x) => [x.path, parseWith(x)]));
-    // V-9 hook: a summary whose source changed since it was written is marked stale (packages/naive/src/engine/stale.mjs).
+    // V-9 hook: a summary whose source changed since it was written is marked stale (packages/naive/src/engine/stale.ts).
     const stale = !remote && cut === null && items.length === 1 ? staleOf(dir, found[0]) : null;
     return { ok: true, result: items.length === 1 ? data[found[0]] : data, ...(items.length === 1 ? { source: cite(items[0]) } : { sources: Object.fromEntries(items.map((x) => [x.path, cite(x)])) }), ...(actor === "public" ? {} : { ...loading, ...(stale ? { stale } : {}) }), ...asOfMark, ...deprecated };
   }

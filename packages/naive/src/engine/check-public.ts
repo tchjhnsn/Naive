@@ -44,7 +44,7 @@ export function check(dir: string) {
   const results = files(ventureFile(dir, CONTENT)).map((f) => {
     const rel = relative(dir, f), { meta, body } = frontmatter(readFileSync(f, "utf8")), errors: string[] = [];
     // variant_of names a record (foundation/problem.json) or one field of it (foundation/problem.json#statement,
-    // the form packages/naive/src/engine/visibility.mjs variantOf reads); a field narrows the copy check to that field's text.
+    // the form packages/naive/src/engine/visibility.ts variantOf reads); a field narrows the copy check to that field's text.
     const [srcRel, field] = String(meta.variant_of ?? "").split("#");
     if (!meta.variant_of) errors.push("names no internal record (variant_of): marketing content is a variant of an internal record");
     else if (!existsSync(ventureFile(dir, srcRel))) errors.push(`variant_of ${meta.variant_of} does not exist`);

@@ -7,7 +7,7 @@
 // is graded by packages/naive/src/engine/evidence-grade.ts (adapted from GRADE), so desk research from three
 // independent sources can reach moderate.
 //
-//   node packages/naive/src/engine/phase-gate.mjs <venture dir> [--preset <name>] [--json]
+//   node packages/naive/src/engine/phase-gate.ts <venture dir> [--preset <name>] [--json]
 //
 // The measures:
 //   grade      the record's evidence grade
@@ -345,7 +345,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const args = process.argv.slice(2);
   const dir = args[0];
   const flag = (/** @type {string} */ n) => { const i = args.indexOf(n); return i > 0 ? args[i + 1] : undefined; };
-  const usage = "usage: node packages/naive/src/engine/phase-gate.mjs <venture dir> [--preset <name>] [--json]";
+  const usage = "usage: node packages/naive/src/engine/phase-gate.ts <venture dir> [--preset <name>] [--json]";
   if (!dir || dir.startsWith("--") || !runSync(Effect.flatMap(VentureFs, (fs) => fs.exists(join(dir, "venture.json"))))) { console.error(usage); process.exit(2); }
   const preset = flag("--preset");
   if (args.includes("--preset") && !preset) { console.error(usage); process.exit(2); }

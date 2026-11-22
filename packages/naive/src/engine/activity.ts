@@ -16,10 +16,10 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { basename, dirname, join, relative, resolve, sep } from "node:path";
-import { humanText, transcriptFiles } from "./transcripts.mjs";
+import { humanText, transcriptFiles } from "./transcripts.ts";
 import { addDays, localDate, daysBetween, zoneOf } from "./clock.ts";
 import { ventureFile } from "../core/venture-paths.ts";
-import { findWorkspace } from "./workspace.mjs";
+import { findWorkspace } from "./workspace.ts";
 import { HostedRefusal, isHosted } from "../core/runtime.ts";
 import type { Activity, ActivitySummary, Venture } from "../records/types/records.d.ts";
 

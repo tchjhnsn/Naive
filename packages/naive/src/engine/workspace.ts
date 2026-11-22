@@ -2,11 +2,11 @@
 // A teammate adds a venture they work for or with; the venture keeps its own settings, and the workspace's
 // settings say what may cross between ventures. Offline, those settings are the whole configuration.
 //
-//   node packages/naive/src/engine/workspace.mjs check <workspace>                     the workspace file matches its schema
-//   node packages/naive/src/engine/workspace.mjs capture <workspace> "<text>"          keep the text in raw/, route its chunks
-//   node packages/naive/src/engine/workspace.mjs inbox <workspace> [list | assign <chunk> <venture>]
-//   node packages/naive/src/engine/workspace.mjs read <workspace> <from venture> <to venture> <path>
-//   node packages/naive/src/engine/workspace.mjs rename <workspace> "<new name>"
+//   node packages/naive/src/engine/workspace.ts check <workspace>                     the workspace file matches its schema
+//   node packages/naive/src/engine/workspace.ts capture <workspace> "<text>"          keep the text in raw/, route its chunks
+//   node packages/naive/src/engine/workspace.ts inbox <workspace> [list | assign <chunk> <venture>]
+//   node packages/naive/src/engine/workspace.ts read <workspace> <from venture> <to venture> <path>
+//   node packages/naive/src/engine/workspace.ts rename <workspace> "<new name>"
 //
 // ensureWorkspace makes a workspace (Torian, 2026-10-30): naive-workspace.json named "Naive workspace"
 // until renamed, with its IANA timeZone (the clock, packages/naive/src/engine/clock.ts), the calendar with its default

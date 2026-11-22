@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// The check for reasons with citations (packages/naive/src/engine/reasons.mjs): for each decided decision, any cited
+// The check for reasons with citations (packages/naive/src/engine/reasons.ts): for each decided decision, any cited
 // local file whose sha256 differs from the one frozen at approval is reported as "the reason you
 // decided <id> changed: <ref>"; the decision renders stale in packages/naive/src/engine/decisions.ts.
 //

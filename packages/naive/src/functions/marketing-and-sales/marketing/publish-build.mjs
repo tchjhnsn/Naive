@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // The publish build through the publishing gate: compile a venture's public words for one of its channels
 // and write what a publish may read. Publishing reads only this output, never a venture record. naive
-// publish build (packages/naive/src/engine/publish.mjs) compiles a channel's approved MDX into .release/publish/; this does the
+// publish build (packages/naive/src/engine/publish.ts) compiles a channel's approved MDX into .release/publish/; this does the
 // same for what a channel's own builders render (a marketing site's facts, a one-page artifact).
 //
 //   node packages/naive/src/functions/marketing-and-sales/marketing/publish-build.mjs <channel> <venture dir> [--out <dir>] [--json]
@@ -17,7 +17,7 @@
 // In order, and any failure stops the build:
 //   1. gate     packages/naive/src/engine/check-public.ts (EE-064): every public variant names its source,
 //               audience and approver, and copies no ten-word run of its source
-//   2. compile  each field reaches the output only through packages/naive/src/engine/visibility.mjs publicValue: the field
+//   2. compile  each field reaches the output only through packages/naive/src/engine/visibility.ts publicValue: the field
 //               when a person approved its wording as public, or its approved MDX variant
 //   3. build    the channel's builders, in order, reading only the compiled output
 //   4. verify   the output carries no internal field's own wording (a field not approved as public) and
@@ -31,7 +31,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 
 import { join, relative, resolve } from "node:path";
 import { check, CONTENT, frontmatter } from "../../../engine/check-public.ts";
 import { leaks } from "../../../engine/check-leaks.ts";
-import { visibilityOf } from "../../../engine/visibility.mjs";
+import { visibilityOf } from "../../../engine/visibility.ts";
 import { ventureFile } from "../../../core/venture-paths.ts";
 import { configFor } from "../../../engine/naive-config.ts";
 
