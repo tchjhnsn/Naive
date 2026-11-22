@@ -119,3 +119,7 @@ The engine's modules (decisions, freshness, generators, lifecycle, upgrades, use
 ## Decision scores
 
 `ownScore` in `decisions.mjs` scores an open decision for the docket and the decision index. A due date within three days dominates; one from three to fourteen days out still counts, less the further it is (24 at five days, 9 at fourteen). An open fail-closed decision adds 15, because the work behind it waits until a person decides it.
+
+## Agents
+
+The function and lead agent specs live in [`agents/`](./agents/README.md) (EE-124).

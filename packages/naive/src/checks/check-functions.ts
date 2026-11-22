@@ -20,6 +20,7 @@
 
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
+import { PLANS } from "../engine/access.mjs";
 import { recordsIn } from "../records/index.mjs";
 import { routes } from "../records/routes/routes.mjs";
 import { validateValue } from "../records/validate.mjs";
@@ -50,11 +51,13 @@ const ROLES = join(root, "packages/naive/template/governance/roles");
 const leads = readdirSync(ROLES).filter((f) => f.endsWith(".json")).map((f) => readJson(join(ROLES, f))).filter(isObject)
   .filter((r) => Array.isArray(r.portfolio)).map((r) => ({ id: String(r.id), portfolio: strings(r.portfolio) }));
 
+// The team plan sets every agent's reach, so no agent writes it, whichever function owns its record type.
 // The routes each function may write: decisions, handoffs, and every record route whose record type the function owns.
 const owner = new Map(model.records.map((r) => [r.id, r.function ?? null]));
 const SHARED = ["decisions/*", "decisions/[id]", "operations/handoff/[id]"];
 export const writeReach = (fn: string): Set<string> => new Set([...SHARED,
-  ...(routes() as { kind: string, record?: string, route: string }[]).filter((r) => r.kind === "record" && r.record && owner.get(r.record) === fn).map((r) => r.route)]);
+  ...(routes() as { kind: string, record?: string, route: string, files?: string[] }[]).filter((r) => r.kind === "record" && r.record && owner.get(r.record) === fn
+    && !(r.files ?? []).some((f) => PLANS.includes(f))).map((r) => r.route)]);
 const reaches = (reach: Set<string>, route: string) => reach.has(route) || [...reach].some((r) => r.endsWith("/*") && route.startsWith(r.slice(0, -1)));
 
 type Finding = { fn: string, file: string, error: string };
