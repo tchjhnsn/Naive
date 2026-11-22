@@ -16,28 +16,29 @@ import { join } from "node:path";
 import { add, build, exportRelease } from "./releases.ts";
 
 const args = process.argv.slice(2);
-const opt = (n) => { const i = args.indexOf(`--${n}`); return i >= 0 ? args[i + 1] : undefined; };
-const has = (n) => args.includes(`--${n}`);
-const values = new Set(["now", "add", "export", "port"].flatMap((n) => (opt(n) !== undefined ? [opt(n)] : [])));
+const opt = (n: string) => { const i = args.indexOf(`--${n}`); return i >= 0 ? args[i + 1] : undefined; };
+const has = (n: string) => args.includes(`--${n}`);
+const values = new Set(["now", "add", "export", "port"].flatMap((n) => { const v = opt(n); return v !== undefined ? [v] : []; }));
 const dir = args.find((a) => !a.startsWith("--") && !values.has(a));
 if (!dir || !existsSync(join(dir, "venture.json"))) {
   console.error("usage: node packages/naive/src/router/orchestration/build-release.ts <venture dir> [--now <iso>] [--json] [--dry-run] | --add <route> | --export <out dir>");
   process.exit(2);
 }
 const actor = process.env.MENTURA_ACTOR === "agent" ? "agent" : "person";
-const now = opt("now") ?? new Date().toISOString();
-if (opt("now") && Number.isNaN(Date.parse(opt("now")))) { console.error(`--now ${opt("now")} is not a time`); process.exit(2); }
+const nowOpt = opt("now");
+const now = nowOpt ?? new Date().toISOString();
+if (nowOpt && Number.isNaN(Date.parse(nowOpt))) { console.error(`--now ${nowOpt} is not a time`); process.exit(2); }
 
-if (opt("export")) {
-  const r = exportRelease(dir, opt("export"));
+const exportTo = opt("export"), addRoute = opt("add");
+if (exportTo) {
+  const r = exportRelease(dir, exportTo);
   if (!r.ok) { console.error(r.error); process.exit(1); }
   console.log(has("json") ? JSON.stringify(r, null, 2) : `exported ${r.records} records to ${r.out}; ${r.left_out_live} live items left out`);
   process.exit(0);
 }
 
-if (opt("add")) {
-  /** @type {{ ok: boolean, error?: string, fix?: string, manifest?: *, added?: { route: string, file: string, from: string } }} */
-  const r = await add(dir, opt("add"), { now, actor });
+if (addRoute) {
+  const r = await add(dir, addRoute, { now, actor });
   if (!r.ok) { console.error(r.error + (r.fix ? `\n  fix: ${r.fix}` : "")); process.exit(1); }
   console.log(has("json") ? JSON.stringify(r.manifest, null, 2) : `added ${r.added.route} to release ${r.added.from}: now release ${r.manifest.release}; nothing else was rebuilt`);
   process.exit(0);
@@ -45,7 +46,7 @@ if (opt("add")) {
 
 const r = await build(dir, { now, actor, dryRun: has("dry-run") });
 if (!r.ok) {
-  if (r.error) { console.error(r.error); process.exit(1); }
+  if (r.error !== undefined) { console.error(r.error); process.exit(1); }
   if (has("json")) console.log(JSON.stringify(r, null, 2));
   console.error("naive build: no release written.");
   for (const p of r.packages.filter((x) => !x.releasable)) console.error(`  package ${p.id} cannot be released:`);

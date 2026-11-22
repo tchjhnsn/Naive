@@ -17,37 +17,40 @@
 //     written before it. A log written by append stores no blob, so an as-of read finds no version of it; the
 //     signal library's day index is such a log, and a pull applies the same cut when it reads it (not built).
 //
-// A .mjs file, not .ts, because router.ts imports it, and Node does not strip types under node_modules, where an
-// app that installs Naive keeps it.
+// The package ships it compiled to .mjs (scripts/build.ts, EE-160), because Node does not strip types under
+// node_modules, where an app that installs Naive keeps it.
 
 import { pathsAsOf, readAsOf } from "../store/as-of.ts";
 import { address } from "../store/connectors/contract.ts";
+import type { ReadStore } from "./router.ts";
+
+/** What the clamp reads of a call. */
+type AsOfCall = { action?: string; actor_id?: string | null; reads_as_of?: unknown; route?: string };
+/** The cut for one call: milliseconds, or null for a live read; or a refusal. */
+type Cut = { ok: true; cut: number | null } | { ok: false; error: string; fix?: Record<string, unknown> };
 
 /** A researcher role: <function>-researcher. */
 export const RESEARCHER = /^[a-z0-9][a-z0-9-]*-researcher$/;
 
 /** What an as-of call may do. Writes are not clamped; everything else reads the venture live. */
-export const AS_OF_ACTIONS = ["read", "view", "write", "append", "template"];
+export const AS_OF_ACTIONS: string[] = ["read", "view", "write", "append", "template"];
 
 /** Whether a role is a researcher. */
-export const isResearcher = (/** @type {unknown} */ role) => typeof role === "string" && RESEARCHER.test(role);
+export const isResearcher = (role: unknown): boolean => typeof role === "string" && RESEARCHER.test(role);
 
 /** Whether a path or an address (<source>://<path>) is in the eval set: a folder _eval at any depth. */
-export const inEval = (/** @type {unknown} */ path) => /(^|\/)_eval(\/|$)/.test(String(path ?? "").replace(/^[a-z0-9][a-z0-9-]*:\/\//, ""));
+export const inEval = (path: unknown): boolean => /(^|\/)_eval(\/|$)/.test(String(path ?? "").replace(/^[a-z0-9][a-z0-9-]*:\/\//, ""));
 
 /**
  * Whether a call is a researcher reading its own function's research program, which reads live.
- * @param {{ action?: string, actor_id?: string | null, route?: string }} a
  */
-export const ownProgram = (a) => isResearcher(a.actor_id) && (a.action === "read" || a.action === "view")
+export const ownProgram = (a: AsOfCall): boolean => isResearcher(a.actor_id) && (a.action === "read" || a.action === "view")
   && a.route === `operations/research-program/${String(a.actor_id).replace(/-researcher$/, "")}`;
 
 /**
  * The cut for one call, in milliseconds, or null when it reads live; or a refusal.
- * @param {{ action?: string, actor_id?: string | null, reads_as_of?: unknown, route?: string }} a
- * @returns {{ ok: true, cut: number | null } | { ok: false, error: string, fix?: Record<string, unknown> }}
  */
-export function cutFor(a) {
+export function cutFor(a: AsOfCall): Cut {
   if (ownProgram(a)) return { ok: true, cut: null };
   const researcher = isResearcher(a.actor_id);
   const given = a.reads_as_of;
@@ -64,9 +67,8 @@ export function cutFor(a) {
 
 /**
  * Refuses what an as-of call may not do, before anything reads the venture. Null when the call may go on.
- * @param {{ action?: string, actor_id?: string | null, reads_as_of?: unknown, route?: string }} a
  */
-export function refusal(a) {
+export function refusal(a: AsOfCall): { ok: false; error: string; fix?: Record<string, unknown> } | null {
   const c = cutFor(a);
   if ("error" in c) return { ok: false, error: c.error, ...(c.fix ? { fix: c.fix } : {}) };
   if (c.cut === null || AS_OF_ACTIONS.includes(String(a.action))) return null;
@@ -76,20 +78,16 @@ export function refusal(a) {
 /**
  * A store that answers as of the cut, for the source a record type lives in: list() is pathsAsOf, read() is readAsOf,
  * and neither touches the live files or the source itself. Another source's records are found by their address in the
- * provenance log, so only what was written through the router is there.
- * @param {string} dir
- * @param {{ id: string }} src
- * @param {string} local the venture's own source id
- * @param {number} cut
+ * provenance log, so only what was written through the router is there. local is the venture's own source id.
  */
-export function asOfStore(dir, src, local, cut) {
+export function asOfStore(dir: string, src: { id: string }, local: string, cut: number): ReadStore {
   const own = src.id === local;
   const prefix = `${src.id}://`;
   return {
     async list() {
-      return pathsAsOf(dir, cut).filter((e) => own ? !e.includes("://") : e.startsWith(prefix)).map((e) => ({ path: own ? e : e.slice(prefix.length) }));
+      return pathsAsOf(dir, cut).filter((e: string) => own ? !e.includes("://") : e.startsWith(prefix)).map((e) => ({ path: own ? e : e.slice(prefix.length) }));
     },
-    async read(/** @type {string} */ path) {
+    async read(path: string) {
       const got = readAsOf(dir, own ? path : address(src.id, path), cut);
       return got ? { path, content: got.content, version: got.sha256, as_of: got.at } : null;
     },
@@ -97,12 +95,9 @@ export function asOfStore(dir, src, local, cut) {
 }
 
 /**
- * Whether an item read as of the cut may be shown: a signal observed after the cut is not.
- * @param {string} record the record type
- * @param {{ content: string }} item
- * @param {number} cut
+ * Whether an item read as of the cut may be shown: a signal observed after the cut is not. record is the record type.
  */
-export function observedBy(record, item, cut) {
+export function observedBy(record: string | undefined, item: { content: string }, cut: number): boolean {
   if (record !== "signal") return true;
   try {
     const observed = Date.parse(JSON.parse(item.content).observed);

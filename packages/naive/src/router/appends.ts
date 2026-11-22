@@ -20,54 +20,60 @@ import { address } from "../store/connectors/contract.ts";
 import { schemaNameOf } from "../records/index.ts";
 import { validateValue } from "../records/validate.ts";
 import { gateWrite } from "./gate-hooks.ts";
+import type { Answer, CallProvenance, RouteEntry, Source, Store } from "./router.ts";
+
+type Obj = Record<string, unknown>;
+const isObj = (x: unknown): x is Obj => !!x && typeof x === "object";
 
 const RETRIES = 200;
-const sha = (s) => createHash("sha256").update(s).digest("hex");
-const pause = () => new Promise((ok) => setTimeout(ok, 1 + Math.random() * 10));
-const message = (e) => String(/** @type {Error} */ (e)?.message ?? e);
+const sha = (s: string) => createHash("sha256").update(s).digest("hex");
+const pause = () => new Promise<void>((ok) => setTimeout(ok, 1 + Math.random() * 10));
+const message = (e: unknown) => String((isObj(e) ? e.message : undefined) ?? e);
 
-/** The lines of a JSON lines log, in order. Throws on a line that does not parse. @param {string} text */
-export const linesOf = (text) => text.split("\n").filter((l) => l.trim()).map((l) => JSON.parse(l));
+/** The lines of a JSON lines log, in order. Throws on a line that does not parse. */
+export const linesOf = (text: string): unknown[] => text.split("\n").filter((l) => l.trim()).map((l) => JSON.parse(l));
 
 /**
  * Appends one line to a log route. Returns { ok, result: { appended, line, version, provenance } }, or
  * { ok: false, error, conflict?: { current } } when the caller's base is stale.
- * @param {{ dir: string, r: Record<string, any>, id?: string, route: string, requested: string, file: string, input: *, actor: string, actor_id?: string,
- *   provenance?: { derived_from?: string[], decision?: string, note?: string, confidence?: number | string | null }, store: *, src: { id: string, connector?: string }, agent: Record<string, any>, remote: boolean }} a
  */
-export async function appendLine({ dir, r, id, route, requested, file, input, actor, actor_id, provenance = {}, store, src, agent, remote }) {
-  const line = input?.line;
-  if (!line || typeof line !== "object" || Array.isArray(line)) return { ok: false, error: "append needs one line, as input.line" };
-  const pinned = !!input && Object.hasOwn(input, "base");
-  if (pinned && input.base !== null && typeof input.base !== "string") return { ok: false, error: "base is the log's version you read, or null for a new log" };
+export async function appendLine({ dir, r, id, route, requested, file, input, actor, actor_id, provenance = {}, store, src, agent, remote }: {
+  dir: string; r: RouteEntry; id?: string; route: string; requested: string; file: string; input: unknown; actor: string; actor_id?: string;
+  provenance?: CallProvenance; store: Store; src: Source; agent: Record<string, unknown>; remote: boolean | undefined;
+}): Promise<Answer> {
+  const inp = isObj(input) ? input : undefined;
+  const line = inp?.line;
+  if (!isObj(line) || Array.isArray(line)) return { ok: false, error: "append needs one line, as input.line" };
+  const pinned = !!inp && Object.hasOwn(inp, "base");
+  if (pinned && inp?.base !== null && typeof inp?.base !== "string") return { ok: false, error: "base is the log's version you read, or null for a new log" };
   if (r.record === "detector-trial" && id && line.detector !== id) return { ok: false, error: `${route} is the ledger of detector ${id}, not ${line.detector}` };
   if (store.writes !== "direct") return { ok: false, error: `${route} lives in ${src.id}, which ${store.writes === "none" ? "is read-only" : "takes writes by pull request, so no line can be appended there"}` };
   // Gate group hook (X-1 to X-6): the venture's gate decides on a line as on any write.
   const verdict = remote ? null : gateWrite({ dir, r, route, requested, file, actor, actor_id, provenance, gate: null });
   if (verdict) return { ok: false, gate_rule: verdict.rule, error: verdict.then === "refuse" ? verdict.why : `gate rule ${verdict.rule} (${verdict.source}) would hold this line as a draft, and a log line cannot wait while the chain moves on: nothing was appended` };
-  const conflict = (current) => ({ ok: false, conflict: { current }, error: `${file} changed since version ${input.base ?? "(none)"}: it is ${current ?? "missing"} now; read it again and retry` });
+  const conflict = (current: unknown) => ({ ok: false, conflict: { current }, error: `${file} changed since version ${inp?.base ?? "(none)"}: it is ${current ?? "missing"} now; read it again and retry` });
   for (let i = 0; ; i++) {
-    let cur;
+    let cur: Awaited<ReturnType<Store["read"]>>;
     try { cur = await store.read(file); } catch (e) { return { ok: false, error: `${src.id}: ${message(e)}` }; }
     const version = cur?.version ?? null;
-    if (pinned && input.base !== version) return conflict(version);
-    let lines;
+    if (pinned && inp?.base !== version) return conflict(version);
+    let lines: unknown[];
     try { lines = cur ? linesOf(cur.content) : []; } catch (e) { return { ok: false, error: `${file} holds a line that does not parse, so nothing was appended: ${message(e)}` }; }
-    if (line.id !== undefined && lines.some((l) => l?.id === line.id)) return { ok: false, error: `${file} already holds a line ${line.id}` };
+    if (line.id !== undefined && lines.some((l) => isObj(l) && l.id === line.id)) return { ok: false, error: `${file} already holds a line ${line.id}` };
     const last = lines.at(-1);
-    if (last && typeof last.hash !== "string") return { ok: false, error: `${file} ends in a line with no hash, so a new line cannot chain onto it` };
-    const prev = last ? last.hash : "genesis";
+    if (last && !(isObj(last) && typeof last.hash === "string")) return { ok: false, error: `${file} ends in a line with no hash, so a new line cannot chain onto it` };
+    const prev = isObj(last) && typeof last.hash === "string" ? last.hash : "genesis";
     const { hash: _hash, prev: _prev, ...rest } = line;
-    const chained = { ...rest, prev };
+    const chained: Obj = { ...rest, prev };
     chained.hash = lineHash(prev, chained);
     const v = validateValue(schemaNameOf(r.schema), chained);
     if (v.status !== 0) return { ok: false, error: `does not match ${r.schema}:\n${(v.stdout + v.stderr).trim()}` };
     const text = JSON.stringify(chained) + "\n";
-    let w;
+    let w: Awaited<ReturnType<Store["write"]>>;
     try { w = await store.write(file, text, { append: true, base: version, message: `${route}: appended ${chained.id ?? "a line"}`, title: `Mentura: ${route}` }); }
     catch (e) {
-      if (/** @type {{ code?: string }} */ (e)?.code === "version-conflict") {
-        if (pinned) return conflict(/** @type {{ current?: string | null }} */ (e).current ?? null);
+      if (isObj(e) && e.code === "version-conflict") {
+        if (pinned) return conflict(e.current ?? null);
         if (i < RETRIES) { await pause(); continue; }
       }
       return { ok: false, error: `${src.id}: ${message(e)}` };

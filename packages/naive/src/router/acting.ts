@@ -14,6 +14,7 @@ import { AsyncLocalStorage } from "node:async_hooks";
 import { createHash } from "node:crypto";
 import { globsOf, mayReadItem, mayReadSome, roleOf, teamPlan } from "../engine/access.ts";
 import { configFor } from "../engine/naive-config.ts";
+import type { Answer, CallArgs } from "./router.ts";
 
 export { mayReadItem, mayReadSome };
 
@@ -23,23 +24,27 @@ export { mayReadItem, mayReadSome };
 // MCP tool, HTTP body or environment variable can claim it, and the role id `projector` is refused on any call that
 // does not carry it. Only the router's own code holds it (the signal pull, router/orchestration/signals.ts, calls asProjector). Nothing
 // below the router imports this file, so engine code cannot reach it either.
-export const PROJECTOR = Symbol("naive.projector");
+export const PROJECTOR: unique symbol = Symbol("naive.projector");
 export const PROJECTOR_ID = "projector";
 /** A router call made as the signal projector. Only the router's orchestration code calls this. */
-export const asProjector = (args) => ({ ...args, actor: "agent", actor_id: PROJECTOR_ID, [PROJECTOR]: true });
+export const asProjector = <T extends object>(args: T): T & { actor: "agent"; actor_id: typeof PROJECTOR_ID; [PROJECTOR]: true } => ({ ...args, actor: "agent", actor_id: PROJECTOR_ID, [PROJECTOR]: true });
 /** Whether a call carries the projector's symbol. */
-export const isProjector = (a) => !!a && a[PROJECTOR] === true;
+export const isProjector = (a: { [PROJECTOR]?: boolean } | null | undefined): boolean => !!a && a[PROJECTOR] === true;
 
 /** Checks who is acting on a venture. Returns { ok, who: { kind, role, known, occupant } } or { ok: false, error }. */
-export function actingOf(dir, kind, roleId) {
-  const who = { kind, role: roleId ?? null };
+/** Who is acting, as actingOf answers it. */
+export type Who = { kind: string; role: string | null; known?: boolean; occupant?: string; projector?: boolean };
+type Acting = { ok: true; who: Who; error?: undefined } | { ok: false; error: string; who?: Who };
+
+export function actingOf(dir: string | null, kind: string, roleId: string | null | undefined): Acting {
+  const who: Who = { kind, role: roleId ?? null };
   // The public reader (field visibility): what a public component may read; reads only, in no role.
   if (kind === "public") return roleId ? { ok: false, error: "the public reader acts in no role", who } : { ok: true, who };
   if (kind !== "agent" && kind !== "person") return { ok: false, error: `the actor is a person or an agent, not ${kind}`, who };
   if (!dir || !roleId) return { ok: true, who };
   const plan = teamPlan(dir);
   if (!plan) return { ok: true, who };
-  const role = (plan.roles ?? []).find((r) => r.id === roleId);
+  const role = (plan.roles ?? []).find((r: { id: string }) => r.id === roleId);
   if (!role) {
     let mode = "allow";
     try { mode = configFor(dir).acting?.unknown_roles ?? "allow"; } catch {}
@@ -51,18 +56,18 @@ export function actingOf(dir, kind, roleId) {
 }
 
 /** A fingerprint of who is acting: kind, role and the role's team-plan entry, so a changed entry counts as a change. */
-export function fingerprint(dir, who) {
+export function fingerprint(dir: string | null, who: Who): string {
   return createHash("sha256").update(JSON.stringify({ kind: who.kind, role: who.role, entry: dir && who.role ? roleOf(dir, who.role) : null })).digest("hex");
 }
 
 /** The routes an identity may reach: globs to read and write. */
-export function reach(dir, roleId) {
+export function reach(dir: string | null, roleId: string | null | undefined): { read: string[]; write: string[] } {
   const g = dir && roleId ? globsOf(dir, roleId) : null;
   return g ?? { read: ["**"], write: ["**"] };
 }
 
 /** The id of a collection item from its file, given the collection's file patterns (products/*.json). */
-export function itemId(patterns, path) {
+export function itemId(patterns: string[], path: string): string {
   for (const g of patterns) {
     if (!g.includes("*")) continue;
     const m = path.match(new RegExp("^" + g.split("*").map((s) => s.replace(/[.+^${}()|[\]\\]/g, "\\$&")).join("([^/]*)") + "$"));
@@ -71,28 +76,28 @@ export function itemId(patterns, path) {
   return path;
 }
 
-const nested = new AsyncLocalStorage();
-const last = new Map();
+const nested = new AsyncLocalStorage<boolean>();
+const last = new Map<string, { fp: string; acting: { kind: string; role: string | null } }>();
 
 /**
  * Runs one router action with who is acting checked first and carried on the answer. inner is the
  * router's own call; findDir finds a venture folder. Calls the router makes inside another call
  * (a view's read, the overview's slots) are checked too, but only the outer call tracks changes.
  */
-export async function actingCall(a, inner, findDir) {
+export async function actingCall(a: CallArgs, inner: (a: CallArgs) => Answer | Promise<Answer>, findDir: (venture: string, workspace?: string) => string | null): Promise<Answer> {
   const kind = a.actor ?? "agent", role = a.actor_id ?? process.env.MENTURA_ACTOR_ID;
-  let dir = null;
+  let dir: string | null = null;
   try { dir = a.venture ? findDir(a.venture, a.workspace) : null; } catch {}
   const projector = isProjector(a);
   // The projector is Naive's code, not a team-plan role: it skips the plan, and nobody else may name it.
-  const check = projector
+  const check: Acting = projector
     ? kind === "agent" && role === PROJECTOR_ID ? { ok: true, who: { kind, role, projector: true } } : { ok: false, error: "the projector acts as an agent with actor_id projector (asProjector)" }
     : role === PROJECTOR_ID ? { ok: false, error: "projector is the signal projector's id, and only Naive's own code acts as it: a person or another agent may not claim it from the CLI, MCP, the HTTP API or MENTURA_ACTOR_ID" }
     : actingOf(dir, kind, role);
   const acting = { kind, role: role ?? null };
   if (!check.ok) return { ok: false, error: check.error, acting };
   if (nested.getStore()) return { ...(await inner(a)), acting };
-  let changed = null;
+  let changed: { from: { kind: string; role: string | null }; to: { kind: string; role: string | null }; may: { read: string[]; write: string[] } } | null = null;
   if (dir) {
     const key = `${dir}\0${a.via ?? "router"}`, fp = fingerprint(dir, check.who), prev = last.get(key);
     if (prev && prev.fp !== fp) changed = { from: prev.acting, to: acting, may: reach(dir, role) };

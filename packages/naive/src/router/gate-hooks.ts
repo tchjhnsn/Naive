@@ -11,6 +11,18 @@ import { reachRefusal } from "../engine/agents/reach.ts";
 import { entries as provEntries } from "../core/provenance.ts";
 import { checksFor, configFor } from "../engine/naive-config.ts";
 import { ventureFile } from "../core/venture-paths.ts";
+import type { CallProvenance, RouteEntry } from "./router.ts";
+import type { DetectorTrial } from "../records/types/records.d.ts";
+
+/** The gate's verdict on a write that does not pass. */
+export type Verdict = { then: string; rule: string | null; source: string | null; why?: string; fix?: unknown; owner?: string; matched?: unknown[]; variants?: boolean; function?: string };
+/** A refusal as a router answer. */
+type Refusal = { ok: false; error: string; gate_rule: string; refused_by: string; fix?: unknown; may_write?: unknown };
+type Ledgered = Record<string, unknown>;
+/** What the gate reads of a route: recipes/<pattern> passes its own table entry (recipes.ts). */
+type GateRoute = { route?: string; record?: string; writer?: string; function?: string };
+/** A thrown value's message, when it has one. */
+const messageOf = (e: unknown): unknown => (e && typeof e === "object" && "message" in e ? e.message : undefined);
 
 /**
  * One writer per file, checked on every write and append, local or in another source, before anything else is
@@ -20,9 +32,10 @@ import { ventureFile } from "../core/venture-paths.ts";
  * program) only from a person: actor is the call's actor and acting says the process names an agent as acting. A
  * record type with writer function (the spend register) only from <function>-agent or a person: role is the acting role.
  * Returns the refusal as a router answer, or null.
- * @param {{ dir: string, r: Record<string, any>, route: string, file: string, projector: boolean, remote?: boolean, actor?: string, acting?: boolean, role?: string }} w
  */
-export function ownerOfWrite({ dir, r, route, file, projector, remote = false, actor = "agent", acting = false, role }) {
+export function ownerOfWrite({ dir, r, route, file, projector, remote = false, actor = "agent", acting = false, role }: {
+  dir: string; r: RouteEntry; route: string; file: string; projector: boolean; remote?: boolean; actor?: string; acting?: boolean; role?: string;
+}): Refusal | null {
   const v = writerRule({ route, writer: r.writer, projector, exists: remote || existsSync(ventureFile(dir, file)), actor, acting, role, fn: r.function });
   return v ? { ok: false, error: v.why, gate_rule: v.rule, refused_by: v.source, ...(v.fix ? { fix: v.fix } : {}) } : null;
 }
@@ -34,9 +47,10 @@ export function ownerOfWrite({ dir, r, route, file, projector, remote = false, a
  * its function). A person's call made while the process says an agent is acting counts as the agent's. A person, the
  * projector and every other role (leads, researchers, the chief of staff, plain agent) are not checked here.
  * Returns the refusal as a router answer, or null.
- * @param {{ r: Record<string, any>, route: string, projector: boolean, actor?: string, acting?: boolean, role?: string }} w
  */
-export function reachOfWrite({ r, route, projector, actor = "agent", acting = false, role }) {
+export function reachOfWrite({ r, route, projector, actor = "agent", acting = false, role }: {
+  r: RouteEntry; route: string; projector: boolean; actor?: string; acting?: boolean; role?: string;
+}): Refusal | null {
   if (projector || (actor === "person" && !acting)) return null;
   const v = reachRefusal({ role, route, table: r.route });
   return v ? { ok: false, error: v.why, gate_rule: v.rule, refused_by: v.source, may_write: v.writes } : null;
@@ -46,14 +60,15 @@ export function reachOfWrite({ r, route, projector, actor = "agent", acting = fa
  * The gate's verdict on a local write, or null when it passes. A person is never held, only
  * refused. A naive.config.json that is not valid JSON fails closed: an agent's write is held. The
  * projector's write to a projection record is never held either: no one but the projector could accept it.
- * @param {{ dir: string, r: Record<string, any>, route: string, requested: string, file: string, actor: string, actor_id?: string, provenance?: { confidence?: number | string | null }, gate?: { owner?: string } | null, projector?: boolean }} w
- * @returns {{ then: string, rule: string, source: string, why?: string, owner?: string, matched?: any[], variants?: boolean, function?: string } | null}
  */
-export function gateWrite({ dir, r, route, requested, file, actor, actor_id, provenance = {}, gate, projector = false }) {
+export function gateWrite({ dir, r, route, requested, file, actor, actor_id, provenance = {}, gate, projector = false }: {
+  dir: string; r: GateRoute; route: string; requested: string; file: string; actor: string; actor_id?: string; provenance?: { confidence?: number | string | null };
+  gate?: { owner?: string | null } | null; projector?: boolean;
+}): Verdict | null {
   const settled = projector && r.writer === "projection";
   let config;
   try { config = configFor(dir); }
-  catch (e) { return actor === "person" || settled ? null : { then: "draft", rule: "naive.config.json", source: "naive.config.json", why: `${e.message}: the gate fails closed, written as a draft for a person to accept` }; }
+  catch (e) { return actor === "person" || settled ? null : { then: "draft", rule: "naive.config.json", source: "naive.config.json", why: `${messageOf(e)}: the gate fails closed, written as a draft for a person to accept` }; }
   const confidence = provenance.confidence === undefined || provenance.confidence === null || provenance.confidence === "" ? undefined : Number(provenance.confidence);
   const v = evaluate({ config, dir, route, table: r.route, requested, record: r.record, actor, role: actor_id, confidence: Number.isNaN(confidence) ? undefined : confidence,
     exists: existsSync(ventureFile(dir, file)), decisionOwner: gate?.owner ?? undefined, writer: r.writer, writerFunction: r.function, projector });
@@ -63,7 +78,9 @@ export function gateWrite({ dir, r, route, requested, file, actor, actor_id, pro
 }
 
 /** Stores an agent's held draft: its sidecar, the owner it was sent to, and variants side by side. */
-export function heldDraft(dir, { draft, file, text, verdict, route, agent, trial }) {
+export function heldDraft(dir: string, { draft, file, text, verdict, route, agent, trial }: {
+  draft: string; file: string; text: string; verdict: Verdict | null; route: string; agent?: { id?: string; kind?: string }; trial?: string;
+}) {
   return writeHeld(dir, { draft, file, text, verdict, route, agent, trial });
 }
 
@@ -79,19 +96,19 @@ export const GATE_DETECTOR = "gate-confidence";
  * (activity rollback) resolves the no call that let the write through as a miss (signal correction). after(hash)
  * appends the line once the write's provenance line exists, and answers what it appended or why it could not; a
  * ledger that cannot be written never undoes the write.
- * @param {{ dir: string, venture: string, workspace?: string, r: Record<string, any>, route: string, file: string, draftFile: string, actor: string, actor_id?: string, via?: string,
- *   provenance?: { activity?: string, derived_from?: string[], confidence?: number | string | null, agent?: Record<string, any> }, draft?: boolean }} w
- * @returns {{ held?: string, after: (hash: string) => Promise<Record<string, any>> } | null}
  */
-export function ledgerHook({ dir, venture, workspace, r, route, file, draftFile, actor, actor_id, via, provenance = {}, draft }) {
+export function ledgerHook({ dir, venture, workspace, r, route, file, draftFile, actor, actor_id, via, provenance = {}, draft }: {
+  dir: string; venture?: string; workspace?: string; r: RouteEntry; route: string; file: string; draftFile: string; actor: string; actor_id?: string; via?: string;
+  provenance?: CallProvenance; draft?: boolean;
+}): { held?: string; after: (hash: string) => Promise<Ledgered> } | null {
   const detFile = ventureFile(dir, `governance/detectors/${GATE_DETECTOR}.json`);
   if (!existsSync(detFile)) return null;
   const ctx = { venture, workspace, actor_id, via };
   const ledger = () => import("./detection-ledger.ts");
-  const answer = (res, what) => res.ok ? { id: GATE_DETECTOR, appended: what.kind, line: res.result.line.id, ...(what.call ? { call: what.call } : { outcome: what.outcome }) } : { id: GATE_DETECTOR, error: res.error };
-  const guard = (fn) => async (hash) => { try { return await fn(hash); } catch (e) { return { id: GATE_DETECTOR, error: String(e?.message ?? e) }; } };
+  const answer = (res: { ok: boolean; error?: string; result?: { line: { id: string } } }, what: { kind: string; call?: string; outcome?: string }): Ledgered => res.ok && res.result ? { id: GATE_DETECTOR, appended: what.kind, line: res.result.line.id, ...(what.call ? { call: what.call } : { outcome: what.outcome }) } : { id: GATE_DETECTOR, error: res.error };
+  const guard = (fn: (hash: string) => Promise<Ledgered>) => async (hash: string): Promise<Ledgered> => { try { return await fn(hash); } catch (e) { return { id: GATE_DETECTOR, error: String(messageOf(e) ?? e) }; } };
   if (actor === "person") {
-    const by = { kind: /** @type {"person"} */ ("person"), id: process.env.MENTURA_PERSON ?? actor_id ?? "founder" };
+    const by = { kind: "person" as const, id: process.env.MENTURA_PERSON ?? actor_id ?? "founder" };
     const person = { ...ctx, actor: "person" };
     if (provenance.activity === "accept") {
       const trial = trialOf(dir, draftFile, provenance.derived_from?.[0]);
@@ -102,7 +119,7 @@ export function ledgerHook({ dir, venture, workspace, r, route, file, draftFile,
     if (provenance.activity === "rollback") {
       return { after: guard(async (hash) => {
         // The write reverted is the one before this revert; the no call that let it through was a miss.
-        const before = provEntries(dir).filter((e) => e.entity === file && e.hash !== hash).at(-1);
+        const before = provEntries(dir).filter((e: { entity: string; hash: string }) => e.entity === file && e.hash !== hash).at(-1);
         const { read, resolveTrial, unresolvedNoCall } = await ledger();
         const t = before ? unresolvedNoCall((await read(person, GATE_DETECTOR)).lines, before.hash) : null;
         if (!t) return { id: GATE_DETECTOR, note: "no unresolved no call judged the write reverted" };
@@ -118,7 +135,7 @@ export function ledgerHook({ dir, venture, workspace, r, route, file, draftFile,
   if (!c) return null;
   // The criterion in force, as the ledger keeps it: the line the gate rule actually used (a rule's number,
   // naive.config.json thresholds or the detector, as configFor resolved them), yes strictly below it, or route person.
-  const criterion = detector?.criterion?.route === "person" ? { route: "person" } : { yes: c.limit, yes_when: "below" };
+  const criterion: DetectorTrial["criterion"] = detector?.criterion?.route === "person" ? { route: "person" } : { yes: c.limit, yes_when: "below" };
   const id = randomUUID();
   return {
     held: draft && c.call === "yes" ? id : undefined,
@@ -128,6 +145,6 @@ export function ledgerHook({ dir, venture, workspace, r, route, file, draftFile,
 }
 
 /** A route's checks with their mode from naive.config.json: run, warn or off. A broken config runs them all. */
-export function checkPlan(dir, checks) {
+export function checkPlan(dir: string, checks: string[]): { check: string; mode: string }[] {
   try { return checksFor(configFor(dir), checks); } catch { return checks.map((check) => ({ check, mode: "run" })); }
 }

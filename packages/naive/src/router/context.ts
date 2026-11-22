@@ -48,26 +48,50 @@ import { entries as provEntries } from "../core/provenance.ts";
 import { tokens } from "../core/instrumentation.ts";
 import { ventureFile } from "../core/venture-paths.ts";
 import { readDataModel } from "../records/index.ts";
+import type { Answer, CallArgs, RouteEntry } from "./router.ts";
+import type { TeamPlan } from "../records/types/records.d.ts";
+
+type Obj = Record<string, unknown>;
+const isObj = (x: unknown): x is Obj => !!x && typeof x === "object";
+/** A thrown value's message, or the value itself. */
+const messageOf = (e: unknown): string => String((isObj(e) ? e.message : undefined) ?? e);
+/** The venture's context settings (naive.config.json context). */
+export type Settings = { budget: number; prefetch_budget: number; large_collection: number; full_max: number; template_ms: number; routes?: Record<string, number> };
+/** A read's header (O-4). */
+export type Header = {
+  route: string; record: string | null; kind: string; collection?: string; state: string; note?: string; count?: number; owner?: string | null; tokens?: number;
+  title?: string | null; updated?: string; by?: string; draft?: string; has_record?: boolean; source?: unknown; version?: unknown; last_at?: string;
+};
+type Budget = { limit: number; used: number; over: boolean; parts: Record<string, number> };
+type Template = { computed_at: string; need_now?: { phase: string; this?: { status: string; now: number; why: string }; suggest_now?: string[] }; decisions?: unknown; pending?: string[]; note?: string };
+type Candidate = { route: string; why: string };
+type Prefetched = { entries: (Obj & { route: string; cost: number })[]; spent: number; budget: number; dropped?: string[] };
+type Layout = { parts: Obj; session?: string; first?: boolean; kept?: string[]; changed?: string[] };
+/** What navigate gathers, in the order it is sent. */
+type Navigated = { header?: Header; budget?: Budget; layout?: Layout; template?: Template | null; stale_result?: unknown; result?: unknown; needs_input?: unknown; prefetch?: Prefetched; [k: string]: unknown };
+/** A progress report (N-5). */
+type Progress = { progress: number; total?: number; message: string };
+type Part = { part: string; data: unknown };
 
 const here = dirname(new URL(import.meta.url).pathname);
 const repoRoot = join(here, "../../../..");
-const load = (p) => JSON.parse(readFileSync(p, "utf8"));
-const sha = (x) => createHash("sha256").update(typeof x === "string" ? x : JSON.stringify(x)).digest("hex").slice(0, 16);
+const load = (p: string) => JSON.parse(readFileSync(p, "utf8"));
+const sha = (x: unknown) => createHash("sha256").update(typeof x === "string" ? x : JSON.stringify(x)).digest("hex").slice(0, 16);
 
-export const DEFAULTS = { budget: 6000, prefetch_budget: 1500, large_collection: 20, full_max: 800, template_ms: 3000 };
+export const DEFAULTS: Settings = { budget: 6000, prefetch_budget: 1500, large_collection: 20, full_max: 800, template_ms: 3000 };
 // Keys that hold computed values: they belong in the template, never in a layout (F-6).
 export const COMPUTED = ["need_now", "need-now", "next", "ranking", "rank", "open_decisions", "decisions", "status", "todo", "due"];
 
 /** The venture's context settings: the defaults, overridden by naive.config.json context. */
-export function settings(dir) {
+export function settings(dir: string | null): Settings {
   const f = dir && join(ventureFile(dir, "naive.config.json"));
-  let c = {};
+  let c: Partial<Settings> = {};
   try { if (f && existsSync(f)) c = load(f).context ?? {}; } catch {}
   return { ...DEFAULTS, ...c };
 }
 
 /** A route's context budget in tokens: the first matching glob in context.routes, else the default. */
-export function budgetFor(set, route) {
+export function budgetFor(set: Settings, route: string): number {
   const hit = Object.entries(set.routes ?? {}).find(([g]) => glob(g).test(route));
   return hit ? hit[1] : set.budget;
 }
@@ -76,11 +100,12 @@ export function budgetFor(set, route) {
 // Header first (O-4)
 
 /** The state of one venture file: missing, draft waiting, agent-written, confirmed, baseline or unlogged. */
-export function stateOf(dir, file, draft) {
+export function stateOf(dir: string, file: string | null | undefined, draft?: string): { state: string; draft?: string; updated?: string; by?: string } {
   if (draft && existsSync(ventureFile(dir, draft))) return { state: "draft waiting", draft };
   if (!file || !existsSync(ventureFile(dir, file))) return { state: "missing" };
-  let state = "unlogged", last = null;
-  for (const e of provEntries(dir).filter((x) => x.entity === file)) {
+  type Entry = { entity: string; activity: string; at: string; agent?: { kind?: string; id?: string } };
+  let state = "unlogged", last: Entry | null = null;
+  for (const e of provEntries(dir).filter((x: Entry) => x.entity === file) as Entry[]) {
     last = e;
     if (e.activity === "baseline") state = "baseline";
     else if (e.activity === "accept" || e.activity === "confirm" || e.agent?.kind === "person") state = "confirmed";
@@ -91,35 +116,34 @@ export function stateOf(dir, file, draft) {
 
 const TITLE = ["name", "title", "statement", "claim", "end", "question", "promise", "summary", "description", "id"];
 /** A one-line summary of a record: its first naming field, cut to 140 characters. */
-export function titleOf(rec) {
+export function titleOf(rec: unknown): string | null {
   if (rec === null || rec === undefined) return null;
   if (typeof rec === "string") return rec.split("\n").find((l) => l.trim())?.replace(/^#+\s*/, "").slice(0, 140) ?? null;
   if (typeof rec !== "object" || Array.isArray(rec)) return null;
-  for (const k of TITLE) if (typeof rec[k] === "string" && rec[k].trim()) return rec[k].slice(0, 140);
-  for (const v of Object.values(rec)) if (v && typeof v === "object" && !Array.isArray(v)) { const t = titleOf(v); if (t) return t; }
-  const s = Object.values(rec).find((v) => typeof v === "string" && v.trim());
+  const o = rec as Obj;
+  for (const k of TITLE) { const v = o[k]; if (typeof v === "string" && v.trim()) return v.slice(0, 140); }
+  for (const v of Object.values(o)) if (v && typeof v === "object" && !Array.isArray(v)) { const t = titleOf(v); if (t) return t; }
+  const s = Object.values(o).find((v): v is string => typeof v === "string" && !!v.trim());
   return s ? s.slice(0, 140) : null;
 }
 
-function ownerOf(r, dir, route) {
+function ownerOf(r: RouteEntry, dir: string, route: string): string | null {
   const g = r.kind === "record" ? gateOf(r, dir) : null;
   if (g?.owner) return g.owner;
   const plan = [join(ventureFile(dir, "people/team-plan.json")), join(ventureFile(dir, "operations/team-plan.json"))].find((p) => existsSync(p));
   if (!plan) return null;
-  try { return load(plan).roles.find((x) => (x.routes?.write ?? []).some((gl) => glob(gl).test(route)))?.id ?? null; } catch { return null; }
+  try { return (load(plan) as TeamPlan).roles.find((x) => (x.routes?.write ?? []).some((gl) => glob(gl).test(route)))?.id ?? null; } catch { return null; }
 }
 
-function fileOfRead(res) {
-  const a = res?.source?.address;
+function fileOfRead(res: Answer | undefined): string | null {
+  const a = (res?.source as { address?: string } | undefined)?.address;
   return a ? a.replace(/^[a-z0-9-]+:\/\//, "") : null;
 }
 
 /**
  * The header of a read: what it is, its state, its owner and what reading it costs, without its body.
- * @param {{ r: Record<string, any>, route: string, dir: string, venture?: string, workspace?: string, res?: * }} at
- * @returns {{ route: string, record: string | null, kind: string, collection?: string, state: string, note?: string, count?: number, owner?: string | null, tokens?: number, title?: string | null, updated?: string, by?: string, draft?: string, has_record?: boolean, source?: *, version?: * }}
  */
-export function headerOf({ r, route, dir, venture, workspace, res }) {
+export function headerOf({ r, route, dir, venture, workspace, res }: { r: RouteEntry; route: string; dir: string; venture?: string; workspace?: string; res?: Answer }): Header {
   const h = { route, record: r.record ?? null, kind: r.kind, ...(r.collection ? { collection: r.collection } : {}) };
   if (r.kind === "command") return { ...h, state: "computed", note: r.note };
   if (r.collection === "list") {
@@ -130,17 +154,18 @@ export function headerOf({ r, route, dir, venture, workspace, res }) {
   const file = (res?.result !== null && res?.result !== undefined && (fileOfRead(res) ?? d?.file)) || d?.file;
   const st = stateOf(dir, res?.result === null ? null : file, d?.draft);
   if (st.state === "missing" && res?.result !== null && res?.result !== undefined) st.state = "present";
+  const source = res?.source as { source?: unknown; version?: unknown } | undefined;
   return { ...h, ...st, ...(st.state === "draft waiting" && res?.result ? { has_record: true } : {}), owner: ownerOf(r, dir, route), title: titleOf(res?.result), tokens: tokens(res?.result),
-    ...(res?.source ? { source: res.source.source, version: res.source.version } : {}) };
+    ...(source ? { source: source.source, version: source.version } : {}) };
 }
 
 // ---------------------------------------------------------------------------------------------
 // Layout parts, sessions and scoped instructions (L-2, N-7, S-14)
 
 /** Every AGENTS.md from the venture root down the route's segments, nearest last. */
-export function chainOf(dir, route) {
-  const out = [];
-  const add = (rel) => { const f = ventureFile(dir, rel); if (existsSync(f)) out.push({ path: rel, text: readFileSync(f, "utf8") }); };
+export function chainOf(dir: string, route: string): { path: string; text: string }[] {
+  const out: { path: string; text: string }[] = [];
+  const add = (rel: string) => { const f = ventureFile(dir, rel); if (existsSync(f)) out.push({ path: rel, text: readFileSync(f, "utf8") }); };
   add("AGENTS.md");
   let acc = "";
   for (const p of route.split("/").filter(Boolean)) { acc = acc ? `${acc}/${p}` : p; add(`${acc}/AGENTS.md`); }
@@ -150,8 +175,8 @@ export function chainOf(dir, route) {
 const PLAIN = /^([a-z][a-z0-9_-]*)\s*:\s*(.+)$/;
 const SCOPED = /^\[([^\]]+)\]\s*([a-z][a-z0-9_-]*)\s*:\s*(.+)$/;
 /** The merged key: value instructions for a route; a scoped line applies only where its glob matches. Nearest wins. */
-export function instructionsFor(chain, route) {
-  const out = {};
+export function instructionsFor(chain: { path: string; text: string }[], route: string): Record<string, string> {
+  const out: Record<string, string> = {};
   for (const f of chain) for (const line of f.text.split("\n")) {
     const s = line.match(SCOPED);
     if (s) { if (s[1].split(",").map((x) => x.trim()).some((g) => glob(g).test(route))) out[s[2]] = s[3].trim(); continue; }
@@ -162,12 +187,12 @@ export function instructionsFor(chain, route) {
 }
 
 /** The stable layout of a route, as named parts. Nothing computed is in it (F-6). */
-export function layoutParts(r, dir) {
+export function layoutParts(r: RouteEntry, dir: string): Obj {
   const base = routerLayout(r, null); // no venture: no need-now spawn, no chain; both come from here instead
   const chain = chainOf(dir, r.route.replace(/\/\[id\]$/, ""));
   // One part per layer or package in the stack, so routes in the same layer share theirs.
-  /** @type {Record<string, any>} */
-  const parts = Object.fromEntries(base.stack.map((k) => [`stack:${k.path}`, k]));
+  const stack = base.stack as { path: string }[];
+  const parts: Obj = Object.fromEntries(stack.map((k) => [`stack:${k.path}`, k]));
   for (const f of chain) parts[`chain:${f.path}`] = f.text;
   parts.instructions = instructionsFor(chain, r.route);
   parts[`record:${r.route}`] = r.kind === "record"
@@ -177,22 +202,23 @@ export function layoutParts(r, dir) {
 }
 
 const sessionDir = () => process.env.NAIVE_SESSION_DIR ?? join(tmpdir(), "naive-sessions");
-const sessionFile = (dir, session) => join(sessionDir(), `${sha(`${dir}\0${session}`)}.json`);
+type Session = { session: string; sent: Record<string, string>; routes: string[] };
+const sessionFile = (dir: string, session: string) => join(sessionDir(), `${sha(`${dir}\0${session}`)}.json`);
 /** What a session has been sent: part key to hash, and the routes it visited. */
-export function sessionOf(dir, session) {
+export function sessionOf(dir: string, session: string): Session {
   try { return load(sessionFile(dir, session)); } catch { return { session, sent: {}, routes: [] }; }
 }
-function saveSession(dir, s) { mkdirSync(sessionDir(), { recursive: true }); writeFileSync(sessionFile(dir, s.session), JSON.stringify(s)); }
+function saveSession(dir: string, s: Session) { mkdirSync(sessionDir(), { recursive: true }); writeFileSync(sessionFile(dir, s.session), JSON.stringify(s)); }
 
 /**
  * The layout to send: every part without a session; with one, only the parts this session has not
  * seen or that changed since (L-2). A sibling route keeps the shared parts and swaps the record's (N-7).
  */
-export function layoutFor(r, dir, session) {
+export function layoutFor(r: RouteEntry, dir: string, session: string | undefined): Layout {
   const parts = layoutParts(r, dir);
   if (!session) return { parts };
   const s = sessionOf(dir, session);
-  const send = {}, kept = [], changed = [];
+  const send: Obj = {}, kept: string[] = [], changed: string[] = [];
   for (const [k, v] of Object.entries(parts)) {
     const h = sha(v);
     if (s.sent[k] === h) kept.push(k);
@@ -207,7 +233,8 @@ export function layoutFor(r, dir, session) {
 // ---------------------------------------------------------------------------------------------
 // Template: recomputed on every action, with a time limit (P-12, F-6)
 
-function runJson(script, args, ms) {
+type Ran = { ok: true; json: Obj & { rows?: unknown; phase?: string; decisions?: unknown }; ms: number; timed_out?: undefined; error?: undefined } | { ok: false; timed_out?: boolean; error?: string; ms: number; json?: undefined };
+function runJson(script: string, args: string[], ms: number): Promise<Ran> {
   return new Promise((done) => {
     const t0 = Date.now();
     execFile(process.execPath, [join(repoRoot, script), ...args], { timeout: ms, maxBuffer: 64 * 1024 * 1024 }, (err, stdout) => {
@@ -218,17 +245,20 @@ function runJson(script, args, ms) {
 }
 
 /** The template for a route: the need-now ranking and open decisions, computed now. Parts that run past template_ms come back pending. */
-export async function templateFor(r, dir, set = settings(dir)) {
+export async function templateFor(r: RouteEntry, dir: string, set: Settings = settings(dir)): Promise<Template> {
   const [nn, ds] = await Promise.all([runJson("packages/naive/src/engine/need-now.ts", [dir, "--json"], set.template_ms), runJson("packages/naive/src/engine/decisions.ts", [dir, "--json"], set.template_ms)]);
-  const out = { computed_at: new Date().toISOString() };
-  const pending = [];
+  const out: Template = { computed_at: new Date().toISOString() };
+  const pending: string[] = [];
   if (nn.ok) {
-    const row = nn.json.rows.find((x) => x.type === r.record);
-    out.need_now = { phase: nn.json.phase, ...(row ? { this: { status: row.status, now: row.now, why: row.why } } : {}),
-      suggest_now: nn.json.rows.filter((x) => x.status === "suggest now").sort((a, b) => b.now - a.now).slice(0, 5).map((x) => x.type) };
+    type Row = { type: string; status: string; now: number; why: string };
+    const rows = nn.json.rows as Row[]; // need-now --json
+    const row = rows.find((x) => x.type === r.record);
+    out.need_now = { phase: String(nn.json.phase), ...(row ? { this: { status: row.status, now: row.now, why: row.why } } : {}),
+      suggest_now: rows.filter((x) => x.status === "suggest now").sort((a, b) => b.now - a.now).slice(0, 5).map((x) => x.type) };
   } else pending.push(`need_now (${nn.timed_out ? `over ${set.template_ms}ms` : nn.error})`);
   if (ds.ok) {
-    const open = (ds.json.decisions ?? []).filter((d) => ["now", "overdue"].includes(d.render) && d.source !== "root");
+    type D = { id: string; render?: string; source?: string; question?: string };
+    const open = ((ds.json.decisions ?? []) as D[]).filter((d) => ["now", "overdue"].includes(String(d.render)) && d.source !== "root");
     out.decisions = { open: open.length, overdue: open.filter((d) => d.render === "overdue").map((d) => d.id), now: open.slice(0, 5).map((d) => ({ id: d.id, question: d.question })) };
   } else pending.push(`decisions (${ds.timed_out ? `over ${set.template_ms}ms` : ds.error})`);
   if (pending.length) Object.assign(out, { pending, note: "still computing: run system/need-now or governance/decisions for the rest; the read did not wait" });
@@ -239,10 +269,10 @@ export async function templateFor(r, dir, set = settings(dir)) {
 // Prefetch (N-3, N-4, N-12, L-12, C-16)
 
 const MODEL = () => readDataModel();
-const AFTER = () => { try { return load(join(repoRoot, "packages/naive/library/packages/catalog.json")).records ?? {}; } catch { return {}; } };
-const valuesAt = (o, path) => path.split(".").reduce((xs, k) => xs.flatMap((x) => (Array.isArray(x) ? x : [x]).flatMap((y) => (y && typeof y === "object" && y[k] !== undefined ? [y[k]] : []))), [o]).flat();
+const AFTER = (): Record<string, { after?: string[] }> => { try { return load(join(repoRoot, "packages/naive/library/packages/catalog.json")).records ?? {}; } catch { return {}; } };
+const valuesAt = (o: unknown, path: string): unknown[] => path.split(".").reduce<unknown[]>((xs, k) => xs.flatMap((x) => (Array.isArray(x) ? x : [x]).flatMap((y: unknown) => (isObj(y) && y[k] !== undefined ? [y[k]] : []))), [o]).flat();
 const ROUTEISH = /^[a-z][a-z0-9-]*(\/[a-z0-9.\-[\]]+)+$/;
-function strings(o, out = [], depth = 0) {
+function strings(o: unknown, out: string[] = [], depth = 0): string[] {
   if (out.length > 300 || depth > 6) return out;
   if (typeof o === "string") out.push(o);
   else if (Array.isArray(o)) for (const x of o) strings(x, out, depth + 1);
@@ -250,20 +280,23 @@ function strings(o, out = [], depth = 0) {
   return out;
 }
 /** The route a record type is read at: its list route for a collection, else its one route. */
-export function routeOfType(type, id) {
-  const rs = routes().filter((x) => x.kind === "record" && x.record === type);
+export function routeOfType(type: string, id?: unknown): string | null {
+  const rs: RouteEntry[] = routes().filter((x: RouteEntry) => x.kind === "record" && x.record === type);
   const item = rs.find((x) => x.collection === "item"), list = rs.find((x) => x.collection === "list"), one = rs.find((x) => !x.collection);
   if (item && typeof id === "string" && /^[a-z0-9][a-z0-9-]*$/.test(id)) return item.route.replace("[id]", id);
   return (list ?? one)?.route ?? null;
 }
 
+/** The fields of a route that candidates and prefetch read. */
+type RouteLike = Pick<RouteEntry, "kind" | "route"> & Partial<Pick<RouteEntry, "record">>;
+
 /** The routes an agent is likely to need after this one, most likely first, each with why. */
-export function candidates(r, record, template, { hover = [] } = {}) {
-  const out = [];
-  const add = (route, why) => { if (route && route !== r.route && !out.some((x) => x.route === route)) out.push({ route, why }); };
+export function candidates(r: RouteLike, record: unknown, template: Template | null | undefined, { hover = [] }: { hover?: string[] } = {}): Candidate[] {
+  const out: Candidate[] = [];
+  const add = (route: string | null, why: string) => { if (route && route !== r.route && !out.some((x) => x.route === route)) out.push({ route, why }); };
   for (const h of hover) add(h, "asked");
   if (r.kind === "record" && record && typeof record === "object") {
-    const def = MODEL().records.find((x) => x.id === r.record);
+    const def = MODEL().records.find((x: { id: string }) => x.id === r.record);
     for (const ref of def?.refs ?? []) {
       const vals = valuesAt(record, ref.field).filter((v) => typeof v === "string");
       for (const v of vals) add(routeOfType(ref.to, v), `ref ${ref.field}`);
@@ -272,25 +305,26 @@ export function candidates(r, record, template, { hover = [] } = {}) {
     for (const s of strings(record).filter((x) => ROUTEISH.test(x))) { const { r: hit } = resolve(s); if (hit?.kind === "record") add(s, "link"); }
   }
   const after = AFTER();
-  for (const t of after[r.record]?.after ?? []) add(routeOfType(t), "reads first");
+  for (const t of after[String(r.record)]?.after ?? []) add(routeOfType(t), "reads first");
   const next = template?.need_now?.suggest_now?.find((t) => t !== r.record);
   if (next) add(routeOfType(next), "next step");
-  for (const [t, v] of Object.entries(after)) if ((v.after ?? []).includes(r.record)) add(routeOfType(t), "waits on this");
+  for (const [t, v] of Object.entries(after)) if ((v.after ?? []).includes(String(r.record))) add(routeOfType(t), "waits on this");
   return out;
 }
 
 /** Prefetches the candidates within the prefetch budget: full, summary, state or count, by what each is and what is left. */
-/** @param {{ r: Record<string, any>, record: *, template: *, venture: string, dir: string, workspace?: string, actor_id?: string, task?: string, hover?: string[], set: Record<string, number> }} at */
-export async function prefetch({ r, record, template, venture, dir, workspace, actor_id, task = "", hover = [], set }) {
+export async function prefetch({ r, record, template, venture, dir, workspace, actor_id, task = "", hover = [], set }: {
+  r: RouteLike; record: unknown; template: Template | null | undefined; venture?: string; dir: string; workspace?: string; actor_id?: string; task?: string; hover?: string[]; set: Settings;
+}): Promise<Prefetched> {
   const cands = candidates(r, record, template, { hover });
-  const named = (route) => hover.includes(route) || (task && (task.includes(route) || task.includes(route.split("/").at(-1))));
-  const entries = [], dropped = [];
+  const named = (route: string) => hover.includes(route) || (task && (task.includes(route) || task.includes(String(route.split("/").at(-1)))));
+  const entries: Prefetched["entries"] = [], dropped: string[] = [];
   let spent = 0;
   for (const c of cands) {
     const { r: cr } = resolve(c.route);
     if (!cr) continue;
     const res = await safeCall({ venture, route: c.route, action: "read", workspace, actor_id, via: "prefetch" });
-    let options; // most to least, each an entry the agent could receive
+    let options: (Obj & Candidate)[]; // most to least, each an entry the agent could receive
     if (!res.ok) options = [{ ...c, state: "unreadable" }];
     else if (cr.collection === "list") {
       const items = res.result ? Object.entries(res.result) : [];
@@ -303,7 +337,7 @@ export async function prefetch({ r, record, template, venture, dir, workspace, a
       const summary = { ...st, title: h.title, tokens: h.tokens };
       const stable = h.state === "confirmed";
       if (h.state === "missing") options = [st];
-      else if ((stable || named(c.route)) && h.tokens <= set.full_max) options = [{ ...summary, full: res.result }, summary, st];
+      else if ((stable || named(c.route)) && (h.tokens ?? 0) <= set.full_max) options = [{ ...summary, full: res.result }, summary, st];
       else if (stable || named(c.route)) options = [summary, st];
       else options = [st]; // changing (agent-written, a draft, unlogged): only its state (N-4)
     }
@@ -319,9 +353,9 @@ export async function prefetch({ r, record, template, venture, dir, workspace, a
 // Navigate: the whole answer, streamed part by part (N-5, N-9)
 
 // A router call that answers a throw as an error, so one broken route never stops a navigation or a report.
-const safeCall = async (args) => { try { return await call(args); } catch (e) { return { ok: false, error: String(e.message ?? e).split("\n")[0] }; } };
+const safeCall = async (args: CallArgs): Promise<Answer> => { try { return await call(args); } catch (e) { return { ok: false, error: messageOf(e).split("\n")[0] }; } };
 
-const runCacheFile = (dir, route) => join(sessionDir(), "runs", `${sha(`${dir}\0${route}`)}.json`);
+const runCacheFile = (dir: string, route: string) => join(sessionDir(), "runs", `${sha(`${dir}\0${route}`)}.json`);
 
 /**
  * Reads a route the AI-native way. Options: session (layout once per session), task (what the agent
@@ -329,30 +363,33 @@ const runCacheFile = (dir, route) => join(sessionDir(), "runs", `${sha(`${dir}\0
  * routes to prefetch in full, like hover), header_only (stop after the header), onPart (called with
  * { part, data } as each part is ready). Returns { ok, result: { header, budget, layout, template,
  * result, prefetch } } in that order.
- * @param {{ venture: string, route: string, workspace?: string, actor?: string, actor_id?: string, via?: string, session?: string, task?: string, prefetch?: boolean | string[], header_only?: boolean, onPart?: (p: { part: string, data: * }) => void, _template?: * }} at
  */
-export async function navigate({ venture, route, workspace, actor = "agent", actor_id, via = "router", session = process.env.MENTURA_SESSION, task, prefetch: pf = true, header_only = false, onPart, _template }) {
+export async function navigate({ venture, route, workspace, actor = "agent", actor_id, via = "router", session = process.env.MENTURA_SESSION, task, prefetch: pf = true, header_only = false, onPart, _template }: {
+  venture?: string; route: string; workspace?: string; actor?: string; actor_id?: string; via?: string; session?: string; task?: string; prefetch?: boolean | string[];
+  header_only?: boolean; onPart?: (p: Part) => void; _template?: Template;
+}): Promise<Answer> {
   const { r, params } = resolve(route);
   if (!r) return { ok: false, error: `no route ${route}` };
   const dir = ventureDir(venture, workspace);
   if (!dir) return { ok: false, error: `no venture ${venture}` };
   const concrete = r.collection === "item" ? r.route.replace("[id]", params.id) : r.route;
   const set = settings(dir);
-  const send = (part, data) => { try { onPart?.({ part, data: data === undefined ? data : JSON.parse(JSON.stringify(data)) }); } catch {} };
-  const out = {};
+  const send = (part: string, data: unknown) => { try { onPart?.({ part, data: data === undefined ? data : JSON.parse(JSON.stringify(data)) }); } catch {} };
+  const out: Navigated = {};
 
   if (r.kind === "command") {
     // A computed route answers at once with its state and the last result, then streams the new one (N-9).
     let last = null;
     try { last = load(runCacheFile(dir, concrete)); } catch {}
-    out.header = { ...headerOf({ r, route: concrete, dir, venture, workspace }), state: "computing", ...(last ? { last_at: last.at } : {}) };
+    const header: Header = { ...headerOf({ r, route: concrete, dir, venture, workspace }), state: "computing", ...(last ? { last_at: last.at } : {}) };
+    out.header = header;
     send("header", out.header);
     if (last) { out.stale_result = last.result; send("stale_result", { as_of: last.at, result: last.result }); }
     if (header_only) return { ok: true, result: out };
     out.layout = layoutFor(r, dir, session); send("layout", out.layout);
     const res = await safeCall({ venture, route: concrete, action: "run", workspace, actor, actor_id, via });
     if (!res.ok) return res;
-    out.header.state = res.needs_input ? "needs input" : "computed";
+    header.state = res.needs_input ? "needs input" : "computed";
     out.result = res.result ?? null;
     if (res.needs_input) out.needs_input = res.needs_input;
     else { mkdirSync(dirname(runCacheFile(dir, concrete)), { recursive: true }); writeFileSync(runCacheFile(dir, concrete), JSON.stringify({ at: new Date().toISOString(), result: res.result })); }
@@ -377,12 +414,13 @@ export async function navigate({ venture, route, workspace, actor = "agent", act
   for (const k of ["not_found", "pending_draft", "pending_pull_requests", "source", "sources", "deprecated"]) if (res[k]) out[k] = res[k];
   send("result", out.result);
   if (pf !== false) {
-    out.prefetch = await prefetch({ r, record: res.result, template: out.template, venture, dir, workspace, actor_id, task, hover: Array.isArray(pf) ? pf : [], set });
+    const fetched = await prefetch({ r, record: res.result, template: out.template, venture, dir, workspace, actor_id, task, hover: Array.isArray(pf) ? pf : [], set });
+    out.prefetch = fetched;
     // Over the route's budget: prefetch is the first thing given back (C-16).
     const limit = budgetFor(set, r.route);
-    while (out.prefetch.entries.length && budgetOf(out, limit).over) out.prefetch.dropped = [...(out.prefetch.dropped ?? []), out.prefetch.entries.pop().route];
-    out.prefetch.spent = out.prefetch.entries.reduce((n, e) => n + e.cost, 0);
-    send("prefetch", out.prefetch);
+    for (let e = fetched.entries.at(-1); e && budgetOf(out, limit).over; e = fetched.entries.at(-1)) { fetched.entries.pop(); fetched.dropped = [...(fetched.dropped ?? []), e.route]; }
+    fetched.spent = fetched.entries.reduce((n, e) => n + e.cost, 0);
+    send("prefetch", fetched);
   }
   out.budget = budgetOf(out, budgetFor(set, r.route));
   send("budget", out.budget);
@@ -390,24 +428,19 @@ export async function navigate({ venture, route, workspace, actor = "agent", act
 }
 
 const PARTS = ["header", "layout", "template", "stale_result", "result", "prefetch"];
-function budgetOf(out, limit) {
+function budgetOf(out: Navigated, limit: number): Budget {
   const parts = Object.fromEntries(PARTS.filter((k) => out[k] !== undefined).map((k) => [k, tokens(out[k])]));
-  const used = Object.values(parts).reduce((a, b) => a + b, 0);
+  const used = Object.values(parts).reduce((a: number, b: number) => a + b, 0);
   return { limit, used, over: used > limit, parts };
 }
 // Header first, then the budget, then the rest in the order an agent needs it.
-const order = (o) => Object.fromEntries(["header", "budget", "needs_input", "layout", "template", "stale_result", "result", "not_found", "pending_draft", "pending_pull_requests", "source", "sources", "deprecated", "prefetch"].filter((k) => o[k] !== undefined).map((k) => [k, o[k]]));
-
-/** @typedef {{ progress: number, total?: number, message: string }} Progress */
+const order = (o: Navigated) => Object.fromEntries(["header", "budget", "needs_input", "layout", "template", "stale_result", "result", "not_found", "pending_draft", "pending_pull_requests", "source", "sources", "deprecated", "prefetch"].filter((k) => o[k] !== undefined).map((k) => [k, o[k]]));
 
 /**
  * Runs a command route in a child process and reports progress while it runs (N-5). Gates apply: it goes through the router.
- * @param {{ venture: string, route: string, input?: { value?: *, as_is?: boolean }, workspace?: string, actor_id?: string }} at
- * @param {(p: Progress) => void} [onProgress]
- * @param {number} [every]
- * @returns {Promise<{ ok: boolean, error?: string, result?: * }>}
  */
-export function runStreaming({ venture, route, input, workspace, actor_id }, onProgress = () => {}, every = 250) {
+export function runStreaming({ venture, route, input, workspace, actor_id }: { venture: string; route: string; input?: { value?: unknown; as_is?: boolean }; workspace?: string; actor_id?: string },
+  onProgress: (p: Progress) => void = () => {}, every = 250): Promise<{ ok: boolean; error?: string; result?: unknown }> {
   return new Promise((done) => {
     const args = [join(repoRoot, "packages/naive/src/interfaces/cli/mentura.ts"), route, "run", "--venture", venture, "--json",
       ...(input?.value !== undefined ? ["--value", String(input.value)] : []), ...(input?.as_is ? ["--as-is"] : []), ...(workspace ? ["--workspace", workspace] : [])];
@@ -417,8 +450,8 @@ export function runStreaming({ venture, route, input, workspace, actor_id }, onP
     const t0 = Date.now();
     onProgress({ progress: 0, message: `started ${route}` });
     const timer = setInterval(() => onProgress({ progress: ++n, message: `running ${route}: ${((Date.now() - t0) / 1000).toFixed(1)}s` }), every);
-    p.stdout.on("data", (d) => { stdout += d; });
-    p.stderr.on("data", (d) => {
+    p.stdout.on("data", (d: Buffer) => { stdout += d; });
+    p.stderr.on("data", (d: Buffer) => {
       stderr += d;
       for (const line of String(d).split("\n")) { const m = line.match(/^progress\s+(\d+)\/(\d+)\s*(.*)$/); if (m) onProgress({ progress: Number(m[1]), total: Number(m[2]), message: m[3] }); }
     });
@@ -433,11 +466,10 @@ export function runStreaming({ venture, route, input, workspace, actor_id }, onP
 
 /**
  * Runs calls one after another (a batch of reads, checks or runs) and reports each as it finishes (N-5).
- * @param {{ venture?: string, workspace?: string, calls?: { route: string, action: string }[], actor_id?: string, via?: string }} at
- * @param {(p: Progress) => void} [onProgress]
  */
-export async function batch({ venture, workspace, calls = [], actor_id, via = "router" }, onProgress = () => {}) {
-  const results = [];
+export async function batch({ venture, workspace, calls = [], actor_id, via = "router" }: { venture?: string; workspace?: string; calls?: { route: string; action: string }[]; actor_id?: string; via?: string },
+  onProgress: (p: Progress) => void = () => {}) {
+  const results: { route: string; action: string; ok: boolean; result?: unknown; error?: string }[] = [];
   for (const [i, c] of calls.entries()) {
     const r = await safeCall({ venture, workspace, actor_id, via, ...c });
     results.push({ route: c.route, action: c.action, ok: r.ok, ...(r.ok ? { result: r.result } : { error: r.error }) });
@@ -449,7 +481,7 @@ export async function batch({ venture, workspace, calls = [], actor_id, via = "r
 // ---------------------------------------------------------------------------------------------
 // The context budget report (N-13, S-14, F-6)
 
-const ADVICE = {
+const ADVICE: Record<string, string> = {
   layout: "move procedural instructions out of AGENTS.md into the router's code or a check, and scope the rest to the routes that need them (S-14)",
   template: "the template is computed every time: keep it to rankings and counts",
   result: "the record is large: read its header first (head) and split it if agents rarely need all of it",
@@ -458,32 +490,31 @@ const ADVICE = {
 };
 
 /** Every route of a venture against its context budget, with its largest part, plus the layout rules it breaks. */
-export async function budget(dir) {
+export async function budget(dir: string) {
   // The report's own reads are measurement, not an agent's work: they stay out of the events log and vitals.
   const was = process.env.NAIVE_INSTRUMENT;
   process.env.NAIVE_INSTRUMENT = "0";
   try { return await measureBudget(dir); } finally { if (was === undefined) delete process.env.NAIVE_INSTRUMENT; else process.env.NAIVE_INSTRUMENT = was; }
 }
 
-async function measureBudget(dir) {
+async function measureBudget(dir: string) {
   const v = load(join(dir, "venture.json"));
   const workspace = dirname(dir);
   const set = settings(dir);
-  /** @type {{ route: string, error?: string, limit?: number, used?: number, over?: boolean, largest?: string, advice?: string }[]} */
-  const rows = [];
-  let tmpl = null;
-  for (const r of routes().filter((x) => x.kind === "record" && x.collection !== "item")) {
+  const rows: { route: string; error?: string; limit?: number; used?: number; over?: boolean; largest?: string; advice?: string }[] = [];
+  let tmpl: Template | null = null;
+  for (const r of routes().filter((x: RouteEntry) => x.kind === "record" && x.collection !== "item") as RouteEntry[]) {
     tmpl ??= await templateFor(r, dir, set);
     const t = { ...tmpl, need_now: tmpl.need_now ? { ...tmpl.need_now, this: undefined } : undefined };
     const n = await navigate({ venture: v.id, route: r.route, workspace, _template: t, via: "budget" });
     if (!n.ok) { rows.push({ route: r.route, error: n.error }); continue; }
-    const b = n.result.budget;
+    const b = (n.result as Navigated).budget as Budget;
     const largest = Object.entries(b.parts).sort((a, c) => c[1] - a[1])[0]?.[0];
-    rows.push({ route: r.route, limit: b.limit, used: b.used, over: b.over, largest, ...(b.over ? { advice: ADVICE[largest] } : {}) });
+    rows.push({ route: r.route, limit: b.limit, used: b.used, over: b.over, largest, ...(b.over ? { advice: ADVICE[String(largest)] } : {}) });
   }
   // Layout rules, over every AGENTS.md in the venture.
-  const rules = [];
-  const agentsFiles = (d, rel = "") => readdirSync(join(d, rel), { withFileTypes: true }).flatMap((e) => e.name.startsWith(".") || e.name.startsWith("_") ? []
+  const rules: { rule: string; file: string; key?: string | null; tokens?: number; fix: string }[] = [];
+  const agentsFiles = (d: string, rel = ""): string[] => readdirSync(join(d, rel), { withFileTypes: true }).flatMap((e) => e.name.startsWith(".") || e.name.startsWith("_") ? []
     : e.isDirectory() ? (existsSync(join(d, rel, e.name, "venture.json")) ? [] : agentsFiles(d, rel ? `${rel}/${e.name}` : e.name)) : e.name === "AGENTS.md" ? [rel ? `${rel}/AGENTS.md` : "AGENTS.md"] : []);
   for (const f of agentsFiles(dir)) {
     const folder = dirname(f) === "." ? "" : dirname(f);
@@ -492,7 +523,7 @@ async function measureBudget(dir) {
       const s = line.match(SCOPED), m = s ? [null, s[2], s[3]] : line.match(PLAIN);
       if (!m) continue;
       // F-6: a computed value in a layout blocks or goes stale; it belongs in the template.
-      if (COMPUTED.includes(m[1])) rules.push({ rule: "F-6", file: f, key: m[1], fix: `${m[1]} is computed: leave it to the template (need-now and decisions), not ${f}` });
+      if (COMPUTED.includes(String(m[1]))) rules.push({ rule: "F-6", file: f, key: m[1], fix: `${m[1]} is computed: leave it to the template (need-now and decisions), not ${f}` });
       // S-14: a scoped line whose routes all sit under one folder belongs in that folder's AGENTS.md.
       if (s) {
         const fixed = s[1].split(",").map((g) => g.trim().split("/").filter((x) => !x.includes("*")).join("/"));
@@ -512,24 +543,25 @@ async function measureBudget(dir) {
 
 /**
  * mentura <route> navigate|head --venture <id> [--session s] [--task text] [--prefetch a,b | --no-prefetch] [--stream]; mentura batch --venture <id> --input calls.json [--stream].
- * @param {string[]} argv @param {{ workspace?: string }} [opts]
  */
-export async function cli(argv, { workspace } = {}) {
-  const opt = (n) => { const i = argv.indexOf(`--${n}`); return i >= 0 ? argv[i + 1] : undefined; };
-  const flag = (n) => argv.includes(`--${n}`);
+export async function cli(argv: string[], { workspace }: { workspace?: string } = {}) {
+  const opt = (n: string): string | undefined => { const i = argv.indexOf(`--${n}`); return i >= 0 ? argv[i + 1] : undefined; };
+  const flag = (n: string) => argv.includes(`--${n}`);
   const [route, action] = argv.filter((a, i) => !a.startsWith("--") && !(i > 0 && argv[i - 1].startsWith("--") && !["json", "stream", "no-prefetch", "header", "as-is"].includes(argv[i - 1].slice(2))));
   const venture = opt("venture");
   const stream = flag("stream");
-  const line = (x) => process.stdout.write(JSON.stringify(x) + "\n");
+  const line = (x: unknown) => process.stdout.write(JSON.stringify(x) + "\n");
   if (route === "batch") {
-    const calls = JSON.parse(readFileSync(opt("input") === "-" ? 0 : opt("input"), "utf8"));
-    const r = await batch({ venture, workspace, calls: calls.calls ?? calls, via: "cli" }, stream ? (p) => line({ progress: p }) : undefined);
+    const input = opt("input");
+    const calls = JSON.parse(readFileSync(input === "-" ? 0 : String(input), "utf8"));
+    const r = await batch({ venture, workspace, calls: calls.calls ?? calls, via: "cli" }, stream ? (p: Progress) => line({ progress: p }) : undefined);
     if (stream) line({ part: "result", data: r.result }); else console.log(JSON.stringify(r.result, null, 2));
     return r.ok ? 0 : 1;
   }
   // Through the router, so the navigation is one instrumented call with its reads under it.
+  const prefetchOpt = opt("prefetch");
   const r = await call({ venture, route, action, workspace, via: "cli", actor: opt("as") === "person" ? "person" : "agent", input: { session: opt("session") ?? process.env.MENTURA_SESSION, task: opt("task"),
-    prefetch: flag("no-prefetch") ? false : opt("prefetch") ? opt("prefetch").split(",").filter(Boolean) : true, onPart: stream ? line : undefined } });
+    prefetch: flag("no-prefetch") ? false : prefetchOpt ? prefetchOpt.split(",").filter(Boolean) : true, onPart: stream ? line : undefined } });
   if (!r.ok) { console.error(r.error); return 1; }
   if (!stream) console.log(JSON.stringify(r.result, null, 2));
   return 0;

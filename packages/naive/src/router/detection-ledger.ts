@@ -14,30 +14,30 @@
 import { randomUUID } from "node:crypto";
 import { lineHash } from "../core/provenance.ts";
 import { call } from "./router.ts";
+import type { CallProvenance } from "./router.ts";
+import type { DetectorTrial } from "../records/types/records.d.ts";
 
 const RETRIES = 200;
-const pause = () => new Promise((ok) => setTimeout(ok, 1 + Math.random() * 10));
-const drop = (o) => Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined));
+const pause = () => new Promise<void>((ok) => setTimeout(ok, 1 + Math.random() * 10));
+const drop = (o: Record<string, unknown>) => Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined));
 
-/** Where a detector's ledger lives, relative to the venture. @param {string} detector */
-export const ledgerPath = (detector) => `governance/detectors/${detector}.trials.jsonl`;
-/** The router route of a detector's ledger. @param {string} detector */
-export const ledgerRoute = (detector) => `governance/detector-trial/${detector}`;
+/** Where a detector's ledger lives, relative to the venture. */
+export const ledgerPath = (detector: string) => `governance/detectors/${detector}.trials.jsonl`;
+/** The router route of a detector's ledger. */
+export const ledgerRoute = (detector: string) => `governance/detector-trial/${detector}`;
 
 /** The outcomes each call can resolve as. An unsure call went to a person, whose own call is not recorded here, so any outcome fits it. */
-export const FITS = { yes: ["hit", "false-alarm"], no: ["miss", "correct-rejection"], unsure: ["hit", "miss", "false-alarm", "correct-rejection"] };
+export const FITS: Record<string, string[]> = { yes: ["hit", "false-alarm"], no: ["miss", "correct-rejection"], unsure: ["hit", "miss", "false-alarm", "correct-rejection"] };
 
-/**
- * @typedef {{ venture: string, workspace?: string, actor?: string, actor_id?: string, via?: string, provenance?: { note?: string, derived_from?: string[], agent?: Record<string, any> } }} Ctx
- * @typedef {{ kind: string, id: string, detector: string, at: string, prev: string, hash: string, call?: string, score?: number, criterion?: Record<string, any>, provenance?: string, trial?: string, outcome?: string, signal?: string, by?: { kind: string, id: string }, note?: string }} Line
- */
+/** Who reads or appends, and through which venture. */
+export type Ctx = { venture?: string; workspace?: string; actor?: string; actor_id?: string; via?: string; provenance?: CallProvenance };
+/** One ledger line: a trial or a resolution. */
+export type Line = DetectorTrial;
 
 /**
  * A detector's ledger, read through the router: its lines in order and its version (null when there is none yet).
- * @param {Ctx} ctx @param {string} detector
- * @returns {Promise<{ lines: Line[], version: string | null }>}
  */
-export async function read(ctx, detector) {
+export async function read(ctx: Ctx, detector: string): Promise<{ lines: Line[]; version: string | null }> {
   const res = await call({ venture: ctx.venture, workspace: ctx.workspace, route: ledgerRoute(detector), action: "read", actor: ctx.actor ?? "agent", actor_id: ctx.actor_id, via: ctx.via ?? "router" });
   if (!res.ok) throw new Error(res.error ?? `could not read ${ledgerPath(detector)}`);
   return { lines: Array.isArray(res.result) ? res.result : [], version: res.source?.version ?? null };
@@ -46,11 +46,10 @@ export async function read(ctx, detector) {
 /**
  * Checks a ledger's chain and shape: each line's prev is the hash before it (genesis first), each hash is lineHash of
  * its line, ids are unique, and each resolution names an earlier trial, resolves it once and fits its call.
- * @param {Line[]} lines @returns {{ ok: boolean, errors: string[] }}
  */
-export function verify(lines) {
-  const errors = [];
-  const ids = new Set(), trials = new Map(), resolved = new Set();
+export function verify(lines: Line[]): { ok: boolean; errors: string[] } {
+  const errors: string[] = [];
+  const ids = new Set<string>(), trials = new Map<string, Line>(), resolved = new Set<string | undefined>();
   let prev = "genesis";
   lines.forEach((l, i) => {
     const at = `line ${i + 1}${l?.id ? ` (${l.id})` : ""}`;
@@ -73,10 +72,10 @@ export function verify(lines) {
 
 /**
  * Appends one trial: the call a detector made. The caller makes the call; this records it.
- * @param {Ctx} ctx
- * @param {{ detector: string, score: number, criterion: Record<string, any>, call: "yes" | "no" | "unsure", provenance?: string, id?: string, at?: string, note?: string }} t
  */
-export async function appendTrial(ctx, { detector, score, criterion, call: made, provenance, id, at, note }) {
+export async function appendTrial(ctx: Ctx, { detector, score, criterion, call: made, provenance, id, at, note }: {
+  detector: string; score: number; criterion: DetectorTrial["criterion"]; call: "yes" | "no" | "unsure"; provenance?: string; id?: string; at?: string; note?: string;
+}) {
   const line = drop({ kind: "trial", id: id ?? randomUUID(), detector, at: at ?? new Date().toISOString(), score, criterion, call: made, provenance, note });
   return await call({ venture: ctx.venture, workspace: ctx.workspace, route: ledgerRoute(detector), action: "append", input: { line }, actor: ctx.actor ?? "agent", actor_id: ctx.actor_id, via: ctx.via ?? "router", provenance: ctx.provenance });
 }
@@ -84,10 +83,10 @@ export async function appendTrial(ctx, { detector, score, criterion, call: made,
 /**
  * Appends one resolution: how a trial turned out, and who settled it. Refused for an unknown trial, a trial already
  * resolved, or an outcome its call cannot have.
- * @param {Ctx} ctx
- * @param {{ detector: string, trial: string, outcome: "hit" | "miss" | "false-alarm" | "correct-rejection", by: { kind: "person" | "record" | "producer", id: string }, signal?: "override" | "correction", id?: string, at?: string, note?: string }} r
  */
-export async function resolveTrial(ctx, { detector, trial, outcome, by, signal, id, at, note }) {
+export async function resolveTrial(ctx: Ctx, { detector, trial, outcome, by, signal, id, at, note }: {
+  detector: string; trial: string; outcome: NonNullable<DetectorTrial["outcome"]>; by: NonNullable<DetectorTrial["by"]>; signal?: DetectorTrial["signal"]; id?: string; at?: string; note?: string;
+}) {
   for (let i = 0; ; i++) {
     const { lines, version } = await read(ctx, detector);
     const t = lines.find((l) => l.kind === "trial" && l.id === trial);
@@ -102,8 +101,8 @@ export async function resolveTrial(ctx, { detector, trial, outcome, by, signal, 
   }
 }
 
-/** The no-call trial that judged a write, by that write's provenance hash, when it is not resolved yet. @param {Line[]} lines @param {string} hash */
-export function unresolvedNoCall(lines, hash) {
+/** The no-call trial that judged a write, by that write's provenance hash, when it is not resolved yet. */
+export function unresolvedNoCall(lines: Line[], hash: string): Line | null {
   const resolved = new Set(lines.filter((l) => l.kind === "resolution").map((l) => l.trial));
   return lines.filter((l) => l.kind === "trial" && l.call === "no" && l.provenance === hash && !resolved.has(l.id)).at(-1) ?? null;
 }

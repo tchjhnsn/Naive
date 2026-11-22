@@ -22,12 +22,28 @@ import { ventureFile } from "../core/venture-paths.ts";
 import { git as runGit, refusedBy } from "../core/runtime.ts";
 import { ROOT, dataModelFile, readDataModel, readSchema, schemaFile, schemaNameOf } from "../records/index.ts";
 import { validateFile as checkFile } from "../records/validate.ts";
+import type { RouteEntry } from "./router.ts";
 
 const repo = new URL("../../../..", import.meta.url).pathname;
-const load = (f) => JSON.parse(readFileSync(f, "utf8"));
+const load = (f: string) => JSON.parse(readFileSync(f, "utf8"));
+type Obj = Record<string, unknown>;
+const isObj = (x: unknown): x is Obj => !!x && typeof x === "object";
+/** A thrown value's message, or the value itself. */
+const messageOf = (e: unknown): string => String((isObj(e) ? e.message : undefined) ?? e);
+
+/** A global error (E-8): the scope, the file, what is wrong and how to recover. */
+export type Health = { scope: string; file: string; problem: string; recovery: string[]; template?: Obj };
+type Checked = { record: string; route: string; file: string; ok: boolean; error?: string; fix?: { schema?: string; template?: string | null; skills: string[] } };
+type PackageBoundary = { package: string; ok: boolean; error?: string; records: Checked[]; checks: { check: string; passed: boolean; output: string }[] };
+/** What boundaries() answers. */
+export type Boundaries = {
+  ok: boolean; reached: "venture" | "package" | null;
+  venture: { ok: boolean; error?: string; recovery?: string[]; errors?: string[]; fix?: string; warnings?: unknown[] };
+  packages: PackageBoundary[]; contained?: string[]; proceeds: string[];
+};
 
 // Where a JSON parse failed: line and column from the position in the message, when it gives one.
-function where(text, message) {
+function where(text: string, message: string): string {
   const m = message.match(/position (\d+)/);
   if (!m && /end of JSON input/.test(message)) return ` (at the end of the file, line ${text.split("\n").length})`;
   if (!m || /line \d+/.test(message)) return "";
@@ -37,16 +53,18 @@ function where(text, message) {
 }
 
 /** Why a JSON file is broken, or null. */
-export function jsonProblem(file) {
+export function jsonProblem(file: string): string | null {
   if (!existsSync(file)) return "is missing";
   const text = readFileSync(file, "utf8");
-  try { JSON.parse(text); return null; } catch (e) { return `does not parse: ${String(e.message).split("\n")[0]}${where(text, String(e.message))}`; }
+  try { JSON.parse(text); return null; } catch (e) { const message = isObj(e) ? e.message : undefined; return `does not parse: ${String(message).split("\n")[0]}${where(text, String(message))}`; }
 }
 
-const VENTURE_SCHEMA = () => readSchema("venture");
+/** The parts of venture.schema.json that the health check reads. */
+type VentureSchema = { required: string[]; properties: { id: { pattern: string }; phase: { enum: string[] } } };
+const VENTURE_SCHEMA = () => readSchema("venture") as VentureSchema;
 
 /** A minimal venture.json for a folder, from the schema's required fields: what recover writes. */
-export function minimalVenture(dir) {
+export function minimalVenture(dir: string) {
   const id = basename(dir).toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-+|-+$/g, "") || "venture";
   return { id, name: id, parent: null, phase: "discovery", owner: "self", status: "active", profile: "profile.md",
     layers: Object.fromEntries(["purpose", "knowledge", "operations", "evidence", "governance", "interface"].map((l) => [l, existsSync(ventureFile(dir, l)) ? { location: `${l}/` } : false])) };
@@ -57,12 +75,12 @@ export function minimalVenture(dir) {
  * how to recover. Checks what the router needs before anything else runs: it parses, its required
  * fields are there, its id and phase are valid. The full schema check stays in packages/naive/src/records/validate.ts.
  */
-export function ventureHealth(dir) {
+export function ventureHealth(dir: string): Health | null {
   const file = join(dir, "venture.json");
   let problem = jsonProblem(file);
   if (!problem) {
     const v = load(file), s = VENTURE_SCHEMA();
-    const missing = v && typeof v === "object" ? s.required.filter((k) => !(k in v)) : [];
+    const missing = v && typeof v === "object" ? s.required.filter((k: string) => !(k in v)) : [];
     if (!v || typeof v !== "object" || Array.isArray(v)) problem = "is not a JSON object";
     else if (missing.length) problem = `is missing ${missing.join(", ")}`;
     else if (!new RegExp(s.properties.id.pattern).test(String(v.id))) problem = `has id ${JSON.stringify(v.id)}, which is not lowercase letters, digits and hyphens`;
@@ -87,16 +105,16 @@ export function ventureHealth(dir) {
 
 // The framework files every route depends on. A broken one stops every route, so it is checked first.
 function frameworkFiles() {
-  const fromRoot = (f) => relative(ROOT, f);
+  const fromRoot = (f: string) => relative(ROOT, f);
   const fixed = [fromRoot(dataModelFile()), "packages/naive/src/engine/need-now.json", fromRoot(schemaFile("venture")), "packages/naive/library/packages/catalog.json", "packages/naive/src/functions/products/frameworks/product-anatomy/phases.json", ...["discovery", "validation", "beachhead", "scale", "platform"].map((p) => `packages/naive/src/phases/${p}/phase.json`), "packages/naive/src/functions/strategy/strategic-foundation.json", "packages/naive/src/functions/departments.json"];
-  let layers = [];
-  try { layers = readDataModel().layers.map((l) => `packages/naive/src/records/layers/${l}/layer.json`); } catch {}
+  let layers: string[] = [];
+  try { layers = readDataModel().layers.map((l: string) => `packages/naive/src/records/layers/${l}/layer.json`); } catch {}
   const pkgs = existsSync(join(repo, "packages/naive/library", "packages")) ? readdirSync(join(repo, "packages/naive/library", "packages")).map((n) => `packages/naive/library/packages/${n}/package.json`).filter((f) => existsSync(join(repo, f))) : [];
   return [...fixed, ...layers, "packages/naive/src/records/layer.json", ...pkgs];
 }
 
 /** The framework's global error (E-8): null when the data model and manifests parse, else the file, the problem and how to recover. */
-export function frameworkHealth() {
+export function frameworkHealth(): Health | null {
   for (const f of frameworkFiles()) {
     const problem = jsonProblem(join(repo, f));
     if (!problem) continue;
@@ -110,21 +128,21 @@ export function frameworkHealth() {
 }
 
 /** The answer a global error gives: an expected error with its recovery steps, never a throw. */
-export function globalError(h, venture) {
+export function globalError(h: Health, venture?: string) {
   const head = h.scope === "venture" ? `${venture ?? basename(dirname(h.file))}: ${h.problem}` : `the framework is broken: ${h.problem}`;
   return { ok: false, outcome: "error", error: [head, "Recovery:", ...h.recovery.map((s, i) => `  ${i + 1}. ${s}`)].join("\n"), global_error: h };
 }
 
 /** Per-record containment (E-6): parses each item on its own; a bad one becomes an error beside the good ones. */
-export function contain(items, parse, idOf = (x) => x.path) {
-  const values = [], errors = {};
+export function contain<T extends { path: string }, V>(items: T[], parse: (x: T) => V, idOf: (path: string) => unknown = (x: unknown) => (isObj(x) ? x.path : undefined)) {
+  const values: [T, V][] = [], errors: Record<string, { file: string; error: string }> = {};
   for (const x of items) {
-    try { values.push([x, parse(x)]); } catch (e) { errors[idOf(x.path)] = { file: x.path, error: `${x.path} does not parse: ${String(e.message ?? e).split("\n")[0]}` }; }
+    try { values.push([x, parse(x)]); } catch (e) { errors[String(idOf(x.path))] = { file: x.path, error: `${x.path} does not parse: ${messageOf(e).split("\n")[0]}` }; }
   }
   return { values, errors };
 }
 
-function validateFile(file, schema) {
+function validateFile(file: string, schema: string): string | null {
   const p = checkFile(schemaNameOf(schema), file);
   return p.status === 0 ? null : (p.stdout + p.stderr).trim();
 }
@@ -133,11 +151,8 @@ function validateFile(file, schema) {
  * The boundaries of a venture (E-5): the venture level first (venture.json and its folder structure),
  * then each package the venture uses, each contained. Inside a package each record is checked on its
  * own (E-6), then the package's checks run. options.only limits it to some packages.
- * @param {string} dir
- * @param {{ only?: string[] | null }} [options]
- * @returns {Promise<{ ok: boolean, reached: "venture" | "package" | null, venture: { ok: boolean, error?: string, recovery?: string[], errors?: string[], fix?: string, warnings?: any[] }, packages: { package: string, ok: boolean, error?: string, records: { record: string, route: string, file: string, ok: boolean, error?: string, fix?: { schema?: string, template?: string, skills: string[] } }[], checks: { check: string, passed: boolean, output: string }[] }[], contained?: string[], proceeds: string[] }>}
  */
-export async function boundaries(dir, { only = null } = {}) {
+export async function boundaries(dir: string, { only = null }: { only?: string[] | null } = {}): Promise<Boundaries> {
   const { structure, checkManifest, manifest } = await import("../engine/structure.ts");
   const { routes, glob } = await import("./router.ts");
   const { routable } = await import("../engine/structure.ts");
@@ -145,23 +160,23 @@ export async function boundaries(dir, { only = null } = {}) {
   if (h) return { ok: false, reached: "venture", venture: { ok: false, error: h.problem, recovery: h.recovery }, packages: [], proceeds: [] };
   const s = structure(dir);
   const verrors = [...s.errors, ...checkManifest(dir)];
-  const venture = { ok: !verrors.length, ...(verrors.length ? { errors: verrors, fix: "node packages/naive/src/engine/structure.ts " + dir } : {}), warnings: s.warnings };
+  const venture: Boundaries["venture"] = { ok: !verrors.length, ...(verrors.length ? { errors: verrors, fix: "node packages/naive/src/engine/structure.ts " + dir } : {}), warnings: s.warnings };
   const m = await manifest(dir);
   // Asked for by name, a package is checked whether or not the venture lists it.
-  const names = only ? only.filter((n) => existsSync(join(repo, "packages/naive/library", "packages", n, "package.json"))) : m.packages.list.filter((p) => p.known).map((p) => p.name);
-  const rs = routes().filter((r) => r.kind === "record" && r.collection !== "list");
-  const out = [];
+  const names = only ? only.filter((n) => existsSync(join(repo, "packages/naive/library", "packages", n, "package.json"))) : m.packages.list.filter((p: { known?: boolean }) => p.known).map((p: { name: string }) => p.name);
+  const rs = routes().filter((r: RouteEntry) => r.kind === "record" && r.collection !== "list");
+  const out: PackageBoundary[] = [];
   for (const name of names) {
     // A package's failure stays in its result: an exception here is caught and reported as that package's.
     try {
       const pkg = load(join(repo, "packages/naive/library", "packages", name, "package.json"));
       const types = [...new Set([...(pkg.required ?? []), ...(pkg.optional ?? []), ...(pkg.records ?? [])])];
-      const records = [], checks = new Set((pkg.checks ?? []).filter((c) => /^packages\/naive\/src\/[a-z]+\/check-[a-z-]+\.(mjs|ts)$/.test(c) && c !== "packages/naive/src/checks/check-data-model.ts" && existsSync(join(repo, c))));
+      const records: Checked[] = [], checks = new Set<string>((pkg.checks ?? []).filter((c: string) => /^packages\/naive\/src\/[a-z]+\/check-[a-z-]+\.mjs$/.test(c) && c !== "packages/naive/src/checks/check-data-model.ts" && existsSync(join(repo, c))));
       for (const t of types) {
-        const r = rs.find((x) => x.record === t);
+        const r: RouteEntry | undefined = rs.find((x: RouteEntry) => x.record === t);
         if (!r) continue;
         for (const c of r.checks ?? []) checks.add(c);
-        const pats = r.files;
+        const pats = r.files ?? [];
         const hits = files(dir).filter((f) => pats.some((g) => glob(g).test(f) && routable(f, g)));
         for (const f of hits) {
           const problem = f.endsWith(".json") ? jsonProblem(ventureFile(dir, f)) ?? (r.schema ? validateFile(ventureFile(dir, f), r.schema) : null) : null;
@@ -173,7 +188,7 @@ export async function boundaries(dir, { only = null } = {}) {
       const ok = records.every((x) => x.ok) && ran.every((x) => x.passed);
       out.push({ package: name, ok, records, checks: ran });
     } catch (e) {
-      out.push({ package: name, ok: false, error: `uncaught in ${name}: ${String(e.message ?? e).split("\n")[0]}`, records: [], checks: [] });
+      out.push({ package: name, ok: false, error: `uncaught in ${name}: ${messageOf(e).split("\n")[0]}`, records: [], checks: [] });
     }
   }
   const failed = out.filter((p) => !p.ok).map((p) => p.package);
@@ -181,7 +196,7 @@ export async function boundaries(dir, { only = null } = {}) {
 }
 
 // The id a collection pattern's one star matches in a file (customers/[id].json, accounts/[id]/account.json).
-export function starOf(file, patterns) {
+export function starOf(file: string, patterns: string[]): string | null {
   for (const g of patterns) {
     if (!g.includes("*") || g.includes("**")) continue;
     const m = file.match(new RegExp("^" + g.split("*").map((x) => x.replace(/[.+^${}()|[\]\\]/g, "\\$&")).join("([^/]*)") + "$"));
@@ -191,13 +206,13 @@ export function starOf(file, patterns) {
 }
 
 // A venture's files, skipping dot folders, nested ventures and the root's private folders (as the router does).
-function files(d, base = d) {
+function files(d: string, base = d): string[] {
   return existsSync(d) ? readdirSync(d, { withFileTypes: true }).flatMap((e) => e.name.startsWith(".") ? [] : e.isDirectory()
     ? (existsSync(join(d, e.name, "venture.json")) || (d === base && e.name.startsWith("_")) ? [] : files(join(d, e.name), base)) : [join(d, e.name).slice(base.length + 1)]) : [];
 }
 
 /** Rebuilds a broken venture.json (E-8): the broken file moves to _private/, and a minimal one takes its place. */
-export function recover(dir) {
+export function recover(dir: string) {
   const h = ventureHealth(dir);
   if (!h) return { ok: true, result: "venture.json is sound: nothing to recover" };
   const kept = join("_private", `venture.json.broken-${new Date().toISOString().replace(/[:.]/g, "-")}`);
@@ -208,7 +223,7 @@ export function recover(dir) {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const [cmd, dir] = process.argv.slice(2);
-  const opt = (n) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 ? process.argv[i + 1] : undefined; };
+  const opt = (n: string): string | undefined => { const i = process.argv.indexOf(`--${n}`); return i >= 0 ? process.argv[i + 1] : undefined; };
   if (!["check", "recover"].includes(cmd) || !dir || !existsSync(dir)) { console.error("usage: node packages/naive/src/router/boundaries.ts check <venture dir> [--package <name>] [--json] | recover <venture dir> --confirm recover"); process.exit(2); }
   if (cmd === "recover") {
     if (opt("confirm") !== "recover") { console.error("recover rewrites venture.json: pass --confirm recover"); process.exit(1); }
@@ -218,11 +233,12 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   }
   const fw = frameworkHealth();
   if (fw) { console.error(globalError(fw).error); process.exit(1); }
-  const b = await boundaries(dir, { only: opt("package") ? [opt("package")] : null });
+  const only = opt("package");
+  const b = await boundaries(dir, { only: only ? [only] : null });
   if (process.argv.includes("--json")) console.log(JSON.stringify(b, null, 2));
   else {
     console.log(`venture: ${b.venture.ok ? "ok" : `failed: ${(b.venture.errors ?? [b.venture.error]).join("; ")}`}`);
-    for (const p of b.packages) console.log(`${p.package.padEnd(14)} ${p.ok ? "ok" : `contained: ${[p.error, ...p.records.filter((x) => !x.ok).map((x) => `${x.file} ${x.error.split("\n")[0]}`), ...p.checks.filter((x) => !x.passed).map((x) => `${x.check} failed`)].filter(Boolean).join("; ")}`}`);
+    for (const p of b.packages) console.log(`${p.package.padEnd(14)} ${p.ok ? "ok" : `contained: ${[p.error, ...p.records.filter((x) => !x.ok).map((x) => `${x.file} ${String(x.error).split("\n")[0]}`), ...p.checks.filter((x) => !x.passed).map((x) => `${x.check} failed`)].filter(Boolean).join("; ")}`}`);
   }
   process.exit(b.ok ? 0 : 1);
 }

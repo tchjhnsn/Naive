@@ -46,38 +46,84 @@ import { CARD, MANIFEST, RECORDS, RELEASE_DIR, frozenText, readRelease } from ".
 import { ventureFile } from "../../core/venture-paths.ts";
 import { schemaNameOf } from "../../records/index.ts";
 import { validateFile } from "../../records/validate.ts";
+import type { RecordRoute, RouteEntry } from "../router.ts";
+import type { DecisionRecord, ProvenanceEntry, Venture } from "../../records/types/records.d.ts";
+
+// The release (release.json, card.json) has no JSON Schema (its data model entry has schema null): this
+// module writes it, so its shapes are written here.
+type Obj = Record<string, unknown>;
+const isObj = (x: unknown): x is Obj => !!x && typeof x === "object";
+type Key = { framework: string; packages: string; model: string | null };
+/** The local cache (C-17). */
+export type Cache = {
+  key: Key; key_hash: string; fresh: boolean; previous_key: Key | null; entries: Record<string, unknown>; hits: number; misses: number;
+  get: (id: string, compute: () => unknown) => unknown; save: () => void;
+};
+/** A record frozen into the release, with its text until the manifest drops it for a sha256. */
+export type Frozen = { file: string; record: string; route: string; route_template: string; id?: string; as_of?: string | null; confirmed_by?: string; text?: string; withheld_fields?: string[] };
+type Shipped = Omit<Frozen, "text"> & { sha256: string };
+/** A named live hole (C-11, C-14). */
+export type Hole = {
+  kind: string; name: string; file: string; record: string; route: string; route_template: string | null; why: string; live: string; to_freeze: string;
+  decides?: string | null; field?: string; stream?: string;
+};
+type LeftOut = { file: string; why: string; fix?: string };
+type Blocker = { file: string; route: string; record: string | null; why: string; fix: string; draft?: boolean };
+export type Survey = { venture: Venture; frozen: Frozen[]; holes: Hole[]; left_out: LeftOut[]; blockers: Blocker[]; private: { records: number; folder: number } };
+type PackageEntry = { id: string; title: string; releasable: boolean; frozen: string[]; holes: string[]; gaps: string[]; blockers: string[]; shell: number | null };
+type CommandEntry = { route: string; in: string; why: string; reads?: string[] };
+/** A frozen command's answer, or why it is empty. */
+type Ran = { empty?: string; result?: unknown };
+type RouteRow = { route: string; kind: string; in: string; why?: string; live?: string; record?: string; collection?: string };
+type Check = { check: string; output: string };
+/** The release manifest, .release/release.json. */
+export type Manifest = {
+  release: string | null; venture: string; name: string; phase: string; built_at: string; now: string; key: Key;
+  records: Shipped[]; holes: Hole[]; left_out: LeftOut[]; withheld: { private_records: number; private_folder_files: number };
+  packages: PackageEntry[]; routes: RouteRow[]; items: Record<string, (string | undefined)[]>; commands: Record<string, { result: unknown; built_from?: string }>;
+  incremental: { route: string; file: string; from: string | null; at: string }[];
+  cache: { key_hash: string; fresh: boolean; hits: number; misses: number; previous_key?: Key };
+};
+type Headline = { label: string; value: unknown; unit?: string | null; as_of?: string | null; confirmed_by: (string | undefined)[] };
+/** The release card's data, .release/card.json. */
+export type Card = {
+  venture: string; name: string; phase: string; release: string | null; built_at: string; headline: Headline[];
+  confirmed_by: (string | undefined)[]; packages: { title: string; shell: number | null; gaps: number }[]; note: string;
+};
+type Confirmation = { ok: false; why: string; fix: string; statements?: string[]; by?: undefined; at?: undefined } | { ok: true; by: string; at: string; why?: undefined; fix?: undefined; statements?: undefined };
+type Matcher = { r: RecordRoute; re: RegExp; g: string };
 
 const repo = new URL("../../../../..", import.meta.url).pathname;
-const load = (p) => JSON.parse(readFileSync(p, "utf8"));
-const sha = (s) => createHash("sha256").update(s).digest("hex");
-const sorted = (x) => Array.isArray(x) ? x.map(sorted) : x && typeof x === "object" ? Object.fromEntries(Object.keys(x).sort().map((k) => [k, sorted(x[k])])) : x;
-const stamp = (d) => new Date(d).toISOString().replace(/\.\d+Z$/, "Z");
+const load = (p: string): unknown => JSON.parse(readFileSync(p, "utf8"));
+const sha = (s: string | Buffer) => createHash("sha256").update(s).digest("hex");
+const sorted = (x: unknown): unknown => Array.isArray(x) ? x.map(sorted) : isObj(x) ? Object.fromEntries(Object.keys(x).sort().map((k) => [k, sorted(x[k])])) : x;
+const stamp = (d: string | number) => new Date(d).toISOString().replace(/\.\d+Z$/, "Z");
 const CLI = "node packages/naive/src/interfaces/cli/mentura.ts";
 
 export const CACHE = ".naive/cache/release.json";
 /** Record types that stay live: never frozen, always a hole (C-11, V-3). */
-export const LIVE = { "money-account": "money moves between builds; read the account live", "data-stream": "a stream is append-only activity; read it live" };
+export const LIVE: Record<string, string> = { "money-account": "money moves between builds; read the account live", "data-stream": "a stream is append-only activity; read it live" };
 /** Record types that are inputs or generated views, never shipped (P-31). */
-export const NOT_SHIPPED = { "idea-dump": "raw input: the founder's notes", "raw-source": "raw input", "raw-text": "raw input", "venture-package": "a generated view", provenance: "the log itself", release: "the release itself", "validation-feedback": "study data: a tester's words stay in the venture", "validation-interview": "study data: an interviewee's words stay in the venture" };
+export const NOT_SHIPPED: Record<string, string> = { "idea-dump": "raw input: the founder's notes", "raw-source": "raw input", "raw-text": "raw input", "venture-package": "a generated view", provenance: "the log itself", release: "the release itself", "validation-feedback": "study data: a tester's words stay in the venture", "validation-interview": "study data: an interviewee's words stay in the venture" };
 
 // ---- the cache key (C-17) ----
 
 /** What a release and its cache are keyed by: the framework version, the package definitions and the model. */
-export function key() {
+export function key(): Key {
   const pk = readdirSync(join(repo, "packages/naive/library", "packages")).filter((n) => existsSync(join(repo, "packages/naive/library", "packages", n, "package.json"))).sort()
     .map((n) => readFileSync(join(repo, "packages/naive/library", "packages", n, "package.json"), "utf8"));
   return { framework: readFileSync(join(repo, "packages/naive/src/records/VERSION"), "utf8").trim(), packages: sha(readFileSync(join(repo, "packages/naive/library/packages/catalog.json"), "utf8") + pk.join("\n")).slice(0, 16), model: process.env.MENTURA_MODEL ?? null };
 }
 
 /** The local cache for a key: { entries, hits, misses, fresh, get(k, f), save() }. A different key starts it fresh. */
-export function openCache(dir, k = key()) {
+export function openCache(dir: string, k: Key = key()): Cache {
   const f = ventureFile(dir, CACHE);
   const kh = sha(JSON.stringify(k)).slice(0, 16);
-  let old = null;
-  try { old = existsSync(f) ? load(f) : null; } catch { old = null; }
+  type CacheFile = { key_hash?: string; key?: Key; entries?: Record<string, unknown> };
+  let old: CacheFile | null = null;
+  try { old = existsSync(f) ? load(f) as CacheFile : null; } catch { old = null; }
   const fresh = !old || old.key_hash !== kh;
-  const c = /** @type {{ key: typeof k, key_hash: string, fresh: boolean, previous_key: *, entries: Record<string, *>, hits: number, misses: number,
-    get: (id: string, compute: () => *) => *, save: () => void }} */ ({ key: k, key_hash: kh, fresh, previous_key: fresh && old ? old.key : null, entries: fresh ? {} : old.entries ?? {}, hits: 0, misses: 0 });
+  const c = ({ key: k, key_hash: kh, fresh, previous_key: fresh && old ? old.key ?? null : null, entries: (fresh ? {} : old?.entries ?? {}) as Record<string, unknown>, hits: 0, misses: 0 }) as Cache; // get and save are set just below
   c.get = (id, compute) => { if (id in c.entries) { c.hits++; return c.entries[id]; } c.misses++; const v = compute(); c.entries[id] = v; return v; };
   c.save = () => {
     mkdirSync(dirname(f), { recursive: true });
@@ -90,7 +136,7 @@ export function openCache(dir, k = key()) {
 // ---- the venture's files (C-10) ----
 
 /** Every file of a venture, relative: skips dot folders, nested ventures and _-folders other than _streams. */
-export function ventureFiles(dir, sub = "") {
+export function ventureFiles(dir: string, sub = ""): string[] {
   return readdirSync(ventureFile(dir, sub), { withFileTypes: true }).flatMap((e) => {
     const rel = sub ? `${sub}/${e.name}` : e.name;
     if (e.name.startsWith(".") || e.name === "node_modules") return [];
@@ -100,44 +146,44 @@ export function ventureFiles(dir, sub = "") {
 }
 
 // The record routes, each with a matcher from a venture-relative file to the concrete route.
-function matchers() {
-  return routes().filter((r) => r.kind === "record" && r.collection !== "list").flatMap((r) => r.files.map((g) => ({ r, re: glob(g), g })));
+function matchers(): Matcher[] {
+  // A record route always names its record type and files.
+  return routes().filter((r: RouteEntry): r is RecordRoute => r.kind === "record" && r.collection !== "list").flatMap((r: RecordRoute) => r.files.map((g) => ({ r, re: glob(g) as RegExp, g })));
 }
-function routeOf(file, ms) {
+function routeOf(file: string, ms: Matcher[]) {
   const hit = ms.find((m) => m.re.test(file));
   if (!hit) return null;
   if (hit.r.collection !== "item") return { route: hit.r.route, template: hit.r.route, record: hit.r.record, r: hit.r };
   const re = new RegExp("^" + hit.g.split("*").map((s) => s.replace(/[.+^${}()|[\]\\]/g, "\\$&")).join("([^/]*)") + "$");
   const id = file.match(re)?.[1];
-  return { route: hit.r.route.replace("[id]", id), template: hit.r.route, record: hit.r.record, id, r: hit.r };
+  return { route: hit.r.route.replace("[id]", String(id)), template: hit.r.route, record: hit.r.record, id, r: hit.r };
 }
 
 // ---- confirmation (C-11, P-31) ----
 
-const who = (a) => a?.id ?? (a?.kind === "person" ? `a person (via ${a.via ?? "cli"})` : a?.kind ?? "unknown");
+const who = (a: { id?: string; kind?: string; via?: string } | undefined) => a?.id ?? (a?.kind === "person" ? `a person (via ${a.via ?? "cli"})` : a?.kind ?? "unknown");
 
 /**
  * Whether a person confirmed this file as it is now: { by, at } or null with why. A person's write or
  * accept, a person's baseline, or a confirm of every foundation statement in it, after the last
  * agent write, and the file unchanged since the last entry (its sha256 matches).
  */
-export function confirmation(dir, file, type, log) {
+export function confirmation(dir: string, file: string, type: string, log: ProvenanceEntry[]): Confirmation {
   const es = log.filter((e) => e.entity === file);
   if (!es.length) return { ok: false, why: "no provenance entry: written outside the router", fix: "baseline" };
-  const last = es.at(-1);
+  const last = es[es.length - 1];
   const now = sha(readFileSync(ventureFile(dir, file)));
   if (last.sha256 && last.sha256 !== now) return { ok: false, why: "changed since its last provenance entry", fix: "rewrite" };
-  const statements = FRAME.questions.flatMap((q) => q.statements).filter((s) => s.record === type && s.id);
+  const statements: { record?: string; id: string }[] = FRAME.questions.flatMap((q: { statements: { record?: string; id?: string }[] }) => q.statements).filter((s: { record?: string; id?: string }) => s.record === type && s.id);
   const ok = confirmedIn(dir, file, null) || (statements.length > 0 && statements.every((s) => confirmedIn(dir, file, s.id)));
   if (!ok) return { ok: false, why: "an agent wrote it and no person has confirmed it", fix: statements.length ? "confirm" : "rewrite", statements: statements.map((s) => s.id) };
   const by = [...es].reverse().find((e) => e.agent?.kind === "person" || e.activity === "accept");
   return { ok: true, by: who(by?.agent), at: by?.at ?? last.at };
 }
 
-/** @param {*} c @param {{ route?: string, file?: string, venture?: string }} at */
-function fixFor(c, { route, file, venture }) {
+function fixFor(c: { fix?: string; statements?: string[] }, { route, file, venture }: { route?: string; file?: string; venture?: string }) {
   if (c.fix === "baseline") return `${CLI} baseline --venture ${venture} --as person`;
-  if (c.fix === "confirm") return c.statements.map((s) => `${CLI} confirm ${s} --venture ${venture} --confirm ${s}`).join(" && ");
+  if (c.fix === "confirm") return (c.statements ?? []).map((s) => `${CLI} confirm ${s} --venture ${venture} --confirm ${s}`).join(" && ");
   if (c.fix === "accept") return `${CLI} accept ${route} --venture ${venture}`;
   return `${CLI} ${route} write --venture ${venture} --input ${file} --as person`;
 }
@@ -145,10 +191,10 @@ function fixFor(c, { route, file, venture }) {
 // ---- command routes (H-4) ----
 
 /** Follows a script's relative imports and reports what runtime data its code reads. */
-export function runtimeReads(script, seen = new Set()) {
+export function runtimeReads(script: string, seen = new Set<string>()): string[] {
   const f = resolvePath(repo, script);
-  const reads = new Set();
-  const walk = (p) => {
+  const reads = new Set<string>();
+  const walk = (p: string) => {
     if (seen.has(p) || !existsSync(p)) return;
     seen.add(p);
     const text = readFileSync(p, "utf8");
@@ -164,8 +210,8 @@ export function runtimeReads(script, seen = new Set()) {
 }
 
 /** How each command route enters a release: frozen when it reads no runtime data, else a hole. */
-export function commandPlan() {
-  return routes().filter((r) => r.kind === "command").map((r) => {
+export function commandPlan(): CommandEntry[] {
+  return routes().filter((r: RouteEntry) => r.kind === "command").map((r: RouteEntry) => {
     if (r.internal === "overview") return { route: r.route, in: "hole", why: "composes the live slots and the recent provenance" };
     if (r.internal === "robots") return { route: r.route, in: "release", why: "reads only the team plan" };
     if (!r.actions.includes("run")) return { route: r.route, in: "hole", why: "no run action" };
@@ -178,35 +224,29 @@ export function commandPlan() {
 
 // ---- the survey: what is frozen, what is a hole, what is left out, what blocks ----
 
-function stripPrivate(text, file) {
+function stripPrivate(text: string, file: string): { text: string; withheld: string[] } {
   if (!file.endsWith(".json")) return { text, withheld: [] };
-  const o = JSON.parse(text);
-  const fields = Array.isArray(o.private_fields) ? o.private_fields : [];
+  const o = JSON.parse(text) as Obj;
+  const fields: string[] = Array.isArray(o.private_fields) ? o.private_fields : [];
   if (!fields.length) return { text, withheld: [] };
   for (const f of fields) delete o[f];
   return { text: JSON.stringify(o, null, 2) + "\n", withheld: fields };
 }
 
-/** @typedef {{ file: string, record: string, route: string, route_template: string, id?: string, as_of?: string, confirmed_by?: string, text?: string, withheld_fields?: string[] }} Frozen */
-
-/**
- * Everything a release would hold, read from the venture as it is. Writes nothing.
- * @param {string} dir
- * @param {{ cache?: ReturnType<typeof openCache> }} [opts]
- */
-export async function survey(dir, { cache } = {}) {
-  const v = load(join(dir, "venture.json"));
-  const log = provEntries(dir);
+/** Everything a release would hold, read from the venture as it is. Writes nothing. */
+export async function survey(dir: string, { cache }: { cache?: Cache } = {}): Promise<Survey> {
+  const v = load(join(dir, "venture.json")) as Venture;
+  const log: ProvenanceEntry[] = provEntries(dir);
   const ms = matchers();
   const files = ventureFiles(dir);
-  const frozen = /** @type {Frozen[]} */ ([]), holes = [], leftOut = [], blockers = [], privateCount = { records: 0, folder: 0 };
-  const streams = new Map();
+  const frozen: Frozen[] = [], holes: Hole[] = [], leftOut: LeftOut[] = [], blockers: Blocker[] = [], privateCount = { records: 0, folder: 0 };
+  const streams = new Map<string, string>();
   for (const file of files) {
     if (["venture.json", "provenance.jsonl", "AGENTS.md"].includes(file) || file.endsWith(".gitkeep")) continue;
     const stream = file.match(/^(.*\/_streams\/[^/]+)\//);
     if (stream) { if (!streams.has(stream[1])) streams.set(stream[1], file); continue; }
     if (file.endsWith(".decision.json") && file.split("/").at(-2) === "decisions") {
-      const d = load(ventureFile(dir, file));
+      const d = load(ventureFile(dir, file)) as DecisionRecord;
       const ro = routeOf(file, ms);
       if (d.status === "decided") frozen.push({ file, record: "decision-record", route: ro?.route ?? `decisions/${d.id}`, route_template: ro?.template ?? "decisions/[id]", ...(ro?.id ? { id: ro.id } : {}),
         as_of: d.provenance?.approved_at ?? null, confirmed_by: d.provenance?.approved_by ?? d.decided_by ?? "a person" });
@@ -217,39 +257,40 @@ export async function survey(dir, { cache } = {}) {
     }
     const ro = routeOf(file, ms);
     const type = ro?.record ?? null;
-    if (!type) { leftOut.push({ file, why: "not a record: notes and readmes never ship" }); continue; }
+    if (!ro || !type) { leftOut.push({ file, why: "not a record: notes and readmes never ship" }); continue; }
     if (NOT_SHIPPED[type]) { leftOut.push({ file, why: NOT_SHIPPED[type] }); continue; }
     if (LIVE[type]) { holes.push({ kind: type === "money-account" ? "money" : "stream", name: ro.id ?? file, file, record: type, route: ro.route, route_template: ro.template, why: LIVE[type], live: `${CLI} ${ro.route} read --venture ${v.id}`, to_freeze: "stays live by design: confirm a dated summary record to freeze a number" }); continue; }
     const text = readFileSync(ventureFile(dir, file), "utf8");
-    let parsed = null;
+    let parsed: unknown = null;
     if (file.endsWith(".json")) { try { parsed = JSON.parse(text); } catch { blockers.push({ file, route: ro.route, record: type, why: "not valid JSON", fix: `fix ${file}` }); continue; } }
-    if (parsed?.private === true) { privateCount.records++; continue; }
+    if (isObj(parsed) && parsed.private === true) { privateCount.records++; continue; }
     const c = confirmation(dir, file, type, log);
     if (!c.ok) { blockers.push({ file, route: ro.route, record: type, why: c.why, fix: fixFor(c, { route: ro.route, file, venture: v.id }) }); continue; }
     // C-14: an attribute mastered in another source is a hole at the field; the rest of the record is frozen.
-    let attrs = [];
-    try { attrs = file.endsWith(".json") ? attributeSources(dir, type, ro.r.collection === "item" && (type === "product" || type === "account") ? { [type]: ro.id } : {}) : []; } catch { attrs = []; }
-    if (ro.r.schema && file.endsWith(".json")) {
+    let attrs: ReturnType<typeof attributeSources> = [];
+    try { attrs = file.endsWith(".json") ? attributeSources(dir, type, ro.r.collection === "item" && (type === "product" || type === "account") ? { [type]: ro.id as string /* an item's file always carries its id */ } : {}) : []; } catch { attrs = []; }
+    const schema = ro.r.schema;
+    if (schema && file.endsWith(".json")) {
       // The schema is checked on the whole record, with each attribute as its system of record holds it, as a read sees it.
-      let whole = parsed;
+      let whole = parsed as Obj;
       for (const a of attrs) {
-        try { const got = await (await connect(a.source, dir)).read(file); const val = got ? JSON.parse(got.content)[a.attribute] : undefined; if (val !== undefined) whole = { ...whole, [a.attribute]: val }; } catch {}
+        try { const got = await (await connect(a.source, dir)).read(file); const val = got ? (JSON.parse(got.content) as Obj)[a.attribute] : undefined; if (val !== undefined) whole = { ...whole, [a.attribute]: val }; } catch {}
       }
       const wholeText = JSON.stringify(whole);
-      const bad = (cache ?? { get: (_, f) => f() }).get(`schema:${ro.r.schema}:${sha(wholeText)}`, () => {
+      const bad = (cache ?? { get: (_: string, f: () => unknown) => f() }).get(`schema:${schema}:${sha(wholeText)}`, () => {
         const tmp = mkdtempSync(join(tmpdir(), "naive-release-check-"));
         try {
           writeFileSync(join(tmp, "record.json"), wholeText);
-          const p = validateFile(schemaNameOf(ro.r.schema), join(tmp, "record.json"));
+          const p = validateFile(schemaNameOf(schema), join(tmp, "record.json"));
           return p.status === 0 ? null : (p.stdout + p.stderr).trim().split("\n").slice(-3).join(" ");
         } finally { rmSync(tmp, { recursive: true, force: true }); }
       });
-      if (bad) { blockers.push({ file, route: ro.route, record: type, why: `does not match ${ro.r.schema}: ${bad}`, fix: `${CLI} ${ro.route} check --venture ${v.id}` }); continue; }
+      if (bad) { blockers.push({ file, route: ro.route, record: type, why: `does not match ${schema}: ${bad}`, fix: `${CLI} ${ro.route} check --venture ${v.id}` }); continue; }
     }
     const { text: shipped, withheld } = stripPrivate(text, file);
     let out = shipped;
     if (attrs.length) {
-      const o = JSON.parse(out);
+      const o = JSON.parse(out) as Obj;
       for (const a of attrs) {
         delete o[a.attribute];
         holes.push({ kind: "attribute", name: `${ro.route}.${a.attribute}`, file, record: type, field: a.attribute, route: ro.route, route_template: ro.template, why: `${type}.${a.attribute} is mastered in ${a.source.id}`, live: `${CLI} ${ro.route} read --venture ${v.id}`, to_freeze: "stays live: its system of record is elsewhere" });
@@ -274,22 +315,22 @@ export async function survey(dir, { cache } = {}) {
   }
   return { venture: v, frozen, holes, left_out: leftOut, blockers, private: privateCount };
 }
-function ventureFilesAll(d) { return readdirSync(d, { withFileTypes: true }).flatMap((e) => e.isDirectory() ? ventureFilesAll(join(d, e.name)) : [e.name]); }
+function ventureFilesAll(d: string): string[] { return readdirSync(d, { withFileTypes: true }).flatMap((e) => e.isDirectory() ? ventureFilesAll(join(d, e.name)) : [e.name]); }
 
 // ---- packages (C-13, C-14) ----
 
 /** Each open package: frozen, holes, gaps and blockers, whether it can be released, and its shell share. */
-export function packagePlan(dir, s) {
-  const p = packages(dir);
+export function packagePlan(dir: string, s: Survey): PackageEntry[] {
+  const p: { core: { id: string; title: string; in: string; records: { record: string; role: string }[] }[] } = packages(dir);
   return p.core.filter((x) => x.in === "now").map((pk) => {
-    const types = new Set(pk.records.filter((r) => r.role !== "reads").map((r) => r.record));
-    const mine = (x) => types.has(x.record) || (x.kind === "decision" && types.has(x.decides));
+    const types = new Set<string | null | undefined>(pk.records.filter((r) => r.role !== "reads").map((r) => r.record));
+    const mine = (x: { record: string | null; kind?: string; decides?: string | null }) => types.has(x.record) || (x.kind === "decision" && types.has(x.decides));
     const frozen = s.frozen.filter(mine).map((x) => x.file);
     const holes = s.holes.filter(mine).map((h) => h.name);
     // Only a required record blocks: an unconfirmed optional one is left out of the release.
-    const required = new Set(pk.records.filter((r) => r.role === "required").map((r) => r.record));
+    const required = new Set<string | null>(pk.records.filter((r) => r.role === "required").map((r) => r.record));
     const blockers = s.blockers.filter((b) => required.has(b.record));
-    const present = new Set([...s.frozen, ...s.blockers].map((x) => x.record));
+    const present = new Set<string | null>([...s.frozen, ...s.blockers].map((x) => x.record));
     const gaps = pk.records.filter((r) => r.role === "required" && !present.has(r.record) && !s.holes.some((h) => h.record === r.record)).map((r) => r.record);
     const total = frozen.length + holes.length;
     return { id: pk.id, title: pk.title, releasable: blockers.length === 0, frozen, holes, gaps, blockers: blockers.map((b) => b.file), shell: total ? Math.round((frozen.length / total) * 100) / 100 : null };
@@ -298,7 +339,7 @@ export function packagePlan(dir, s) {
 
 // ---- running the frozen commands against the confirmed records alone (H-4, C-10) ----
 
-async function frozenCommands(dir, v, frozen, plan, cache, log) {
+async function frozenCommands(dir: string, v: Venture, frozen: Frozen[], plan: CommandEntry[], cache: Cache, log: ProvenanceEntry[]): Promise<Record<string, Ran>> {
   const ws = mkdtempSync(join(tmpdir(), "naive-release-"));
   const shadow = join(ws, v.id);
   try {
@@ -309,7 +350,7 @@ async function frozenCommands(dir, v, frozen, plan, cache, log) {
     const kept = log.filter((e) => !(e.activity === "release" && e.entity === MANIFEST));
     writeFileSync(join(shadow, "provenance.jsonl"), log.map((e) => JSON.stringify(e)).join("\n") + (log.length ? "\n" : ""));
     const inputs = sha(JSON.stringify([v, frozen.map((f) => [f.file, sha(f.text ?? "")]), kept.map((e) => e.hash)]));
-    const out = {};
+    const out: Record<string, Ran> = {};
     for (const c of plan.filter((x) => x.in === "release")) {
       const got = await cacheAsync(cache, `command:${c.route}:${inputs}`, async () => {
         const r = await call({ venture: v.id, route: c.route, action: "run", workspace: ws, via: "release" });
@@ -321,8 +362,8 @@ async function frozenCommands(dir, v, frozen, plan, cache, log) {
     return out;
   } finally { rmSync(ws, { recursive: true, force: true }); }
 }
-async function cacheAsync(cache, id, compute) {
-  if (id in cache.entries) { cache.hits++; return cache.entries[id]; }
+async function cacheAsync(cache: Cache, id: string, compute: () => Promise<Ran>): Promise<Ran> {
+  if (id in cache.entries) { cache.hits++; return cache.entries[id] as Ran; } // the cache holds what compute returned
   cache.misses++;
   const v = await compute();
   cache.entries[id] = v;
@@ -331,37 +372,40 @@ async function cacheAsync(cache, id, compute) {
 
 // ---- the manifest ----
 
-function routeTable(s, plan, commands) {
+function routeTable(s: Survey, plan: CommandEntry[], commands: Record<string, Ran>): RouteRow[] {
   const has = new Set(s.frozen.map((f) => f.route_template));
   const holeTemplates = new Set(s.holes.filter((h) => h.kind !== "attribute").map((h) => h.route_template));
-  return routes().map((r) => {
+  return routes().map((r: RouteEntry): RouteRow => {
     if (r.kind === "command") {
       const c = plan.find((x) => x.route === r.route);
+      // commandPlan has an entry for every command route.
+      if (!c) throw new Error(`${r.route} has no entry in the command plan`);
       if (c.in === "hole") return { route: r.route, kind: "command", in: "hole", why: c.why, live: `${CLI} ${r.route} run --venture ${s.venture.id}` };
       const got = commands[r.route];
       return { route: r.route, kind: "command", in: got?.empty ? "empty" : "release", why: got?.empty ?? c.why };
     }
     const base = { route: r.route, kind: "record", record: r.record, ...(r.collection ? { collection: r.collection } : {}) };
-    if (NOT_SHIPPED[r.record]) return { ...base, in: "left out", why: NOT_SHIPPED[r.record] };
-    if (LIVE[r.record]) return { ...base, in: "hole", why: LIVE[r.record], live: `${CLI} ${r.route.replace("/[id]", "")} read --venture ${s.venture.id}` };
+    if (NOT_SHIPPED[String(r.record)]) return { ...base, in: "left out", why: NOT_SHIPPED[String(r.record)] };
+    if (LIVE[String(r.record)]) return { ...base, in: "hole", why: LIVE[String(r.record)], live: `${CLI} ${r.route.replace("/[id]", "")} read --venture ${s.venture.id}` };
     const item = r.collection === "list" ? `${r.route}/[id]` : r.route;
     if (has.has(item) || has.has(r.route) || holeTemplates.has(item)) return { ...base, in: "release" };
     return { ...base, in: "empty", why: "no confirmed record when the release was built" };
   });
 }
 
-const releaseId = (m) => sha(JSON.stringify(sorted({ venture: m.venture, phase: m.phase, key: m.key, records: m.records, holes: m.holes, routes: m.routes, commands: m.commands, packages: m.packages }))).slice(0, 16);
+const releaseId = (m: Manifest) => sha(JSON.stringify(sorted({ venture: m.venture, phase: m.phase, key: m.key, records: m.records, holes: m.holes, routes: m.routes, commands: m.commands, packages: m.packages }))).slice(0, 16);
 
 /** The release card's data (P-25, O-7): name, phase, the headline numbers with their dates, and who confirmed them. */
-export function cardOf(dir, m) {
-  const latest = (rs) => rs.map((r) => r.as_of).filter(Boolean).sort().at(-1) ?? null;
-  const people = (rs) => [...new Set(rs.map((r) => r.confirmed_by).filter(Boolean))];
-  const count = (label, type) => { const rs = m.records.filter((r) => r.record === type); return rs.length ? [{ label, value: rs.length, as_of: latest(rs), confirmed_by: people(rs) }] : []; };
-  const headline = [{ label: "Confirmed records", value: m.records.length, as_of: latest(m.records), confirmed_by: people(m.records) },
+export function cardOf(dir: string, m: Manifest): Card {
+  const latest = (rs: Shipped[]) => rs.map((r) => r.as_of).filter(Boolean).sort().at(-1) ?? null;
+  const people = (rs: Shipped[]) => [...new Set(rs.map((r) => r.confirmed_by).filter(Boolean))];
+  const count = (label: string, type: string): Headline[] => { const rs = m.records.filter((r) => r.record === type); return rs.length ? [{ label, value: rs.length, as_of: latest(rs), confirmed_by: people(rs) }] : []; };
+  const headline: Headline[] = [{ label: "Confirmed records", value: m.records.length, as_of: latest(m.records), confirmed_by: people(m.records) },
     ...count("Products", "product"), ...count("Customers", "customer"), ...count("Evidence", "evidence"), ...count("Decisions made", "decision-record")];
   const pricing = m.records.find((r) => r.record === "validation-pricing");
   if (pricing) {
-    const pt = (JSON.parse(frozenText(dir, pricing.file) ?? "{}").points ?? []).find((x) => typeof x.amount === "number");
+    const points: { amount?: unknown; currency?: string; per?: string; period?: string }[] = (JSON.parse(frozenText(dir, pricing.file) ?? "{}") as { points?: [] }).points ?? [];
+    const pt = points.find((x) => typeof x.amount === "number");
     if (pt) headline.push({ label: "Price", value: pt.amount, unit: [pt.currency, pt.per ?? pt.period].filter(Boolean).join(" per ") || null, as_of: pricing.as_of, confirmed_by: [pricing.confirmed_by] });
   }
   headline.push({ label: "Live holes", value: m.holes.length, as_of: m.now, confirmed_by: [] });
@@ -370,8 +414,8 @@ export function cardOf(dir, m) {
     note: "Assembled by code from the release's records. It is drawn by packages/naive/src/engine/release-card.ts." };
 }
 
-function checks(dir) {
-  const fails = [];
+function checks(dir: string): Check[] {
+  const fails: Check[] = [];
   for (const c of ["packages/naive/src/checks/check-provenance.ts", "packages/naive/src/checks/check-private.ts"]) {
     const p = spawnSync("node", [join(repo, c), dir], { encoding: "utf8" });
     if (p.status !== 0) fails.push({ check: c, output: (p.stderr || p.stdout).trim().split("\n").slice(0, 5).join("\n") });
@@ -379,7 +423,7 @@ function checks(dir) {
   return fails;
 }
 
-function writeRelease(dir, m, frozen) {
+function writeRelease(dir: string, m: Manifest, frozen: Frozen[]) {
   const stage = join(ventureFile(dir, RELEASE_DIR), `.stage-${process.pid}`);
   rmSync(stage, { recursive: true, force: true });
   for (const f of frozen) {
@@ -395,14 +439,17 @@ function writeRelease(dir, m, frozen) {
   writeFileSync(ventureFile(dir, CARD), JSON.stringify(cardOf(dir, m), null, 2) + "\n");
 }
 
-/** @param {Frozen} r */
-const strip = ({ text, ...rest }) => ({ ...rest, sha256: sha(text ?? "") });
+const strip = ({ text, ...rest }: Frozen): Shipped => ({ ...rest, sha256: sha(text ?? "") });
 
 /**
  * naive build: survey the venture, check every open package can be released, and write the release.
  * Returns { ok, manifest } or { ok: false, blockers, failed_checks, packages }.
  */
-export async function build(dir, { now = new Date().toISOString(), actor = "person", dryRun = false } = {}) {
+export async function build(dir: string, { now = new Date().toISOString(), actor = "person", dryRun = false }: { now?: string; actor?: string; dryRun?: boolean } = {}): Promise<
+  | { ok: false; error: string; blockers?: undefined; failed_checks?: undefined; packages?: undefined; manifest?: undefined; dry_run?: undefined }
+  | { ok: false; error?: undefined; blockers: Blocker[]; failed_checks: Check[]; packages: PackageEntry[]; manifest?: undefined; dry_run?: undefined }
+  | { ok: true; manifest: Manifest; dry_run?: boolean; error?: undefined; blockers?: undefined; failed_checks?: undefined; packages?: undefined }
+> {
   dir = resolvePath(dir);
   if (!existsSync(join(dir, "venture.json"))) return { ok: false, error: `${dir} is not a venture (no venture.json)` };
   const cache = openCache(dir);
@@ -412,12 +459,12 @@ export async function build(dir, { now = new Date().toISOString(), actor = "pers
   const blocking = pk.filter((p) => !p.releasable);
   const blockers = s.blockers.filter((b) => blocking.some((p) => p.blockers.includes(b.file)));
   // An unconfirmed record outside every open package is left out, not a blocker.
-  const leftOut = [...s.left_out, ...s.blockers.filter((b) => !blockers.includes(b)).map((b) => ({ file: b.file, why: `${b.why}; not required by an open package, so left out`, fix: b.fix }))];
+  const leftOut: LeftOut[] = [...s.left_out, ...s.blockers.filter((b) => !blockers.includes(b)).map((b) => ({ file: b.file, why: `${b.why}; not required by an open package, so left out`, fix: b.fix }))];
   if (blockers.length || failed.length) { cache.save(); return { ok: false, blockers, failed_checks: failed, packages: pk }; }
   const plan = commandPlan();
   const log = provEntries(dir);
   const commands = await frozenCommands(dir, s.venture, s.frozen, plan, cache, log);
-  const m = {
+  const m: Manifest = {
     release: null, venture: s.venture.id, name: s.venture.name, phase: s.venture.phase,
     built_at: stamp(Date.now()), now: stamp(now), key: cache.key,
     records: s.frozen.map(strip).sort((a, b) => a.file.localeCompare(b.file)),
@@ -425,7 +472,7 @@ export async function build(dir, { now = new Date().toISOString(), actor = "pers
     left_out: leftOut.sort((a, b) => a.file.localeCompare(b.file)), withheld: { private_records: s.private.records, private_folder_files: s.private.folder },
     packages: pk, routes: routeTable(s, plan, commands),
     items: Object.fromEntries([...new Set(s.frozen.filter((f) => f.id).map((f) => f.route_template))].sort().map((t) => [t, s.frozen.filter((f) => f.route_template === t).map((f) => f.id).sort()])),
-    commands: Object.fromEntries(Object.entries(commands).filter(([, v]) => !v.empty).map(([k, v]) => [k, /** @type {{ result: *, built_from?: string }} */ ({ result: v.result })])),
+    commands: Object.fromEntries(Object.entries(commands).filter(([, v]) => !v.empty).map(([k, v]) => [k, { result: v.result }])),
     incremental: [],
     cache: { key_hash: cache.key_hash, fresh: cache.fresh, hits: cache.hits, misses: cache.misses, ...(cache.previous_key ? { previous_key: cache.previous_key } : {}) },
   };
@@ -434,16 +481,19 @@ export async function build(dir, { now = new Date().toISOString(), actor = "pers
   cache.save();
   if (dryRun) return { ok: true, manifest: m, dry_run: true };
   writeRelease(dir, m, s.frozen);
-  prov(dir, /** @type {Parameters<typeof prov>[1]} */ ({ entity: MANIFEST, route: "system/release", activity: "release", agent: agentFromEnv(actor === "agent" ? "agent" : "person", "cli"), note: `release ${m.release}: ${m.records.length} records frozen, ${m.holes.length} live holes` }));
+  prov(dir, ({ entity: MANIFEST, route: "system/release", activity: "release", agent: agentFromEnv(actor === "agent" ? "agent" : "person", "cli"), note: `release ${m.release}: ${m.records.length} records frozen, ${m.holes.length} live holes` }) as Parameters<typeof prov>[1]);
   return { ok: true, manifest: m };
 }
 
 /** C-18: adds one item (a new customer, a new product) to the release, leaving the rest as built. */
-export async function add(dir, route, { now = new Date().toISOString(), actor = "person" } = {}) {
+export async function add(dir: string, route: string, { now = new Date().toISOString(), actor = "person" }: { now?: string; actor?: string } = {}): Promise<
+  { ok: false; error: string; fix?: string; manifest?: undefined; added?: undefined } | { ok: true; manifest: Manifest; added: { route: string; file: string; from: string | null }; error?: undefined; fix?: undefined }
+> {
   dir = resolvePath(dir);
-  const m = readRelease(dir);
+  const m: Manifest | null = readRelease(dir);
   if (!m) return { ok: false, error: `no release in ${dir}: build one first` };
-  const r = routes().find((x) => x.kind === "record" && x.collection === "item" && route.startsWith(x.route.slice(0, -4)) && !route.slice(x.route.length - 4).includes("/"));
+  // A record route always names its record type and files.
+  const r: RecordRoute | undefined = routes().find((x: RouteEntry) => x.kind === "record" && x.collection === "item" && route.startsWith(x.route.slice(0, -4)) && !route.slice(x.route.length - 4).includes("/"));
   if (!r) return { ok: false, error: `${route} is not a collection item route (such as product/<id>)` };
   const id = route.slice(r.route.length - 4);
   if (m.records.some((x) => x.route === route)) return { ok: false, error: `${route} is already in release ${m.release}; a full build updates it` };
@@ -464,16 +514,16 @@ export async function add(dir, route, { now = new Date().toISOString(), actor = 
   m.incremental = [...(m.incremental ?? []), { route, file, from: before, at: stamp(now) }];
   m.release = releaseId(m);
   mkdirSync(dirname(join(ventureFile(dir, RECORDS), file)), { recursive: true });
-  writeFileSync(join(ventureFile(dir, RECORDS), file), hit.text);
+  writeFileSync(join(ventureFile(dir, RECORDS), file), hit.text as string); // survey gives every frozen record file its text
   writeFileSync(ventureFile(dir, MANIFEST), JSON.stringify(m, null, 2) + "\n");
   writeFileSync(ventureFile(dir, CARD), JSON.stringify(cardOf(dir, m), null, 2) + "\n");
-  prov(dir, /** @type {Parameters<typeof prov>[1]} */ ({ entity: MANIFEST, route: "system/release", activity: "release", agent: agentFromEnv(actor === "agent" ? "agent" : "person", "cli"), note: `release ${m.release}: added ${route} to ${before} without rebuilding the rest` }));
+  prov(dir, ({ entity: MANIFEST, route: "system/release", activity: "release", agent: agentFromEnv(actor === "agent" ? "agent" : "person", "cli"), note: `release ${m.release}: added ${route} to ${before} without rebuilding the rest` }) as Parameters<typeof prov>[1]);
   return { ok: true, manifest: m, added: { route, file, from: before } };
 }
 
 // ---- export (Z-3) ----
 
-function mdOf(x, depth = 0) {
+function mdOf(x: unknown, depth = 0): string {
   const pad = "  ".repeat(depth);
   if (x === null || x === undefined || x === "") return "";
   if (typeof x !== "object") return String(x);
@@ -482,17 +532,17 @@ function mdOf(x, depth = 0) {
 }
 
 /** Z-3: the release as plain files in out/: Markdown and JSON, no live holes, every number dated. */
-export function exportRelease(dir, out) {
+export function exportRelease(dir: string, out: string): { ok: false; error: string; out?: undefined; records?: undefined; left_out_live?: undefined } | { ok: true; out: string; records: number; left_out_live: number; error?: undefined } {
   dir = resolvePath(dir); out = resolvePath(out);
-  const m = readRelease(dir);
+  const m: Manifest | null = readRelease(dir);
   if (!m) return { ok: false, error: `no release in ${dir}: build one first` };
   if (existsSync(out) && readdirSync(out).length) return { ok: false, error: `${out} exists and is not empty: an export never writes over files` };
   mkdirSync(out, { recursive: true });
-  const card = JSON.parse(readFileSync(ventureFile(dir, CARD), "utf8"));
+  const card = JSON.parse(readFileSync(ventureFile(dir, CARD), "utf8")) as Card;
   const lines = [`# ${m.name}`, "", `Phase: ${m.phase}. Release ${m.release}, built ${m.built_at} as of ${m.now}.`, "", "## Headline numbers", "", "| Number | Value | As of | Confirmed by |", "| --- | --- | --- | --- |",
     ...card.headline.filter((h) => h.label !== "Live holes").map((h) => `| ${h.label} | ${h.value}${h.unit ? ` ${h.unit}` : ""} | ${h.as_of ?? m.now} | ${h.confirmed_by.join(", ") || "none"} |`), "", "## Records", "", "| Record | As of | Confirmed by |", "| --- | --- | --- |"];
   for (const r of m.records) {
-    const text = frozenText(dir, r.file);
+    const text: string = frozenText(dir, r.file) as string; // every record in the manifest has its frozen copy
     mkdirSync(dirname(join(out, "records", r.file)), { recursive: true });
     writeFileSync(join(out, "records", r.file), text);
     if (r.file.endsWith(".json")) writeFileSync(join(out, "records", r.file.replace(/\.json$/, ".md")), `# ${r.route}\n\nAs of ${r.as_of}, confirmed by ${r.confirmed_by}. Frozen in release ${m.release}.\n\n${mdOf(JSON.parse(text))}\n`);
