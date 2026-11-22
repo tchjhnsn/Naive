@@ -7,6 +7,7 @@ import { randomUUID } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { confidenceCall, evaluate, writerRule } from "../engine/gate.mjs";
 import { trialOf, writeHeld } from "../engine/gate-drafts.mjs";
+import { reachRefusal } from "../engine/agents/reach.mjs";
 import { entries as provEntries } from "../core/provenance.mjs";
 import { checksFor, configFor } from "../engine/naive-config.mjs";
 import { ventureFile } from "../core/venture-paths.mjs";
@@ -24,6 +25,21 @@ import { ventureFile } from "../core/venture-paths.mjs";
 export function ownerOfWrite({ dir, r, route, file, projector, remote = false, actor = "agent", acting = false, role }) {
   const v = writerRule({ route, writer: r.writer, projector, exists: remote || existsSync(ventureFile(dir, file)), actor, acting, role, fn: r.function });
   return v ? { ok: false, error: v.why, gate_rule: v.rule, refused_by: v.source, ...(v.fix ? { fix: v.fix } : {}) } : null;
+}
+
+/**
+ * A function agent's write reach, checked on every write before the schema: an agent acting as <function>-agent
+ * (a function in departments.json) writes only a route its derived write globs match (functionWrites in
+ * packages/naive/src/engine/agents/reach.mjs: decisions/* and the routes of the record types the data model gives
+ * its function). A person's call made while the process says an agent is acting counts as the agent's. A person, the
+ * projector and every other role (leads, researchers, the chief of staff, plain agent) are not checked here.
+ * Returns the refusal as a router answer, or null.
+ * @param {{ r: Record<string, any>, route: string, projector: boolean, actor?: string, acting?: boolean, role?: string }} w
+ */
+export function reachOfWrite({ r, route, projector, actor = "agent", acting = false, role }) {
+  if (projector || (actor === "person" && !acting)) return null;
+  const v = reachRefusal({ role, route, table: r.route });
+  return v ? { ok: false, error: v.why, gate_rule: v.rule, refused_by: v.source, may_write: v.writes } : null;
 }
 
 /**
