@@ -11,23 +11,26 @@ import { readSchema } from "../records/index.ts";
 
 const repo = new URL("../../../..", import.meta.url).pathname;
 let failed = 0;
-const expect = (name, ok, detail) => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${JSON.stringify(detail)}`}`); if (!ok) failed++; };
-const schema = readSchema("internal-terms");
-const item = schema.properties.patterns.items;
+const expect = (name: string, ok: unknown, detail?: unknown) => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${JSON.stringify(detail)}`}`); if (!ok) failed++; };
+/** The part of the internal-terms schema the shape check reads. */
+type ObjectSchema = { required: string[]; properties: Record<string, { pattern?: string; enum?: unknown[]; items?: ObjectSchema }> };
+type Pattern = Record<string, unknown> & { id?: unknown; regex?: unknown };
+const schema = readSchema("internal-terms") as ObjectSchema;
+const item = schema.properties.patterns.items as ObjectSchema;
 
 // The schema's shape, checked without a validator: required keys, known keys, enums, compiling regexes.
-function problems(doc) {
-  const out = [];
+function problems(doc: { patterns?: Pattern[] }) {
+  const out: string[] = [];
   for (const k of schema.required) if (!(k in doc)) out.push(`missing ${k}`);
   for (const k of Object.keys(doc)) if (!schema.properties[k]) out.push(`unknown key ${k}`);
-  const ids = new Set();
+  const ids = new Set<unknown>();
   for (const p of doc.patterns ?? []) {
     for (const k of item.required) if (!(k in p)) out.push(`${p.id}: missing ${k}`);
     for (const k of Object.keys(p)) if (!item.properties[k]) out.push(`${p.id}: unknown key ${k}`);
-    if (!new RegExp(item.properties.id.pattern).test(p.id)) out.push(`${p.id}: bad id`);
+    if (!new RegExp(String(item.properties.id.pattern)).test(String(p.id))) out.push(`${p.id}: bad id`);
     if (ids.has(p.id)) out.push(`${p.id}: duplicate id`); ids.add(p.id);
-    for (const k of ["kind", "severity"]) if (p[k] !== undefined && !item.properties[k].enum.includes(p[k])) out.push(`${p.id}: ${k} ${p[k]}`);
-    try { new RegExp(p.regex, "g"); } catch (e) { out.push(`${p.id}: ${e.message}`); }
+    for (const k of ["kind", "severity"]) if (p[k] !== undefined && !item.properties[k].enum?.includes(p[k])) out.push(`${p.id}: ${k} ${p[k]}`);
+    try { new RegExp(String(p.regex), "g"); } catch (e) { out.push(`${p.id}: ${e instanceof Error ? e.message : String(e)}`); }
   }
   return out;
 }
@@ -50,7 +53,7 @@ try {
   expect("Naive's own patterns do not know a venture's codename", !leaks([join(ws, "page.mdx")]).some((l) => l.pattern === "codename-orchid"));
   const found = leaks([join(ws, "page.mdx")], { venture: v });
   expect("a venture's founder-edited terms apply with --venture", found.some((l) => l.pattern === "codename-orchid" && l.severity === "fail") && found.some((l) => l.pattern === "jargon-precog" && l.severity === "warn"), found);
-  const cli = (file) => spawnSync("node", [join(repo, "packages/naive/src/engine/check-leaks.ts"), file, "--venture", v], { encoding: "utf8" });
+  const cli = (file: string) => spawnSync("node", [join(repo, "packages/naive/src/engine/check-leaks.ts"), file, "--venture", v], { encoding: "utf8" });
   expect("a fail term fails the check", cli(join(ws, "page.mdx")).status === 1);
   writeFileSync(join(ws, "warn.mdx"), "Now with precog.\n");
   const w = cli(join(ws, "warn.mdx"));

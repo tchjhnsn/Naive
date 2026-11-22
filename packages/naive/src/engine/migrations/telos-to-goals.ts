@@ -17,18 +17,23 @@ import { ventureFile } from "../../core/venture-paths.ts";
 import { split, telosFile } from "../../../../../frameworks/telos/adapter.mjs";
 import { toScaleGoal } from "../../../../../frameworks/ambition-tier/adapter.mjs";
 
+/** The part of the upgrade context (packages/naive/src/engine/upgrades.mjs) this migration uses. */
+type Ctx = { write(rel: string, text: string, opts?: { activity?: string; note?: string; derived_from?: string[]; log?: boolean }): void; mv(from: string, to: string): void; escalate(msg: string): void; note(msg: string): void };
+/** One canonical record to write: its file, the record, where it came from and the provenance note. */
+type Out = { file: string; rec: unknown; from: string; note: string };
+
 export const id = "telos-to-goals";
 export const describe = "Splits telos.json into canonical goals and exit criteria per phase, turns venture.json's ambition into a goal of kind scale, and archives the old telos";
 
-const json = (x) => JSON.stringify(x, null, 2) + "\n";
+const json = (x: unknown) => JSON.stringify(x, null, 2) + "\n";
 
-export function apply(dir, ctx) {
-  const v = JSON.parse(readFileSync(join(dir, "venture.json"), "utf8"));
+export function apply(dir: string, ctx: Ctx) {
+  const v: Record<string, unknown> & { id?: string; ambition?: string } = JSON.parse(readFileSync(join(dir, "venture.json"), "utf8"));
   const old = telosFile(dir);
-  const out = [];
+  const out: Out[] = [];
   if (old) {
     const s = split(JSON.parse(readFileSync(ventureFile(dir, old), "utf8")), { venture: v.id });
-    out.push(...s.goals.map((g) => ({ ...g, from: old, note: `goal ${g.rec.id} from ${old}` })), ...s.exit.map((e) => ({ ...e, from: old, note: `${e.rec.phase} exit criteria from ${old}` })));
+    out.push(...s.goals.map((g) => ({ ...g, from: old, note: `goal ${g.rec.id} from ${old}` })), ...s.exit.map((e: { file: string; rec: { phase: unknown } }) => ({ ...e, from: old, note: `${e.rec.phase} exit criteria from ${old}` })));
     if (s.steering) ctx.note(`${old}: steering (${Object.keys(s.steering).join(", ")}) has no canonical home yet; it stays in the archived telos`);
   }
   if (v.ambition) out.push({ file: "foundation/goals/scale.json", rec: toScaleGoal(v.ambition, { venture: v.id }), from: "venture.json", note: `ambition ${v.ambition} from venture.json, now a goal of kind scale` });

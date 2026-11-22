@@ -13,65 +13,56 @@
 //   workflow  each function workflow that reads the box's route (functions/<id>/workflows/*.json reads)
 //   record    each record type whose refs point at the box's record type (data-model.json refs)
 // Exit 1 when the canvas names a record type the data model lacks, or two boxes share an id. Exit 2 on a bad call.
-// A .mjs file because the router runs it as a command route, also when Naive is installed under node_modules.
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { filesOf, statement } from "./foundation.ts";
 import { readDataModel, venturePaths } from "../records/index.ts";
+import type { DataModel, FunctionWorkflow, LeanCanvas, PhaseModule, Venture } from "../records/types/records.d.ts";
 
 const repo = new URL("../../../..", import.meta.url).pathname;
-/** @param {string} f */
-const load = (f) => JSON.parse(readFileSync(f, "utf8"));
+const load = (f: string): unknown => JSON.parse(readFileSync(f, "utf8"));
 
-/**
- * @typedef {{ id: string, label: string, ask: string, record: string, attribute: string }} Box
- * @typedef {{ kind: "gate", phase: string, gate: string, next: string | null } | { kind: "workflow", function: string, workflow: string, title: string } | { kind: "record", record: string, field: string }} Unlock
- * @typedef {{ id: string, step: number, gate: { name: string, evidence?: { id: string, source?: string }[] } }} Phase
- */
+type Box = LeanCanvas["boxes"][number];
+export type Unlock = { kind: "gate"; phase: string; gate: string; next: string | null } | { kind: "workflow"; function: string; workflow: string; title: string } | { kind: "record"; record: string; field: string };
 
 /** The canvas definition. */
-export const CANVAS = /** @type {{ version: string, note?: string, standard?: Record<string, string>, boxes: Box[] }} */ (load(join(repo, "packages/naive/src/functions/strategy/lean-canvas.json")));
+export const CANVAS = load(join(repo, "packages/naive/src/functions/strategy/lean-canvas.json")) as LeanCanvas;
 /** The function that owns the canvas itself: it assembles and orders the boxes and writes none of them. */
 export const CANVAS_OWNER = "strategy";
-const MODEL = readDataModel();
+const MODEL: DataModel = readDataModel();
 
-/** The phase modules in lifecycle order. @returns {Phase[]} */
-function phases() {
+/** The phase modules in lifecycle order. */
+function phases(): PhaseModule[] {
   const d = join(repo, "packages/naive/src/phases");
-  return readdirSync(d).filter((x) => existsSync(join(d, x, "phase.json"))).map((x) => /** @type {Phase} */ (load(join(d, x, "phase.json")))).sort((a, b) => a.step - b.step);
+  return readdirSync(d).filter((x) => existsSync(join(d, x, "phase.json"))).map((x) => load(join(d, x, "phase.json")) as PhaseModule).sort((a, b) => a.step - b.step);
 }
 
-/** The record types a phase's gate asks for, in the gate's order. @param {Phase | undefined} p @returns {string[]} */
-const gateRecords = (p) => [...new Set((p?.gate.evidence ?? []).map((e) => e.source).filter((x) => typeof x === "string"))];
+/** The record types a phase's gate asks for, in the gate's order. */
+const gateRecords = (p: PhaseModule | undefined): string[] => [...new Set((p?.gate.evidence ?? []).map((e) => e.source).filter((x) => typeof x === "string"))];
 
 /**
  * The routes a record type lives at, from its venture paths: `instance/**\/foundation/icp/*.json` is `foundation/icp`.
- * @param {string} type @returns {string[]}
  */
-export function routesOf(type) {
-  const r = MODEL.records.find((/** @type {{ id: string }} */ x) => x.id === type);
+export function routesOf(type: string): string[] {
+  const r = MODEL.records.find((x) => x.id === type);
   if (!r) return [];
-  return [...new Set(venturePaths(r).map((/** @type {string} */ g) => g.replace(/\/\*\.json$/, "").replace(/\.json$/, "").replace(/\*\.[a-z.]+$/, "").replace(/\/$/, "")))].filter(Boolean);
+  return [...new Set(venturePaths(r).map((g: string) => g.replace(/\/\*\.json$/, "").replace(/\.json$/, "").replace(/\*\.[a-z.]+$/, "").replace(/\/$/, "")))].filter(Boolean);
 }
 
-/** Every function workflow with what it reads. @returns {{ function: string, workflow: string, title: string, reads: string[] }[]} */
-function workflows() {
+/** Every function workflow with what it reads. */
+function workflows(): { function: string; workflow: string; title: string; reads: string[] }[] {
   const root = join(repo, "packages/naive/src/functions");
   return readdirSync(root, { withFileTypes: true }).filter((e) => e.isDirectory() && existsSync(join(root, e.name, "workflows"))).flatMap((e) =>
-    readdirSync(join(root, e.name, "workflows")).filter((f) => f.endsWith(".json")).map((f) => load(join(root, e.name, "workflows", f)))
+    readdirSync(join(root, e.name, "workflows")).filter((f) => f.endsWith(".json")).map((f) => load(join(root, e.name, "workflows", f)) as FunctionWorkflow)
       .map((w) => ({ function: e.name, workflow: String(w.id), title: String(w.title ?? w.id), reads: Array.isArray(w.reads) ? w.reads.map(String) : [] })));
 }
 
 /**
  * What filling a box unlocks, from the phase gates, the function workflows and the data model's refs. Pure over its inputs.
- * @param {Box} box
- * @param {{ phases: Phase[], workflows: ReturnType<typeof workflows>, model: { records: { id: string, refs?: { field: string, to: string }[] }[] } }} data
- * @returns {Unlock[]}
  */
-export function unlocksOf(box, data) {
-  /** @type {Unlock[]} */
-  const out = [];
+export function unlocksOf(box: Box, data: { phases: PhaseModule[]; workflows: ReturnType<typeof workflows>; model: { records: { id: string; refs?: { field: string; to: string }[] }[] } }): Unlock[] {
+  const out: Unlock[] = [];
   data.phases.forEach((p, i) => { if (gateRecords(p).includes(box.record)) out.push({ kind: "gate", phase: p.id, gate: p.gate.name, next: data.phases[i + 1]?.id ?? null }); });
   const routes = routesOf(box.record);
   for (const w of data.workflows) if (w.reads.some((r) => routes.includes(r))) out.push({ kind: "workflow", function: w.function, workflow: w.workflow, title: w.title });
@@ -82,14 +73,10 @@ export function unlocksOf(box, data) {
 /**
  * The roadmap order: boxes the current gate asks for in the gate's order, then those the next gate asks for in its
  * order, then the rest in canvas order. Pure.
- * @param {readonly { id: string, record: string }[]} boxes
- * @param {readonly string[]} gateNow
- * @param {readonly string[]} gateNext
- * @returns {{ box: string, why: string }[]}
  */
-export function roadmapOrder(boxes, gateNow, gateNext) {
-  const rankIn = (/** @type {readonly string[]} */ g, /** @type {string} */ r) => { const i = g.indexOf(r); return i < 0 ? Infinity : i; };
-  const tier = (/** @type {{ record: string }} */ b) => gateNow.includes(b.record) ? 0 : gateNext.includes(b.record) ? 1 : 2;
+export function roadmapOrder(boxes: readonly { id: string; record: string }[], gateNow: readonly string[], gateNext: readonly string[]): { box: string; why: string }[] {
+  const rankIn = (g: readonly string[], r: string) => { const i = g.indexOf(r); return i < 0 ? Infinity : i; };
+  const tier = (b: { record: string }) => gateNow.includes(b.record) ? 0 : gateNext.includes(b.record) ? 1 : 2;
   return boxes.map((b, i) => ({ b, i })).sort((x, y) => tier(x.b) - tier(y.b)
     || (tier(x.b) === 0 ? rankIn(gateNow, x.b.record) - rankIn(gateNow, y.b.record) : tier(x.b) === 1 ? rankIn(gateNext, x.b.record) - rankIn(gateNext, y.b.record) : 0)
     || x.i - y.i)
@@ -98,17 +85,16 @@ export function roadmapOrder(boxes, gateNow, gateNext) {
 
 /**
  * The canvas for one venture: the kernel, each box resolved, and the roadmap.
- * @param {string} dir
  */
-export function leanCanvas(dir) {
-  const venture = load(join(dir, "venture.json"));
+export function leanCanvas(dir: string) {
+  const venture = load(join(dir, "venture.json")) as Venture;
   const all = phases();
   const at = all.findIndex((p) => p.id === venture.phase);
   const gateNow = gateRecords(all[at]), gateNext = gateRecords(all[at + 1]);
   const data = { phases: all, workflows: workflows(), model: MODEL };
   const boxes = CANVAS.boxes.map((b) => {
-    const s = /** @type {{ status: string, value?: unknown }} */ (statement(dir, { id: b.id, record: b.record, attribute: b.attribute }));
-    const owner = MODEL.records.find((/** @type {{ id: string }} */ r) => r.id === b.record)?.function ?? "venture";
+    const s = statement(dir, { id: b.id, record: b.record, attribute: b.attribute });
+    const owner = MODEL.records.find((r) => r.id === b.record)?.function ?? "venture";
     return {
       id: b.id, label: b.label, ask: b.ask, owner, record: b.record, attribute: b.attribute,
       refs: filesOf(dir, b.record), routes: routesOf(b.record),
@@ -126,16 +112,16 @@ export function leanCanvas(dir) {
   };
 }
 
-/** One box of the canvas, fetched by id, or null. @param {string} dir @param {string} id */
-export function canvasBox(dir, id) {
+/** One box of the canvas, fetched by id, or null. */
+export function canvasBox(dir: string, id: string) {
   const c = leanCanvas(dir);
   const box = c.boxes.find((b) => b.id === id);
   return box ? { venture: c.venture, phase: c.phase, kernel: c.kernel, place: c.roadmap.findIndex((r) => r.box === id) + 1, ...box } : null;
 }
 
-/** What is wrong with the canvas definition itself. @returns {string[]} */
-export function problems() {
-  const out = CANVAS.boxes.filter((b) => !MODEL.records.some((/** @type {{ id: string }} */ r) => r.id === b.record)).map((b) => `lean canvas: box ${b.id} names record type ${b.record}, which the data model lacks`);
+/** What is wrong with the canvas definition itself. */
+export function problems(): string[] {
+  const out = CANVAS.boxes.filter((b) => !MODEL.records.some((r) => r.id === b.record)).map((b) => `lean canvas: box ${b.id} names record type ${b.record}, which the data model lacks`);
   const ids = CANVAS.boxes.map((b) => b.id);
   for (const id of new Set(ids.filter((x, i) => ids.indexOf(x) !== i))) out.push(`lean canvas: two boxes are named ${id}`);
   return out;
@@ -143,7 +129,7 @@ export function problems() {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const dir = process.argv[2];
-  const flag = (/** @type {string} */ n) => { const i = process.argv.indexOf(n); return i > 0 ? process.argv[i + 1] : undefined; };
+  const flag = (n: string) => { const i = process.argv.indexOf(n); return i > 0 ? process.argv[i + 1] : undefined; };
   if (!dir || !existsSync(join(dir, "venture.json"))) { console.error("usage: node packages/naive/src/engine/lean-canvas.ts <venture dir> [--box <id>] [--json]"); process.exit(2); }
   const errs = problems();
   for (const e of errs) console.error(`FAIL  ${e}`);

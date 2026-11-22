@@ -4,16 +4,21 @@
 // change to the framework (a pull request), not through a venture route.
 import { join } from "node:path";
 import { cli, drop, questions, readJson, repo, schemaOf, slug, validate } from "./generate.ts";
+import type { Reference } from "../../records/types/records.d.ts";
+
+type Source = Reference["references"][number];
+/** The answers: a source's fields and its layer, with the year as a number or its digits. */
+type Answers = Partial<Omit<Source, "year">> & { layer?: Reference["layer"]; year?: number | string };
 
 export const record = "reference";
 export const describe = () => ({ record, ask: [{ field: "layer", required: true, type: "choice", choices: schemaOf(record).properties.layer.enum },
   ...questions(schemaOf(record).properties.references.items, "references[].").filter((q) => q.field !== "references[].id")],
   derived: { id: "first author's surname, year and a title word, unique in the file", checked: "only with a url" } });
 
-export function draft(a, { root = repo } = {}) {
+export function draft(a: Answers, { root = repo }: { root?: string; venture?: string } = {}) {
   if (!a.layer || !a.title || !a.year) return { ok: false, record, errors: ["a reference needs layer, title and year"] };
   const file = join(root, "packages/naive/src/records/layers", a.layer, "references/references.json");
-  const now = readJson(file) ?? { layer: a.layer, references: [] };
+  const now = readJson(file) as Reference | null ?? { layer: a.layer, references: [] };
   const surname = String((a.authors ?? ["anon"])[0]).split(/\s+/).pop();
   const base = a.id ?? slug(`${surname}-${a.year}-${String(a.title).split(/\s+/).find((w) => w.length > 3) ?? ""}`);
   let id = base, n = 2; const taken = new Set(now.references.map((r) => r.id)); while (taken.has(id)) id = `${base}-${n++}`;

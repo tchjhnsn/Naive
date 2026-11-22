@@ -15,27 +15,30 @@ import { dirname, join } from "node:path";
 import { FUNCTIONS, PACKAGE_FUNCTION, SRC, layoutOf, logical, logicalFiles, physical, srcPath } from "../../core/venture-paths.ts";
 import { git } from "../../core/runtime.ts";
 
+/** The part of the upgrade context this migration uses; naive upgrade --layout passes dry for --check. */
+type Ctx = { dry?: boolean; escalate(msg: string): void; note(msg: string): void };
+
 export const id = "src-layout";
 export const describe = "Moves a venture onto the src layout: each package folder into src/<function>/, everything else at the top beside src/ and public/ (EE-118 step 8)";
 
 /** Remove the folders a move emptied, deepest first, never the venture folder itself. */
-function prune(dir, sub) {
+function prune(dir: string, sub: string): void {
   const d = join(dir, sub);
   if (!existsSync(d) || !statSync(d).isDirectory()) return;
   for (const e of readdirSync(d)) prune(dir, join(sub, e));
   if (!readdirSync(d).length) rmdirSync(d);
 }
 
-export function apply(dir, ctx) {
+export function apply(dir: string, ctx: Ctx) {
   if (layoutOf(dir) === "src") return;
   const from = layoutOf(dir);
-  const tracked = (p) => git("moving a tracked file with git mv", ["ls-files", "--error-unmatch", p], { cwd: dir, stdio: "pipe" }).status === 0;
+  const tracked = (p: string) => git("moving a tracked file with git mv", ["ls-files", "--error-unmatch", p], { cwd: dir, stdio: "pipe" }).status === 0;
   // Where each file is now, by its logical path, read before venture.json changes the layout.
   const files = logicalFiles(dir).filter((l) => l !== "venture.json" && !l.startsWith(".naive/") && !l.startsWith(".git/"));
   const before = new Map(files.map((l) => [l, physical(dir, l)]));
   // A nested venture (a folder with its own venture.json, such as portfolio/kilnworks) moves whole, by its logical path.
-  const nested = [];
-  const walk = (sub) => {
+  const nested: string[] = [];
+  const walk = (sub: string) => {
     for (const e of readdirSync(join(dir, sub), { withFileTypes: true })) {
       if (!e.isDirectory() || e.name === ".git" || e.name === "node_modules" || e.name === ".naive") continue;
       const rel = sub ? `${sub}/${e.name}` : e.name;
@@ -43,7 +46,7 @@ export function apply(dir, ctx) {
     }
   };
   walk("");
-  const moves = [];
+  const moves: [string, string][] = [];
   for (const was of nested) {
     const to = srcPath(logical(dir, was));
     if (to !== was) { if (existsSync(join(dir, to))) ctx.escalate(`${to} already exists, so ${was} stayed where it is; move it yourself`); else moves.push([was, to]); }

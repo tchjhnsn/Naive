@@ -16,17 +16,21 @@ import { dirname, join } from "node:path";
 import { CODEBASE, KBASE, TOP as TOP_FILES, layoutOf } from "../../core/venture-paths.ts";
 import { git } from "../../core/runtime.ts";
 
+/** The part of the upgrade context this migration uses; naive upgrade --layout passes dry for --check. */
+type Ctx = { dry?: boolean; escalate(msg: string): void; note(msg: string): void };
+type Person = Record<string, unknown> & { hats?: unknown };
+
 export const id = "structured-layout";
 export const describe = "Moves a flat venture onto the structured layout: the knowledge base into k-base/, provenance, config, sources and releases into meta/, and profile.md to README.md (EE-086)";
 
 const TOP = new Set([...TOP_FILES, ".git", ".naive", "node_modules", KBASE, "meta", CODEBASE, "repo"]);
 
-export function apply(dir, ctx) {
+export function apply(dir: string, ctx: Ctx) {
   if (layoutOf(dir) === "structured") return;
   if (layoutOf(dir) === "src") { ctx.escalate("this venture is on the src layout (EE-118 step 8), which replaces the structured one, so nothing moved"); return; }
-  const tracked = (p) => git("moving a tracked file with git mv", ["ls-files", "--error-unmatch", p], { cwd: dir, stdio: "pipe" }).status === 0;
-  const movedPaths = [], gone = new Set();
-  const move = (from, to) => {
+  const tracked = (p: string) => git("moving a tracked file with git mv", ["ls-files", "--error-unmatch", p], { cwd: dir, stdio: "pipe" }).status === 0;
+  const movedPaths: string[] = [], gone = new Set<string>();
+  const move = (from: string, to: string) => {
     if (!existsSync(join(dir, from))) return;
     if (existsSync(join(dir, to))) { ctx.escalate(`${to} already exists, so ${from} stayed where it is; move it yourself`); return; }
     if (!ctx.dry) {
@@ -59,12 +63,12 @@ export function apply(dir, ctx) {
   if (!ctx.dry) {
     const rosterFile = join(dir, KBASE, "people/people.json");
     if (existsSync(rosterFile)) {
-      const roster = JSON.parse(readFileSync(rosterFile, "utf8"));
-      if ((roster.people ?? []).some((p) => "hats" in p)) { for (const p of roster.people) delete p.hats; writeFileSync(rosterFile, JSON.stringify(roster, null, 2) + "\n"); }
+      const roster: { people?: Person[] } = JSON.parse(readFileSync(rosterFile, "utf8"));
+      if ((roster.people ?? []).some((p) => "hats" in p)) { for (const p of roster.people ?? []) delete p.hats; writeFileSync(rosterFile, JSON.stringify(roster, null, 2) + "\n"); }
     }
     const fdir = join(dir, KBASE, "people/founders");
     if (existsSync(fdir)) for (const f of readdirSync(fdir).filter((n) => n.endsWith(".json"))) {
-      const rec = JSON.parse(readFileSync(join(fdir, f), "utf8"));
+      const rec: Person = JSON.parse(readFileSync(join(fdir, f), "utf8"));
       if ("hats" in rec) { delete rec.hats; writeFileSync(join(fdir, f), JSON.stringify(rec, null, 2) + "\n"); ctx.escalate(`people/founders/${f} stored hats; name each function's owner in venture.json functions instead`); }
     }
   }

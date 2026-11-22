@@ -34,27 +34,30 @@ import { validateFile } from "../records/validate.ts";
 import { runSync } from "../core/effect/run.ts";
 import { loadPhases } from "../phases/phases.mjs";
 import { meter, phaseGate } from "./phase-gate.mjs";
+import type { ExitCriteria, LifecyclePlaybook, Telos } from "../records/types/records.d.ts";
+
+type Criterion = ExitCriteria["criteria"][number];
+type Agent = ReturnType<typeof agentFromEnv>;
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "../../../..");
-const load = (f) => JSON.parse(readFileSync(f, "utf8"));
+const load = (f: string) => JSON.parse(readFileSync(f, "utf8"));
 export const PHASES = runSync(loadPhases()).map(({ id, name, question, gate, binding_constraint }) => ({ id, name, question, gate: gate.name, binding_constraint }));
 export const DEFAULT_PLAYBOOK = "product-first";
 const playbookDir = join(root, "packages/naive/src/functions/products/frameworks/product-anatomy/playbooks");
-export const playbooks = () => existsSync(playbookDir) ? readdirSync(playbookDir).filter((f) => f.endsWith(".json")).map((f) => load(join(playbookDir, f))) : [];
-export const playbookOf = (id) => playbooks().find((p) => p.id === id) ?? null;
+export const playbooks = (): LifecyclePlaybook[] => existsSync(playbookDir) ? readdirSync(playbookDir).filter((f) => f.endsWith(".json")).map((f) => load(join(playbookDir, f))) : [];
+export const playbookOf = (id: string) => playbooks().find((p) => p.id === id) ?? null;
 // Exit criteria are canonical records (foundation/exit-criteria/<phase>.json), read through packages/naive/src/engine/canonical.ts;
 // a venture not yet migrated by telos-to-goals falls back to its telos's phases.
 
 /**
  * Where the venture is in the lifecycle and what stands between it and the next phase.
- * @param {string} dir
- * @param {{ decidedBy?: string | null }} [opts] the person deciding the phase change, for the gate's authority item
+ * @param opts.decidedBy the person deciding the phase change, for the gate's authority item
  */
-export function lifecycle(dir, { decidedBy } = {}) {
-  const v = load(join(dir, "venture.json"));
+export function lifecycle(dir: string, { decidedBy }: { decidedBy?: string | null } = {}) {
+  const v: { id: string; phase: string; lifecycle_playbook?: string } = load(join(dir, "venture.json"));
   const i = PHASES.findIndex((p) => p.id === v.phase);
   const ec = exitCriteria(dir, v.phase);
-  const criteria = ec.criteria.map((c) => ({ id: c.id, statement: c.statement, evidence: c.evidence ?? null, met: c.met ?? null }));
+  const criteria: { id: string; statement: string; evidence: string | null; met: NonNullable<Criterion["met"]> | null }[] = ec.criteria.map((c: Criterion) => ({ id: c.id, statement: c.statement, evidence: c.evidence ?? null, met: c.met ?? null }));
   const unmet = criteria.filter((c) => !c.met).map((c) => c.id);
   const chosen = !!v.lifecycle_playbook;
   const pb = playbookOf(v.lifecycle_playbook ?? DEFAULT_PLAYBOOK);
@@ -69,7 +72,7 @@ export function lifecycle(dir, { decidedBy } = {}) {
   const blocking = [
     ...(!criteria.length ? [`no exit criteria for ${v.phase}: state what must be true to leave it (foundation/exit-criteria/${v.phase}.json)`] : unmet.map((id) => `exit criterion ${id} is not met`)),
     ...(!pb && chosen ? [`no lifecycle playbook ${v.lifecycle_playbook}`] : []),
-    ...missing.map((e) => `the ${pb.id} playbook clears ${v.phase} on ${e.statement}; no met exit criterion supplies it`),
+    ...missing.map((e) => `the ${pb?.id} playbook clears ${v.phase} on ${e.statement}; no met exit criterion supplies it`),
   ];
   const gate = phaseGate(dir, { decidedBy });
   if (gate.enforce) blocking.push(...gate.blocking.map((b) => `gate strength: ${b}`));
@@ -90,21 +93,18 @@ export function lifecycle(dir, { decidedBy } = {}) {
 
 /**
  * A person marks one of the current phase's exit criteria met, with the evidence for it.
- * @param {string} dir
- * @param {string} id
- * @param {{ evidence?: string, by?: { kind?: string, via?: string, id?: string } }} [opts]
  */
-export function meet(dir, id, { evidence, by } = {}) {
-  const v = load(join(dir, "venture.json"));
+export function meet(dir: string, id: string, { evidence, by }: { evidence?: string; by?: Agent } = {}) {
+  const v: { phase: string } = load(join(dir, "venture.json"));
   const ec = exitCriteria(dir, v.phase);
   if (!ec.file) return { ok: false, error: `the venture has no exit criteria for ${v.phase} yet, so none to meet` };
-  const rec = ec.record;
-  const list = ec.source === "telos" ? rec.phases.find((p) => p.phase === v.phase).exit_criteria : rec.criteria;
-  const c = list.find((x) => x.id === id);
+  const rec: unknown = ec.record;
+  const list: Criterion[] | undefined = ec.source === "telos" ? (rec as Telos).phases?.find((p) => p.phase === v.phase)?.exit_criteria : (rec as ExitCriteria).criteria;
+  const c = list?.find((x) => x.id === id);
   if (!c) return { ok: false, error: `${v.phase} has no exit criterion ${id}` };
   const agent = by ?? agentFromEnv("person", "cli");
   if (agent.kind !== "person") return { ok: false, error: "only a person can say an exit criterion is met; an agent can propose it" };
-  c.met = { at: new Date().toISOString(), by: agent.id ?? "person", ...(evidence ? { evidence } : {}) };
+  c.met = { at: new Date().toISOString(), by: String(agent.id ?? "person"), ...(evidence ? { evidence } : {}) };
   // Checked against its schema on a scratch copy first, so a bad record never lands.
   const schema = ec.source === "telos" ? "telos.schema.json" : "exit-criteria.schema.json";
   const scratch = mkdtempSync(join(tmpdir(), "exit-"));
@@ -114,33 +114,30 @@ export function meet(dir, id, { evidence, by } = {}) {
   if (ok.status !== 0) return { ok: false, error: `the record would not match its schema:\n${(ok.stdout + ok.stderr).trim()}` };
   const tf = ventureFile(dir, ec.file);
   writeFileSync(tf, JSON.stringify(rec, null, 2) + "\n");
-  record(dir, /** @type {Parameters<typeof record>[1]} */ ({ entity: ec.file, route: ec.source === "telos" ? "foundation/telos" : `foundation/exit-criteria/${v.phase}`, activity: "confirm", agent, note: `exit criterion ${v.phase}/${id} met${evidence ? `: ${evidence}` : ""}` }));
+  record(dir, { entity: ec.file, route: ec.source === "telos" ? "foundation/telos" : `foundation/exit-criteria/${v.phase}`, activity: "confirm", agent, note: `exit criterion ${v.phase}/${id} met${evidence ? `: ${evidence}` : ""}` });
   return { ok: true, result: lifecycle(dir) };
 }
 
 /**
  * A person moves the venture to another phase, through the gate.
- * @param {string} dir
- * @param {string} to
- * @param {{ reason?: string, override?: string, by?: { kind?: string, via?: string, id?: string }, now?: string }} [opts]
  */
-export function advance(dir, to, { reason, override, by, now } = {}) {
+export function advance(dir: string, to: string, { reason, override, by, now }: { reason?: string; override?: string; by?: Agent; now?: string } = {}) {
   const agent = by ?? agentFromEnv("person", "cli");
   if (agent.kind !== "person") return { ok: false, error: "a phase change is a person's decision; an agent can suggest it, never make it" };
-  const l = lifecycle(dir, { decidedBy: agent.id ?? "person" });
+  const l = lifecycle(dir, { decidedBy: String(agent.id ?? "person") });
   const from = PHASES.findIndex((p) => p.id === l.phase), target = PHASES.findIndex((p) => p.id === to);
   if (target < 0) return { ok: false, error: `${to} is not a phase (${PHASES.map((p) => p.id).join(", ")})` };
   if (target === from) return { ok: false, error: `${l.venture} is already in ${to}` };
   if (target < from && !reason) return { ok: false, error: `going back to ${to} needs --reason` };
   if (target > from + 1 && !override) return { ok: false, error: `${to} skips ${PHASES.slice(from + 1, target).map((p) => p.id).join(", ")}; pass --override "<why>" to skip` };
-  if (target > from && !l.ready && !override) return { ok: false, error: `the ${l.current.gate} gate is not passed: ${l.blocking.join("; ")}. Meet them with naive phase --meet <id>, or pass --override "<why>"`, result: l };
+  if (target > from && !l.ready && !override) return { ok: false, error: `the ${l.current?.gate} gate is not passed: ${l.blocking.join("; ")}. Meet them with naive phase --meet <id>, or pass --override "<why>"`, result: l };
   const why = [reason, override && `gate overridden: ${override}`].filter(Boolean).join("; ");
-  const r = changePhase(dir, to, { reason: why || `${l.current.gate} passed`, by: agent, now });
-  if (r.ok) r.result.gate = { phase: l.phase, gate: l.current.gate, passed: l.ready, overridden: override ?? null, strength: l.phase_gate.strictness ? { preset: l.phase_gate.preset, enforced: l.phase_gate.enforce, ready: l.phase_gate.ready, passed: l.phase_gate.passed, risks: l.phase_gate.risks } : null };
-  return r;
+  const r = changePhase(dir, to, { reason: why || `${l.current?.gate} passed`, by: agent, now });
+  if (!r.ok || !r.result) return r;
+  return { ...r, result: { ...r.result, gate: { phase: l.phase, gate: l.current?.gate, passed: l.ready, overridden: override ?? null, strength: l.phase_gate.strictness ? { preset: l.phase_gate.preset, enforced: l.phase_gate.enforce, ready: l.phase_gate.ready, passed: l.phase_gate.passed, risks: l.phase_gate.risks } : null } } };
 }
 
-const text = (l) => [
+const text = (l: ReturnType<typeof lifecycle>) => [
   `${l.venture}: ${l.current?.name ?? l.phase} (phase ${l.step} of ${l.of})`,
   l.current ? `  ${l.current.question}` : "",
   l.current ? `  Gate: ${l.current.gate}${l.playbook ? ` (${l.playbook.id} playbook${l.playbook.chosen ? "" : ", the default"})` : ""}` : "",
@@ -154,13 +151,13 @@ const text = (l) => [
 if (import.meta.url === `file://${process.argv[1]}`) {
   const [dir, cmd, arg, ...rest] = process.argv.slice(2);
   const all = process.argv.slice(2);
-  const opt = (k) => { const i = all.indexOf(`--${k}`); return i < 0 ? undefined : all[i + 1]; };
+  const opt = (k: string) => { const i = all.indexOf(`--${k}`); return i < 0 ? undefined : all[i + 1]; };
   if (!dir || !existsSync(join(dir, "venture.json"))) { console.error("usage: node packages/naive/src/engine/lifecycle.ts <venture dir> [meet <criterion> | advance <phase>]"); process.exit(2); }
   const by = opt("by") ? agentFromEnv("person", "cli", { id: opt("by") }) : undefined;
-  const out = (r) => { if (!r.ok) { console.error(r.error); process.exit(1); } return r.result; };
+  const out = <R,>(r: { ok: boolean; error?: string; result?: R }): R => { if (!r.ok || r.result === undefined) { console.error(r.error); process.exit(1); } return r.result; };
   if (!cmd || cmd.startsWith("--")) { const l = lifecycle(dir); console.log(all.includes("--json") ? JSON.stringify(l, null, 2) : text(l)); }
   else if (cmd === "meet") console.log(text(out(meet(dir, arg, { evidence: opt("evidence"), by }))));
-  else if (cmd === "advance") { const r = out(advance(dir, arg, { reason: opt("reason"), override: opt("override"), by })); console.log(`${r.venture}: ${r.from} -> ${r.to}. ${r.note}`); }
+  else if (cmd === "advance") { const r = out<{ venture?: string; from?: string; to?: string; note?: string }>(advance(dir, arg, { reason: opt("reason"), override: opt("override"), by })); console.log(`${r.venture}: ${r.from} -> ${r.to}. ${r.note}`); }
   else { console.error(`unknown command ${cmd}`); process.exit(2); }
   void rest;
 }

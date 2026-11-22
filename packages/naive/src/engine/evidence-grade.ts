@@ -9,15 +9,20 @@
 //   record grade: the best supporting item's grade; up one when three or more supporting items from distinct sources
 //     grade low or better; down one when an item at that grade or better contradicts the claim. No evidence: very low.
 
-export const LEVELS = ["very low", "low", "moderate", "high"];
-export const WEIGHT = { "very low": 0.1, low: 0.4, moderate: 0.7, high: 1 };
-export const START = { behavior: 3, commitment: 2, stated: 1, "desk-research": 1, opinion: 0 };
+import type { ValidationEvidence } from "../records/types/records.d.ts";
+
+export const LEVELS: string[] = ["very low", "low", "moderate", "high"];
+export const WEIGHT: Record<string, number> = { "very low": 0.1, low: 0.4, moderate: 0.7, high: 1 };
+export const START: Record<ValidationEvidence["kind"], number> = { behavior: 3, commitment: 2, stated: 1, "desk-research": 1, opinion: 0 };
 export const STALE_MONTHS = 18, MIN_SAMPLE = 5;
 
-export function gradeItem(e, today = new Date(), staleMonths = STALE_MONTHS) {
+/** The fields of an evidence item that grade it. */
+export type GradedFields = Pick<ValidationEvidence, "kind" | "audience" | "collected"> & Partial<Pick<ValidationEvidence, "sample" | "specificity">>;
+
+export function gradeItem(e: GradedFields, today = new Date(), staleMonths = STALE_MONTHS): { level: string; why: string[] } {
   let g = START[e.kind];
-  const why = [];
-  const down = (n, reason) => { g -= n; why.push(reason); };
+  const why: string[] = [];
+  const down = (n: number, reason: string) => { g -= n; why.push(reason); };
   if (e.audience === "wrong") down(2, "wrong audience");
   else if (e.audience !== "target") down(1, `${e.audience} audience`);
   if (["behavior", "commitment", "stated"].includes(e.kind) && (e.sample?.n ?? 0) < MIN_SAMPLE) down(1, `sample under ${MIN_SAMPLE}`);
@@ -27,12 +32,12 @@ export function gradeItem(e, today = new Date(), staleMonths = STALE_MONTHS) {
   return { level: LEVELS[Math.max(0, g)], why };
 }
 
-export function gradeRecord(rec, today = new Date(), staleMonths = STALE_MONTHS) {
+export function gradeRecord(rec: { evidence?: ValidationEvidence[] }, today = new Date(), staleMonths = STALE_MONTHS) {
   const items = (rec.evidence ?? []).map((e) => ({ e, ...gradeItem(e, today, staleMonths) }));
   const sup = items.filter((i) => i.e.supports !== false);
   if (!sup.length) return { level: "very low", weight: WEIGHT["very low"], why: [items.length ? "no supporting evidence" : "claim only: no evidence cited"], items };
   let g = Math.max(...sup.map((i) => LEVELS.indexOf(i.level)));
-  const why = [];
+  const why: string[] = [];
   const sources = new Set(sup.filter((i) => LEVELS.indexOf(i.level) >= 1).map((i) => i.e.source.url ?? i.e.source.path ?? i.e.source.title));
   if (sources.size >= 3 && g < 3) { g++; why.push("consistent across 3 or more sources"); }
   if (items.some((i) => i.e.supports === false && LEVELS.indexOf(i.level) >= g)) { g = Math.max(0, g - 1); why.push("contradicted by evidence as strong"); }

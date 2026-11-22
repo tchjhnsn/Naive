@@ -21,12 +21,21 @@ import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { KBASE, ventureFile } from "../core/venture-paths.ts";
 import { primaryAnatomy } from "./generators/anatomy-cells.ts";
+import type { Venture, VentureLayer, VentureTypes } from "../records/types/records.d.ts";
+
+// scaffold/defaults.json has no schema (record type scaffold): its shape is the one this script reads.
+type Defaults = { layers: Record<string, string[] | undefined>; formalized: string[]; pillars: { guides: string; stubs: Record<string, string> }; readme: Record<string, string> };
+// The venture.json being drafted, before the schema checks it: phase and legal form are the command line's strings until
+// then, a layer is keyed by its name, and a function's owner is null until create-venture or the founder names one.
+type Draft = Pick<Venture, "id" | "name" | "parent"> & Partial<Pick<Venture, "type" | "core" | "owner" | "status" | "profile" | "layout">> & {
+  phase: string; form?: { legal_form?: string; funding?: string }; layers?: Record<string, VentureLayer>; functions?: Record<string, { owner: string | null }>;
+};
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repo = join(here, "../../../..");
-const { layers, formalized, pillars, readme } = JSON.parse(readFileSync(join(here, "scaffold/defaults.json"), "utf8"));
+const { layers, formalized, pillars, readme }: Defaults = JSON.parse(readFileSync(join(here, "scaffold/defaults.json"), "utf8"));
 const args = process.argv.slice(2);
-const flag = (name) => { const i = args.indexOf(`--${name}`); return i < 0 ? null : args.splice(i, 2)[1]; };
+const flag = (name: string): string | null => { const i = args.indexOf(`--${name}`); return i < 0 ? null : args.splice(i, 2)[1]; };
 const phase = flag("phase") ?? "discovery", parent = flag("parent"), legalForm = flag("legal-form"), only = flag("layers"), typeId = flag("type");
 // --layout structured (EE-086): knowledge/, meta/ and an org chart in venture.json. --layout src (EE-118
 // step 8): the template's src/<function>/ and public/, with each package folder under its function.
@@ -34,7 +43,8 @@ const phase = flag("phase") ?? "discovery", parent = flag("parent"), legalForm =
 const layout = flag("layout") ?? "flat";
 if (!["flat", "structured", "src"].includes(layout)) { console.error(`unknown layout ${layout}: flat, structured or src`); process.exit(2); }
 const structured = layout === "structured";
-const vtype = typeId ? JSON.parse(readFileSync(join(here, "venture-types.json"), "utf8")).types.find((t) => t.id === typeId) : null;
+const ventureTypes: VentureTypes = JSON.parse(readFileSync(join(here, "venture-types.json"), "utf8"));
+const vtype = typeId ? ventureTypes.types.find((t) => t.id === typeId) : null;
 if (typeId && !vtype) { console.error(`unknown venture type ${typeId}: see node packages/naive/src/engine/venture-type.mjs list`); process.exit(2); }
 const [dir, id] = args;
 if (!dir || !id) { console.error("usage: node packages/naive/src/engine/init-venture.ts <dir> <id> [--phase discovery] [--parent <id>] [--legal-form llc] [--layout flat|structured|src]"); process.exit(2); }
@@ -42,15 +52,15 @@ if (!layers[phase]) { console.error(`unknown phase ${phase}: one of ${Object.key
 if (existsSync(dir) && readdirSync(dir).length) { console.error(`${dir} already exists and is not empty: init creates new ventures only, and never writes into an existing project`); process.exit(1); }
 
 const ALL = ["purpose", "knowledge", "operations", "evidence", "governance", "interface"];
-const on = only !== null ? only.split(",").filter(Boolean) : [...new Set([...layers[phase], ...(vtype?.layers ?? []), ...(legalForm && legalForm !== "none" ? formalized : [])])];
+const on = only !== null ? only.split(",").filter(Boolean) : [...new Set([...(layers[phase] ?? []), ...(vtype?.layers ?? []), ...(legalForm && legalForm !== "none" ? formalized : [])])];
 const unknown = on.filter((l) => !ALL.includes(l));
 if (unknown.length) { console.error(`unknown layers: ${unknown.join(", ")}; one of ${ALL.join(", ")}`); process.exit(2); }
 mkdirSync(dir, { recursive: true });
-const venture = /** @type {{ id: string, name: string, type?: string, parent: string | null, phase: string, form?: { legal_form?: string, funding?: string }, core?: Record<string, string>,
-  owner?: string, status?: string, profile?: string, layers?: Record<string, { location: string } | false>, layout?: string, functions?: Record<string, { owner: string | null }> }} */ ({ id, name: id, ...(vtype ? { type: vtype.id } : {}), parent: parent ?? null, phase });
+const venture: Draft = { id, name: id, ...(vtype ? { type: vtype.id } : {}), parent: parent ?? null, phase };
 if (legalForm || vtype?.funding) venture.form = { ...(legalForm ? { legal_form: legalForm } : {}), ...(vtype?.funding ? { funding: vtype.funding } : {}) };
 if (phase !== "discovery") venture.core = { promise: "", promised_to: "", must_not: "", competence: "" };
-Object.assign(venture, { owner: "self", status: "active", profile: structured ? "README.md" : "profile.md", layers: {} });
+const ventureLayers: Record<string, VentureLayer> = {};
+Object.assign(venture, { owner: "self", status: "active", profile: structured ? "README.md" : "profile.md", layers: ventureLayers });
 // The package folders (EE-070); a typed venture gets its type's packages.
 const packageDirs = vtype ? vtype.packages : ["foundation", "validation", "product", "marketing", "finance", "people", "customers", "investors", "money"];
 if (structured) {
@@ -58,7 +68,7 @@ if (structured) {
   // one function per package, owned by no one until create-venture or the founder names the owner.
   venture.layout = "structured";
   venture.functions = Object.fromEntries(packageDirs.map((p) => [p, { owner: null }]));
-  for (const layer of ALL) venture.layers[layer] = on.includes(layer) ? { location: `${KBASE}/` } : false;
+  for (const layer of ALL) ventureLayers[layer] = on.includes(layer) ? { location: `${KBASE}/` } : false;
   writeFileSync(join(dir, "venture.json"), JSON.stringify(venture, null, 2) + "\n");
   for (const sub of [KBASE, "meta"]) mkdirSync(join(dir, sub), { recursive: true });
 }
@@ -70,10 +80,10 @@ if (layout === "src") {
   for (const sub of ["src", "public"]) cpSync(join(repo, "packages/naive/template", sub), join(dir, sub), { recursive: true });
 }
 for (const layer of structured ? [] : ALL) {
-  if (!on.includes(layer)) { if (only !== null || !["governance", "interface"].includes(layer)) venture.layers[layer] = false; continue; }
+  if (!on.includes(layer)) { if (only !== null || !["governance", "interface"].includes(layer)) ventureLayers[layer] = false; continue; }
   mkdirSync(ventureFile(dir, layer), { recursive: true });
   writeFileSync(join(dir, layer, "README.md"), `# ${layer}\n\n${readme[layer]}\n`);
-  venture.layers[layer] = { location: `${layer}/` };
+  ventureLayers[layer] = { location: `${layer}/` };
 }
 if (!structured) for (const sub of ["products", "accounts"]) { mkdirSync(ventureFile(dir, sub), { recursive: true }); writeFileSync(join(dir, sub, ".gitkeep"), ""); }
 // The package folder layout (EE-070). Old layer folders above stay for one release.
@@ -160,12 +170,12 @@ if (decisionSet === "product-foundation") for (const d of productFoundation) wri
   JSON.stringify({ ...d, layer: "purpose", boundary: "fail-closed", needed_in: phase, status: "open", provenance: framework }, null, 2) + "\n");
 // The Venture Anatomy Matrix (EE-157): every venture starts with its primary market and industry, every cell unknown,
 // so the matrix is whole from the first day and filling it moves cells to estimated or known. The cells come from the
-// schemas through generators/anatomy-cells.mjs, which the market and industry generators share.
+// schemas through generators/anatomy-cells.ts, which the market and industry generators share.
 const anatomy = primaryAnatomy(id);
 if (anatomy.errors.length) { console.error(anatomy.errors.join("\n")); process.exit(1); }
-for (const [file, rec] of [["industries/primary.json", anatomy.industry], ["markets/primary.json", anatomy.market]]) {
-  mkdirSync(dirname(ventureFile(dir, String(file))), { recursive: true });
-  writeFileSync(ventureFile(dir, String(file)), JSON.stringify(rec, null, 2) + "\n");
+for (const [file, rec] of [["industries/primary.json", anatomy.industry], ["markets/primary.json", anatomy.market]] as const) {
+  mkdirSync(dirname(ventureFile(dir, file)), { recursive: true });
+  writeFileSync(ventureFile(dir, file), JSON.stringify(rec, null, 2) + "\n");
 }
 // The type's functions are imported like any department (EE-047): listed in venture.json, with their folders.
 // In the structured layout the org chart is venture.json's functions; the flat layout imports departments.

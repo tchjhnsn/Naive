@@ -13,13 +13,17 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
+/** The part of the upgrade context (packages/naive/src/engine/upgrades.mjs) this migration uses. */
+type Ctx = { write(rel: string, text: string, opts?: { activity?: string; note?: string; derived_from?: string[]; log?: boolean }): void; mv(from: string, to: string): void; escalate(msg: string): void; note(msg: string): void };
+type Profile = Record<string, unknown> & { id?: string };
+
 export const id = "icp-profiles";
 export const describe = "Splits foundation/icp.json into one record per ideal customer profile at foundation/icp/<id>.json and archives the old file";
 
-export function apply(dir, ctx) {
+export function apply(dir: string, ctx: Ctx) {
   const old = ["foundation/icp.json", "purpose/icp.json"].find((f) => existsSync(join(dir, f)));
   if (!old) return;
-  const rec = JSON.parse(readFileSync(join(dir, old), "utf8"));
+  const rec: Record<string, unknown> & { profiles?: Profile[] } = JSON.parse(readFileSync(join(dir, old), "utf8"));
   const profiles = rec.profiles ?? [];
   const ids = profiles.map((p) => p.id);
   if (!profiles.length) return ctx.escalate(`${old} has no profiles; left as it is`);

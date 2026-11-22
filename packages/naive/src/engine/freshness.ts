@@ -41,87 +41,99 @@ import { connect, LOCAL, sourcesOf } from "../store/connectors/index.ts";
 import { decisions as decisionMatrix, PHASES } from "./decisions.ts";
 import { ventureFile } from "../core/venture-paths.ts";
 import { validateFile } from "../records/validate.ts";
+import type { FreshnessLog, FreshnessProfiles, FreshnessProfilesProfile, ProvenanceEntry, WhereUsed } from "../records/types/records.d.ts";
+
+/** The route table entry fields this module reads (packages/naive/src/records/routes/routes.ts). */
+type RouteEntry = { kind: string; route: string; record?: string; files?: string[]; collection?: string; package?: string | null; layer?: string };
+const routeTable = (): RouteEntry[] => routes();
+const resolveR = (route: string): { r: RouteEntry | null; params: { id?: string; pattern?: string } } => resolveRoute(route);
+type Agent = ReturnType<typeof agentFromEnv>;
+type Target = NonNullable<FreshnessLog["target"]>;
+type RecordFile = { path: string; record: string; route: string; package: string | null; layer: string | undefined };
+type Reason = { kind: string; since: string; note: string; dependency?: string; pivot?: boolean };
+type Item = RecordFile & { checked_at: number; basis: string; changed_at: number; depends_on: string[]; profile: string; reasons: Reason[]; hole: boolean;
+  revalidate_at: string | null; expire_at: string | null; reuse_for: number | null; state: "fresh" | "stale" | "expired"; precise: boolean; fix: string | null };
+type Outcome<R> = { ok: boolean; error?: string; suggest?: string[]; or?: string; blocked?: string[]; result?: R };
+/** A line of the freshness log as an event to append: its schema's fields less who wrote it. */
+type Event = Omit<FreshnessLog, "by">;
+type Profiles = { default: string; profiles: Record<string, FreshnessProfilesProfile>; records: Record<string, string>; overridden: boolean };
 
 const repo = new URL("../../../..", import.meta.url).pathname;
-const load = (f) => JSON.parse(readFileSync(f, "utf8"));
+const load = (f: string) => JSON.parse(readFileSync(f, "utf8"));
 export const LOG = "knowledge/freshness.jsonl";
 export const DEFAULTS = "packages/naive/src/engine/freshness.json";
-const UNITS = { s: 1, m: 60, h: 3600, d: 86400, w: 604800 };
+const UNITS: Record<string, number> = { s: 1, m: 60, h: 3600, d: 86400, w: 604800 };
 // Activities that change a record's content, and those that only say a person looked at it.
 const CONTENT = new Set(["write", "accept", "baseline", "move", "port", "create"]);
 const CHECKED = new Set(["confirm"]);
 const EXACT = new Set(["tag", "changed", "drift", "decision", "depends"]);
 const ORDER = ["tag", "changed", "drift", "decision", "depends", "path", "package", "phase", "age", "expired"];
 // Times keep milliseconds, so a mark and a write in the same second stay in order.
-const iso = (ms) => new Date(ms).toISOString();
-const count = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
-const isUrl = (s) => /^[a-z][a-z0-9+.-]*:\/\//.test(s);
-/** @typedef {{ path: string, record: string, route: string, package: string | null, layer: string }} RecordFile */
-/** @typedef {{ kind: string, since: string, note: string, dependency?: string, pivot?: boolean }} Reason */
-/** @typedef {RecordFile & { checked_at: number, basis: string, changed_at: number, depends_on: string[], profile: string, reasons: Reason[], hole: boolean, revalidate_at: string | null, expire_at: string | null, reuse_for: number | null, state: "fresh" | "stale" | "expired", precise: boolean, fix: string | null }} Item */
-/** @template R @typedef {{ ok: boolean, error?: string, suggest?: string[], or?: string, blocked?: string[], result?: R }} Outcome */
+const iso = (ms: number) => new Date(ms).toISOString();
+const count = (n: number, word: string) => `${n} ${word}${n === 1 ? "" : "s"}`;
+const isUrl = (s: string) => /^[a-z][a-z0-9+.-]*:\/\//.test(s);
 
 /** The time freshness is judged at: an explicit input, else NAIVE_NOW, else the clock (C-9). */
-export function nowOf(now) {
+export function nowOf(now?: string | number | null): number {
   const v = now ?? process.env.NAIVE_NOW;
   if (v === undefined || v === null || v === "") return Date.now();
   // +100d: that long from the clock, so a founder can ask what will be stale in 100 days.
-  if (typeof v === "string" && v.startsWith("+")) return Date.now() + seconds(v.slice(1)) * 1000;
+  if (typeof v === "string" && v.startsWith("+")) return Date.now() + Number(seconds(v.slice(1))) * 1000;
   const t = typeof v === "number" ? v : Date.parse(v);
   if (Number.isNaN(t)) throw new Error(`not a time: ${v}`);
   return t;
 }
 
 /** A duration in seconds: a whole number of seconds, or a number with s, m, h, d or w. null when absent. */
-export function seconds(d) {
+export function seconds(d: unknown): number | null {
   if (d === undefined || d === null) return null;
   if (typeof d === "number" && Number.isInteger(d) && d >= 0) return d;
   const m = String(d).match(/^(\d+)(s|m|h|d|w)$/);
   if (!m) throw new Error(`not a duration: ${JSON.stringify(d)} (seconds, or a number with s, m, h, d or w)`);
   return Number(m[1]) * UNITS[m[2]];
 }
-const human = (s) => s % 604800 === 0 && s ? `${s / 604800}w` : s % 86400 === 0 && s ? `${s / 86400}d` : s % 3600 === 0 && s ? `${s / 3600}h` : `${s}s`;
+const human = (s: number) => s % 604800 === 0 && s ? `${s / 604800}w` : s % 86400 === 0 && s ? `${s / 86400}d` : s % 3600 === 0 && s ? `${s / 3600}h` : `${s}s`;
 
 /**
  * The freshness profiles for a venture: the framework's defaults, with the venture's own profiles
  * and assignments from naive.config.json (freshness) laid over them. Throws on an unknown profile
  * or a bad duration, so a typo never silently means "never stale".
  */
-export function profiles(dir) {
-  const base = load(join(repo, DEFAULTS));
-  const cfg = dir && existsSync(join(ventureFile(dir, "naive.config.json"))) ? load(join(ventureFile(dir, "naive.config.json"))).freshness ?? {} : {};
-  const out = { default: cfg.default ?? base.default, profiles: { ...base.profiles, ...(cfg.profiles ?? {}) }, records: { ...base.records, ...(cfg.records ?? {}) }, overridden: Object.keys(cfg).length > 0 };
-  const where = (k) => (cfg.profiles?.[k] || cfg.records?.[k] || k === "default") && out.overridden ? "naive.config.json freshness" : DEFAULTS;
+export function profiles(dir?: string | null): Profiles {
+  const base: FreshnessProfiles = load(join(repo, DEFAULTS));
+  const cfg: FreshnessProfiles = dir && existsSync(join(ventureFile(dir, "naive.config.json"))) ? load(join(ventureFile(dir, "naive.config.json"))).freshness ?? {} : {};
+  const out: Profiles = { default: String(cfg.default ?? base.default), profiles: { ...base.profiles, ...(cfg.profiles ?? {}) }, records: { ...base.records, ...(cfg.records ?? {}) }, overridden: Object.keys(cfg).length > 0 };
+  const where = (k: string) => (cfg.profiles?.[k] || cfg.records?.[k] || k === "default") && out.overridden ? "naive.config.json freshness" : DEFAULTS;
   for (const [name, p] of Object.entries(out.profiles)) {
     for (const k of Object.keys(p)) if (!["stale", "revalidate", "expire", "per_phase", "live", "note"].includes(k)) throw new Error(`${where(name)}: profile ${name} has an unknown field ${k}`);
-    for (const k of ["stale", "revalidate", "expire"]) try { seconds(p[k]); } catch (e) { throw new Error(`${where(name)}: profile ${name}.${k}: ${e.message}`); }
-    if (p.expire !== undefined && p.revalidate !== undefined && seconds(p.expire) < seconds(p.revalidate)) throw new Error(`${where(name)}: profile ${name} expires before it is due to be revalidated`);
+    for (const k of ["stale", "revalidate", "expire"]) try { seconds(p[k as keyof FreshnessProfilesProfile]); } catch (e) { throw new Error(`${where(name)}: profile ${name}.${k}: ${e instanceof Error ? e.message : String(e)}`); }
+    if (p.expire !== undefined && p.revalidate !== undefined && Number(seconds(p.expire)) < Number(seconds(p.revalidate))) throw new Error(`${where(name)}: profile ${name} expires before it is due to be revalidated`);
   }
-  for (const [k, name] of [["default", out.default], ...Object.entries(out.records)]) if (!out.profiles[name]) throw new Error(`${where(k)}: ${k} names profile ${name}, which is not defined (${Object.keys(out.profiles).join(", ")})`);
+  for (const [k, name] of [["default", out.default], ...Object.entries(out.records)] as [string, string][]) if (!out.profiles[name]) throw new Error(`${where(k)}: ${k} names profile ${name}, which is not defined (${Object.keys(out.profiles).join(", ")})`);
   return out;
 }
 
 /** The profile name for one record: a route prefix assignment beats the record type; the longest prefix wins. */
-export function profileFor(P, record, route) {
-  const types = new Set(routes().filter((r) => r.kind === "record").map((r) => r.record));
+export function profileFor(P: Profiles, record: string, route: string): string {
+  const types = new Set(routeTable().filter((r) => r.kind === "record").map((r) => r.record));
   const prefixes = Object.keys(P.records).filter((k) => !types.has(k) && (route === k || route.startsWith(`${k}/`))).sort((a, b) => b.length - a.length);
   return prefixes.length ? P.records[prefixes[0]] : P.records[record] ?? P.default;
 }
 
 /** Every record file in a venture, with its record type, concrete route, package and route entry. @returns {RecordFile[]} */
-export function recordFiles(dir) {
-  const table = routes().filter((r) => r.kind === "record" && r.collection !== "list");
-  const out = [];
-  for (const f of ventureFiles(dir)) {
+export function recordFiles(dir: string): RecordFile[] {
+  const table = routeTable().filter((r) => r.kind === "record" && r.collection !== "list");
+  const out: RecordFile[] = [];
+  for (const f of ventureFiles(dir) as string[]) {
     for (const r of table) {
-      const g = r.files.find((x) => glob(x).test(f));
+      const g = r.files?.find((x) => glob(x).test(f));
       if (!g) continue;
       let route = r.route;
       if (r.collection === "item") {
         const m = f.match(new RegExp("^" + g.split("*").map((s) => s.replace(/[.+^${}()|[\]\\]/g, "\\$&")).join("([^/]*)") + "$"));
         route = r.route.replace("[id]", m?.[1] ?? f);
       }
-      out.push({ path: f, record: r.record, route, package: r.package ?? null, layer: r.layer });
+      out.push({ path: f, record: String(r.record), route, package: r.package ?? null, layer: r.layer });
       break;
     }
   }
@@ -129,14 +141,14 @@ export function recordFiles(dir) {
 }
 
 /** The freshness log: revalidate, verify and phase events, oldest first. */
-export function events(dir) {
+export function events(dir: string): FreshnessLog[] {
   const f = ventureFile(dir, LOG);
   return existsSync(f) ? readFileSync(f, "utf8").split("\n").filter((l) => l.trim()).map((l) => JSON.parse(l)) : [];
 }
 
 // When the venture last changed phase. A phase changed by hand in venture.json, after the last
 // recorded change, counts from venture.json's file time, with a warning.
-function phaseChange(dir, venture, evs, warnings) {
+function phaseChange(dir: string, venture: { phase: string }, evs: FreshnessLog[], warnings: string[]): { at: number; from?: string; to?: string; basis: string } | null {
   const changes = evs.filter((e) => e.event === "phase");
   const last = changes.at(-1);
   if (last && last.to === venture.phase) return { at: Date.parse(last.at), from: last.from, to: last.to, basis: "freshness log" };
@@ -147,7 +159,7 @@ function phaseChange(dir, venture, evs, warnings) {
   return null;
 }
 
-function covers(target, item, dir) {
+function covers(target: Target, item: { path: string; route: string; package: string | null }): boolean {
   const v = target.value.replace(/\/$/, "");
   if (target.kind === "tag") return item.path === v;
   if (target.kind === "path") return item.path === v || item.path.startsWith(`${v}/`) || item.route === v || item.route.startsWith(`${v}/`);
@@ -157,8 +169,8 @@ function covers(target, item, dir) {
 
 // A dependency named in derived_from: a venture file, a route (to its file), or a draft (to what
 // the draft was derived from). URLs and decision ids are not files and are left out.
-function normalizeDeps(list, byRoute, entries, seen = new Set()) {
-  const out = [];
+function normalizeDeps(list: string[] | undefined, byRoute: Map<string, string>, entries: ProvenanceEntry[], seen = new Set<string>()): string[] {
+  const out: string[] = [];
   for (const d of list ?? []) {
     if (isUrl(d) || /^[A-Z]+-\d+$/.test(d)) continue;
     if (d.startsWith("_drafts/")) {
@@ -167,24 +179,29 @@ function normalizeDeps(list, byRoute, entries, seen = new Set()) {
       out.push(...normalizeDeps(entries.filter((e) => e.entity === d && e.derived_from).at(-1)?.derived_from, byRoute, entries, seen));
       continue;
     }
-    out.push(byRoute.get(d) ?? byRoute.get(resolveRoute(d).r ? (resolveRoute(d).r.collection === "item" ? resolveRoute(d).r.route.replace("[id]", resolveRoute(d).params.id) : resolveRoute(d).r.route) : "") ?? d);
+    const { r, params } = resolveR(d);
+    out.push(byRoute.get(d) ?? byRoute.get(r ? (r.collection === "item" ? r.route.replace("[id]", String(params.id)) : r.route) : "") ?? d);
   }
   return [...new Set(out)];
 }
 
-const at = (obj, pointer) => pointer.split("/").slice(1).map((k) => k.replace(/~1/g, "/").replace(/~0/g, "~")).reduce((o, k) => o == null ? undefined : o[k], obj);
+const at = (obj: unknown, pointer: string): unknown => pointer.split("/").slice(1).map((k) => k.replace(/~1/g, "/").replace(/~0/g, "~"))
+  .reduce<unknown>((o, k) => o == null ? undefined : (o as Record<string, unknown>)[k], obj);
 
 // Where-used facts (EE-042) as dependencies: each live child in the venture folder depends on its
 // parent record; a child that does not show the parent's value has drifted. Children elsewhere
 // are read through their connector when it is a file system, else left to the platform.
-async function whereUsed(dir, byRoute, byPath, unchecked) {
+/** One live where-used child, as whereUsed reads it. */
+type Use = { fact: string; parent: string; child: string; local: boolean; record: boolean; missing: boolean; drift: boolean; deliver: string };
+
+async function whereUsed(dir: string, byRoute: Map<string, string>, byPath: Map<string, Item>, unchecked: string[]): Promise<Use[]> {
   const f = join(ventureFile(dir, "knowledge/where-used.json"));
   if (!existsSync(f)) return [];
   const ids = new Map(sourcesOf(dir).sources.map((s) => [s.id, s]));
-  const out = [];
-  for (const fact of load(f).facts ?? []) {
-    const { r, params } = resolveRoute(fact.parent.route);
-    const route = r ? (r.collection === "item" ? r.route.replace("[id]", params.id) : r.route) : fact.parent.route;
+  const out: Use[] = [];
+  for (const fact of (load(f) as WhereUsed).facts ?? []) {
+    const { r, params } = resolveR(fact.parent.route);
+    const route = r ? (r.collection === "item" ? r.route.replace("[id]", String(params.id)) : r.route) : fact.parent.route;
     const parent = byRoute.get(route);
     if (!parent || !parent.endsWith(".json")) { unchecked.push(`${fact.id}: parent ${fact.parent.route} is not a JSON record in the venture folder`); continue; }
     const value = at(load(ventureFile(dir, parent)), fact.parent.pointer);
@@ -192,12 +209,13 @@ async function whereUsed(dir, byRoute, byPath, unchecked) {
       if (child.status === "frozen") continue;
       const s = ids.get(child.source);
       if (!s || s.connector !== "filesystem") { unchecked.push(`${fact.id} -> ${child.source}://${child.path}: needs the platform to check`); continue; }
-      let content;
+      let content: string | null;
       if (s.id === LOCAL) content = existsSync(ventureFile(dir, child.path)) ? readFileSync(ventureFile(dir, child.path), "utf8") : null;
       else content = (await (await connect(s, dir)).read(child.path))?.content ?? null;
-      const shows = content === null ? false : child.match.kind === "json"
-        ? (() => { try { return JSON.stringify(at(JSON.parse(content), child.match.pointer)) === JSON.stringify(value); } catch { return false; } })()
-        : content.includes(child.match.template.replaceAll("{value}", String(value)));
+      const match = child.match, text = content;
+      const shows = text === null ? false : match.kind === "json"
+        ? (() => { try { return JSON.stringify(at(JSON.parse(text), match.pointer)) === JSON.stringify(value); } catch { return false; } })()
+        : text.includes(match.template.replaceAll("{value}", String(value)));
       out.push({ fact: fact.id, parent, child: s.id === LOCAL ? child.path : `${s.id}://${child.path}`, local: s.id === LOCAL, record: s.id === LOCAL && byPath.has(child.path), missing: content === null, drift: !shows, deliver: child.deliver });
     }
   }
@@ -209,28 +227,28 @@ async function whereUsed(dir, byRoute, byPath, unchecked) {
  * state (fresh, stale or expired), hole (a live record, never frozen), when it was last checked
  * and on what basis, when it is due, and the reasons it is stale, exact dependencies first (V-8).
  * options: now; light (skip the decision matrix, for the router's read flag).
- * @param {string} dir
- * @param {{ now?: string | number, light?: boolean }} [opts]
  */
-export async function freshness(dir, { now, light = false } = {}) {
+export async function freshness(dir: string, { now, light = false }: { now?: string | number; light?: boolean } = {}) {
   const t = nowOf(now);
-  const venture = load(join(dir, "venture.json"));
+  const venture: { id: string; phase: string } = load(join(dir, "venture.json"));
   const P = profiles(dir);
-  const warnings = [], unchecked = [];
-  const items = /** @type {Item[]} */ (recordFiles(dir));
+  const warnings: string[] = [], unchecked: string[] = [];
+  // Each record file gains its freshness fields in the loops below.
+  const items = recordFiles(dir) as Item[];
   const byPath = new Map(items.map((i) => [i.path, i]));
   const byRoute = new Map(items.map((i) => [i.route, i.path]));
-  const log = provEntries(dir).filter((e) => !e.source);
+  const log = (provEntries(dir) as ProvenanceEntry[]).filter((e) => !e.source);
   const evs = events(dir);
   const change = phaseChange(dir, venture, evs, warnings);
-  const lastOf = (path, kinds) => { const e = log.filter((x) => x.entity === path && kinds.has(x.activity)).at(-1); return e ? Date.parse(e.at) : null; };
+  const lastOf = (path: string, kinds: Set<string>) => { const e = log.filter((x) => x.entity === path && kinds.has(x.activity)).at(-1); return e ? Date.parse(e.at) : null; };
   // The last time a file's content changed: its last logged write, else its file time.
-  const changedAt = (path) => lastOf(path, CONTENT) ?? (existsSync(ventureFile(dir, path)) ? statSync(ventureFile(dir, path)).mtimeMs : null);
+  const changedAt = (path: string) => lastOf(path, CONTENT) ?? (existsSync(ventureFile(dir, path)) ? statSync(ventureFile(dir, path)).mtimeMs : null);
 
   for (const i of items) {
     const write = lastOf(i.path, CONTENT), confirmed = lastOf(i.path, CHECKED);
-    const verified = evs.filter((e) => e.event === "verify" && e.target && covers(e.target, i, dir)).map((e) => Date.parse(e.at)).at(-1) ?? null;
-    const known = /** @type {[number, string][]} */ ([[write, "provenance log: written"], [confirmed, "provenance log: confirmed"], [verified, "freshness log: verified"]]).filter(([x]) => x !== null).sort((a, b) => b[0] - a[0]);
+    const verified = evs.filter((e) => e.event === "verify" && e.target && covers(e.target, i)).map((e) => Date.parse(e.at)).at(-1) ?? null;
+    const known = ([[write, "provenance log: written"], [confirmed, "provenance log: confirmed"], [verified, "freshness log: verified"]] as [number | null, string][])
+      .filter((k): k is [number, string] => k[0] !== null).sort((a, b) => b[0] - a[0]);
     i.checked_at = known.length ? known[0][0] : statSync(ventureFile(dir, i.path)).mtimeMs;
     i.basis = known.length ? known[0][1] : "file time (not in the provenance log)";
     i.changed_at = write ?? statSync(ventureFile(dir, i.path)).mtimeMs;
@@ -242,12 +260,13 @@ export async function freshness(dir, { now, light = false } = {}) {
 
   // Where-used: a live child repeats its parent's value and depends on it.
   const uses = await whereUsed(dir, byRoute, byPath, unchecked);
-  const copies = [];
+  const copies: { fact: string; path: string; parent: string; state: string; deliver: string; note?: string }[] = [];
   for (const u of uses) {
     if (u.record) {
-      const c = byPath.get(u.child);
+      // u.record says the child is one of the venture's record files, so it is in byPath.
+      const c = byPath.get(u.child) as Item;
       if (!c.depends_on.includes(u.parent)) c.depends_on.push(u.parent);
-      if (u.drift) c.reasons.push({ kind: "drift", dependency: u.parent, since: iso(changedAt(u.parent)), note: `does not show ${u.parent}'s value for ${u.fact}; deliver by ${u.deliver}` });
+      if (u.drift) c.reasons.push({ kind: "drift", dependency: u.parent, since: iso(Number(changedAt(u.parent))), note: `does not show ${u.parent}'s value for ${u.fact}; deliver by ${u.deliver}` });
     } else copies.push({ fact: u.fact, path: u.child, parent: u.parent, state: u.missing ? "missing" : u.drift ? "stale" : "fresh", deliver: u.deliver,
       ...(u.drift ? { note: u.missing ? `${u.child} does not exist` : `does not show ${u.parent}'s value for ${u.fact}; deliver by ${u.deliver}` } : {}) });
   }
@@ -255,14 +274,14 @@ export async function freshness(dir, { now, light = false } = {}) {
   // Decisions made before their parent last changed are stale (EE-057).
   if (!light) {
     try {
-      const ds = decisionMatrix(dir, t).decisions;
+      const ds: { id: string; file?: string; parent?: string; render?: string; decided_at?: string; provenance?: { approved_at?: string } }[] = decisionMatrix(dir, t).decisions;
       for (const d of ds.filter((x) => x.render === "stale" && x.file)) {
-        const i = byPath.get(d.file);
+        const i = byPath.get(d.file ?? "");
         const up = ds.find((x) => x.id === d.parent);
         const since = up?.provenance?.approved_at ?? up?.decided_at;
         if (i) i.reasons.push({ kind: "decision", dependency: d.parent, since: since ? iso(Date.parse(since)) : iso(t), note: `decision ${d.parent} above it changed after it was made` });
       }
-    } catch (e) { warnings.push(`decision matrix: ${String(e.message ?? e).split("\n")[0]}`); }
+    } catch (e) { warnings.push(`decision matrix: ${String(e instanceof Error ? e.message : e).split("\n")[0]}`); }
   }
 
   for (const i of items) {
@@ -272,8 +291,8 @@ export async function freshness(dir, { now, light = false } = {}) {
     if (p.per_phase && change && change.at > i.checked_at) i.reasons.push({ kind: "phase", since: iso(change.at), note: `the venture moved from ${change.from} to ${change.to} after it was last checked; records with the ${i.profile} profile are tested again each phase` });
     if (rev !== null && age >= rev) i.reasons.push({ kind: "age", since: iso(i.checked_at + rev * 1000), note: `last checked ${human(Math.floor(age / 86400) * 86400) || "0d"} ago; ${i.profile} records are stale after ${human(rev)}` });
     if (exp !== null && age >= exp) i.reasons.push({ kind: "expired", since: iso(i.checked_at + exp * 1000), note: `${i.profile} records expire after ${human(exp)}; check or redo it before relying on it` });
-    for (const e of evs.filter((x) => x.event === "revalidate" && x.target && Date.parse(x.at) > i.checked_at && covers(x.target, i, dir)))
-      i.reasons.push({ kind: e.target.kind, since: e.at, ...(e.pivot ? { pivot: true } : {}), note: `${e.target.kind}:${e.target.value} was revalidated${e.reason ? `: ${e.reason}` : ""}` });
+    for (const e of evs.filter((x) => x.event === "revalidate" && x.target && Date.parse(x.at) > i.checked_at && covers(x.target, i)))
+      i.reasons.push({ kind: String(e.target?.kind), since: e.at, ...(e.pivot ? { pivot: true } : {}), note: `${e.target?.kind}:${e.target?.value} was revalidated${e.reason ? `: ${e.reason}` : ""}` });
     for (const d of i.depends_on) {
       const c = changedAt(d);
       if (c !== null && c > i.checked_at && !i.reasons.some((r) => r.kind === "drift" && r.dependency === d)) i.reasons.push({ kind: "changed", dependency: d, since: iso(c), note: `${d}, which it was derived from, changed after it was last checked` });
@@ -285,7 +304,7 @@ export async function freshness(dir, { now, light = false } = {}) {
 
   // On-demand staleness flows to what depends on it, transitively; age and phase do not, since a
   // record built on aged evidence is not itself wrong until the evidence is redone.
-  const onDemand = (i) => i.reasons.filter((r) => !["age", "expired", "phase"].includes(r.kind));
+  const onDemand = (i: Item) => i.reasons.filter((r) => !["age", "expired", "phase"].includes(r.kind));
   for (let pass = 0, moved = true; moved && pass <= items.length; pass++) {
     moved = false;
     for (const i of items) for (const d of i.depends_on) {
@@ -318,44 +337,44 @@ export async function freshness(dir, { now, light = false } = {}) {
 }
 
 /** For the router's read (V-5): the freshness flag of the files a read returned, when any is stale, expired or a live hole. */
-export async function readFlag(dir, paths, list = false) {
+export async function readFlag(dir: string | undefined, paths: string[] | undefined, list = false) {
   if (!dir || !paths?.length) return {};
   let f;
-  try { f = await freshness(dir, { light: true }); } catch (e) { return { freshness: { error: String(e.message ?? e) } }; }
-  const flag = (i) => ({ state: i.state, hole: i.hole, profile: i.profile, checked_at: i.checked_at, revalidate_at: i.revalidate_at, expire_at: i.expire_at, reasons: i.reasons, ...(i.fix ? { fix: i.fix } : {}) });
+  try { f = await freshness(dir, { light: true }); } catch (e) { return { freshness: { error: String(e instanceof Error ? e.message : e) } }; }
+  const flag = (i: (typeof f.items)[number]) => ({ state: i.state, hole: i.hole, profile: i.profile, checked_at: i.checked_at, revalidate_at: i.revalidate_at, expire_at: i.expire_at, reasons: i.reasons, ...(i.fix ? { fix: i.fix } : {}) });
   const hits = f.items.filter((i) => paths.includes(i.path) && (i.state !== "fresh" || i.hole));
   if (!hits.length) return {};
   return !list && paths.length === 1 ? { freshness: flag(hits[0]) } : { freshness: Object.fromEntries(hits.map((i) => [i.path, flag(i)])) };
 }
 
 // A plain target: a record file or route is a tag; a folder is refused in favour of tags (V-8).
-function parseTarget(dir, target, items) {
+function parseTarget(dir: string, target: string, items: RecordFile[]): Target | { error: string; suggest?: string[]; or?: string } {
   const m = String(target).match(/^(tag|path|package):(.+)$/);
   const kind = m?.[1], value = (m?.[2] ?? String(target)).replace(/^\.\//, "").replace(/\/$/, "");
   if (/^\/|(^|\/)\.\.(\/|$)/.test(value)) return { error: `${value} is outside the venture` };
   const byRoute = new Map(items.map((i) => [i.route, i.path]));
-  const asRecord = () => {
+  const asRecord = (): string | null => {
     if (items.some((i) => i.path === value)) return value;
-    if (byRoute.has(value)) return byRoute.get(value);
-    const { r, params } = resolveRoute(value);
-    if (r && r.kind === "record") { const route = r.collection === "item" ? r.route.replace("[id]", params.id) : r.route; return byRoute.get(route) ?? null; }
+    if (byRoute.has(value)) return byRoute.get(value) ?? null;
+    const { r, params } = resolveR(value);
+    if (r && r.kind === "record") { const route = r.collection === "item" ? r.route.replace("[id]", String(params.id)) : r.route; return byRoute.get(route) ?? null; }
     return null;
   };
   if (kind === "package") {
-    const pkgs = new Set(routes().map((r) => r.package).filter(Boolean));
+    const pkgs = new Set(routeTable().map((r) => r.package).filter(Boolean));
     if (!pkgs.has(value)) return { error: `no package ${value} owns record types (${[...pkgs].sort().join(", ")})` };
-    return { kind, value };
+    return { kind: "package", value };
   }
-  if (kind === "path") return { kind, value };
+  if (kind === "path") return { kind: "path", value };
   const file = asRecord();
   if (file) return { kind: "tag", value: file };
   if (kind === "tag") return { error: `${value} is not a record in this venture (a record route, such as validation/pricing, or its file)` };
   const under = items.filter((i) => covers({ kind: "path", value }, i));
   if (under.length) return { error: `${value} is a folder of ${count(under.length, "record")}. Prefer tags, which are exact: revalidate the record that changed, and what depends on it follows`, suggest: under.map((i) => `tag:${i.route}`), or: `path:${value}` };
-  return { error: `${value} is not a record, folder or package in this venture${resolveRoute(value).r ? " (no record at that route yet)" : ""}` };
+  return { error: `${value} is not a record, folder or package in this venture${resolveR(value).r ? " (no record at that route yet)" : ""}` };
 }
 
-function append(dir, event, by) {
+function append(dir: string, event: Event, by: Agent) {
   const line = { at: event.at, event: event.event, ...(event.target ? { target: event.target } : {}), ...(event.from ? { from: event.from, to: event.to } : {}), ...(event.reason ? { reason: event.reason } : {}), ...(event.pivot ? { pivot: true } : {}), by };
   const scratch = mkdtempSync(join(tmpdir(), "freshness-"));
   writeFileSync(join(scratch, "line.json"), JSON.stringify(line));
@@ -365,27 +384,24 @@ function append(dir, event, by) {
   mkdirSync(dirname(ventureFile(dir, LOG)), { recursive: true });
   appendFileSync(ventureFile(dir, LOG), JSON.stringify(line) + "\n");
   const what = event.target ? `${event.target.kind}:${event.target.value}` : `${event.from} -> ${event.to}`;
-  const entry = prov(dir, /** @type {Parameters<typeof prov>[1]} */ ({ entity: LOG, route: "knowledge/freshness-log", activity: "write", agent: by, note: `${event.event} ${what}${event.reason ? `: ${event.reason}` : ""}` }));
+  const entry = prov(dir, { entity: LOG, route: "knowledge/freshness-log", activity: "write", agent: by, note: `${event.event} ${what}${event.reason ? `: ${event.reason}` : ""}` });
   return { line, provenance: entry.hash };
 }
 
-const byDefault = (by) => by ?? agentFromEnv(process.env.MENTURA_ACTOR === "person" ? "person" : "agent", "router");
+const byDefault = (by: Agent | undefined) => by ?? agentFromEnv(process.env.MENTURA_ACTOR === "person" ? "person" : "agent", "router");
 
 /**
  * Marks records stale on demand (revalidateTag, revalidatePath). target: tag:<route or file> (the
  * record and what depends on it), path:<folder>, package:<name>, pivot (the validation package), or
  * a plain route or file (a tag). A plain folder is refused with the exact tags to use instead.
  * Returns { ok, result: { target, records, dependents, provenance } } or { ok: false, error, suggest }.
- * @param {string} dir
- * @param {string} target
- * @param {{ reason?: string, by?: object, now?: string | number }} [opts]
- * @returns {Promise<Outcome<{ target: string, at: string, pivot?: boolean, records: string[], dependents: string[], provenance: string, note: string }>>}
  */
-export async function revalidate(dir, target, { reason, by, now } = {}) {
+export async function revalidate(dir: string, target: string, { reason, by, now }: { reason?: string; by?: Agent; now?: string | number } = {}):
+  Promise<Outcome<{ target: string; at: string; pivot?: boolean; records: string[]; dependents: string[]; provenance: string; note: string }>> {
   const pivot = target === "pivot";
   const items = recordFiles(dir);
-  const t = pivot ? { kind: "package", value: "validation" } : parseTarget(dir, target, items);
-  if (t.error) return { ok: false, error: t.error, ...(t.suggest ? { suggest: t.suggest, or: t.or } : {}) };
+  const t = pivot ? { kind: "package" as const, value: "validation" } : parseTarget(dir, target, items);
+  if ("error" in t) return { ok: false, error: t.error, ...(t.suggest ? { suggest: t.suggest, or: t.or } : {}) };
   const direct = items.filter((i) => covers(t, i));
   if (!direct.length) return { ok: false, error: `${t.kind}:${t.value} covers no record in this venture, so nothing would be marked` };
   const stamp = iso(Math.max(nowOf(now), ...events(dir).map((e) => Date.parse(e.at) + 1)));
@@ -399,15 +415,12 @@ export async function revalidate(dir, target, { reason, by, now } = {}) {
 
 /**
  * Records that a person or agent checked a record (or a folder of them) is still right, unchanged: its age starts again.
- * @param {string} dir
- * @param {string} target
- * @param {{ reason?: string, by?: object, now?: string | number }} [opts]
  */
-export function verify(dir, target, { reason, by, now } = {}) {
+export function verify(dir: string, target: string, { reason, by, now }: { reason?: string; by?: Agent; now?: string | number } = {}) {
   const items = recordFiles(dir);
   const t = parseTarget(dir, target, items);
-  if (t.error && !t.or) return { ok: false, error: t.error };
-  const tt = t.error ? { kind: "path", value: t.or.slice(5) } : t;
+  if ("error" in t && !t.or) return { ok: false, error: t.error };
+  const tt: Target = "error" in t ? { kind: "path", value: String(t.or).slice(5) } : t;
   const covered = items.filter((i) => covers(tt, i));
   if (!covered.length) return { ok: false, error: `${tt.kind}:${tt.value} covers no record in this venture` };
   const stamp = iso(Math.max(nowOf(now), ...events(dir).map((e) => Date.parse(e.at) + 1)));
@@ -417,11 +430,8 @@ export function verify(dir, target, { reason, by, now } = {}) {
 
 /**
  * Moves the venture to another phase and records when, so per-phase records go stale (V-2).
- * @param {string} dir
- * @param {string} to
- * @param {{ reason?: string, by?: object, now?: string | number }} [opts]
  */
-export function phase(dir, to, { reason, by, now } = {}) {
+export function phase(dir: string, to: string, { reason, by, now }: { reason?: string; by?: Agent; now?: string | number } = {}) {
   if (!PHASES.includes(to)) return { ok: false, error: `${to} is not a phase (${PHASES.join(", ")})` };
   const file = join(dir, "venture.json");
   const v = load(file);
@@ -439,7 +449,7 @@ export function phase(dir, to, { reason, by, now } = {}) {
   const stamp = iso(Math.max(nowOf(now), ...events(dir).map((e) => Date.parse(e.at) + 1)));
   const w = append(dir, { at: stamp, event: "phase", from, to, reason }, agent);
   writeFileSync(file, JSON.stringify(next, null, 2) + "\n");
-  prov(dir, /** @type {Parameters<typeof prov>[1]} */ ({ entity: "venture.json", activity: "write", agent, note: `phase ${from} -> ${to}${reason ? `: ${reason}` : ""}` }));
+  prov(dir, { entity: "venture.json", activity: "write", agent, note: `phase ${from} -> ${to}${reason ? `: ${reason}` : ""}` });
   const P = profiles(dir);
   const due = recordFiles(dir).filter((i) => P.profiles[profileFor(P, i.record, i.route)].per_phase).map((i) => i.path);
   return { ok: true, result: { venture: v.id, from, to, at: stamp, stale: due, provenance: w.provenance, note: `${count(due.length, "record")} with a per-phase profile ${due.length === 1 ? "is" : "are"} stale until checked or redone in ${to}${next.core && !v.core ? "; fill in the core product in venture.json" : ""}` } };
@@ -450,30 +460,27 @@ export function phase(dir, to, { reason, by, now } = {}) {
  * hole and has not expired is copied in; live records stay holes, named in shell.json with the
  * route that reads them. Refuses when a record has expired (it must be checked first) or when out
  * is a routed folder inside the venture.
- * @param {string} dir
- * @param {string} out
- * @param {{ now?: string | number }} [opts]
- * @returns {Promise<Outcome<{ out: string, frozen: number, stale: number, holes: string[], note: string }>>}
  */
-export async function freeze(dir, out, { now } = {}) {
+export async function freeze(dir: string, out: string, { now }: { now?: string | number } = {}): Promise<Outcome<{ out: string; frozen: number; stale: number; holes: string[]; note: string }>> {
   const f = await freshness(dir, { now });
   if (f.shell.blocked.length) return { ok: false, error: `cannot freeze: ${count(f.shell.blocked.length, "record")} ${f.shell.blocked.length === 1 ? "has" : "have"} expired (${f.shell.blocked.join(", ")}); check or redo them first`, blocked: f.shell.blocked };
   const target = resolvePath(out);
   const rel = relative(dir, target);
   if (!rel.startsWith("..") && !isAbsolute(rel) && !rel.split("/")[0].startsWith(".")) return { ok: false, error: `${out} is inside the venture: freeze into a folder outside it, or under a dot folder such as .release/` };
   const byPath = new Map(f.items.map((i) => [i.path, i]));
+  const itemAt = (p: string) => { const i = byPath.get(p); if (!i) throw new Error(`${p} is in the shell but not among the records`); return i; };
   mkdirSync(target, { recursive: true });
   for (const p of f.shell.frozen) { mkdirSync(dirname(join(target, p)), { recursive: true }); copyFileSync(ventureFile(dir, p), join(target, p)); }
   const manifest = {
     venture: f.venture, phase: f.phase, frozen_at: f.now,
-    frozen: f.shell.frozen.map((p) => { const i = byPath.get(p); return { path: p, route: i.route, record: i.record, state: i.state, sha256: createHash("sha256").update(readFileSync(ventureFile(dir, p))).digest("hex"), ...(i.state === "stale" ? { reasons: i.reasons.map((r) => r.note) } : {}) }; }),
-    holes: f.shell.holes.map((p) => { const i = byPath.get(p); return { path: p, route: i.route, record: i.record, profile: i.profile, read: `mentura ${i.route} read --venture ${f.venture}` }; }),
+    frozen: f.shell.frozen.map((p) => { const i = itemAt(p); return { path: p, route: i.route, record: i.record, state: i.state, sha256: createHash("sha256").update(readFileSync(ventureFile(dir, p))).digest("hex"), ...(i.state === "stale" ? { reasons: i.reasons.map((r) => r.note) } : {}) }; }),
+    holes: f.shell.holes.map((p) => { const i = itemAt(p); return { path: p, route: i.route, record: i.record, profile: i.profile, read: `mentura ${i.route} read --venture ${f.venture}` }; }),
   };
   writeFileSync(join(target, "shell.json"), JSON.stringify(manifest, null, 2) + "\n");
   return { ok: true, result: { out: target, frozen: manifest.frozen.length, stale: manifest.frozen.filter((x) => x.state === "stale").length, holes: manifest.holes.map((h) => h.path), note: `froze ${count(manifest.frozen.length, "record")} into ${target}/shell.json${manifest.holes.length ? `; ${count(manifest.holes.length, "live hole")} ${manifest.holes.length === 1 ? "stays" : "stay"} read from their source: ${manifest.holes.map((h) => h.route).join(", ")}` : ""}` } };
 }
 
-function text(f) {
+function text(f: Awaited<ReturnType<typeof freshness>>) {
   const lines = [`${f.venture} (${f.phase}) at ${f.now}: ${f.summary.fresh} fresh, ${f.summary.stale} stale, ${f.summary.expired} expired, ${count(f.summary.holes, "live hole")}, of ${count(f.summary.records, "record")}.`];
   for (const i of f.items.filter((x) => x.state !== "fresh")) lines.push(`  ${i.state.padEnd(7)} ${i.route} (${i.profile})${i.hole ? " [hole]" : ""}: ${i.reasons.map((r) => r.note).join("; ")}`);
   for (const c of f.copies.filter((x) => x.state !== "fresh")) lines.push(`  ${c.state.padEnd(7)} ${c.path} (copy of ${c.parent}): ${c.note}`);
@@ -483,17 +490,18 @@ function text(f) {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const argv = process.argv.slice(2);
-  const opt = (n) => { const i = argv.indexOf(`--${n}`); return i >= 0 ? argv[i + 1] : undefined; };
+  const opt = (n: string) => { const i = argv.indexOf(`--${n}`); return i >= 0 ? argv[i + 1] : undefined; };
   const json = argv.includes("--json");
   const dir = argv[0] && !argv[0].startsWith("--") ? resolvePath(argv[0]) : null;
   if (!dir || !existsSync(join(dir, "venture.json"))) { console.error("usage: node packages/naive/src/engine/freshness.ts <venture dir> [--json] [--now <iso>] | --revalidate <target> [--reason <text>] | --freeze <out dir>"); process.exit(2); }
   try {
     const now = opt("now");
-    let r;
-    if (opt("revalidate") !== undefined) r = await revalidate(dir, opt("revalidate"), { reason: opt("reason"), now });
-    else if (opt("freeze") !== undefined) r = await freeze(dir, opt("freeze"), { now });
+    let r: Outcome<{ note?: string }>;
+    const rv = opt("revalidate"), fz = opt("freeze");
+    if (rv !== undefined) r = await revalidate(dir, rv, { reason: opt("reason"), now });
+    else if (fz !== undefined) r = await freeze(dir, fz, { now });
     else { const f = await freshness(dir, { now }); console.log(json ? JSON.stringify(f, null, 2) : text(f)); process.exit(0); }
     if (!r.ok) { console.error(r.error + (r.suggest ? `\n  ${r.suggest.join("\n  ")}\n  or, for the whole folder: ${r.or}` : "")); process.exit(1); }
-    console.log(json ? JSON.stringify(r.result, null, 2) : r.result.note ?? JSON.stringify(r.result, null, 2));
-  } catch (e) { console.error(String(e.message ?? e)); process.exit(1); }
+    console.log(json ? JSON.stringify(r.result, null, 2) : r.result?.note ?? JSON.stringify(r.result, null, 2));
+  } catch (e) { console.error(String(e instanceof Error ? e.message : e)); process.exit(1); }
 }

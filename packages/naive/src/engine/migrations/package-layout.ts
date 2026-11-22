@@ -11,16 +11,23 @@ import { join } from "node:path";
 import { ventureFile } from "../../core/venture-paths.ts";
 import { layoutOf } from "../../core/venture-paths.ts";
 
+/** The part of the upgrade context (packages/naive/src/engine/upgrades.mjs) this migration uses. */
+type Ctx = {
+  at: string; moved: [string, string][]; escalated: string[];
+  write(rel: string, text: string, opts?: { activity?: string; note?: string; derived_from?: string[]; log?: boolean }): void;
+  mv(from: string, to: string): void; escalate(msg: string): void; removeEmpty(rel: string): void; keep(sub: string): void;
+};
+
 export const id = "package-layout";
 export const describe = "Moves records from the layer folders (purpose/, pillars/, products/, knowledge/) into package folders (foundation/, validation/, product/, marketing/, people/, decisions/)";
 
-export function apply(dir, ctx) {
+export function apply(dir: string, ctx: Ctx) {
   // A venture in the structured layout (EE-086) is already past this layout: nothing to move.
   if (layoutOf(dir) !== "flat") return;
-  const load = (p) => JSON.parse(readFileSync(p, "utf8"));
+  const load = (p: string): Record<string, unknown> & { decides?: { path?: string } } => JSON.parse(readFileSync(p, "utf8"));
   // A decision file infers its target from the folder it sits in. Stamp that path before the file
   // moves, so the decision still points at the same record.
-  const stampDecisions = (folder) => {
+  const stampDecisions = (folder: string) => {
     const d = ventureFile(dir, folder);
     if (!existsSync(d)) return;
     for (const f of readdirSync(d).filter((x) => x.endsWith(".decision.json"))) {
@@ -49,7 +56,7 @@ export function apply(dir, ctx) {
   ];
   for (const [a, b] of pairs) ctx.mv(a, b);
 
-  const list = (rel, ext) => existsSync(ventureFile(dir, rel)) ? readdirSync(ventureFile(dir, rel)).filter((f) => f.endsWith(ext)) : [];
+  const list = (rel: string, ext: string) => existsSync(ventureFile(dir, rel)) ? readdirSync(ventureFile(dir, rel)).filter((f) => f.endsWith(ext)) : [];
   for (const f of list("products", ".json")) ctx.mv(`products/${f}`, `product/${f}`);
   for (const f of list("purpose/anatomy", ".json")) ctx.mv(`purpose/anatomy/${f}`, `product/anatomy/${f}`);
 

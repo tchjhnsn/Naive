@@ -21,47 +21,58 @@ import { readDataModel, venturePaths } from "../records/index.ts";
 import { runSync } from "../core/effect/run.ts";
 import { loadPhases } from "../phases/phases.mjs";
 
-const root = new URL("../../../..", import.meta.url).pathname;
-const load = (p) => JSON.parse(readFileSync(p, "utf8"));
-const PHASES = runSync(loadPhases()).map((p) => p.id);
+import type { DataModel } from "../records/types/records.d.ts";
 
-const files = (d, base = d) => existsSync(d) ? readdirSync(d, { withFileTypes: true }).flatMap((e) =>
+/** A condition that raises or lowers a prior: a fact test (key, key:value or key>=n), optionally in one phase. */
+export type Condition = { if: string; phase?: string; at_least?: number; at_most?: number };
+/** Need-now priors for one record type, department or package: the probability per phase, and the conditions. */
+export type Prior = { base: Record<string, number | undefined>; when?: Condition[]; why?: string };
+/** Facts about a venture, by name, as the conditions test them. */
+export type Facts = Record<string, unknown>;
+
+const root = new URL("../../../..", import.meta.url).pathname;
+const load = (p: string) => JSON.parse(readFileSync(p, "utf8"));
+const PHASES: string[] = runSync(loadPhases()).map((p: { id: string }) => p.id);
+
+const files = (d: string, base = d): string[] => existsSync(d) ? readdirSync(d, { withFileTypes: true }).flatMap((e) =>
   e.isDirectory() ? files(join(d, e.name), base) : [join(d, e.name).slice(base.length + 1)]) : [];
-const glob = (g) => new RegExp("^" + g.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*\*\//g, "\0").replace(/\*/g, "[^/]*").replace(/\0/g, "(?:[^/]+/)*") + "$");
+const glob = (g: string) => new RegExp("^" + g.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*\*\//g, "\0").replace(/\*/g, "[^/]*").replace(/\0/g, "(?:[^/]+/)*") + "$");
 
 /** Facts about a venture that the need-now conditions test. */
-export function factsOf(dir) {
+export function factsOf(dir: string) {
   const v = load(join(dir, "venture.json"));
-  const json = (p) => existsSync(ventureFile(dir, p)) ? load(ventureFile(dir, p)) : null;
-  const products = existsSync(join(ventureFile(dir, "products"))) ? readdirSync(join(ventureFile(dir, "products"))).filter((f) => f.endsWith(".json")).map((f) => load(join(ventureFile(dir, "products"), f))) : [];
-  const members = (v.members ?? []).map((m) => typeof m === "string" ? { kind: "person", role: m } : m);
+  const json = (p: string) => existsSync(ventureFile(dir, p)) ? load(ventureFile(dir, p)) : null;
+  const products: { offering?: string; software?: boolean }[] = existsSync(join(ventureFile(dir, "products"))) ? readdirSync(join(ventureFile(dir, "products"))).filter((f) => f.endsWith(".json")).map((f) => load(join(ventureFile(dir, "products"), f))) : [];
+  const members: { kind?: string; role?: string }[] = (v.members ?? []).map((m: string | { kind?: string; role?: string }) => typeof m === "string" ? { kind: "person", role: m } : m);
   const own = json("governance/ownership.json");
   const hDir = join(ventureFile(dir, "operations/handoffs"));
-  const handoffs = existsSync(hDir) ? readdirSync(hDir).filter((f) => f.endsWith(".json")).map((f) => load(join(hDir, f))) : [];
+  const handoffs: { decision_classes?: string[]; escalations?: { class?: string }[] }[] = existsSync(hDir) ? readdirSync(hDir).filter((f) => f.endsWith(".json")).map((f) => load(join(hDir, f))) : [];
   // The founding team, as the founder answered Naive's team question (EE-060): solo, cofounders or looking.
   const teamFile = join(ventureFile(dir, "decisions/venture.team.decision.json"));
-  const td = existsSync(teamFile) ? load(teamFile) : null;
+  const td: { status?: string; answer?: string } | null = existsSync(teamFile) ? load(teamFile) : null;
   const team = td?.status === "decided" ? ["solo", "cofounders", "looking"].find((t) => (td.answer ?? "").toLowerCase().startsWith(t)) ?? null : null;
   return {
     team, type: v.type ?? null, phase: v.phase, ambition: scale(dir, v), funding: v.form?.funding, legal_form: v.form?.legal_form,
     offering: products.map((p) => p.offering), software: products.some((p) => p.software),
     path: json("purpose/validation/go-to-market.json")?.path,
     people: members.filter((m) => m.kind !== "agent").length + (v.owner === "self" && !members.some((m) => m.kind !== "agent") ? 1 : 0),
-    founders: own ? own.holders.filter((h) => h.kind === "founder").length : members.filter((m) => m.role === "founder").length,
+    founders: own ? own.holders.filter((h: { kind?: string }) => h.kind === "founder").length : members.filter((m) => m.role === "founder").length,
     agents: members.filter((m) => m.kind === "agent").length, products: products.length,
     publishes: handoffs.some((h) => (h.decision_classes ?? []).includes("public-commitment") || (h.escalations ?? []).some((e) => e.class === "public-commitment")),
   };
 }
 
-export function holds(cond, f) {
+export function holds(cond: string, f: Facts): boolean {
   const m = cond.match(/^([a-z_]+)(>=|:)?(.*)$/);
+  if (!m) throw new Error(`not a need-now condition: ${cond}`);
   const [, key, op, val] = m;
-  if (!op) return !!f[key];
-  if (op === ">=") return (f[key] ?? 0) >= Number(val);
-  return Array.isArray(f[key]) ? f[key].includes(val) : f[key] === val;
+  const fact = f[key];
+  if (!op) return !!fact;
+  if (op === ">=") return Number(fact ?? 0) >= Number(val);
+  return Array.isArray(fact) ? fact.includes(val) : fact === val;
 }
 
-export function probability(spec, phase, f) {
+export function probability(spec: Prior, phase: string, f: Facts): number {
   let p = spec.base[phase] ?? 0;
   for (const w of spec.when ?? []) {
     if (w.phase && w.phase !== phase) continue;
@@ -72,9 +83,9 @@ export function probability(spec, phase, f) {
   return p;
 }
 
-export function needNow(dir) {
-  const N = load(join(root, "packages/naive/src/engine/need-now.json"));
-  const model = readDataModel();
+export function needNow(dir: string) {
+  const N: { suggest: number; records: Record<string, Prior> } = load(join(root, "packages/naive/src/engine/need-now.json"));
+  const model: DataModel = readDataModel();
   const f = factsOf(dir);
   const v = load(join(dir, "venture.json"));
   const here = files(dir);
@@ -90,7 +101,7 @@ export function needNow(dir) {
     return { type, layer: rec?.layer, now, next: soon, status, why: spec.why };
   });
   // Departments are imported one by one (EE-047, EE-048), each with its own priors in the catalog.
-  const departments = catalog().map((d) => {
+  const departments = catalog().map((d: Prior & { id: string }) => {
     const now = probability(d, phase, f), soon = next ? probability(d, next, f) : now;
     const status = (v.departments ?? []).includes(d.id) ? "held" : now >= N.suggest ? "suggest now" : soon >= N.suggest ? "coming soon" : "hold back";
     return { type: `department:${d.id}`, layer: "operations", now, next: soon, status, why: d.why };

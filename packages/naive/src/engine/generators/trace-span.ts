@@ -6,13 +6,13 @@
 import { randomUUID } from "node:crypto";
 import { cli, drop, questions, schemaOf, validate } from "./generate.ts";
 import { spanHash } from "../../core/instrumentation.ts";
+import type { TraceSpan } from "../../records/types/records.d.ts";
 
 export const record = "trace-span";
 export const describe = () => ({ record, ask: questions(schemaOf(record)).filter((q) => !["span_id", "prev", "hash"].includes(q.field)),
   derived: { span_id: "a new id unless given", trace_id: "MENTURA_TRACE_ID or a new id", start: "now unless given", end: "start unless given", status: "ok unless given", prev: "genesis", hash: "sha256 of prev and the span" } });
 
-/** @param {any} a */
-export function draft(a) {
+export function draft(a: Partial<TraceSpan>) {
   if (!a.name || !a.kind) return { ok: false, record, errors: ["a span needs a name and a kind"] };
   const start = a.start ?? new Date().toISOString();
   const line = drop({ trace_id: a.trace_id ?? process.env.MENTURA_TRACE_ID ?? randomUUID(), span_id: a.span_id ?? randomUUID(), parent_span_id: a.parent_span_id,

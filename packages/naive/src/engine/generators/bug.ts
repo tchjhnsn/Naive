@@ -4,15 +4,18 @@
 import { existsSync, readdirSync } from "node:fs";
 import { cli, drop, questions, schemaOf, slug, validate } from "./generate.ts";
 import { ventureFile } from "../../core/venture-paths.ts";
+import type { Bug } from "../../records/types/records.d.ts";
+
+/** The answers: a bug's fields, with repro as one step or a list. */
+type Answers = Partial<Omit<Bug, "repro">> & { repro?: string | string[] };
 
 export const record = "bug";
 export const describe = () => ({ record, ask: questions(schemaOf(record)).filter((q) => !["id", "venture", "status", "fixed_in"].includes(q.field)),
   derived: { id: "from the title, unique among product/bugs", status: "open", fixed_in: "null until a release fixes it" } });
 
-/** @param {any} a @param {{ venture?: string }} [o] */
-export function draft(a, { venture } = {}) {
+export function draft(a: Answers, { venture }: { venture?: string } = {}) {
   if (!a.title) return { ok: false, record, errors: ["a bug needs a title"] };
-  const taken = venture && existsSync(ventureFile(venture, "product/bugs")) ? new Set(readdirSync(ventureFile(venture, "product/bugs")).map((f) => f.replace(/\.json$/, ""))) : new Set();
+  const taken = venture && existsSync(ventureFile(venture, "product/bugs")) ? new Set(readdirSync(ventureFile(venture, "product/bugs")).map((f) => f.replace(/\.json$/, ""))) : new Set<string>();
   let id = a.id ?? slug(a.title), n = 2; while (taken.has(id)) id = `${slug(a.title)}-${n++}`;
   const rec = drop({ id, venture: a.venture, title: a.title, severity: a.severity, status: a.status ?? "open", found_in: a.found_in,
     repro: typeof a.repro === "string" ? [a.repro] : a.repro, fixed_in: a.fixed_in ?? null, feedback: a.feedback });

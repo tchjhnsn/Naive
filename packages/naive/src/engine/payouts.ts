@@ -17,8 +17,11 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ventureFile } from "../core/venture-paths.ts";
+import type { Exit, Ownership } from "../records/types/records.d.ts";
 
-export function payouts(own, value) {
+type Position = { holder: string; of: string; fraction: number; pref: number; rank: number; participating: boolean };
+
+export function payouts(own: Ownership, value: number) {
   const classes = new Map(own.classes.map((c) => [c.id, c]));
   const kindOf = new Map(own.holders.map((h) => [h.id, h.kind]));
   const grants = own.grants.filter((g) => kindOf.get(g.holder) !== "pool");
@@ -30,33 +33,34 @@ export function payouts(own, value) {
 
   // One position per grant or instrument: its as-converted fraction and its preference.
   const pos = [
-    ...grants.map((g) => {
+    ...grants.map((g): Position => {
       const c = classes.get(g.class);
+      if (!c) throw new Error(`grant to ${g.holder} names class ${g.class}, which ownership.json does not define`);
       const pref = c.kind === "preferred" ? g.amount * (c.price_per_share ?? 0) * (c.liquidation?.multiple ?? 1) : 0;
       return { holder: g.holder, of: g.class, fraction: (1 - safeShare) * g.amount / issued, pref, rank: c.liquidation?.seniority ?? 0, participating: !!c.liquidation?.participating };
     }),
-    ...instruments.map((i) => ({ holder: i.holder, of: i.id, fraction: i.valuation_cap ? i.amount / i.valuation_cap : 0, pref: i.amount, rank: lowest, participating: false })),
+    ...instruments.map((i): Position => ({ holder: i.holder, of: i.id, fraction: i.valuation_cap ? i.amount / i.valuation_cap : 0, pref: i.amount, rank: lowest, participating: false })),
   ];
 
-  const run = (converted) => {
+  const run = (converted: Set<number>) => {
     let left = value;
     const paid = pos.map(() => 0);
-    const takesPref = (p, i) => p.pref > 0 && !converted.has(i);
+    const takesPref = (p: Position, i: number) => p.pref > 0 && !converted.has(i);
     for (const rank of [...new Set(pos.filter(takesPref).map((p) => p.rank))].sort((a, b) => b - a)) {
-      const group = pos.map((p, i) => [p, i]).filter(([p, i]) => takesPref(p, i) && p.rank === rank);
+      const group = pos.map((p, i): [Position, number] => [p, i]).filter(([p, i]) => takesPref(p, i) && p.rank === rank);
       const owed = group.reduce((n, [p]) => n + p.pref, 0);
       const pay = Math.min(left, owed);
       for (const [p, i] of group) paid[i] += pay * p.pref / owed;
       left -= pay;
     }
-    const sharers = pos.map((p, i) => [p, i]).filter(([p, i]) => p.pref === 0 || p.participating || converted.has(i));
+    const sharers = pos.map((p, i): [Position, number] => [p, i]).filter(([p, i]) => p.pref === 0 || p.participating || converted.has(i));
     const total = sharers.reduce((n, [p]) => n + p.fraction, 0);
     for (const [p, i] of sharers) paid[i] += total ? left * p.fraction / total : 0;
     return paid;
   };
 
   // Each non-participating preference converts when converting pays it more; repeat until stable.
-  const converted = new Set();
+  const converted = new Set<number>();
   for (let changed = true, guard = 0; changed && guard < 50; guard++) {
     changed = false;
     const now = run(converted);
@@ -67,7 +71,7 @@ export function payouts(own, value) {
     }
   }
   const paid = run(converted);
-  const byHolder = new Map();
+  const byHolder = new Map<string, number>();
   for (const [i, p] of pos.entries()) byHolder.set(p.holder, (byHolder.get(p.holder) ?? 0) + paid[i]);
   return { value, converted: [...converted].map((i) => pos[i].of), payouts: [...byHolder].map(([holder, amount]) => ({ holder, amount: Math.round(amount * 100) / 100 })) };
 }
@@ -75,10 +79,10 @@ export function payouts(own, value) {
 if (import.meta.url === `file://${process.argv[1]}`) {
   const [dir, arg] = process.argv.slice(2);
   if (!dir) { console.error("usage: node packages/naive/src/engine/payouts.ts <venture dir> [value] [--json]"); process.exit(2); }
-  const own = JSON.parse(readFileSync(join(ventureFile(dir, "governance/ownership.json")), "utf8"));
+  const own: Ownership = JSON.parse(readFileSync(join(ventureFile(dir, "governance/ownership.json")), "utf8"));
   const exitFile = join(ventureFile(dir, "governance/exit.json"));
-  const scenarios = arg && !arg.startsWith("--") ? [{ id: "given", value: Number(arg) }]
-    : existsSync(exitFile) ? JSON.parse(readFileSync(exitFile, "utf8")).scenarios ?? [] : [];
+  const scenarios: { id: string; value: number }[] = arg && !arg.startsWith("--") ? [{ id: "given", value: Number(arg) }]
+    : existsSync(exitFile) ? (JSON.parse(readFileSync(exitFile, "utf8")) as Exit).scenarios ?? [] : [];
   if (!scenarios.length) { console.error("no scenarios: pass a value or add scenarios to governance/exit.json"); process.exit(2); }
   const results = scenarios.map((s) => ({ scenario: s.id, ...payouts(own, s.value) }));
   if (process.argv.includes("--json")) { console.log(JSON.stringify(results, null, 2)); process.exit(0); }

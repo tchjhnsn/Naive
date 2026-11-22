@@ -7,19 +7,22 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { packages, request, situation, write, PACKAGES, HOME } from "./packages.ts";
 import { readDataModel } from "../records/index.ts";
+import type { DataModel } from "../records/types/records.d.ts";
 
-const MODEL = readDataModel();
+const MODEL: DataModel = readDataModel();
 let failed = 0;
-const t = (name, fn) => { try { fn(); console.log(`ok   ${name}`); } catch (e) { failed++; console.log(`FAIL ${name}: ${e.message}`); } };
-const ok = (c, m) => { if (!c) throw new Error(m ?? "assertion failed"); };
-const venture = (files) => {
+const t = (name: string, fn: () => void) => { try { fn(); console.log(`ok   ${name}`); } catch (e) { failed++; console.log(`FAIL ${name}: ${e instanceof Error ? e.message : String(e)}`); } };
+const ok = (c: unknown, m?: string) => { if (!c) throw new Error(m ?? "assertion failed"); };
+const venture = (files: Record<string, unknown>) => {
   const v = mkdtempSync(join(tmpdir(), "pkg-"));
   for (const [f, x] of Object.entries(files)) { mkdirSync(join(v, f, ".."), { recursive: true }); writeFileSync(join(v, f), typeof x === "string" ? x : JSON.stringify(x)); }
   return v;
 };
-const person = (...es) => es.map((e) => JSON.stringify({ entity: e, activity: "write", agent: { kind: "person", id: "founder" } })).join("\n") + "\n";
+const person = (...es: string[]) => es.map((e) => JSON.stringify({ entity: e, activity: "write", agent: { kind: "person", id: "founder" } })).join("\n") + "\n";
 const base = { "venture.json": { id: "kept", name: "Kept", phase: "discovery" }, "purpose/validation/problem.json": { statement: "Solo clinics lose visits to no-shows" } };
-const by = (r) => Object.fromEntries([...r.core, ...r.handoff].map((p) => [p.id, p]));
+const by = (r: ReturnType<typeof packages>) => Object.fromEntries([...r.core, ...r.handoff].map((p) => [p.id, p]));
+// Core packages alone, for the fields only a core package has (its records and what is missing).
+const core = (r: ReturnType<typeof packages>) => Object.fromEntries(r.core.map((p) => [p.id, p]));
 
 t("every record lives in exactly one core package, and every reference and dependency names a known record type", () => {
   const ids = new Set(MODEL.records.map((r) => r.id)), seen = new Set();
@@ -27,7 +30,7 @@ t("every record lives in exactly one core package, and every reference and depen
     for (const r of [...p.required, ...p.optional]) { ok(ids.has(r), `${id}: ${r}`); ok(!seen.has(r), `${r} has two homes`); seen.add(r); }
     for (const r of p.refs) ok(HOME[r], `${id} reads ${r}, which has no home`);
   }
-  for (const [r, x] of Object.entries(PACKAGES.records)) { ok(seen.has(r), `${r} is in no package`); for (const a of x.after) ok(PACKAGES.records[a], `${r} waits on unknown ${a}`); }
+  for (const [r, x] of Object.entries(PACKAGES.records)) { ok(seen.has(r), `${r} is in no package`); for (const a of x?.after ?? []) ok(PACKAGES.records[a], `${r} waits on unknown ${a}`); }
   for (const [id, h] of Object.entries(PACKAGES.handoff)) for (const c of h.from) ok(PACKAGES.core[c], `${id} draws on unknown ${c}`);
 });
 
@@ -38,17 +41,18 @@ t("the assumed model leaves out what it does not model: no legal, operations or 
 });
 
 t("a discovery venture opens foundation and validation, and holds the investor handoff", () => {
-  const p = by(packages(venture(base)));
+  const r = packages(venture(base));
+  const p = by(r), c = core(r);
   ok(p.foundation.in === "now" && p.validation.in === "now" && p.investor.in === "held", JSON.stringify(Object.values(p).map((x) => [x.id, x.in])));
-  ok(p.foundation.state === "building" && p.foundation.missing.includes("icp"), JSON.stringify(p.foundation.missing));
+  ok(c.foundation.state === "building" && c.foundation.missing.includes("icp"), JSON.stringify(c.foundation.missing));
 });
 
 t("inside a package a record moves on its own once what it reads first is confirmed, and waits otherwise", () => {
   const v = venture({ ...base, "provenance.jsonl": person("purpose/validation/problem.json") });
-  const val = by(packages(v)).validation.records;
-  const of = (id) => val.find((x) => x.record === id);
-  ok(of("validation-solution").moves === "now" && of("validation-pricing").moves === "waits" && of("validation-pricing").waits_on[0] === "validation-solution", JSON.stringify(val.map((x) => [x.record, x.moves, x.waits_on])));
-  ok(of("validation-problem").role === "reads" && of("validation-problem").home === "foundation", "the problem is read from Foundation");
+  const val = core(packages(v)).validation.records;
+  const of = (id: string) => val.find((x) => x.record === id);
+  ok(of("validation-solution")?.moves === "now" && of("validation-pricing")?.moves === "waits" && of("validation-pricing")?.waits_on?.[0] === "validation-solution", JSON.stringify(val.map((x) => [x.record, x.moves, x.waits_on])));
+  ok(of("validation-problem")?.role === "reads" && of("validation-problem")?.home === "foundation", "the problem is read from Foundation");
 });
 
 t("the situation moves packages: raising opens the investor handoff, a partner-led ICP the partner handoff", () => {
@@ -56,7 +60,7 @@ t("the situation moves packages: raising opens the investor handoff, a partner-l
   const r = packages(v, { flags: { raising: true } });
   const p = by(r);
   ok(p.investor.in === "now" && p.partner.in === "now" && /raising/.test(p.investor.why), JSON.stringify([p.investor, p.partner].map((x) => [x.in, x.why])));
-  ok(r.situation.questions.find((q) => q.id === "partner_led").by === "records", "partner-led settled by the records");
+  ok(r.situation.questions.find((q) => q.id === "partner_led")?.by === "records", "partner-led settled by the records");
 });
 
 t("the question matrix asks Jev only what the records leave open, and its answers set or clear facts", () => {

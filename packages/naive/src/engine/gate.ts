@@ -15,6 +15,15 @@ import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { may } from "./access.ts";
 import { configFor, functionOf, packageDefs, packagesOf, pinsBlocking, threshold } from "./naive-config.ts";
+import type { NaiveConfig, NaiveConfigRule } from "../records/types/records.d.ts";
+
+/** A rule the gate applies, with where it came from. */
+export type GateRule = NaiveConfigRule & { source: string; package?: string; fail_closed?: boolean };
+type Then = "pass" | NaiveConfigRule["then"];
+/** A refusal by the data model's writer rule. */
+export type WriterRefusal = { then: "refuse"; rule: string; source: string; matched: string[]; why: string; fix?: { command: string; built: boolean; then: string } };
+/** The gate's confidence call on one write. */
+export type ConfidenceCall = { call: "yes" | "no"; score: number; limit: number; rule: string };
 
 const repo = new URL("../../../..", import.meta.url).pathname;
 
@@ -25,7 +34,7 @@ export function packageGates() {
   return readdirSync(dir).flatMap((name) => {
     const p = join(dir, name, "package.json");
     if (!existsSync(p)) return [];
-    const pkg = JSON.parse(readFileSync(p, "utf8"));
+    const pkg: { name: string; gates?: unknown[] } = JSON.parse(readFileSync(p, "utf8"));
     return (pkg.gates ?? []).map((rule) => ({ package: pkg.name, rule }));
   });
 }
@@ -34,15 +43,15 @@ export function packageGates() {
  * Whether an agent write is held as a draft by fail_closed alone. fail_closed names path prefixes
  * (foundation, or foundation/problem). A person is not held. Kept for callers of the first gate.
  */
-export function hold(config, route, actor) {
+export function hold(config: { fail_closed?: string[] } | null | undefined, route: string, actor: string) {
   if (actor === "person") return null;
   const closed = config?.fail_closed ?? [];
   const hit = closed.find((g) => route === g || route.startsWith(`${g}/`));
-  return hit ? { hold: "draft", rule: hit } : null;
+  return hit ? { hold: "draft" as const, rule: hit } : null;
 }
 
 /** The gate section of the venture's naive.config.json, with its defaults. */
-export function configOf(dir) {
+export function configOf(dir: string | undefined) {
   return configFor(dir).gate;
 }
 
@@ -51,7 +60,7 @@ export function configOf(dir) {
  * matches itself; an [id] (any [name]) segment or * is one segment; ** is any depth, and a trailing
  * /** covers the route above it too (validation/** covers validation).
  */
-export function patternRe(pattern) {
+export function patternRe(pattern: string): RegExp {
   const segs = pattern.split("/").filter(Boolean);
   let re = "", sep = false;
   segs.forEach((s, i) => {
@@ -67,13 +76,13 @@ export function patternRe(pattern) {
 }
 
 /** Whether a rule's pattern covers a write: the concrete route (product/kettle) or its table route (product/[id]). */
-export function matches(pattern, route, tableRoute) {
+export function matches(pattern: string, route: string, tableRoute?: string): boolean {
   const re = patternRe(pattern);
   return re.test(route) || (!!tableRoute && (pattern === tableRoute || re.test(tableRoute)));
 }
 
 /** Gate rules imported from the package definitions (X-5): each package's gate_rules, tagged with the package. */
-export function packageRules(config) {
+export function packageRules(config: NaiveConfig | null | undefined): GateRule[] {
   const sel = config?.gate?.packages ?? true;
   if (sel === false) return [];
   return packageDefs().filter((p) => sel === true || sel[p.name] !== false)
@@ -81,10 +90,10 @@ export function packageRules(config) {
 }
 
 /** Every rule the venture's gate applies, in order: fail_closed, the config's rules, then the packages'. */
-export function rulesFor(config) {
-  const g = config?.gate ?? {};
+export function rulesFor(config: NaiveConfig | null | undefined): GateRule[] {
+  const g: NonNullable<NaiveConfig["gate"]> = config?.gate ?? {};
   return [
-    ...(g.fail_closed ?? []).map((p) => ({ id: p, routes: [p, `${p}/**`], then: "draft", actors: ["agent"], source: "naive.config.json", fail_closed: true })),
+    ...(g.fail_closed ?? []).map((p): GateRule => ({ id: p, routes: [p, `${p}/**`], then: "draft", actors: ["agent"], source: "naive.config.json", fail_closed: true })),
     ...(g.rules ?? []).map((r) => ({ ...r, source: "naive.config.json" })),
     ...packageRules(config),
   ];
@@ -95,27 +104,26 @@ export function rulesFor(config) {
  * question is "does this write need a person?". It is asked only when the write carries a score and a rule with
  * confidence_below covers the write. yes: the score is below that rule's line, so the write is held. no: it is not.
  * Returns { call, score, limit, rule } or null when no confidence rule asked. It decides nothing evaluate does not.
- * @param {{ config: *, route: string, table?: string, actor?: string, role?: string, confidence?: number, exists?: boolean }} q
- * @returns {{ call: "yes" | "no", score: number, limit: number, rule: string } | null}
  */
-export function confidenceCall({ config, route, table, actor = "agent", role, confidence, exists }) {
+export function confidenceCall({ config, route, table, actor = "agent", role, confidence, exists }: {
+  config: NaiveConfig | null | undefined; route: string; table?: string; actor?: string; role?: string; confidence?: number; exists?: boolean;
+}): ConfidenceCall | null {
   if (typeof confidence !== "number" || Number.isNaN(confidence)) return null;
-  /** @type {{ call: "yes" | "no", score: number, limit: number, rule: string } | null} */
-  let asked = null;
+  let asked: ConfidenceCall | null = null;
   for (const r of rulesFor(config)) {
     const w = r.when ?? {};
-    if (w.confidence_below === undefined || !(r.actors ?? ["agent"]).includes(actor)) continue;
-    if (r.roles?.length && !r.roles.includes(role)) continue;
+    if (w.confidence_below === undefined || !(r.actors ?? ["agent"]).some((a) => a === actor)) continue;
+    if (r.roles?.length && !(role !== undefined && r.roles.includes(role))) continue;
     if (!r.routes.some((p) => matches(p, route, table))) continue;
     if (w.exists !== undefined && w.exists !== !!exists) continue;
     const limit = typeof w.confidence_below === "number" ? w.confidence_below : threshold(config, w.confidence_below, threshold(config, "confidence", 0.7));
-    if (confidence < limit) return { call: /** @type {"yes"} */ ("yes"), score: confidence, limit, rule: r.id };
-    asked ??= { call: /** @type {"no"} */ ("no"), score: confidence, limit, rule: r.id };
+    if (confidence < limit) return { call: "yes", score: confidence, limit, rule: r.id };
+    asked ??= { call: "no", score: confidence, limit, rule: r.id };
   }
   return asked;
 }
 
-const SEVERITY = { pass: 0, draft: 1, owner: 2, refuse: 3 };
+const SEVERITY: Record<Then, number> = { pass: 0, draft: 1, owner: 2, refuse: 3 };
 
 /** The command a person runs to correct what a signal says, named in the refusal (packages/naive/src/router/orchestration/signals.ts emit). */
 export const EMIT_HINT = "naive signals emit <type> --subject <id> --supersedes <signal address>";
@@ -138,10 +146,10 @@ export const EMIT_HINT = "naive signals emit <type> --subject <id> --supersedes 
  * or by a person. An agent acting in any other role, or in none, is refused before the team plan is read, so a role
  * the team plan does not list cannot reach it either; so is the projector. A person's call made while the process
  * says an agent is acting counts as the agent's. Returns a refusal or null.
- * @param {{ route: string, writer?: string, projector?: boolean, exists?: boolean, actor?: string, acting?: boolean, role?: string, fn?: string | null }} q
- * @returns {{ then: "refuse", rule: string, source: string, matched: string[], why: string, fix?: { command: string, built: boolean, then: string } } | null}
  */
-export function writerRule({ route, writer, projector = false, exists = false, actor = "agent", acting = false, role, fn }) {
+export function writerRule({ route, writer, projector = false, exists = false, actor = "agent", acting = false, role, fn }: {
+  route: string; writer?: string; projector?: boolean; exists?: boolean; actor?: string; acting?: boolean; role?: string; fn?: string | null;
+}): WriterRefusal | null {
   if (writer === "function") {
     const own = `${fn}-agent`;
     const person = actor === "person" && !acting;
@@ -168,9 +176,11 @@ export function writerRule({ route, writer, projector = false, exists = false, a
  * data model), writerFunction (the record type's function, for writer function) and projector (the call is the signal
  * projector's; see writerRule).
  * Returns { then: pass | draft | owner | refuse, rule, source, owner, variants, why, matched }.
- * @param {{ config: *, dir?: string, route: string, table?: string, requested?: *, record?: string, actor?: string, role?: string, confidence?: number, exists?: boolean, decisionOwner?: string, writer?: string, writerFunction?: string | null, projector?: boolean }} q
  */
-export function evaluate({ config, dir, route, table, requested, record, actor = "agent", role, confidence, exists, decisionOwner, writer, writerFunction, projector = false }) {
+export function evaluate({ config, dir, route, table, requested, record, actor = "agent", role, confidence, exists, decisionOwner, writer, writerFunction, projector = false }: {
+  config: NaiveConfig | null | undefined; dir?: string; route: string; table?: string; requested?: string; record?: string; actor?: string; role?: string;
+  confidence?: number; exists?: boolean; decisionOwner?: string; writer?: string; writerFunction?: string | null; projector?: boolean;
+}) {
   const owned = writerRule({ route, writer, projector, exists, actor, role, fn: writerFunction });
   if (owned) return owned;
   const pins = pinsBlocking(config, record);
@@ -178,10 +188,10 @@ export function evaluate({ config, dir, route, table, requested, record, actor =
     why: pins.map((p) => `${p.package} is pinned to ${p.pinned} but ${p.installed ?? "nothing"} is installed`).join("; ") + ": change the pin or the install first" };
   if (dir && role && ![route, table, requested].some((x) => x && may(dir, role, "write", x)))
     return { then: "refuse", rule: "access", source: "team plan", matched: ["access"], why: `${role} may not write ${route} (team plan routes)` };
-  const hits = [];
+  const hits: GateRule[] = [];
   for (const r of rulesFor(config)) {
-    if (!(r.actors ?? ["agent"]).includes(actor)) continue;
-    if (r.roles?.length && !r.roles.includes(role)) continue;
+    if (!(r.actors ?? ["agent"]).some((a) => a === actor)) continue;
+    if (r.roles?.length && !(role !== undefined && r.roles.includes(role))) continue;
     if (!r.routes.some((p) => matches(p, route, table))) continue;
     const w = r.when ?? {};
     if (w.exists !== undefined && w.exists !== !!exists) continue;
@@ -191,11 +201,11 @@ export function evaluate({ config, dir, route, table, requested, record, actor =
     }
     hits.push(r);
   }
-  if (!hits.length) return { then: "pass", rule: null, source: null, matched: [] };
+  if (!hits.length) return { then: "pass" as const, rule: null, source: null, matched: [] };
   const top = hits.reduce((a, b) => (SEVERITY[b.then] > SEVERITY[a.then] ? b : a));
   const fn = functionOf(record);
   // The owner: the rule's, else naive.config.json owners by function or by package, else the record's decision-class owner, else the founder.
-  const keys = [fn, top.package, ...packagesOf(record).map((p) => p.name)].filter(Boolean);
+  const keys = [fn, top.package, ...packagesOf(record).map((p) => p.name)].filter((k): k is string => !!k);
   const owner = top.then === "owner" ? top.owner ?? keys.map((k) => config?.owners?.[k]).find(Boolean) ?? decisionOwner ?? "founder" : undefined;
   const variants = !!(top.variants ?? config?.gate?.variants);
   const where = top.fail_closed ? `${top.id} fails closed in naive.config.json` : `rule ${top.id} (${top.source})`;

@@ -20,16 +20,29 @@ import { kit } from "../kits.ts";
 export const id = "kit-to-package";
 export const describe = "Moves Naive packages out of naive.config.json kits into packages, and rewrites layer and kit routes inside records (decision unlocks, team-plan access, where-used parents) to package routes";
 
+/** The part of the upgrade context (packages/naive/src/engine/upgrades.mjs) this migration uses. */
+type Ctx = {
+  config: { kits?: string[]; packages?: Record<string, unknown>; [key: string]: unknown };
+  write(rel: string, text: string, opts?: { note?: string }): void;
+  escalate(msg: string): void; note(msg: string): void; configChanged(): void;
+};
+/** One route alias (packages/naive/src/router/route-aliases.json). */
+type Alias = { from: string; to: string };
+/** The record shapes whose routes this migration rewrites, read as JSON. */
+type Decision = { unlocks?: { routes?: unknown }[] };
+type TeamPlan = { roles?: { id?: string; routes?: Record<string, unknown> }[] };
+type WhereUsed = { facts?: { id?: string; parent?: { route?: unknown } }[] };
+
 const repo = new URL("../../../../..", import.meta.url).pathname;
 
-function aliases() {
+function aliases(): Alias[] {
   const f = process.env.MENTURA_ROUTE_ALIASES ?? join(repo, "packages/naive/src/router/route-aliases.json");
   // Longest first, so purpose/validation/problem wins over a shorter alias it starts with.
-  return existsSync(f) ? JSON.parse(readFileSync(f, "utf8")).aliases.slice().sort((a, b) => b.from.length - a.from.length) : [];
+  return existsSync(f) ? JSON.parse(readFileSync(f, "utf8")).aliases.slice().sort((a: Alias, b: Alias) => b.from.length - a.from.length) : [];
 }
 
 /** A route or route glob rewritten through the aliases: { to } when it moved, { escalate } when it spans moved routes, else null. */
-export function rewriteRoute(route, list = aliases()) {
+export function rewriteRoute(route: unknown, list = aliases()): { to: string; alias: Alias; escalate?: undefined } | { escalate: string; to?: undefined } | null {
   if (typeof route !== "string") return null;
   const hit = list.find((a) => route === a.from || route.startsWith(`${a.from}/`));
   if (hit) return { to: hit.to + route.slice(hit.from.length), alias: hit };
@@ -43,13 +56,13 @@ export function rewriteRoute(route, list = aliases()) {
   return null;
 }
 
-export function apply(dir, ctx) {
+export function apply(dir: string, ctx: Ctx) {
   const list = aliases();
 
   // 1. kits that are Naive packages become packages.
   const cfg = ctx.config;
   if (Array.isArray(cfg.kits) && cfg.kits.length) {
-    const keep = [];
+    const keep: string[] = [];
     for (const name of cfg.kits) {
       if (existsSync(join(repo, "packages/naive/library", "packages", name, "package.json"))) {
         cfg.packages = { ...(cfg.packages ?? {}), [name]: cfg.packages?.[name] ?? {} };
@@ -62,35 +75,35 @@ export function apply(dir, ctx) {
   }
 
   // 2. Routes inside records.
-  const rewrite = (file, value, where) => {
+  const rewrite = (file: string, value: unknown, where: string) => {
     const r = rewriteRoute(value, list);
     if (!r) return value;
     if (r.escalate) { ctx.escalate(`${file}: ${where} ${r.escalate}; rewrite it yourself`); return value; }
     return r.to;
   };
-  const rewriteFile = (file, fn) => {
+  const rewriteFile = <T,>(file: string, fn: (rec: T) => void) => {
     if (!existsSync(ventureFile(dir, file))) return;
     const before = readFileSync(ventureFile(dir, file), "utf8");
-    const rec = JSON.parse(before);
+    const rec: T = JSON.parse(before);
     fn(rec);
     const after = JSON.stringify(rec, null, 2) + "\n";
     if (after.trim() !== before.trim()) ctx.write(file, after, { note: "routes renamed from layer and kit routes to package routes (EE-071)" });
   };
 
-  const decisionFiles = (sub = "") => readdirSync(ventureFile(dir, sub), { withFileTypes: true }).flatMap((e) => {
+  const decisionFiles = (sub = ""): string[] => readdirSync(ventureFile(dir, sub), { withFileTypes: true }).flatMap((e) => {
     const rel = sub ? `${sub}/${e.name}` : e.name;
     if (e.isDirectory()) return e.name.startsWith(".") || e.name.startsWith("_") || existsSync(join(dir, rel, "venture.json")) ? [] : decisionFiles(rel);
     return e.name.endsWith(".decision.json") ? [rel] : [];
   });
-  for (const f of decisionFiles()) rewriteFile(f, (d) => {
+  for (const f of decisionFiles()) rewriteFile(f, (d: Decision) => {
     for (const u of d.unlocks ?? []) if (Array.isArray(u.routes)) u.routes = u.routes.map((g) => rewrite(f, g, "unlocks route"));
   });
 
-  for (const f of ["people/team-plan.json", "operations/team-plan.json"]) rewriteFile(f, (p) => {
+  for (const f of ["people/team-plan.json", "operations/team-plan.json"]) rewriteFile(f, (p: TeamPlan) => {
     for (const role of p.roles ?? []) for (const k of ["read", "write"]) if (Array.isArray(role.routes?.[k])) role.routes[k] = role.routes[k].map((g) => rewrite(f, g, `role ${role.id} ${k}`));
   });
 
-  rewriteFile("knowledge/where-used.json", (w) => {
+  rewriteFile("knowledge/where-used.json", (w: WhereUsed) => {
     for (const fact of w.facts ?? []) if (fact.parent?.route) fact.parent.route = rewrite("knowledge/where-used.json", fact.parent.route, `fact ${fact.id} parent`);
   });
 }

@@ -19,20 +19,32 @@ import { ventureFile } from "../core/venture-paths.ts";
 import { canonicalHome, migrated } from "./canonical.ts";
 import { readDataModel, venturePaths } from "../records/index.ts";
 
+import type { DataModel, IcpProfile, ProvenanceEntry, StrategicFoundation } from "../records/types/records.d.ts";
+
+/** A foundation statement as the frame (or a Lean Canvas box) names it. */
+export type Statement = { id: string; record?: string | null; attribute?: string | null; note?: string; derived_from?: string };
+/** One statement's status and value, as statement() reports it. */
+export type StatementReport = {
+  id: string; status: string; note?: string | null; record?: string | null; attribute?: string | null; derived_from?: string; path?: string;
+  confirmed?: boolean; agent_wrote?: boolean; unsigned_write?: boolean; value?: unknown;
+};
+/** An ICP profile with the file it was read from. */
+export type IcpRead = IcpProfile & { file: string };
+
 const repo = new URL("../../../..", import.meta.url).pathname;
-const load = (f) => JSON.parse(readFileSync(f, "utf8"));
-export const FRAME = load(join(repo, "packages/naive/src/functions/strategy/strategic-foundation.json"));
-const MODEL = readDataModel();
+const load = (f: string) => JSON.parse(readFileSync(f, "utf8"));
+export const FRAME: StrategicFoundation = load(join(repo, "packages/naive/src/functions/strategy/strategic-foundation.json"));
+const MODEL: DataModel = readDataModel();
 
 // "." is the whole record: a collection whose items are the statement, such as one file per ICP profile.
-const get = (o, path) => path === "." ? o : path.split(".").reduce((x, k) => (x == null ? undefined : x[k]), o);
-const filled = (v) => v !== undefined && v !== null && v !== "" && !(Array.isArray(v) && !v.length);
+const get = (o: unknown, path: string): unknown => path === "." ? o : path.split(".").reduce<unknown>((x, k) => (x == null ? undefined : (x as Record<string, unknown>)[k]), o);
+const filled = (v: unknown) => v !== undefined && v !== null && v !== "" && !(Array.isArray(v) && !v.length);
 
 /** Venture-relative files of a record type: one file, or every item of a collection. */
-export function filesOf(dir, type) {
+export function filesOf(dir: string, type: string): string[] {
   const r = MODEL.records.find((x) => x.id === type);
   const gs = venturePaths(r);
-  const found = [];
+  const found: string[] = [];
   for (const g of gs) {
     if (!g.includes("*")) { if (existsSync(ventureFile(dir, g))) found.push(g); continue; }
     const star = g.indexOf("*");
@@ -56,18 +68,18 @@ export function filesOf(dir, type) {
 
 /** The files and attribute that hold a statement. A migrated venture has no telos record, so its statements
  *  read the canonical records. */
-export function statementFiles(dir, s) {
+export function statementFiles(dir: string, s: Statement & { record: string }): { files: string[]; attribute: string | null | undefined } {
   if (s.record !== "telos" || !migrated(dir)) return { files: filesOf(dir, s.record), attribute: s.attribute };
   return canonicalHome(dir, s.id);
 }
 
-const logOf = (dir, ...files) => {
+const logOf = (dir: string, ...files: string[]): ProvenanceEntry[] => {
   const log = ventureFile(dir, "provenance.jsonl");
   return existsSync(log) ? readFileSync(log, "utf8").split("\n").filter(Boolean).map((l) => JSON.parse(l)).filter((e) => files.includes(e.entity)) : [];
 };
 
 /** Whether a writer of the given kind wrote this file's content, following a migration's move back to its source. */
-function wrote(dir, file, by, seen = new Set()) {
+function wrote(dir: string, file: string, by: (e: ProvenanceEntry) => boolean, seen = new Set<string>()): boolean {
   if (seen.has(file)) return false;
   seen.add(file);
   const es = logOf(dir, file);
@@ -75,30 +87,30 @@ function wrote(dir, file, by, seen = new Set()) {
     || es.filter((e) => e.activity === "move").flatMap((e) => e.derived_from ?? []).some((p) => wrote(dir, p, by, seen));
 }
 /** An agent wrote this file's content: what a card may say. A baseline only adopts a file. */
-export const agentWrote = (dir, file) => wrote(dir, file, (e) => e.agent?.kind === "agent" && e.activity !== "baseline");
+export const agentWrote = (dir: string, file: string) => wrote(dir, file, (e) => e.agent?.kind === "agent" && e.activity !== "baseline");
 /** Anyone but a person wrote this file's content: what waits for a person to confirm. */
-export const unsignedWrite = (dir, file) => wrote(dir, file, (e) => e.agent?.kind !== "person");
+export const unsignedWrite = (dir: string, file: string) => wrote(dir, file, (e) => e.agent?.kind !== "person");
 
 /** Whether a person confirmed one statement in a file: their write or accept of the file, or a
  *  confirm of that statement, after the last write by anyone else. A write that lists statements
  *  (foundation/core shares venture.json with other statements) confirms only those. */
-export function confirmedIn(dir, file, id, seen = new Set()) {
+export function confirmedIn(dir: string, file: string, id: string | null, seen = new Set<string>()): boolean {
   if (seen.has(file)) return false;
   seen.add(file);
   const es = logOf(dir, file, `_drafts/${file.replace(/\//g, "__")}.draft`);
   const lastAgentWrite = es.findLastIndex((e) => e.entity === file && e.activity !== "confirm" && e.activity !== "move" && e.activity !== "release" && e.agent?.kind !== "person" && e.activity !== "accept");
-  const direct = es.some((e, i) => i > lastAgentWrite && e.entity === file && (e.activity === "accept" || (e.agent?.kind === "person" && e.activity !== "confirm" && e.activity !== "move" && (!e.statements || e.statements.includes(id))) || (e.activity === "confirm" && e.statement === id)));
+  const direct = es.some((e, i) => i > lastAgentWrite && e.entity === file && (e.activity === "accept" || (e.agent?.kind === "person" && e.activity !== "confirm" && e.activity !== "move" && (!e.statements || (id !== null && e.statements.includes(id)))) || (e.activity === "confirm" && e.statement === id)));
   if (direct) return true;
   return es.filter((e) => e.activity === "move" && e.entity === file).flatMap((e) => e.derived_from ?? []).some((p) => confirmedIn(dir, p, id, seen));
 }
 
 /** One statement's status and value: a record attribute, confirmed by a person, written by an agent, waiting as a
- *  draft or missing. The Lean Canvas (lean-canvas.ts) reads its boxes through this too.
- * @param {string} dir
- * @param {{ id: string, record?: string | null, attribute?: string | null, note?: string }} s */
-export function statement(dir, s) {
-  if (!s.record) return { id: s.id, status: "planned", note: s.note ?? null };
-  const { files, attribute } = statementFiles(dir, s);
+ *  draft or missing. The Lean Canvas (lean-canvas.ts) reads its boxes through this too. */
+export function statement(dir: string, s: Statement): StatementReport {
+  const record = s.record;
+  if (!record) return { id: s.id, status: "planned", note: s.note ?? null };
+  const { files, attribute } = statementFiles(dir, { ...s, record });
+  if (attribute == null) throw new Error(`statement ${s.id} names record ${record} but no attribute`);
   // A retired product no longer answers for the venture.
   const values = files.filter((f) => existsSync(ventureFile(dir, f)) && load(ventureFile(dir, f)).status !== "retired").map((f) => ({ f, v: get(load(ventureFile(dir, f)), attribute) })).filter((x) => filled(x.v));
   const drafts = files.filter((f) => existsSync(ventureFile(dir, `_drafts/${f.replace(/\//g, "__")}.draft`)));
@@ -112,36 +124,38 @@ export function statement(dir, s) {
 }
 
 /** Each foundation statement of a venture, with its status and value. */
-export function foundation(dir) {
-  const report = FRAME.questions.map((q) => ({ question: q.id, ask: q.ask, statements: q.statements.map((s) => s.derived_from ? s : statement(dir, s)) }));
+export function foundation(dir: string) {
+  const report = FRAME.questions.map((q) => ({ question: q.id, ask: q.ask, statements: q.statements.map((s): StatementReport | Statement => s.derived_from ? s : statement(dir, s)) }));
   // A derived statement takes its source's status and shows the primary ICP profile's short form.
   const all = report.flatMap((q) => q.statements);
-  for (const q of report) q.statements = q.statements.map((s) => {
-    if (!s.derived_from) return s;
-    const src = all.find((x) => x.id === s.derived_from) ?? { status: "missing" };
-    const out = { id: s.id, record: s.record, attribute: s.attribute, derived_from: s.derived_from, status: src.status };
-    const primary = Array.isArray(src.value) ? (src.value.find((p) => p.primary) ?? src.value[0]) : null;
+  const statusOf = (x: StatementReport | Statement): StatementReport => ("status" in x ? x : { ...x, status: "missing" });
+  const done = report.map((q) => ({ ...q, statements: q.statements.map((s): StatementReport => {
+    if (!s.derived_from) return statusOf(s);
+    const src = all.find((x) => x.id === s.derived_from);
+    const value = src && "value" in src ? src.value : undefined;
+    const out: StatementReport = { id: s.id, record: s.record, attribute: s.attribute, derived_from: s.derived_from, status: src && "status" in src ? src.status : "missing" };
+    const primary: { primary?: boolean; short?: string; who?: string } | null = Array.isArray(value) ? (value.find((p) => p.primary) ?? value[0]) : null;
     if (primary) out.value = primary.short ?? primary.who;
     return out;
-  });
-  return report;
+  }) }));
+  return done;
 }
 
 /** The venture's ICP profiles: one record each in foundation/icp/, else the profiles of the older single file. */
-export function icpProfiles(dir) {
+export function icpProfiles(dir: string): IcpRead[] {
   const folder = ventureFile(dir, "foundation/icp");
   if (existsSync(folder)) return readdirSync(folder).filter((f) => f.endsWith(".json")).sort().map((f) => ({ file: `foundation/icp/${f}`, ...load(join(folder, f)) }));
   const old = ["foundation/icp.json", "purpose/icp.json"].find((f) => existsSync(ventureFile(dir, f)));
-  return old ? (load(ventureFile(dir, old)).profiles ?? []).map((p) => ({ file: old, ...p })) : [];
+  return old ? (load(ventureFile(dir, old)).profiles ?? []).map((p: IcpProfile) => ({ file: old, ...p })) : [];
 }
 
-export function problems(dir) {
+export function problems(dir: string): string[] {
   const out = FRAME.questions.flatMap((q) => q.statements).filter((s) => s.record && !MODEL.records.some((r) => r.id === s.record)).map((s) => `frame: ${s.id} names record type ${s.record}, which the data model lacks`);
-  const there = (...fs) => fs.map((f) => ventureFile(dir, f)).find((p) => existsSync(p));
+  const there = (...fs: string[]) => fs.map((f) => ventureFile(dir, f)).find((p) => existsSync(p));
   const prob = there("foundation/problem.json", "purpose/validation/problem.json");
   const profiles = icpProfiles(dir);
   if (profiles.length) {
-    const forms = new Set(prob ? (load(prob).forms ?? []).map((f) => f.id) : []);
+    const forms = new Set(prob ? (load(prob).forms ?? []).map((f: { id: string }) => f.id) : []);
     for (const p of profiles) for (const f of p.problem_forms ?? []) if (!forms.has(f)) out.push(`icp ${p.id}: problem form ${f} is not in the problem record`);
     // Each profile is its own record, so its id is its file name and is unique.
     for (const p of profiles) if (p.file.startsWith("foundation/icp/") && p.file !== `foundation/icp/${p.id}.json`) out.push(`${p.file}: its id is ${p.id}; the file must be foundation/icp/${p.id}.json`);
@@ -158,7 +172,7 @@ export function problems(dir) {
 if (import.meta.url === `file://${process.argv[1]}`) {
   const arg = process.argv[2];
   if (!arg) { console.error("usage: node packages/naive/src/engine/foundation.ts <venture or workspace dir> [--json]"); process.exit(2); }
-  const walk = (d) => existsSync(join(d, "venture.json")) ? [d] : readdirSync(d, { withFileTypes: true }).filter((e) => e.isDirectory() && !e.name.startsWith(".") && !e.name.startsWith("_")).flatMap((e) => walk(join(d, e.name)));
+  const walk = (d: string): string[] => existsSync(join(d, "venture.json")) ? [d] : readdirSync(d, { withFileTypes: true }).filter((e) => e.isDirectory() && !e.name.startsWith(".") && !e.name.startsWith("_")).flatMap((e) => walk(join(d, e.name)));
   const dirs = walk(arg);
   const errs = dirs.flatMap((d) => problems(d).map((p) => `${d}: ${p}`));
   if (process.argv.includes("--json")) console.log(JSON.stringify(dirs.length === 1 ? foundation(dirs[0]) : Object.fromEntries(dirs.map((d) => [d, foundation(d)])), null, 2));

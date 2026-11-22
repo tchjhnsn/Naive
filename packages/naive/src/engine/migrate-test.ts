@@ -14,7 +14,7 @@ import { naiveScript } from "../core/scripts.ts";
 
 const repo = new URL("../../../..", import.meta.url).pathname;
 let failed = 0;
-const expect = (name, ok, detail = "") => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${detail}`}`); if (!ok) failed++; };
+const expect = (name: string, ok: boolean, detail = "") => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${detail}`}`); if (!ok) failed++; };
 
 const base = mkdtempSync(join(tmpdir(), "migrate-test-"));
 const src = join(base, "old-project"), ws = join(base, "workspace");
@@ -24,20 +24,21 @@ writeFileSync(join(src, "brand.md"), "# Brand\n\nWarm, plain, local.\n");
 writeFileSync(join(src, ".env"), "NOT_A_REAL_KEY=1\n");
 writeFileSync(join(src, "id_rsa"), "NOT_A_REAL_KEY\n");
 writeFileSync(join(src, "logo.png"), Buffer.from([0x89, 0x50, 0x4e, 0x47, 0, 0, 0, 0]));
-const fingerprint = () => createHash("sha256").update(JSON.stringify(readdirSync(src, { recursive: true }).sort()
+const fingerprint = () => createHash("sha256").update(JSON.stringify(readdirSync(src, { recursive: true, encoding: "utf8" }).sort()
   .map((f) => [f, statSync(join(src, f)).isFile() ? readFileSync(join(src, f)).toString("hex") : "dir"]))).digest("hex");
 const before = fingerprint();
 
 const env = { ...process.env, MENTURA_WORKSPACE: ws, MENTURA_AGENT_CMD: `node ${join(repo, "packages/naive/src/records/examples/migrate/agent.ts")}` };
-const naive = (...a) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/naive.mjs"), ...a], { env, encoding: "utf8" });
-const mentura = (...a) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.mjs"), ...a], { env, encoding: "utf8" });
-const init = (id) => spawnSync("node", [join(repo, "packages/naive/src/engine/init-venture.ts"), join(ws, "ventures", id), id], { encoding: "utf8" }).status === 0;
+const naive = (...a: string[]) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/naive.mjs"), ...a], { env, encoding: "utf8" });
+const mentura = (...a: string[]) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.mjs"), ...a], { env, encoding: "utf8" });
+const init = (id: string) => spawnSync("node", [join(repo, "packages/naive/src/engine/init-venture.ts"), join(ws, "ventures", id), id], { encoding: "utf8" }).status === 0;
 
 const dir = join(ws, "ventures", "kettle");
 expect("a new venture is created to migrate into", init("kettle"));
 const p = naive("migrate", "--from", src, "--venture", dir);
 expect("migrate writes a plan", p.status === 0 && existsSync(join(dir, ".release/migrate-plan.json")), p.stderr);
-const planned = JSON.parse(readFileSync(join(dir, ".release/migrate-plan.json"), "utf8"));
+// The plan migrate writes (.release/migrate-plan.json, no record type): only the fields this test reads.
+const planned: { items: { route: string; from: string[] }[]; left_behind: { from: string; why: string }[] } = JSON.parse(readFileSync(join(dir, ".release/migrate-plan.json"), "utf8"));
 expect("the agent's record is planned on a real route, citing the file it came from", planned.items.length === 1 && planned.items[0].route === "product/kettle" && planned.items[0].from[0] === "notes/plan.md");
 expect("what the agent did not use is left behind, with why", planned.left_behind.some((l) => l.from === "brand.md") && planned.left_behind.some((l) => l.from === "logo.png"));
 expect("secrets are never opened, and never reach the plan or the agent", planned.left_behind.filter((l) => /secret/.test(l.why)).length === 2 && !readFileSync(join(dir, ".release/migrate-plan.json"), "utf8").includes("NOT_A_REAL_KEY"));

@@ -27,32 +27,45 @@ import { decisions, ownScore } from "./decisions.ts";
 import { analytics } from "./decision-analytics.ts";
 import { PACKAGES } from "./packages.ts";
 
+/** A decision to rank: what ownScore in packages/naive/src/engine/decisions.ts scores, and the fields the ranking reads.
+ *  A scenario (packages/naive/src/engine/docket-eval.ts) passes its own decisions in this shape. */
+export type DocketDecision = Parameters<typeof ownScore>[0] & {
+  id: string; question: string; render: string; source?: string; held_by?: string; action?: Action | null; function?: Fn;
+};
+/** A function of the venture, by id and title. */
+type Fn = { id: string; title: string };
+/** What a founder does to settle a decision, as decisions.ts proposes it. */
+type Action = { kind: string; confirm?: string; route?: string; statement?: string };
+/** One decision on the docket. */
+export type Row = { id: string; question: string; function: string; function_id: string; render: string; own: number; value: number; holds: string[]; why: string[]; action: Action | null; dominant?: boolean };
+
 const ACTIONABLE = new Set(["now", "overdue", "stale"]);
 const OPEN = new Set(["now", "overdue", "stale", "waiting"]);
 const BASE = 10;
 
-export function docket(dir, now = Date.parse(process.env.DECISIONS_NOW ?? "") || Date.now(), { set_aside = new Set() } = {}) {
+export function docket(dir: string, now = Date.parse(process.env.DECISIONS_NOW ?? "") || Date.now(), { set_aside = new Set<string>() } = {}) {
   const r = decisions(dir, now);
-  const fnOf = new Map(analytics(dir, now).decisions.map((x) => [x.id, { id: x.function_id, title: x.function }]));
-  const ds = r.decisions.filter((d) => d.source !== "root" && !set_aside.has(d.id)).map((d) => ({ ...d, function: fnOf.get(d.id) }));
+  const fnOf = new Map<string, Fn>(analytics(dir, now).decisions.map((x: { id: string; function_id: string; function: string }) => [x.id, { id: x.function_id, title: x.function }]));
+  const ds = r.decisions.filter((d: DocketDecision) => d.source !== "root" && !set_aside.has(d.id)).map((d: DocketDecision): DocketDecision => ({ ...d, function: fnOf.get(d.id) }));
   return { venture: r.venture, ...rankDocket(ds, r.phase, now) };
 }
 
 /** The ranking itself, over decisions as decisions.ts resolves them, each with its function ({id, title}).
  *  Pure, so scenarios can be ranked without a venture on disk (packages/naive/src/engine/docket-eval.ts). */
-export function rankDocket(all, phase, now = Date.now()) {
+export function rankDocket(all: DocketDecision[], phase: string, now = Date.now()) {
   const ds = all.filter((d) => OPEN.has(d.render));
-  const own = new Map(ds.map((d) => { const o = ownScore(d, phase, now); return [d.id, { score: BASE + o.score, why: o.why }]; }));
-  const heldBy = new Map();
+  const own = new Map(ds.map((d): [string, { score: number; why: string[] }] => { const o = ownScore(d, phase, now); return [d.id, { score: BASE + o.score, why: o.why }]; }));
+  const ownOf = (id: string) => own.get(id) ?? { score: 0, why: [] };
+  const heldBy = new Map<string, string[]>();
   for (const d of ds) if (d.held_by) heldBy.set(d.held_by, [...(heldBy.get(d.held_by) ?? []), d.id]);
-  const holds = (id, seen = new Set()) => { for (const x of heldBy.get(id) ?? []) if (!seen.has(x)) { seen.add(x); holds(x, seen); } return seen; };
+  const holds = (id: string, seen = new Set<string>()): Set<string> => { for (const x of heldBy.get(id) ?? []) if (!seen.has(x)) { seen.add(x); holds(x, seen); } return seen; };
 
-  const rows = ds.filter((d) => ACTIONABLE.has(d.render)).map((d) => {
+  const rows = ds.filter((d) => ACTIONABLE.has(d.render)).map((d): Row => {
     const held = [...holds(d.id)];
-    const value = own.get(d.id).score + held.reduce((s, x) => s + (own.get(x)?.score ?? 0), 0);
+    const value = ownOf(d.id).score + held.reduce((s, x) => s + (own.get(x)?.score ?? 0), 0);
     const fn = d.function ?? { id: "venture", title: "Venture" };
-    return { id: d.id, question: d.question, function: fn.title, function_id: fn.id, render: d.render, own: own.get(d.id).score, value,
-      holds: held, why: [...own.get(d.id).why, ...(held.length ? [`holds ${held.length} decision${held.length > 1 ? "s" : ""}: ${held.join(", ")}`] : [])], action: d.action ?? null };
+    return { id: d.id, question: d.question, function: fn.title, function_id: fn.id, render: d.render, own: ownOf(d.id).score, value,
+      holds: held, why: [...ownOf(d.id).why, ...(held.length ? [`holds ${held.length} decision${held.length > 1 ? "s" : ""}: ${held.join(", ")}`] : [])], action: d.action ?? null };
   });
   const functions = [...new Set(rows.map((x) => x.function_id))].map((id) => {
     const xs = rows.filter((x) => x.function_id === id).sort((a, b) => b.value - a.value || a.id.localeCompare(b.id));
@@ -74,27 +87,29 @@ export function rankDocket(all, phase, now = Date.now()) {
 }
 
 // Settles one decision the way a founder would, through the CLI, with its proposed wording.
-function settle(ws, venture, d) {
-  const cli = (...a) => spawnSync("node", [new URL("../interfaces/cli/mentura.mjs", import.meta.url).pathname, ...a], { env: { ...process.env, MENTURA_WORKSPACE: ws }, encoding: "utf8" });
+function settle(ws: string, venture: string, d: Row) {
+  const cli = (...a: string[]) => spawnSync("node", [new URL("../interfaces/cli/mentura.mjs", import.meta.url).pathname, ...a], { env: { ...process.env, MENTURA_WORKSPACE: ws }, encoding: "utf8" });
   const a = d.action;
   if (!a) return false;
-  const p = a.kind === "decide" ? cli("decide", d.id, "--venture", venture, "--by", "Founder (replay)", "--answer", "Settled in the replay", "--confirm", a.confirm)
-    : a.kind === "accept" ? cli("accept", a.route, "--venture", venture, "--confirm", a.confirm)
-    : a.kind === "confirm" ? cli("confirm", a.statement, "--venture", venture, "--confirm", a.confirm) : null;
+  // spawnSync turns a missing argument into the string "undefined", as the replay always has.
+  const confirm = String(a.confirm);
+  const p = a.kind === "decide" ? cli("decide", d.id, "--venture", venture, "--by", "Founder (replay)", "--answer", "Settled in the replay", "--confirm", confirm)
+    : a.kind === "accept" ? cli("accept", String(a.route), "--venture", venture, "--confirm", confirm)
+    : a.kind === "confirm" ? cli("confirm", String(a.statement), "--venture", venture, "--confirm", confirm) : null;
   return p?.status === 0;
 }
 
 /** The founder's day, replayed on a copy: settle the top decision, recompute, and record which function
  *  leads after each step. A decision only the founder can write (a statement to draft) can't be settled
  *  by a replay, so it is set aside for the rest of the day, as a founder who leaves it for tomorrow would. */
-export function replay(dir, steps = 20) {
+export function replay(dir: string, steps = 20) {
   const ws = mkdtempSync(join(tmpdir(), "docket-replay-"));
   const venture = basename(dir);
   const copy = join(ws, "ventures", venture);
   mkdirSync(join(ws, "ventures"), { recursive: true });
   cpSync(dir, copy, { recursive: true });
-  const skipped = new Set();
-  const timeline = [];
+  const skipped = new Set<string>();
+  const timeline: { step: number; leading: string; attention: Record<string, number>; decision: string; value: number; dominant?: boolean; settled: boolean }[] = [];
   for (let i = 0; i < steps; i++) {
     const k = docket(copy, undefined, { set_aside: skipped });
     const top = k.functions[0];

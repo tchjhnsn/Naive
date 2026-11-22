@@ -12,7 +12,7 @@ const repo = new URL("../../../..", import.meta.url).pathname;
 const base = mkdtempSync(join(tmpdir(), "frames-test-"));
 const dir = join(base, "acme");
 // finance=rho syncs through the app's command (packages/naive/src/core/sync.ts); the test names a stand-in.
-const env = { ...process.env, HOME: base, NAIVE_SYNC_RHO: `node ${join(repo, "packages/naive/src/records/examples/money-sync/sync.ts")}` };
+const env: Record<string, string | undefined> = { ...process.env, HOME: base, NAIVE_SYNC_RHO: `node ${join(repo, "packages/naive/src/records/examples/money-sync/sync.ts")}` };
 for (const k of ["MENTURA_WORKSPACE", "TYPESAFE_API_KEY", "TYPESAFEAI_API_KEY", "MENTURA_TYPE_CMD"]) delete env[k];
 const made = spawnSync("node", [join(repo, "packages/create-venture/index.mjs"), dir, "--type", "software-startup", "--name", "Pat Doe", "--source", "finance=rho", "--yes", "--skip-install", "--no-git"], { env, encoding: "utf8" });
 if (made.status !== 0) { console.log(`FAIL create-venture: ${made.stderr}`); process.exit(1); }
@@ -20,18 +20,20 @@ for (const k of ["TYPESAFE_API_KEY", "TYPESAFEAI_API_KEY"]) delete process.env[k
 process.env.NAIVE_JUDGE_CMD = `node ${join(repo, "packages/naive/src/records/examples/frames/judge.ts")}`;
 process.env.MENTURA_WORKSPACE = base;
 const F = await import("./frames.ts");
-const file = (id) => JSON.parse(readFileSync(ventureFile(dir, `decisions/${id}.decision.json`), "utf8"));
+const file = (id: string) => JSON.parse(readFileSync(ventureFile(dir, `decisions/${id}.decision.json`), "utf8"));
 
 let failed = 0;
-const ok = (c, m) => { if (!c) throw new Error(m ?? "assertion failed"); };
-const t = async (name, fn) => { try { await fn(); console.log(`ok   ${name}`); } catch (e) { failed++; console.log(`FAIL ${name}: ${e.message}`); } };
+const ok: (c: unknown, m?: string) => asserts c = (c, m) => { if (!c) throw new Error(m ?? "assertion failed"); };
+const t = async (name: string, fn: () => unknown) => { try { await fn(); console.log(`ok   ${name}`); } catch (e) { failed++; console.log(`FAIL ${name}: ${e instanceof Error ? e.message : String(e)}`); } };
 const SAID = "I need investors to scale, but I don't want to give up control";
 
 await t("every frame matches its rules and names no instrument as the answer", async () => {
   ok(F.frames().length >= 1);
   const errs = F.frames().flatMap(F.check);
   ok(!errs.length, errs.join("\n"));
-  const bad = { ...F.frameOf("fund-without-ceding-control"), reframe: "Raise on a SAFE to keep {goal} on track." };
+  const frame = F.frameOf("fund-without-ceding-control");
+  ok(frame, "no frame fund-without-ceding-control");
+  const bad = { ...frame, reframe: "Raise on a SAFE to keep {goal} on track." };
   ok(F.check(bad).some((e) => /names "safe"/.test(e)), "a frame that names an instrument passed");
 });
 
@@ -42,15 +44,16 @@ await t("the founder's words find their frame; unrelated words find none", async
 
 await t("props come from the venture's records: revenue and runway from the Rho summary, unknowns say so", async () => {
   const { facts, sources } = await F.props(dir);
-  ok(/USD a month in/.test(facts.revenue) && sources.revenue === "money/_summary.json", facts.revenue);
+  ok(/USD a month in/.test(String(facts.revenue)) && sources.revenue === "money/_summary.json", facts.revenue);
   ok(facts.goal === "not on record" && facts.control_rights === "not on record", JSON.stringify(facts));
 });
 
 await t("code settles the verdicts at the thresholds; a premise with no answer is unknown", async () => {
   const f = F.frameOf("fund-without-ceding-control");
+  ok(f, "no frame fund-without-ceding-control");
   const v = F.verdicts(f, { "premise:needs-outside-money": { noul: 0.8 }, "premise:money-means-ownership": { noul: 0.2 }, "premise:ownership-means-control": { noul: 0.5 }, "dichotomy:false": { noul: 0.75 } });
   ok(v.premises["needs-outside-money"].verdict === "yes" && v.premises["money-means-ownership"].verdict === "no" && v.premises["ownership-means-control"].verdict === "unknown" && v.premises["control-is-one-thing"].verdict === "unknown");
-  ok(v.dichotomy.reading === "false");
+  ok(v.dichotomy?.reading === "false");
   const blind = F.verdicts(f, { "premise:control-is-one-thing": { noul: 0.02 } }, { control_rights: "not on record" });
   ok(blind.premises["control-is-one-thing"].verdict === "unknown" && blind.premises["control-is-one-thing"].overruled, "a judgment the facts cannot support was kept");
 });
@@ -58,7 +61,7 @@ await t("code settles the verdicts at the thresholds; a premise with no answer i
 await t("a run proposes the frame's decisions open, drafted by an agent, with the reframe and verdicts in the note", async () => {
   const r = await F.run(dir, { text: SAID });
   ok(r.ok, r.error);
-  ok(r.result.frame === "fund-without-ceding-control" && r.result.dichotomy.reading === "sequence" && r.result.verdicts["needs-outside-money"].verdict === "unknown", JSON.stringify(r.result.verdicts));
+  ok(r.result?.frame === "fund-without-ceding-control" && r.result.dichotomy?.reading === "sequence" && r.result.verdicts["needs-outside-money"].verdict === "unknown", JSON.stringify(r.result?.verdicts));
   const d = file("which-control-matters");
   ok(d.status === "open" && d.options.length === 6 && d.provenance.drafted_by.kind === "agent" && d.note.includes(SAID) && /which ways of funding/i.test(d.note), JSON.stringify(d));
   const how = file("fund-growth-how");
@@ -79,14 +82,14 @@ await t("lookup options are kept only when dated within the frame's freshness an
 
 await t("a second run asks the judge nothing new: the judgments are cached", async () => {
   const r = await F.run(dir, { text: SAID });
-  ok(r.ok && r.result.judge.cache === "hit", JSON.stringify(r.result?.judge));
+  ok(r.ok && r.result?.judge.cache === "hit", JSON.stringify(r.result?.judge));
 });
 
 await t("without a judge, a run refuses and says how to get one", async () => {
   const saved = process.env.NAIVE_JUDGE_CMD; delete process.env.NAIVE_JUDGE_CMD;
   const r = await F.run(join(base, "acme"), { id: "fund-without-ceding-control" });
   process.env.NAIVE_JUDGE_CMD = saved;
-  ok(r.ok || /no judge|NAIVE_JUDGE_CMD/.test(r.error), r.error);
+  ok(r.ok || /no judge|NAIVE_JUDGE_CMD/.test(r.error ?? ""), r.error);
 });
 
 console.log(failed ? `\n${failed} failing` : "\nall frame checks pass");
