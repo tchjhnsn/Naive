@@ -24,9 +24,9 @@
 import { join } from "node:path";
 import { PLANS } from "../engine/access.mjs";
 import { Effect } from "effect";
-import { CannotRun } from "../core/effect/errors.mjs";
-import { readJson, VentureFs } from "../core/effect/fs.mjs";
-import { describe, runMain } from "../core/effect/run.mjs";
+import { CannotRun } from "../core/effect/errors.ts";
+import { readJson, VentureFs } from "../core/effect/fs.ts";
+import { describe, runMain } from "../core/effect/run.ts";
 import { recordsIn } from "../records/index.mjs";
 import { routes } from "../records/routes/routes.mjs";
 import { validateValue } from "../records/validate.mjs";
