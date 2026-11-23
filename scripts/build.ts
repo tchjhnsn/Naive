@@ -109,6 +109,15 @@ export function rewrite(file: string, text: string, compiled: Set<string>, outpu
   return { text: out, missing };
 }
 
+/**
+ * Renames JSON string values that name a compiled .ts file from the package root to .mjs, so data that points at a
+ * module (a connector's `module`, a migration's `module`) names the file the compiled package holds. Only whole
+ * strings change; every other byte is kept.
+ */
+export function rewriteJson(text: string, compiled: Set<string>): string {
+  return text.replace(/"((?:[^"\\]|\\.)+\.ts)"/g, (m: string, s: string) => (compiled.has(posix.normalize(s)) ? `"${outPath(s)}"` : m));
+}
+
 /** Compiles the code entries into `out` with tsc. */
 function compile(root: string, out: string, code: Entry[]): void {
   const options: ts.CompilerOptions = {
@@ -163,11 +172,12 @@ export function build(root: string = ROOT): { built: boolean; files: number } {
       if (existsSync(js)) renameSync(js, join(tmp, outPath(e.path)));
     }
     // Data after code: tsc also writes the JSON files that code imports, and the copy keeps their bytes exact.
+    const compiled = new Set(code.filter((e) => e.path.endsWith(".ts")).map((e) => e.path));
     for (const e of entries.filter((x) => x.kind === "copy")) {
       mkdirSync(dirname(join(tmp, e.path)), { recursive: true });
-      copyFileSync(join(root, e.path), join(tmp, e.path));
+      if (e.path.endsWith(".json")) writeFileSync(join(tmp, e.path), rewriteJson(readFileSync(join(root, e.path), "utf8"), compiled));
+      else copyFileSync(join(root, e.path), join(tmp, e.path));
     }
-    const compiled = new Set(code.filter((e) => e.path.endsWith(".ts")).map((e) => e.path));
     const outputs = new Set(entries.map((e) => (e.kind === "compile" ? outPath(e.path) : e.path)));
     const missing: string[] = [];
     for (const e of code) {
