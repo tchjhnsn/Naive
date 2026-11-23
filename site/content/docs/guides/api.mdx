@@ -1,0 +1,26 @@
+---
+title: Call the local API
+description: Call the local HTTP API on your own machine, with no authentication.
+type: how-to
+status: draft
+lastReviewed: 2026-10-28
+owner: builder
+---
+
+Start the API when a script on your machine needs the same routes as the command line. It binds to `127.0.0.1` and has no authentication. Paths are on the [HTTP reference](../reference/api).
+
+## Start it and read the route table
+
+In one terminal, from the repository root:
+
+```sh
+node packages/naive/src/interfaces/api/server.ts
+```
+
+In another:
+
+```sh
+curl -s http://127.0.0.1:4330/routes
+```
+
+Stop the server with Ctrl-C. Provenance for a write comes from the headers `x-mentura-derived-from`, `x-mentura-decision` and `x-mentura-model`.

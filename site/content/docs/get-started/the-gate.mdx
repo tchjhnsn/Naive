@@ -1,0 +1,250 @@
+---
+title: The gate
+description: Decide what happens to every write before it lands, and set the venture's defaults, in naive.config.json.
+type: how-to
+status: draft
+lastReviewed: 2026-10-29
+owner: builder
+---
+
+Use this page to decide which writes an agent may make without you, who gets them instead, and which defaults your venture changes. It translates five Next.js concepts. The gate is Next.js's proxy (`proxy.ts`, once middleware): it runs before every write, not before every request. `naive.config.json` is `next.config.js`, and it also holds what `eslint.config.mjs` and the pinned versions in `package.json` hold. Who is acting plays the part of cookies in a Server Action.
+
+## Start a venture for this page
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts init ~/ventures/gate-demo --id gate-demo --layers purpose
+export MENTURA_WORKSPACE=~/ventures
+```
+
+## Fail a package closed
+
+Add `naive.config.json` to the venture root. Each entry in `fail_closed` covers that route and every route under it. An agent's write there is held as a draft. A person's write (`--as person`) is never held:
+
+```sh
+cat > ~/ventures/gate-demo/naive.config.json <<'JSON'
+{ "gate": { "fail_closed": ["validation"] } }
+JSON
+node packages/naive/src/checks/check-config.ts ~/ventures/gate-demo
+cat > ~/gate-solution.json <<'JSON'
+{
+  "venture": "gate-demo",
+  "statement": "Online booking that fills the calendar while the physio treats",
+  "alternatives": ["a receptionist", "phone and paper"],
+  "evidence": []
+}
+JSON
+node packages/naive/src/interfaces/cli/mentura.ts validation/solution write --venture gate-demo --input ~/gate-solution.json
+node packages/naive/src/interfaces/cli/mentura.ts accept validation/solution --venture gate-demo
+```
+
+```json
+{
+  "written": "_drafts/validation__solution.json.draft",
+  "draft": true,
+  "note": "validation fails closed in naive.config.json: written as a draft for a person to accept",
+  "gate_rule": "validation"
+}
+```
+
+`node packages/naive/src/checks/check-config.ts` checks the file against its schema. It also fails a route that matches nothing in the route table.
+
+## Send a write to its function owner
+
+A rule names the routes it covers in the router's own path patterns, like a proxy `matcher`. `product/[id]` and `product/*` match one segment. `validation/**` matches `validation` and everything under it. A plain route matches only itself. `then` is `draft`, `owner` or `refuse`.
+
+With `then: "owner"`, the draft goes to the function's owner. `owners` maps a function to a role:
+
+```sh
+cat > ~/ventures/gate-demo/naive.config.json <<'JSON'
+{
+  "owners": { "products": "product-lead" },
+  "gate": {
+    "rules": [
+      { "id": "products-to-owner", "routes": ["product/[id]"], "then": "owner" }
+    ]
+  }
+}
+JSON
+cat > ~/lamp.json <<'JSON'
+{ "id": "lamp", "name": "Lamp", "description": "A reading lamp for the clinic" }
+JSON
+node packages/naive/src/interfaces/cli/mentura.ts product/lamp write --venture gate-demo --input ~/lamp.json
+node packages/naive/src/engine/gate-drafts.ts ~/ventures/gate-demo --owner product-lead
+```
+
+```text
+product/lamp.json                    owner  product-lead  products-to-owner  variants a
+```
+
+Without an `owners` entry, the owner is the record's decision-class owner, then the founder.
+
+## Keep two drafts side by side
+
+Next.js rewrites a request to one of two pages for an A/B test. In Naive, a rule with `variants: true` keeps a second, different agent draft beside the first. It does not replace the first. One open decision asks you which to accept:
+
+```sh
+cat > ~/ventures/gate-demo/naive.config.json <<'JSON'
+{
+  "gate": {
+    "rules": [
+      { "id": "products-side-by-side", "routes": ["product/[id]"], "then": "draft", "variants": true }
+    ]
+  }
+}
+JSON
+cat > ~/lamp-b.json <<'JSON'
+{ "id": "lamp", "name": "Desk lamp", "description": "A desk lamp for the front desk" }
+JSON
+node packages/naive/src/interfaces/cli/mentura.ts product/lamp write --venture gate-demo --input ~/lamp-b.json
+node packages/naive/src/interfaces/cli/mentura.ts accept product/lamp --venture gate-demo --confirm product/lamp # exits 1
+node packages/naive/src/interfaces/cli/mentura.ts accept product/lamp --venture gate-demo --pick b --by Torian --confirm product/lamp
+```
+
+```text
+product/lamp holds 2 drafts side by side (a, b): pick one with --pick <letter>
+accepted: product/lamp.json (draft b; decision variants-product-lamp decided)
+```
+
+The decision lives at `product/decisions/lamp.variants.decision.json`. Accepting one draft removes the others.
+
+## Refuse a write
+
+```sh
+cat > ~/ventures/gate-demo/naive.config.json <<'JSON'
+{
+  "gate": {
+    "rules": [
+      { "id": "no-agent-products", "routes": ["product/*"], "then": "refuse", "note": "products are the founder's" }
+    ]
+  }
+}
+JSON
+node packages/naive/src/interfaces/cli/mentura.ts product/lamp write --venture gate-demo --input ~/lamp.json # exits 1
+```
+
+```text
+rule no-agent-products (naive.config.json) refuses this write: products are the founder's
+```
+
+## Route by confidence
+
+The gate never calls a model. It reads a score the write already carries, from `--confidence` in the CLI, `confidence` in the MCP tool, or the `x-mentura-confidence` header. A write with no score is never held for confidence. The validation package ships this rule, and the threshold is `thresholds.confidence` (0.7 by default):
+
+```sh
+rm ~/ventures/gate-demo/naive.config.json
+node packages/naive/src/interfaces/cli/mentura.ts validation/solution write --venture gate-demo --input ~/gate-solution.json --confidence 0.4
+node packages/naive/src/checks/check-config.ts ~/ventures/gate-demo --explain validation/pricing --confidence 0.9
+```
+
+```json
+{
+  "written": "_drafts/validation__solution.json.draft",
+  "draft": true,
+  "note": "rule validation-low-confidence (package validation) sends this write to its function owner, founder: written as a draft for them to accept",
+  "gate_rule": "validation-low-confidence",
+  "owner": "founder"
+}
+```
+
+`--explain` says what the gate would do with a write, without writing.
+
+## Package rules
+
+A venture has one gate. Its rules come from `naive.config.json` and from each package's `gate_rules` in `library/packages/<name>/package.json`. List them all:
+
+```sh
+node packages/naive/src/checks/check-config.ts ~/ventures/gate-demo --rules
+```
+
+To leave a package's rules out, set `"gate": { "packages": { "money": false } }`. Set `"packages": false` to leave them all out.
+
+## Pin package versions
+
+`packages` pins each package at a version. If the installed version differs, a write to that package is refused, for people too, until you change the pin or the install. After you install a new version, `--pin` moves the pins to what is installed:
+
+```sh
+cat > ~/ventures/gate-demo/naive.config.json <<'JSON'
+{ "packages": { "validation": "0.2.0" } }
+JSON
+node packages/naive/src/checks/check-config.ts ~/ventures/gate-demo # exits 1
+node packages/naive/src/interfaces/cli/mentura.ts validation/solution write --venture gate-demo --input ~/gate-solution.json --as person # exits 1
+node packages/naive/src/checks/check-config.ts ~/ventures/gate-demo --pin
+node packages/naive/src/interfaces/cli/mentura.ts validation/solution write --venture gate-demo --input ~/gate-solution.json --as person
+```
+
+```text
+FAIL  packages: validation is pinned to 0.2.0 but 0.3.0 is installed
+```
+
+## Change checks, thresholds and questions
+
+`checks.off` stops a check from running. `checks.warn` runs it but does not fail the route. `thresholds` overrides a threshold by name. `questions` turns off System 1 questions by kind, the part of the question key before the colon:
+
+```sh
+cat > ~/ventures/gate-demo/naive.config.json <<'JSON'
+{
+  "checks": { "off": ["packages/naive/src/checks/check-validation.ts"] },
+  "thresholds": { "confidence": 0.6, "idea-map": 0.7 },
+  "questions": { "idea-map": { "off": ["exists"] } }
+}
+JSON
+node packages/naive/src/checks/check-config.ts ~/ventures/gate-demo
+node packages/naive/src/interfaces/cli/mentura.ts validation/solution check --venture gate-demo
+node packages/naive/src/checks/check-config.ts ~/ventures/gate-demo --resolved
+```
+
+```json
+[
+  {
+    "check": "packages/naive/src/checks/check-validation.ts",
+    "passed": null,
+    "off": true
+  }
+]
+```
+
+`--resolved` prints the config with every default filled in.
+
+## Who is acting
+
+Every action carries who is acting: a person or an agent, and the team-plan role. The router checks it before anything else, on every call. An agent may not act in a role a person holds. Each answer says who acted, under `acting`. When who is acting changes between two calls to one MCP or API server, or the role's entry in the team plan changes, the next answer carries `acting_changed` with what the new identity may reach. Set `"acting": { "unknown_roles": "refuse" }` to refuse role ids the team plan does not list.
+
+Access is checked again at the record. A list read returns only the items the role may read:
+
+```sh
+mkdir -p ~/ventures/gate-demo/people
+cat > ~/ventures/gate-demo/people/team-plan.json <<'JSON'
+{
+  "venture": "gate-demo",
+  "updated": "2026-10-29",
+  "roles": [
+    { "id": "founder", "name": "Founder", "occupant": "person", "needed_by": "discovery", "status": "filled" },
+    { "id": "scout", "name": "Scout", "occupant": "agent", "needed_by": "discovery", "status": "filled",
+      "routes": { "read": ["product/lamp", "validation/**"], "write": ["validation/*"] } }
+  ]
+}
+JSON
+echo '{ "id": "kettle", "name": "Kettle", "description": "A kettle for the staff room" }' | node packages/naive/src/interfaces/cli/mentura.ts product/kettle write --venture gate-demo --input - --as person --confirm product/kettle
+MENTURA_ACTOR_ID=scout node packages/naive/src/interfaces/cli/mentura.ts product read --venture gate-demo --json
+MENTURA_ACTOR_ID=founder node packages/naive/src/interfaces/cli/mentura.ts validation/solution write --venture gate-demo --input ~/gate-solution.json # exits 1
+```
+
+```json
+{
+  "ok": true,
+  "result": {
+    "lamp": { "id": "lamp", "name": "Desk lamp", "description": "A desk lamp for the front desk" }
+  },
+  "acting": { "kind": "agent", "role": "scout" }
+}
+```
+
+The scout sees the lamp but not the kettle. The last write fails because `founder` is a person's role.
+
+## Rules use current route names
+
+The gate matches the route a write resolves to, after aliases. `purpose/validation/solution` resolves to `validation/solution`, so write rules with the current names.
+
+## Internal terms
+
+Public output must carry no internal text. `node packages/naive/src/engine/check-leaks.ts <file or folder> --venture <venture dir>` matches Naive's patterns (`packages/naive/src/engine/internal-terms.json`: decision ids, dated attributions, record paths, draft markers) and the venture's own, which the founder edits at `governance/internal-terms.json` in the venture: unannounced codenames and internal jargon. Both follow `packages/naive/src/records/internal-terms.schema.json`. A pattern with `"severity": "warn"` is reported without failing, for a term whose status a person has not decided yet.

@@ -28,7 +28,7 @@ const failing = [...all.errors, ...strict.errors];
 
 // repos/ is vendored reference source (AGENTS.md, Vendored repositories), excluded in tsconfig.json too.
 const tracked = spawnSync("git", ["ls-files", "*.mjs", "*.ts", ":!repos"], { cwd: root, encoding: "utf8" }).stdout.split("\n");
-const suppressed = tracked.filter((f) => f && existsSync(join(root, f))
+const suppressed = tracked.filter((f) => f && !f.startsWith("site/") && existsSync(join(root, f))
   && new RegExp(SUPPRESS).test(readFileSync(join(root, f), "utf8")));
 
 for (const l of failing) console.log(`FAIL  ${l}`);

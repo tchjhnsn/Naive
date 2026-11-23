@@ -1,0 +1,211 @@
+---
+title: Bringing a project in
+description: Bring an existing project into a new venture, then keep it moving with triggers and fresh with change notices from its systems of record.
+type: how-to
+status: draft
+lastReviewed: 2026-10-29
+owner: builder
+sources:
+  - https://nextjs.org/docs/app/guides/migrating
+  - https://react.dev/learn/responding-to-events
+  - https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary
+  - https://nextjs.org/docs/app/guides/incremental-static-regeneration
+---
+
+Use this page when you already have a project and want it in a venture. It translates the Next.js migration guides: you bring files in with `port` or `migrate`. It then covers what keeps the venture moving once it is in: triggers start the next step when something happens, as React event handlers do, a failed trigger is raised for you rather than lost, and a change in a system of record marks the summaries that read it stale, as Next.js revalidation does.
+
+Naive never restructures a project in place. You create a new venture, then bring the project into it: port moves the folder in as it is, and migrate reads it and writes records.
+
+| Command | What it does | When to use it |
+| --- | --- | --- |
+| `naive port` | Moves the folder into the venture whole, with no file changed | The folder is fine as it is and you want it to live in the venture |
+| `naive migrate` | An agent reads the project and rewrites what it finds as Naive records | You want records that pass the schemas, not a pile of files |
+
+## Port
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts init ~/naive/ventures/clinic --id clinic --layers purpose
+export MENTURA_WORKSPACE=~/naive/ventures
+mkdir -p ~/old-clinic/notes
+echo "Clinics lose a day a week to scheduling." > ~/old-clinic/notes/problem-statement.md
+node packages/naive/src/interfaces/cli/naive.ts port ~/old-clinic --venture ~/naive/ventures/clinic
+```
+
+```text
+move   /Users/you/old-clinic  ->  /Users/you/naive/ventures/clinic/repo/old-clinic   (1 files, 0.0 MB)
+
+1 folder to move, unchanged. Nothing has moved yet.
+```
+
+Run `naive port` once for each folder. The plan is in `.release/port-plan.json`; set any item's action to `leave`, then carry it out:
+
+```sh
+node packages/naive/src/interfaces/cli/naive.ts port --venture ~/naive/ventures/clinic --apply --confirm port
+```
+
+A port moves each folder with a rename, so no file in it is opened or changed and a git repository keeps its history. It never overwrites, never copies across disks, refuses a folder that is not the one it planned, and refuses while a process is working inside the folder unless you add `--even-if-busy`. Each folder becomes a read-only source of truth in `sources.json`, and each move is in `provenance.jsonl` with the path it came from.
+
+## Migrate
+
+Migrate sends the project's readable files, never its secrets, to an agent with the schemas of the routes they could fill. The agent's records become a plan and one open decision per function. Nothing is written until you decide:
+
+```text
+node packages/naive/src/interfaces/cli/naive.ts migrate --from ~/old-project --venture ~/ventures/new-venture
+node packages/naive/src/interfaces/cli/mentura.ts decide migrate-product --venture new-venture --by Founder --confirm migrate-product
+node packages/naive/src/interfaces/cli/naive.ts migrate --venture ~/ventures/new-venture --apply
+```
+
+The agent is `claude -p` by default, so Claude Code must be installed and signed in. Set `MENTURA_AGENT_CMD` to use another command that reads the prompt on stdin and answers as `claude -p --output-format json` does. To try migrate without a model, use the stand-in agent the tests use:
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts init ~/ventures/kettle --id kettle --layers purpose
+export MENTURA_WORKSPACE=~/ventures
+mkdir -p ~/kettles/notes && printf '# Plan\n\nWe sell kettles to cafes.\n' > ~/kettles/notes/plan.md
+MENTURA_AGENT_CMD="node packages/naive/src/records/examples/migrate/agent.ts" node packages/naive/src/interfaces/cli/naive.ts migrate --from ~/kettles --venture ~/ventures/kettle
+node packages/naive/src/interfaces/cli/mentura.ts decide migrate-product --venture kettle --by Founder --confirm migrate-product
+node packages/naive/src/interfaces/cli/naive.ts migrate --venture ~/ventures/kettle --apply
+```
+
+Each record is written through the router, so it passes its schema, and its provenance names the decision and the file it was derived from.
+
+## Start the next step with a trigger
+
+A trigger starts the next step when something happens in the venture. An event is a line of the venture's provenance log: a record written, drafted, accepted, confirmed or moved. The next step is one router call, or a decision proposed for you. Triggers live in `naive.config.json`.
+
+This venture runs the problem assessment each time the problem is written. A second trigger re-runs it when the ICP is written, but its route has a typo:
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts init ~/ventures/bakery --id bakery --layers purpose
+export MENTURA_WORKSPACE=~/ventures
+node packages/naive/src/interfaces/cli/naive.ts upgrade ~/ventures/bakery
+cat > ~/ventures/bakery/naive.config.json <<'JSON'
+{
+  "naive": { "version": "0.3.0", "channel": "stable" },
+  "triggers": [
+    { "id": "assess", "on": { "activity": "write", "route": "foundation/problem" },
+      "run": { "route": "purpose/validation/assess", "action": "run", "input": { "as_is": true } } },
+    { "id": "recheck", "on": { "activity": "write", "route": "foundation/icp/*" },
+      "run": { "route": "purpose/validation/asess", "action": "run" } }
+  ]
+}
+JSON
+cat > ~/bakery-problem.json <<'JSON'
+{ "venture": "bakery", "statement": "Bakeries throw away a fifth of their bread", "segment": "Neighbourhood bakeries", "evidence": [] }
+JSON
+cat > ~/bakery-icp.json <<'JSON'
+{ "venture": "bakery", "id": "bakers", "who": "Bakery owners", "primary": true }
+JSON
+node packages/naive/src/interfaces/cli/mentura.ts foundation/problem write --venture bakery --input ~/bakery-problem.json --as person
+node packages/naive/src/interfaces/cli/mentura.ts foundation/icp/bakers write --venture bakery --input ~/bakery-icp.json --as person
+node packages/naive/src/interfaces/cli/mentura.ts triggers --venture bakery
+```
+
+```text
+trigger   assess (naive.config.json): on {"activity":"write","route":"foundation/problem"} run {"route":"purpose/validation/assess","action":"run"}
+trigger   recheck (naive.config.json): on {"activity":"write","route":"foundation/icp/*"} run {"route":"purpose/validation/asess","action":"run"}
+run 1     ran       assess on write of foundation/problem.json
+run 2     failed    recheck on write of foundation/icp/bakers.json [raised]
+failed    recheck (run 2): no route purpose/validation/asess
+          mentura decide trigger-recheck-failed-2 --venture bakery --by <your name> --answer "Retry" (or "Skip this event", "Turn the trigger off")
+```
+
+Triggers run after each write, so you do not start them yourself. `mentura triggers` shows what ran. A trigger starts only on events after it was configured, never on its own writes, and acts as an agent, `trigger-<id>`. So a record behind a gate is drafted for you, not written.
+
+`on` can name an `activity`, a `route` or `entity` glob, and `by` (`person` or `agent`). Add `"once": true` to run a trigger only once. The schema is `packages/naive/src/records/trigger.schema.json`.
+
+A Mentura kit can bring its own triggers, called automations. Each one names the package it needs and waits until that package is complete. The `validation-kickoff` kit proposes the decision to start validating once the foundation is settled. Turn it on with `"kits": ["validation-kickoff"]` in `naive.config.json`.
+
+## A failed trigger becomes a decision
+
+React's error boundaries do not catch errors in event handlers, so you catch them yourself. Naive does it for you. A run that fails, or throws, is stored in `.naive/triggers.json` and raised as an open decision: retry, skip this event, or turn the trigger off. The decision fails open, so nothing else waits on it. Even a crash of the trigger runner is kept and raised on the next run.
+
+Fix the route, then decide:
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts init ~/ventures/bakery-fix --id bakery-fix --layers purpose
+export MENTURA_WORKSPACE=~/ventures
+node packages/naive/src/interfaces/cli/naive.ts upgrade ~/ventures/bakery-fix
+cat > ~/ventures/bakery-fix/naive.config.json <<'JSON'
+{
+  "naive": { "version": "0.3.0", "channel": "stable" },
+  "triggers": [
+    { "id": "recheck", "on": { "activity": "write", "route": "foundation/icp/*" },
+      "run": { "route": "purpose/validation/asess", "action": "run" } }
+  ]
+}
+JSON
+cat > ~/bakery-fix-icp.json <<'JSON'
+{ "venture": "bakery-fix", "id": "bakers", "who": "Bakery owners", "primary": true }
+JSON
+node packages/naive/src/interfaces/cli/mentura.ts foundation/icp/bakers write --venture bakery-fix --input ~/bakery-fix-icp.json --as person
+cat > ~/ventures/bakery-fix/naive.config.json <<'JSON'
+{
+  "naive": { "version": "0.3.0", "channel": "stable" },
+  "triggers": [
+    { "id": "recheck", "on": { "activity": "write", "route": "foundation/icp/*" },
+      "run": { "route": "purpose/validation/assess", "action": "run", "input": { "as_is": true } } }
+  ]
+}
+JSON
+node packages/naive/src/interfaces/cli/mentura.ts decide trigger-recheck-failed-1 --venture bakery-fix --by Founder --answer Retry --confirm trigger-recheck-failed-1
+node packages/naive/src/interfaces/cli/mentura.ts triggers --venture bakery-fix
+```
+
+```text
+run 1     failed    recheck on write of foundation/icp/bakers.json [retried]
+run 2     ran       recheck on write of foundation/icp/bakers.json
+```
+
+Retry runs the step again on the same event. "Skip this event" drops that one run. "Turn the trigger off" adds the trigger to `triggers_off` in `naive.config.json`.
+
+## Mark summaries stale when a source changes
+
+A summary in the venture often reads a system of record, such as a CRM. When the CRM changes, the summary is out of date. A notice marks it stale, as a Next.js revalidation webhook does for a page. Naive finds what reads the changed item: records whose provenance says they were derived from it, and every where-used child of a fact it holds. Nothing is fetched or rewritten. Writing the summary again makes it fresh.
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts init ~/ventures/bakery-crm-demo --id bakery-crm-demo --layers purpose
+export MENTURA_WORKSPACE=~/ventures
+mkdir -p ~/bakery-crm/customers ~/ventures/bakery-crm-demo/knowledge
+echo '{ "name": "Rise Bakery" }' > ~/bakery-crm/customers/rise.json
+cat > ~/ventures/bakery-crm-demo/knowledge/sources.json <<'JSON'
+{ "sources": [{ "id": "crm", "connector": "filesystem", "root": "../../bakery-crm", "writes": "none" }], "records": {} }
+JSON
+node packages/naive/src/interfaces/cli/mentura.ts decide product-exists --venture bakery-crm-demo --by Founder --answer "No: it is still an idea" --confirm product-exists
+cat > ~/loaf-log.json <<'JSON'
+{ "id": "loaf-log", "name": "Loaf log", "description": "Tells Rise Bakery how much bread to bake" }
+JSON
+node packages/naive/src/interfaces/cli/mentura.ts product/loaf-log write --venture bakery-crm-demo --input ~/loaf-log.json --as person --derived-from crm://customers/rise.json
+node packages/naive/src/interfaces/cli/mentura.ts notify --venture bakery-crm-demo --source crm --path customers/rise.json
+node packages/naive/src/interfaces/cli/mentura.ts stale --venture bakery-crm-demo
+node packages/naive/src/interfaces/cli/mentura.ts product/loaf-log read --venture bakery-crm-demo
+```
+
+```text
+1 stale: product/loaf-log.json
+stale  product/loaf-log.json  since 2026-10-29T06:47:04.732Z: crm changed customers/rise.json
+```
+
+The read still answers, and adds a `stale` field that says since when, why, and how to fix it:
+
+```json
+{
+  "stale": {
+    "since": "2026-10-29T06:47:04.732Z",
+    "because": [{ "source": "crm", "paths": ["customers/rise.json"], "reads": "crm://customers/rise.json" }],
+    "fix": "write product/loaf-log.json again from the changed source; it is fresh once written"
+  }
+}
+```
+
+A source the venture does not have is refused. A change nothing reads marks nothing.
+
+On Mentura, the CRM sends the notice itself. `platform/webhooks/server.mjs` takes a signed request and marks the same summaries stale:
+
+```text
+POST /webhooks/bakery-crm-demo/crm
+x-naive-signature: sha256=<HMAC-SHA256 of the raw body with NAIVE_WEBHOOK_SECRET_CRM>
+
+{ "paths": ["customers/rise.json"] }
+```
+
+A request with a bad signature gets 401, and an unknown venture or source gets 404. With no secret set, every request is refused.

@@ -1,0 +1,27 @@
+---
+title: Naive and Mentura
+description: Which parts of this repository are the framework, and which are the platform.
+type: explanation
+status: draft
+lastReviewed: 2026-10-28
+owner: builder
+---
+
+Use this page when a doc, a path or a dependency might belong to the platform rather than the framework.
+
+## Two sides
+
+Naive is the framework: the conventions that work offline, with no account and without naming a vendor (EE-043, EE-041). That includes packages (schemas, templates and checks), the router, the command line, the MCP server, the local API, provenance and these docs.
+
+{/* DRAFT: agent-written, needs Torian */}
+Mentura is the platform: hosting, connectors that reach a vendor, and integrations that call outside services. A kit is Mentura's enhanced package. It adds automations, agent workflows, skills and connectors. Platform code lives in `platform/`. These docs describe Naive. A page mentions Mentura only to mark that something is platform.
+
+## The import boundary
+
+Nothing outside `platform/` imports from it. The check is:
+
+```sh
+node packages/naive/src/checks/check-boundary.ts
+```
+
+Neither name has had a trademark check. Do not add a trademark mark or a legal claim. Say "SAD" or "MAD" when you mean those, and do not call either one a methodology site. MAD is a separate product. SAD was removed from this system (EE-036).

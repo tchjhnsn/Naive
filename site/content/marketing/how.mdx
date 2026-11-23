@@ -1,0 +1,47 @@
+---
+title: How it works
+description: How Naive keeps a venture moving while people make the decisions, explained through the Next.js ideas builders already know.
+status: draft
+lastReviewed: 2026-10-29
+owner: builder
+---
+
+{/* DRAFT: agent-written, needs Torian */}
+This page explains how Naive divides work between you and your agents, so you can see what you decide and what agents do for you.
+
+{/* DRAFT: agent-written, needs Torian */}
+<Section title="People decide by default">
+  People are the server and agents are the client: agents read, work and propose, and anything that settles the venture goes back to a person.
+
+  | Next.js | Naive |
+  | --- | --- |
+  | Server Components by default | People decide by default |
+  | Client Components, added where you need interactivity | Agents, added where you need work done |
+  | Server-only code never reaches the client | Private records and person-only actions never reach an agent |
+  | Server Actions called from the client | Proposals and drafts an agent sends up for a person to accept |
+</Section>
+
+{/* DRAFT: agent-written, needs Torian */}
+<Section title="The venture keeps moving while you decide">
+  The docket ranks the decisions that need you, inside each function and across functions.
+
+  | Next.js | Naive | What it means |
+  | --- | --- | --- |
+  | Prefetching | Precog | Agents draft the next likely decisions before you reach them. |
+  | Streaming | Streaming | A decision shows what is known now and fills in as evidence arrives. |
+  | Client-side transitions | Handoffs | Agents carry the work and its context into the next sprint, campaign or phase, with your approval. |
+
+  Precog drafting on its own, decisions that fill in as evidence arrives, and handoffs between phases are not built yet.
+</Section>
+
+{/* DRAFT: agent-written, needs Torian */}
+<Section title="A venture is folders of records">
+  A record is one file the venture keeps about itself, like a page in Next.js. Each venture function, such as marketing or finance, is declared once in `venture.json`. Each one says what it reads, what it writes and who may take each action.
+</Section>
+
+{/* DRAFT: agent-written, needs Torian */}
+<Section title="Naive and Mentura">
+  Naive is the open framework: conventions, schemas and checks that work offline. Mentura is the platform built on it, with the agents, automations and connections that do the work.
+</Section>
+
+<CTA href="/waitlist">Waitlist</CTA>

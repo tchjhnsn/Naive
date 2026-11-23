@@ -1,0 +1,178 @@
+---
+title: Caching
+description: Reuse computed answers and System 1 judgments until the venture changes, give every cached value a life, and keep private results per person.
+type: how-to
+status: draft
+lastReviewed: 2026-10-29
+owner: builder
+---
+
+Use this page to stop Naive from redoing work it has already done. It translates the Next.js Caching chapter. In Next.js, `use cache` stores the result of a function or a component, `cacheLife` says how long it lasts, and the cache key is the arguments plus the values the function captures. In Naive the same ideas apply to two things: derived records (the result of a command route, such as need-now or the decision list) and judgments (one System 1 answer to a typed question).
+
+## Start a venture for this page
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts init ~/ventures/cache-demo --id cache-demo --layers purpose
+export MENTURA_WORKSPACE=~/ventures
+```
+
+## A result is stored and reused
+
+Caching is on in the recommended defaults. Run need-now twice. The first run computes and stores the result. The second reads it from the store.
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts system/need-now run --venture cache-demo --json > ~/first.json
+node packages/naive/src/interfaces/cli/mentura.ts system/need-now run --venture cache-demo --json > ~/second.json
+node packages/naive/src/interfaces/cli/mentura.ts system/cache run --venture cache-demo --value list
+```
+
+With `--json`, each run carries a `cache` field. The first says `miss`, the second `hit`:
+
+```json
+{
+  "status": "hit",
+  "level": "record",
+  "name": "system/need-now",
+  "life": "hours",
+  "stored_at": "2026-10-29T04:44:09.988Z",
+  "expires_at": "2026-10-30T04:44:09.988Z",
+  "age_s": 0,
+  "by": "framework"
+}
+```
+
+The store is `.naive/cache/` inside the venture. Git ignores it and the router never routes it, like the `.next/` folder in Next.js.
+
+## Changing the venture starts it fresh
+
+The key holds the state of the venture's files, the framework's code, the arguments, and anything the route declares it varies on. Write a record and the key changes, so the next run computes again:
+
+```sh
+cat > ~/problem.json <<'JSON'
+{ "venture": "cache-demo", "statement": "Home cooks lose meals to kettles that boil over.", "segment": "home cooks", "evidence": [] }
+JSON
+node packages/naive/src/interfaces/cli/mentura.ts foundation/problem write --venture cache-demo --input ~/problem.json --as person
+node packages/naive/src/interfaces/cli/mentura.ts system/need-now run --venture cache-demo --json > ~/third.json
+```
+
+A write never reads from the cache and never stores in it. Only reads use it: `run`, and `view` over a command. This is the Naive form of a Next.js route handler, where `GET` can opt in to caching and other methods cannot. A read can opt out for one call with the input `{ "cache": "no-store" }`.
+
+## Which routes are cached
+
+A route is cached only when something declares it. Packages declare it in their definition with `use_cache`, the Naive form of the `use cache` directive. The decisions package declares the decision list:
+
+```json title="library/packages/decisions/package.json"
+"use_cache": [
+  { "route": "governance/decisions", "level": "record", "life": "minutes", "vary": ["hour", "env:DECISIONS_NOW"] }
+]
+```
+
+The framework declares its own derived records: `system/need-now`, `system/time-to-ready` and `system/package`. The foundation package declares `purpose/foundation`, and the validation package declares `purpose/validation/assess`.
+
+`vary` names inputs other than the files. The decision list reads the clock to say what is due, so it varies on the hour. The values are `day`, `hour`, `actor`, and `env:` followed by the name of an environment variable.
+
+## Every cached value has a life
+
+A life is a Next.js `cacheLife` profile: `seconds`, `minutes`, `hours`, `days`, `weeks`, `max` or `default`. Within its revalidate time an entry is fresh. After that it is computed again. After its expire time it is gone. A declaration without a life is refused.
+
+A venture changes a route's life, or turns it off, in `naive.config.json`:
+
+```sh
+cat > ~/ventures/cache-demo/naive.config.json <<'JSON'
+{ "cache": { "routes": { "system/need-now": "days", "system/time-to-ready": false } } }
+JSON
+NAIVE_CACHE=off node packages/naive/src/interfaces/cli/mentura.ts system/need-now run --venture cache-demo --json > ~/uncached.json
+```
+
+`{ "cache": { "enabled": false } }` turns caching off for the venture. `NAIVE_CACHE=off` turns it off for one command.
+
+## Judgments are asked once per state
+
+A judgment is one System 1 answer. Its key is the exact state it was given, the question, the model, and the versions of Naive and the packages. Change any of them and it is asked again. Otherwise the stored answer is reused, because the same input gives the same answer.
+
+`system/judge` takes a typed request, the same shape `platform/integrations/jev.mjs` reads. It answers what it can from the store and sends only the rest to `NAIVE_JUDGE_CMD`, in one request. This stand-in judge answers every question with 0.9:
+
+```sh
+cat > ~/judge.mjs <<'JS'
+let text = "";
+for await (const chunk of process.stdin) text += chunk;
+const request = JSON.parse(text);
+const answers = Object.fromEntries(Object.keys(request.questions).map((k) => [k, { noul: 0.9 }]));
+console.log(JSON.stringify({ model: request.model, answers }));
+JS
+cat > ~/request.json <<'JSON'
+{
+  "state": { "idea": "A kettle that never boils over" },
+  "model": "jev-latest",
+  "questions": {
+    "is-product": { "type": "noul", "instructions": "Is the idea in `idea` a product?", "criteria": { "true": "Yes", "false": "No" } },
+    "is-hardware": { "type": "noul", "instructions": "Is the idea in `idea` hardware?", "criteria": { "true": "Yes", "false": "No" } }
+  }
+}
+JSON
+export NAIVE_JUDGE_CMD="node $HOME/judge.mjs"
+node packages/naive/src/interfaces/cli/mentura.ts system/judge run --venture cache-demo --input ~/request.json
+node packages/naive/src/interfaces/cli/mentura.ts system/judge run --venture cache-demo --input ~/request.json
+```
+
+The second run asks the judge nothing:
+
+```json
+{
+  "model": "jev-latest",
+  "answers": { "is-product": { "noul": 0.9 }, "is-hardware": { "noul": 0.9 } },
+  "cache": { "status": "hit", "reused": ["is-product", "is-hardware"], "asked": [], "unanswered": [] }
+}
+```
+
+Add a question and only that question is asked. A judgment's default life is `max`. A request can set its own with `"life"`.
+
+## Private results stay with one person
+
+Some results depend on who is acting. Next.js keeps these out of the shared cache with `use cache: private`. In Naive, a request with `"private": true`, or a route that varies on `actor`, is stored per person. Another person never gets it and is asked for their own. When the actor has no name, the result is not stored at all. The person is `MENTURA_PERSON` for `--as person`, or else `MENTURA_ACTOR_ID`. `system/cache` lists only the shared entries and your own.
+
+## One answer from confirmed, cached and fresh parts
+
+Next.js mixes static, cached and streamed content on one page. `system/answer` gathers several routes into one answer and labels each part:
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts system/answer run --venture cache-demo --value foundation/problem,system/need-now,purpose/foundation
+```
+
+```json
+{
+  "venture": "cache-demo",
+  "mix": { "confirmed": 1, "cached": 1, "fresh": 1 },
+  "parts": [
+    { "route": "foundation/problem", "kind": "confirmed", "by": "person" },
+    { "route": "system/need-now", "kind": "cached", "cache": { "status": "hit", "life": "hours" } },
+    { "route": "purpose/foundation", "kind": "fresh", "cache": { "status": "miss", "life": "hours" } }
+  ]
+}
+```
+
+The output above is shortened: each part also carries its `data`. A record is `confirmed` when a person wrote, accepted or confirmed it last, and `agent` when an agent did. A record not written yet is `missing`. Give the input `{ "routes": [...], "judge": <request> }` to add a judgment part.
+
+## Within one action, each read happens once
+
+One router call is one action, together with every call it makes. Within it, each record is read once and the route table, the decision list, the venture's state and each command's output are computed once, then shared. This is the Naive form of React's `cache` and of fetch memoization in Next.js. For example, the overview needs need-now three times, for its layouts and its own slot, and runs it once. A write in the action forgets what was read for that venture, so a read after it sees the new record.
+
+## Look after the store
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts system/cache run --venture cache-demo --value prune
+node packages/naive/src/interfaces/cli/mentura.ts system/cache run --venture cache-demo
+```
+
+`prune` removes expired entries. `clear` removes them all. Without a value, `system/cache` reports the entries by level, what has expired, the size, and each declared route's life. Any other value is refused:
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts system/cache run --venture cache-demo --value forever # exits 1
+```
+
+## What is not built yet
+
+- A stale entry is computed again in the foreground. Next.js serves stale content and revalidates in the background. Naive serves a stale entry only when code asks for it (`allowStale` in `packages/naive/src/engine/caching.ts`); the CLI has no flag for it.
+- The key covers the venture's own folder and the framework's code. A command that read a parent venture or another source would not be keyed on it. The declared commands read only their own folder.
+- No package calls a model yet (`use_model` is empty), so no package declares a judgment-level `use_cache`. `system/judge` takes the life per request.
+- The release as a static shell, prefetching, and adding new items to a release are other rows of the chapter and are not part of this page.

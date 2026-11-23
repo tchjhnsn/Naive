@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 // Checks docs/design/naive-nextjs-status.json against the Next.js translation ledger and the code: every
 // concept row in the ledger has exactly one status, and a built or partial row cites files that exist (or,
-// in evidence_elsewhere, files in everything-ecosystem, which are not checked here) and names a docs page. The docs pages live with the docs site, outside this repository: given --docs <dir>
-// (the site's MDX content folder), each named page must exist there and the generated "What's built" page,
+// in evidence_elsewhere, files in an app's repository, which are not checked here) and names a docs page. The docs pages live in the docs site,
+// site/ in this repository: given --docs <dir> (site/content/docs), each named page must exist there and the generated "What's built" page,
 // <dir>/get-started/whats-built.mdx, must match the data.
 //
 //   node packages/naive/src/checks/check-nextjs-status.ts                          check, and print the counts

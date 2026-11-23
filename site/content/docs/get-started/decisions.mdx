@@ -1,0 +1,86 @@
+---
+title: Decisions
+description: See which decision needs you first, make it, and let an agent propose one for you to decide.
+type: how-to
+status: draft
+lastReviewed: 2026-10-29
+owner: builder
+---
+
+Use this page to work through the decisions a venture owes. Next.js has no equivalent. In Naive a decision is a record in `decisions/`: a question, its options, the record it decides, whether it fails closed, and the phase it is needed in. A decision that fails closed holds what waits behind it.
+
+## The docket
+
+```sh
+node packages/naive/src/engine/docket.ts ~/ventures/my-venture
+```
+
+```text
+my-venture (discovery): next is product-exists in Foundation, which outweighs every other function
+
+Foundation: attention 110 (85%)
+    80  product-exists  [dominant]: unlocks Write product cards for what exists or is planned; settles the strategic foundation; holds 2 decisions: core-product, flagship
+    30  foundation-alignment  [dominant]: settles the strategic foundation
+```
+
+The docket ranks decisions inside each function, then ranks the functions against each other. A decision's value includes everything it holds, so one gate can outweigh a whole function. The ranking is code, with no model call.
+
+## Make a decision
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts decide product-exists --venture my-venture --by Founder --answer "Still an idea" --confirm product-exists
+```
+
+`--answer` gives your own wording; leave it out to approve the drafted wording. At a terminal you type the decision's id to confirm. The answer lists what the decision unlocked, and the docket moves on to the next one.
+
+## Change, merge and roll back a decision
+
+A decided decision changes by a new version: give `decide` a new `--answer`, and the earlier version is kept in `versions`. Approving does not change your records. Merging does: it writes the decided answer into the records the decision names in `applies_to`, and it is its own step.
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts merge product-exists --venture my-venture --by Founder --confirm product-exists # exits 1
+node packages/naive/src/interfaces/cli/mentura.ts decide product-exists --venture my-venture --by Founder --rollback 1 --confirm product-exists # exits 1
+```
+
+Both refuse here, and say why: `product-exists` names no `applies_to`, so there is nothing to merge into, and it has only one version, so there is nothing to roll back to. On a decision such as a mission, whose `applies_to` names `venture.json` `core.promise`, the same `merge` writes the answer there. A rollback makes an earlier version current again as a new version, so history is never rewritten. Merge it to apply it.
+
+Who may merge:
+
+- A person may. With no grant, only the founder merges.
+- A role may merge only under a live grant in the venture's `governance/delegation.json` that names it, sets `may_merge`, and lists the decision's `class`. Pass `--role <role>`; an agent with no `--by` merges as its role (`MENTURA_ACTOR_ID`). A decision with no `class` is merged only by the founder.
+- A one-way door (a class in `one_way_doors`) is never merged by a role, even with a grant.
+
+A merge marks stale the public variants written from the merged field (an MDX file whose frontmatter says `variant_of: <file>#<field>`), so they are checked again before they are published.
+
+A decided decision always names who decided it. Writing one through a record route without `provenance.approved_by` is refused for a person, and held as a draft for an agent. A decision approved where no one signs in (the venture console) also carries `provenance.signer: "unverified"` and no `wording`: it names the venture's founder, but nothing checked that the founder was the one who approved it. Its entry in `provenance.jsonl` says `agent.kind: "unverified"` and `via: "console"`. Rolling back to such a version under your own name clears the mark.
+
+## Let an agent propose one
+
+```sh
+cat > ~/pricing-decision.json <<'JSON'
+{ "id": "pricing-model", "question": "Charge per clinic per month, or per booking?", "options": ["per clinic per month", "per booking"], "layer": "purpose", "boundary": "fail-open", "needed_in": "validation" }
+JSON
+node packages/naive/src/interfaces/cli/mentura.ts propose --venture my-venture --input ~/pricing-decision.json
+```
+
+A proposed decision stays open until a person decides it. An agent that reports itself cannot decide; the limits are under [Merging, impact and reasons](#merging-impact-and-reasons).
+
+## The matrix
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts governance/decisions run --venture my-venture
+```
+
+The matrix lists every decision the venture owes by layer and phase, with its parent, boundary, and whether it renders now, waits, comes later, or is stale because its parent changed after it was made.
+
+## Merging, impact and reasons
+
+A merge writes a decided answer into the records the decision names in `applies_to`. Each record is checked against its schema first. If the answer would add a schema error, the merge is refused and nothing is written. Gaps the record already had do not block it, but a record the merge would create must pass whole. If the schema check cannot run, the merge is refused too.
+
+Who may merge is checked before anything is written. A person merges only as themselves, and only a founder merges a one-way door. A role merges only under a live grant that names `may_merge` and the decision's class, whose chain passes the same check as `check-delegation`, and whose `scope` holds every `applies_to` file. Approving needs a person too: when a venture records people or founders, `--by` must be one of them. A venture that records no one has no list to check against, so setup can run. The check that no agent is acting reads `MENTURA_ACTOR`, `MENTURA_MODEL` and `MENTURA_ACTOR_ID`. An agent's raw write to a decided decision becomes a draft for a person to accept, whatever status it sets. A decision's `id` is its file name and one id has one file, so a write that names another id is refused.
+
+This is not signed identity. Who is acting is an environment variable, so these checks stop an agent that reports itself honestly and no more. An agent that unsets the variables passes as a person. Three doors stay open even with the variables set: `mentura accept` lands a draft with no check of who ran it, including an agent's own draft of `governance/delegation.json` or `people/people.json`, `write --as person` writes as a person on the caller's word, and an agent can write those governance records through the same two doors. The real fix is signed identity, which a process cannot set for itself. Until then, review of the repository by a person is the gate that holds.
+
+The impact map is built only for a merged version. Running `mentura impact` on a decision that was never merged is refused. Running it again on the same merged version returns the map already built and marks nothing stale a second time.
+
+A new version keeps the reasons it inherits frozen at the hash they were decided on. If a cited file changed, the new version stays stale until the person approving it restates that reason with the same claim, which freezes it fresh. A rollback restores the earlier version's reasons along with its answer.

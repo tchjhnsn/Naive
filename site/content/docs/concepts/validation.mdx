@@ -1,0 +1,26 @@
+---
+title: Validation
+description: How a problem's evidence is labelled, and why the single score is held.
+type: explanation
+status: draft
+lastReviewed: 2026-10-28
+owner: builder
+sources:
+  - https://www.gradeworkinggroup.org/
+---
+
+Validation here is not a yes or no, and it is not one number. For the problem, the assessment labels four assumptions and says which commitment that evidence supports.
+
+## Assess the problem
+
+From the repository root:
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts purpose/validation/assess run --venture everything-ecosystem
+```
+
+When the record is incomplete, the command lists what is missing and asks you to fill it in or run as is. Off a terminal it prints both choices and exits. The labels are demonstrated, inferred, assumed, unknown and contradicted. The commitment they support is explore, prototype, charge or raise (EE-050).
+
+## The single score is held
+
+An older check still grades evidence from high to very low, adapting GRADE, and folds seven sub-scores into one number. That score is held (EE-050). The route `purpose/validation/score` still runs it and says so. Use `purpose/validation/assess` for the problem.

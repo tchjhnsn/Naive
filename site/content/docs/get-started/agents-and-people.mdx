@@ -1,0 +1,247 @@
+---
+title: Agents and people
+description: Declare the steps where a model judges or drafts, see what it is given, run it, and see whose each answer is.
+type: tutorial
+status: draft
+lastReviewed: 2026-10-29
+owner: builder
+---
+
+Use this page to put a model into a venture where it belongs, run it, and tell whose each answer is. It translates the Next.js chapter on Server and Client Components, with parts of Fetching Data and Error Handling. In Next.js the server is the default and the client is added where it is needed. In Naive, code is the default and a model is added where a judgment is needed.
+
+## Code by default, a model at the leaves
+
+Code reads records, computes values, checks gates and decides. A model does one of five things, one atomic question at a time:
+
+| Kind | What the model does | Its answer |
+| --- | --- | --- |
+| `classify` | labels a fragment | one of `options` |
+| `noul` | judges fit | yes, no or unknown |
+| `choice` | chooses among options | one of `options` |
+| `score` | rates | a number in `scale` |
+| `draft` | writes prose | text |
+
+Only a draft is model-only. Code never expects a deterministic answer from it, so a draft has no threshold and no code check. This is the `client-only` package in Next.js.
+
+## Declare a model step
+
+A package lists its model steps in `use_model`. This is the `"use client"` boundary. The customers package declares two:
+
+```json title="library/packages/customers/package.json"
+{
+  "use_model": [
+    {
+      "step": "stage",
+      "kind": "choice",
+      "for_each": "customers",
+      "question": "Which buying stage do the notes {item.notes} put this customer at?",
+      "inputs": ["item.notes"],
+      "options": ["aware", "trying", "paying", "gone"],
+      "threshold": 0.7
+    },
+    {
+      "step": "summary",
+      "kind": "draft",
+      "for_each": "customers",
+      "after": ["stage"],
+      "question": "Write one plain sentence about this customer from the notes {item.notes} and the stage {steps.stage}, with the seat count written as {{seats}}.",
+      "inputs": ["item.notes"],
+      "computed": { "seats": { "item": "seats" } },
+      "keep": ["seats"]
+    }
+  ]
+}
+```
+
+- `inputs` names fields, never a whole record or package. An input is `item.<path>`, `<route>#<path>` or `<record id>.<path>`. The model gets those fields and nothing else.
+- Every input must appear in the question as `{path}`, so nothing is sent that the question does not ask about.
+- `computed` values come from code: `{"item": <path>}`, `{"count": <route>}` or `{"read": "<route>#<path>"}`.
+- `keep` names computed values a draft must carry unchanged. The model writes `{{seats}}`, code fills in the number and checks that it came through.
+- `after` makes a step wait on the steps it reads first.
+- `when` asks a step only when a computed condition holds, such as `{"computed": "seats", "gte": 10}`.
+- `budget` caps the characters of state one question gets (2000 by default).
+
+A private record, a sensitive record or a field in `private_fields` never reaches a model. The step is refused for that item.
+
+## Try it
+
+Start a venture and add two customers as a person:
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts init ~/ventures/agents-demo --id agents-demo --layers purpose
+export MENTURA_WORKSPACE=~/ventures
+echo '{"id": "ada", "name": "Ada Clinic", "notes": "Signed the annual plan last week and added two more rooms.", "seats": 12}' | node packages/naive/src/interfaces/cli/mentura.ts customers/ada write --venture agents-demo --input - --as person
+echo '{"id": "bo", "name": "Bo Physio", "notes": "Asked for a demo, then went quiet.", "seats": 3}' | node packages/naive/src/interfaces/cli/mentura.ts customers/bo write --venture agents-demo --input - --as person
+```
+
+Check the steps, then look at the payload. The payload asks no model:
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts steps check --venture agents-demo
+node packages/naive/src/interfaces/cli/mentura.ts steps payload --venture agents-demo
+```
+
+```text
+2 model steps check: each asks one typed question about named fields, in order, and no private field reaches a model.
+4 judgments pending, 2 computed by code, 0 withheld, 0 skipped.
+  customers/stage/ada  choice
+  customers/stage/bo  choice
+  customers/summary/ada  draft  waits on customers/stage/ada
+  customers/summary/bo  draft  waits on customers/stage/bo
+```
+
+The payload is the RSC Payload's counterpart: what code computed, a placeholder for each judgment still pending, and the state each one receives. `mentura system/steps run --venture agents-demo --json` returns it through the router. A question points at paths in that state, and the state holds only the named field:
+
+```json
+{
+  "placeholder": "customers/stage/ada",
+  "question": "Which buying stage do the notes `state[\"customers/stage/ada\"].item.notes` put this customer at?",
+  "reads": ["customers/ada.json#notes"],
+  "state": { "item": { "notes": "Signed the annual plan last week and added two more rooms." } }
+}
+```
+
+## Run the steps
+
+A run needs a model. Without one it refuses rather than make answers up. Here the model is a file of answers, as a founder's agent or a typed-judgment service would return them:
+
+```sh
+cat > ~/agents-demo-answers.json <<'EOF'
+{
+  "model": "stand-in",
+  "answers": {
+    "customers/stage/ada": { "value": "paying", "confidence": 0.92 },
+    "customers/stage/bo": { "value": "trying", "confidence": 0.41 },
+    "customers/summary/ada": { "value": "Ada Clinic pays for {{seats}} seats and just added two rooms." },
+    "customers/summary/bo": { "value": "Bo Physio is trying {{seats}} seats and has gone quiet." }
+  }
+}
+EOF
+node packages/naive/src/interfaces/cli/mentura.ts steps run --venture agents-demo # exits 1
+node packages/naive/src/interfaces/cli/mentura.ts steps run --venture agents-demo --answers ~/agents-demo-answers.json
+```
+
+```text
+customers/stage/ada  answer  "paying"  (0.92)
+customers/stage/bo  uncertain  (0.41)
+customers/summary/ada  answer  "Ada Clinic pays for 12 seats and just added two rooms."
+uncertain customers/stage/bo: confidence 0.41 is below the threshold 0.7; the founder answers decision judge-customers-stage-bo
+skipped customers/summary/bo: waits on customers/stage/bo, which has no answer yet
+```
+
+What happened:
+
+- Each package's questions in one wave went to the model in one request, and packages are asked in parallel.
+- The summary waited on the stage, because it reads it first.
+- Each answer was checked against its kind. A malformed answer never comes back: it is uncertain.
+- The answer for Bo was below its threshold, so it is uncertain and became an open decision for the founder. The other answers were not held up by it.
+- Each answer is a judgment record at `knowledge/judgments/<id>.json`, written through the router.
+
+Set `MENTURA_MODEL_CMD` to use a live model: a command that reads one request on stdin and prints `{"model", "answers"}`. Add `--stream` to print computed values first and then each judgment as it arrives, one JSON line each. A second run reuses a judgment while its question and state are unchanged; `--fresh` asks again.
+
+## Whose each answer is
+
+A judgment is the agent's until a person confirms it. The customer record the step read stays the person's:
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts steps provenance knowledge/judgments/customers-stage-ada.json --venture agents-demo
+node packages/naive/src/interfaces/cli/mentura.ts steps provenance customers/ada.json --venture agents-demo
+```
+
+```text
+knowledge/judgments/customers-stage-ada.json: agent (a model's judgment): a model's judgment (use model: customers/stage); a person confirms it
+customers/ada.json: person: written by a person
+```
+
+A record an agent writes from a judgment (its provenance `derived_from` names the judgment) is listed as downstream of the model. It stays the agent's until a person confirms the judgment, or until its own checks pass (`--checks`).
+
+The founder answers what the model was not sure of. The next run writes that answer as the founder's and asks the step that waited on it:
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts decide judge-customers-stage-bo --venture agents-demo --by Ana --answer trying --confirm judge-customers-stage-bo
+node packages/naive/src/interfaces/cli/mentura.ts steps run --venture agents-demo --answers ~/agents-demo-answers.json
+node packages/naive/src/interfaces/cli/mentura.ts steps confirm customers-summary-ada --venture agents-demo --by Ana
+node packages/naive/src/interfaces/cli/mentura.ts steps provenance knowledge/judgments/customers-summary-ada.json --venture agents-demo
+```
+
+```text
+customers/stage/ada  reused  "paying"  (asked before on the same state)
+customers/summary/ada  reused  "Ada Clinic pays for 12 seats and just added two rooms."  (asked before on the same state)
+customers/stage/bo  answer  "trying"
+customers/summary/bo  answer  "Bo Physio is trying 3 seats and has gone quiet."
+knowledge/judgments/customers-summary-ada.json: person: confirmed by Ana
+```
+
+## When something goes wrong
+
+Next.js has two kinds of error. Naive has three, plus the answer:
+
+| Outcome | Examples | What happens |
+| --- | --- | --- |
+| answer | a typed answer at or above its threshold | written as a judgment |
+| expected | an invalid write, a missing record, a gate that holds, a failed model request, state over budget | reported in the run's answer, and the other questions go on |
+| uncaught | a bug: a cycle in the step order, a request that points at a path not in its state | the CLI says `uncaught:` and exits 1 |
+| uncertain | below threshold, malformed, unknown or unanswered | an open decision for the founder |
+
+When a judgment and a code check disagree (`"check": {"equals": "<computed value>"}`), the code wins. The judgment is recorded as `overruled`, with both values. A draft that changed a kept value is uncertain.
+
+## Order, parallel and speculation
+
+The `after` links between records are the venture's real order. A record waits on the records it reads first, and records with nothing to wait on move at once:
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts steps waterfall --venture agents-demo
+```
+
+```text
+0: department (now), evidence (now), icp (now), knowledge-sources (now), product (now), ...
+1: account (waits on icp), anatomy-answers (waits on product), ... telos (waits on validation-problem), ...
+2: alignment (waits on telos), ...
+```
+
+A cycle in the order is a bug, so it is uncaught. Steps follow the same rule through their own `after`.
+
+`--speculate` is preloading. A step with `when` is asked while code is still computing its condition, and answers whose condition turns out false are discarded. Without it, code computes first and only the needed judgments are asked.
+
+## A kit's agent workflow
+
+A kit (Mentura's enhanced package) wraps its agent workflow in a declared boundary in its `kit.json`: what it reads, what it writes and which steps use a model. This is wrapping a third-party component with `"use client"`. Calls outside the boundary are refused, and the workflow always acts as the kit's agent:
+
+```sh
+cat > ~/agents-demo-kit.json <<'EOF'
+{
+  "name": "follow-up",
+  "package": "customers",
+  "boundary": {
+    "reads": ["customers", "customers/*"],
+    "writes": ["knowledge/judgment/**"],
+    "use_model": [
+      {
+        "step": "upsell",
+        "kind": "noul",
+        "for_each": "customers",
+        "question": "Do the notes {item.notes} say they want more seats?",
+        "inputs": ["item.notes"],
+        "computed": { "seats": { "item": "seats" } },
+        "when": { "computed": "seats", "gte": 10 }
+      }
+    ]
+  }
+}
+EOF
+echo '{"answers": {"follow-up/upsell/ada": {"value": true, "confidence": 0.88}, "follow-up/upsell/bo": {"value": false, "confidence": 0.9}}}' > ~/agents-demo-kit-answers.json
+node packages/naive/src/router/kit-boundary.ts ~/agents-demo-kit.json
+node packages/naive/src/interfaces/cli/mentura.ts steps run --venture agents-demo --kit ~/agents-demo-kit.json --answers ~/agents-demo-kit-answers.json --speculate
+```
+
+```text
+kit follow-up: reads 2 route patterns, writes 1, 1 model steps, inside its boundary.
+follow-up/upsell/ada  answer  true  (0.88)
+discarded follow-up/upsell/bo
+```
+
+Bo has 3 seats, so the condition did not hold and the answer asked for him was discarded.
+
+## People and agents at the keyboard
+
+The CLI writes as an agent unless you pass `--as person`. The MCP server always writes as an agent, so nothing an agent sends through it can approve itself. A write by an agent to a gated record becomes a draft ([Writing records](./writing-records)). The code is `packages/naive/src/router/orchestration/model-steps.ts` and `packages/naive/src/router/kit-boundary.ts`; `node interface/tests/model-steps-test.mjs` tests them.
