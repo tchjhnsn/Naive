@@ -18,6 +18,10 @@
       "types": "./packages/naive/src/*.ts",
       "default": "./dist/packages/naive/src/*.mjs"
     },
+    "./src/*.mjs": {
+      "types": "./packages/naive/src/*.ts",
+      "default": "./dist/packages/naive/src/*.mjs"
+    },
     "./src/*": {
       "types": "./packages/naive/src/*",
       "default": "./dist/packages/naive/src/*"
