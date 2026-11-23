@@ -4,7 +4,7 @@
 // result runs from node_modules.
 //
 //   node scripts/build-test.ts
-import { isCode, outPath, rewrite } from "./build.ts";
+import { isCode, outPath, rewrite, rewriteJson } from "./build.ts";
 
 let failed = 0;
 const t = (name: string, fn: () => void): void => {
@@ -25,6 +25,11 @@ t("a string that names a compiled .ts file, from the package root or from the fi
   const r = rewrite(file, `run("packages/naive/src/engine/trace-cli.ts"); spawn(new URL('./admit.ts', import.meta.url));\n`, compiled, outputs);
   eq(r.text, `run("packages/naive/src/engine/trace-cli.mjs"); spawn(new URL('./admit.mjs', import.meta.url));\n`);
   eq(r.missing, []);
+});
+
+t("a JSON string that names a compiled .ts file from the package root is renamed, and nothing else changes", () => {
+  const json = '{\n  "module": "packages/naive/src/engine/trace-cli.ts",\n  "other": "packages/naive/src/engine/missing.ts",\n  "note": "see trace-cli.ts"\n}\n';
+  eq(rewriteJson(json, compiled), '{\n  "module": "packages/naive/src/engine/trace-cli.mjs",\n  "other": "packages/naive/src/engine/missing.ts",\n  "note": "see trace-cli.ts"\n}\n');
 });
 
 t("a .ts string that names no compiled file is left: a suffix, a recipe, a declaration, an escaped or a template one", () => {
