@@ -28,6 +28,19 @@ jobs:
   # The docs site (site/): its own npm project, linked to Naive from this checkout (file:..).
   site:
     runs-on: ubuntu-latest
+    # A throwaway Postgres for the waitlist store test. Its password is not a secret.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: mentura
+          POSTGRES_PASSWORD: mentura-eval
+          POSTGRES_DB: mentura_eval
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U mentura" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      MENTURA_EVAL_DATABASE_URL: postgres://mentura:mentura-eval@localhost:5432/mentura_eval
     defaults:
       run:
         working-directory: site
