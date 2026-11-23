@@ -4,7 +4,10 @@
 // result runs from node_modules.
 //
 //   node scripts/build-test.ts
-import { isCode, outPath, rewrite, rewriteJson } from "./build.ts";
+import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { isCode, outPath, rewrite, rewriteJson, unredact } from "./build.ts";
 
 let failed = 0;
 const t = (name: string, fn: () => void): void => {
@@ -15,6 +18,17 @@ const eq = (a: unknown, b: unknown): void => { if (JSON.stringify(a) !== JSON.st
 t("code is .ts and .mjs outside fixtures, less declarations and recipes, which Naive reads as data", () => {
   eq(["a/x.ts", "a/x.mjs", "a/x.d.ts", "a/p.recipe.ts", "a/fixtures/f.ts", "a/x.json", "a/x.md"].filter(isCode), ["a/x.ts", "a/x.mjs"]);
   eq([outPath("a/x.ts"), outPath("a/x.mjs")], ["a/x.mjs", "a/x.mjs"]);
+});
+
+t("a path npm 11 lists with a UUID redacted as *** is matched to the real file in its folder", () => {
+  const root = mkdtempSync(join(tmpdir(), "naive-build-test-"));
+  const id = ["2b1f4c0e", "8a8d", "4f0e", "9c55", "5d1d8f3a7e21"].join("-");
+  mkdirSync(join(root, "events"));
+  writeFileSync(join(root, "events", `${id}.json`), "{}");
+  writeFileSync(join(root, "events", "note.json"), "{}");
+  eq(unredact(root, "events/***.json"), [`events/${id}.json`]);
+  eq(unredact(root, "events/note.json"), ["events/note.json"]);
+  eq(unredact(root, "gone/***.json"), ["gone/***.json"]);
 });
 
 const compiled = new Set(["packages/naive/src/engine/trace-cli.ts", "packages/naive/src/terms/admit.ts"]);
