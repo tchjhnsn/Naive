@@ -20,7 +20,8 @@ The EE-095 term engine: every term is admitted through one pipeline with a valid
 | [`fixtures.ts`](./fixtures.ts) | Real arrangements, run beside the generated cases. |
 | [`gen-concepts-test.ts`](./gen-concepts-test.ts) | Regenerates the Lean ontology concepts from small fixtures and checks what packages/naive/src/terms/gen-concepts.ts does. Its arrays carry explicit types, so the type check of the whole repository does not depend on the order tsc reads files in. |
 | [`gen-concepts.ts`](./gen-concepts.ts) | Writes one Lean `Concept` per noun in packages/naive/src/terms/ontology.json to packages/naive/lean/Naive/Generated/Ontology.lean. |
-| [`lean-agreement-test.ts`](./lean-agreement-test.ts) | Fails the suite when the term engine and the Lean proofs disagree about which terms and theorems exist. |
+| [`lean-agreement.ts`](./lean-agreement.ts) | Reads the Lean proofs and the admitted terms and lists where they disagree (`disagreements`, `readLean`). It ships in the package, so an app such as Mentura's reconcile runner imports it. |
+| [`lean-agreement-test.ts`](./lean-agreement-test.ts) | Runs `lean-agreement.ts` as a test: fails the suite when the term engine and the Lean proofs disagree about which terms and theorems exist. |
 | [`levels.ts`](./levels.ts) | The levels terms are defined at, each with its facts and a seeded case generator. The detector and trial levels hold the signal detection terms. The reception level (one signal arriving at one listener) holds the signal library terms; its signals and listeners come from pools, so one signal reaches many listeners. The experiment, plan and settlement levels hold the autoresearch terms. |
 | [`ontology-catalog.json`](./ontology-catalog.json) | The catalog of ontologies, one scope per function (N-050). |
 | [`ontology-gate-test.ts`](./ontology-gate-test.ts) | Behavior of the membership gate. |
