@@ -1,0 +1,58 @@
+---
+title: Introduction
+description: What Naive is, which layers it has, and where to read next.
+type: explanation
+status: draft
+lastReviewed: 2026-10-29
+owner: builder
+---
+
+Read this page to see what the framework gives you, then open the section that matches the job in front of you.
+
+{/* DRAFT: agent-written, needs Torian */}
+Naive is a venture development framework. A web framework gives a developer conventions, a project structure, generators, a test runner and packages. A venture is the equivalent of a Next.js project (Torian, 2026-10-28).
+
+Naive is for solo founders and small founding teams. Its scaffolding is a central data management structure: everything your venture knows (its foundation, products, customers, people, money, decisions and evidence) lives in one place, under one set of conventions, with pointers to the systems that keep the rest, such as your code repository or your bank.
+
+Central data suits a small team. Software as a service is now a commodity, so what a company once spread across a CRM, a wiki, a finance app and a tracker can live in one structure that stays true. It also gives your agents the whole picture, so they reason better about each decision and move faster.
+
+Naive is not a software engineering framework; building software is MAD's job. It leans toward a monorepo and asks only that your code be connected to your knowledge base. It is opinionated about file conventions: what each record is, where it routes, and how the knowledge base points at the code.
+
+<Callout type="info">
+  These are draft developer docs. They stay unpublished until the owner approves the channel.
+</Callout>
+
+## What you get
+
+| Web development framework | Naive |
+| --- | --- |
+| Conventions over configuration | One opinionated default per choice, each with its references |
+| Project structure | A workspace of ventures, six layers and typed records |
+| A generator | `create-venture`, which creates a venture, installs the framework and starts a git repository |
+| A test suite | `node test.mjs`, every check in one run |
+| Packages | A package: schemas, templates and checks. A kit is Mentura's enhanced package |
+| Routing | One route table shared by a command line, an MCP server and an HTTP API |
+
+## The layers
+
+Four layers form a loop, and two cut across them.
+
+| Layer | Question |
+| --- | --- |
+| Purpose | Why |
+| Knowledge | Memory: where every record is stored and found |
+| Operations | How the business runs: team, hiring, handoffs to people and agents |
+| Evidence | Did it work |
+| Governance (cross-cutting) | Who may decide |
+| Interface (cross-cutting) | How you work across the layers at once |
+
+Purpose is written into knowledge, operations hands the work to people and agents, and evidence feeds back into knowledge and purpose. MAD, the method for building software, is a separate product (EE-038). The names Naive and Mentura, and which code is which, are on [Naive and Mentura](./concepts/naive-and-mentura).
+
+## Where to start
+
+<Cards>
+  <Card title="Installation" href="/docs/get-started/install" />
+  <Card title="Project structure" href="/docs/get-started/project-structure" />
+  <Card title="What's built" href="/docs/get-started/whats-built" />
+  <Card title="Routes" href="/docs/reference/routes" />
+</Cards>

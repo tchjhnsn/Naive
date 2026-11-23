@@ -25,3 +25,43 @@ jobs:
       - run: npm ci
       - run: node test.ts
 
+  # The docs site (site/): its own npm project, linked to Naive from this checkout (file:..).
+  site:
+    runs-on: ubuntu-latest
+    # A throwaway Postgres for the waitlist store test. Its password is not a secret.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: mentura
+          POSTGRES_PASSWORD: mentura-eval
+          POSTGRES_DB: mentura_eval
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U mentura" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      MENTURA_EVAL_DATABASE_URL: postgres://mentura:mentura-eval@localhost:5432/mentura_eval
+    defaults:
+      run:
+        working-directory: site
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22.19"
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            site/package-lock.json
+      - run: npm ci
+        working-directory: .
+      - run: npm ci
+      - run: node scripts/docs-commands-test.mjs
+      - run: node scripts/venture-facts-test.mjs
+      - run: node scripts/canaries-test.mjs
+      - run: node scripts/publish-build-test.mjs
+      - run: node verification/site-templates/replay.mjs
+      - run: node lib/waitlist-store-test.ts
+      - run: node scripts/gate-pages-test.ts
+      - run: npm run check:content
+      - run: npm run build

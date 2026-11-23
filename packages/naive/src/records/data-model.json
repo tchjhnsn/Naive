@@ -3357,6 +3357,10 @@
       "reason": "A handoff package whose founder facts fail a term-engine check, read by packages/naive/src/terms/ontology-gate-test.ts; a fixture, not a record"
     },
     {
+      "path": "site/**/*.json",
+      "reason": "The docs site's own configuration, lockfile, frozen facts and gate lists (site/AGENTS.md); the site is an app in this repository, not records"
+    },
+    {
       "path": "naive.data-model.json",
       "reason": "An app's own record types and ignore entries, merged into this data model by packages/naive/src/records when the file sits at the root of the repository being checked; not a record"
     }

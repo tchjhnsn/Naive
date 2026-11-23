@@ -1,0 +1,160 @@
+---
+title: Routes and records
+description: List the routes, read a record or a package, filter a read, and see the metadata and resolution order every read answers with.
+type: how-to
+status: draft
+lastReviewed: 2026-10-29
+owner: builder
+---
+
+Use this page to read from a venture. In Next.js a URL resolves to a page through its layouts, error, loading and not-found files, `searchParams` filter what it shows, and `metadata` describes it. In Naive a route resolves to a record the same way, route inputs filter it, and every read carries its metadata. The router is the one source of answers: the CLI, the MCP server and the HTTP API all call it.
+
+## List the routes
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts init ~/ventures/wr-routes --id wr-routes --layers purpose
+export MENTURA_WORKSPACE=~/ventures
+node packages/naive/src/interfaces/cli/mentura.ts routes --group discovery
+```
+
+The first segment of a route is its package (`foundation/problem`, `customers/[id]`). There are four kinds:
+
+| Kind | Example | Actions |
+| --- | --- | --- |
+| record | `foundation/problem` | read, write, check, template, layout, view |
+| collection | `customers` and `customers/[id]` | the list reads; the item also writes |
+| command | `system/need-now` | run, view, layout |
+| package | `validation`, `packages/product` | read, view, check, layout |
+
+Each route lists its actions. An action it does not have is refused with the list of the ones it does ([Errors](./errors)).
+
+## Read a record
+
+```sh
+cat > ~/wr-problem.json <<'JSON'
+{
+  "venture": "wr-routes",
+  "statement": "Solo physios lose their evenings to booking calls",
+  "segment": "solo physiotherapy clinics",
+  "evidence": []
+}
+JSON
+node packages/naive/src/interfaces/cli/mentura.ts foundation/problem write --venture wr-routes --input ~/wr-problem.json --as person
+node packages/naive/src/interfaces/cli/mentura.ts foundation/problem read --venture wr-routes
+```
+
+A record that exists returns its data. A read never writes.
+
+## A missing record
+
+A read of a record that does not exist yet is not an error. It answers with what you need to write it:
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts foundation/icp read --venture wr-routes
+```
+
+```json
+{
+  "ok": true,
+  "result": null,
+  "not_found": {
+    "note": "no icp records yet",
+    "schema": "packages/naive/src/records/icp-profile.schema.json",
+    "need_now": { "phase": "discovery", "status": "suggest now" }
+  },
+  "resolved_by": "not-found"
+}
+```
+
+A record with an agent's draft waiting says so on read (`pending_draft`), and a record held by an open decision names the decision.
+
+## Read a package
+
+This translates a route that lists its children, like `/blog` listing its posts. A package's own route returns its records and their state: the package's progress, the records that move now, the ones that wait and on what, and the drafts waiting in it for a person. The drafts are the package's pending state, its `loading`:
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts validation read --venture wr-routes
+node packages/naive/src/interfaces/cli/mentura.ts packages/product view --venture wr-routes
+```
+
+```json
+{
+  "package": "validation",
+  "state": "building",
+  "progress": 0.17,
+  "moves_now": ["validation/solution", "evidence/[id]"],
+  "waits": [{ "route": "validation/pricing", "on": ["validation-solution"] }],
+  "loading": null
+}
+```
+
+The answer is trimmed here: it also lists every record with its role, status and files. Use `packages/<name>` for a package whose name is also a record route, such as `product`. `view` renders the same as a Markdown page.
+
+## Filter a read
+
+This translates `searchParams`. Route inputs change what a read returns. `--where` keeps the records whose fields match, by top-level field or dot path, or by a derived field: `state` (`confirmed`, `agent`, `draft`, `unlogged`), `function`, `owner` or `phase`. A value may list several, separated by `|`, such as `--where "status=active|trial"`:
+
+```sh
+cat > ~/wr-ada.json <<'JSON'
+{ "id": "ada", "name": "Ada", "status": "active" }
+JSON
+cat > ~/wr-bo.json <<'JSON'
+{ "id": "bo", "name": "Bo", "status": "lapsed" }
+JSON
+node packages/naive/src/interfaces/cli/mentura.ts customers/ada write --venture wr-routes --input ~/wr-ada.json --as person
+node packages/naive/src/interfaces/cli/mentura.ts customers/bo write --venture wr-routes --input ~/wr-bo.json --as person
+node packages/naive/src/interfaces/cli/mentura.ts customers read --venture wr-routes --where status=active
+node packages/naive/src/interfaces/cli/mentura.ts customers read --venture wr-routes --where "status=active|lapsed"
+```
+
+A list keeps the matching items and says how many matched (`filtered`). A single record that does not match comes back as `result: null` with `filtered_out`. Over MCP, `mentura_read` takes `where` as an object, such as `{"status": ["active", "trial"]}`. Next.js renders a page dynamically when it reads `searchParams`; Naive computes every read when it is made, so there is nothing to opt out of yet.
+
+## Metadata
+
+This translates `metadata` and `generateMetadata`, and the fields Next.js adds to every page. Every read answers with `metadata`, computed by code from the files and the provenance log. No model writes any of it:
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts foundation/problem read --venture wr-routes --json
+```
+
+```json
+{
+  "venture": { "id": "wr-routes", "name": "wr-routes", "phase": "discovery", "status": "active" },
+  "record": { "type": "validation-problem", "route": "foundation/problem", "schema": "packages/naive/src/records/validation-problem.schema.json", "form": "json" },
+  "derived": { "phase": "discovery", "function": "strategy", "owner": "the founder", "package": "foundation", "by": "code", "state": "confirmed", "counts": { "evidence": 0 } },
+  "id": "validation-problem",
+  "created": "2026-10-29T06:00:00.000Z",
+  "updated": "2026-10-29T06:00:00.000Z",
+  "by": { "kind": "person", "via": "cli" },
+  "activity": "write",
+  "writes": 1,
+  "from": "provenance"
+}
+```
+
+| Part | Next.js | Holds |
+| --- | --- | --- |
+| `venture`, `record`, `frontmatter` or `title` | static `metadata` | The venture's identity from venture.json, the record's type and route, and a Markdown record's frontmatter |
+| `derived` | `generateMetadata` | Fields derived from the record: counts of its lists, the phase, the function and its owner, and its state |
+| `id`, `created`, `updated`, `by`, `writes` | default fields | What the framework adds to every record: from the provenance log, or from the file with `from: "file"` when it was written outside the router |
+
+A list's metadata has a `count` and the same fields for each item under `items`. `mentura baseline` adopts files written outside the router into the log.
+
+## How a read resolves
+
+This translates the component hierarchy: `layout`, `template`, `error`, `loading`, `not-found`, then `page`. The router resolves a read in that order: the stable context, the fresh context, a failed check or a record that does not parse, a draft waiting, a missing record, then the record. Every read says which level answered it in `resolved_by`. `--hierarchy` returns every level and what it holds:
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts foundation/icp read --venture wr-routes --hierarchy
+```
+
+| `resolved_by` | When |
+| --- | --- |
+| `error` | The record could not be read, such as a file that does not parse |
+| `loading` | An agent's draft is waiting for a person, or a pull request is open |
+| `not-found` | No record yet |
+| `page` | The record |
+
+## Reading outside systems
+
+Records can also come from outside systems through connectors, such as a folder of files mapped in `knowledge/sources.json`. Connector credentials stay in Mentura, the platform; the framework names none.

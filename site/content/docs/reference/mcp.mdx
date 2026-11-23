@@ -1,0 +1,31 @@
+---
+title: MCP server
+description: The MCP tools and resources the server exposes over stdio.
+type: reference
+status: draft
+lastReviewed: 2026-10-28
+owner: builder
+---
+
+`packages/naive/src/interfaces/mcp/server.ts` speaks MCP over stdio. How to connect a harness is the [MCP guide](../guides/mcp).
+
+## Tools
+
+| Tool | Does |
+| --- | --- |
+| `mentura_routes` | The route table, or one phase's group |
+| `mentura_ventures` | Ventures in the workspace |
+| `mentura_layout` | The context for a route before acting on it |
+| `mentura_read` | Read a record |
+| `mentura_write` | Write a record, with what it was derived from and the decision it acts under |
+| `mentura_check` | Run a record's checks |
+| `mentura_template` | A record's template |
+| `mentura_run` | Run a command route |
+| `mentura_setup` | Where a new venture's setup stands, and an artifact of it to render |
+| `mentura_setup_answer` | Write down the founder's answer to a setup question, in their words, for them to confirm |
+| `mentura_setup_point` | Point a function at the system that holds its truth |
+| `mentura_view` | A route as a Markdown page |
+
+## Resources
+
+`mentura://routes`, `mentura://<venture>` (the overview) and `mentura://<venture>/<route>`. Every write through the server counts as an agent's.
