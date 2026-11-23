@@ -63,5 +63,6 @@ jobs:
       - run: node verification/site-templates/replay.mjs
       - run: node lib/waitlist-store-test.ts
       - run: node scripts/gate-pages-test.ts
+      - run: node pr-review/pr-review-test.mjs
       - run: npm run check:content
       - run: npm run build
