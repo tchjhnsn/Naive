@@ -4,6 +4,7 @@
 // alias, so `mentura typegen` and `mentura upgrade` run these same commands.
 //
 //   naive new [dir] [--yes] [--type <type>] [...]    start a venture: create-venture's questions and scaffold (EE-082)
+//   naive agent [list] | brief <role> | run <role> "<task>"   Naive's agents from the terminal: run uses NAIVE_AGENT_CMD (such as claude -p), else prints the prompt
 //   naive <route> <action> | decide | decisions | accept | ...
 //                                                   every record command of mentura runs here too: see naive help
 //   naive dev [--port 4331]                         the setup page at /setup and the board, live: edit a record and it updates; each saved
@@ -408,6 +409,8 @@ else if (cmd === "build" || cmd === "start") {
   writeFileSync(join(out, "tools.json"), JSON.stringify(TOOLS, null, 2) + "\n");
   writeFileSync(join(out, "routes.json"), JSON.stringify(routes().map((r: { route: string, actions: string[], kind: string }) => ({ route: r.route, actions: r.actions, kind: r.kind })), null, 2) + "\n");
   console.log(`wrote ${out}`);
+} else if (cmd === "agent") {
+  process.exit(run("packages/naive/src/engine/agents/run.ts", rest));
 } else if (cmd === "new") {
   // A new venture: create-venture's questions and scaffold, so the whole lifecycle starts from this one command.
   process.exit(run("packages/create-venture/index.mjs", rest));
