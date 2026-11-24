@@ -106,7 +106,8 @@ function checkCommand(f: string, n: number, line: string) {
     const [, bin, cmd, tail] = m;
     claims++;
     if (bin === "naive") {
-      if (!naiveCmds.has(cmd)) { fail(f, n, `naive ${cmd}`, "packages/naive/src/interfaces/cli/naive.ts has no such command"); continue; }
+      // naive runs every mentura command it does not have itself (naive.ts), and naive help lists both.
+      if (!naiveCmds.has(cmd)) { if (cmd !== "help" && !menturaCmds.has(cmd) && !routeTop.has(cmd) && !isRoute(cmd) && cmd !== "venture") fail(f, n, `naive ${cmd}`, "neither packages/naive/src/interfaces/cli/naive.ts nor mentura.ts has such a command"); continue; }
       const known = flagsOf(cmd);
       for (const [, fl] of (tail ?? "").replace(/"[^"]*"|'[^']*'|\[[^\]]*\]/g, (s) => s.startsWith("[") ? s.slice(1, -1) : "").matchAll(/(?:^|\s)--([a-z][a-z-]*)/g)) {
         claims++;

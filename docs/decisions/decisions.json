@@ -1997,6 +1997,28 @@
           "expect": "exists"
         }
       ]
+    },
+    {
+      "id": "EE-162",
+      "date": "2026-11-24",
+      "status": "in-force",
+      "decision": "Mentura is the official console for Naive, and Naive ships its own CLI. naive is the one command a founder needs: naive new starts a venture through create-venture, and any command naive does not have itself runs as the same mentura command, so routes, drafts, decisions and freshness run through naive inside a venture. mentura stays as an alias. Naive gets no console of its own. A paid tier of the CLI is planned (not built): capabilities open by license, checked through a hook the paid build registers, so Naive names no vendor.",
+      "why": "Torian chose it on 2026-11-24 (decision card: Which console should Naive have?) after asking that Naive run completely from a CLI and that people may pay for the CLI. Naive is the engine and Mentura is hosted Naive (EE-041, EE-118), so one console is built once. A single command removes the split between naive and mentura that a new founder could not guess.",
+      "related": [
+        "EE-030",
+        "EE-041",
+        "EE-072",
+        "EE-082",
+        "EE-118"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/interfaces/tests/naive-cli-test.ts",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
     }
   ]
 }

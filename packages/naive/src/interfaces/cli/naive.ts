@@ -3,6 +3,9 @@
 // venture.json in the current directory or its parents. mentura stays for platform commands and as an
 // alias, so `mentura typegen` and `mentura upgrade` run these same commands.
 //
+//   naive new [dir] [--yes] [--type <type>] [...]    start a venture: create-venture's questions and scaffold (EE-082)
+//   naive <route> <action> | decide | decisions | accept | ...
+//                                                   every record command of mentura runs here too: see naive help
 //   naive dev [--port 4331]                         the setup page at /setup and the board, live: edit a record and it updates; each saved
 //                                                   record is checked against its schema as you go (I-17, I-24)
 //   naive build                                     check every package and write a release (I-17)
@@ -405,7 +408,16 @@ else if (cmd === "build" || cmd === "start") {
   writeFileSync(join(out, "tools.json"), JSON.stringify(TOOLS, null, 2) + "\n");
   writeFileSync(join(out, "routes.json"), JSON.stringify(routes().map((r: { route: string, actions: string[], kind: string }) => ({ route: r.route, actions: r.actions, kind: r.kind })), null, 2) + "\n");
   console.log(`wrote ${out}`);
+} else if (cmd === "new") {
+  // A new venture: create-venture's questions and scaffold, so the whole lifecycle starts from this one command.
+  process.exit(run("packages/create-venture/index.mjs", rest));
+} else if (cmd && cmd !== "help" && cmd !== "--help" && !rest.includes("--help")) {
+  // Every other command is a record command: the routes, drafts, decisions and freshness over the router (EE-030).
+  // They live in mentura.ts, and naive runs them, so one CLI covers the whole venture; mentura stays as an alias.
+  process.exit(run("packages/naive/src/interfaces/cli/mentura.ts", [cmd, ...rest]));
 } else {
-  console.error(readFileSync(new URL(import.meta.url), "utf8").split("\n").filter((l) => l.startsWith("//   ")).map((l) => l.slice(5)).join("\n"));
-  process.exit(cmd ? 1 : 2);
+  const lines = (file: URL, from: string): string[] => readFileSync(file, "utf8").split("\n").filter((l) => l.startsWith("//   ")).map((l) => (from ? l.slice(5).replace(from, "naive ") : l.slice(5)));
+  const records = lines(new URL("./mentura.ts", import.meta.url), "mentura ");
+  console.error([...lines(new URL(import.meta.url), ""), "", "Record commands (the same as mentura <command>):", ...records].join("\n"));
+  process.exit(cmd && cmd !== "help" && cmd !== "--help" ? 1 : cmd ? 0 : 2);
 }
