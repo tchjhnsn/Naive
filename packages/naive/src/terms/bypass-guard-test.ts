@@ -59,6 +59,8 @@ export const REGISTRY: Registry = {
   "packages/naive/src/checks/check-phases.ts": plain("the phase modules: schema shape, ids and steps that match the phase list, references to function workflows, record types and departments, weights that sum to 1, need-now priors present for each phase, and that a gate name is defined once; it compares ids and adds numbers, it does not decide what a thing is"),
   "packages/naive/src/checks/check-phases-test.ts": plain("proves the phase modules check breaks on each rule on copies, and tests the phase loader and generator"),
   "packages/naive/src/checks/check-connections-test.ts": plain("proves the connections check breaks on each rule on copies"),
+  "packages/naive/src/checks/check-tools.ts": plain("the tool catalog: schema shape, unique ids and titles, process group ids that start with their function's APQC number, references to departments, process groups, data model record types and capability clusters, and coverage of every function and group; it compares ids, it does not decide what a thing is"),
+  "packages/naive/src/checks/check-tools-test.ts": plain("proves the tools check breaks on each rule on copies"),
   "packages/naive/src/checks/check-data-model.ts": plain("every JSON file maps to a declared record type by path; record types are schema types, not glossary terms"),
   "packages/naive/src/checks/check-data-packages.ts": plain("data package layout, append-only streams and immutable raw sources"),
   "packages/naive/src/checks/check-delegation.ts": plain("grant chains, scopes and expiry between roles named in templates"),

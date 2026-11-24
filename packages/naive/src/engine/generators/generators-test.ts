@@ -12,6 +12,7 @@ import * as detector from "./detector.ts";
 import * as detectorTrial from "./detector-trial.ts";
 import * as connection from "./connection.ts";
 import * as capabilityCluster from "./capability-cluster.ts";
+import * as toolCatalog from "./tool-catalog.ts";
 import * as leadPlan from "./lead-plan.ts";
 import * as rawDump from "./raw-dump.ts";
 import * as triage from "./triage.ts";
@@ -123,6 +124,10 @@ const cc = capabilityCluster.draft({ title: "Physical logistics", functions: ["s
 t("capability-cluster: a new cluster is added to the catalog and passes the schema", cc.ok && cc.added === "physical-logistics" && cc.draft?.clusters.length === 7);
 t("capability-cluster: a cluster already in the catalog is refused", !capabilityCluster.draft({ title: "Messaging delivery", functions: ["products"], gaps: ["runtime"], why: "x" }).ok);
 t("capability-cluster: a vendor field fails the schema", cc.ok && !validate("capability-cluster", { ...cc.draft, clusters: [{ ...cc.draft?.clusters[0], vendor: "Acme" }] }).ok);
+const tc = toolCatalog.draft({ title: "Grants", function: "finance", kind: "workflow", phase: "validation", about: "Grants applied for and won", process_groups: ["9.7"], proposes: ["grant"] });
+t("tool-catalog: a new tool is added to the catalog and passes the schema", tc.ok && tc.added === "grants" && tc.draft?.tools.at(-1)?.function === "finance");
+t("tool-catalog: a tool already in the catalog is refused", !toolCatalog.draft({ title: "Books", kind: "view", phase: "validation", about: "x" }).ok);
+t("tool-catalog: a tool with no kind is refused", !toolCatalog.draft({ title: "Ledger", phase: "validation", about: "x" }).ok);
 
 const op = opportunity.draft({ title: "Corner Bakery POS", source: "inbound", created: "2026-11-20T15:00:00Z", value: { amount: 600, currency: "USD", cadence: "annual" } });
 t("opportunity: draft starts at lead with no reply yet and passes the schema", op.ok && op.route === "sales/opportunities/corner-bakery-pos" && op.draft.pipeline_stage === "lead" && op.draft.first_response === null);
