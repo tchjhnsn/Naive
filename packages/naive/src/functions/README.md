@@ -23,6 +23,7 @@ A module is complete when it has every piece below; `node packages/naive/src/che
 | Path | Holds |
 |---|---|
 | [`departments.json`](./departments.json) | The 13 functions: APQC category, value-chain place, governance and operations sides, and phase priors (EE-047, EE-028) |
+| [`tools.json`](./tools.json) | The tool catalog (EE-163): each function's APQC level 2 process groups, and the tools a business needs, each with its function (none for the 11 universal tools), process groups, the record types it reads and writes, and the ones it proposes. `node packages/naive/src/checks/check-tools.ts` checks it (`--json` prints coverage per function); consoles build their navigation from it |
 | [`strategy/`](./strategy/README.md) | Strategy |
 | [`products/`](./products/README.md) | Products and services |
 | [`marketing-and-sales/`](./marketing-and-sales/README.md) | Marketing and sales |
@@ -40,5 +41,6 @@ A module is complete when it has every piece below; `node packages/naive/src/che
 ## How it connects
 
 - A venture's `venture.json` names its functions and their owners by these ids.
+- The tool catalog sits under the functions: function, then process group, then tool. A tool's status is derived from what it touches: ready when the data model has every record type it needs, partial when it reads or writes some and proposes others, proposed when it only proposes. No console screen is implied by a tool being ready.
 - The data model's layers still own the record types (`../records/data-model.json`); a function module owns no record type.
 - Every module carries the function's autoresearch work: `templates/research-program.md`, a starter research program with one section per pattern the function researches (strategy's covers `competitors/[id]/signals`, whose record type the competitors package owns; the rest have none yet and say what to research and how). Each starter's research questions and signals to watch come from the function research thread's signals and research questions. Products, marketing and sales, and supply chain name their first patterns (a feature-request register counted by distinct ICP accounts; leads and win-loss reasons; inventory position, shipments and a supplier scorecard), but those record types are not built, so each starter lists them as research questions until they are. `../engine/research-programs.ts` copies it into a venture's `programs/<function>.md` once, when the venture lists the function in venture.json departments and has no program; the copy is then the founder's, and only a person writes it. The loop the function's researcher runs is the research skill, [`../interfaces/skills/research/SKILL.md`](../interfaces/skills/research/SKILL.md), the same for every function.
