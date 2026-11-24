@@ -16,12 +16,13 @@
 import { createHash } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import { basename, dirname, join } from "node:path";
-import { Effect } from "effect";
+import { Effect, Option } from "effect";
 import type { Scope } from "effect/Scope";
 import { blobHash, writeBlobEffect } from "./blobs.ts";
 import { IoError, ParseError, Refused, type NotFound } from "./effect/errors.ts";
 import { VentureFs } from "./effect/fs.ts";
 import { runSync } from "./effect/run.ts";
+import { traceContextOf } from "./effect/tracer.ts";
 import { currentSpan, emit } from "./instrumentation.ts";
 import { ventureFile } from "./venture-paths.ts";
 import type { ProvenanceEntry } from "../records/types/records.d.ts";
@@ -255,12 +256,14 @@ export const recordEffect = (dir: string, { entity, route, activity, agent, deri
   }
   // The chain is read and extended inside a lock, so two processes writing at once cannot both chain onto one line.
   const log = ventureFile(dir, LOG);
+  const effectSpan = yield* Effect.option(Effect.currentSpan);
   const entry = yield* withLockFileEffect(join(dirname(log), `.${basename(log)}.lock`), Effect.gen(function* () {
     const prior = yield* entriesEffect(dir);
     const last = prior.at(-1);
     const prev = last ? last.hash : "genesis";
-    // A write made inside a trace span names it (EE-121), so what changed points to the step that changed it.
-    const cur = currentSpan();
+    // A write made inside a trace span names it (EE-121), so what changed points to the step that changed it: an
+    // instrumentation span (withSpan), else the Effect span the write runs in when NaiveTracer writes it for this venture.
+    const cur = currentSpan() ?? Option.match(effectSpan, { onNone: () => null, onSome: (s) => traceContextOf(s, dir) });
     const span = cur ? { trace_id: cur.trace_id, span_id: cur.span_id, ...(cur.session && cur.session !== cur.trace_id ? { session: cur.session } : {}) } : undefined;
     const fields: Omit<Entry, "hash"> = { at: new Date().toISOString(), entity, route, activity, agent,
       derived_from: derived_from?.length ? derived_from : undefined, span, decision, note, source, statement, statements, sha256: hash, prev };

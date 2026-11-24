@@ -1,0 +1,211 @@
+---
+title: Revalidating
+description: Keep a venture's records fresh by time and on demand, see what is stale, and freeze a release that leaves live records as holes.
+type: how-to
+status: draft
+lastReviewed: 2026-10-29
+owner: builder
+---
+
+Use this page to find out which of a venture's records are out of date, and to mark records stale when something changes. It translates the Next.js chapter Revalidating. Next.js keeps cached data fresh by time (`cacheLife`) and on demand (`revalidateTag`, `revalidatePath`). Naive does both for records, because evidence ages and a record goes stale when what it rests on changes.
+
+## Start a venture with three records
+
+The product card is written `--derived-from` the solution. That is its tag: when the solution changes, the card is stale.
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts init ~/ventures/revalidating --id revalidating --layers purpose
+export MENTURA_WORKSPACE=~/ventures
+cat > ~/revalidating-solution.json <<'JSON'
+{
+  "venture": "revalidating",
+  "statement": "Online booking that fills the calendar while the physio treats",
+  "alternatives": ["a receptionist", "phone and paper"],
+  "evidence": []
+}
+JSON
+cat > ~/revalidating-card.json <<'JSON'
+{ "id": "booking", "name": "Clinic booking", "description": "Online booking for solo physiotherapy clinics" }
+JSON
+cat > ~/revalidating-ana.json <<'JSON'
+{ "id": "ana", "name": "Ana's clinic" }
+JSON
+node packages/naive/src/interfaces/cli/mentura.ts validation/solution write --venture revalidating --input ~/revalidating-solution.json --as person
+node packages/naive/src/interfaces/cli/mentura.ts product/booking write --venture revalidating --input ~/revalidating-card.json --as person --derived-from validation/solution.json
+node packages/naive/src/interfaces/cli/mentura.ts customers/ana write --venture revalidating --input ~/revalidating-ana.json --as person
+node packages/naive/src/interfaces/cli/mentura.ts freshness --venture revalidating
+```
+
+```text
+revalidating (discovery): 9 fresh, 0 stale, 0 expired, 1 live hole, of 9 records.
+```
+
+## Freshness by time
+
+Each record type has a freshness profile, like a `cacheLife` profile. The defaults are in `knowledge/freshness.json`:
+
+| Profile | Stale after | Expires after | Used for |
+| --- | --- | --- | --- |
+| `feedback` | 30 days | 90 days | Raw sources, interview notes, evidence |
+| `research` | 90 days | 365 days | Product cards, accounts, site measurements |
+| `assumption` | 90 days, and each phase | 365 days | The validation records |
+| `foundation` | 365 days, and each phase | never | Telos, ICP, alignment |
+| `live` | 7 days | never | Customers, investors, money, streams |
+| `max` | 365 days | never | Governance and other slow records |
+| `none` | never | never | Generated and configuration records |
+
+A stale record is still read, with a stale flag. An expired one should not be relied on, and is not frozen into a release. "Now" is an input, so you can ask what will be stale later:
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts freshness --venture revalidating --now +100d
+```
+
+```text
+revalidating (discovery): 6 fresh, 3 stale, 0 expired, 1 live hole, of 9 records.
+  stale   customers/ana: last checked 100d ago; live records are stale after 1w
+  stale   product/booking: last checked 100d ago; research records are stale after 90d
+  stale   validation/solution: last checked 100d ago; assumption records are stale after 90d
+```
+
+`--now` takes a time (`2027-03-01T00:00:00Z`) or a duration from now (`+100d`). `NAIVE_NOW` sets it for every call.
+
+## Set your own profiles
+
+Next.js defines custom `cacheLife` profiles in `next.config.js`. Naive reads them from `freshness` in the venture's `naive.config.json`. A key under `records` is a record type or a route prefix:
+
+```sh
+cat > ~/ventures/revalidating/naive.config.json <<'JSON'
+{ "freshness": { "profiles": { "weekly": { "revalidate": "7d", "expire": "30d" } }, "records": { "product": "weekly" } } }
+JSON
+node packages/naive/src/interfaces/cli/mentura.ts freshness --venture revalidating --now +10d
+```
+
+A profile has `stale` (how long an agent may reuse what it read), `revalidate`, `expire`, `per_phase` and `live`. Durations are seconds, or a number with `s`, `m`, `h`, `d` or `w`. A profile name that is not defined is refused.
+
+## Revalidate a tag
+
+When a fact changes outside the venture, mark its record stale. Everything that depends on it is stale too, and still readable with a flag until it is redone. This is `revalidateTag`, with stale-while-revalidate:
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts revalidate validation/solution --venture revalidating --reason "a competitor launched online booking"
+node packages/naive/src/interfaces/cli/mentura.ts product/booking read --venture revalidating --json
+```
+
+```json
+{
+  "ok": true,
+  "result": { "id": "booking", "name": "Clinic booking", "description": "Online booking for solo physiotherapy clinics" },
+  "freshness": {
+    "state": "stale",
+    "profile": "weekly",
+    "reasons": [
+      { "kind": "depends", "dependency": "validation/solution.json", "note": "validation/solution.json, which it depends on, is stale" }
+    ],
+    "fix": "redo it (a write), or check it is still right: mentura verify product/booking --venture revalidating"
+  }
+}
+```
+
+A record is stale on demand when:
+
+- it was revalidated by tag, path or package;
+- a record it was derived from was written after it;
+- it repeats a fact from the where-used list, and no longer shows the fact's value;
+- it is a decision made before the decision above it changed ([Decisions](./decisions)).
+
+## Redo it, or verify it
+
+Writing a record again makes it fresh. Your next read after your own write shows it, never a stale copy. Rewriting the solution makes the card stale, because the card was derived from it. If the card is still right, say so with `verify`. Its age starts again and its content is unchanged:
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts validation/solution write --venture revalidating --input ~/revalidating-solution.json --as person
+node packages/naive/src/interfaces/cli/mentura.ts freshness --venture revalidating
+node packages/naive/src/interfaces/cli/mentura.ts verify product/booking --venture revalidating --as person
+```
+
+```text
+revalidating (discovery): 9 fresh, 1 stale, 0 expired, 1 live hole, of 10 records.
+  stale   product/booking: validation/solution.json, which it was derived from, changed after it was last checked
+```
+
+## Prefer tags over paths
+
+A plain folder is refused. Naive lists the exact records to revalidate instead. To mark the whole folder, say `path:`. This is `revalidatePath`:
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts revalidate validation --venture revalidating # exits 1
+node packages/naive/src/interfaces/cli/mentura.ts revalidate path:validation --venture revalidating --reason "five new interviews"
+node packages/naive/src/interfaces/cli/mentura.ts verify path:validation --venture revalidating --as person
+```
+
+```text
+validation is a folder of 1 record. Prefer tags, which are exact: revalidate the record that changed, and what depends on it follows
+  tag:validation/solution
+  or, for the whole folder: mentura revalidate path:validation --venture revalidating
+```
+
+`package:<name>` marks every record of a package. A pivot marks the validation package, so every assumption is tested again:
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts revalidate --pivot --venture revalidating --reason "from clinics to gyms" --as person
+node packages/naive/src/interfaces/cli/mentura.ts verify path:validation --venture revalidating --as person
+```
+
+## Revalidate each phase
+
+Next.js has no need for this. A record with a `per_phase` profile is stale once the venture changes phase after it was last checked. A phase change is a person's, so `mentura phase` needs `--as person`:
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts phase validation --venture revalidating --as person --override "this example has no exit criteria"
+node packages/naive/src/interfaces/cli/mentura.ts freshness --venture revalidating
+node packages/naive/src/interfaces/cli/mentura.ts verify validation/solution --venture revalidating --as person
+```
+
+```text
+revalidating (validation): 9 fresh, 1 stale, 0 expired, 1 live hole, of 10 records.
+  stale   validation/solution: the venture moved from discovery to validation after it was last checked; records with the assumption profile are tested again each phase
+```
+
+Leaving Discovery adds an empty core product to `venture.json`, as `init` does. Fill it in. A phase changed by hand in `venture.json` still counts, with a warning to record it.
+
+## Freeze a shell with live holes
+
+Fast-changing records (customers, investors, money, streams) have the `live` profile. They are never frozen into a release. They stay holes, read from their source each time. `--freeze` copies every other record into a folder, with `shell.json` naming the holes:
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts freshness --venture revalidating --freeze ~/revalidating-shell
+cat ~/revalidating-shell/shell.json
+node packages/naive/src/interfaces/cli/mentura.ts freshness --venture revalidating --freeze ~/revalidating-later --now +400d # exits 1
+```
+
+```json
+{
+  "venture": "revalidating",
+  "phase": "validation",
+  "frozen": [
+    { "path": "validation/solution.json", "route": "validation/solution", "record": "validation-solution", "state": "fresh", "sha256": "43ab..." }
+  ],
+  "holes": [
+    { "path": "customers/ana.json", "route": "customers/ana", "record": "customer", "profile": "live", "read": "mentura customers/ana read --venture revalidating" }
+  ]
+}
+```
+
+A stale record is frozen with its reasons. An expired one blocks the freeze, by name, until it is checked or redone.
+
+## From an agent or the API
+
+The same report and marks are routes, so the MCP server and the API have them too:
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts system/freshness run --venture revalidating
+node packages/naive/src/interfaces/cli/mentura.ts system/revalidate run --venture revalidating --value tag:product/booking
+tail -n 1 ~/ventures/revalidating/knowledge/freshness.jsonl
+node packages/naive/src/checks/check-provenance.ts ~/ventures
+```
+
+Every revalidate, verify and phase change is a line in `knowledge/freshness.jsonl` (route `knowledge/freshness-log`) and in the provenance log.
+
+## What is not built yet
+
+A system of record (a CRM, a bank) that notifies on change and marks its summaries stale needs a webhook. That is the platform's. Where-used children in another source, such as a GitHub repository, are listed as needing the platform to check.

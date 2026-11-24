@@ -1,0 +1,27 @@
+---
+title: Decisions
+description: Every framework decision in force, rendered from the decision log.
+type: reference
+status: draft
+lastReviewed: 2026-11-01
+owner: builder
+---
+
+Every decision in force, newest first, rendered from `docs/decisions/decisions.json`.
+
+A decision can list what it `affects`, so a check can tell whether the repository agrees with it. Each entry names a `kind`, a `target` and what to `expect`:
+
+| `kind` | `target` | `expect` |
+| --- | --- | --- |
+| `path` | a relative glob (no leading `/`, no `..`), with `root`: `repo` (this repository), `workspace` (the folder holding `workspace.json`) or `venture` (every venture) | `exists` or `absent` |
+| `term` | a glossary term id, or `<id>@<scope>` | `defined` or `retired` |
+| `record` | a record type, or `<type>.<field>` | `exists` or `absent` |
+| `decision` | a decision id | `superseded` or `narrowed` |
+
+```json
+{ "kind": "path", "target": "foundation/**", "root": "venture", "expect": "absent" }
+```
+
+Each `expect` names an end state, so an entry fails until the decision is built and holds once it is; an entry that only confirms an area exists says nothing and is left out. An in-force decision with `affects` is a requirement on the codebase, not only a note. The check that reads these entries is not built yet. A decision that is not built yet says so in its own text. A venture's live decisions name the files a merge writes in `applies_to` instead ([Decisions](../get-started/decisions)).
+
+<Decisions />

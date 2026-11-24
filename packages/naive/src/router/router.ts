@@ -40,10 +40,10 @@
 import { mayKnow, publicView } from "../engine/visibility.ts";
 import { execFileSync, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { basename, dirname, join, relative } from "node:path";
-import { actingAgent, agentFromEnv, entries as provEntries, record as prov } from "../core/provenance.ts";
+import { actingAgent, agentFromEnv, entries as provEntries } from "../core/provenance.ts";
+import { logWrite as prov, schemaFailure } from "./write-effects.ts";
 import type { Entry } from "../core/provenance.ts";
 import { address } from "../store/connectors/contract.ts";
 import { decisionFile, holding, locked } from "../engine/decisions.ts";
@@ -84,7 +84,6 @@ import { coreOf, statementsIn, withCore } from "../engine/venture-core.ts";
 import { telosView } from "../../../../frameworks/telos/adapter.ts";
 import { migrated, scale } from "../engine/canonical.ts";
 import { schemaNameOf } from "../records/index.ts";
-import { validateFile } from "../records/validate.ts";
 import type { DecisionRecord, TeamPlan, Venture } from "../records/types/records.d.ts";
 import type { RecordRoute, Route } from "../records/routes/routes.ts";
 import {
@@ -503,21 +502,14 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
     }
     const gate = gateOf(r, dir);
     const text = JSON.stringify(rec, null, 2) + "\n";
-    // The schema first, on a scratch copy, so nothing reaches any source unless it matches.
-    const scratch = mkdtempSync(join(tmpdir(), "mentura-write-"));
-    const tmp = join(scratch, basename(file));
-    writeFileSync(tmp, text);
-    const v = validateFile(schemaNameOf(String(r.schema)), tmp);
-    rmSync(scratch, { recursive: true, force: true });
-    if (v.status !== 0) return { ok: false, error: `does not match ${r.schema}:\n${(v.stdout + v.stderr).trim()}`, fix: fix(r) };
+    // The schema first, through RecordValidator, so nothing reaches any source unless it matches.
+    const failed = schemaFailure(schemaNameOf(String(r.schema)), JSON.parse(text));
+    if (failed !== null) return { ok: false, error: `does not match ${r.schema}:\n${failed}`, fix: fix(r) };
     const base = r.view_of ? readFileSync(ventureFile(dir, file), "utf8") : null;
     const whole = base && JSON.stringify(withCore(JSON.parse(base), rec), null, 2) + "\n";
     if (whole) {
-      const held = mkdtempSync(join(tmpdir(), "mentura-write-")), copy = join(held, basename(file));
-      writeFileSync(copy, whole);
-      const w = validateFile("venture.schema.json", copy);
-      rmSync(held, { recursive: true, force: true });
-      if (w.status !== 0) return { ok: false, error: `${file} does not match packages/naive/src/records/venture.schema.json, so nothing was written:\n${(w.stdout + w.stderr).trim()}`, fix: fix(r) };
+      const w = schemaFailure("venture.schema.json", JSON.parse(whole));
+      if (w !== null) return { ok: false, error: `${file} does not match packages/naive/src/records/venture.schema.json, so nothing was written:\n${w}`, fix: fix(r) };
     }
     const agent = agentFromEnv(actor === "person" ? "person" : "agent", via, { ...(actor_id && actor !== "person" ? { id: actor_id } : {}), ...provenance.agent });
     const log = (entity: string, activity: string, extra: Obj = {}) => prov(dir, { entity, route, activity, agent, derived_from: provenance.derived_from, decision: provenance.decision ?? gate?.class ?? undefined, note: provenance.note, ...extra });

@@ -1,5 +1,5 @@
 {
-  "framework": "0.3.0",
+  "framework": "0.4.0",
   "note": "Naive's versions, the migrations that move a venture from one to the next, and each package's version and channel (EE-076, the Next.js translation's chapter 18). naive upgrade reads this file from the installed copy, so a venture always upgrades to the framework it runs on. A version's guide is bundled here, in docs/upgrades/, so agents read the guide for the version installed (I-29).",
   "channels": {
     "stable": "Packages Naive models and computes fit for. The default.",
@@ -30,6 +30,15 @@
       "migrations": [
         "kit-to-package"
       ]
+    },
+    {
+      "version": "0.4.0",
+      "date": "2026-11-22",
+      "summary": "Ventures run on Effect (EE-161): the venture's package.json pins effect at the exact version Naive declares as a peer dependency, so Naive and the venture's programs share one copy.",
+      "guide": "docs/upgrades/0.4.0.md",
+      "migrations": [
+        "effect-pin"
+      ]
     }
   ],
   "migrations": [
@@ -46,6 +55,12 @@
       "package": null,
       "decision": "EE-071",
       "aliases": "packages/naive/src/router/route-aliases.json"
+    },
+    {
+      "id": "effect-pin",
+      "module": "packages/naive/src/engine/migrations/effect-pin.ts",
+      "package": null,
+      "decision": "EE-161"
     },
     {
       "id": "icp-profiles",

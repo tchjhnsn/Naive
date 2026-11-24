@@ -1,0 +1,54 @@
+---
+title: Decision library
+description: Frames turn a founder's problem, in their own words, into the decisions hidden in it, with each premise tested against the venture.
+type: tutorial
+status: draft
+lastReviewed: 2026-10-29
+owner: builder
+---
+
+What a component library is to React, the decision library is to Naive. Each item is a **frame**: one recurring venture problem, described as a shape. A frame holds the goal, the decisions hidden in the founder's sentence, the premises that sentence assumes and the moves that test them, and what current information a lookup must supply. It never holds an answer. Instruments, vendors, terms and market norms go stale and can be wrong, so a frame that names one fails its check.
+
+Frames live in the package of the function they belong to, at `library/packages/<function>/frames/<id>.frame.json`. Their shape is `packages/naive/src/records/frame.schema.json`.
+
+## An example
+
+A founder says: "I need investors to scale, but I don't want to give up control." Read literally, that sentence forces a trade. The frame `fund-without-ceding-control` walks the chain of premises under it:
+
+| Premise | How it is tested |
+| --- | --- |
+| Reaching the goal needs outside money now | Make the goal concrete, then check revenue and runway |
+| Taking outside money means selling ownership | Split money from ownership |
+| Giving up ownership means giving up control | Split ownership from votes, board seats and vetoes |
+| Control is one thing | Name the specific right that matters |
+
+It leaves the founder with a better question: which ways of funding the goal keep the specific control rights they will not give up, at this phase? It proposes two decisions, both open: which control rights the founder will not give up, and which way of funding fits them.
+
+## Run a frame
+
+```sh
+node packages/naive/src/engine/frames.ts list
+node packages/naive/src/engine/frames.ts match "I need investors to scale, but I don't want to give up control"
+node packages/naive/src/engine/frames.ts check
+```
+
+To judge the premises against a venture, Naive needs a judge: a command in `NAIVE_JUDGE_CMD` that answers typed questions, or `TYPESAFE_API_KEY` for Jev. Then, inside the venture:
+
+```txt
+npx naive frame "I need investors to scale, but I don't want to give up control"
+```
+
+1. Naive reads the frame's props from the venture's records: the phase, the discovery goal, revenue and runway from `money/_summary.json` (Rho, when it is connected), and the cap table. A fact the records do not hold is sent as "not on record", never guessed.
+2. A model answers one yes-or-no question per premise, plus whether the trade is false, real or a sequence. The answers go through the judgment cache, so asking again costs nothing.
+3. Code settles each verdict: yes at 0.7 or above, no at 0.3 or below, unknown in between.
+4. Naive proposes the frame's decisions, open, with the founder's words, the reframed question and the verdicts in each note. The founder decides; a model never picks an option.
+
+An agent does the same through the `mentura_frame` MCP tool when a founder states a problem in chat.
+
+## Options come from a lookup
+
+A frame says what to look for and how fresh it must be, in its `freshness` block, and never what was found. Options for how to do something, such as which funding structures separate money from ownership, come from a lookup that a Mentura kit runs. Naive keeps only options that cite a source and are dated within the frame's `max_age_days`. Until a lookup is on file, the decision says what it is waiting for.
+
+## Worked cases
+
+Each frame carries worked cases: the props of an example venture and the verdicts a good judgment reaches. `node packages/naive/src/engine/frames.ts eval <frame id>` asks the judge each case and reports how many verdicts match. The cases in `fund-without-ceding-control` are drafts for the founder to review.

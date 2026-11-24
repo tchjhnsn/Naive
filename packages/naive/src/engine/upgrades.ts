@@ -31,6 +31,7 @@ import { git as runGit, isHosted, refusedBy } from "../core/runtime.ts";
 import { schemaNameOf } from "../records/index.ts";
 import { validateFile } from "../records/validate.ts";
 import type { NaiveConfig, UpgradeRegistry } from "../records/types/records.d.ts";
+import { alignPin } from "./effect-pin.ts";
 
 export type Registry = UpgradeRegistry;
 export type Migration = Registry["migrations"][number];
@@ -196,6 +197,10 @@ export async function upgrade(dir: string, { reg = registry(), dry = false, git 
     // is missing, so a founder's program is never touched (packages/naive/src/engine/research-programs.ts).
     const programs = seedPrograms(dir, { dry });
     if (!dry) for (const x of programs) record(dir, ({ entity: x.path, activity: "write", agent, derived_from: [x.template], note: `starter research program for ${x.function}, copied because it was missing; the venture's copy is the founder's from now on` }) as Parameters<typeof record>[1]);
+    // One Effect, shared (EE-161): the venture's effect pin moves with the framework on every upgrade, not only the
+    // one that crosses 0.4.0 (packages/naive/src/engine/effect-pin.ts).
+    const effect = alignPin(dir, { dry });
+    if (effect && !dry) record(dir, ({ entity: "package.json", activity: "write", agent, note: `pinned effect ${effect.to}${effect.from ? ` (was ${effect.from})` : ""}, Naive's peer version (EE-161)` }) as Parameters<typeof record>[1]);
     // Pins (U-1, U-4): the framework, the channel, and every package the venture uses.
     const before = JSON.stringify(cfg);
     cfg.naive = { ...(cfg.naive ?? {}), version: p.to, channel: cfg.naive?.channel ?? "stable" };
@@ -210,7 +215,7 @@ export async function upgrade(dir: string, { reg = registry(), dry = false, git 
     cfg.packages = Object.fromEntries(Object.entries(now_).sort(([a], [b]) => a.localeCompare(b)));
     if (JSON.stringify(cfg) !== before) configChanged = true;
     const built = { version: p.to, from: p.from, at, venture: p.venture, channel: cfg.naive.channel, migrations: ran,
-      packages: p.packages.filter((x) => !x.missing).map((x) => ({ name: x.name, from: x.from, to: x.to })), guides: p.steps.map((s) => s.guide).filter((g): g is string => Boolean(g)), escalated: [...ran.flatMap((r) => r.escalated), ...escalated], programs };
+      packages: p.packages.filter((x) => !x.missing).map((x) => ({ name: x.name, from: x.from, to: x.to })), guides: p.steps.map((s) => s.guide).filter((g): g is string => Boolean(g)), escalated: [...ran.flatMap((r) => r.escalated), ...escalated], programs, ...(effect ? { effect } : {}) };
     const release: typeof built & { adapters?: unknown } = built;
     if (!dry && (p.pending || configChanged)) {
       if (configChanged) { writeConfig(dir, cfg); record(dir, ({ entity: CONFIG, activity: "write", agent, note: `pinned Naive ${p.to} and ${Object.keys(cfg.packages).length} packages (U-1)` }) as Parameters<typeof record>[1]); }
@@ -221,7 +226,7 @@ export async function upgrade(dir: string, { reg = registry(), dry = false, git 
       // Adapters installed in the venture (Z-4) are refreshed, so their copies of package skills follow the upgrade.
       release.adapters = await refreshAdapters(dir);
     }
-    return { ...p, dry, release, changed: !dry && (p.pending || configChanged || programs.length > 0) };
+    return { ...p, dry, release, changed: !dry && (p.pending || configChanged || programs.length > 0 || !!effect) };
   } finally {
     if (held === undefined) delete process.env.NAIVE_TRIGGERS_ACTIVE; else process.env.NAIVE_TRIGGERS_ACTIVE = held;
   }

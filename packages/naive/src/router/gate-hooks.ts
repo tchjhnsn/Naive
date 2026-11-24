@@ -4,8 +4,11 @@
 // (the venture's overrides).
 
 import { randomUUID } from "node:crypto";
+import { Cause, Effect, Exit } from "effect";
 import { existsSync, readFileSync } from "node:fs";
-import { confidenceCall, evaluate, writerRule } from "../engine/gate.ts";
+import { confidenceCall, writerRule } from "../engine/gate.ts";
+import { askGate } from "../engine/gate-service.ts";
+import { runSync } from "../core/effect/run.ts";
 import { trialOf, writeHeld } from "../engine/gate-drafts.ts";
 import { reachRefusal } from "../engine/agents/reach.ts";
 import { entries as provEntries } from "../core/provenance.ts";
@@ -62,20 +65,34 @@ export function reachOfWrite({ r, route, projector, actor = "agent", acting = fa
  * refused. A naive.config.json that is not valid JSON fails closed: an agent's write is held. The
  * projector's write to a projection record is never held either: no one but the projector could accept it.
  */
-export function gateWrite({ dir, r, route, requested, file, actor, actor_id, provenance = {}, gate, projector = false }: {
+export type GateWriteArgs = {
   dir: string; r: GateRoute; route: string; requested: string; file: string; actor: string; actor_id?: string; provenance?: { confidence?: number | string | null };
   gate?: { owner?: string | null } | null; projector?: boolean;
-}): Verdict | null {
+};
+
+/** gateWrite as an Effect: the venture's gate asked through the Gate service (engine/gate-service.ts). */
+export const gateWriteEffect = ({ dir, r, route, requested, file, actor, actor_id, provenance = {}, gate, projector = false }: GateWriteArgs): Effect.Effect<Verdict | null> => Effect.gen(function* () {
   const settled = projector && r.writer === "projection";
-  let config;
-  try { config = configFor(dir); }
-  catch (e) { return actor === "person" || settled ? null : { then: "draft", rule: "naive.config.json", source: "naive.config.json", why: `${messageOf(e)}: the gate fails closed, written as a draft for a person to accept` }; }
+  const config = yield* Effect.exit(Effect.try({ try: () => configFor(dir), catch: (e) => e }));
+  if (Exit.isFailure(config)) {
+    const e = Cause.squash(config.cause);
+    return actor === "person" || settled ? null : { then: "draft", rule: "naive.config.json", source: "naive.config.json", why: `${messageOf(e)}: the gate fails closed, written as a draft for a person to accept` };
+  }
   const confidence = provenance.confidence === undefined || provenance.confidence === null || provenance.confidence === "" ? undefined : Number(provenance.confidence);
-  const v = evaluate({ config, dir, route, table: r.route, requested, record: r.record, actor, role: actor_id, confidence: Number.isNaN(confidence) ? undefined : confidence,
+  const v = yield* askGate({ config: config.value, dir, route, table: r.route, requested, record: r.record, actor, role: actor_id, confidence: Number.isNaN(confidence) ? undefined : confidence,
     exists: existsSync(ventureFile(dir, file)), decisionOwner: gate?.owner ?? undefined, writer: r.writer, writerFunction: r.function, projector });
   if (v.then === "pass") return null;
   if ((actor === "person" || settled) && v.then !== "refuse") return null;
   return v;
+});
+
+/**
+ * The gate's verdict on a local write, or null when it passes. A person is never held, only
+ * refused. A naive.config.json that is not valid JSON fails closed: an agent's write is held. The
+ * projector's write to a projection record is never held either: no one but the projector could accept it.
+ */
+export function gateWrite(args: GateWriteArgs): Verdict | null {
+  return runSync(gateWriteEffect(args));
 }
 
 /** Stores an agent's held draft: its sidecar, the owner it was sent to, and variants side by side. */
