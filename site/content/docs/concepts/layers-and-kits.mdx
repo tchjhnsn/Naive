@@ -1,0 +1,26 @@
+---
+title: Layers, packages and kits
+description: What a package is, what a kit adds, and where the kit files still live.
+type: explanation
+status: draft
+lastReviewed: 2026-10-28
+owner: builder
+---
+
+Read this when you need to tell a layer, a package, a kit and a template apart.
+
+Every venture has the same six layers, each at the depth the venture needs. A layer you do not use yet is off.
+
+{/* DRAFT: agent-written, needs Torian */}
+A package is Naive's open definition: schemas, templates and checks.
+
+{/* DRAFT: agent-written, needs Torian */}
+A kit is Mentura's enhanced package. It adds automations, agent workflows, skills and connectors. A page mentions a kit only to mark that part as platform.
+
+A template is a fill-in starting point for one record or document. A package holds templates and checks. A template holds no rules and checks nothing.
+
+The files are still named `kit.json`, under `<layer>/kits/`. That rename is a later change. The validation files, for example, still live inside the purpose layer.
+
+## The kit manifests
+
+<Kits />

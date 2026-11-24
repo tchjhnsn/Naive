@@ -1,0 +1,15 @@
+{
+  "note": "This venture's own internal terms, on top of Naive's (schema/internal-terms.json). The founder edits this list. Public output must match none of the fail patterns (schema/check-leaks.mjs --venture). Mentura is listed as warn because whether it is announced is Torian's call: change it to fail to keep it off public pages, or remove it once it is announced.",
+  "updated": "2026-10-30",
+  "owner": "Torian",
+  "patterns": [
+    {
+      "id": "codename-mentura",
+      "kind": "codename",
+      "regex": "\\bMentura\\b",
+      "why": "the platform's codename, internal until announced",
+      "severity": "warn",
+      "until": "Torian announces Mentura"
+    }
+  ]
+}

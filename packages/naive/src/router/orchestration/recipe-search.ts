@@ -21,6 +21,8 @@ import type { KnobValue } from "../../engine/recipes/knobs.ts";
 import { recipeExports } from "../../engine/recipes/sandbox.ts";
 import { logLines } from "../recipes.ts";
 import { call } from "../router.ts";
+import type { WorkflowEngine, WorkflowInstance } from "effect/workflow/WorkflowEngine";
+import { activityStep, closeRun, engineLayer, isDurable, openRun, plainStep, runDurable, type Step as DurableStep } from "../../core/effect/durable.ts";
 
 type Reply = { ok: boolean; error?: string; verdict?: string; retried?: boolean; result?: Record<string, unknown>; line?: { dev?: Dev; reason?: string } };
 type Dev = { score: number; tip_score: number | null; margin: number };
@@ -38,7 +40,8 @@ const sha = (s: string): string => createHash("sha256").update(s).digest("hex");
 const same = (a: unknown, b: unknown): boolean => JSON.stringify(a) === JSON.stringify(b);
 
 /** Coordinate descent over the knobs of the recipe at a pattern (see the top of this file). */
-export async function search(dir: string, pattern: string, o: SearchOptions = {}): Promise<SearchResult> {
+export async function search(dir: string, pattern: string, o: SearchOptions = {}, step: DurableStep = plainStep): Promise<SearchResult> {
+  const durable = step !== plainStep;
   const venture = (JSON.parse(readFileSync(join(dir, "venture.json"), "utf8")) as { id: string }).id;
   const route = `recipes/${pattern}`;
   const at = (action: string, input?: unknown) => call({ venture, workspace: dir, route, action, input, ...SEARCHER }) as Promise<Reply>;
@@ -50,16 +53,21 @@ export async function search(dir: string, pattern: string, o: SearchOptions = {}
   if (!(factor > 1)) return stop("refused", "--factor is a number above 1");
   let shrinks = o.shrinks ?? 2;
   const maxWrites = o.maxWrites ?? 200;
-  const read = await at("read");
+  // The tip and what this plan's log has scored are read once, as one step, so a resumed durable search starts from
+  // the same place it started from the first time.
+  const { read, logged } = await step("read", async () => {
+    const r = await at("read");
+    const p = (r.result as { plan?: string | null } | undefined)?.plan;
+    return { read: r, logged: p ? logLines(dir, pattern).filter((l) => l.kind === "experiment" && l.plan === p).map((l) => l.candidate) : [] };
+  });
   if (!read.ok || !read.result) return stop("refused", read.error ?? "the recipe route did not answer");
   const r0 = read.result as { tip: string | null; source: string | null; plan: string | null; spent: { dev_evaluations: number; of: number } | null };
   if (!r0.tip || r0.source === null) return stop("refused", `no recipe at ${pattern} to search: write one first`);
   if (!r0.plan || !r0.spent) return stop("refused", `no eval plan at ${pattern}.plan.json, so nothing can score a step: a person makes one with naive recipes plan ${pattern} --by <person>`);
   let tip = { sha: r0.tip, source: r0.source };
   out.start = out.tip = tip.sha;
-  const plan = r0.plan;
   // Every candidate this plan's log has scored, and every tip the search has stood on: neither is written again.
-  const scored = new Set<string>([tip.sha, ...logLines(dir, pattern).filter((l) => l.kind === "experiment" && l.plan === plan).map((l) => l.candidate)]);
+  const scored = new Set<string>([tip.sha, ...logged]);
 
   const found = knobsIn(tip.source);
   if (!found.ok) return stop("refused", found.reason);
@@ -88,7 +96,7 @@ export async function search(dir: string, pattern: string, o: SearchOptions = {}
         if (writes >= maxWrites) return stop(`stopped at --max-writes ${maxWrites}`);
         writes++;
         scored.add(candidate);
-        const w = await at("write", { source: edit.source, base: tip.sha });
+        const w = await step(`write/${candidate}`, () => at("write", { source: edit.source, base: tip.sha }));
         const verdict = (w.ok ? (w.result?.verdict as string) : w.verdict) as Step["verdict"] | undefined;
         if (!verdict) {
           // A refusal with no verdict scored nothing: a spent budget ends the search; anything else is an error.
@@ -97,7 +105,8 @@ export async function search(dir: string, pattern: string, o: SearchOptions = {}
         }
         const line = (w.ok ? w.result?.line : w.line) as { dev?: Dev; reason?: string; kept_as?: string } | undefined;
         out.steps.push({ knob: name, from: knob.value, to, verdict, ...(line?.kept_as ? { kept_as: line.kept_as } : {}), ...(line?.dev ? { dev: { score: line.dev.score, tip_score: line.dev.tip_score, margin: line.dev.margin } } : {}), reason: line?.reason ?? w.error ?? "", candidate });
-        if (verdict !== "fail" && !w.retried) out.spent++;
+        // A retried write spent nothing again; resumed after a crash, the retry is this search's own first write.
+        if (verdict !== "fail" && (!w.retried || durable)) out.spent++;
         if (verdict === "keep") {
           tip = { sha: candidate, source: edit.source };
           out.tip = tip.sha; out.kept++; keptThisPass = true;
@@ -110,6 +119,33 @@ export async function search(dir: string, pattern: string, o: SearchOptions = {}
     shrinks--;
     factor = Math.sqrt(factor);
   }
+}
+
+/**
+ * The search as a durable workflow (EE-161, phase 12c), when naive.config.json sets durable.engine: the read and each
+ * experiment write are activities, so a search that dies resumes where it was without writing a step twice. Writes
+ * were already safe to repeat (the route answers a retry with its logged line); a resumed search now also replays
+ * its earlier steps instead of skipping them as already scored. The run stays open in .naive/durable-runs/ until it
+ * finishes.
+ */
+export async function searchDurable(dir: string, pattern: string, o: SearchOptions = {}): Promise<SearchResult> {
+  const { Effect, Layer, Schema } = await import("effect");
+  const Workflow = await import("effect/workflow/Workflow");
+  const toStep = await activityStep();
+  const run = openRun(dir, "recipes", pattern);
+  const Search = Workflow.make("naive/recipe-search", {
+    payload: { dir: Schema.String, pattern: Schema.String, run: Schema.String },
+    success: Schema.String,
+    idempotencyKey: (p) => `${p.dir}#${p.pattern}#${p.run}`,
+  });
+  const SearchLive = Search.toLayer(Effect.fn(function* () {
+    const context = yield* Effect.context<WorkflowEngine | WorkflowInstance>();
+    const result = yield* Effect.promise(() => search(dir, pattern, o, toStep(context)));
+    return JSON.stringify(result);
+  }));
+  const out = await runDurable(SearchLive.pipe(Layer.provideMerge(await engineLayer(dir, "recipes"))), Search.execute({ dir, pattern, run }));
+  closeRun(dir, "recipes", pattern);
+  return JSON.parse(out) as SearchResult;
 }
 
 function print(r: SearchResult): void {
@@ -128,7 +164,8 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     console.error("usage: node packages/naive/src/router/orchestration/recipe-search.ts <venture dir> <pattern> [--factor 2] [--shrinks 2] [--max-writes 200] [--json]");
     process.exit(2);
   }
-  const r = await search(dir, pattern, { factor: num("factor"), shrinks: num("shrinks"), maxWrites: num("max-writes") });
+  const opts = { factor: num("factor"), shrinks: num("shrinks"), maxWrites: num("max-writes") };
+  const r = isDurable(dir) ? await searchDurable(dir, pattern, opts) : await search(dir, pattern, opts);
   if (a.includes("--json")) console.log(JSON.stringify(r, null, 2)); else print(r);
   process.exit(r.ok ? 0 : 1);
 }

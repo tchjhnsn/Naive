@@ -18,6 +18,10 @@
       "types": "./packages/naive/src/*.ts",
       "default": "./dist/packages/naive/src/*.mjs"
     },
+    "./src/*.mjs": {
+      "types": "./packages/naive/src/*.ts",
+      "default": "./dist/packages/naive/src/*.mjs"
+    },
     "./src/*": {
       "types": "./packages/naive/src/*",
       "default": "./dist/packages/naive/src/*"
@@ -108,12 +112,13 @@
   "devDependencies": {
     "@eslint/js": "^9.39.5",
     "@types/node": "22.20.5",
+    "effect": "4.1.5",
     "eslint": "^9.39.5",
     "globals": "^17.13.0",
     "typescript": "5.9.3",
     "typescript-eslint": "^8.72.1"
   },
-  "dependencies": {
+  "peerDependencies": {
     "effect": "4.1.5"
   }
 }

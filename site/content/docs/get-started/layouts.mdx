@@ -1,0 +1,92 @@
+---
+title: Layouts
+description: How AGENTS.md files nest from the venture root to a record, how an item's id reaches its layouts, and what an agent receives.
+type: explanation
+status: draft
+lastReviewed: 2026-10-29
+owner: builder
+---
+
+Use this page to give agents the context they need before they write. In Next.js a layout wraps every page below it, layouts nest, and a dynamic segment's `params` reach every layout inside it. In Naive an `AGENTS.md` file is the layout: the router collects every `AGENTS.md` from the venture root down to the route and hands the chain to the agent with the record's schema, template, checks, and the actions it may take.
+
+## The root layout
+
+`init` writes `AGENTS.md` at the venture root. Its prose tells an agent how to work in the venture. Lines shaped `key: value` are instructions the router parses:
+
+```markdown title="AGENTS.md"
+## Instructions
+
+phase: discovery
+voice: plain words, in the founder's own terms
+private: _private/
+```
+
+## Nested layouts
+
+Add an `AGENTS.md` to a package folder to add context for every route under it. The nearer file wins when two set the same key:
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts init ~/ventures/wr-layouts --id wr-layouts --layers purpose
+export MENTURA_WORKSPACE=~/ventures
+printf '# Marketing\n\nvoice: warm and local, never salesy\naudience: clinic owners\n' > ~/ventures/wr-layouts/marketing/AGENTS.md
+node packages/naive/src/interfaces/cli/mentura.ts marketing/sitemap layout --venture wr-layouts --json
+```
+
+The answer's `chain` is `["AGENTS.md", "marketing/AGENTS.md"]`, and its `instructions` merge them:
+
+```json
+{
+  "phase": "discovery",
+  "voice": "warm and local, never salesy",
+  "private": "_private/",
+  "audience": "clinic owners"
+}
+```
+
+## Params
+
+This translates `params`: the dynamic segment's value, also given to every layout inside it. A collection item's id (`ada` in `customers/ada`) comes back as `params` on its read and its layout. An `AGENTS.md` in the item's own folders joins the chain, and `[id]` in an instruction becomes the id, so a customer's layout knows which customer:
+
+```sh
+cat > ~/wr-ada.json <<'JSON'
+{ "id": "ada", "name": "Ada", "status": "active" }
+JSON
+node packages/naive/src/interfaces/cli/mentura.ts customers/ada write --venture wr-layouts --input ~/wr-ada.json --as person
+printf '# Customers\n\ncustomer: [id]\n' > ~/ventures/wr-layouts/customers/AGENTS.md
+node packages/naive/src/interfaces/cli/mentura.ts customers/ada layout --venture wr-layouts --json
+```
+
+```json
+{
+  "params": { "id": "ada" },
+  "instructions": {
+    "phase": "discovery",
+    "voice": "plain words, in the founder's own terms",
+    "private": "_private/",
+    "customer": "ada"
+  }
+}
+```
+
+For an item that is a folder, such as `purpose/account/ada` at `accounts/ada/account.json`, an `accounts/ada/AGENTS.md` is in that item's chain and no other. A record without an `[id]` has `params` of `{}`.
+
+## Group layouts
+
+A route group shares one layout across several packages ([Project structure](./project-structure)). A package in a group gets the group's `context`, and the group's `(group)/AGENTS.md` sits right after the venture root's in the chain. A package outside the group never sees it.
+
+## What a layout returns
+
+| Field | Holds |
+| --- | --- |
+| `chain` | Each `AGENTS.md` from the root down, nearest last: the root, the route group, the folders to the route, then the item's own folders |
+| `instructions` | The merged `key: value` lines, with `[id]` replaced by the item's id |
+| `params` | The dynamic segment's value, such as `{ "id": "ada" }` |
+| `group` | The route group the package belongs to, if any |
+| `stack` | The system layer, the record's layer, and its package |
+| `package` | The package that owns the record |
+| `schema`, `template`, `checks` | What a write must match and how it is graded |
+| `gate` | Whether an agent's write is held as a draft |
+| `need_now` | Whether this record is worth writing in this phase |
+| `actions` | The routes in this folder, which actions the actor may take now, and how a write would land ([Writing records](./writing-records)) |
+
+Layouts are recomputed on every call, so `need_now`, the gate and `actions` reflect the venture as it is now.

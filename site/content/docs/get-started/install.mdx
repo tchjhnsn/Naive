@@ -1,0 +1,332 @@
+---
+title: Installation
+description: Create a new Naive venture with create-venture, or set one up by hand.
+type: tutorial
+status: draft
+lastReviewed: 2026-10-29
+owner: builder
+---
+
+Add Naive to your agent, and let it create the venture and walk you through setting it up. It takes a few minutes, and you never leave the conversation.
+
+## Quick start
+
+### In Claude Code: the plugin
+
+Add Naive's plugin, then ask Claude to start a venture:
+
+```txt
+/plugin marketplace add tchjhnsn/naive-plugins
+/plugin install naive@naive
+```
+
+Then say "Start a venture with Naive". Claude asks what you are building, your role, who else is founding it, the phase, and where each function keeps its truth. It creates the venture, then walks you through its foundation and first decisions, and shows your progress as an artifact. The plugin brings Naive's two skills, `naive-create` and `naive-setup`, and its MCP server, so there is nothing else to install.
+
+The plugin's source is [tchjhnsn/naive-plugins](https://github.com/tchjhnsn/naive-plugins). From a clone of this repository, you can also add it by path: `/plugin marketplace add /path/to/naive`, which uses `.claude-plugin/marketplace.json` here.
+
+### With any agent: the command line
+
+
+1. Create a new venture named `my-venture` with the recommended defaults:
+
+<Tabs groupId="package-manager" persist items={["npm", "pnpm", "yarn", "bun"]}>
+  <Tab>
+```bash
+npx create-venture@latest my-venture --yes
+```
+  </Tab>
+  <Tab>
+```bash
+pnpm create venture my-venture --yes
+```
+  </Tab>
+  <Tab>
+```bash
+yarn create venture my-venture --yes
+```
+  </Tab>
+  <Tab>
+```bash
+bun create venture my-venture --yes
+```
+  </Tab>
+</Tabs>
+
+2. Plug Naive into your agent from inside the venture, then ask it to set the venture up:
+
+<Tabs items={["Claude Code", "Cursor"]}>
+  <Tab>
+```bash
+cd my-venture
+claude mcp add naive -- npx naive mcp
+```
+
+Then ask Claude: "Set up my venture with Naive". It walks you through your people, sources of truth, foundation and first decisions in conversation, and shows your progress as an artifact. [Set up your venture](./setup) explains each step.
+  </Tab>
+  <Tab>
+Add Naive to `.cursor/mcp.json` in the venture (the JSON is under [Connect your agent](#connect-your-agent)), then ask: "Set up my venture with Naive".
+  </Tab>
+</Tabs>
+
+3. To watch the venture's decisions as they are made, start the board and open [http://127.0.0.1:4331](http://127.0.0.1:4331):
+
+<Tabs groupId="package-manager" persist items={["npm", "pnpm", "yarn", "bun"]}>
+  <Tab>
+```bash
+npm run dev
+```
+  </Tab>
+  <Tab>
+```bash
+pnpm dev
+```
+  </Tab>
+  <Tab>
+```bash
+yarn dev
+```
+  </Tab>
+  <Tab>
+```bash
+bun dev
+```
+  </Tab>
+</Tabs>
+
+To have your coding agent do all of this for you, paste:
+
+```txt
+Create a new Naive venture named my-venture with npx create-venture@latest and the recommended defaults, connect Naive's MCP server (npx naive mcp) from inside it, and then set the venture up with me.
+```
+
+`--yes` skips the setup questions and uses the recommended defaults: a software startup with you as its solo founder, the discovery phase, the type's packages, the checks, and an `AGENTS.md` root layout. Leave it out to answer the questions yourself.
+
+`create-venture` and the framework it installs, `naive-framework`, are on the npm registry. Inside the venture, everything runs through the `naive` command the venture installed.
+
+### From a clone of the repository
+
+To work on Naive itself, run the generator from your clone. It takes the same flags, and the venture installs the framework from the clone, so your changes show up at once:
+
+```sh
+node packages/create-venture/index.mjs ~/ventures/my-venture --yes
+```
+
+Check the venture and see what is installed:
+
+```sh
+cd ~/ventures/my-venture
+npx naive check
+npx naive info
+```
+
+`naive check` ends with `all passing`. `naive info` prints the Naive and Node versions, the venture, and which agents are connected. With yarn 1, run the check script as `yarn run check`, because `yarn check` is a yarn 1 command of its own.
+
+## System requirements
+
+- [Node.js 20](https://nodejs.org/) or later.
+- A package manager: npm, pnpm, yarn or bun. Naive has no dependencies of its own, so any of them works.
+- Git, if you want `create-venture` to start a repository and `naive upgrade` to move tracked files with `git mv`.
+- python3 with the `jsonschema` package, for checking records against their schemas. Without it, `naive dev` still runs but does not check records as you save.
+- macOS, Linux or Windows (WSL).
+
+## Supported agents
+
+Naive is tested with these agents:
+
+| Agent | How it connects |
+| --- | --- |
+| Claude Code | MCP server, `.mcp.json` |
+| Cursor | MCP server, `.cursor/mcp.json` |
+| Any MCP client | `packages/naive/src/interfaces/mcp/server.ts` over stdio |
+| Anything that speaks HTTP | `packages/naive/src/interfaces/api/server.ts` on `127.0.0.1:4330` |
+
+`naive info` shows which of these a venture is connected to. [Connect your agent](#connect-your-agent) below sets them up.
+
+## Create with the CLI
+
+Without `--yes`, `create-venture` asks what you are building and your role in it before it creates anything:
+
+```txt
+What is your venture named? my-venture
+What are you building? Describe it in a few words, or press Enter to pick from the list
+What is your role in it? founder / co-founder / operator / advisor / board-member
+What is your name?
+Are you building it solo or with a team? solo / team
+Which phase is the venture in? discovery / validation / beachhead / scale / platform
+Where is the source of truth for Products? local-repo / github / vercel / cloudflare / none
+Would you like to use the recommended Naive defaults for the rest? recommended / previous / customize
+```
+
+With a model key, a few words are enough: "an angel syndicate for climate founders" becomes a VC fund, and you confirm it. On a team, it asks who owns each function. [Venture types and roles](./venture-types-and-roles) explains the types, the roles and the `people/` directory. `previous` reuses your answers from the last venture you created. They are kept in `~/.config/naive/create-venture.json`, and `--reset-preferences` clears them. `customize` asks:
+
+```txt
+Which layers should be on? (comma separated; empty for the defaults)
+Is the venture a legal entity yet? none / sole-prop / partnership / llc / s-corp / c-corp / benefit-corp / nonprofit
+Paste the path of an idea dump to start from (optional)
+```
+
+After the questions, `create-venture`:
+
+1. Creates the venture directory. It refuses a directory that already has files, so it can never damage an existing project. To bring an existing project in, see [Bringing a project in](./bringing-a-project-in).
+2. Writes `venture.json` with the venture's type, the root `AGENTS.md`, the type's packages and functions, and its first questions: a startup's product questions, or a fund's thesis and terms.
+3. Writes `people/people.json` and one file per founder in `people/founders/`, with the hats each person wears, and `knowledge/sources.json` with where each function keeps its truth. It syncs Rho if you chose it.
+4. Saves your idea dump as `raw/dump.md`, if you gave one, and records it in `provenance.jsonl`.
+5. Writes `package.json` with the framework as a dev dependency and four scripts, `dev`, `build`, `start` and `check`.
+6. Writes `.vscode/settings.json`, which maps every record file to its JSON Schema so your editor completes and checks records.
+7. Installs the framework with the package manager you ran it with. `--use-npm`, `--use-pnpm`, `--use-yarn` or `--use-bun` picks one, and `--skip-install` skips the install.
+8. Starts a git repository with a first commit, unless the directory is inside one already or you pass `--no-git`.
+
+| Flag | What it does |
+| --- | --- |
+| `--yes` | Use the recommended defaults, with no questions: a software startup, you as its solo founder |
+| `--type <type>` | The kind of venture, such as `software-startup` or `vc-fund` |
+| `--describe "<words>"` | Describe the venture and let a model pick the type (needs `TYPESAFE_API_KEY`) |
+| `--role <role>` | Your role, such as `founder` or `general-partner` |
+| `--name "<name>"` | Your name, for `people/` (defaults to git's `user.name`) |
+| `--team "<name>, <name>"` | The other founders; without it, you are building solo |
+| `--source <function>=<system>[:<address>]` | Where a function keeps its truth, such as `finance=rho` or `products=github:acme/app`; repeat it for each function |
+| `--rho-fixture` | Sync Rho from a saved sandbox answer, offline, instead of the live sandbox |
+| `--phase <phase>` | Start in `discovery`, `validation`, `beachhead`, `scale` or `platform` |
+| `--layers <a,b>` | Turn on only these layers |
+| `--legal-form <form>` | Record the venture's legal form, such as `llc` |
+| `--dump <file>` | Start from an idea dump, saved verbatim as `raw/dump.md` |
+| `--use-npm`, `--use-pnpm`, `--use-yarn`, `--use-bun` | Install with this package manager |
+| `--skip-install` | Do not install the framework |
+| `--no-git` | Do not start a git repository |
+| `--reset-preferences` | Forget the answers saved from the last venture |
+
+## Manual installation
+
+To set up a venture without `create-venture`, make the directory and install the framework as a dev dependency:
+
+<Tabs groupId="package-manager" persist items={["npm", "pnpm", "yarn", "bun"]}>
+  <Tab>
+```bash
+mkdir my-venture && cd my-venture
+npm install --save-dev naive-framework
+```
+  </Tab>
+  <Tab>
+```bash
+mkdir my-venture && cd my-venture
+pnpm add -D naive-framework
+```
+  </Tab>
+  <Tab>
+```bash
+mkdir my-venture && cd my-venture
+yarn add --dev naive-framework
+```
+  </Tab>
+  <Tab>
+```bash
+mkdir my-venture && cd my-venture
+bun add -D naive-framework
+```
+  </Tab>
+</Tabs>
+
+To install the framework from a clone instead, use `npm install --save-dev file:/path/to/naive`.
+
+Add the scripts to `package.json`:
+
+```json title="package.json"
+{
+  "scripts": {
+    "dev": "naive dev",
+    "build": "naive build",
+    "start": "naive start",
+    "check": "naive check"
+  }
+}
+```
+
+| Script | What it does |
+| --- | --- |
+| `naive dev` | Serves the board at `127.0.0.1:4331`, or the next free port (`--port 0` picks any free port), and checks each record against its schema as you save it |
+| `naive build` | Checks every package and writes a release |
+| `naive start` | Serves the latest release, read-only |
+| `naive check` | Runs every check that applies to the venture |
+
+Then write the one file a venture needs, `venture.json`:
+
+```json title="venture.json"
+{
+  "id": "my-venture",
+  "name": "My venture",
+  "phase": "discovery",
+  "owner": "self",
+  "status": "active",
+  "profile": "profile.md",
+  "layers": {}
+}
+```
+
+The root layout, `AGENTS.md`, is required too. If it is missing, `naive dev` writes a stub for you, the way `next dev` writes a root layout. Run `npm run dev` and edit any record: the board updates, and the terminal shows `✓` or what does not match the record's schema.
+
+## Set up schemas
+
+Schemas are built in. Every record type has a schema in the framework's `schema/` directory, and every write through the router is checked against it. `create-venture` maps each record file to its schema in `.vscode/settings.json`, so VS Code, Cursor and other editors complete fields and flag mistakes as you type. `naive typegen` writes the route table and the MCP tools to `.naive/types/` for agents and code. See [Typegen and MCP](./typegen-and-mcp).
+
+## Set up checks
+
+Naive has one checker. `naive check` runs every check that reads a venture: ventures, provenance, sources, data packages, governance, telos, publication, private records and where-used. Run it in CI on every change.
+
+## Refer to records by route
+
+Records refer to each other by route, such as `foundation/icp`, never by relative file path. When a route is renamed, `packages/naive/src/router/route-aliases.json` keeps the old name working for one release. See [Upgrading](./upgrading).
+
+## Run commands from outside a venture
+
+Inside a venture, `naive` and `mentura` find it on their own: they look for `venture.json` in the current directory and its parents, so you never pass `--venture`. From anywhere else, name the workspace that holds your ventures. The rest of these pages run from the repository root this way:
+
+```sh
+export MENTURA_WORKSPACE=~/ventures
+node packages/naive/src/interfaces/cli/mentura.ts system/need-now run --venture my-venture
+```
+
+## Connect your agent
+
+<Tabs items={["Claude Code", "Cursor", "HTTP"]}>
+  <Tab>
+From inside the venture, add the server with:
+
+```text
+claude mcp add naive --env MENTURA_HARNESS="Claude Code" -- npx naive mcp
+```
+
+`naive mcp` serves the venture it runs in over stdio.
+  </Tab>
+  <Tab>
+```json title=".cursor/mcp.json"
+{
+  "mcpServers": {
+    "naive": {
+      "command": "npx",
+      "args": ["naive", "mcp"],
+      "env": { "MENTURA_HARNESS": "Cursor" }
+    }
+  }
+}
+```
+  </Tab>
+  <Tab>
+```text
+node packages/naive/src/interfaces/api/server.ts
+```
+
+The HTTP API listens on `127.0.0.1:4330` and has no authentication. Keep it on your own machine. Stop it with Ctrl-C.
+  </Tab>
+</Tabs>
+
+Ask the agent to call `mentura_ventures`, then `mentura_view` on `system/overview`. You can paste this prompt into your coding agent to set the connection up for you:
+
+```txt
+Connect this venture to Naive's MCP server: read the Installation page of the Naive docs, add the server for this agent, then call mentura_ventures and mentura_view on system/overview to confirm it works.
+```
+
+## Next steps
+
+- [Project structure](./project-structure): what is in a venture directory, and why.
+- [Layouts](./layouts): the `AGENTS.md` chain every agent reads before it acts.
+- [Writing records](./writing-records): writes, drafts, accept and provenance.

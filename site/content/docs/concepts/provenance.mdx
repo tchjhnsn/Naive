@@ -1,0 +1,41 @@
+---
+title: Provenance
+description: Who or what wrote each record, from what, and under which decision.
+type: explanation
+status: draft
+lastReviewed: 2026-10-28
+owner: builder
+---
+
+Provenance answers who wrote a record, from what, and under which decision.
+
+## Two layers
+
+- Explicitly: every write through the router adds a line to the venture's `provenance.jsonl`, after W3C PROV. The line names the file, the activity (write, draft, accept or baseline), the person or agent and the interface it came through, what the content was derived from, and the decision it acted under.
+- Implicitly: git history covers anything written outside the router.
+
+Each line carries the hash of the line before it, so editing, removing or reordering a line breaks the chain. Check a venture with:
+
+```sh
+node packages/naive/src/checks/check-provenance.ts <venture dir>
+```
+
+A file that changed outside the router since its last line is reported as a warning.
+
+## Time travel
+
+Every write through the router also keeps the bytes it wrote. They go to the venture's blob store, `.naive/blobs/<first two hex characters>/<sha256>`, named by the SHA-256 the provenance line records. The blob is written before its line, so every line written since blobs exist has its bytes. A blob never changes, writing the same bytes twice stores them once, and a file whose bytes do not hash to its name is never served.
+
+So any record can be read as it was at any moment. Set `MENTURA_READS_AS_OF` to the moment and read through the router:
+
+```sh
+MENTURA_READS_AS_OF=2026-11-22T03:29:00Z node packages/naive/src/interfaces/cli/mentura.ts decisions/who-pays read --venture my-venture
+```
+
+An as-of read never touches the live files, and an as-of call may only read, view, write, append and take a template. A record has no version before its first write, and versions written before the blob store existed are not backfilled. Researcher agents (`<function>-researcher`) must read this way, so they never see an outcome after their cut.
+
+Set `MENTURA_ACTOR_ID`, `MENTURA_MODEL`, `MENTURA_SESSION` and `MENTURA_HARNESS` so each line names the agent. For a venture that existed before the log, adopt the records once. This writes the log, so point it at the venture you mean:
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts baseline --venture my-venture
+```

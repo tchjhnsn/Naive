@@ -1,0 +1,197 @@
+---
+title: Building and starting a release
+description: Build a release of a venture's confirmed records with named live holes, serve it read-only, add an item, and export it as files.
+type: how-to
+status: draft
+lastReviewed: 2026-10-29
+owner: builder
+---
+
+Use this page to turn a venture into a release you can hand to someone. It translates Next.js's Deploying chapter, `next build` and `next start`, and the static shell from the Caching chapter (Partial Prerendering).
+
+A release is the venture's static shell. Every record a person confirmed is frozen in, as it was confirmed. What must stay live is a named hole: open decisions, streams, money, and fields another system keeps. Drafts, notes, raw inputs and anything private never ship.
+
+| Next.js | Naive |
+| --- | --- |
+| `next build` prerenders a static shell and fails on a route that cannot produce one | `node packages/naive/src/router/orchestration/build-release.ts` freezes the confirmed records and refuses when an open package holds an unconfirmed record |
+| Holes that stream in at request time | Live holes, each named with where to read it live |
+| `next start`, or a CDN serving the shell | `node packages/naive/src/engine/start-release.ts` serves the release read-only, without the router |
+| Incremental Static Regeneration | `--add` puts one new item into the release without rebuilding the rest |
+| `output: "export"` | `--export` writes plain Markdown and JSON with no holes and every number dated |
+| `opengraph-image` | The release card: numbers with their dates and who confirmed them |
+
+## Build a release
+
+A build checks every package open in the venture's phase. A record that package requires must be confirmed by a person, or not written yet. An agent's draft blocks it:
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts init ~/ventures/release-demo --id release-demo --layers purpose
+export MENTURA_WORKSPACE=~/ventures
+cat > ~/release-problem.json <<'JSON'
+{
+  "venture": "release-demo",
+  "statement": "Independent cafes lose an hour a day waiting on slow kettles",
+  "segment": "Independent cafes in the US",
+  "evidence": []
+}
+JSON
+node packages/naive/src/interfaces/cli/mentura.ts foundation/problem write --venture release-demo --input ~/release-problem.json
+node packages/naive/src/router/orchestration/build-release.ts ~/ventures/release-demo # exits 1
+```
+
+```text
+naive build: no release written.
+  package foundation cannot be released:
+    _drafts/foundation__problem.json.draft: a draft waits for a person and nothing confirmed stands behind it
+      fix: node packages/naive/src/interfaces/cli/mentura.ts accept foundation/problem --venture release-demo
+```
+
+Accept the draft as a person, then build again. `--now` sets the time the release is as of. The release id comes from the records alone, so the same records give the same id at any time:
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts accept foundation/problem --venture release-demo --confirm foundation/problem
+node packages/naive/src/router/orchestration/build-release.ts ~/ventures/release-demo --now 2026-10-29T12:00:00Z
+```
+
+```text
+wrote release babb6aca572dc2ba for release-demo (discovery) as of 2026-10-29T12:00:00Z
+  1 records frozen, 4 live holes, 5 files left out
+  package foundation   released  shell 1  not written yet: icp
+  package validation   released  shell empty  not written yet: validation-solution, validation-pricing, validation-go-to-market
+  package product      released  shell 0  not written yet: product
+  hole decision  core-product: open decision: What is the core product: ...
+  hole decision  flagship: open decision: Which product is the flagship now: ...
+  hole decision  founding-team: open decision: Who is founding this venture: ...
+  hole decision  product-exists: open decision: Does a product already exist ...
+  cache: 0 hits, 7 misses
+```
+
+The four holes are the open decisions every new venture starts with. The product package's shell is 0: it holds nothing frozen yet, only those decisions.
+
+The release is in `.release/`:
+
+| File | What it holds |
+| --- | --- |
+| `release.json` | The manifest: each frozen record with its sha256, date and who confirmed it; each hole; each file left out and why; the route table as the release holds it |
+| `records/` | The frozen copies |
+| `card.json` | The release card's data |
+
+A build writes nothing else. Its cache lives in `.naive/cache/`, which git ignores. Changing the framework version, a package definition or `MENTURA_MODEL` starts the cache fresh.
+
+## What is frozen and what stays live
+
+| In the venture | In the release |
+| --- | --- |
+| A record a person wrote, accepted, baselined or confirmed, unchanged since | Frozen in |
+| An open decision | A hole: decide it to freeze what it decides |
+| `_streams/`, money accounts | A hole, by design |
+| A field another source masters (`knowledge/sources.json`) | A hole at that field; the rest of the record is frozen |
+| A command that reads the clock, calls a model or reaches the network | A hole that says which |
+| Any other command, such as `purpose/foundation` | Run at build time on the confirmed records alone, and frozen in |
+| An agent's write, or a draft, in a required record | Blocks the build |
+| The same in an optional record, notes, `raw/`, `_private/`, private records and fields | Left out |
+
+Holes sit as deep as they can. One open decision is one hole, not its whole package, so more of each package is released. Each package reports its shell share: how much of what it holds is frozen.
+
+## Read a release without the router
+
+`start-release.mjs` serves the release on `127.0.0.1` and reads only `.release/`. Changing the venture's records does not change what it serves. `--get` answers one path and exits, which is handy for scripts:
+
+```sh
+node packages/naive/src/engine/start-release.ts ~/ventures/release-demo --get /foundation/problem
+node packages/naive/src/engine/start-release.ts ~/ventures/release-demo --get /decisions/founding-team
+```
+
+```json
+{
+  "route": "foundation/problem",
+  "file": "foundation/problem.json",
+  "as_of": "2026-10-29T04:50:18.586Z",
+  "confirmed_by": "a person (via cli)",
+  "record": {
+    "venture": "release-demo",
+    "statement": "Independent cafes lose an hour a day waiting on slow kettles",
+    "segment": "Independent cafes in the US",
+    "evidence": []
+  }
+}
+```
+
+```json
+{
+  "route": "decisions/founding-team",
+  "hole": true,
+  "kind": "decision",
+  "why": "open decision: Who is founding this venture: you alone, you with cofounders, or you looking for cofounders?",
+  "live": "node packages/naive/src/interfaces/cli/mentura.ts governance/decisions run --venture release-demo"
+}
+```
+
+To serve it, run this and open the address it prints:
+
+```text
+node packages/naive/src/engine/start-release.ts ~/ventures/release-demo --port 4330
+serving release babb6aca572dc2ba of release-demo read-only at http://127.0.0.1:4330/
+```
+
+| Path | Answers |
+| --- | --- |
+| `/` | The release id, its routes and its holes |
+| `/<route>` | A frozen record, a collection's items, a frozen command answer, or a hole with where to read it live |
+| `/records/<file>` | One frozen copy |
+| `/card.json`, `/card.svg` | The release card's data, and the card drawn from it as an SVG |
+
+Anything but `GET` or `HEAD` answers 405. A release is read-only.
+
+## Add a new item without rebuilding
+
+An item written after the build is not in the release. Asking for it answers 404 with the items the release does hold and the command that adds it. `--add` freezes that one item and leaves every other entry as it was built:
+
+```sh
+cat > ~/release-kettle.json <<'JSON'
+{ "id": "kettle", "name": "Kettle", "description": "A cafe kettle that boils in a minute" }
+JSON
+node packages/naive/src/interfaces/cli/mentura.ts product/kettle write --venture release-demo --input ~/release-kettle.json --as person
+node packages/naive/src/engine/start-release.ts ~/ventures/release-demo --get /product/kettle # exits 1
+node packages/naive/src/router/orchestration/build-release.ts ~/ventures/release-demo --add product/kettle
+node packages/naive/src/engine/start-release.ts ~/ventures/release-demo --get /product/kettle
+```
+
+```text
+added product/kettle to release 0b6d21bc80c35e04: now release 44684d5bc37b3293; nothing else was rebuilt
+```
+
+The manifest's `incremental` list records each item added and the release it was added to. A full build later takes everything in afresh.
+
+## The release card
+
+The card is what someone sees first when you share a release with an investor or a partner. Code assembles it from the release's records: the venture's name and phase, headline numbers each with its date, and who confirmed them. `packages/naive/src/engine/release-card.ts` draws it as an SVG:
+
+```sh
+node packages/naive/src/engine/start-release.ts ~/ventures/release-demo --get /card.json
+node packages/naive/src/engine/release-card.ts ~/ventures/release-demo > ~/release-demo-card.svg
+```
+
+## Export a release as files
+
+An export is the release as plain Markdown and JSON, for a data room or an email. It has no live holes, only their count, and every number and record carries its date:
+
+```sh
+node packages/naive/src/router/orchestration/build-release.ts ~/ventures/release-demo --export ~/release-demo-export
+ls ~/release-demo-export ~/release-demo-export/records/foundation
+```
+
+```text
+exported 2 records to /home/you/release-demo-export; 4 live items left out
+/home/you/release-demo-export:
+README.md
+card.json
+records
+release.json
+
+/home/you/release-demo-export/records/foundation:
+problem.json
+problem.md
+```
+
+An export never writes over files: give it a new folder each time.

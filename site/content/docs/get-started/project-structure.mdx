@@ -1,0 +1,173 @@
+---
+title: Project structure
+description: What a venture folder holds, what venture.json declares, which folders are private, and which names Naive reserves.
+type: explanation
+status: draft
+lastReviewed: 2026-10-29
+owner: builder
+---
+
+Use this page to find your way around a venture folder and to keep it in a shape Naive can read. In Next.js the project folder holds `app/`, `public/`, `package.json` and config files, folders in `app/` become routes, and `_folder` and `(group)` have special meanings. In Naive the venture folder holds packages, each package's records are routes, and `venture.json` plays the part of `package.json`.
+
+## The venture folder
+
+`mentura init` creates this:
+
+```text
+my-venture/
+  AGENTS.md          the root layout: what every agent reads first
+  venture.json       identity, phase, governance, functions, packages and kits
+  profile.md         a few sentences on what the venture is
+  foundation/        core package: problem, ICP, vision, mission, alignment
+  validation/        core package: solution, pricing, fit
+  product/  marketing/  finance/  people/  customers/  investors/  money/
+  ideas/             the idea map and graph
+  decisions/         one file per live decision
+  evidence/          graded, cited evidence
+  raw/dump/          immutable captures, such as an idea dump
+  raw/sources/       founder-supplied sources
+  public/            assets shipped as they are
+  _drafts/           agent writes waiting for a person
+  _private/          never read by a model, never released
+  .release/          plans and release output
+```
+
+`init` also writes `pillars/`, `products/`, `accounts/`, and a folder for each layer you turn on (`purpose/` with `--layers purpose`, `knowledge/` by default). These belong to the older layer layout, which the checks still read. `naive upgrade` moves a venture off them ([Upgrading](./upgrading)).
+
+## Packages
+
+A package is a folder of records with one owner, the way a Next.js feature folder groups the pages of one feature. Naive splits a venture by function, never by type of file. The definitions live in the repository's `library/packages/` folder:
+
+| Kind | Packages | What they hold |
+| --- | --- | --- |
+| core | foundation, validation, product, marketing, finance, legal, people, operations, relationships | The venture's records, one home each |
+| data | customers, investors, money | One `[id].json` per item, plus append-only activity streams |
+| folder | decisions, evidence | Decision records and graded evidence |
+| raw | raw | Captures and sources, never rewritten |
+| handoff | investor, partner, cofounder, counsel, engineering | No records: a snapshot of core packages for one receiver |
+
+Each package declares its required and optional records, the records it reads from other packages, and `use_model`, the steps that call a model ([Agents and people](./agents-and-people)). Each package also has its own route, such as `validation`, which reads its state ([Routes and records](./routes-and-records)).
+
+## venture.json
+
+This translates `package.json`. It holds the venture's identity, phase and governance, and lists the packages it uses the way `package.json` lists dependencies:
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts init ~/ventures/wr-structure --id wr-structure --layers purpose
+export MENTURA_WORKSPACE=~/ventures
+cat > ~/ventures/wr-structure/venture.json <<'JSON'
+{
+  "id": "wr-structure",
+  "name": "Booking for physios",
+  "parent": null,
+  "phase": "discovery",
+  "owner": "self",
+  "status": "active",
+  "profile": "profile.md",
+  "packages": ["foundation", "validation", "product", "customers"],
+  "kits": [{ "id": "interviews", "extends": "validation" }],
+  "functions": { "strategy": { "owner": "the founder" }, "products": { "owner": "the founder" } },
+  "layers": { "purpose": { "location": "purpose/" }, "knowledge": false, "operations": false, "evidence": false, "governance": false, "interface": false }
+}
+JSON
+node packages/naive/src/interfaces/cli/mentura.ts venture read --venture wr-structure
+node packages/naive/src/engine/structure.ts ~/ventures/wr-structure
+```
+
+| Field | Holds |
+| --- | --- |
+| `id`, `name`, `owner`, `status` | Identity |
+| `phase` | What need-now suggests, from discovery to platform |
+| `governed_by`, `members`, `form` | Governance. Any member switches on the governance layer |
+| `functions` | Each function's one accountable owner, keyed by function id. Left out, a solo founder owns them all |
+| `packages` | The Naive packages the venture uses. Left out, Naive uses the core packages that fit the phase plus any package that holds records |
+| `kits` | Mentura kits, each naming the one package it extends. The venture must use that package |
+| `layers` | The older layer layout. A layer set to `false` makes need-now report its records as "layer off" |
+
+`mentura venture read` returns this manifest, with the function owners and packages filled in when venture.json leaves them out. `node packages/naive/src/engine/structure.ts <venture dir>` exits 1 when venture.json names an unknown package or function, a function without an owner, or a kit on a package the venture does not use. `parent` names the venture a nested venture belongs to.
+
+## Private folders
+
+This translates Next.js private folders: a folder whose name starts with `_` opts out of routing. No route reaches a file under a private folder, or a file whose name starts with `_`, unless the data model names that folder in a record's path. Data packages' `_streams/` is the one such case today.
+
+| Folder | Holds |
+| --- | --- |
+| `_drafts/` | Agent writes held for a person, at the venture root only. Naive writes it |
+| `_private/` | Never sent to a model and never released |
+| `_notes/` | Working notes beside a package, never routed |
+| `_streams/` | A data package's append-only activity, directly under `customers/`, `investors/` or `money/` |
+
+```sh
+mkdir -p ~/ventures/wr-structure/customers/_notes
+cat > ~/ventures/wr-structure/customers/_notes/call.json <<'JSON'
+{ "id": "call", "summary": "Not a customer record: a note from a call" }
+JSON
+node packages/naive/src/interfaces/cli/mentura.ts customers read --venture wr-structure
+node packages/naive/src/engine/structure.ts ~/ventures/wr-structure --json
+```
+
+The read finds no customers, and the structure check lists `customers/_notes/` among the private folders.
+
+## Reserved names
+
+Naive keeps some names for its own conventions, now and later, so a venture never uses them for something else:
+
+| Name | Today | Using it elsewhere |
+| --- | --- | --- |
+| `AGENTS.md` | A layout for its folder and below ([Layouts](./layouts)) | Allowed anywhere |
+| `venture.json` | The manifest. A folder holding one is a nested venture | Makes that folder its own venture |
+| `naive.config.json`, `provenance.jsonl` | Overrides and the provenance log | An error away from the venture root |
+| `_drafts/`, `.release/` | Held drafts, release output | An error away from the venture root, or `_drafts/` holding anything but `.draft` files |
+| `_streams/` | Data package activity | An error outside a data package |
+| `(group)/` | A route group's own `AGENTS.md`, at the venture root | An error when it holds anything else |
+| `layout.md`, `template.md`, `error.md`, `loading.md`, `not-found.md`, `default.md`, `page.md` | Kept for later conventions | A warning |
+| `@slot/`, `[param]/`, `.naive/` | Kept for later conventions | A warning |
+
+A folder Naive does not know is allowed. It is never routed or released.
+
+## Route groups
+
+This translates Next.js route groups used for shared and opt-in layouts. A group of packages shares one layout, so their records share context, and only the packages in the group get it. The framework defines `(go-to-market)` for marketing, relationships and customers. A venture adds or changes groups in `naive.config.json`, and keeps a group's own instructions in a `(group)/AGENTS.md` at its root:
+
+```sh
+mkdir -p "$HOME/ventures/wr-structure/(go-to-market)"
+printf '# Go to market\n\naudience: clinic owners\n' > "$HOME/ventures/wr-structure/(go-to-market)/AGENTS.md"
+cat > ~/ventures/wr-structure/naive.config.json <<'JSON'
+{ "groups": { "strategy": { "packages": ["foundation", "validation"], "context": "The problem and its proof travel together." } } }
+JSON
+node packages/naive/src/interfaces/cli/mentura.ts "(go-to-market)" read --venture wr-structure
+node packages/naive/src/interfaces/cli/mentura.ts marketing/sitemap layout --venture wr-structure --json
+```
+
+The layout's `group` names `(go-to-market)`, and its `chain` puts `(go-to-market)/AGENTS.md` right after the venture's root `AGENTS.md`. A route in the foundation package gets the venture's own `(strategy)` group instead.
+
+## What the overview shows for an empty package
+
+This translates `default.js`, the fallback a parallel slot shows when it has nothing to render. `system/overview` has a `@packages` slot. A package with records shows its state and progress. A package with nothing in it shows its default: that nothing is written yet, and the command to start its first record:
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts system/overview view --venture wr-structure
+```
+
+```text
+## @packages
+
+| package | title | state | progress | moving | default | shows | start |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| foundation | Foundation | building | 0.06 | foundation/problem, foundation/icp, knowledge/venture-profile |  |  |  |
+| validation | Validation |  |  |  | true | Validation: nothing written yet | mentura validation/solution template, then mentura validation/solution write --venture wr-structure --input <file> |
+| customers | Customers |  |  |  | true | Customers: nothing written yet | mentura customers/<id> write --venture wr-structure --input <file> |
+```
+
+The real slot lists every package the venture uses. Foundation is not empty: `init` wrote its venture profile.
+
+## Special names
+
+| Name | Meaning |
+| --- | --- |
+| `AGENTS.md` | A layout: instructions for agents in this folder and below ([Layouts](./layouts)) |
+| `_drafts/` | Writes held for a person, named after the record they would replace |
+| `_private/` | Never sent to a model and never released |
+| `[id]` | A collection route, such as `customers/[id]` |
+| `naive.config.json` | Overrides to the framework's defaults: the gate ([The gate](./the-gate)) and route groups |
+| `provenance.jsonl` | The append-only, hash-chained log of every write |

@@ -1,0 +1,22 @@
+---
+title: File formats
+description: When a file is JSON, JSONL, Markdown, or MDX, and which check compiles it.
+type: reference
+status: draft
+lastReviewed: 2026-10-28
+owner: builder
+---
+
+Choose a file's format by asking these questions in order. The first yes decides.
+
+| Question | Format | Examples |
+| --- | --- | --- |
+| Does a program read or write it? | JSON, with a schema | Records, `kit.json` manifests, the data model, policies |
+| Is it an append-only log? | JSONL | `provenance.jsonl` |
+| Does another tool expect the name? | `.md` | `SKILL.md`, `AGENTS.md`, `CLAUDE.md`, `README.md`, vault notes |
+| Is it prose for people that is published, or that needs a component or live data? | MDX | These docs, guides, reference pages |
+| Is it prose that stays private? | `.md` | A venture profile, working notes |
+
+MDX is stricter than Markdown: a bare `` `<` `` or `` `{` `` in text breaks a page. `npm run check:content` in `site/` checks every page against the content contract, and the build fails on a page that does not match its frontmatter schema.
+
+This convention is in force (EE-033). The docs-site check it names has moved; see EE-080.

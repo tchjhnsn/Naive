@@ -1,0 +1,50 @@
+---
+title: Field visibility
+description: Mark which fields of a record may be published, and see what the public pages are refused.
+type: how-to
+status: draft
+lastReviewed: 2026-10-30
+owner: builder
+---
+
+Every field of every record is internal until a person says otherwise. A field can be:
+
+- `public`: the internal and public wording are the same, so a public page may show the field as written.
+- `variant`: publishable only through a separate public version, an MDX file whose frontmatter says `variant_of: <record>#<field>`, `publish: true` and `approved_by: <name>`.
+- `internal`: never published. This is the default.
+
+Visibility lives beside the record, in `<record>.visibility.json`, and `packages/naive/src/engine/visibility.ts` reads it.
+
+## See a record's fields
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts visibility venture --venture my-venture
+```
+
+## Approve a field as public
+
+Only a person approves a field as public. Here the founder approves the venture's name. Approving pins the exact wording by sha256, and the approval is a line in provenance.
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts visibility venture name --venture my-venture --public --by Founder
+```
+
+An agent proposes instead, with `--propose`. The field stays internal until a person approves it. A sidecar that says `public` but names no approver, or names anyone outside `people/people.json`, counts as internal.
+
+The command refuses a run marked as an agent's (`MENTURA_ACTOR=agent`, `MENTURA_MODEL`, or a `MENTURA_ACTOR_ID` other than the approver). It cannot catch an agent shell with none of these set, or a hand-written sidecar, so pull request review is the gate that holds in the end.
+
+The `--as public` reader reads only record routes. Package, group and venture routes refuse it, a list leaves out any item with no public field, and an item with no public field answers as if it were missing.
+
+When the field's wording changes after it was approved, it drops to `variant` and stays off the public pages until a person approves the new wording.
+
+## What the public may read
+
+A read with `--as public` returns only the fields that are public or have an approved variant, with no `metadata`, `hierarchy` or draft notes. A record that does not parse gives a fixed message without the parser's detail. The public reader can only read.
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts foundation/problem read --venture my-venture --as public --json
+```
+
+## The publish check
+
+`node packages/naive/src/checks/check-visibility.ts <venture dir>` fails when a public page uses a `<Fact>` or `<FactList>` whose field the gate refused. It names the field and the command a person runs to approve it. Until someone approves the fields, the check fails on the in-repo venture, and the pages leave those facts out.
