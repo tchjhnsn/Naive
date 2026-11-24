@@ -1,0 +1,382 @@
+[
+  {
+    "rel": "foundation/alignment.json",
+    "field": "principles.0.check",
+    "text": "purpose/features/strategic-foundation.feature"
+  },
+  {
+    "rel": "foundation/alignment.json",
+    "field": "principles.0.source",
+    "text": "Torian, 2026-10-28 (drafts must be put plainly in front of him as decisions)"
+  },
+  {
+    "rel": "foundation/alignment.json",
+    "field": "principles.0.statement",
+    "text": "Never present an agent's draft as the founder's decision: a foundation statement is the founder's only once they confirm it"
+  },
+  {
+    "rel": "foundation/alignment.json",
+    "field": "principles.1.check",
+    "text": "purpose/kits/validation/features/problem-assessment.feature"
+  },
+  {
+    "rel": "foundation/alignment.json",
+    "field": "principles.1.source",
+    "text": "Torian, 2026-10-28; EE-050"
+  },
+  {
+    "rel": "foundation/alignment.json",
+    "field": "principles.1.statement",
+    "text": "Never tell a founder a good idea is not viable because the evidence is not in yet"
+  },
+  {
+    "rel": "foundation/alignment.json",
+    "field": "principles.2.check",
+    "text": "purpose/kits/validation/features/problem-assessment.feature"
+  },
+  {
+    "rel": "foundation/alignment.json",
+    "field": "principles.2.source",
+    "text": "Torian, 2026-10-28; EE-050"
+  },
+  {
+    "rel": "foundation/alignment.json",
+    "field": "principles.2.statement",
+    "text": "When inputs are missing, show the founder what is missing and ask whether to fill it in or run as is, in every interface"
+  },
+  {
+    "rel": "foundation/alignment.json",
+    "field": "principles.3.source",
+    "text": "venture core.must_not; EE-014"
+  },
+  {
+    "rel": "foundation/alignment.json",
+    "field": "principles.3.statement",
+    "text": "Every default traces to a source"
+  },
+  {
+    "rel": "foundation/alignment.json",
+    "field": "principles.4.source",
+    "text": "venture core.must_not; EE-041"
+  },
+  {
+    "rel": "foundation/alignment.json",
+    "field": "principles.4.statement",
+    "text": "A founder's records stay in plain files they can read and take with them"
+  },
+  {
+    "rel": "foundation/alignment.json",
+    "field": "principles.5.source",
+    "text": "Torian, 2026-10-28 (Naive is not live)"
+  },
+  {
+    "rel": "foundation/alignment.json",
+    "field": "principles.5.statement",
+    "text": "Nothing is called live until it is aligned, passes evals for function, is tested on enough use cases, and has carried one project through its whole pipeline"
+  },
+  {
+    "rel": "foundation/goals/scale.json",
+    "field": "statement",
+    "text": "The venture means to grow as a managed-growth venture"
+  },
+  {
+    "rel": "foundation/icp/ai-native-early-founders.json",
+    "field": "id",
+    "text": "ai-native-early-founders"
+  },
+  {
+    "rel": "foundation/icp/ai-native-early-founders.json",
+    "field": "jobs.0",
+    "text": "Know the right next step for something already built"
+  },
+  {
+    "rel": "foundation/icp/ai-native-early-founders.json",
+    "field": "jobs.1",
+    "text": "Know which decision matters most right now, and which is noise"
+  },
+  {
+    "rel": "foundation/icp/ai-native-early-founders.json",
+    "field": "jobs.3",
+    "text": "Tell the idea to builders, investors and customers, each in their terms"
+  },
+  {
+    "rel": "foundation/icp/ai-native-early-founders.json",
+    "field": "jobs.4",
+    "text": "Learn the skills a venture needs beyond building: marketing, sales, finance, storytelling, team building"
+  },
+  {
+    "rel": "foundation/icp/ai-native-early-founders.json",
+    "field": "not.0",
+    "text": "Companies already scaling: their choices pay off at scale and wait until need-now raises them (EE-045)"
+  },
+  {
+    "rel": "foundation/icp/ai-native-early-founders.json",
+    "field": "not.1",
+    "text": "Personal life and PKM (EE-009)"
+  },
+  {
+    "rel": "foundation/icp/ai-native-early-founders.json",
+    "field": "short",
+    "text": "Early founders who build with AI"
+  },
+  {
+    "rel": "foundation/icp/ai-native-early-founders.json",
+    "field": "traits.0",
+    "text": "Can build: everyone is a technical founder now (Torian, 2026-10-28)"
+  },
+  {
+    "rel": "foundation/icp/ai-native-early-founders.json",
+    "field": "traits.2",
+    "text": "Works with AI agents as editors and team members"
+  },
+  {
+    "rel": "foundation/icp/ai-native-early-founders.json",
+    "field": "where_to_find.0",
+    "text": "Austin founder and builder meetups on Luma"
+  },
+  {
+    "rel": "foundation/icp/ai-native-early-founders.json",
+    "field": "where_to_find.1",
+    "text": "Capital Factory events and community"
+  },
+  {
+    "rel": "foundation/icp/ai-native-early-founders.json",
+    "field": "where_to_find.2",
+    "text": "Antler Austin events and community"
+  },
+  {
+    "rel": "foundation/icp/ai-native-early-founders.json",
+    "field": "who",
+    "text": "Solo entrepreneurs, low- to no-code founders and small teams in the early phases of a venture, who build AI-native with agents as their editors and team members (EE-045)"
+  },
+  {
+    "rel": "foundation/icp/founder-mentors.json",
+    "field": "jobs.0",
+    "text": "See where a founder's venture stands and what it needs next"
+  },
+  {
+    "rel": "foundation/icp/founder-mentors.json",
+    "field": "jobs.1",
+    "text": "Have the founders they work with come to the table with their business in order"
+  },
+  {
+    "rel": "foundation/icp/founder-mentors.json",
+    "field": "jobs.2",
+    "text": "Offer a tool to their portfolio companies"
+  },
+  {
+    "rel": "foundation/icp/founder-mentors.json",
+    "field": "not.0",
+    "text": "Promising team-collaboration features now: helping teams work together is a later-phase promise, wording not settled (Torian, 2026-10-28)"
+  },
+  {
+    "rel": "foundation/icp/founder-mentors.json",
+    "field": "traits.0",
+    "text": "Works with several early founders at once"
+  },
+  {
+    "rel": "foundation/icp/founder-mentors.json",
+    "field": "traits.1",
+    "text": "Needs a founder's business in order before advising, investing or bringing in a marketer or salesperson"
+  },
+  {
+    "rel": "foundation/icp/founder-mentors.json",
+    "field": "where_to_find.2",
+    "text": "Austin investor and mentor networks"
+  },
+  {
+    "rel": "foundation/icp/founder-mentors.json",
+    "field": "who",
+    "text": "People who mentor, advise or invest in early founders: investors, accelerator and incubator teams (for example Capital Factory and Antler) and the advisors and mentors who work with their portfolio companies (Torian, 2026-10-28)"
+  },
+  {
+    "rel": "foundation/problem.json",
+    "field": "cost",
+    "text": "Projects built that no one ever uses; the wrong next decision, or none; ideas never proven or communicated to the people who could back them; founders who fear losing control of their idea by inviting a cofounder (Torian, 2026-10-28)"
+  },
+  {
+    "rel": "foundation/problem.json",
+    "field": "evidence.0.id",
+    "text": "carta-solo-founder-share"
+  },
+  {
+    "rel": "foundation/problem.json",
+    "field": "evidence.0.source.title",
+    "text": "Carta, Solo Founders Report 2025"
+  },
+  {
+    "rel": "foundation/problem.json",
+    "field": "evidence.0.source.url",
+    "text": "https://carta.com/data/solo-founders-report"
+  },
+  {
+    "rel": "foundation/problem.json",
+    "field": "evidence.0.summary",
+    "text": "Carta: solo-founded startups rose from 23.7% of new startups in 2019 to 36.3% in H1 2025. Sizes the segment; says nothing yet about the problem."
+  },
+  {
+    "rel": "foundation/problem.json",
+    "field": "evidence.1.source.title",
+    "text": "Cofounder homepage; Pancake, Best AI Co-Founder Tools in 2026"
+  },
+  {
+    "rel": "foundation/problem.json",
+    "field": "evidence.1.summary",
+    "text": "A crowded 2026 category of products that run a solo founder's departments with agents: Cofounder says over 10,650 companies run on it (self-reported); Founderr, AI Cofounders and VenturOS offer agent executive teams. Founders are paying for agent-run operations, which is a workaround for the problem, but none of these claims is observed by us."
+  },
+  {
+    "rel": "foundation/problem.json",
+    "field": "evidence.2.id",
+    "text": "validation-tools-category"
+  },
+  {
+    "rel": "foundation/problem.json",
+    "field": "evidence.2.source.title",
+    "text": "Stork.ai and IdeaProof comparison pages; makerstack.co siift review"
+  },
+  {
+    "rel": "foundation/problem.json",
+    "field": "evidence.2.source.url",
+    "text": "https://ideaproof.io/versus/dimeadozen-vs-ideaproof"
+  },
+  {
+    "rel": "foundation/problem.json",
+    "field": "evidence.2.summary",
+    "text": "Founders pay for AI idea-validation scores and reports: ValidatorAI (free 0-100 score, paid sessions), IdeaProof (from EUR 19), DimeADozen (free tier, paid reports), Siift (AI-scored validation that grades assumptions by evidence, from about USD 20 per user per month). Prices from third-party and competitor pages, unverified."
+  },
+  {
+    "rel": "foundation/problem.json",
+    "field": "evidence.3.source.title",
+    "text": "Drata, Startup solutions page"
+  },
+  {
+    "rel": "foundation/problem.json",
+    "field": "evidence.3.source.url",
+    "text": "https://drata.com/solutions/size/startup"
+  },
+  {
+    "rel": "foundation/problem.json",
+    "field": "evidence.3.summary",
+    "text": "Startups pay for compliance early: Drata claims 8,500+ customers and a startup offer (SOC 2, ISO 27001, GDPR, HIPAA, ISO 42001); third-party estimates put a startup's first SOC 2 on Vanta at roughly USD 10,000 to 20,000 a year plus audit fees. Evidence that founders meet compliance as a late, costly surprise is not yet gathered."
+  },
+  {
+    "rel": "foundation/problem.json",
+    "field": "forms.0.statement",
+    "text": "You build a project and no one ever uses it. There is no strategy for it; you want it to go further but don't know the right next step."
+  },
+  {
+    "rel": "foundation/problem.json",
+    "field": "forms.1.statement",
+    "text": "A venture faces many decisions, and there is no framework for knowing all the decisions you will need to make over time, or which are the most consequential right now: what is signal and what is noise."
+  },
+  {
+    "rel": "foundation/problem.json",
+    "field": "forms.2.statement",
+    "text": "You have an idea and feel it is good, but you don't know how to research it to prove that it is."
+  },
+  {
+    "rel": "foundation/problem.json",
+    "field": "forms.3.statement",
+    "text": "You don't know how to communicate the idea to the right people: a technical professional, an investor and the target audience each need it told differently."
+  },
+  {
+    "rel": "foundation/problem.json",
+    "field": "forms.4.statement",
+    "text": "Everyone can build now, but not everyone is a marketer, a salesperson, a financial expert, a storyteller who can inspire a team, or a team builder; a founder may fear losing control of their idea by inviting a cofounder."
+  },
+  {
+    "rel": "foundation/problem.json",
+    "field": "segment",
+    "text": "Solo founders and small early-stage teams (Discovery or Validation), low- to no-code, building AI-native with agents as editors (EE-045)"
+  },
+  {
+    "rel": "foundation/problem.json",
+    "field": "statement",
+    "text": "Many more people can now build their ideas, but building is no longer the hard part: knowing the right next decision is. Founders lose traction, can't tell the highest-signal decision from the noise, don't know how to prove or communicate their idea, and lack the skills a venture needs beyond building (Torian, 2026-10-28)."
+  },
+  {
+    "rel": "foundation/problem.json",
+    "field": "why_now",
+    "text": "Many more people are now able to build applications and build their ideas (Torian, 2026-10-28), so the bottleneck moves from building to deciding. Supporting trend: solo-founded startups rose from 23.7% to 36.3% of new startups, 2019 to H1 2025 (Carta)."
+  },
+  {
+    "rel": "foundation/problem.json",
+    "field": "workarounds.0",
+    "text": "Agent-team products that run departments for the founder (Cofounder, Founderr, AI Cofounders, VenturOS)"
+  },
+  {
+    "rel": "foundation/problem.json",
+    "field": "workarounds.1",
+    "text": "AI idea-validation reports and scores (ValidatorAI, IdeaProof, DimeADozen, Siift)"
+  },
+  {
+    "rel": "foundation/problem.json",
+    "field": "workarounds.2",
+    "text": "Business-plan and canvas tools (LivePlan, Upmetrics, Strategyzer)"
+  },
+  {
+    "rel": "foundation/problem.json",
+    "field": "workarounds.3",
+    "text": "Developer-side agent method frameworks (GitHub Spec Kit, BMAD Method)"
+  },
+  {
+    "rel": "foundation/problem.json",
+    "field": "workarounds.4",
+    "text": "Point tools bought as the need arrives: compliance (Drata, Vanta), cap table and board consents (Carta Launch)"
+  },
+  {
+    "rel": "foundation/problem.json",
+    "field": "workarounds.5",
+    "text": "Notes, docs and chat history kept by hand (Notion, Google Docs)"
+  },
+  {
+    "rel": "products/kit.json",
+    "field": "description",
+    "text": "The framework side of Mentura (EE-041, EE-043): the conventions that work offline, with no account and no named vendor. Record schemas and the data model, kits by layer, the router with its CLI, MCP server and local API, provenance, checks, need-now priors, validation scoring, init-venture and templates, the connector contract and the filesystem connector. Tagline proposed: 'What you need, when you need it' (EE-048). Not live (Torian, 2026-10-28): the published docs are not an invitation to use it; it still needs alignment, evals for function, tests across enough use cases, and one project run through its whole pipeline."
+  },
+  {
+    "rel": "products/kit.json",
+    "field": "job",
+    "text": "Run a venture on one method whose records agents can read and check and whose steps agents follow"
+  },
+  {
+    "rel": "products/kit.json",
+    "field": "market.geography",
+    "text": "Austin, Texas first (Luma meetups, Capital Factory, Antler), then global (Torian, 2026-10-28)"
+  },
+  {
+    "rel": "products/kit.json",
+    "field": "market.segment",
+    "text": "solo founders and small teams, low- to no-code, in Discovery or Validation, building AI-native with agents (EE-045)"
+  },
+  {
+    "rel": "products/kit.json",
+    "field": "technology",
+    "text": "JSON Schema, Node scripts and agent skills (SKILL.md)"
+  },
+  {
+    "rel": "venture.json",
+    "field": "core.competence",
+    "text": "Turning methods into machine-checkable schemas and agent-readable skills, with references behind every default"
+  },
+  {
+    "rel": "venture.json",
+    "field": "core.must_not",
+    "text": "Defaults with no traceable source, or a builder's records locked into a format they cannot read or take with them"
+  },
+  {
+    "rel": "venture.json",
+    "field": "core.promise",
+    "text": "We help founders who can build know the right next decision, prove it, and grow the skills to carry it out."
+  },
+  {
+    "rel": "venture.json",
+    "field": "core.promised_to",
+    "text": "Early founders who build with AI"
+  },
+  {
+    "rel": "venture.json",
+    "field": "repos.0.url",
+    "text": "https://github.com/tchjhnsn/everything-ecosystem"
+  }
+]

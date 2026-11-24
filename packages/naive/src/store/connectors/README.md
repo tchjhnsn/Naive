@@ -67,7 +67,7 @@ A write without either option replaces the item, as it always has. `checkWrite` 
 
 ## Adding a connector
 
-1. Decide which side it is on. If it works offline, needs no credentials and names no vendor, it is Naive's and goes in `packages/naive/src/store/connectors/<id>.mjs`. Otherwise it is the app's: it lives in the app, which calls `registerConnector` (EE-041). `node packages/naive/src/checks/check-boundary.ts` enforces this: a connector in the registry must be in this repository, offline and without credentials, and no code names an app's module.
+1. Decide which side it is on. If it works offline, needs no credentials and names no vendor, it is Naive's and goes in `packages/naive/src/store/connectors/<id>.ts`. Otherwise it is the app's: it lives in the app, which calls `registerConnector` (EE-041). `node packages/naive/src/checks/check-boundary.ts` enforces this: a connector in the registry must be in this repository, offline and without credentials, and no code names an app's module.
 2. Export `connect(options)`, returning an object that meets the contract.
 3. For a Naive connector, add a `connector` to its entry in `packages/naive/src/records/layers/knowledge/tooling/integrations.json`: the module, its write modes and its options. An app passes the same fields to `registerConnector`.
 4. Run it through `contract()` from `suite.ts`: against a fake of its API offline, and against the real one when credentials are given.
@@ -78,4 +78,9 @@ A write without either option replaces the item, as it always has. `checkWrite` 
 node packages/naive/src/store/connectors/eval.ts                 # the contract, and an app's connector registered
 node packages/naive/src/interfaces/tests/connectors-router-test.ts    # through the router
 node packages/naive/src/store/connectors/effects-test.ts               # the Effect versions on an in-memory VentureFs
+node packages/naive/src/store/connectors/service-test.ts               # Connectors as a service
 ```
+
+## Connectors as a service
+
+`service.ts` names how a venture reaches its sources as one Effect service, `Connectors` (EE-161, phase 7): `connect(source, dir)`, `connectAll(dir)` and `sourceFor(dir, recordType, context)`, and `connectorFor(dir, recordType)` for the source and connector that hold a record type. It is a `Context.Reference` whose default is the `registerConnector` registry above, so an Effect that asks for it needs no layer; a host that keeps records in Postgres or Neon provides another with `Layer.succeed(Connectors, ...)`. Its methods run over the `VentureFs` in scope. The plain `connect`, `connectAll` and `sourceFor` keep working; the router does not ask for the service yet (not built; phase 8).

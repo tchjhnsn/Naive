@@ -1,0 +1,28 @@
+---
+title: Use the command line
+description: "Run a route from the command line: read, write, check, and run."
+type: how-to
+status: draft
+lastReviewed: 2026-10-28
+owner: builder
+---
+
+Use the command line when you are in a terminal in this repository. The full syntax is on the [command reference](../reference/cli).
+
+## Run a command route
+
+From the repository root, list what the venture in this repo needs now:
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts system/need-now run --venture everything-ecosystem
+```
+
+`everything-ecosystem` is a venture in the workspace, which is `MENTURA_WORKSPACE`, else the current directory. For a venture you created with `init`, set `MENTURA_WORKSPACE` to its parent folder and pass that venture's id.
+
+## Read the route table for one phase
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts routes --group discovery
+```
+
+Actions on a record route are `read`, `write`, `check`, `template`, `layout`, `view`, and `run` for commands. A write takes `--derived-from`, `--decision` and `--note` for the provenance log.

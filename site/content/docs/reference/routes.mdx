@@ -1,0 +1,33 @@
+---
+title: Routes
+description: The one route table shared by the command line, MCP server, and HTTP API.
+type: reference
+status: draft
+lastReviewed: 2026-10-28
+owner: builder
+---
+
+Every record and command a venture has is a route, generated from the data model and the `kit.json` manifests. The file name is unchanged. The command line, the MCP server and the HTTP API share one route table, so they cannot disagree.
+
+Routes follow the Next.js App Router. A route is its record's folder path, first segment the package: `foundation/problem` is `foundation/problem.json`. `foundation/core` is a view of `venture.json`: a person writes the mission, core competence, tagline and chosen lifecycle playbook there, and every other field of that file stays out of reach. Routes from the older layer layout, such as `purpose/validation/problem`, still resolve through `packages/naive/src/router/route-aliases.json`.
+
+## How a Next.js name is used
+
+| Next.js | Here |
+| --- | --- |
+| `route` | Record actions read, write, check and template; command routes run |
+| `page` | The view action: a Markdown page for a person |
+| `layout` | The context an agent gets before acting: purpose, the package template, skills where a kit adds them, references, the gate and need-now status |
+| `not-found`, `loading`, `error` | A missing record answers with its template; a waiting draft is reported; a failed check answers with how to fix it |
+| `[id]` | Collection items, such as `purpose/product/kettle` |
+| `[...slug]` | The venture, by id or by a nested venture's path (`studio/print`) |
+| `(group)` | One group per phase |
+| `@slot` | `system/overview`: slots that render side by side |
+| `_private` | `_drafts/`, never routed |
+| `proxy` | Gates before every write |
+| `robots` | The routes a team-plan role may read and write |
+| redirects | Route aliases for renamed routes |
+
+## Every route
+
+<RouteTable />

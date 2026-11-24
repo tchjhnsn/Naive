@@ -1,0 +1,27 @@
+---
+title: HTTP API
+description: "The local HTTP API: methods, paths, and provenance headers."
+type: reference
+status: draft
+lastReviewed: 2026-10-28
+owner: builder
+---
+
+`node packages/naive/src/interfaces/api/server.ts` listens on `127.0.0.1:4330`. It has no authentication. Starting it is the [HTTP guide](../guides/api).
+
+## Paths
+
+| Method and path | Does |
+| --- | --- |
+| `GET /routes`, `GET /groups` | The route table and route groups |
+| `GET /ventures` | Ventures in the workspace |
+| `GET /templates/<route>` | A record's template |
+| `GET /ventures/<venture>` | The venture overview |
+| `GET /ventures/<venture>/<route>` | Read a record |
+| `GET /ventures/<venture>/<route>/view` | The route as a Markdown page |
+| `GET /ventures/<venture>/<route>/layout` | The layout |
+| `PUT /ventures/<venture>/<route>` | Write a record |
+| `POST /ventures/<venture>/<route>/check` | Run its checks |
+| `POST /ventures/<venture>/<route>/run` | Run a command |
+
+Provenance comes from the headers `x-mentura-derived-from`, `x-mentura-decision` and `x-mentura-model`, and the acting role from `x-mentura-actor`.

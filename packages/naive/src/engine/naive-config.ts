@@ -11,6 +11,9 @@
 import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { ventureFile } from "../core/venture-paths.ts";
+import { configOf } from "../core/effect/config.ts";
+import { ParseError } from "../core/effect/errors.ts";
+import { runSync } from "../core/effect/run.ts";
 import { line } from "./detectors.ts";
 import type { NaiveConfig, NaiveConfigRule } from "../records/types/records.d.ts";
 
@@ -55,9 +58,7 @@ export const namedPerson = (setBy: unknown): boolean =>
   typeof setBy === "object" && setBy !== null && "person" in setBy && typeof setBy.person === "string" && setBy.person.trim() !== "";
 
 export function rawConfig(dir: string | undefined): NaiveConfig {
-  const f = dir && ventureFile(dir, CONFIG);
-  if (!f || !existsSync(f)) return {};
-  try { return load(f); } catch (e) { throw new Error(`${CONFIG} is not valid JSON: ${e instanceof Error ? e.message : String(e)}`); }
+  return dir ? readConfig(dir) : {};
 }
 
 /** The thresholds a detector holds (packages/naive/src/engine/detectors.ts): threshold name to detector id. */
@@ -169,10 +170,9 @@ export function pinsBlocking(config: NaiveConfig | null | undefined, recordType:
 
 /** The venture's naive.config.json, or {} when it has none. A file that is not JSON throws. */
 export function readConfig(dir: string): NaiveConfig {
-  const f = ventureFile(dir, CONFIG);
-  if (!existsSync(f)) return {};
-  try { return JSON.parse(readFileSync(f, "utf8")); }
-  catch (e) { throw new Error(`${CONFIG} is not valid JSON: ${e instanceof Error ? e.message : String(e)}`); }
+  // Read through the NaiveConfig service (core/effect/config.ts); the error keeps the message callers match on.
+  try { return runSync(configOf(dir)); }
+  catch (e) { throw new Error(`${CONFIG} is not valid JSON: ${e instanceof ParseError && e.cause instanceof Error ? e.cause.message : e instanceof Error ? e.message : String(e)}`); }
 }
 
 /** Writes the config back, keys in a stable order: naive, packages, kits, triggers, gate, then the rest. */

@@ -1,0 +1,33 @@
+---
+title: Typegen and MCP
+description: Generate the route and tool types, and serve a venture to agents over MCP.
+type: how-to
+status: draft
+lastReviewed: 2026-10-29
+owner: builder
+---
+
+Use this page to give an agent typed access to a venture. In Next.js, route handlers expose a backend and `next typegen` generates their types. In Naive every route's actions are already the backend: the MCP server turns them into tools, and `naive typegen` writes their types.
+
+## Generate the types
+
+```sh
+node packages/naive/src/interfaces/cli/naive.ts typegen
+ls .naive/types
+```
+
+`routes.json` lists every route with its actions and kind. `tools.json` holds each MCP tool with its input schema. Both come from the data model, so they never drift from the router.
+
+## Serve a venture over MCP
+
+The server speaks newline-delimited JSON-RPC 2.0 on stdio. A harness starts it for you ([Install](./install)); you can also call it from a shell:
+
+```sh
+printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"mentura_read","arguments":{"venture":"my-venture","route":"foundation/problem"}}}' | node packages/naive/src/interfaces/mcp/server.ts
+```
+
+The tools are `mentura_routes`, `mentura_layout`, `mentura_view`, `mentura_ventures`, `mentura_read`, `mentura_write`, `mentura_decisions`, `mentura_propose_decision`, `mentura_check`, `mentura_template`, `mentura_run`, and the three setup tools `mentura_setup`, `mentura_setup_answer` and `mentura_setup_point` ([Set up your venture](./setup)). Every caller is an agent, so a gated write is always a draft.
+
+## Deploying
+
+The CLI on your machine runs every framework feature. Platform features, such as connectors that hold credentials, belong to Mentura, which is Naive's first adapter. Claude Code, Codex and Cursor adapt the framework through `AGENTS.md` and the MCP server.
