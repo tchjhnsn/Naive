@@ -939,6 +939,22 @@
       "note": "The departments a venture can import: APQC categories tagged with Porter's value chain, with need-now priors (EE-047)"
     },
     {
+      "id": "tool-catalog",
+      "layer": "operations",
+      "function": null,
+      "level": "method",
+      "schema": "packages/naive/src/records/tool-catalog.schema.json",
+      "generator": "packages/naive/src/engine/generators/tool-catalog.ts",
+      "paths": [
+        "packages/naive/src/functions/tools.json"
+      ],
+      "refs": [
+        { "field": "tools[].function", "to": "department-catalog", "checked_by": "packages/naive/src/checks/check-tools.ts" },
+        { "field": "tools[].cluster", "to": "capability-cluster", "checked_by": "packages/naive/src/checks/check-tools.ts" }
+      ],
+      "note": "The tools a business needs: each function's APQC level 2 process groups, and each tool's function, process groups and the record types it reads, writes or proposes. A tool with no function is universal. Consoles build their navigation from it (venture console spec, phase 3)"
+    },
+    {
       "id": "operating-rules",
       "layer": "operations",
       "function": null,

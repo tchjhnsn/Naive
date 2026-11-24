@@ -13,6 +13,7 @@ import * as detectorTrial from "./detector-trial.ts";
 import * as connection from "./connection.ts";
 import * as capabilityCluster from "./capability-cluster.ts";
 import * as standard from "./standard.ts";
+import * as toolCatalog from "./tool-catalog.ts";
 import * as leadPlan from "./lead-plan.ts";
 import * as rawDump from "./raw-dump.ts";
 import * as triage from "./triage.ts";
@@ -128,6 +129,10 @@ const st = standard.draft({ name: "Unified Modeling Language", issuer: "Object M
 t("standard: a new standard is drafted as its own file and passes the schema", st.ok && st.file === "packages/naive/src/terms/standards/unified-modeling-language.json" && st.draft?.checked === "2026-11-19" && st.draft?.gaps.length === 0);
 t("standard: a standard already in the catalog is refused", !standard.draft({ id: "bfo", name: "BFO", issuer: "ISO", url: "https://basic-formal-ontology.org/", status: "adopted", copyright: "restricted", uses: "x", checked: "2026-11-19" }).ok);
 t("standard: an unconfirmed standard with no note is refused", !standard.draft({ name: "Some standard", issuer: "X", url: "https://example.org/", status: "considered", copyright: "open", uses: "x" }).ok);
+const tc = toolCatalog.draft({ title: "Grants", function: "finance", kind: "workflow", phase: "validation", about: "Grants applied for and won", process_groups: ["9.7"], proposes: ["grant"] });
+t("tool-catalog: a new tool is added to the catalog and passes the schema", tc.ok && tc.added === "grants" && tc.draft?.tools.at(-1)?.function === "finance");
+t("tool-catalog: a tool already in the catalog is refused", !toolCatalog.draft({ title: "Books", kind: "view", phase: "validation", about: "x" }).ok);
+t("tool-catalog: a tool with no kind is refused", !toolCatalog.draft({ title: "Ledger", phase: "validation", about: "x" }).ok);
 
 const op = opportunity.draft({ title: "Corner Bakery POS", source: "inbound", created: "2026-11-20T15:00:00Z", value: { amount: 600, currency: "USD", cadence: "annual" } });
 t("opportunity: draft starts at lead with no reply yet and passes the schema", op.ok && op.route === "sales/opportunities/corner-bakery-pos" && op.draft.pipeline_stage === "lead" && op.draft.first_response === null);
