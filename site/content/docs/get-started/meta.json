@@ -1,0 +1,28 @@
+{
+  "title": "Get started",
+  "pages": [
+    "index",
+    "install",
+    "venture-types-and-roles",
+    "setup",
+    "project-structure",
+    "layouts",
+    "routes-and-records",
+    "agents-and-people",
+    "writing-records",
+    "decisions",
+    "decision-library",
+    "errors",
+    "the-gate",
+    "field-visibility",
+    "caching",
+    "revalidating",
+    "prefetching-and-vitals",
+    "releases",
+    "brand-and-assets",
+    "typegen-and-mcp",
+    "bringing-a-project-in",
+    "upgrading",
+    "whats-built"
+  ]
+}

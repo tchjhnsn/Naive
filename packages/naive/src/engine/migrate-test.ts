@@ -51,6 +51,8 @@ const d = mentura("decide", "migrate-product", "--venture", "kettle", "--by", "T
 expect("a person decides", d.status === 0, d.stderr);
 const a = mentura("migrate", "--venture", "kettle", "--apply");
 expect("apply writes the record through the router", a.status === 0 && /1 brought/.test(a.stdout), a.stdout + a.stderr);
+const applied: { items: { status: string; at?: unknown }[] } = JSON.parse(readFileSync(join(dir, ".release/migrate-plan.json"), "utf8"));
+expect("the plan records the path each item landed at, not whether it is a draft", typeof applied.items[0]?.at === "string" && /\.json/.test(String(applied.items[0]?.at)), JSON.stringify(applied.items));
 const rec = existsSync(join(dir, "product/kettle.json")) ? JSON.parse(readFileSync(join(dir, "product/kettle.json"), "utf8")) : {};
 expect("the record holds what the project said, rewritten into Naive's shape", rec.description === "We sell kettles to cafes.");
 expect("its provenance names the decision and the file it was derived from", entries(dir).some((e) => e.entity === "product/kettle.json" && e.decision === "migrate-product" && e.derived_from?.[0] === `file://${join(src, "notes/plan.md")}`));

@@ -1,0 +1,196 @@
+---
+title: Prefetching and vitals
+description: Read routes header first, keep the layout for a session, prefetch refs, and check what agents spend with agent vitals.
+type: how-to
+status: draft
+lastReviewed: 2026-10-29
+owner: builder
+---
+
+Use this page to give agents only the context they need, and to measure what they spend. It translates the Next.js chapter Linking and Navigating: prefetching, streaming and client-side transitions. It also translates layouts that keep their state, `instrumentation.ts`, and Core Web Vitals. In Naive the client is a model, so the cost is tokens and calls, not bytes.
+
+## Set up a venture
+
+Create a venture and turn instrumentation on. Like adding `instrumentation.ts` to a Next.js app, it is opt-in. It writes events to `.naive/events.jsonl` in the venture:
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts init ~/ventures/prefetch-demo --id prefetch-demo --layers purpose
+export MENTURA_WORKSPACE=~/ventures
+cat > ~/ventures/prefetch-demo/naive.config.json <<'JSON'
+{ "instrumentation": { "events": true } }
+JSON
+```
+
+## Read the header first
+
+`head` returns a record's header and stops. The header says what the record is, its state, its owner and how many tokens the body costs. An agent can then decide whether to read on. This is Next.js streaming metadata before the body:
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts foundation/problem head --venture prefetch-demo
+```
+
+```json
+{
+  "header": {
+    "route": "foundation/problem",
+    "record": "validation-problem",
+    "kind": "record",
+    "state": "missing",
+    "owner": "founder",
+    "title": null,
+    "tokens": 1
+  },
+  "budget": { "limit": 6000, "used": 34, "over": false, "parts": { "header": 34 } }
+}
+```
+
+A state is `missing`, `draft waiting`, `agent-written`, `confirmed` (a person wrote, accepted or confirmed it), `baseline` or `unlogged`.
+
+## Navigate in a session
+
+`navigate` is a read in the order an agent needs it: the header, the budget, the layout, the template, the record and the prefetch. Pass `--session` to keep the layout between calls:
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts foundation/problem navigate --venture prefetch-demo --session task-1 > /dev/null
+node packages/naive/src/interfaces/cli/mentura.ts foundation/problem navigate --venture prefetch-demo --session task-1
+```
+
+The second answer sends no layout parts. It lists what the session already has:
+
+```json
+{
+  "layout": {
+    "session": "task-1",
+    "first": false,
+    "parts": {},
+    "kept": ["stack:schema/layer.json", "stack:purpose/layer.json", "stack:library/packages/validation/package.json", "chain:AGENTS.md", "instructions", "record:foundation/problem"]
+  }
+}
+```
+
+The layout comes in parts: one per layer or package, one per `AGENTS.md`, the merged instructions, and the record's own schema and gate. A part is sent again only when it changes. A sibling route keeps the shared parts and swaps only the record's part, the way a Next.js layout stays mounted while the page changes:
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts validation/solution navigate --venture prefetch-demo --session task-1
+```
+
+## The template is fresh every time
+
+The `template` part holds what changes on every action: the need-now ranking and the open decisions. It is never in the layout, so a slow computation never blocks a read. It runs with a time limit, `template_ms` (3000 by default). A part that runs past it comes back under `pending`, and the read still answers.
+
+## What prefetch sends
+
+On a record read, the router adds short entries for the routes the agent is likely to need next. Code picks them; no model is needed:
+
+| Why | Comes from |
+| --- | --- |
+| `ref <field>` | A ref field in the data model, such as a product's `part_of` |
+| `link` | A string in the record that is a route, such as `foundation/icp` |
+| `reads first` | The `after` links in `library/packages/catalog.json` |
+| `waits on this` | Records whose `after` names this one |
+| `next step` | The first record need-now suggests now |
+| `asked` | Routes you name with `--prefetch`, like prefetch on hover |
+
+What each entry holds depends on the record:
+
+- A confirmed record comes in full when it is small (`full_max`, 800 tokens).
+- A record that is still changing sends only its state.
+- A collection larger than `large_collection` (20) sends only its count, unless `--task` names it.
+- Every entry has a `cost` in tokens. Entries stop when `prefetch_budget` (1500) is spent, and the rest are listed under `dropped`.
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts foundation/problem navigate --venture prefetch-demo --task "write the problem, then the telos" --prefetch foundation/telos
+node packages/naive/src/interfaces/cli/mentura.ts foundation/problem navigate --venture prefetch-demo --no-prefetch
+```
+
+## Stream the parts
+
+Add `--stream` to print each part on its own line as it is ready, header first. A command route, such as `system/need-now`, answers at once with its state and the last result, then the new one:
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts system/need-now navigate --venture prefetch-demo --stream > /dev/null
+node packages/naive/src/interfaces/cli/mentura.ts system/need-now navigate --venture prefetch-demo --stream | cut -c1-80
+```
+
+```text
+{"part":"header","data":{"route":"system/need-now","record":null,"kind":"comma
+{"part":"stale_result","data":{"as_of":"2026-10-29T05:20:11.120Z","result":{"
+{"part":"layout","data":{"parts":{"stack:schema/layer.json":{"name":"system",
+{"part":"result","data":{"phase":"discovery","next":"validation","facts":{"ph
+{"part":"budget","data":{"limit":6000,"used":2650,"over":false,"parts":{"head
+```
+
+Over MCP, `mentura_read` is this navigation. When a call carries `_meta.progressToken`, the server sends each part of a read, and the progress of a `mentura_run`, as `notifications/progress`. `mentura batch` runs a list of calls and reports each one as it finishes:
+
+```sh
+printf '[{"route":"foundation/telos","action":"read"},{"route":"system/need-now","action":"run"}]' > ~/prefetch-demo-calls.json
+node packages/naive/src/interfaces/cli/mentura.ts batch --venture prefetch-demo --input ~/prefetch-demo-calls.json --stream | head -2
+```
+
+## Keep each route in its context budget
+
+Naive's bundle is the context an agent receives. Each route has a budget in tokens, 6000 by default. Every navigation reports what it used by part. Over budget, prefetch is given back first. `system/context` measures every route, like a bundle analyzer:
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts system/context run --venture prefetch-demo > /dev/null
+node packages/naive/src/router/context.ts ~/ventures/prefetch-demo budget --check
+```
+
+Set budgets per route in `naive.config.json`, under `context`:
+
+```json title="naive.config.json"
+{ "context": { "budget": 6000, "routes": { "foundation/**": 3000 }, "prefetch_budget": 1500, "large_collection": 20, "full_max": 800, "template_ms": 3000 } }
+```
+
+Give context as low in the tree as it is needed, so other routes do not pay for it. Scope an instruction to some routes with a glob in brackets, in any `AGENTS.md`:
+
+```sh
+printf '[foundation/problem] evidence: cite every source by path\n' >> ~/ventures/prefetch-demo/AGENTS.md
+node packages/naive/src/router/context.ts ~/ventures/prefetch-demo budget --check # exits 1
+```
+
+The check fails and says to move the line into `foundation/problem/AGENTS.md`. It also fails when an `AGENTS.md` holds a computed value, such as `need_now`, which belongs in the template, or when an `AGENTS.md` takes more than a quarter of the budget. Move that logic out of prompts and into the router's code or a check.
+
+## Check agent vitals
+
+Agent vitals are Naive's Core Web Vitals. Each is assessed at the 75th percentile, like Web Vitals:
+
+| Vital | Measures | Threshold |
+| --- | --- | --- |
+| `calls_per_task` | Router calls in one session | 25 |
+| `tokens_per_call` | Tokens of context each call sends | 6000 |
+| `time_to_useful_ms` | Time from a session's first call to its first useful answer | 10000 |
+| `decision_hours` | Time from a decision opening to a person deciding it | 72 |
+
+Calls come from the events log. Decisions come from `provenance.jsonl`, so decision latency is measured even with instrumentation off. Vitals are checked, not only measured:
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts system/vitals run --venture prefetch-demo > /dev/null
+node packages/naive/src/router/vitals.ts ~/ventures/prefetch-demo --check
+cat > ~/ventures/prefetch-demo/naive.config.json <<'JSON'
+{ "instrumentation": { "events": true }, "vitals": { "calls_per_task": 1 } }
+JSON
+node packages/naive/src/router/vitals.ts ~/ventures/prefetch-demo --check # exits 1
+```
+
+## Send traces to the platform
+
+`--trace` turns the events into a trace: a run per call, nested calls under their parent, judgments as model runs, and the vitals as feedback. Mentura's LangSmith exporter, `platform/integrations/langsmith.mjs`, uploads it with `LANGSMITH_API_KEY`. The framework names no vendor:
+
+```sh
+node packages/naive/src/router/vitals.ts ~/ventures/prefetch-demo --trace --session task-1 > ~/prefetch-demo-trace.json
+```
+
+## How the Next.js concepts translate
+
+| Next.js | Naive |
+| --- | --- |
+| The Link component and prefetching | Refs between records, prefetched as short summaries |
+| Static routes prefetch in full | Confirmed records come in full; changing ones send their state |
+| Prefetch off for long lists | Large collections send a count |
+| Layouts keep state on navigation | The layout is sent once per session, then only what changed |
+| `template` | The template, recomputed on every read |
+| Streaming and `loading` | Parts as they are ready; a computed route answers with its state first |
+| Bundle size | The context budget |
+| `instrumentation.ts` | `naive.config.json` instrumentation and `register()` in `packages/core/instrumentation.mjs` |
+| Core Web Vitals | Agent vitals |

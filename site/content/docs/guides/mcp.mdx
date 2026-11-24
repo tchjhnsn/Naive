@@ -1,0 +1,30 @@
+---
+title: Connect an agent
+description: Connect an agent harness to the MCP server and call a tool.
+type: how-to
+status: draft
+lastReviewed: 2026-10-28
+owner: builder
+---
+
+The MCP server is `packages/naive/src/interfaces/mcp/server.ts`. It speaks MCP over stdio and has no dependencies. The tool and resource list is the [MCP reference](../reference/mcp).
+
+## Add it to Cursor
+
+Put this in `.cursor/mcp.json`, with your own paths:
+
+```json title=".cursor/mcp.json"
+{
+  "mcpServers": {
+    "mentura": {
+      "command": "node",
+      "args": ["/path/to/mentura/interface/mcp/server.mjs"],
+      "env": { "MENTURA_WORKSPACE": "/path/to/ventures", "MENTURA_HARNESS": "Cursor" }
+    }
+  }
+}
+```
+
+## Ask for the overview
+
+Ask the agent to call `mentura_ventures`, then `mentura_view` with route `system/overview`. Every write through the server counts as an agent's.

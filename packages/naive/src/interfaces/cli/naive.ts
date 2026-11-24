@@ -3,6 +3,9 @@
 // venture.json in the current directory or its parents. mentura stays for platform commands and as an
 // alias, so `mentura typegen` and `mentura upgrade` run these same commands.
 //
+//   naive new [dir] [--yes] [--type <type>] [...]    start a venture: create-venture's questions and scaffold (EE-082)
+//   naive <route> <action> | decide | decisions | accept | ...
+//                                                   every record command of mentura runs here too: see naive help
 //   naive dev [--port 4331]                         the setup page at /setup and the board, live: edit a record and it updates; each saved
 //                                                   record is checked against its schema as you go (I-17, I-24)
 //   naive build                                     check every package and write a release (I-17)
@@ -55,6 +58,8 @@
 //   naive beta status|feedback <capability>|unlock  the plugin beta: which capabilities are open, the checkpoint feedback
 //                                                   that unlocks the next, and unlocking it (beta.enabled in naive.config.json)
 //   naive bugs [--all]                              open P0 and P1 bugs; stable means none
+//   naive handoff run <id> [--runner <id>]           a handoff's done-criteria, durable when naive.config.json sets durable.engine (EE-161)
+//   naive run <file> [--json]                       a venture program on the venture runtime: an Effect or a function (EE-161)
 //   naive trace append [--session <id>]             span lines on stdin, chained into traces/<session>.jsonl (EE-121)
 //   naive trace show [<session>] [--json]           the venture's trace sessions, or one as a tree of spans, offline
 //   naive signals emit <type> --props '<json>' [--subject <id>] [--time <date>] [--rating B2] [--by <person>] [--cite <url>]
@@ -82,12 +87,13 @@
 
 import { spawnSync, type SpawnSyncOptions } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, watch, writeFileSync } from "node:fs";
-import { createServer, type AddressInfo } from "node:net";
+import type { AddressInfo } from "node:net";
 import { basename, join, relative, resolve } from "node:path";
 import { asRouted, findVenture } from "./find-venture.ts";
 import { logical } from "../../core/venture-paths.ts";
 import { ventureFile } from "../../core/venture-paths.ts";
 import { checkWorkspace, ensureWorkspace, findWorkspace } from "../../engine/workspace.ts";
+import { checkCopies } from "../../engine/effect-pin.ts";
 import { schemaNameOf } from "../../records/index.ts";
 import { naiveScript, PACKAGE_ROOT } from "../../core/scripts.ts";
 import { validateFile } from "../../records/validate.ts";
@@ -110,8 +116,6 @@ function here() {
   return dir;
 }
 
-// A port that is free, starting at the one asked for, the way next dev moves on from 3000.
-const free = (p: number): Promise<number> => new Promise((ok) => { const s = createServer().once("error", () => ok(free(p + 1))).once("listening", () => { const bound = (s.address() as AddressInfo).port; s.close(() => ok(bound)); }).listen(p, "127.0.0.1"); });
 
 // The schema a venture file is checked against, from the route table (records only).
 async function schemaFor(file: string): Promise<string | null> {
@@ -127,20 +131,29 @@ async function dev(dir: string): Promise<void> {
   }
   const { workspace, venture } = asRouted(dir);
   process.env.MENTURA_WORKSPACE = workspace;
-  const port = await free(Number(opt("port") ?? 4331));
   // One origin: /setup is the setup page (packages/naive/src/interfaces/dev/setup.ts); everything else is the board, served
   // on a port of its own and passed through.
   const { serve } = await import("../demo/board.ts");
   const { handle } = await import("../dev/setup.ts");
-  const boardPort = await free(0);
-  serve(boardPort, venture);
+  // Each server listens before its address is printed or used, so no other process can take a port between a probe and
+  // the listen (the board takes any free port; the setup server the one asked for, else the next free one).
+  const board = serve(0, venture);
+  if (!board.listening) await new Promise((ok) => board.once("listening", ok));
+  const boardPort = (board.address() as AddressInfo).port;
   const { createServer: http, request } = await import("node:http");
-  http(async (req, res) => {
+  const server = http(async (req, res) => {
     if (await handle(req, res, dir)) return;
     const up = request({ host: "127.0.0.1", port: boardPort, path: req.url, method: req.method, headers: req.headers }, (r) => { res.writeHead(r.statusCode ?? 502, r.headers); r.pipe(res); });
     up.on("error", (e) => { res.writeHead(502); res.end(String(e.message)); });
     req.pipe(up);
-  }).listen(port, "127.0.0.1");
+  });
+  const port = await new Promise<number>((ok, fail) => {
+    const at = (p: number) => {
+      server.once("error", (e: NodeJS.ErrnoException) => e.code === "EADDRINUSE" && p !== 0 ? at(p + 1) : fail(e));
+      server.listen(p, "127.0.0.1", () => { server.removeAllListeners("error"); ok((server.address() as AddressInfo).port); });
+    };
+    at(Number(opt("port") ?? 4331));
+  });
   const name = JSON.parse(readFileSync(join(dir, "venture.json"), "utf8")).name ?? venture;
   console.log(`\n  ▲ Naive ${version()}\n  - Venture:  ${name} (${relative(process.cwd(), dir) || "."})\n  - Setup:    http://127.0.0.1:${port}/setup\n  - Board:    http://127.0.0.1:${port}/\n  - Map:      http://127.0.0.1:${port}/map\n\n  Watching for changes. Each saved record is checked against its schema. Ctrl-C to stop.\n`);
   // Live feedback on save (I-24): a record that no longer matches its schema says so at once.
@@ -175,6 +188,10 @@ function check(dir: string): number {
     console.log(`${r.status === 0 ? "pass" : "FAIL"}  ${c.replace("check-", "")}: ${last}`);
     if (r.status !== 0) console.log((r.stdout + r.stderr).trim().split("\n").slice(0, 12).map((l) => `      ${l}`).join("\n"));
   }
+  // One Effect, shared (EE-161): the venture pins Naive's exact effect version and loads the copy Naive loads.
+  const effect = checkCopies(dir);
+  if (!effect.ok) failed++;
+  console.log(`${effect.ok ? "pass" : "FAIL"}  effect: ${effect.message}`);
   // The workspace the venture sits in: its naive-workspace.json matches the schema.
   const ws = findWorkspace(dir);
   if (ws) { const e = checkWorkspace(ws); if (e) failed++; console.log(`${e ? "FAIL" : "pass"}  workspace: ${e ? e.split("\n")[0] : "naive-workspace.json matches its schema"}`); }
@@ -351,6 +368,18 @@ else if (cmd === "build" || cmd === "start") {
   // The plugin beta's gate (packages/naive/src/engine/beta-gate.ts) and the bug summary (packages/naive/src/engine/bugs.ts).
   const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
   process.exit(run(cmd === "beta" ? "packages/naive/src/engine/beta-gate.ts" : "packages/naive/src/engine/bugs.ts", [here(), ...(cmd === "beta" && !args.length ? ["status"] : args)]));
+} else if (cmd === "handoff") {
+  // A handoff's done-criteria: a durable workflow when durable.engine is sqlite or postgres, else run-handoff.ts (EE-161).
+  const [what, id, ...args] = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
+  if (what !== "run" || !id) { console.error("usage: naive handoff run <id> [--runner <id>] [--venture <dir>]"); process.exit(2); }
+  const dir = here();
+  const { durableEngine } = await import("../../router/orchestration/durable-handoff.ts");
+  const durable = durableEngine(dir) !== "memory";
+  process.exit(run(durable ? "packages/naive/src/router/orchestration/durable-handoff.ts" : "packages/naive/src/engine/run-handoff.ts", [dir, id, ...args]));
+} else if (cmd === "run") {
+  // A venture program on the venture runtime (packages/naive/src/engine/venture-program.ts, EE-161).
+  const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
+  process.exit(run("packages/naive/src/engine/venture-program.ts", [...args, "--venture", here()]));
 } else if (cmd === "trace") {
   // Traces in the venture's files (packages/naive/src/engine/trace-cli.ts, EE-121).
   const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
@@ -379,7 +408,16 @@ else if (cmd === "build" || cmd === "start") {
   writeFileSync(join(out, "tools.json"), JSON.stringify(TOOLS, null, 2) + "\n");
   writeFileSync(join(out, "routes.json"), JSON.stringify(routes().map((r: { route: string, actions: string[], kind: string }) => ({ route: r.route, actions: r.actions, kind: r.kind })), null, 2) + "\n");
   console.log(`wrote ${out}`);
+} else if (cmd === "new") {
+  // A new venture: create-venture's questions and scaffold, so the whole lifecycle starts from this one command.
+  process.exit(run("packages/create-venture/index.mjs", rest));
+} else if (cmd && cmd !== "help" && cmd !== "--help" && !rest.includes("--help")) {
+  // Every other command is a record command: the routes, drafts, decisions and freshness over the router (EE-030).
+  // They live in mentura.ts, and naive runs them, so one CLI covers the whole venture; mentura stays as an alias.
+  process.exit(run("packages/naive/src/interfaces/cli/mentura.ts", [cmd, ...rest]));
 } else {
-  console.error(readFileSync(new URL(import.meta.url), "utf8").split("\n").filter((l) => l.startsWith("//   ")).map((l) => l.slice(5)).join("\n"));
-  process.exit(cmd ? 1 : 2);
+  const lines = (file: URL, from: string): string[] => readFileSync(file, "utf8").split("\n").filter((l) => l.startsWith("//   ")).map((l) => (from ? l.slice(5).replace(from, "naive ") : l.slice(5)));
+  const records = lines(new URL("./mentura.ts", import.meta.url), "mentura ");
+  console.error([...lines(new URL(import.meta.url), ""), "", "Record commands (the same as mentura <command>):", ...records].join("\n"));
+  process.exit(cmd && cmd !== "help" && cmd !== "--help" ? 1 : cmd ? 0 : 2);
 }

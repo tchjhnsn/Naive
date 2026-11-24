@@ -106,6 +106,7 @@ export const REGISTRY: Registry = {
   "packages/naive/src/engine/gate-drafts.ts": plain("stores held writes and their variants"),
   "packages/naive/src/interfaces/tests/gate-test.ts": plain("tests the write gate"),
   "packages/naive/src/engine/gate.ts": plain("the write gate: route rules, pins and role access decide what happens to a write, not a term"),
+  "packages/naive/src/engine/gate-service.ts": plain("the write gate as an Effect service: its default runs gate.ts's route rules, pins and role access, not a term"),
   "packages/naive/src/terms/ontology-gate-test.ts": plain("tests the membership gate, which is registered as symbolic"),
   "packages/naive/src/terms/ontology-gate.ts": symbolic,
 };

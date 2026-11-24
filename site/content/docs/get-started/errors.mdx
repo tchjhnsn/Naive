@@ -1,0 +1,129 @@
+---
+title: Errors
+description: What a refused write, a bad record, a failing package and a broken venture.json answer, and how each one is contained.
+type: reference
+status: draft
+lastReviewed: 2026-10-29
+owner: builder
+---
+
+Use this page to read what Naive says when something goes wrong, and how far a failure reaches. Next.js separates expected errors, returned as values, from uncaught exceptions caught by error boundaries: `error.js` for a segment and `global-error.js` for the root. Naive does the same. An expected error is a structured answer that says what failed and how to fix it, and the CLI exits 1. A failure stays inside its record, then its package, and only a broken venture.json or framework file reaches everything.
+
+## A write that does not match its schema
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts init ~/ventures/wr-errors --id wr-errors --layers purpose
+export MENTURA_WORKSPACE=~/ventures
+echo '{"statement": 5}' | node packages/naive/src/interfaces/cli/mentura.ts foundation/problem write --venture wr-errors --input - --as person # exits 1
+```
+
+```text
+does not match schema/validation-problem.schema.json:
+(root): 'venture' is a required property
+(root): 'segment' is a required property
+(root): 'evidence' is a required property
+statement: 5 is not of type 'string'
+```
+
+Nothing is written, and nothing enters the provenance log. With `--json` the answer's `fix` names the package's skill, the template and the schema.
+
+## An action the route does not have
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts foundation/problem delete --venture wr-errors # exits 1
+```
+
+```text
+foundation/problem has no action delete (it has read, view, layout, write, check, template)
+```
+
+## An unknown route or venture
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts foundation/nothing read --venture wr-errors # exits 1
+node packages/naive/src/interfaces/cli/mentura.ts foundation/problem read --venture nope # exits 1
+```
+
+These answer `no route foundation/nothing` and `no venture nope`.
+
+## One bad record
+
+This translates `catchError`, a boundary around one component. A record that does not parse fails only itself. A list read still returns the other records and names the bad one in `errors`:
+
+```sh
+cat > ~/wr-ada.json <<'JSON'
+{ "id": "ada", "name": "Ada" }
+JSON
+node packages/naive/src/interfaces/cli/mentura.ts customers/ada write --venture wr-errors --input ~/wr-ada.json --as person
+printf '{ "id": "cy", ' > ~/ventures/wr-errors/customers/cy.json
+node packages/naive/src/interfaces/cli/mentura.ts customers read --venture wr-errors
+node packages/naive/src/interfaces/cli/mentura.ts customers/cy read --venture wr-errors # exits 1
+```
+
+```json
+{
+  "ok": true,
+  "result": { "ada": { "id": "ada", "name": "Ada" } },
+  "errors": { "cy": { "file": "customers/cy.json", "error": "customers/cy.json does not parse: Expected double-quoted property name in JSON at position 14 (line 1 column 15)" } }
+}
+```
+
+The answer also carries each record's metadata, left out here. Reading `customers/cy` on its own answers that record's error with the schema and template to fix it, instead of a stack trace.
+
+## A failing package
+
+This translates `error.js`: errors bubble to the nearest boundary. Each package is a boundary. A failing record or check in one package is contained there, and the other packages proceed. `mentura <package> check` checks one package; `mentura venture check` checks the venture level first (venture.json and the folder structure), then every package it uses:
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts venture check --venture wr-errors # exits 1
+rm ~/ventures/wr-errors/customers/cy.json
+node packages/naive/src/interfaces/cli/mentura.ts foundation check --venture wr-errors
+```
+
+```json
+{
+  "ok": false,
+  "reached": "package",
+  "venture": { "ok": true, "warnings": [] },
+  "contained": ["customers"],
+  "proceeds": ["foundation", "validation", "product"]
+}
+```
+
+The answer is trimmed here: it also lists each package. `reached` is `package` when the failure stayed in packages and `venture` when the venture level failed. Each package lists its records with `ok`, the error and the fix, and the checks it ran. `node packages/naive/src/router/boundaries.ts check <venture dir>` prints the same as text.
+
+## A broken venture.json
+
+This translates `global-error.js`, which replaces the root layout when it fails. A venture.json that does not parse, lacks a required field, or has an unknown phase answers every route with what is wrong and how to recover:
+
+```sh
+printf '{ "id": "wr-errors", "name": ' > ~/ventures/wr-errors/venture.json
+node packages/naive/src/interfaces/cli/mentura.ts venture read --venture wr-errors # exits 1
+node packages/naive/src/router/boundaries.ts recover ~/ventures/wr-errors --confirm recover
+node packages/naive/src/interfaces/cli/mentura.ts venture read --venture wr-errors
+```
+
+```text
+wr-errors: venture.json does not parse: Unexpected end of JSON input (at the end of the file, line 1)
+Recovery:
+  1. Fix it by hand: it must be a JSON object with id, name, parent, phase, owner, status, layers
+  2. Or rebuild a minimal one, keeping the broken file in _private/: node packages/naive/src/router/boundaries.ts recover ~/ventures/wr-errors --confirm recover
+  3. Then check it: python3 schema/validate.py --schema venture.schema.json --file ~/ventures/wr-errors/venture.json
+```
+
+When the venture is in git, the first step is to restore the committed file. `recover` moves the broken file to `_private/` and writes a minimal venture.json; copy back what you need from the kept file. One broken venture never stops the router finding the others: `mentura ventures` lists it as broken.
+
+A broken framework file, such as `packages/naive/src/records/data-model.json`, stops every route the same way, before any module reads it. The answer names the file and says to restore it and run `node packages/naive/src/checks/check-data-model.ts`.
+
+## Not errors
+
+| Case | Answer |
+| --- | --- |
+| A record that does not exist yet | `result: null` with `not_found`: the schema, template and need-now status ([Routes and records](./routes-and-records)) |
+| An agent's write that is held | `draft: true` and a note naming the rule that held it |
+| A check that grades low | `passed: true` with the grade and why |
+| A judgment below its threshold | `outcome: "uncertain"`, routed to the function owner |
+
+## Uncaught failures
+
+A bug, such as a cycle in the decision tree, is the uncaught case. `capture` in `packages/naive/src/router/router.ts` turns a throw into `outcome: "uncaught"` with the message. A throw inside one package's check is reported as that package's failure, and the other packages still run.

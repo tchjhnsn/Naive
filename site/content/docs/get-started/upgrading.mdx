@@ -1,0 +1,182 @@
+---
+title: Upgrading
+description: Move a venture onto the installed Naive, pin its packages, adopt packages early, let an agent work the upgrade, and verify adapters.
+type: how-to
+status: draft
+lastReviewed: 2026-10-29
+owner: builder
+sources:
+  - https://nextjs.org/docs/app/getting-started/upgrading
+  - https://nextjs.org/docs/app/getting-started/deploying
+  - https://docs.claude.com/en/docs/claude-code/memory
+  - https://docs.claude.com/en/docs/claude-code/skills
+  - https://agents.md/
+  - https://docs.cursor.com/context/rules
+---
+
+Use this page to move a venture onto the version of Naive you have installed, and to keep it there. It translates the Next.js Upgrading chapter: `next upgrade` becomes `naive upgrade`, codemods become migrations, `--agent` becomes an agent-run upgrade that the checks decide, the canary channel becomes experimental packages, and each version gets a guide. It also covers adapters, from the Deploying chapter.
+
+## Upgrade a venture
+
+Create a venture to try it on, then see what the upgrade would do. `--check` changes nothing:
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts init ~/ventures/upgrade-demo --id upgrade-demo --layers purpose
+export MENTURA_WORKSPACE=~/ventures
+node packages/naive/src/interfaces/cli/naive.ts upgrade ~/ventures/upgrade-demo --check
+node packages/naive/src/interfaces/cli/naive.ts upgrade ~/ventures/upgrade-demo
+```
+
+```text
+upgraded upgrade-demo from Naive 0.1.0 to 0.3.0: 3 files moved, 3 records rewritten, 9 packages pinned, 2 escalated for a decision.
+migrate   package-layout (0.2.0): 3 moved, 0 rewritten
+migrate   kit-to-package (0.3.0): 0 moved, 3 rewritten
+escalate  product pillar: the brief names a home only for brand (marketing/). Archived at _private/pillars/product.md rather than guessed.
+escalate  business pillar: the brief names a home only for brand (marketing/). Archived at _private/pillars/business.md rather than guessed.
+guide     docs/upgrades/0.2.0.md
+guide     docs/upgrades/0.3.0.md
+```
+
+A venture with no pin is on Naive 0.1.0, the layer layout. The upgrade runs every migration between that and the installed version, then pins the framework and each package the venture uses in `naive.config.json`:
+
+```json title="~/ventures/upgrade-demo/naive.config.json"
+{
+  "naive": { "version": "0.3.0", "channel": "stable" },
+  "packages": {
+    "customers": { "version": "0.3.0" },
+    "decisions": { "version": "0.3.0" },
+    "evidence": { "version": "0.3.0" },
+    "foundation": { "version": "0.3.0" },
+    "investors": { "version": "0.3.0" },
+    "money": { "version": "0.3.0" },
+    "product": { "version": "0.3.0" },
+    "raw": { "version": "0.3.0" },
+    "validation": { "version": "0.3.0" }
+  }
+}
+```
+
+Run it again and it has nothing to do. Every move and rewrite is a new line in `provenance.jsonl`, and `.release/upgrade-0.3.0.json` lists what changed. In a git repository, files move with `git mv`.
+
+## Migrations rewrite records
+
+A migration is Naive's codemod. It rewrites a venture's records when the framework or a package's schema changes. The versions and their migrations are in `packages/naive/src/engine/upgrades.json`:
+
+| Version | Migration | What it does |
+| --- | --- | --- |
+| 0.2.0 | `package-layout` | Moves records from layer folders into package folders, such as `purpose/validation/problem.json` to `foundation/problem.json` |
+| 0.3.0 | `kit-to-package` | Moves Naive packages out of `kits` into `packages`, and rewrites layer and kit routes inside records to package routes |
+
+The kit-to-package rename rewrites the routes a decision unlocks, the routes each team-plan role may read and write, and where-used parents. A route glob that spans several packages, such as `purpose/**`, is escalated for you to rewrite. A file with no clear home is archived under `_private/` and escalated, never guessed.
+
+Old routes keep working. `packages/naive/src/router/route-aliases.json` maps each one to its new route, and a read on `purpose/validation/problem` answers from `foundation/problem` with a deprecation note.
+
+A move onto a file that already exists stops the upgrade before anything moves.
+
+## Move a flat venture onto the structured layout
+
+New ventures start in the structured layout. A venture made before it stays flat until you move it, because the move touches every folder:
+
+```bash
+naive upgrade --layout structured --check   # say what would move
+naive upgrade --layout structured
+```
+
+- Every package folder and record at the top moves into `k-base/`. The old `knowledge/` layer folder becomes `k-base/knowledge/`.
+- `venture.json`, `AGENTS.md`, `README.md`, `package.json`, the lockfiles (`package-lock.json`, `pnpm-lock.yaml`, `yarn.lock`, `bun.lock`, `bun.lockb`), `.gitignore` and `.vscode/` stay at the top.
+- `provenance.jsonl`, `naive.config.json` and `knowledge/sources.json` move into `meta/`, and `.release/` becomes `meta/releases/`.
+- `profile.md` becomes `README.md` when there is no README yet.
+- `venture.json` gains `"layout": "structured"`. Hats leave `people/`, so name each function's owner in `venture.json` under `functions`.
+
+Every record keeps its route, so citations and the provenance log read the same. Department folders, the telos check and every other check find them where they now sit. Files git tracks move with `git mv`. A structured venture is left alone.
+
+## Read the guide for each version
+
+Each framework version has a guide in `docs/upgrades/`, read from the copy of Naive you have installed. It says what the migrations do and what is left for you to do by hand:
+
+```sh
+node packages/naive/src/interfaces/cli/naive.ts upgrade ~/ventures/upgrade-demo --guide 0.3.0
+```
+
+Without a version, `--guide` prints the guide of every version the venture's next upgrade crosses.
+
+## Update the installed framework
+
+Naive is installed as a git checkout. `--framework` fast-forwards it with `git pull --ff-only`, then upgrades the venture with the code it just pulled:
+
+```text
+node packages/naive/src/interfaces/cli/naive.ts upgrade --framework ~/ventures/upgrade-demo
+updated Naive from 0.3.0 to 0.4.0 (12 commits)
+```
+
+A checkout with local changes, or one that cannot fast-forward, is left as it is.
+
+## Adopt packages early
+
+Each package fits a phase. Adopt one before its phase with `--adopt`; it is pinned with `"early": true`, and the venture package opens it now. Experimental packages are ones Naive does not model yet: legal, operations, relationships and counsel. They need the canary channel:
+
+```sh
+node packages/naive/src/interfaces/cli/naive.ts upgrade ~/ventures/upgrade-demo --adopt finance
+node packages/naive/src/interfaces/cli/naive.ts upgrade ~/ventures/upgrade-demo --adopt legal # exits 1
+node packages/naive/src/interfaces/cli/naive.ts upgrade ~/ventures/upgrade-demo --canary
+node packages/naive/src/interfaces/cli/naive.ts upgrade ~/ventures/upgrade-demo --adopt legal
+node packages/naive/src/interfaces/cli/naive.ts upgrade ~/ventures/upgrade-demo --drop legal
+node packages/naive/src/interfaces/cli/naive.ts upgrade ~/ventures/upgrade-demo --stable
+```
+
+`--stable` is refused while an experimental package is adopted. Drop it first.
+
+## Let an agent work the upgrade
+
+`--agent` upgrades a copy of the venture under `.naive/upgrade/`. Code runs the migrations on the copy. An agent then does what the guides leave to a person, such as saying package where an `AGENTS.md` says kit. Then the framework's checks run on the copy. Nothing lands until they pass and you type the confirmation:
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts init ~/ventures/upgrade-agent --id upgrade-agent --layers purpose
+echo "- Use the validation kit for interviews." >> ~/ventures/upgrade-agent/AGENTS.md
+export NAIVE_KITS="$MENTURA_DIR/platform/kits"
+MENTURA_AGENT_CMD="node $MENTURA_DIR/platform/kits/agent-upgrade/stand-in-agent.mjs" node packages/naive/src/interfaces/cli/naive.ts upgrade ~/ventures/upgrade-agent --agent
+node packages/naive/src/interfaces/cli/naive.ts upgrade ~/ventures/upgrade-agent --accept # exits 1
+node packages/naive/src/interfaces/cli/naive.ts upgrade ~/ventures/upgrade-agent --accept --confirm upgrade
+```
+
+```text
+staged upgrade of 0.1.0 to 0.3.0, worked by an agent: ready
+agent     Updated 1 file(s) by the guides' by-hand steps.
+edited    AGENTS.md: 0.3.0 by hand: say package where the text says kit
+pass      schema/check-ventures.mjs
+pass      schema/check-provenance.mjs
+pass      records match their schemas
+pass      nothing left to upgrade
+Nothing has landed. To land it: node packages/naive/src/interfaces/cli/naive.ts upgrade ~/ventures/upgrade-agent --accept --confirm upgrade
+```
+
+The agent's word is not trusted. Every file it changed is found by its hash and logged as an agent's write. If a check fails, the upgrade cannot be accepted. Fix the copy and run `--status` to check again, or `--reject` to discard it. If the venture changes while the copy waits, accepting is refused.
+
+<Callout type="info">
+The agent-run upgrade is a Mentura kit, `platform/kits/agent-upgrade` in Mentura's repository (`MENTURA_DIR` above is a checkout of it). Naive finds kits only in the folder `NAIVE_KITS` names. By default its agent is `claude -p` with file tools only, so Claude Code must be installed and signed in. `MENTURA_AGENT_CMD` replaces it; the stand-in above runs offline. Without the kit, `--stage` upgrades a copy and runs the checks with no agent.
+</Callout>
+
+## Verify adapters
+
+An adapter runs Naive on a platform or in an agent harness, as a Next.js adapter does for a host. Mentura is Naive's first adapter, as Vercel is for Next.js. Claude Code, Codex and Cursor adapt the framework through `AGENTS.md` and skills: `mentura adapt` writes the files each one reads. For Claude Code that is a `CLAUDE.md` that imports `AGENTS.md`, and a copy of each open package's skill in `.claude/skills/`. An adapter is verified when it passes the framework's tests:
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts adapt claude-code --venture upgrade-demo
+node packages/naive/src/interfaces/cli/mentura.ts adapters verify claude-code
+```
+
+```text
+verified  claude-code (harness)
+  pass  every entry file is written with the adapter's text
+  pass  the harness reaches the venture's AGENTS.md (it reads it, or an entry file imports or names it)
+  pass  each open package's skill is copied byte for byte where the harness loads skills
+  pass  a file the founder changed is kept, never overwritten
+```
+
+The output above is shortened; the full run has eleven checks.
+
+`mentura adapters` lists them all. `mentura adapters verify mentura` runs the tests the platform adapter names: the connector contract suite, the webhooks and the kits. An upgrade refreshes the adapters a venture has, so its skill copies follow the installed packages, and a file you changed is kept.
+
+## What is not built yet
+
+Naive is not published as an npm package, so the framework updates only from a git checkout. Every migration so far is a framework migration; the registry supports a package's own migrations, but no package has needed one yet. `mentura upgrade --venture <id>` and the old `mentura migrate --venture <id>` still run a plain upgrade.

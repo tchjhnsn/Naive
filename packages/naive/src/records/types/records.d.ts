@@ -2302,8 +2302,10 @@ export type Handoff = {
     id: string;
     /** conformance: an objective check run as a command, with no model and no reviewer. self-proof: the change exercised for real, with evidence attached (EE-006). review: fit to intent, judged by the named role. */
     kind: "conformance" | "self-proof" | "review";
-    /** The command to run, or for review the question the reviewer answers */
+    /** The command to run, the venture program for runs effect, or for review the question the reviewer answers */
     check: string;
+    /** How a conformance or self-proof check runs (EE-161). bash: a shell command from the repository root, sent to the host's sandbox hook when hosted. effect: a venture program (a path in the venture) run on the venture runtime, which passes when it succeeds and returns neither false nor { passed: false }, and needs no sandbox when hosted. */
+    runs?: "bash" | "effect";
     /** Role id, for review criteria */
     reviewer?: string;
   }[];
@@ -3225,6 +3227,10 @@ export type NaiveConfig = {
   research?: {
     /** The share of noise receptions surfaced anyway and marked as probes, so a recipe can be scored on signals the current one never surfaced (packages/naive/src/engine/recipes/probes.ts). 0 by default, because probes cost attention. Marking probes in reception files is build plan item 9 (not built). */
     probe_rate?: number;
+  };
+  /** Durable work (EE-161, Effect runtime plan phase 11). engine memory (the default) keeps no state across processes; sqlite runs each handoff as an Effect workflow stored in .naive/durable.sqlite, so a run that dies resumes without rerunning a finished done-criterion; postgres runs the same engine on the client the host's sql hook provides, and is refused without one. */
+  durable?: {
+    engine?: "memory" | "sqlite" | "postgres";
   };
   /** Traces in the venture's files (EE-121): true writes one span per step of an agent run to traces/<session>.jsonl, hash-chained and linked from provenance. content keeps inputs and outputs too, redacted; off by default because a trace is internal. Off by default. */
   traces?: boolean | {

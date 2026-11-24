@@ -1,0 +1,221 @@
+---
+title: Brand and assets
+description: Record your venture's brand, fonts, logo and images with their licenses, and check that agents and content follow them.
+type: how-to
+status: draft
+lastReviewed: 2026-10-29
+owner: builder
+---
+
+Use this page to give your venture one brand that every agent and every interface reads, and to ship images and fonts you have the right to ship. It translates four Next.js chapters: CSS, Images, Fonts, and the file-based icons and sitemap from Metadata. Styling itself stays with the interface. What converts is the brand, the rights to each file, and facts that code reads so agents never guess them.
+
+## Start a venture
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts init ~/ventures/brand-demo --id brand-demo --layers purpose
+export MENTURA_WORKSPACE=~/ventures
+```
+
+`init` creates `public/` and `marketing/`. Files in `public/` ship as they are. This is the Next.js `public/` folder.
+
+## Register what you ship
+
+Every file in `public/` needs a source, a license and a credit. Until it has them, the check fails:
+
+```sh
+printf '<svg xmlns="http://www.w3.org/2000/svg" width="200" height="60"><text x="0" y="40">Demo</text></svg>\n' > ~/ventures/brand-demo/public/logo.svg
+printf '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><rect width="64" height="64" fill="#1d4e89"/></svg>\n' > ~/ventures/brand-demo/public/icon.svg
+node packages/naive/src/interfaces/cli/mentura.ts public/assets check --venture brand-demo  # exits 1
+node packages/naive/src/interfaces/cli/mentura.ts assets add public/logo.svg --venture brand-demo --source "Demo design" --license owned --credit "Demo" --alt "Demo wordmark"
+node packages/naive/src/interfaces/cli/mentura.ts assets add public/icon.svg --venture brand-demo --source "Demo design" --license owned --credit "Demo" --decorative
+```
+
+`assets add` writes `public/assets.json` through the router, so the write is checked against its schema and logged in provenance. Code reads each file's type, width, height, size and hash from its bytes. In Next.js a static import supplies width and height. In Naive the check compares the recorded facts with the file, so a guessed width fails. Run `assets fill` after you change a file:
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts assets fill --venture brand-demo
+node packages/naive/src/interfaces/cli/mentura.ts public/assets/facts run --venture brand-demo
+```
+
+## Confirm alt text
+
+Alt text that an agent wrote stays pending until a person confirms it. The confirmation goes into the provenance log and is bound to the exact text, so changing the text makes it pending again:
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts assets check --venture brand-demo
+node packages/naive/src/interfaces/cli/mentura.ts assets confirm public/logo.svg --venture brand-demo --by Torian --confirm public/logo.svg
+node packages/naive/src/interfaces/cli/mentura.ts assets check --venture brand-demo
+```
+
+```text
+pending  public/logo.svg: alt text by agent, not confirmed by a person
+assets: 2 files, 0 remote links, 1 alt texts pending
+confirmed: alt text of public/logo.svg
+assets: 2 files, 0 remote links, 0 alt texts pending
+```
+
+A missing credit fails the check. So does an image with no alt text, unless it is marked `--decorative`.
+
+## Link to remote images
+
+In Next.js a remote image needs its host in `remotePatterns`. In Naive a remote image is a link with a note in `raw/`. A full copy stays private unless the license allows one:
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts assets remote https://images.example.com/clinic.jpg --venture brand-demo --license all-rights-reserved --credit "Ana Photo" --alt "A clinic waiting room"
+cat ~/ventures/brand-demo/raw/sources/images-example-com-clinic/text.md
+```
+
+The hosts an agent may fetch from are a setting in the register. The platform's fetcher refuses every other host, checks redirects again, keeps the original in `raw/sources/<id>/original.*` (out of git), and copies into `public/` only when the license allows it:
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts assets hosts images.example.com --venture brand-demo --as person
+```
+
+```text
+node platform/integrations/remote-image.mjs https://images.example.com/team.png --venture brand-demo --license CC-BY-4.0 --credit "Ana Photo" --copy public/team.png
+```
+
+The fetcher reaches the network, so it lives in `platform/` and is not run on this page.
+
+## Write the brand
+
+The brand is `marketing/brand.json`. It is the global stylesheet: colors, typefaces with their licenses, the font each role uses, voice rules, the logo and icons, outside design systems, and scopes. A typeface is self-hosted from `public/`, so a reader's browser makes no outside request, as with `next/font`. The font file below is a stand-in; copy your real `.woff2` file instead:
+
+```sh
+mkdir -p ~/ventures/brand-demo/public/fonts
+printf 'wOF2 stand-in for a real font file' > ~/ventures/brand-demo/public/fonts/inter.woff2
+node packages/naive/src/interfaces/cli/mentura.ts assets add public/fonts/inter.woff2 --venture brand-demo --source "https://rsms.me/inter/" --license OFL-1.1 --credit "Rasmus Andersson"
+cat > ~/brand-demo-brand.json <<'JSON'
+{
+  "version": "0.1.0",
+  "venture": "brand-demo",
+  "name": "Demo",
+  "colors": { "accent": "#1d4e89", "ink": "#111111" },
+  "typefaces": [
+    { "id": "inter", "family": "Inter", "source": "self-hosted", "license": "OFL-1.1", "files": ["public/fonts/inter.woff2"], "fallback": ["system-ui", "sans-serif"] },
+    { "id": "mono", "family": "ui-monospace", "source": "system", "fallback": ["monospace"] }
+  ],
+  "fonts": { "body": "inter" },
+  "voice": { "tone": ["plain", "warm"], "rules": [{ "id": "no-jargon", "avoid": ["synergy", "leverage"], "use": "work with" }] },
+  "marks": [{ "kind": "logo", "asset": "public/logo.svg" }, { "kind": "icon", "asset": "public/icon.svg" }],
+  "design_systems": [{ "id": "radix", "name": "Radix Colors", "url": "https://www.radix-ui.com/colors", "license": "MIT" }],
+  "scopes": [{ "for": "investors", "fonts": { "body": "mono" }, "colors": { "accent": "#000000" } }]
+}
+JSON
+node packages/naive/src/interfaces/cli/mentura.ts marketing/brand write --venture brand-demo --input ~/brand-demo-brand.json --as person
+node packages/naive/src/interfaces/cli/mentura.ts marketing/brand check --venture brand-demo
+```
+
+The check fails a typeface with no license, a remote typeface, and a font file that is not registered under the same license. It fails a mark that is not a registered file of the right kind: an `apple-icon` is a 180x180 PNG, an `icon` is square, a `favicon` is an ICO. It fails a design system that is not a link, and any file copied from one whose license does not allow it.
+
+## Read the brand
+
+An interface reads the brand as W3C design tokens, CSS custom properties and head links. This is what Next.js global CSS and file-based icons give a page:
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts brand css --venture brand-demo
+node packages/naive/src/interfaces/cli/mentura.ts brand head --venture brand-demo
+```
+
+```text
+@font-face {
+  font-family: "Inter";
+  src: url("/fonts/inter.woff2") format("woff2");
+  font-display: swap;
+}
+
+:root {
+  --color-accent: #1d4e89;
+  --color-ink: #111111;
+  --font-body: "Inter", system-ui, sans-serif;
+}
+
+[data-naive-scope="investors"] {
+  --color-accent: #000000;
+  --font-body: "ui-monospace", monospace;
+}
+```
+
+`marketing/brand/tokens run` returns all three as JSON, for the MCP server and the API.
+
+## Nearer context wins
+
+A scope overrides the brand for a route prefix. A deeper scope wins over a shallower one, and any scope wins over the venture brand. This is the same rule as the `AGENTS.md` chain, and it is how a font is scoped to one part of the venture while the root applies one everywhere:
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts marketing/brand/resolve run --venture brand-demo --value investors/deck
+```
+
+The answer, without its name, fonts and voice:
+
+```json
+{
+  "route": "investors/deck",
+  "colors": { "accent": "#000000", "ink": "#111111" },
+  "scopes": ["investors"],
+  "set_by": { "color.accent": "investors", "color.ink": "venture", "font.body": "investors", "voice.no-jargon": "venture" }
+}
+```
+
+Every agent's layout carries the brand at its route: the tone, the voice rules, the fonts and the colors.
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts investors layout --venture brand-demo --json
+```
+
+## Hold words to the voice
+
+Voice rules are the global stylesheet for words. The voice check holds marketing content to the rules in force at each file's path. Check a draft before you write it:
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts brand voice --venture brand-demo --text "We leverage synergy"  # exits 1
+node packages/naive/src/interfaces/cli/mentura.ts brand voice --venture brand-demo --text "We work with clinics"
+node packages/naive/src/interfaces/cli/mentura.ts marketing/voice run --venture brand-demo
+```
+
+## Keep package terms local
+
+CSS Modules scope class names to one file. In Naive a package's terms stay local to it unless its glossary exports them. An agent in another package sees only exported terms:
+
+```sh
+cat > ~/brand-demo-finance.json <<'JSON'
+{ "package": "finance", "terms": [
+  { "term": "burn multiple", "meaning": "net burn divided by net new ARR" },
+  { "term": "runway", "meaning": "months of cash at the current burn", "export": true }
+] }
+JSON
+node packages/naive/src/interfaces/cli/mentura.ts glossary/finance write --venture brand-demo --input ~/brand-demo-finance.json --as person
+node packages/naive/src/interfaces/cli/mentura.ts glossary/terms run --venture brand-demo --value marketing
+```
+
+Marketing sees `runway` but not `burn multiple`. The brand check fails when two packages export one term with different meanings. It warns when public content uses another package's local term.
+
+## Render the sitemap
+
+The sitemap is a marketing record, planned from the venture's records. It is not derived from the framework's routes. `sitemap.xml` is rendered from it for a release:
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts operations/marketing/sitemap run --venture brand-demo > ~/brand-demo-sitemap.json
+node packages/naive/src/interfaces/cli/mentura.ts marketing/sitemap write --venture brand-demo --input ~/brand-demo-sitemap.json
+node packages/naive/src/interfaces/cli/mentura.ts marketing/sitemap/xml run --venture brand-demo --value https://demo.example
+node packages/naive/src/interfaces/cli/mentura.ts brand sitemap --venture brand-demo --base https://demo.example --out ~/brand-demo-release/sitemap.xml
+```
+
+The file starts with the home page, then one `url` per planned page:
+
+```text
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://demo.example/</loc>
+    <lastmod>2026-10-29</lastmod>
+  </url>
+  <url>
+    <loc>https://demo.example/pricing</loc>
+    <lastmod>2026-10-29</lastmod>
+  </url>
+```
+
+## What does not convert
+
+Tailwind, CSS optimization, `next/image` resizing and lazy loading are rendering work for an interface. A release contains no CSS. Google Fonts and local font files need nothing beyond a self-hosted typeface with its license.
