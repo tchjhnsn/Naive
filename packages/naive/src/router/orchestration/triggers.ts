@@ -23,6 +23,7 @@ import { join } from "node:path";
 import { entries } from "../../core/provenance.ts";
 import { call, glob } from "../router.ts";
 import { decisions, propose } from "../../engine/decisions.ts";
+import { crashSeam } from "../../core/crash-seam.ts";
 import { kit } from "../../engine/kits.ts";
 import { CONFIG, readConfig, writeConfig } from "../../engine/naive-config.ts";
 import { packages } from "../../engine/packages.ts";
@@ -116,12 +117,19 @@ function raise(dir: string, run: Run) {
 async function runOne(dir: string, t: Live, e: Entry | undefined, state: State, extra: Partial<Run> = {}): Promise<Run> {
   const v = load(join(dir, "venture.json")) as Venture;
   const run: Run = ({ n: state.runs.length + 1, trigger: t.id, from: t.from, event: e?.hash ?? null, entity: e?.entity ?? null, activity: e?.activity ?? null, at: now(), ...extra });
+  // A run is keyed by its trigger and event. A runner that stopped after a route call landed and before the state was
+  // saved finds the call in provenance on the next run and records it as ran instead of calling again, so state, the
+  // cursor and this key together make each trigger run once per event (EE-161, phase 12d). A retry runs again.
+  const key = e?.hash ? `event ${e.hash}` : null;
+  const landed = key && !extra.retry_of && !t.run.propose && entries(dir).some((x: Entry) => x.agent?.id === `trigger-${t.id}` && typeof x.note === "string" && x.note.includes(key));
   try {
     let r: { ok: boolean; result?: unknown; error?: string };
-    if (t.run.propose) r = propose(dir, t.run.propose, { agentId: `trigger-${t.id}`, via: "router" } as Parameters<typeof propose>[2]);
+    if (landed) r = { ok: true, result: "already ran before the runner stopped; not called again" };
+    else if (t.run.propose) r = propose(dir, t.run.propose, { agentId: `trigger-${t.id}`, via: "router" } as Parameters<typeof propose>[2]);
     else if (typeof t.run.route !== "string") throw new Error(`trigger ${t.id} names no route to run`); // a malformed trigger crashes; the router would read it as a broken route table
     else r = await call({ venture: v.id, workspace: dir, route: t.run.route, action: t.run.action as string /* the trigger schema requires an action beside a route */, input: t.run.input, actor: "agent", actor_id: `trigger-${t.id}`, via: "router",
-      provenance: { derived_from: e?.entity && !/:\/\//.test(e.entity) ? [e.entity] : undefined, note: `trigger ${t.id} on ${e?.activity ?? "retry"} of ${e?.entity ?? "?"}` } });
+      provenance: { derived_from: e?.entity && !/:\/\//.test(e.entity) ? [e.entity] : undefined, note: `trigger ${t.id} on ${e?.activity ?? "retry"} of ${e?.entity ?? "?"}${key ? ` (${key})` : ""}` } });
+    crashSeam(`trigger/${t.id}`);
     run.outcome = r.ok ? "ran" : "failed";
     if (r.ok) run.result = brief(r.result); else run.error = r.error ?? brief(r.result) ?? "the call did not succeed";
   } catch (err) { run.outcome = "uncaught"; run.error = String((err as { stack?: unknown } | null)?.stack ?? err).slice(0, 2000); }

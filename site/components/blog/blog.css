@@ -1,0 +1,284 @@
+.naive-blog {
+  --color-fd-background: #fff;
+  --color-fd-foreground: #18181b;
+  --color-fd-border: #e4e4e7;
+  --color-fd-primary: #1d4e89;
+  --color-fd-primary-foreground: #f7f8fa;
+  --color-fd-muted-foreground: #3f3f46;
+  --color-fd-card: #f7f8fa;
+  min-height: 100vh;
+  background: var(--color-fd-background);
+  color: var(--color-fd-foreground);
+  font-family: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+}
+
+.dark .naive-blog {
+  --color-fd-background: #0a0a0a;
+  --color-fd-foreground: #ededed;
+  --color-fd-border: #2a2a2a;
+  --color-fd-primary: #8eb4e8;
+  --color-fd-primary-foreground: #0d1b2a;
+  --color-fd-muted-foreground: #a3a3a3;
+  --color-fd-card: #161616;
+}
+
+.naive-blog-draft {
+  margin: 0;
+  border-bottom: 1px solid var(--color-fd-border, #e4e4e7);
+  background: color-mix(in srgb, var(--color-fd-primary, #1d4e89) 8%, transparent);
+  color: var(--color-fd-foreground, #18181b);
+  padding: 0.45rem 1.5rem;
+  text-align: center;
+  font-size: 0.875rem;
+}
+
+.naive-blog-header {
+  border-bottom: 1px solid var(--color-fd-border, #e4e4e7);
+}
+
+.naive-blog-header a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.naive-blog-header a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.naive-blog-tag,
+.naive-blog-tag-active {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.15rem 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  position: relative;
+  z-index: 2;
+  pointer-events: auto;
+}
+
+.naive-blog-tag {
+  color: var(--color-fd-primary, #1d4e89);
+  background: color-mix(in srgb, var(--color-fd-primary, #1d4e89) 12%, transparent);
+}
+
+.naive-blog-tag-active,
+.naive-blog-tag:hover {
+  color: var(--color-fd-primary-foreground, #f7f8fa);
+  background: var(--color-fd-primary, #1d4e89);
+}
+
+.naive-blog-card {
+  position: relative;
+  display: block;
+  border: 1px solid var(--color-fd-border, #e4e4e7);
+  border-radius: var(--radius-lg, 8px);
+  background: var(--color-fd-card, #f7f8fa);
+  padding: 1.25rem 1.35rem 1.15rem;
+  color: inherit;
+  text-decoration: none;
+}
+
+.naive-blog-card:hover {
+  border-color: var(--color-fd-primary, #1d4e89);
+}
+
+.naive-blog-card h2 a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.naive-blog-card > :not(h2) {
+  pointer-events: none;
+}
+
+.naive-blog-card h2 a::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.naive-blog-card:hover h2 a,
+.naive-blog-card h2 a:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.naive-blog-card:focus-within {
+  outline: 2px solid var(--color-fd-primary, #1d4e89);
+  outline-offset: 2px;
+}
+
+.naive-blog-muted {
+  color: var(--color-fd-muted-foreground, #3f3f46);
+}
+
+.naive-blog-avatar {
+  display: inline-flex;
+  width: 1.75rem;
+  height: 1.75rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--color-fd-primary, #1d4e89);
+  color: var(--color-fd-primary-foreground, #f7f8fa);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.naive-blog-hero {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-top: 1.75rem;
+  border: 1px solid var(--color-fd-border, #e4e4e7);
+  border-radius: var(--radius-lg, 8px);
+  background: var(--color-fd-card, #f7f8fa);
+}
+
+.naive-blog .prose {
+  font-size: 1.0625rem;
+  line-height: 1.75;
+}
+
+.naive-blog .prose p,
+.naive-blog .prose ul,
+.naive-blog .prose ol,
+.naive-blog .prose blockquote,
+.naive-blog .prose pre {
+  margin: 1rem 0;
+}
+
+.naive-blog .prose h2,
+.naive-blog .prose h3,
+.naive-blog .prose h4 {
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+  scroll-margin-top: 5rem;
+}
+
+.naive-blog .prose h2 {
+  font-size: 1.5rem;
+  margin: 2.25rem 0 0.75rem;
+}
+
+.naive-blog .prose h3 {
+  font-size: 1.25rem;
+  margin: 1.75rem 0 0.5rem;
+}
+
+.naive-blog .prose h4 {
+  font-size: 1.1rem;
+  margin: 1.5rem 0 0.5rem;
+}
+
+.naive-blog .prose a {
+  color: var(--color-fd-primary, #1d4e89);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+.naive-blog .prose h2 a,
+.naive-blog .prose h3 a,
+.naive-blog .prose h4 a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.naive-blog .prose .anchor {
+  margin-right: 0.35rem;
+  color: var(--color-fd-muted-foreground, #3f3f46);
+  text-decoration: none;
+  opacity: 0;
+}
+
+.naive-blog .prose h2:hover .anchor,
+.naive-blog .prose h3:hover .anchor,
+.naive-blog .prose h4:hover .anchor,
+.naive-blog .prose .anchor:focus {
+  opacity: 1;
+}
+
+.naive-blog .prose ul {
+  padding-left: 1.25rem;
+  list-style: disc;
+}
+
+.naive-blog .prose ol {
+  padding-left: 1.25rem;
+  list-style: decimal;
+}
+
+.naive-blog .prose li + li {
+  margin-top: 0.35rem;
+}
+
+.naive-blog .prose code {
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 0.9em;
+  background: color-mix(in srgb, var(--color-fd-primary, #1d4e89) 8%, var(--color-fd-card, #f4f4f5));
+  padding: 0.1em 0.35em;
+  border-radius: 0.25rem;
+}
+
+.naive-blog .prose pre {
+  overflow-x: auto;
+  border: 1px solid var(--color-fd-border, #e4e4e7);
+  border-radius: var(--radius-lg, 8px);
+  background: var(--color-fd-card, #f4f4f5);
+  padding: 0.9rem 1rem;
+}
+
+.naive-blog .prose pre code {
+  background: none;
+  padding: 0;
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+
+.naive-blog .prose blockquote {
+  border-left: 3px solid var(--color-fd-primary, #1d4e89);
+  padding-left: 1rem;
+  color: var(--color-fd-muted-foreground, #3f3f46);
+}
+
+.naive-blog-pager {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 3.5rem;
+  border-top: 1px solid var(--color-fd-border, #e4e4e7);
+  padding-top: 1.5rem;
+}
+
+.naive-blog-pager a {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  border: 1px solid var(--color-fd-border, #e4e4e7);
+  border-radius: var(--radius-lg, 8px);
+  padding: 0.85rem 1rem;
+  color: inherit;
+  text-decoration: none;
+}
+
+.naive-blog-pager a:hover {
+  border-color: var(--color-fd-primary, #1d4e89);
+}
+
+@media (min-width: 640px) {
+  .naive-blog-pager {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .naive-blog-pager-next {
+    text-align: right;
+    align-items: flex-end;
+  }
+}

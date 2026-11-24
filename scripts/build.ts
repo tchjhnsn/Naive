@@ -21,7 +21,7 @@
 // dist/ and renamed into place, so parallel runs (npm pack from several tests) never see a half-written tree.
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { copyFileSync, existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join, posix } from "node:path";
 import { fileURLToPath } from "node:url";
 import ts from "typescript";
@@ -46,6 +46,24 @@ export const outPath = (path: string): string => path.replace(/\.ts$/, ".mjs");
 /** Set in the listing's environment: npm 10 runs prepare even for `npm pack --dry-run --ignore-scripts`. */
 const LISTING = "NAIVE_BUILD_LISTING";
 
+const UUID = "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}";
+
+/**
+ * The real paths behind one path from npm's listing. npm 11 redacts anything shaped like a UUID as `***`, because a
+ * legacy npm token is one, and it does so in `--json` output too, so a record named by its id
+ * (calendar/events/<uuid>.json) comes back as `***.json`. A listed path that exists is itself; one that holds `***`
+ * is matched against its folder with a UUID in each `***`. Anything else is returned as listed, and reading it fails.
+ */
+export function unredact(root: string, path: string): string[] {
+  if (!path.includes("***") || existsSync(join(root, path))) return [path];
+  const dir = posix.dirname(path);
+  const name = posix.basename(path);
+  if (dir.includes("***")) return [path];
+  const pattern = new RegExp(`^${name.split("***").map((s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join(UUID)}$`);
+  const found = existsSync(join(root, dir)) ? readdirSync(join(root, dir)).filter((f) => pattern.test(f)).sort() : [];
+  return found.length ? found.map((f) => (dir === "." ? f : `${dir}/${f}`)) : [path];
+}
+
 /** The source files npm ships, from `npm pack --dry-run`, less dist/ and the verification fixtures. */
 function shipped(root: string): Entry[] {
   // npm's own CLI when npm runs this as prepare; pnpm and yarn set npm_execpath to theirs, whose pack lists differently.
@@ -55,7 +73,7 @@ function shipped(root: string): Entry[] {
   const r = npm ? spawnSync(process.execPath, [npm, ...args], opts) : spawnSync("npm", args, opts);
   if (r.status !== 0) throw new Error(`npm pack --dry-run failed: ${r.stderr}`);
   const listing = JSON.parse(r.stdout) as Array<{ files: Array<{ path: string }> }>;
-  const paths = (listing[0]?.files ?? []).map((f) => f.path)
+  const paths = [...new Set((listing[0]?.files ?? []).flatMap((f) => unredact(root, f.path)))]
     .filter((p) => !p.startsWith(`${DIST}/`) && !p.startsWith("packages/naive/test/"));
   return paths.sort().map((path) => ({ path, kind: isCode(path) ? "compile" : "copy" }));
 }
@@ -107,6 +125,15 @@ export function rewrite(file: string, text: string, compiled: Set<string>, outpu
   let out = text;
   for (const s of splices.sort((a, b) => b.start - a.start)) out = out.slice(0, s.start) + s.text + out.slice(s.end);
   return { text: out, missing };
+}
+
+/**
+ * Renames JSON string values that name a compiled .ts file from the package root to .mjs, so data that points at a
+ * module (a connector's `module`, a migration's `module`) names the file the compiled package holds. Only whole
+ * strings change; every other byte is kept.
+ */
+export function rewriteJson(text: string, compiled: Set<string>): string {
+  return text.replace(/"((?:[^"\\]|\\.)+\.ts)"/g, (m: string, s: string) => (compiled.has(posix.normalize(s)) ? `"${outPath(s)}"` : m));
 }
 
 /** Compiles the code entries into `out` with tsc. */
@@ -163,11 +190,12 @@ export function build(root: string = ROOT): { built: boolean; files: number } {
       if (existsSync(js)) renameSync(js, join(tmp, outPath(e.path)));
     }
     // Data after code: tsc also writes the JSON files that code imports, and the copy keeps their bytes exact.
+    const compiled = new Set(code.filter((e) => e.path.endsWith(".ts")).map((e) => e.path));
     for (const e of entries.filter((x) => x.kind === "copy")) {
       mkdirSync(dirname(join(tmp, e.path)), { recursive: true });
-      copyFileSync(join(root, e.path), join(tmp, e.path));
+      if (e.path.endsWith(".json")) writeFileSync(join(tmp, e.path), rewriteJson(readFileSync(join(root, e.path), "utf8"), compiled));
+      else copyFileSync(join(root, e.path), join(tmp, e.path));
     }
-    const compiled = new Set(code.filter((e) => e.path.endsWith(".ts")).map((e) => e.path));
     const outputs = new Set(entries.map((e) => (e.kind === "compile" ? outPath(e.path) : e.path)));
     const missing: string[] = [];
     for (const e of code) {

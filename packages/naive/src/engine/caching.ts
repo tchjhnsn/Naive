@@ -32,15 +32,15 @@
 //   node packages/naive/src/engine/caching.ts clear <venture dir> [--level record|judgment]
 //   node packages/naive/src/engine/caching.ts judge <venture dir> --request <file|-> [--life <profile>] [--private --as <person>]
 
-import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import type { BinaryLike, Hash } from "node:crypto";
 import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { entries as provEntries, type Entry as ProvEntry } from "../core/provenance.ts";
 import { ventureFile } from "../core/venture-paths.ts";
-import { envCommand, hostHook, isHosted, missingHook } from "../core/runtime.ts";
 import type { CommandResult } from "../core/runtime.ts";
+import { askJudge, commandArgv } from "../core/effect/host.ts";
+import { runPromise } from "../core/effect/run.ts";
 
 /** A life by profile name, or { revalidate, expire } in seconds (stale is how long a stale value may be served). */
 export type LifeInput = string | { stale?: number; revalidate?: number; expire?: number | null } | null | undefined;
@@ -326,19 +326,14 @@ export type JudgeRequest = { state?: unknown; model?: string; questions: Record<
 export type JudgeOptions = { cmd?: string | string[]; life?: LifeInput; actor?: string; actor_id?: string; private?: boolean; packages?: string[]; now?: number; allowStale?: boolean };
 
 /** A command from an environment variable or an option: a string split on spaces, a JSON array, or an array. */
-export function judgeCommand(cmd: string | string[] | null | undefined): string[] | null {
-  if (!cmd) return null;
-  if (Array.isArray(cmd)) return cmd;
-  const t = String(cmd).trim();
-  return t.startsWith("[") ? JSON.parse(t) : t.split(/\s+/);
-}
+export const judgeCommand = commandArgv;
 
 /**
  * Answers a typed request ({ state, model, questions }, the shape a Jev client reads) with every
  * answer it can reuse, and asks the judge only the rest, in one request. Each question is its own entry, keyed by the request's state, the question, the model and the package
  * versions. Returns { model, answers, cache: { reused, asked, unanswered } }.
  */
-export async function judge(dir: string, request: Partial<JudgeRequest>, { cmd = envCommand("NAIVE_JUDGE_CMD"), life, actor, actor_id, private: priv = false, packages, now = Date.now(), allowStale = false }: JudgeOptions = {}) {
+export async function judge(dir: string, request: Partial<JudgeRequest>, { cmd, life, actor, actor_id, private: priv = false, packages, now = Date.now(), allowStale = false }: JudgeOptions = {}) {
   if (!request || typeof request !== "object" || !request.questions || typeof request.questions !== "object") throw new Error("a judgment request has questions: { state, model, questions }");
   const questions = request.questions;
   const cfg = configOf(dir);
@@ -355,15 +350,12 @@ export async function judge(dir: string, request: Partial<JudgeRequest>, { cmd =
   let model: string | null = request.model ?? null;
   const unanswered: string[] = [];
   if (ask.length) {
-    // Hosted, Naive spawns no command: the host's judge hook answers, or the judgment is refused.
-    const hook = hostHook("judge");
-    if (isHosted() && !hook) throw missingHook(`judging ${ask.length} uncached question(s)`, "judge");
-    const argv = judgeCommand(cmd);
+    // The Judge service (core/effect/host.ts): hosted, the host's judge hook answers, or the judgment is refused;
+    // on a laptop, the command runs. Naive spawns no command when hosted.
     const sub = { ...request, questions: Object.fromEntries(ask.map((k) => [k, questions[k]])) };
-    let p: CommandResult, by: string;
-    if (hook) { p = await hook([], JSON.stringify(sub)); by = "the host's judge hook"; }
-    else if (argv) { p = spawnSync(argv[0], argv.slice(1), { input: JSON.stringify(sub), encoding: "utf8", maxBuffer: 1 << 26 }); by = argv[0]; }
-    else throw new Error(`${ask.length} question(s) are not cached and there is no judge: set NAIVE_JUDGE_CMD to a command that answers the Jev protocol`);
+    const answered = await runPromise(askJudge({ feature: `judging ${ask.length} uncached question(s)`, input: JSON.stringify(sub), cmd }));
+    if (!answered) throw new Error(`${ask.length} question(s) are not cached and there is no judge: set NAIVE_JUDGE_CMD to a command that answers the Jev protocol`);
+    const { result: p, by } = answered;
     if (p.error) throw new Error(`could not run the judge (${by}): ${p.error.message}`);
     if (p.status !== 0) throw new Error(`the judge stopped with status ${p.status}: ${(p.stderr || p.stdout).trim().slice(0, 500)}`);
     let out: { model?: string; answers?: Record<string, unknown> };

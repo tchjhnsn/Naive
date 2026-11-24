@@ -1,0 +1,181 @@
+---
+title: Writing records
+description: Write a record as a person or an agent, read what the write changed and where to go next, and see which actions a folder offers.
+type: how-to
+status: draft
+lastReviewed: 2026-10-29
+owner: builder
+---
+
+Use this page to change a venture's records and to see what each change did. In Next.js, a Server Action mutates data, returns the updated UI in the same round trip, and can redirect to the next page. In Naive every change is a `write` action on a route. It is checked against the record's schema, recorded in the provenance log, and held as a draft when an agent writes something a person must accept. The answer says what the write changed and the next route to act on.
+
+## Write as a person
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts init ~/ventures/wr-writes --id wr-writes --layers purpose
+export MENTURA_WORKSPACE=~/ventures
+cat > ~/wr-problem.json <<'JSON'
+{
+  "venture": "wr-writes",
+  "statement": "Solo physios lose their evenings to booking calls",
+  "segment": "solo physiotherapy clinics",
+  "evidence": []
+}
+JSON
+node packages/naive/src/interfaces/cli/mentura.ts foundation/problem write --venture wr-writes --input ~/wr-problem.json --as person
+```
+
+`--input -` reads the record from stdin. The answer names the file written and the provenance entry's hash, then what changed and what comes next.
+
+## What a write changed
+
+This translates Next.js's single round trip, where an action returns the new UI and data together. The `changed` field of a write's answer holds:
+
+| Field | Holds |
+| --- | --- |
+| `record` | The record's state before and after: `missing`, `agent`, `draft` or `confirmed` |
+| `packages` | Each package whose progress or state moved, from and to |
+| `moves_now` | Records that could not move before and can now, with their routes |
+| `unlocked` | A package that completed and what that opens, or a decision that no longer waits |
+| `need_now` | Need-now rows the write settled, such as `suggest now` to `held` |
+
+For the write above:
+
+```json
+{
+  "record": { "type": "validation-problem", "from": "missing", "to": "confirmed", "package": "foundation" },
+  "packages": [
+    { "package": "foundation", "title": "Foundation", "progress": { "from": 0.06, "to": 0.28 }, "state": { "from": "building", "to": "building" } }
+  ],
+  "moves_now": [
+    { "record": "telos", "package": "foundation", "route": "foundation/telos" },
+    { "record": "validation-solution", "package": "validation", "route": "validation/solution" }
+  ],
+  "unlocked": [],
+  "need_now": [{ "record": "validation-problem", "from": "suggest now", "to": "held" }]
+}
+```
+
+The real answer lists every package the write moved, including handoff packages that read the record.
+
+## The next route
+
+This translates `redirect` after a mutation. The `next` field names one route to act on, and the command to do it:
+
+```json
+{
+  "route": "foundation/icp",
+  "action": "write",
+  "command": "mentura foundation/icp write --venture wr-writes --input <file>",
+  "why": "the next required record in Foundation that moves now"
+}
+```
+
+An agent's write of a record no gate holds lands as the record, and its `next` asks a person to review it, since the records that read it wait until a person confirms it:
+
+```sh
+cat > ~/solution.json <<'JSON'
+{
+  "venture": "wr-writes",
+  "statement": "Online booking that fills the calendar while the physio treats",
+  "alternatives": ["a receptionist", "phone and paper"],
+  "evidence": []
+}
+JSON
+node packages/naive/src/interfaces/cli/mentura.ts validation/solution write --venture wr-writes --input ~/solution.json
+```
+
+```json
+{
+  "route": "validation/solution",
+  "action": "review",
+  "who": "a person",
+  "command": "mentura validation/solution read --venture wr-writes",
+  "why": "Validation solution was written by an agent: a person confirms it by writing it with --as person, and what reads it moves then"
+}
+```
+
+The router picks it in this order:
+
+1. The draft this write made, for a person to accept.
+2. The next required record in the same package that can move now.
+3. A record an agent wrote in the package, for a person to review.
+4. A record this write let move.
+5. The next optional record in the package.
+6. What need-now suggests now.
+7. The open decision that matters most.
+
+## When a write becomes a draft
+
+```sh
+cat > ~/wr-problem-agent.json <<'JSON'
+{
+  "venture": "wr-writes",
+  "statement": "Physios lose evenings to the phone",
+  "segment": "solo physiotherapy clinics",
+  "evidence": []
+}
+JSON
+node packages/naive/src/interfaces/cli/mentura.ts foundation/problem write --venture wr-writes --input ~/wr-problem-agent.json
+```
+
+Without `--as person` the write is an agent's. The problem record is a foundation statement, so the answer has `draft: true` and its `next` is the accept:
+
+```json
+{
+  "route": "foundation/problem",
+  "action": "accept",
+  "who": "a person",
+  "command": "mentura accept foundation/problem --venture wr-writes",
+  "why": "the write is held as a draft until a person accepts it"
+}
+```
+
+An agent's write is held as a draft in `_drafts/` when any of these hold:
+
+| Hold | Where it comes from |
+| --- | --- |
+| The record's decision class escalates | The data model: foundation statements, ownership, the board, the founder agreement |
+| An open decision that fails closed decides the record | A decision record in `decisions/` ([Decisions](./decisions)) |
+| The route fails closed in `naive.config.json` | The venture's own gate ([The gate](./the-gate)) |
+
+A person accepts a draft with `mentura accept <route>`. Rejecting it is deleting the draft. A read reports a waiting draft as `pending_draft`.
+
+## The actions a folder offers
+
+This translates passing Server Actions to a component as props. A route's layout lists the routes in its folder, the actions each has, which of them the actor asking may take now, and how a write would land:
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts foundation/problem layout --venture wr-writes --json
+```
+
+The answer's `actions` field:
+
+```json
+{
+  "folder": "foundation",
+  "actor": { "kind": "agent" },
+  "routes": [
+    {
+      "route": "foundation/problem",
+      "kind": "record",
+      "actions": ["read", "view", "layout", "write", "check", "template"],
+      "write": { "lands": "draft", "why": "validation-problem is a strategy-or-constitution decision (escalate)" },
+      "available": ["read", "view", "layout", "check", "template", "write"]
+    }
+  ]
+}
+```
+
+`lands` is `record`, `draft`, or `null` when the write is refused. A route a decision keeps locked says which decision. A role the team plan keeps out of a route says so. Pass `--as person` to see what a person may do.
+
+## Provenance
+
+Every write, draft, accept and decision is a line in `provenance.jsonl`, with who acted, what it was derived from, and a hash that chains it to the line before:
+
+```sh
+tail -n 1 ~/ventures/wr-writes/provenance.jsonl
+node packages/naive/src/checks/check-provenance.ts ~/ventures/wr-writes
+```
+
+`check-provenance` fails if any line was edited after it was written. Pass `--derived-from a,b`, `--decision <id>` and `--note <text>` to a write to record where it came from.

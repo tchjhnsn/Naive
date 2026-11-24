@@ -5,11 +5,15 @@
 //   - runMain runs a CLI's Effect, prints a failure in one line and sets process.exitCode.
 // All three run through one venture runtime for the process (EE-161), with the default layer (NodeFs). Older
 // callers pass absolute paths, so it serves the working directory (".") and is never disposed.
-import { Cause, type Effect, Exit } from "effect";
+import { Cause, type Effect, Exit, Tracer } from "effect";
 import type { NaiveError } from "./errors.ts";
-import { ventureRuntime, type VentureServices } from "./runtime.ts";
+import { ventureRuntime, type VentureRuntime, type VentureServices } from "./runtime.ts";
 
-const runtime = ventureRuntime(".");
+// Effect's own in-memory tracer: these callers pass absolute paths, so "." is no venture to write spans to.
+// Built on first run, not at import: modules the venture layer imports (core/provenance.ts) import this one, so
+// building it while they load would read the layer before it exists.
+let built: VentureRuntime | undefined;
+const runtime = (): VentureRuntime => built ??= ventureRuntime(".", { tracer: Tracer.nativeTracer });
 
 /** Throws the tagged error itself (not a wrapper), so old try/catch callers see `_tag` and the message. */
 const unwrap = <A, E>(exit: Exit.Exit<A, E>): A => {
@@ -18,9 +22,9 @@ const unwrap = <A, E>(exit: Exit.Exit<A, E>): A => {
   throw failure._tag === "Some" ? failure.value : Cause.squash(exit.cause);
 };
 
-export const runSync = <A, E>(effect: Effect.Effect<A, E, VentureServices>): A => unwrap(runtime.runSyncExit(effect));
+export const runSync = <A, E>(effect: Effect.Effect<A, E, VentureServices>): A => unwrap(runtime().runSyncExit(effect));
 
-export const runPromise = async <A, E>(effect: Effect.Effect<A, E, VentureServices>): Promise<A> => unwrap(await runtime.runPromiseExit(effect));
+export const runPromise = async <A, E>(effect: Effect.Effect<A, E, VentureServices>): Promise<A> => unwrap(await runtime().runPromiseExit(effect));
 
 export const exitCode = (error: NaiveError): 1 | 2 => (error._tag === "CannotRun" ? 2 : 1);
 
@@ -37,7 +41,7 @@ export const describe = (error: NaiveError): string => {
 };
 
 export const runMain = async <A>(effect: Effect.Effect<A, NaiveError, VentureServices>): Promise<A | undefined> => {
-  const exit = await runtime.runPromiseExit(effect);
+  const exit = await runtime().runPromiseExit(effect);
   if (Exit.isSuccess(exit)) return exit.value;
   const failure = Cause.findErrorOption(exit.cause);
   if (failure._tag === "Some") { console.error(describe(failure.value)); process.exitCode = exitCode(failure.value); }

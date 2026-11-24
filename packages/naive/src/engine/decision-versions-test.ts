@@ -6,7 +6,7 @@ import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { approve, merge, propose, rollback } from "./decisions.ts";
+import { approve, decisions, merge, propose, rollback } from "./decisions.ts";
 import { staleOf } from "./stale.ts";
 import { Validator, useValidator } from "../records/validate.ts";
 
@@ -26,6 +26,8 @@ try {
   const a1 = approve(v, "mission", { by: "Founder" });
   expect("a person approves it", a1.ok && json(F).status === "decided", a1);
   expect("approving does not merge: the venture is unchanged", !json("venture.json").core, json("venture.json"));
+  const listedMission = decisions(v).decisions.find((x) => x.id === "mission");
+  expect("the decision matrix keeps the version and applies_to that the merge prompt shows", (listedMission?.version ?? 1) === 1 && listedMission?.applies_to?.[0]?.field === "core.promise", listedMission);
   expect("a name the venture does not record cannot merge", /not a person/.test(merge(v, "mission", { by: "Mallory" }).error ?? "") && !json("venture.json").core);
   expect("--by and --role together are refused", /not both/.test(merge(v, "mission", { by: "Founder", role: "chief-of-staff" }).error ?? ""));
   const m1 = merge(v, "mission", { by: "Founder" });

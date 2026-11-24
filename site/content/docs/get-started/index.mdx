@@ -1,0 +1,32 @@
+---
+title: Get started
+description: Learn Naive chapter by chapter, in the order the Next.js docs teach Next.js.
+type: tutorial
+status: draft
+lastReviewed: 2026-10-29
+owner: builder
+---
+
+Use these pages in order when you are new to Naive. They follow the chapters of the Next.js App Router docs, because Naive translates that concept system to ventures: a venture is the project, a package is a feature folder with one owner, a record is a page, and the router answers every read and write. Every command on these pages runs as written, and the test suite runs them.
+
+## Pages
+
+| Page | Next.js chapter | What you learn |
+| --- | --- | --- |
+| [Installation](./install) | Installation | Create a venture with `create-venture`, run `naive dev`, connect your agent |
+| [Venture types and roles](./venture-types-and-roles) | (Naive's own) | What kind of venture, your role in it, and who owns each function |
+| [Set up your venture](./setup) | (Naive's own) | Sources of truth, the foundation and first decisions in Claude, and a discovery goal |
+| [Project structure](./project-structure) | Project Structure | What is in a venture folder, and why |
+| [Layouts](./layouts) | Layouts and Pages | The AGENTS.md chain every agent reads before it acts |
+| [Routes and records](./routes-and-records) | Linking and Navigating, Fetching Data | Reading records, and what a missing record answers |
+| [Agents and people](./agents-and-people) | Server and Client Components | What code does, what a model does, and what stays private |
+| [Writing records](./writing-records) | Mutating Data | Writes, drafts, accept, and provenance |
+| [Decisions](./decisions) | (Naive's own) | Decision records, the docket, propose and decide |
+| [Errors](./errors) | Error Handling | Structured answers for refused writes and missing records |
+| [The gate](./the-gate) | Proxy | Holding agent writes with `naive.config.json` |
+| [Typegen and MCP](./typegen-and-mcp) | Route Handlers, Deploying | Generated types, and serving a venture to agents |
+| [Bringing a project in](./bringing-a-project-in) | (Naive's own) | `naive port` and `naive migrate` |
+| [Upgrading](./upgrading) | Upgrading | `naive upgrade` and route aliases |
+| [What's built](./whats-built) | All | Every translated concept, and whether it works today |
+
+Caching, revalidating, CSS, images, fonts and metadata have no page of their own yet: most of what they translate to is not built. [What's built](./whats-built) lists each concept.

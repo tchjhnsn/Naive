@@ -11,7 +11,9 @@
 //             A pattern with a live recipe (<pattern>.recipe.ts, autoresearch design, everything-ecosystem
 //             docs/design/AUTORESEARCH_RECORDS_2026-11-06.md, build plan item 9) renders through it in the sandbox
 //             instead of the plain fold, and its receptions go beside each record (<record>.reception.json); once a
-//             render's horizon has passed, a pull fills each reception's hindsight label.
+//             render's horizon has passed, a pull fills each reception's hindsight label. With durable.engine set
+//             in naive.config.json the pull runs as a durable workflow (pullDurable, EE-161 phase 12b): a pull that
+//             dies resumes with the plan it made and writes nothing twice.
 //   explain   one signal at every listener: salient or noise, and why
 //   replay    render every projected record again from what it cites and report drift; writes nothing
 //   emit      a person records a signal in the venture's local library (raw/signals/), its address computed
@@ -27,10 +29,12 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { readBlob } from "../../core/blobs.ts";
+import { activityStep, closeRun, engineLayer, isDurable, openRun, plainStep, runDurable, type Step } from "../../core/effect/durable.ts";
+import { canonicalJson } from "../../core/signal-id.ts";
 import { entries, record } from "../../core/provenance.ts";
 import { ventureFile } from "../../core/venture-paths.ts";
 import { decisionFile, propose } from "../../engine/decisions.ts";
-import { verify } from "../../engine/freshness.ts";
+import { events, verify } from "../../engine/freshness.ts";
 import { mark } from "../../engine/stale.ts";
 import { LOCAL, connect, sourcesOf } from "../../store/connectors/index.ts";
 import * as S from "../../engine/signals.ts";
@@ -45,6 +49,7 @@ import type { Known } from "../../engine/recipes/outcomes.ts";
 import type { Reception as Receptions, SignalType } from "../../records/types/records.d.ts";
 import { asProjector } from "../acting.ts";
 import { call } from "../router.ts";
+import type { WorkflowEngine, WorkflowInstance } from "effect/workflow/WorkflowEngine";
 
 type Reply = { ok: boolean; error?: string; result?: unknown };
 type Venture = { id: string; phase?: string };
@@ -179,65 +184,100 @@ async function writeProjected(dir: string, store: Store, file: string, value: un
   record(dir, { entity: file, route: entry.route, activity: base === null ? "create" : "write", agent: { ...S.PROJECTOR_AGENT }, derived_from: entry.derived_from, note: entry.note, content: text });
 }
 
+/** A receptions file the commit writes: the document, built when the pull plans, and how provenance names it. */
+type ReceptionWrite = { file: string; doc: unknown; derived_from: string[]; note: string };
+
 /** Each recipe record's receptions beside it: written with a new or changed record, and with an unchanged one only
- *  when what the receptions say changed. A record a person keeps gets none. */
-async function writeReceptions(dir: string, store: Store, t: Extract<Through, { ok: true }>, changes: readonly Change[], now: string): Promise<{ written: string[]; error?: string }> {
-  const written: string[] = [];
+ *  when what the receptions say changed. A record a person keeps gets none. Built before anything is written, so the
+ *  commit only writes; a document that cannot be built stops the list there, as an error the commit reports after
+ *  the records and the receptions before it are written. */
+async function receptionsPlan(store: Store, t: Extract<Through, { ok: true }>, changes: readonly Change[], now: string): Promise<{ writes: ReceptionWrite[]; error?: string }> {
+  const writes: ReceptionWrite[] = [];
   for (const { recipe, render } of t.rendered) {
     const ch = changes.find((c) => c.route === render.route);
     if (render.record === null || !ch || ch.kind === "kept") continue;
     const recordFile = S.recordFile(render.route);
     const file = receptionPath(recordFile);
     const built = receptionsDoc({ record: recordFile, recipe: recipe.sha256, asOf: Date.parse(now), rendered: render, known: t.known, types: t.types, horizon: recipe.type.settles ? durationMs(recipe.type.settles.horizon) : null });
-    if (!built.ok) return { written, error: `${file}: ${built.errors.join("; ")}` };
+    if (!built.ok) return { writes, error: `${file}: ${built.errors.join("; ")}` };
     const held = await store.read(file);
     if (held && ch.kind === "unchanged") { try { if (sameReceptions(JSON.parse(held.content) as Receptions, built.doc)) continue; } catch { /* rewrite a file that is not JSON */ } }
-    await writeProjected(dir, store, file, built.doc, held?.version ?? null, { route: "knowledge/reception", derived_from: [recordFile], note: `signal pull: receptions of ${recipe.file} (${recipe.sha256.slice(0, 12)}) as of ${now}` });
-    written.push(file);
+    writes.push({ file, doc: built.doc, derived_from: [recordFile], note: `signal pull: receptions of ${recipe.file} (${recipe.sha256.slice(0, 12)}) as of ${now}` });
   }
-  return { written };
+  return { writes };
 }
 
-/**
- * Hindsight for every receptions file of a live recipe's pattern whose render's horizon has passed: the recipe that
- * rendered it (the live one, or its source from the blob store) runs again at the render's as-of point with and
- * without each signal, scored against the settled record. A file it cannot label is named in problems and left as it
- * is. A record type with no settles has no horizon, so its receptions get no hindsight.
- */
-async function fillHindsight(dir: string, store: Store, recipes: readonly LiveRecipe[], now: string, loaded: { known: Known[]; types: SignalType[] } | null): Promise<{ written: string[]; problems: string[] }> {
-  const written: string[] = [];
-  const problems: string[] = [];
-  let all = loaded;
-  for (const recipe of recipes) {
+/** A receptions file whose hindsight is due, by the recipe's index in the live recipes, or a file that cannot be read. */
+type HindsightItem = { problem: string } | { recipe: number; id: string; file: string };
+type Loaded = { known: Known[]; types: SignalType[] };
+
+/** The receptions files of the live recipes' patterns whose render's horizon has passed, in the order they are labelled. */
+async function hindsightList(dir: string, store: Store, recipes: readonly LiveRecipe[], now: string): Promise<HindsightItem[]> {
+  const items: HindsightItem[] = [];
+  for (const [i, recipe] of recipes.entries()) {
     const settles = recipe.type.settles;
     if (!settles) continue;
     const h = durationMs(settles.horizon);
     for (const id of await S.idsIn(dir, recipe.pattern.split("/[id]")[0])) {
-      const recordFile = S.recordFile(S.fill(recipe.pattern, id));
-      const file = receptionPath(recordFile);
+      const file = receptionPath(S.recordFile(S.fill(recipe.pattern, id)));
       const held = await store.read(file);
       if (!held) continue;
       let doc: Receptions;
-      try { doc = JSON.parse(held.content) as Receptions; } catch { problems.push(`${file} is not JSON: no hindsight`); continue; }
-      if (!hindsightDue(doc, h, Date.parse(now))) continue;
-      let source: string | null = null, ranges = recipe.ranges, facts = recipe.facts;
-      if (doc.recipe === recipe.sha256) source = recipe.source;
-      else {
-        source = (readBlob(dir, doc.recipe) as Buffer | null)?.toString("utf8") ?? null;
-        if (source !== null) {
-          const ex = await recipeExports(source);
-          if (!ex.ok) { problems.push(`${file}: the recipe ${doc.recipe} that rendered it does not run (${ex.reason}): no hindsight`); continue; }
-          ranges = ex.output.hears.signals as string[];
-          facts = Object.fromEntries(Object.entries(ex.output.hears.facts ?? {}).filter((e): e is [string, string] => typeof e[1] === "string"));
-        }
-      }
-      if (source === null) { problems.push(`${file}: the recipe ${doc.recipe} that rendered it is neither live nor in the blob store: no hindsight`); continue; }
-      all ??= await loadSignals(dir);
-      const hd = await hindsightDoc({ doc, source, ranges, pattern: recipe.pattern, subject: id, schema: recipe.type.schema, known: all.known, types: all.types, settles, facts: factsAsOf(dir, facts, Date.parse(doc.as_of)), now: Date.parse(now) });
-      if (!hd.ok) { problems.push(`${file}: no hindsight: ${hd.reason}`); continue; }
-      await writeProjected(dir, store, file, hd.doc, held.version, { route: "knowledge/reception", derived_from: [recordFile], note: `signal pull: hindsight for the receptions as of ${doc.as_of}` });
-      written.push(file);
+      try { doc = JSON.parse(held.content) as Receptions; } catch { items.push({ problem: `${file} is not JSON: no hindsight` }); continue; }
+      if (hindsightDue(doc, h, Date.parse(now))) items.push({ recipe: i, id, file });
     }
+  }
+  return items;
+}
+
+/**
+ * Hindsight for one receptions file: the recipe that rendered it (the live one, or its source from the blob store)
+ * runs again at the render's as-of point with and without each signal, scored against the settled record. A file it
+ * cannot label is named in problem and left as it is. On a durable run a file no longer due was labelled by this run
+ * before a crash, so it counts as written and is not written again.
+ */
+async function labelHindsight(dir: string, store: Store, recipe: LiveRecipe, id: string, file: string, now: string, signals: () => Promise<Loaded>, durable: boolean): Promise<{ written: boolean; problem?: string }> {
+  const settles = recipe.type.settles;
+  const held = await store.read(file);
+  if (!settles || !held) return { written: false };
+  const recordFile = S.recordFile(S.fill(recipe.pattern, id));
+  let doc: Receptions;
+  try { doc = JSON.parse(held.content) as Receptions; } catch { return { written: false, problem: `${file} is not JSON: no hindsight` }; }
+  if (!hindsightDue(doc, durationMs(settles.horizon), Date.parse(now))) return { written: durable };
+  let source: string | null = null, ranges = recipe.ranges, facts = recipe.facts;
+  if (doc.recipe === recipe.sha256) source = recipe.source;
+  else {
+    source = (readBlob(dir, doc.recipe) as Buffer | null)?.toString("utf8") ?? null;
+    if (source !== null) {
+      const ex = await recipeExports(source);
+      if (!ex.ok) return { written: false, problem: `${file}: the recipe ${doc.recipe} that rendered it does not run (${ex.reason}): no hindsight` };
+      ranges = ex.output.hears.signals as string[];
+      facts = Object.fromEntries(Object.entries(ex.output.hears.facts ?? {}).filter((e): e is [string, string] => typeof e[1] === "string"));
+    }
+  }
+  if (source === null) return { written: false, problem: `${file}: the recipe ${doc.recipe} that rendered it is neither live nor in the blob store: no hindsight` };
+  const all = await signals();
+  const hd = await hindsightDoc({ doc, source, ranges, pattern: recipe.pattern, subject: id, schema: recipe.type.schema, known: all.known, types: all.types, settles, facts: factsAsOf(dir, facts, Date.parse(doc.as_of)), now: Date.parse(now) });
+  if (!hd.ok) return { written: false, problem: `${file}: no hindsight: ${hd.reason}` };
+  await writeProjected(dir, store, file, hd.doc, held.version, { route: "knowledge/reception", derived_from: [recordFile], note: `signal pull: hindsight for the receptions as of ${doc.as_of}` });
+  return { written: true };
+}
+
+/**
+ * Hindsight for every receptions file of a live recipe's pattern whose render's horizon has passed. The list is one
+ * step and each file's labelling its own. A record type with no settles has no horizon, so its receptions get no
+ * hindsight.
+ */
+async function fillHindsight(dir: string, store: Store, recipes: readonly LiveRecipe[], now: string, loaded: Loaded | null, step: Step, durable: boolean): Promise<{ written: string[]; problems: string[] }> {
+  const written: string[] = [];
+  const problems: string[] = [];
+  let all = loaded;
+  const signals = async () => (all ??= await loadSignals(dir));
+  const items = await step("hindsight", () => hindsightList(dir, store, recipes, now));
+  for (const x of items) {
+    if ("problem" in x) { problems.push(x.problem); continue; }
+    const r = await step(`hindsight/${x.file}`, () => labelHindsight(dir, store, recipes[x.recipe], x.id, x.file, now, signals, durable));
+    if (r.problem) problems.push(r.problem); else if (r.written) written.push(x.file);
   }
   return { written, problems };
 }
@@ -260,14 +300,29 @@ export type PullResult = {
   why?: string;
 };
 
-/** One pull. Writes nothing when nothing is new; moves the cursor only after every write succeeded. */
-export async function pull(dir: string, { now = iso(Date.now()) }: { now?: string } = {}): Promise<PullResult> {
+/** One record the commit acts on: write a new or changed one, verify an unchanged one, or keep a person's. */
+type Commit =
+  | { kind: "write"; file: string; route: string; record: Record<string, unknown>; derived: string[]; note: string }
+  | { kind: "verify"; file: string }
+  | { kind: "kept"; file: string };
+/** What a pull decided before writing anything, as JSON, so a resumed durable pull commits the same plan. */
+type Plan =
+  | { at: "done"; out: PullResult }
+  | { at: "nothing"; out: PullResult; now: string; cursor: S.Cursor | null; recipes: LiveRecipe[] }
+  | {
+    at: "commit"; out: PullResult; now: string; v: Venture; commits: Commit[]; receptions: ReceptionWrite[]; receptionError?: string;
+    proposals: { id: string; input: Record<string, unknown> }[]; marks: { file: string; listener: string; source: string; addr: string }[];
+    libraries: S.Cursor["libraries"]; recipes: LiveRecipe[];
+  };
+
+/** Everything a pull reads and decides: new lines, touched subjects, the render, recipe renders and the diff against
+ *  what the venture holds now. It writes nothing. keep is handed the loaded signals, for hindsight in this process. */
+async function planPull(dir: string, store: Store, now: string, keep: (_l: Loaded) => void): Promise<Plan> {
   const c = await context(dir);
   const cursor = S.readCursor(dir);
   const out: PullResult = { ok: true, status: "pulled", touched: {}, written: [], verified: [], kept: [], proposed: [], marked: [], receptions: [], hindsight: [], noise: 0, problems: [...c.problems] };
-  const store = await ventureStore(dir);
   const live = await liveRecipes(readText(store));
-  if (live.failures.length) return { ...out, ok: false, status: "failed", error: `a live recipe cannot be read, so its pattern is not rendered: ${live.failures.join("; ")}` };
+  if (live.failures.length) return { at: "done", out: { ...out, ok: false, status: "failed", error: `a live recipe cannot be read, so its pattern is not rendered: ${live.failures.join("; ")}` } };
   const heard = [...new Set([...c.heard, ...live.recipes.flatMap((r) => rangeIds(r.ranges))])].sort();
   // New log lines per library, and the signals they name.
   const counts: Record<string, Record<string, number>> = {};
@@ -286,12 +341,8 @@ export async function pull(dir: string, { now = iso(Date.now()) }: { now?: strin
   out.touched = Object.fromEntries(touched);
   const next = { libraries: { ...cursor.libraries, ...counts }, provenance: log.at(-1)?.hash ?? null };
   const moved = JSON.stringify(next.libraries) !== JSON.stringify(cursor.libraries);
-  if (!touched.size) {
-    // Nothing to render. The cursor moves only when a library published lines no listener could use.
-    if (moved) saveCursor(dir, { ...next, provenance: cursor.provenance, pulled_at: now });
-    const hs = await fillHindsight(dir, store, live.recipes, now, null);
-    return { ...out, hindsight: hs.written, problems: [...out.problems, ...hs.problems], status: "nothing new" };
-  }
+  // Nothing to render. The cursor moves only when a library published lines no listener could use.
+  if (!touched.size) return { at: "nothing", out, now, cursor: moved ? { ...next, provenance: cursor.provenance, pulled_at: now } : null, recipes: live.recipes };
   const subjects = new Set(touched.keys());
   const g = await gather(c.libs, heard, subjects, c.types, c.listeners);
   out.problems.push(...g.problems);
@@ -300,10 +351,11 @@ export async function pull(dir: string, { now = iso(Date.now()) }: { now?: strin
   const r = S.render({ signals: g.signals, types: c.types, listeners: c.listeners, facts: f.facts, now });
   out.problems.push(...r.problems, ...r.withdrawal.refused.map((x) => `${x.signal} may not withdraw ${x.target}: ${x.why}`));
   out.noise = r.receptions.filter((x) => x.kind === "noise").length;
-  if (r.status === "raised") return { ...out, ok: false, status: "raised", why: r.why };
+  if (r.status === "raised") return { at: "done", out: { ...out, ok: false, status: "raised", why: r.why } };
   // Every pattern with a live recipe renders through it, before anything is written, so a recipe that fails writes nothing.
   const t = await throughRecipes(dir, c.v, c.listeners, live.recipes, [...subjects], r, c.types, now);
-  if (!t.ok) return { ...out, ok: false, status: "failed", error: t.error };
+  if (!t.ok) return { at: "done", out: { ...out, ok: false, status: "failed", error: t.error } };
+  if (live.recipes.length) keep({ known: t.known, types: t.types });
   out.problems.push(...t.problems);
   out.noise = t.noise;
   const have = await current(dir, c.v, t.records.map((x) => x.route));
@@ -313,43 +365,134 @@ export async function pull(dir: string, { now = iso(Date.now()) }: { now?: strin
   const bySignal = new Map(g.signals.map((s) => [s.signal.id, s]));
   const addresses = new Map(g.signals.map((s) => [s.signal.id, s.address]));
   const derived = (ch: Change) => [...ch.cites.map((id) => addresses.get(id) ?? id), ...ch.facts.filter((x) => !x.startsWith("ids:")).map(S.factFile)];
-  // Commit: records first, in route order, so a crash leaves the cursor where it was and the next pull redoes it.
-  for (const ch of d.changes) {
+  // Records in route order, so a crash leaves the cursor where it was and the next pull redoes it.
+  const commits: Commit[] = d.changes.map((ch) => {
     const { file, route } = have.where[ch.route];
-    if (ch.kind === "kept") { out.kept.push(file); continue; }
-    if (ch.kind === "unchanged") {
-      const ver = verify(dir, `path:${file}`, { by: { ...S.PROJECTOR_AGENT }, reason: "a signal pull rendered it again unchanged", now }) as Reply;
-      if (ver.ok) out.verified.push(file); else out.problems.push(`${file}: ${ver.error}`);
-      continue;
-    }
-    const w = await projector(c.v, dir, route, "write", { input: ch.record, provenance: { derived_from: derived(ch), note: `signal pull: ${ch.kind} from ${ch.cites.length} signal${ch.cites.length === 1 ? "" : "s"}` } });
-    if (!w.ok) return { ...out, ok: false, status: "failed", error: `${route}: ${w.error}` };
-    out.written.push(file);
-  }
-  const rw = await writeReceptions(dir, store, t, d.changes, now);
-  out.receptions = rw.written;
-  if (rw.error) return { ...out, ok: false, status: "failed", error: rw.error };
-  for (const p of d.proposals) {
+    if (ch.kind === "kept" || ch.kind === "unchanged") return { kind: ch.kind === "kept" ? "kept" : "verify", file };
+    return { kind: "write", file, route, record: ch.record, derived: derived(ch), note: `signal pull: ${ch.kind} from ${ch.cites.length} signal${ch.cites.length === 1 ? "" : "s"}` };
+  });
+  const rw = await receptionsPlan(store, t, d.changes, now);
+  const proposals = d.proposals.map((p) => {
     const l = c.listeners.find((x) => x.id === p.listener);
-    const res = propose(dir, { id: p.id, question: `Signal ${p.view.id} (${p.view.type}@${p.view.version} about ${p.view.subject}, ${p.view.time}) is salient at listener ${p.listener}${l?.note ? `: ${l.note}` : ""}. What does it change?`,
-      ...(c.v.phase ? { needed_in: c.v.phase } : {}), note: `Proposed by the signal pull from ${addresses.get(p.view.id) ?? p.view.id}${p.facts.length ? `, reading ${p.facts.join(", ")}` : ""}.` }, { agentId: S.PROJECTOR_AGENT.id, via: "router" }) as Reply;
-    if (!res.ok) return { ...out, ok: false, status: "failed", error: `proposing ${p.id}: ${res.error}` };
-    out.proposed.push(p.id);
-  }
+    return { id: p.id, input: { id: p.id, question: `Signal ${p.view.id} (${p.view.type}@${p.view.version} about ${p.view.subject}, ${p.view.time}) is salient at listener ${p.listener}${l?.note ? `: ${l.note}` : ""}. What does it change?`,
+      ...(c.v.phase ? { needed_in: c.v.phase } : {}), note: `Proposed by the signal pull from ${addresses.get(p.view.id) ?? p.view.id}${p.facts.length ? `, reading ${p.facts.join(", ")}` : ""}.` } };
+  });
   const marked = markedAlready(dir);
+  const marks: Extract<Plan, { at: "commit" }>["marks"] = [];
   for (const m of r.marks) {
     const file = S.recordFile(m.route);
     const addr = addresses.get(m.view.id) ?? m.view.id;
     if (!S.routerRoute(file)) { out.problems.push(`listener ${m.listener}: no record type lives at ${file} to mark stale`); continue; }
     if (marked.has(`${file} ${addr}`)) continue;
-    mark(dir, [file], { source: bySignal.get(m.view.id)?.library ?? S.LOCAL_LIBRARY, paths: [addr], reads: addr, via: "signals" });
-    out.marked.push(file);
+    marks.push({ file, listener: m.listener, source: bySignal.get(m.view.id)?.library ?? S.LOCAL_LIBRARY, addr });
   }
-  const hs = await fillHindsight(dir, store, live.recipes, now, live.recipes.length ? { known: t.known, types: t.types } : null);
+  return { at: "commit", out, now, v: c.v, commits, receptions: rw.writes, ...(rw.error ? { receptionError: rw.error } : {}), proposals, marks, libraries: next.libraries, recipes: live.recipes };
+}
+
+/** Whether the projector verified a file at or after a pull's now: a durable verify that ran before a crash. */
+const verifiedSince = (dir: string, file: string, now: string) => (events(dir) as { event?: string; at?: string; target?: { kind?: string; value?: string }; by?: { id?: string } }[])
+  .some((e) => e.event === "verify" && e.target?.kind === "path" && e.target.value === file && e.by?.id === S.PROJECTOR_AGENT.id && Date.parse(e.at ?? "") >= Date.parse(now));
+
+/**
+ * One pull. Writes nothing when nothing is new; moves the cursor only after every write succeeded. Every read that
+ * can change goes through step: the plan (render, recipe renders and diff) is one step, and each write, verify,
+ * reception write, proposal, stale mark, hindsight label and the cursor move is its own. The default step just runs,
+ * so the memory path is one process as before; pullDurable passes the workflow's step. On a durable run each step
+ * that writes first checks whether its write already landed, so a step repeated after a crash writes nothing twice.
+ */
+export async function pull(dir: string, { now: asked }: { now?: string } = {}, step: Step = plainStep): Promise<PullResult> {
+  const durable = step !== plainStep;
+  const store = await ventureStore(dir);
+  let loaded: Loaded | null = null;
+  const plan = await step("plan", () => planPull(dir, store, asked ?? iso(Date.now()), (l) => { loaded = l; }));
+  if (plan.at === "done") return plan.out;
+  const { out, now } = plan;
+  if (plan.at === "nothing") {
+    const moved = plan.cursor;
+    if (moved) await step("cursor", async () => { saveCursor(dir, moved); return true; });
+    const hs = await fillHindsight(dir, store, plan.recipes, now, null, step, durable);
+    return { ...out, hindsight: hs.written, problems: [...out.problems, ...hs.problems], status: "nothing new" };
+  }
+  const v = plan.v;
+  for (const c of plan.commits) {
+    if (c.kind === "kept") { out.kept.push(c.file); continue; }
+    if (c.kind === "verify") {
+      const ver = await step(`verify/${c.file}`, async (): Promise<Reply> => {
+        if (durable && verifiedSince(dir, c.file, now)) return { ok: true };
+        const x = verify(dir, `path:${c.file}`, { by: { ...S.PROJECTOR_AGENT }, reason: "a signal pull rendered it again unchanged", now }) as Reply;
+        return { ok: x.ok, ...(x.error ? { error: x.error } : {}) };
+      });
+      if (ver.ok) out.verified.push(c.file); else out.problems.push(`${c.file}: ${ver.error}`);
+      continue;
+    }
+    const w = await step(`write/${c.route}`, async (): Promise<Reply> => {
+      if (durable) {
+        const held = await projector(v, dir, c.route, "read");
+        if (held.ok && held.result !== null && held.result !== undefined && canonicalJson(held.result) === canonicalJson(c.record)) return { ok: true };
+      }
+      const x = await projector(v, dir, c.route, "write", { input: c.record, provenance: { derived_from: c.derived, note: c.note } });
+      return { ok: x.ok, ...(x.error ? { error: x.error } : {}) };
+    });
+    if (!w.ok) return { ...out, ok: false, status: "failed", error: `${c.route}: ${w.error}` };
+    out.written.push(c.file);
+  }
+  for (const x of plan.receptions) {
+    await step(`reception/${x.file}`, async () => {
+      const held = await store.read(x.file);
+      if (durable && held?.content === JSON.stringify(x.doc, null, 2) + "\n") return true;
+      await writeProjected(dir, store, x.file, x.doc, held?.version ?? null, { route: "knowledge/reception", derived_from: x.derived_from, note: x.note });
+      return true;
+    });
+    out.receptions.push(x.file);
+  }
+  if (plan.receptionError) return { ...out, ok: false, status: "failed", error: plan.receptionError };
+  for (const p of plan.proposals) {
+    const res = await step(`propose/${p.id}`, async (): Promise<Reply> => {
+      if (durable && decisionFile(dir, p.id)) return { ok: true };
+      const x = propose(dir, p.input as Parameters<typeof propose>[1], { agentId: S.PROJECTOR_AGENT.id, via: "router" }) as Reply;
+      return { ok: x.ok, ...(x.error ? { error: x.error } : {}) };
+    });
+    if (!res.ok) return { ...out, ok: false, status: "failed", error: `proposing ${p.id}: ${res.error}` };
+    out.proposed.push(p.id);
+  }
+  for (const m of plan.marks) {
+    await step(`mark/${m.file}#${m.addr}#${m.listener}`, async () => {
+      if (durable && markedAlready(dir).has(`${m.file} ${m.addr}`)) return true;
+      mark(dir, [m.file], { source: m.source, paths: [m.addr], reads: m.addr, via: "signals" });
+      return true;
+    });
+    out.marked.push(m.file);
+  }
+  const hs = await fillHindsight(dir, store, plan.recipes, now, loaded, step, durable);
   out.hindsight = hs.written;
   out.problems.push(...hs.problems);
-  saveCursor(dir, { ...next, provenance: (entries(dir) as ProvLine[]).at(-1)?.hash ?? null, pulled_at: now });
+  await step("cursor", async () => { saveCursor(dir, { libraries: plan.libraries, provenance: (entries(dir) as ProvLine[]).at(-1)?.hash ?? null, pulled_at: now }); return true; });
   return out;
+}
+
+/**
+ * The pull as a durable workflow (EE-161, phase 12b), when naive.config.json sets durable.engine: the plan and each
+ * write after it are activities, so a pull that dies resumes with the plan it made and writes nothing twice. The run
+ * stays open in .naive/durable-runs/ until the workflow finishes.
+ */
+export async function pullDurable(dir: string, o: { now?: string } = {}): Promise<PullResult> {
+  const { Effect, Layer, Schema } = await import("effect");
+  const Workflow = await import("effect/workflow/Workflow");
+  const toStep = await activityStep();
+  const run = openRun(dir, "signals", "pull");
+  const Pull = Workflow.make("naive/signal-pull", {
+    payload: { dir: Schema.String, run: Schema.String },
+    success: Schema.String,
+    idempotencyKey: (p) => `${p.dir}#pull#${p.run}`,
+  });
+  const PullLive = Pull.toLayer(Effect.fn(function* () {
+    const context = yield* Effect.context<WorkflowEngine | WorkflowInstance>();
+    const result = yield* Effect.promise(() => pull(dir, o, toStep(context)));
+    return JSON.stringify(result);
+  }));
+  const out = await runDurable(PullLive.pipe(Layer.provideMerge(await engineLayer(dir, "signals"))), Pull.execute({ dir, run }));
+  closeRun(dir, "signals", "pull");
+  return JSON.parse(out) as PullResult;
 }
 
 /** The stale marks a pull already made, as "file address". */
@@ -477,7 +620,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const what = opt("explain") ? "explain" : a[0];
   const now = opt("now");
   let r: { ok: boolean; error?: string; result?: unknown; problems?: string[] } & Record<string, unknown>;
-  if (what === "pull") r = await pull(dir, { now });
+  if (what === "pull") r = isDurable(dir) ? await pullDurable(dir, { now }) : await pull(dir, { now });
   else if (what === "explain") { const id = opt("explain") ?? a[1]; if (!id) { console.error(usage); process.exit(2); } r = await explainSignal(dir, id, { now }); }
   else if (what === "replay") r = await replay(dir, { now });
   else if (what === "emit") {

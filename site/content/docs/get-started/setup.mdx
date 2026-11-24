@@ -1,0 +1,73 @@
+---
+title: Set up your venture
+description: Point Naive at where each function keeps its truth, then settle the foundation and the first decisions in Claude.
+type: tutorial
+status: draft
+lastReviewed: 2026-10-29
+owner: builder
+---
+
+Use this page right after [Installation](./install). By the end, your venture has its people and their hats, a source of truth for each function, a settled strategic foundation, its first decisions, and a goal for the discovery phase. Every decision from then on routes through the docket.
+
+## Sources of truth
+
+Each function of a venture keeps its truth somewhere already. A software product lives in a local repository, on GitHub and in its Vercel or Cloudflare deployments, and its analytics live with its host. An e-commerce business keeps its sales in Stripe, Square or Shopify. Money lives in the bank. `create-venture` asks where each one is, and records the answers as pointers in `knowledge/sources.json`, the venture's source-of-truth matrix. Naive keeps pointers, never copies.
+
+| Function | Systems you can point it at |
+| --- | --- |
+| Products | a local repository, GitHub, Vercel, Cloudflare |
+| Marketing and sales | Vercel or Cloudflare analytics, Stripe, Square, Shopify |
+| Finance | Rho, Stripe, Square, Shopify |
+| Legal documents | Google Drive, DocuSign, a local folder |
+
+The full list, with what an address looks like for each system, is in `packages/naive/src/engine/systems-catalog.json`. A system Naive reads through code is **connected**. One it only knows of is **pointed**, until there is a connector for it. When a function has nothing yet, answer `none`, or say it in your own words. Your words are kept with the function.
+
+Rho is connected: Naive reads accounts, transactions and a summary through Rho's API, into the money package. Without `RHO_API_TOKEN` it reads Rho's sandbox, a fictional company. With the token it reads your account. `--rho-fixture` replays a saved sandbox answer offline, and the record says so.
+
+```sh
+node packages/create-venture/index.mjs ~/ventures/acme --type software-startup --name "Pat Doe" --source products=local-repo:../acme-app,github:acme/app,vercel:acme/web --source finance=rho --rho-fixture --yes --skip-install
+cat ~/ventures/acme/meta/sources.json
+node packages/naive/src/checks/check-sources.ts ~/ventures/acme
+```
+
+The transactions Rho returns are sensitive, so the venture's `.gitignore` keeps every stream's activity out of git and versions only its `stream.json` and `summary.md`.
+
+If no legal documents are connected, `create-venture` says so and shows how to point Naive at them, and the founder agreement can be drafted with the founding-agreement kit.
+
+## Set up in Claude
+
+You finish setup in conversation, in the harness you already use. Naive does not start a server for it. The `naive-setup` skill (`packages/naive/src/interfaces/skills/naive-setup/SKILL.md`) teaches the model the steps, and the model shows your progress with the harness's own features. In Claude, that is an [artifact](https://claude.com/features/artifacts): a page beside the chat that updates after every answer.
+
+Connect Naive to Claude Code from inside the venture with `claude mcp add naive -- npx naive mcp`, or add the same command as a connector in the Claude app. Then ask:
+
+```txt
+Set up my venture acme with Naive.
+```
+
+The model calls `mentura_setup`, renders the artifact it returns, and asks one question at a time, in this order:
+
+1. **People and hats.** Who is in the venture, in which role, and the functions each person owns, from `people/people.json`.
+2. **Sources of truth.** Where each function keeps its truth, from the table above. Choosing Rho syncs it there and then.
+3. **Foundation and first decisions.** The decision docket: the strategic foundation's statements and the type's first questions, in order.
+4. **A goal for discovery.** What must be true for the venture to leave discovery. Every later decision, sprint and campaign works toward it.
+
+You answer in your own words. The model writes each answer down exactly as you wrote it, as an open decision with your words as its wording, recorded in `decisions/` and in `provenance.jsonl`. A model never decides for you, so each answer waits until you confirm it yourself, at the keyboard:
+
+```txt
+npx naive setup confirm
+```
+
+That lists every answer the model wrote down and asks whether they are yours as written. Once you confirm, each one is a decision you made, and the artifact says the venture's structure is established. Some decisions are held for later phases, and it says how many.
+
+The same steps run without a model:
+
+```sh
+node packages/naive/src/router/orchestration/setup.ts ~/ventures/acme state
+node packages/naive/src/router/orchestration/setup.ts ~/ventures/acme artifact > ~/acme-setup.html
+```
+
+A harness without artifacts shows the steps as a checklist in the chat instead. `npm run dev` also serves them as a page at `/setup`.
+
+## What comes next
+
+At this point you have a structure for the venture and a way to route every decision. Running the business day to day (tasks, documents, money and people in one workspace, with your team and your agents) is what Mentura is for. Mentura is to Naive what Vercel is to Next.js: you build with the framework and operate on the platform.

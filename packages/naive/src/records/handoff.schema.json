@@ -109,7 +109,15 @@
           },
           "check": {
             "type": "string",
-            "description": "The command to run, or for review the question the reviewer answers"
+            "description": "The command to run, the venture program for runs effect, or for review the question the reviewer answers"
+          },
+          "runs": {
+            "enum": [
+              "bash",
+              "effect"
+            ],
+            "default": "bash",
+            "description": "How a conformance or self-proof check runs (EE-161). bash: a shell command from the repository root, sent to the host's sandbox hook when hosted. effect: a venture program (a path in the venture) run on the venture runtime, which passes when it succeeds and returns neither false nor { passed: false }, and needs no sandbox when hosted."
           },
           "reviewer": {
             "type": "string",

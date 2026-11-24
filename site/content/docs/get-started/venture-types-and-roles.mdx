@@ -1,0 +1,87 @@
+---
+title: Venture types and roles
+description: Choose what kind of venture you are creating and your role in it, and see who owns which function.
+type: explanation
+status: draft
+lastReviewed: 2026-10-29
+owner: builder
+---
+
+`create-venture` scaffolds nothing until it knows two things: what kind of venture you are creating, and your role in it. The type decides which packages the venture starts with and which questions it asks first. A VC fund starts with its thesis, a software startup with its product. Your role, and whether you are building alone or with a team, decides who owns each function.
+
+## Venture types
+
+Describe the venture in a few words, and a model picks the type. You confirm it, or pick from the list instead. Without `TYPESAFE_API_KEY` in your environment, no model is called and you pick from the list. `--type` skips the question.
+
+```sh
+node packages/naive/src/engine/venture-type.ts list
+```
+
+| Type | Starts with | First questions |
+| --- | --- | --- |
+| `software-startup` | foundation, validation, product, marketing, finance, people, customers, investors, money | Does a product exist, what is the core product, which is the flagship |
+| `vc-fund` | foundation, fund, deals, portfolio, investors, people, finance, money | The thesis, the fund's terms, the first close |
+| `services-business`, `local-business`, `ecommerce`, `creator-media`, `nonprofit` | the packages each one needs | The product questions |
+| `holding-company` | foundation, portfolio, finance, people, investors, money | None: each venture it holds answers its own |
+| `side-project` | foundation, product | The product questions |
+
+The full list, with each type's functions and roles, is in `packages/naive/src/engine/venture-types.json`.
+
+## Roles
+
+Investors are a role, like founders. A general partner runs a fund, so an investor creates a venture of type `vc-fund`. Each type lists the roles it has:
+
+| Role | Kind | A founder? | Owns functions? |
+| --- | --- | --- | --- |
+| `founder` | builder | yes | yes; alone, every one |
+| `co-founder` | builder | yes | the ones the team gives them |
+| `general-partner` | investor | yes | yes; alone, every one |
+| `limited-partner` | investor | no | no |
+| `operator` | operator | no | no |
+| `advisor` | advisor | no | no |
+| `board-member` | governor | no | no |
+
+The roles are in `governance/venture-template/roles/venture-roles.json`, beside the agent roles.
+
+## Hats
+
+A function is a hat. A solo founder wears every hat the venture type imports. On a team, `create-venture` asks who owns each function, one at a time. Each function becomes a department of the venture, with its folders, as `node packages/naive/src/engine/add-department.ts` would make it.
+
+## The people directory
+
+`k-base/people/` is to the venture's people what `venture.json` is to the venture:
+
+```text
+people/
+  people.json            who is in the venture, in which role, and the hats each wears
+  founders/
+    ana-ruiz.json        one file per founder: role, hats, when they joined, their founder agreement
+    ben-okafor.json
+  team-plan.json         the roles to fill, by people and agents
+```
+
+Create a fund with two general partners. Each owns the functions the team gives them:
+
+```sh
+node packages/create-venture/index.mjs ~/ventures/northstar --type vc-fund --name "Ana Ruiz" --team "Ben Okafor" --phase validation --yes --skip-install --no-git
+cat ~/ventures/northstar/k-base/people/people.json
+```
+
+Check that every role, hat and founder file agrees:
+
+```sh
+node packages/naive/src/checks/check-people.ts ~/ventures
+```
+
+The check fails when a role is not in the registry or not one the venture's type has, when a hat is a function the venture does not import, when a solo founder is missing a hat, when no one owns a function, and when a founder file and the roster disagree. `naive check` runs it too.
+
+## A fund's records
+
+| Route | File | What it holds |
+| --- | --- | --- |
+| `fund/thesis` | `fund/thesis.json` | Rounds, sectors, geographies, check size, target ownership and the fund's edge |
+| `fund/terms` | `fund/terms.json` | Target size, vintage, structure, management fee, carry, term and the closes so far |
+| `deals/[id]` | `deals/<id>.json` | One company in the pipeline, from sourced to invested or passed |
+| (nested venture) | `portfolio/<id>/venture.json` | A company the fund invested in, a venture of its own with `parent` set to the fund |
+
+The example fund in `packages/naive/src/records/examples/workspace/ventures/northstar` has all four.

@@ -1,0 +1,35 @@
+---
+title: Ventures and phases
+description: What a venture is, the five phases, and how long it took to be ready.
+type: explanation
+status: draft
+lastReviewed: 2026-10-28
+owner: builder
+---
+
+{/* DRAFT: agent-written, needs Torian */}
+A venture is the equivalent of a Next.js project (Torian, 2026-10-28). Each one has a `venture.json` and moves through five phases. A phase ends when its exit criteria are met, and the owner decides when that is.
+
+## The phases
+
+| Phase | The question it asks |
+| --- | --- |
+| Discovery | Does a real problem exist, and who has it? |
+| Validation | Will people adopt this solution and keep using it? |
+| Beachhead | Can we win one segment repeatably, at a profitable cost? |
+| Scale | How fast can we take the mass market? |
+| Platform | What will others build on, so the venture can't be displaced? |
+
+Each phase is also a route group: the routes the need-now score suggests in that phase.
+
+<Groups />
+
+## Time to ready
+
+From the repository root, with the venture id:
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts system/time-to-ready run --venture everything-ecosystem
+```
+
+That measures how long the venture took to be running, and how long each layer took to hold what the current phase needs. `everything-ecosystem` is the venture in this repository. Pass your own id when `MENTURA_WORKSPACE` points at another workspace.

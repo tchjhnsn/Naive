@@ -11,13 +11,14 @@ import { fileURLToPath } from "node:url";
 /** Each vendored repository: its folder, the package.json inside it that carries the version, and the dependency it mirrors. */
 export const VENDORED = [{ dir: "repos/effect", manifest: "packages/effect/package.json", dependency: "effect" }];
 
-type Manifest = { version?: unknown; dependencies?: Record<string, unknown> };
+type Manifest = { version?: unknown; dependencies?: Record<string, unknown>; devDependencies?: Record<string, unknown>; peerDependencies?: Record<string, unknown> };
 
 const readManifest = (path: string): Manifest => JSON.parse(readFileSync(path, "utf8")) as Manifest;
 
 /** The mismatches between vendored copies and the pins in `root`'s package.json. */
 export function check(root: string): string[] {
-  const pins = readManifest(join(root, "package.json")).dependencies ?? {};
+  const own = readManifest(join(root, "package.json"));
+  const pins = { ...own.devDependencies, ...own.dependencies, ...own.peerDependencies };
   const errors: string[] = [];
   for (const v of VENDORED) {
     const manifest = join(root, v.dir, v.manifest);

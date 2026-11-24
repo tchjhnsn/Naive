@@ -1,0 +1,124 @@
+.sc {
+  --sc-accent: #1d4e89;
+  --sc-ink: #141416;
+  --sc-muted: #3f3f46;
+  --sc-line: #e4e7ee;
+  --sc-paper: #ffffff;
+  --sc-wash: #f4f7fb;
+  --sc-on: #f7f8fa;
+  --sc-example: #6b4e16;
+  --sc-example-bg: #f4efe4;
+  color: var(--sc-ink);
+  background: var(--sc-paper);
+  --sc-phase-bg: #d5e3f4;
+  color-scheme: light;
+  font-family: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  min-height: 100vh;
+}
+
+.dark .sc {
+  --sc-accent: #8eb4e8;
+  --sc-ink: #ededed;
+  --sc-muted: #a3a3a3;
+  --sc-line: #2a2a2a;
+  --sc-paper: #0a0a0a;
+  --sc-wash: #161616;
+  --sc-on: #0d1b2a;
+  --sc-example: #e6c98a;
+  --sc-example-bg: #2a2418;
+  --sc-phase-bg: #1b334d;
+  color-scheme: dark;
+}
+
+.sc a {
+  color: var(--sc-accent);
+  text-underline-offset: 3px;
+}
+
+.sc a:hover {
+  text-decoration: underline;
+}
+
+.sc a.sc-quiet,
+.sc a.sc-quiet:hover {
+  color: inherit;
+  text-decoration: none;
+}
+
+.sc a.sc-title {
+  color: var(--sc-ink);
+  text-decoration: none;
+}
+
+.sc a.sc-title:hover {
+  color: var(--sc-accent);
+}
+
+.sc :focus-visible {
+  outline: 2px solid var(--sc-accent);
+  outline-offset: 3px;
+}
+
+.sc-filters {
+  position: sticky;
+  top: var(--nextra-navbar-height, 64px);
+  z-index: 20;
+  background: color-mix(in srgb, var(--sc-paper) 92%, transparent);
+  backdrop-filter: blur(12px);
+}
+
+.sc-filter {
+  border: 0;
+  border-radius: 999px;
+  background: var(--sc-wash);
+  color: var(--sc-ink);
+  padding: 0.375rem 0.75rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.sc-filter:hover {
+  background: color-mix(in srgb, var(--sc-accent) 14%, var(--sc-wash));
+}
+
+.sc-filter-on,
+.sc-filter-on:hover {
+  background: var(--sc-accent);
+  color: var(--sc-on);
+}
+
+.sc-phase {
+  background: var(--sc-phase-bg);
+}
+
+.sc a.sc-submit,
+.sc a.sc-submit:hover {
+  color: var(--sc-accent);
+  text-decoration: none;
+}
+
+.sc-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.sc-shot {
+  display: block;
+  overflow: hidden;
+  border: 1px solid var(--sc-line);
+  border-radius: 16px;
+  background: var(--sc-wash);
+}
+
+.sc-shot img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+}
+
+.sc-shot:hover {
+  border-color: var(--sc-accent);
+}
