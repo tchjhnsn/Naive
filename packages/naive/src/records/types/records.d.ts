@@ -5663,6 +5663,51 @@ export type Telos = {
   };
 };
 
+/** The catalog of tools a business needs, at packages/naive/src/functions/tools.json (venture console spec, 2026-11-24, phase 3). It is a three-level taxonomy: function (APQC level 1, an id in packages/naive/src/functions/departments.json), process group (APQC level 2), tool. Each tool names the record types it reads and writes, so a console can build its navigation and each screen from Naive data instead of a hand-kept list. A tool whose function is null is universal: every business gets it. It names no vendor: every object allows only the properties listed. packages/naive/src/checks/check-tools.ts checks it across files. */
+export type ToolCatalog = {
+  version: string;
+  note?: string;
+  /** What a tool does with records, one meaning each. */
+  kinds: {
+    id: "view" | "editor" | "workflow" | "storage" | "connection";
+    means: string;
+  }[];
+  /** APQC Process Classification Framework level 2 groups (cross-industry, version 7.4 names), each under the function whose APQC id is its prefix. */
+  process_groups: {
+    /** The APQC hierarchy id, such as 3.5. */
+    id: string;
+    /** An id in packages/naive/src/functions/departments.json whose apqc.id is this group's prefix. */
+    function: string;
+    name: string;
+    /** APQC's element id for the group, where the research recorded it. */
+    pcf?: number;
+  }[];
+  tools: {
+    id: string;
+    /** The function the tool serves, or null for a universal tool. */
+    function: string | null;
+    /** The label a person sees, in plain words. */
+    title: string;
+    kind: "view" | "editor" | "workflow" | "storage" | "connection";
+    /** The earliest phase in which most businesses need the tool. */
+    phase: "discovery" | "validation" | "beachhead" | "scale" | "platform";
+    /** One sentence on what the tool is for. */
+    about: string;
+    /** The process groups the tool serves, all under its function; empty for a universal tool. */
+    process_groups: string[];
+    /** Record types in the data model the tool reads; * is every type. */
+    reads: string[];
+    /** Record types in the data model the tool writes; * is every type. */
+    writes: string[];
+    /** Record types the tool needs that the data model does not have yet. A tool that reads, writes and keeps nothing else is proposed, not built. */
+    proposes?: string[];
+    /** Logical venture paths the tool keeps that are not records, such as files. */
+    paths?: string[];
+    /** The capability cluster (packages/naive/src/functions/it/capability-clusters.json) whose outside tool it usually needs. */
+    cluster?: string;
+  }[];
+};
+
 /** One step of an agent run, one line of <venture>/traces/<session>.jsonl, after the OpenTelemetry GenAI semantic conventions (a span with a trace id, a span id, its parent, a name, a start and an end, and gen_ai.* attributes), so any OpenTelemetry tool can read it. The file is append-only: each line carries the hash of the line before, as the provenance log does, so an edited or deleted line breaks the chain. A provenance line written inside a span names it in its span field. Spans hold names, routes, sizes, times and tokens; inputs and outputs only when the venture turns on traces.content in naive.config.json. packages/naive/src/checks/check-traces.ts checks it. */
 export type TraceSpan = {
   /** The run the span belongs to; every span of one top-level run shares it */

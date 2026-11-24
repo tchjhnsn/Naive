@@ -2019,6 +2019,27 @@
           "expect": "exists"
         }
       ]
+    },
+    {
+      "id": "EE-163",
+      "date": "2026-11-24",
+      "status": "in-force",
+      "decision": "Naive keeps the tools a business needs as data, in packages/naive/src/functions/tools.json: a three-level taxonomy of function (APQC level 1, departments.json), process group (APQC level 2, 72 groups) and tool. Each tool names its function, or none for the universal tools every business gets (home, decisions, agents, files, records, tasks, people, calendar, activity, connections, settings), the process groups it serves, the record types it reads and writes, and the record types it proposes where the data model has none yet. Consoles build their navigation from this file instead of a hand-kept list. A tool's status is derived from what it touches, never written. check-tools.ts holds every function and process group to at least one tool.",
+      "why": "Torian asked on 2026-11-24 for the console to offer the tools a business needs across all of its functions and sub-functions, plus the universal tools, from an enumerated ontology rather than an ad hoc menu. APQC's Process Classification Framework already gives Naive its functions (EE-047), so its level 2 groups are the sub-functions, and tying each tool to record types keeps the console and the data model from drifting.",
+      "related": [
+        "EE-047",
+        "EE-099",
+        "EE-118",
+        "EE-162"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/checks/check-tools-test.ts",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
     }
   ]
 }
