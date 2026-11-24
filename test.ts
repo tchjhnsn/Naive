@@ -45,6 +45,7 @@ const steps: Step[] = [
   ["model steps: use model, judgments, kit boundaries, uncertain routing", "node", ["packages/naive/src/interfaces/tests/model-steps-test.ts"]],
   ["the gate: naive.config.json, one gate per venture, who is acting", "node", ["packages/naive/src/interfaces/tests/gate-test.ts"]],
   ["one CLI: naive new, and every record command through naive", "node", ["packages/naive/src/interfaces/tests/naive-cli-test.ts"]],
+  ["naive agent: list, brief and run an agent from the terminal", "node", ["packages/naive/src/interfaces/tests/naive-agent-test.ts"]],
   ["the setup page (people, sources of truth, the docket, a discovery goal)", "node", ["packages/naive/src/interfaces/dev/test.ts"]],
   ["naive workspace init and rename, the clock and the calendar (derived events, .ics)", "node", ["packages/naive/src/engine/workspace-init-test.ts"]],
   ["the Claude Code plugin (manifest, skills, MCP server outside a venture, marketplaces)", "node", ["packages/naive/src/interfaces/plugin-test.ts"]],
