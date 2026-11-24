@@ -293,7 +293,9 @@ if (Object.keys(functions).length) {
     note: `systems of record: ${Object.entries(functions).map(([fn, f]) => `${fn} ${f.systems.map((s) => `${s.system} (${s.status})`).join(", ") || "in the founder's words"}`).join("; ")}` });
 }
 
-// The venture's package.json: the framework as a dev dependency, the four scripts (I-17) and the framework's Node floor (EE-158).
+// The venture's package.json: the framework as a dev dependency, Effect at the framework's exact peer pin (EE-161: one
+// copy, shared by Naive and the venture's programs, so their services agree), the four scripts (I-17) and the
+// framework's Node floor (EE-158).
 const fromClone = existsSync(join(framework, "test.ts")) && !framework.split("/").includes("node_modules");
 // A dependency value is a range or a location, never name@range: --framework naive-framework@^0.2 keeps ^0.2.
 // From a clone, the pin is the clone's repository at its commit (naive#70, as everything-ecosystem pins it, EE-119), so the
@@ -305,10 +307,46 @@ const spec = opt("framework")?.replace(new RegExp(`^${fw.name}@`), "") ?? (fromC
 writeFileSync(join(dir, "package.json"), JSON.stringify({
   name: id, private: true, type: "module",
   scripts: { dev: "naive dev", build: "naive build", start: "naive start", check: "naive check" },
+  ...(fw.peerDependencies?.effect ? { dependencies: { effect: fw.peerDependencies.effect } } : {}),
   devDependencies: { [fw.name]: spec },
   ...(fw.engines?.node ? { engines: { node: fw.engines.node } } : {}),
 }, null, 2) + "\n");
 writeFileSync(join(dir, ".gitignore"), "node_modules/\n.naive/\n.DS_Store\n# Founder conversations and what is caught in them stay local, in case a redaction misses something.\n**/raw/sources/conversations-*/\n**/raw/sources/diagnosis-*/\n# Founder-supplied originals stay out of git (EE-070).\n**/raw/**/original.*\n# A data stream's activity (bank transactions, CRM events) stays out of git; only its stream.json and summary.md are versioned.\n/*/_streams/*/*\n!/*/_streams/*/stream.json\n!/*/_streams/*/summary.md\n/k-base/*/_streams/*/*\n!/k-base/*/_streams/*/stream.json\n!/k-base/*/_streams/*/summary.md\n");
+
+// Venture programs (EE-161): one example program and one example done-criterion, run on the venture runtime with
+// `naive run src/naive/hello.ts` and named by a handoff criterion with `runs: "effect"`. A plain async function works too.
+const programs = {
+  "src/naive/hello.ts": `// A venture program: naive run src/naive/hello.ts
+// The default export is an Effect, or a function of { dir } that returns a value, a promise or an Effect. It runs on
+// the venture runtime Naive provides, with the same copy of Effect Naive uses (the pin in package.json).
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import { Effect } from "effect";
+
+export default ({ dir }: { dir: string }) => Effect.gen(function* () {
+  const venture = yield* Effect.try(() => JSON.parse(readFileSync(join(dir, "venture.json"), "utf8")) as { name?: string });
+  return \`\${venture.name ?? "this venture"} runs on Effect\`;
+});
+`,
+  "src/naive/done/venture-named.ts": `// A done-criterion as a venture program. Name it in a handoff:
+//   { "id": "named", "kind": "conformance", "runs": "effect", "check": "src/naive/done/venture-named.ts" }
+// It passes when it succeeds and returns neither false nor { passed: false }; output is what the evidence keeps.
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import { Effect } from "effect";
+
+export default ({ dir }: { dir: string }) => Effect.sync(() => {
+  const venture = JSON.parse(readFileSync(join(dir, "venture.json"), "utf8")) as { name?: string };
+  return { passed: Boolean(venture.name), output: venture.name ? \`named \${venture.name}\` : "venture.json has no name" };
+});
+`,
+};
+for (const [file, text] of Object.entries(programs)) {
+  const path = join(dir, file);
+  if (existsSync(path)) continue;
+  mkdirSync(dirname(path), { recursive: true });
+  writeFileSync(path, text);
+}
 
 // Editor completion for records (I-26): every record file is mapped to its JSON Schema in the installed framework.
 const { routes } = await import(fwModule("packages/naive/src/router/router.ts"));

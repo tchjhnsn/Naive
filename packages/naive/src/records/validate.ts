@@ -7,9 +7,8 @@
 // Exit 0: valid. Exit 1: a record failed. Exit 2: the checker itself failed, so a caller must not record
 // that as a reject.
 //
-// It is .mjs with JSDoc types, not .ts, because the write path will import it, and an app that installs
-// Naive runs it from node_modules, where Node does not strip types. It becomes .ts when Naive ships compiled
-// JavaScript.
+// Effect code checks records through RecordValidator and decodes them through record views (record-validator.ts),
+// which run this validator; this module stays plain functions so code that is not Effect calls it directly.
 //
 // It covers the JSON Schema 2020-12 keywords Naive's schemas use, and fails with exit 2 on a schema keyword
 // it does not know, so a new keyword cannot be silently ignored. Formats: only "date" is checked, the

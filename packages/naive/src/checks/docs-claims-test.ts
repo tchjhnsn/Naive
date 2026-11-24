@@ -16,7 +16,8 @@ const expect = (name: string, text: string, ok: boolean, pattern?: RegExp | null
   console.log(`${good ? "pass" : "FAIL"}  ${name}${good ? "" : `\n${r.stdout}${r.stderr}`}`);
 };
 expect("a built command, flag, file and route pass", "Run `naive phase --meet x --evidence y`, see `packages/naive/src/checks/check-docs-claims.ts`, read `foundation/problem`, keep `k-base/raw/` and `artifacts/<id>.json`.\n", true);
-expect("an unknown naive command fails", "Run `naive teleport`.\n", false, /naive teleport: packages\/naive\/src\/interfaces\/cli\/naive.ts has no such command/);
+expect("an unknown naive command fails", "Run `naive teleport`.\n", false, /naive teleport: neither packages\/naive\/src\/interfaces\/cli\/naive.ts nor mentura.ts has such a command/);
+expect("a mentura command named naive passes, since naive runs it", "Run `naive decisions --json`.\n", true);
 expect("a flag the command never reads fails", "```sh\nnaive phase --warp 9\n```\n", false, /naive phase --warp/);
 expect("a string literal in the source is not a flag", "```sh\nnaive check --node\n```\n", false, /naive check --node/);
 expect("a missing repo file fails", "See `schema/does-not-exist.mjs`.\n", false, /no such file/);

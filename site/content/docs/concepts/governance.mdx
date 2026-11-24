@@ -1,0 +1,28 @@
+---
+title: Gates and decision rights
+description: Who may decide, which writes stay drafts, and how a person accepts them.
+type: explanation
+status: draft
+lastReviewed: 2026-10-28
+owner: builder
+---
+
+Each record type can name the decision class a write of it is. The venture's decision rights say who owns each class and at what level. When a class escalates to a person, an agent's write is held as a draft in `_drafts/` until a person accepts it.
+
+## Accept a draft
+
+When a draft is waiting, from the repository root:
+
+```sh
+node packages/naive/src/interfaces/cli/mentura.ts accept governance/ownership --venture everything-ecosystem
+```
+
+With no draft waiting, the command exits with an error. That is the signal to write the record first, not a different command. Some accepts ask you to type the route back (EE-051).
+
+## What is gated
+
+These record types are gated today:
+
+<RouteTable gated />
+
+Writes through the MCP server and the HTTP API always count as an agent's. The command line cannot tell a person from an agent, so the gate that holds in the end is the pull request a person merges.

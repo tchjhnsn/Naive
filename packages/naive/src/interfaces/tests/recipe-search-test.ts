@@ -7,8 +7,9 @@
 //
 //   node packages/naive/src/interfaces/tests/recipe-search-test.ts
 
+import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -118,6 +119,21 @@ try {
   const b = await search(small, PATTERN);
   expect("budget: the search stops when the plan's dev evaluations are spent", b.ok && b.spent === 2 && /budget is spent/.test(b.stopped)
     && lines(small).filter((l) => l.verdict === "keep" || l.verdict === "discard").length === 2, b);
+
+  // Durable (EE-161, phase 12c): killed right after its first experiment write lands, the search resumes on the next
+  // run, writes no step twice and ends where the plain search ended.
+  const dur = await venture("durable", 24);
+  writeFileSync(join(dur, "naive.config.json"), JSON.stringify({ durable: { engine: "sqlite" } }, null, 2) + "\n");
+  const marker = join(tmp, "search-killed");
+  const cli = (env: Record<string, string> = {}) => spawnSync("node", [join(repo, "packages/naive/src/router/orchestration/recipe-search.ts"), dur, PATTERN, "--json"], { encoding: "utf8", input: "", env: { ...process.env, ...env } });
+  const died = cli({ NAIVE_DURABLE_KILL: `write/:${marker}` });
+  expect("durable: the first run dies right after its first write lands", died.status !== 0 && existsSync(marker) && lines(dur).length === 1, { status: died.status, signal: died.signal, lines: lines(dur).length, err: died.stderr.slice(-400) });
+  const resumed = cli();
+  const rd = resumed.status === 0 ? JSON.parse(resumed.stdout) as typeof r : null;
+  const dlog = lines(dur);
+  expect("durable: the next run resumes and ends at the plain search's tip", !!rd && rd.ok && rd.tip === r.tip && rd.kept === r.kept && rd.steps.length === r.steps.length, { status: resumed.status, err: resumed.stderr.slice(-600), rd: rd && { tip: rd.tip, kept: rd.kept, steps: rd.steps.length }, want: { tip: r.tip, kept: r.kept, steps: r.steps.length } });
+  expect("durable: no step is written twice, and the spent count matches the log", new Set(dlog.map((l) => l.candidate)).size === dlog.length && dlog.length === r.steps.length && rd?.spent === dlog.filter((l) => l.verdict === "keep" || l.verdict === "discard").length, { lines: dlog.length, spent: rd?.spent });
+  expect("durable: the run is closed, so the next search starts afresh", !existsSync(join(dur, ".naive/durable-runs")) || readdirSync(join(dur, ".naive/durable-runs")).length === 0);
 
   // A factor that is not above 1 is refused.
   const bad = await search(small, PATTERN, { factor: 1 });

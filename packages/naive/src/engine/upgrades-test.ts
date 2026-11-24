@@ -40,9 +40,9 @@ writeFileSync(join(a, "knowledge/where-used.json"), JSON.stringify({ facts: [{ i
 writeFileSync(join(a, "naive.config.json"), JSON.stringify({ kits: ["validation", "agent-upgrade", "made-up"], gate: { fail_closed: [] } }, null, 2));
 const before = snapshot(a);
 const dry = naive(["upgrade", a, "--check"]);
-expect("upgrade --check says what it would do and changes nothing", dry.status === 0 && /would upgrade alpha from Naive 0\.1\.0 to 0\.3\.0/.test(dry.stdout) && JSON.stringify(snapshot(a)) === JSON.stringify(before), dry.stdout + dry.stderr);
+expect("upgrade --check says what it would do and changes nothing", dry.status === 0 && new RegExp(`would upgrade alpha from Naive 0\\.1\\.0 to ${reg.framework.replace(/\./g, "\\.")}`).test(dry.stdout) && JSON.stringify(snapshot(a)) === JSON.stringify(before), dry.stdout + dry.stderr);
 const up = naive(["upgrade", a]);
-expect("naive upgrade moves the venture from 0.1.0 to the installed framework", up.status === 0 && /upgraded alpha from Naive 0\.1\.0 to 0\.3\.0/.test(up.stdout), up.stdout + up.stderr);
+expect("naive upgrade moves the venture from 0.1.0 to the installed framework", up.status === 0 && new RegExp(`upgraded alpha from Naive 0\\.1\\.0 to ${reg.framework.replace(/\./g, "\\.")}`).test(up.stdout), up.stdout + up.stderr);
 const cfg = json(join(a, "naive.config.json"));
 expect("the framework and its channel are pinned in naive.config.json", cfg.naive?.version === reg.framework && cfg.naive.channel === "stable");
 expect("every package the venture uses is pinned to its installed version", ["foundation", "validation", "product", "raw", "decisions"].every((p) => cfg.packages?.[p]?.version === reg.packages[p].version), JSON.stringify(cfg.packages));
@@ -57,7 +57,7 @@ expect("kit-to-package rewrites team-plan access to package routes", plan2.roles
 expect("a route glob that spans several packages is escalated, not rewritten", plan2.roles[0].routes.read[0] === "purpose/**" && /purpose\/\*\* spans routes/.test(up.stdout));
 expect("kit-to-package rewrites the where-used parent route", json(join(a, "knowledge/where-used.json")).facts[0].parent.route === "product/alpha-app");
 const rel: Awaited<ReturnType<typeof upgrade>>["release"] = json(join(a, `.release/upgrade-${reg.framework}.json`));
-expect("the release record lists each migration, the packages pinned and the guides", rel.from === "0.1.0" && rel.migrations.map((m) => m.id).join() === "package-layout,kit-to-package,icp-profiles,telos-to-goals" && rel.guides.length === 2 && rel.packages.length > 5);
+expect("the release record lists each migration, the packages pinned and the guides", rel.from === "0.1.0" && rel.migrations.map((m) => m.id).join() === "package-layout,kit-to-package,effect-pin,icp-profiles,telos-to-goals" && rel.guides.length === 3 && rel.packages.length > 5);
 const log = entries(a);
 expect("each move, rewrite and pin is a provenance line, and the chain holds", log.some((e) => e.activity === "move" && e.entity === "people/team-plan.json") && log.some((e) => e.activity === "write" && e.entity === "people/team-plan.json" && e.agent?.id === "naive-upgrade") && log.some((e) => e.entity === "naive.config.json") && run("packages/naive/src/checks/check-provenance.ts", [a]).status === 0);
 const read = mentura(["purpose/validation/problem", "read", "--venture", "alpha"]);
