@@ -12,12 +12,13 @@
 //   - an element's parent is missing (a process group's is its category N.0, every other element's is its id less
 //     the last part);
 //   - the children of a category, an element or the framework itself are not numbered 1 to n with no gap;
-//   - there are not exactly 13 categories.
+//   - there are not exactly 13 categories;
+//   - the tool catalog drifts from it: a process group in packages/naive/src/functions/tools.json is not a level 2
+//     element here, its name or element id differs from APQC's, or a level 2 element here is not in tools.json.
 // Element ids are not required to be unique, because APQC files a few elements at two hierarchy ids (PCF 8.0 has
 // four: 19950, 19951, 14197 and 10530).
-// --json prints the counts per level and per category, and tool_catalog_drift: each process group in
-// packages/naive/src/functions/tools.json whose id is missing here or whose name or element id differs, and each
-// process group here that tools.json does not have. Drift is reported, never a failure: tools.json is on PCF 7.4.
+// --json prints the counts per level and per category, and tool_catalog_drift, the same drift as data (empty when
+// the check passes).
 //
 // It reads files through VentureFs (EE-125). Findings exit 1; pcf.json, tools.json or a references file that cannot be
 // read exits 2.
@@ -117,6 +118,12 @@ export function toolCatalogDrift(pcf: Pcf, groups: Group[]): Drift[] {
   return out;
 }
 
+/** A drift entry as a finding. */
+export const driftError = (d: Drift): string =>
+  d.kind === "missing" ? `${TOOLS}: process group ${d.id} (${d.tools.name}) is not a level 2 element of ${PCF}`
+    : d.kind === "not-in-tools" ? `${TOOLS}: process group ${d.id} (${d.pcf.name}) of ${PCF} is missing`
+      : `${TOOLS}: process group ${d.id} differs from ${PCF} in ${d.fields.join(" and ")}: APQC has ${JSON.stringify(d.pcf.name)}, element id ${d.pcf.pcf}`;
+
 const read = (file: string) => readJson(join(root, file)).pipe(Effect.mapError((e) => new CannotRun({ message: `${file}: ${describe(e)}`, cause: e })));
 
 /** Reads pcf.json, the tool catalog and the references, and checks the PCF. */
@@ -134,10 +141,11 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const json = process.argv.includes("--json");
   await runMain(Effect.map(checkPcf, ({ errors, pcf, groups }) => {
     const drift = pcf ? toolCatalogDrift(pcf, groups) : [];
+    errors.push(...drift.map(driftError));
     if (json && pcf) console.log(JSON.stringify({ ok: !errors.length, errors, version: pcf.version, edition: pcf.edition, ...counts(pcf), tool_catalog_drift: drift }, null, 2));
     if (errors.length) { if (!json) for (const e of errors) console.error(`FAIL  ${e}`); process.exitCode = 1; return; }
     if (json || !pcf) return;
     const { levels } = counts(pcf);
-    console.log(`PCF ${pcf.version} ${pcf.edition}: ${LEVELS.map((l) => `${levels[l]} ${l}`).join(", ")}. Tool catalog drift: ${drift.length} process groups that tools.json numbers, names or identifies differently, or lacks (--json lists them).`);
+    console.log(`PCF ${pcf.version} ${pcf.edition}: ${LEVELS.map((l) => `${levels[l]} ${l}`).join(", ")}. The tool catalog's process groups match it.`);
   }));
 }

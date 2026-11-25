@@ -26,7 +26,7 @@
     "process_groups": {
       "type": "array",
       "minItems": 1,
-      "description": "APQC Process Classification Framework level 2 groups (cross-industry, version 7.4 names), each under the function whose APQC id is its prefix.",
+      "description": "APQC Process Classification Framework level 2 groups (cross-industry, version 8.0 ids and names, as in packages/naive/src/functions/pcf.json), each under the function whose APQC id is its prefix.",
       "items": {
         "type": "object",
         "required": ["id", "function", "name"],
@@ -35,7 +35,7 @@
           "id": { "type": "string", "pattern": "^\\d{1,2}\\.\\d{1,2}$", "description": "The APQC hierarchy id, such as 3.5." },
           "function": { "type": "string", "pattern": "^[a-z0-9-]+$", "description": "An id in packages/naive/src/functions/departments.json whose apqc.id is this group's prefix." },
           "name": { "type": "string", "minLength": 1 },
-          "pcf": { "type": "integer", "description": "APQC's element id for the group, where the research recorded it." }
+          "pcf": { "type": "integer", "description": "APQC's element id for the group." }
         }
       }
     },
