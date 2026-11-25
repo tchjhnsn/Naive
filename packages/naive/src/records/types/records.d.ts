@@ -31,6 +31,28 @@ export type Account = {
 export type ActivityCatalog = {
   version: string;
   note?: string;
+  /** The rules by which scores propose a decision (EE-169). A rule picks the rated activities whose scores meet every condition, and packages/naive/src/engine/activity-proposals.ts files one open decision per rule and function for a person. A rule's lines are unvalidated priors: no line has been compared with an outcome. A rule never decides anything. */
+  proposal_rules?: {
+    id: string;
+    /** The conditions an activity's scores must all meet. An activity with no score on a named scale does not match. */
+    when: ({
+      scale: "regulatory-restriction" | "physical-deployment" | "cognitive-complexity" | "verification" | "importance" | "share" | "frequency";
+      /** The score is this or higher. */
+      at_least?: number;
+      /** The score is this or lower. */
+      at_most?: number;
+    } & ({
+      /** The score is this or higher. */
+      at_least: number;
+    } | {
+      /** The score is this or lower. */
+      at_most: number;
+    }))[];
+    /** The question the decision puts to a person about the matching activities. */
+    asks: string;
+    /** Why the lines sit where they do, and that they are unvalidated. */
+    basis: string;
+  }[];
   /** The published scales an activity may be scored on. A rating's value must sit inside its scale's range. */
   scales: {
     /** regulatory-restriction, physical-deployment and cognitive-complexity are from the CDR taxonomy; verification from the RL feasibility index; importance, share and frequency from O*NET. */
