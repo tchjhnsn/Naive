@@ -179,6 +179,33 @@
       "pattern": "^[0-9a-f]{64}$",
       "description": "sha256 of prev followed by this line without its hash field, as JSON with sorted keys"
     },
+    "rechained_from": {
+      "type": "object",
+      "required": [
+        "hash",
+        "prev",
+        "working_copy"
+      ],
+      "additionalProperties": false,
+      "description": "A line a working copy wrote offline and a push wrote again on top of the store's chain (EE-177, docs/design/OFFLINE_SYNC_2026-11-25.md). The line keeps its own time, entity, activity and agent, so the push does not claim the write; prev and hash are the store chain's. This block names where the line came from, as a rebase keeps the original commit, and makes the original hash checkable: it is the hash of this line with prev set to rechained_from.prev and this block left out.",
+      "properties": {
+        "hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "The line's hash in the working copy's own log, before it was written again"
+        },
+        "prev": {
+          "type": "string",
+          "pattern": "^([0-9a-f]{64}|genesis)$",
+          "description": "The line's prev in the working copy's own log, so the original hash can be recomputed"
+        },
+        "working_copy": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The id of the working copy the line came from (working_copy in <venture>/.naive/sync.json)"
+        }
+      }
+    },
     "statement": {
       "type": "string",
       "pattern": "^[a-z0-9-]+$",
