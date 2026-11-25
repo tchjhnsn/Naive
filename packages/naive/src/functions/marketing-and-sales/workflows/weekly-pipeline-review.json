@@ -6,7 +6,7 @@
   "reads": ["sales/opportunities", "customers", "foundation/icp", "purpose/competitor", "governance/publication-policy"],
   "steps": [
     { "id": "find-unanswered", "do": "List leads with no first response, and for each draft the reply for the founder to send.", "skill": "pipeline-review", "raises": ["public-commitment"] },
-    { "id": "check-stages", "do": "For each open opportunity, check its qualification against its stage and its stage age, move it where the evidence says, and propose closing the ones with no next step.", "skill": "pipeline-review", "writes": ["sales/opportunities/[id]"] },
+    { "id": "check-stages", "do": "For each open opportunity, check its qualification against its stage and its stage age, move it where the evidence says, and propose closing the ones with no next step.", "skill": "pipeline-review", "writes": ["sales/opportunities/[id]"], "activity": "3.5.1.6" },
     { "id": "record-outcomes", "do": "For each opportunity closed this week, write the win-loss reason and who gave it, and write a customer record for each win.", "skill": "pipeline-review", "writes": ["sales/opportunities/[id]", "customers/[id]"] },
     { "id": "route-asks", "do": "Send features buyers asked for to products and service complaints to customer service as handoffs.", "writes": ["operations/handoff/[id]"], "raises": ["defer-or-route"] },
     { "id": "propose-focus", "do": "Count this week's loss reasons and sources, and propose to the growth lead which opportunities and channels to work next week.", "raises": ["set-priorities"] }
