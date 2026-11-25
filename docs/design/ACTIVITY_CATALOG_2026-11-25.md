@@ -1,6 +1,6 @@
 # The activity catalog
 
-Date: 2026-11-25. Decisions: EE-164, EE-165, EE-166, EE-167, EE-168, EE-169. Status: the record type, the scales, the check and the generator are built, and APQC's Process Classification Framework 8.0, levels 1 to 5, is built as `packages/naive/src/functions/pcf.json`; the catalog holds a first seed of 38 activities from SciNet, and the rest is listed under Not built.
+Date: 2026-11-25. Decisions: EE-164, EE-165, EE-166, EE-167, EE-168, EE-169, EE-170. Status: the record type, the scales, the check and the generator are built, and APQC's Process Classification Framework 8.0, levels 1 to 5, is built as `packages/naive/src/functions/pcf.json`; the catalog holds a first seed of 38 activities from SciNet, and the rest is listed under Not built.
 
 ## Domain
 
@@ -70,6 +70,21 @@ A score is one rater's judgment. Every rated activity names who rated it, on wha
 - `packages/naive/src/functions/activities.json` is the catalog: `version`, `note`, `scales` (the seven above) and `activities`.
 - A workflow step may name the activity it performs (EE-168): `activity` on a step in `packages/naive/src/functions/<function>/workflows/<id>.json` is the hierarchy id of an APQC level 4 activity in `pcf.json`, such as 3.5.1.6 Manage opportunity pipeline, or the id of an activity in `activities.json`. `check-functions.ts` fails when it names neither or sits under another function's APQC category.
 - Scores propose decisions (EE-169): the catalog's `proposal_rules` are data, each `{id, when, asks, basis}`. `when` lists lines on scales, and an activity matches when its scores meet every line; an activity with no score on a named scale does not match. The two rules are `agent-with-checked-result` (verification at least 7, physical deployment at most 1, regulatory restriction at most 1) and `person-approves-restricted` (regulatory restriction at least 2). Their lines are unvalidated priors. `naive activities list` prints, for each function the venture lists in venture.json departments, the rated cross-industry activities each rule finds, and writes nothing. `naive activities propose` files one open decision per rule and function, `activity-<rule>-<function>`, through the decision door as the agent `activity-proposals`, with each activity, the scores the rule read and who rated it in the note. A rerun leaves a decision already filed, open or decided, as it is. It edits no catalog, workflow or other record (`packages/naive/src/engine/activity-proposals.ts`).
+- A venture's own lines (EE-170): `activity_proposals.rules` in `naive.config.json` maps a rule id to `off`, so the rule proposes nothing in that venture, or to `{ when }`, lines that replace all of the catalog's for that rule. A rule left out keeps the catalog's lines. The decision id is the same either way, and the note says the lines are the venture's and that the catalog's basis was written for the catalog's lines. `packages/naive/src/checks/check-config.ts` and `naive activities` refuse a rule id the catalog lacks, a scale it does not list, a line outside the scale's range and lines no score meets. A decision already filed is left as it is when the lines change.
+
+```mermaid
+flowchart LR
+  C[activities.json proposal_rules] --> M{venture set this rule?}
+  V[naive.config.json activity_proposals.rules] --> M
+  M -- no --> L1[catalog's lines]
+  M -- "{ when }" --> L2[venture's lines]
+  M -- off --> N[no proposal]
+  L1 --> F[find matching activities per function]
+  L2 --> F
+  F --> D[open decision activity-rule-function]
+  D --> P[a person decides]
+```
+
 - The seed (EE-167): `node scripts/import-scinet.ts` wrote 38 activities under process group 3.1, process 3.1.1 Perform customer and market intelligence analysis. They are SciNet v1.10.0's Data Gathering and Data Analysis tasks for the subfields Entrepreneurship & Innovation and Marketing, and the universal task of obtaining ethical approval and informed consent. Each keeps SciNet's statement, names SciNet as its source, and carries SciNet's scores. Those scores rate the task as researchers perform it, and each activity's `rated.basis` says it is not rated for a business. A rerun on the same release writes the same bytes, and the script replaces only SciNet's activities under the process group it is given.
 - `packages/naive/src/records/activity-catalog.schema.json` is its schema, with `additionalProperties: false` on every object. An activity is `{id, process_group, process?, statement, scope, source?, ratings?, rated?}`. `scope` is `{kind: "cross-industry"}` or `{kind: "industry", naics}`. `source` is `{ref, locator?, changed?}`, where `changed` says the statement was reworded from the source. `rated` (`{by, on, basis}`) is required when `ratings` is present.
 - The record type `activity-catalog` is in `packages/naive/src/records/data-model.json` (operations layer, no function, method level) and in the operations layer manifest. Its type is `ActivityCatalog` in `packages/naive/src/records/types/records.d.ts`.
@@ -82,7 +97,7 @@ A score is one rater's judgment. Every rated activity names who rated it, on wha
 
 - Requiring an activity to name its PCF process. `process` is still optional.
 - Naming an activity on every workflow step. The field is optional, and two steps of the marketing and sales workflows name one so far.
-- Lines per venture for the proposal rules. The lines are the catalog's, and a venture cannot yet set its own.
+- Proposing a venture's lines from its market and industry, as gate calibration does for the phase gates. A person writes them by hand.
 - Proposals for an activity of one NAICS industry. Matching it to the venture's industry is not built.
 - Applying an accepted proposal. A person's answer changes no workflow step, decision level or done-criterion on its own.
 - Rating the seeded activities for a business. The scores are SciNet's, for researchers.
