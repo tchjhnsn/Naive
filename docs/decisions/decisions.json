@@ -2244,6 +2244,33 @@
       ]
     },
     {
+      "id": "EE-172",
+      "date": "2026-11-25",
+      "status": "in-force",
+      "decision": "A person's answer to an activity proposal is applied through the decision's own merge. A proposal rule may name what its answer sets: a field of the venture's activity assignments, operations/activity-assignments.json, either performer (agent or person) or approval (person or none). The decision the rule files offers that field's values as its options and names one applies_to field per activity found. A person decides, and merging the decided answer writes it for each activity after checking the file against its schema, so an answer outside the options is refused. The record type is activity-assignments. Nothing reads the assignments yet.",
+      "why": "EE-169 let scores propose a decision, and a person's answer to it changed nothing. Decisions already have applies_to and a merge that is separate from approving, can be delegated, is checked against the target's schema and is logged in provenance, so applying an answer needs no new mechanism, only a record to write to and a rule that says which field. Taking the options from the assignments schema keeps one list of allowed values. A person still decides and a person still merges, so a score never changes who does the work.",
+      "related": [
+        "EE-058",
+        "EE-164",
+        "EE-169",
+        "EE-170"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/records/activity-assignments.schema.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/activity-proposals.ts",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
       "id": "EE-151",
       "date": "2026-11-19",
       "status": "in-force",

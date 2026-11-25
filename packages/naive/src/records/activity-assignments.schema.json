@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Activity assignments",
+  "description": "Who performs each activity of the activity catalog in this venture, and whether a person approves it first (EE-172). A person's decided answer to an activity proposal is merged into it (packages/naive/src/engine/activity-proposals.ts). The file is operations/activity-assignments.json.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "activities"
+  ],
+  "properties": {
+    "activities": {
+      "type": "object",
+      "description": "Per activity id in packages/naive/src/functions/activities.json",
+      "propertyNames": {
+        "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "performer": {
+            "enum": [
+              "agent",
+              "person"
+            ],
+            "description": "Who performs the activity: an agent, with a person checking a sample of the results, or a person"
+          },
+          "approval": {
+            "enum": [
+              "person",
+              "none"
+            ],
+            "description": "Whether a person approves the activity each time before it is done"
+          }
+        }
+      }
+    }
+  }
+}
