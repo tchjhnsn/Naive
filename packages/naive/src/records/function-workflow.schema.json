@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "function-workflow.schema.json",
   "title": "Function workflow",
-  "description": "One recurring piece of a function's work, at packages/naive/src/functions/<id>/workflows/<workflow id>.json: what starts it, the steps the function's agent takes, the records each step writes through the router, the decision classes a step may raise, and the done criteria in the handoff's form (handoff.schema.json done_criteria), so a workflow run can be handed off and verified like any other work. Every route a step writes must be in the function's write reach, and every class it raises must have a row in the function's decisions.json (packages/naive/src/checks/check-functions.ts).",
+  "description": "One recurring piece of a function's work, at packages/naive/src/functions/<id>/workflows/<workflow id>.json: what starts it, the steps the function's agent takes, the records each step writes through the router, the decision classes a step may raise, the activity a step performs, and the done criteria in the handoff's form (handoff.schema.json done_criteria), so a workflow run can be handed off and verified like any other work. Every route a step writes must be in the function's write reach, and every class it raises must have a row in the function's decisions.json and every activity a step names must be an APQC activity or a catalog activity under the function's APQC category (packages/naive/src/checks/check-functions.ts).",
   "type": "object",
   "required": ["id", "function", "title", "trigger", "steps", "done_criteria"],
   "additionalProperties": false,
@@ -34,7 +34,12 @@
           "skill": { "type": "string", "pattern": "^[a-z0-9-]+$", "description": "A skill in the function's skills/ folder to load for this step." },
           "ask": { "type": "boolean", "description": "True when the step asks the person, because only they know the answer." },
           "writes": { "type": "array", "items": { "type": "string" }, "description": "Route patterns this step writes." },
-          "raises": { "type": "array", "items": { "type": "string", "pattern": "^[a-z0-9-]+$" }, "description": "Decision classes this step may raise." }
+          "raises": { "type": "array", "items": { "type": "string", "pattern": "^[a-z0-9-]+$" }, "description": "Decision classes this step may raise." },
+          "activity": {
+            "type": "string",
+            "pattern": "^(\\d{1,2}(\\.\\d{1,2}){3}|[a-z0-9]+(-[a-z0-9]+)*)$",
+            "description": "The activity this step performs: the hierarchy id of an APQC level 4 activity in packages/naive/src/functions/pcf.json, such as 3.5.1.6, or the id of an activity in packages/naive/src/functions/activities.json. It must sit under the function's APQC category."
+          }
         }
       }
     },

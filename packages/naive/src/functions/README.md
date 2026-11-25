@@ -14,7 +14,7 @@ A module is complete when it has every piece below; `node packages/naive/src/che
 |---|---|
 | `function.json` | Purpose, intake workflow, telos measure kinds, capability clusters (`packages/naive/src/records/function-module.schema.json`). Records owned, lead and write reach are derived from the data model, the lead role templates and the route table |
 | `agent.md` | The function agent's instructions, harness-neutral, with frontmatter `role: <id>-agent` and `function: <id>` |
-| `workflows/<id>.json` | At least two: the intake and the recurring work, each with a trigger, steps, the routes each writes, the classes it raises and done criteria (`packages/naive/src/records/function-workflow.schema.json`) |
+| `workflows/<id>.json` | At least two: the intake and the recurring work, each with a trigger, steps, the routes each writes, the classes it raises, optionally the activity a step performs (an APQC level 4 activity in `pcf.json` or an activity in `activities.json`, under the function's APQC category, EE-168) and done criteria (`packages/naive/src/records/function-workflow.schema.json`) |
 | `decisions.json` | The decision matrix: decide, recommend or escalate per decision class; one-way doors and never-redelegated classes are always escalate (`packages/naive/src/records/function-decisions.schema.json`) |
 | `skills/` | At least one skill a workflow step loads |
 
