@@ -120,6 +120,7 @@ const steps: Step[] = [
   ["vendored check breaks on copies", "node", ["scripts/vendored-test.ts"]],
   ["to-ts: references to a converted module are rewritten, others left", "node", ["scripts/to-ts-test.ts"]],
   ["import-pcf: APQC's PCF hierarchy is written to pcf.json sorted and one element per line, the same hierarchy always gives the same bytes, and the committed file is its output (EE-165)", "node", ["scripts/import-pcf-test.ts"]],
+  ["activity proposals: a rule picks rated cross-industry activities whose scores meet every condition, under the functions the venture lists; propose files one open decision per rule and function once, and a decided one is left alone (EE-169)", "node", ["packages/naive/src/engine/activity-proposals-test.ts"]],
   ["import-scinet: SciNet's tasks become activities with their statement, source and scores, a rerun writes the same bytes, and other activities are kept (EE-167)", "node", ["scripts/import-scinet-test.ts"]],
   ["activity (active minutes, days in the venture's zone, streak)", "node", ["packages/naive/src/engine/activity-test.ts"]],
   ["telos: examples", "node", ["packages/naive/src/checks/check-telos.ts", "packages/naive/src/records/examples/workspace"]],
