@@ -2393,6 +2393,39 @@
       ]
     },
     {
+      "id": "EE-178",
+      "date": "2026-11-25",
+      "status": "in-force",
+      "decision": "The offline sync client is `naive sync link|pull|push|status` over one engine module, packages/naive/src/engine/sync.ts. A working copy keeps its own sync state in .naive/sync.json: the host, the business, this copy's id, the sync point and the base version and base content hash of each record. Pull merges base, local and store with mergeRecord, takes the base content from the blob store by that hash, writes each merged record with a provenance line, files each same-field conflict with fileConflicts, copies down the files records name by sha256, and moves the point last; a merge that brought local fields in must still pass the record's schema, or the store's value stands and a decision holds the local one. Push sends every record whose bytes differ from its base, each with its base version, uploads the file hashes the host is missing first, carries the provenance lines the host does not have, and on a 409 pulls, merges and retries at most twice. One filter, syncable(path), governs both directions: a JSON record the data model owns that a record route takes writes for, so no log, no derived file, no .env file, nothing under .naive/, _eval/ or _private/, no record marked private or sensitive, and not venture.json, which no route claims. A device sign-in token lives in the operating system's keychain (security on macOS, secret-tool on Linux) or in ~/.config/naive/credentials.json with mode 0600, never in the business folder. The host comes from --host or sync.host in naive.config.json, the HTTP client is injectable, and every command is refused when NAIVE_RUNTIME=hosted.",
+      "why": "EE-174 settled how a working copy and a business store come back together; this is the client half, and the choices it had to make. The base content comes from the blob store because that is where every write already puts the bytes its provenance line names (EE-031), so a three-way merge needs no second copy. The base is always the store's content at the version last seen, even after a merge, so the next merge asks the right question. The sync state is derived and local to one copy, so it is never synced and a full pull rebuilds it. Records changed are found by hashing bytes rather than by a dirty list, so a pull or push that stopped halfway converges on a rerun and a pull after a pull writes nothing. The data model already says which paths are records, which are logs and which are derived, and the route table already says which of those a route takes writes for, so the filter reads both instead of keeping a second list that could drift; the host writes each accepted change through its own router, so a path no route claims would be refused whole, and the two ends agree by construction. The explicit never-send list is the guard for the paths the data model does call records inside .naive/ and _eval/. The same filter guards what a pull writes, so a host cannot push a path into a working copy that the working copy would never send. The token is in the keychain because a business folder is in git. Naive names no vendor, so there is no default host. Hosted mode is refused because a hosted store is the store.",
+      "related": [
+        "EE-031",
+        "EE-072",
+        "EE-174",
+        "EE-175"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/sync.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/sync-credentials.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/sync-test.ts",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
       "id": "EE-154",
       "date": "2026-11-19",
       "status": "in-force",
