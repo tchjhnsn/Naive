@@ -27,6 +27,19 @@ export type Account = {
   note?: string;
 };
 
+/** Who performs each activity of the activity catalog in this venture, and whether a person approves it first (EE-172). A person's decided answer to an activity proposal is merged into it (packages/naive/src/engine/activity-proposals.ts). The file is operations/activity-assignments.json. */
+export type ActivityAssignments = {
+  /** Per activity id in packages/naive/src/functions/activities.json */
+  activities: {
+    [key: string]: {
+      /** Who performs the activity: an agent, with a person checking a sample of the results, or a person */
+      performer?: "agent" | "person";
+      /** Whether a person approves the activity each time before it is done */
+      approval?: "person" | "none";
+    };
+  };
+};
+
 /** The catalog of activities at packages/naive/src/functions/activities.json (EE-164). An activity is a unit of work (APQC level 4) written as an O*NET task statement and filed under an APQC level 2 process group from packages/naive/src/functions/tools.json, optionally under a level 3 process. Its scope is cross-industry or one NAICS industry. It may be scored on the published scales the catalog lists, and a scored activity names who rated it, when and on what basis. Every object allows only the properties listed. packages/naive/src/checks/check-activities.ts checks it across files. */
 export type ActivityCatalog = {
   version: string;
@@ -48,6 +61,8 @@ export type ActivityCatalog = {
       /** The score is this or lower. */
       at_most: number;
     }))[];
+    /** The field of packages/naive/src/records/activity-assignments.schema.json this rule's decided answer sets for each activity it found. The decision then offers that field's values as its options and names operations/activity-assignments.json in applies_to, so a merge writes the answer (EE-172). A rule without it changes nothing when answered. */
+    sets?: "performer" | "approval";
     /** The question the decision puts to a person about the matching activities. */
     asks: string;
     /** Why the lines sit where they do, and that they are unvalidated. */

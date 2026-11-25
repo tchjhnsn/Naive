@@ -954,6 +954,26 @@
       "note": "APQC's Process Classification Framework 8.0, cross-industry, levels 1 to 5 (EE-165): each element's hierarchy id, name verbatim from APQC and element id, with the attribution APQC's licence requires. Written by scripts/import-pcf.ts"
     },
     {
+      "id": "activity-assignments",
+      "layer": "operations",
+      "function": null,
+      "level": "venture",
+      "schema": "packages/naive/src/records/activity-assignments.schema.json",
+      "generator": "packages/naive/src/engine/generators/activity-assignments.ts",
+      "paths": [
+        "instance/**/operations/activity-assignments.json",
+        "packages/naive/src/records/examples/**/operations/activity-assignments.json"
+      ],
+      "refs": [
+        {
+          "field": "activities",
+          "to": "activity-catalog",
+          "checked_by": "packages/naive/src/engine/activity-proposals.ts"
+        }
+      ],
+      "note": "Who performs each activity of the activity catalog in this venture, agent or person, and whether a person approves it first (EE-172). Written by merging a person's decided answer to an activity proposal; nothing reads it yet"
+    },
+    {
       "id": "activity-catalog",
       "layer": "operations",
       "function": null,
