@@ -7,7 +7,7 @@
   "steps": [
     { "id": "read-what-exists", "do": "Read the customer profiles, customers, opportunities, brand and publication policy, and list what is missing, most needed first." },
     { "id": "ask-customers", "do": "Ask the founder who pays or uses the venture today, and write one customer record for each.", "ask": true, "writes": ["customers/[id]"] },
-    { "id": "ask-pipeline", "do": "Ask who is talking to the venture about buying, how each one arrived and what is known about their buyer, pain and decision, and write one opportunity for each.", "skill": "pipeline-review", "ask": true, "writes": ["sales/opportunities/[id]"] },
+    { "id": "ask-pipeline", "do": "Ask who is talking to the venture about buying, how each one arrived and what is known about their buyer, pain and decision, and write one opportunity for each.", "skill": "pipeline-review", "ask": true, "writes": ["sales/opportunities/[id]"], "activity": "3.5.1.2" },
     { "id": "ask-brand", "do": "Ask for the venture's name as customers see it, its voice rules and its colors, and draft the brand record for the founder to accept.", "ask": true, "writes": ["marketing/brand"], "raises": ["public-commitment"] },
     { "id": "summarize", "do": "Tell the founder how many customers and open opportunities there are, which have no reply or no next step, and which channel most opportunities came from, each count citing the records; propose to the growth lead which channels to test first.", "raises": ["set-priorities"] }
   ],

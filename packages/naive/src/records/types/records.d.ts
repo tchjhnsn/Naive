@@ -2035,7 +2035,7 @@ export type FunctionModule = {
   note?: string;
 };
 
-/** One recurring piece of a function's work, at packages/naive/src/functions/<id>/workflows/<workflow id>.json: what starts it, the steps the function's agent takes, the records each step writes through the router, the decision classes a step may raise, and the done criteria in the handoff's form (handoff.schema.json done_criteria), so a workflow run can be handed off and verified like any other work. Every route a step writes must be in the function's write reach, and every class it raises must have a row in the function's decisions.json (packages/naive/src/checks/check-functions.ts). */
+/** One recurring piece of a function's work, at packages/naive/src/functions/<id>/workflows/<workflow id>.json: what starts it, the steps the function's agent takes, the records each step writes through the router, the decision classes a step may raise, the activity a step performs, and the done criteria in the handoff's form (handoff.schema.json done_criteria), so a workflow run can be handed off and verified like any other work. Every route a step writes must be in the function's write reach, and every class it raises must have a row in the function's decisions.json and every activity a step names must be an APQC activity or a catalog activity under the function's APQC category (packages/naive/src/checks/check-functions.ts). */
 export type FunctionWorkflow = {
   /** The file's name without .json. */
   id: string;
@@ -2063,6 +2063,8 @@ export type FunctionWorkflow = {
     writes?: string[];
     /** Decision classes this step may raise. */
     raises?: string[];
+    /** The activity this step performs: the hierarchy id of an APQC level 4 activity in packages/naive/src/functions/pcf.json, such as 3.5.1.6, or the id of an activity in packages/naive/src/functions/activities.json. It must sit under the function's APQC category. */
+    activity?: string;
   }[];
   done_criteria: {
     id: string;
