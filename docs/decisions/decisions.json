@@ -2197,6 +2197,33 @@
       ]
     },
     {
+      "id": "EE-170",
+      "date": "2026-11-25",
+      "status": "in-force",
+      "decision": "A venture sets its own lines for the activity catalog's proposal rules in naive.config.json. activity_proposals.rules maps a rule id to off, so the rule proposes nothing in that venture, or to { when }, lines that replace all of the catalog's for that rule. A rule left out keeps the catalog's lines. The decision a rule files keeps its id, and its note says the lines are the venture's. check-config and naive activities refuse a rule id the catalog lacks, a scale it does not list, a line outside the scale's range and lines no score meets. Proposing a venture's lines from its market and industry is not built.",
+      "why": "EE-169 kept the lines in the catalog and called them unvalidated priors. Where a line should sit depends on the venture: a regulated business wants a person's approval at a lower restriction score than the catalog asks, and a venture with no agents has no use for the question of what an agent may do. A threshold is contextual to a venture's market, industry and time, so it is the venture's to set and never fixed in code. Replacing all of a rule's lines, and not merging them scale by scale, keeps what a venture wrote the whole of what applies. Holding the venture's lines to the catalog's rule ids and scales means a typing mistake fails the check and does not silently propose nothing.",
+      "related": [
+        "EE-156",
+        "EE-157",
+        "EE-164",
+        "EE-169"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/activity-proposals.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/records/naive-config.schema.json",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
       "id": "EE-153",
       "date": "2026-11-19",
       "status": "in-force",

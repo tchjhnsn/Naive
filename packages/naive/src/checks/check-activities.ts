@@ -26,6 +26,7 @@ import { Effect } from "effect";
 import { CannotRun } from "../core/effect/errors.ts";
 import { readJson, VentureFs } from "../core/effect/fs.ts";
 import { describe, runMain } from "../core/effect/run.ts";
+import { lineProblems } from "../engine/activity-proposals.ts";
 import { validateValue } from "../records/validate.ts";
 import type { ActivityCatalog } from "../records/types/records.d.ts";
 
@@ -61,12 +62,7 @@ export function catalogErrors(cat: ActivityCatalog, known: Known): string[] {
   twice("scale", cat.scales.map((s) => s.id));
   twice("activity", cat.activities.map((a) => a.id));
   twice("proposal rule", (cat.proposal_rules ?? []).map((r) => r.id));
-  for (const r of cat.proposal_rules ?? []) for (const c of r.when) {
-    const scale = cat.scales.find((s) => s.id === c.scale);
-    if (!scale) { out.push(`proposal rule ${r.id} names the scale ${c.scale}, which the catalog does not list`); continue; }
-    for (const line of [c.at_least, c.at_most]) if (line !== undefined && (line < scale.range[0] || line > scale.range[1])) out.push(`proposal rule ${r.id} draws a line at ${line} on ${c.scale}, outside its range ${scale.range[0]} to ${scale.range[1]}`);
-    if (c.at_least !== undefined && c.at_most !== undefined && c.at_least > c.at_most) out.push(`proposal rule ${r.id} asks for ${c.scale} at least ${c.at_least} and at most ${c.at_most}, which no score meets`);
-  }
+  for (const r of cat.proposal_rules ?? []) out.push(...lineProblems(`proposal rule ${r.id}`, r.when, cat.scales));
 
   const range = new Map<string, [number, number]>();
   for (const s of cat.scales) {
