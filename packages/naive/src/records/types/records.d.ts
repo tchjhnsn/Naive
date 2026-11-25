@@ -5776,14 +5776,14 @@ export type ToolCatalog = {
     id: "view" | "editor" | "workflow" | "storage" | "connection";
     means: string;
   }[];
-  /** APQC Process Classification Framework level 2 groups (cross-industry, version 7.4 names), each under the function whose APQC id is its prefix. */
+  /** APQC Process Classification Framework level 2 groups (cross-industry, version 8.0 ids and names, as in packages/naive/src/functions/pcf.json), each under the function whose APQC id is its prefix. */
   process_groups: {
     /** The APQC hierarchy id, such as 3.5. */
     id: string;
     /** An id in packages/naive/src/functions/departments.json whose apqc.id is this group's prefix. */
     function: string;
     name: string;
-    /** APQC's element id for the group, where the research recorded it. */
+    /** APQC's element id for the group. */
     pcf?: number;
   }[];
   tools: {
