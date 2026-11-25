@@ -40,11 +40,12 @@ import { readSchema } from "../records/index.ts";
 import { decisionFile, propose } from "./decisions.ts";
 import { CONFIG, rawConfig } from "./naive-config.ts";
 import { functionsOf } from "./research-programs.ts";
-import type { ActivityCatalog, NaiveConfig } from "../records/types/records.d.ts";
+import type { ActivityCatalog, NaiveConfig, Pcf } from "../records/types/records.d.ts";
 
 const repo = new URL("../../../..", import.meta.url).pathname;
 export const CATALOG = "packages/naive/src/functions/activities.json";
 const TOOLS = "packages/naive/src/functions/tools.json";
+export const PCF = "packages/naive/src/functions/pcf.json";
 export const PROPOSER = "activity-proposals";
 /** The venture record a decided answer is merged into. */
 export const ASSIGNMENTS = "operations/activity-assignments.json";
@@ -154,11 +155,18 @@ export function optionsFor(sets: NonNullable<Rule["sets"]>): string[] {
 export const appliesTo = (f: Found): { file: string; field: string }[] =>
   f.rule.sets ? f.activities.map((a) => ({ file: ASSIGNMENTS, field: `activities.${a.id}.${f.rule.sets}` })) : [];
 
-/** What is wrong with a venture's activity assignments beyond their schema: an activity the catalog lacks. Pure. */
-export function assignmentProblems(catalog: ActivityCatalog, assignments: unknown): string[] {
+/** True for the hierarchy id of an APQC level 4 activity, such as 3.5.1.6. */
+export const isApqcId = (id: string): boolean => /^\d{1,2}(\.\d{1,2}){3}$/.test(id);
+
+/** The hierarchy ids of APQC's level 4 activities. Pure. */
+export const apqcActivities = (pcf: Pcf): Set<string> => new Set(pcf.elements.filter((e) => e.level === 4).map((e) => e.id));
+
+/** What is wrong with a venture's activity assignments beyond their schema: an activity neither the catalog nor APQC's level 4 has. Pure. */
+export function assignmentProblems(catalog: ActivityCatalog, assignments: unknown, apqc: Set<string> = new Set()): string[] {
   const known = new Set(catalog.activities.map((a) => a.id));
   const listed = isObject(assignments) && isObject(assignments.activities) ? Object.keys(assignments.activities) : [];
-  return listed.filter((id) => !known.has(id)).map((id) => `${ASSIGNMENTS} assigns ${id}, which is not an activity in ${CATALOG}`);
+  return listed.filter((id) => !(isApqcId(id) ? apqc.has(id) : known.has(id)))
+    .map((id) => `${ASSIGNMENTS} assigns ${id}, which is not ${isApqcId(id) ? `a level 4 activity in ${PCF}` : `an activity in ${CATALOG}`}`);
 }
 
 const read = (file: string) => readJson(join(repo, file)).pipe(Effect.mapError((e) => new CannotRun({ message: `${file}: ${describe(e)}`, cause: e })));
@@ -168,6 +176,9 @@ export const industryOf = (dir: string) => Effect.map(
   readJson(join(dir, "venture.json")).pipe(Effect.mapError((e) => new CannotRun({ message: `venture.json: ${describe(e)}`, cause: e }))),
   (v) => (isObject(v) && isObject(v.industry) && v.industry.system === "naics" && typeof v.industry.code === "string" ? v.industry.code : undefined),
 );
+
+/** APQC's Process Classification Framework as Naive carries it. */
+export const readPcf = () => Effect.map(read(PCF), (p) => p as Pcf);
 
 /** The shipped catalog. */
 export const readCatalog = () => Effect.map(read(CATALOG), (c) => c as ActivityCatalog);
@@ -186,7 +197,7 @@ export const findFor = (dir: string) => Effect.gen(function* () {
   const wrong = ventureLineProblems(catalog, lines);
   if (wrong.length) return yield* Effect.fail(new CannotRun({ message: `${CONFIG}: ${wrong.join("; ")}` }));
   const assigned = ventureFile(dir, ASSIGNMENTS);
-  const stray = existsSync(assigned) ? assignmentProblems(catalog, yield* readJson(assigned).pipe(Effect.mapError((e) => new CannotRun({ message: `${ASSIGNMENTS}: ${describe(e)}`, cause: e })))) : [];
+  const stray = existsSync(assigned) ? assignmentProblems(catalog, yield* readJson(assigned).pipe(Effect.mapError((e) => new CannotRun({ message: `${ASSIGNMENTS}: ${describe(e)}`, cause: e }))), apqcActivities(yield* readPcf())) : [];
   if (stray.length) return yield* Effect.fail(new CannotRun({ message: stray.join("; ") }));
   return find(catalog, yield* readGroups(), functionsOf(dir), lines, yield* industryOf(dir));
 });
