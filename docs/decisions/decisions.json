@@ -2063,6 +2063,33 @@
       ]
     },
     {
+      "id": "EE-165",
+      "date": "2026-11-25",
+      "status": "in-force",
+      "decision": "Naive carries APQC's Process Classification Framework 8.0, cross-industry, levels 1 to 5, as data in packages/naive/src/functions/pcf.json: each element's hierarchy id, its name verbatim from APQC and its five-digit element id, with the attribution APQC's licence requires in every copy, and none of APQC's definitions or measures. scripts/import-pcf.ts writes the elements from a hierarchy extracted from APQC's own files, and check-pcf.ts checks them. Hierarchy ids change between PCF versions and element ids do not, so a reference meant to outlast a version uses the element id. Element ids are not required to be unique, because APQC files a few at two hierarchy ids. An activity's optional process must be a level 3 element of pcf.json. The tool catalog is still on PCF 7.4 names and numbers; moving it to 8.0 is a separate change and is not built, and check-pcf.ts --json lists the drift without failing.",
+      "why": "The activity catalog (EE-164) let an activity name a level 3 process with nothing to check it against, because Naive had no PCF data and had not read APQC's terms. APQC's 13 Definitions and Key Measures articles for version 8.0 (March 2026) print the licence: a perpetual, worldwide, royalty-free license to use, copy, publish, modify, and create derivative works of the PCF, provided every copy and derivative work contains APQC's attribution. With the data and the terms in hand, Naive can ship the hierarchy and check references to it. APQC already defines the activity and task levels, so the activity catalog keeps only the activities Naive adds. Keeping the PCF in its own file leaves tools.json and its schema, which a console copies, unchanged.",
+      "related": [
+        "EE-014",
+        "EE-047",
+        "EE-163",
+        "EE-164"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/functions/pcf.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/checks/check-pcf-test.ts",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
       "id": "EE-153",
       "date": "2026-11-19",
       "status": "in-force",
