@@ -2,7 +2,8 @@
 // proposal says, per activity, who performs it and whether a person approves it
 // (operations/activity-assignments.json, EE-172). A function agent's brief for that venture carries the assignments
 // of its own function's activities, each with the rule to follow, and a workflow step that names an assigned
-// activity carries the same rule. Nothing here refuses a write: the gate does not know which activity a write is for.
+// activity carries the same rule. An activity is one in the catalog or an APQC level 4 activity (EE-176), which is
+// what the shipped workflow steps name. Nothing here refuses a write: the gate does not know which activity a write is for.
 //
 //   assignedActivities(catalog, groups, "marketing-and-sales", assignments)   // [{ id, statement, performer, rule }]
 //   assignedSteps(workflow, assignments)                                      // the workflow, steps marked
@@ -14,13 +15,15 @@ import { CannotRun } from "../../core/effect/errors.ts";
 import { readJson } from "../../core/effect/fs.ts";
 import { describe, runSync } from "../../core/effect/run.ts";
 import { ventureFile } from "../../core/venture-paths.ts";
-import { ASSIGNMENTS, readCatalog, readGroups } from "../activity-proposals.ts";
-import type { ActivityAssignments, ActivityCatalog } from "../../records/types/records.d.ts";
+import { ASSIGNMENTS, isApqcId, readCatalog, readGroups, readPcf } from "../activity-proposals.ts";
+import type { ActivityAssignments, ActivityCatalog, Pcf } from "../../records/types/records.d.ts";
 
 export type Assignment = ActivityAssignments["activities"][string];
 /** An assigned activity as a brief carries it: what it is, who performs it, whether a person approves it, and the rule that follows. */
 export interface AssignedActivity extends Assignment {
   readonly id: string,
+  /** Where the activity is defined: APQC's framework or the activity catalog. */
+  readonly from: "pcf" | "catalog",
   readonly process_group: string,
   readonly process?: string,
   readonly statement: string,
@@ -50,12 +53,22 @@ export function ruleFor(a: Assignment): string {
   ].filter(Boolean).join(" ");
 }
 
-/** The catalog activities under a function's process groups that the venture has assigned, in the catalog's order. Pure. */
-export function assignedActivities(catalog: ActivityCatalog, groups: Map<string, string>, fn: string, assignments: unknown): AssignedActivity[] {
-  return catalog.activities.flatMap((act) => {
-    const a = groups.get(act.process_group) === fn ? assignmentOf(assignments, act.id) : null;
-    return a ? [{ id: act.id, process_group: act.process_group, ...(act.process ? { process: act.process } : {}), statement: act.statement, ...a, rule: ruleFor(a) }] : [];
+/**
+ * The activities under a function's process groups that the venture has assigned: APQC's level 4 activities in the
+ * framework's order, with APQC's name as the statement, then the catalog's in the catalog's order. Pure.
+ */
+export function assignedActivities(catalog: ActivityCatalog, groups: Map<string, string>, fn: string, assignments: unknown, pcf?: Pcf): AssignedActivity[] {
+  const apqc = (pcf?.elements ?? []).flatMap((e): AssignedActivity[] => {
+    if (e.level !== 4 || !isApqcId(e.id)) return [];
+    const [c, g, p] = e.id.split(".");
+    const a = groups.get(`${c}.${g}`) === fn ? assignmentOf(assignments, e.id) : null;
+    return a ? [{ id: e.id, from: "pcf", process_group: `${c}.${g}`, process: `${c}.${g}.${p}`, statement: e.name, ...a, rule: ruleFor(a) }] : [];
   });
+  const own = catalog.activities.flatMap((act): AssignedActivity[] => {
+    const a = groups.get(act.process_group) === fn ? assignmentOf(assignments, act.id) : null;
+    return a ? [{ id: act.id, from: "catalog", process_group: act.process_group, ...(act.process ? { process: act.process } : {}), statement: act.statement, ...a, rule: ruleFor(a) }] : [];
+  });
+  return [...apqc, ...own];
 }
 
 /** A workflow with `assignment` on each step whose activity the venture has assigned. Other steps and fields are unchanged. Pure. */
@@ -83,6 +96,6 @@ export function assignmentsFor(dir: string, fn: string): { record: unknown, acti
   return runSync(Effect.gen(function* () {
     const record = yield* readAssignments(dir);
     if (!record) return { record, activities: [] };
-    return { record, activities: assignedActivities(yield* readCatalog(), yield* readGroups(), fn, record) };
+    return { record, activities: assignedActivities(yield* readCatalog(), yield* readGroups(), fn, record, yield* readPcf()) };
   }));
 }
