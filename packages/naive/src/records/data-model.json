@@ -939,6 +939,21 @@
       "note": "The departments a venture can import: APQC categories tagged with Porter's value chain, with need-now priors (EE-047)"
     },
     {
+      "id": "pcf",
+      "layer": "operations",
+      "function": null,
+      "level": "method",
+      "schema": "packages/naive/src/records/pcf.schema.json",
+      "generator": "packages/naive/src/engine/generators/pcf.ts",
+      "paths": [
+        "packages/naive/src/functions/pcf.json"
+      ],
+      "refs": [
+        { "field": "source", "to": "reference", "checked_by": "packages/naive/src/checks/check-pcf.ts" }
+      ],
+      "note": "APQC's Process Classification Framework 8.0, cross-industry, levels 1 to 5 (EE-165): each element's hierarchy id, name verbatim from APQC and element id, with the attribution APQC's licence requires. Written by scripts/import-pcf.ts"
+    },
+    {
       "id": "activity-catalog",
       "layer": "operations",
       "function": null,
@@ -950,6 +965,7 @@
       ],
       "refs": [
         { "field": "activities[].process_group", "to": "tool-catalog", "checked_by": "packages/naive/src/checks/check-activities.ts" },
+        { "field": "activities[].process", "to": "pcf", "checked_by": "packages/naive/src/checks/check-activities.ts" },
         { "field": "activities[].source.ref", "to": "reference", "checked_by": "packages/naive/src/checks/check-activities.ts" },
         { "field": "scales[].source", "to": "reference", "checked_by": "packages/naive/src/checks/check-activities.ts" }
       ],
