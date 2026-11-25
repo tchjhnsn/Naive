@@ -1,6 +1,7 @@
 // Tests packages/naive/src/engine/activity-proposals.ts (EE-169): a rule picks only rated cross-industry activities
 // whose scores meet every condition, under the functions the venture lists; propose files one open decision per rule
 // and function, a rerun files nothing more, a decided proposal is left alone, and list writes nothing. A venture's
+// industry (EE-171) adds the activities filed under a NAICS code its own code starts with. A venture's
 // own lines in naive.config.json (EE-170) turn a rule off or replace its lines, the note says whose lines they are,
 // and lines the catalog cannot hold fail check-config and the command.
 //
@@ -11,7 +12,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { approve } from "./decisions.ts";
-import { find, matches, note, proposeFound, question, ventureLineProblems } from "./activity-proposals.ts";
+import { applies, find, inIndustry, matches, note, proposeFound, question, ventureLineProblems } from "./activity-proposals.ts";
 import type { ActivityCatalog } from "../records/types/records.d.ts";
 
 let failed = 0;
@@ -99,6 +100,16 @@ ok(ventureLineProblems(scaled, { checked: { when: [{ scale: "verification", at_l
 
 const CHECK_CONFIG = new URL("../checks/check-config.ts", import.meta.url).pathname;
 const checkConfig = (dir: string): { errors: string[] } => JSON.parse(spawnSync("node", [CHECK_CONFIG, dir, "--json"], { encoding: "utf8" }).stdout);
+ok(inIndustry("44", "445110") && inIndustry("4451", "445110") && inIndustry("445110", "445110") && !inIndustry("4452", "445110") && !inIndustry("445110", "4451"), "a venture is in every industry its NAICS code starts with, and in none narrower than its own code");
+ok(inIndustry("44", "459110") && inIndustry("31", "334111") && inIndustry("49", "484110") && !inIndustry("44", "484110") && !inIndustry("441", "459110"), "a two-digit code in a ranged sector (31-33, 44-45, 48-49) names the whole sector, and a longer code does not");
+ok(!inIndustry("44", undefined) && applies(catalog.activities[0], undefined) && !applies(catalog.activities[5], undefined) && !applies(catalog.activities[5], "541511"), "a venture with no industry, or another one, gets cross-industry activities only");
+const grocer = find(catalog, groups, ["marketing-and-sales"], {}, "445110");
+ok(grocer[0].activities.map((a) => a.id).join() === "survey-buyers,line-met-exactly,one-industry" && /one-industry \(3\.1, NAICS 44\)/.test(note(grocer[0])) && grocer[0].id === found[0].id, "a venture in the activity's industry gets it under the same decision, and the note names the industry");
+
+const inRetail = venture("in-retail", ["marketing-and-sales"]);
+writeFileSync(join(inRetail, "venture.json"), JSON.stringify({ id: "in-retail", phase: "discovery", departments: ["marketing-and-sales"], industry: { system: "naics", code: "445110" } }, null, 2) + "\n");
+ok(run(inRetail, "--json").out === listed.out.replaceAll("real", "in-retail") || JSON.parse(run(inRetail, "--json").out).found.length === listedFound.length, "the command reads the venture's industry, and the shipped catalog, which has no industry activity yet, gives it the same proposals");
+
 const config = (dir: string, value: unknown): void => writeFileSync(join(dir, "naive.config.json"), JSON.stringify(value, null, 2) + "\n");
 const strict = venture("strict", ["marketing-and-sales"]);
 config(strict, { activity_proposals: { rules: { "agent-with-checked-result": { when: [{ scale: "verification", at_least: 10 }] }, "person-approves-restricted": "off" } } });
