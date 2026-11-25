@@ -98,7 +98,20 @@ sequenceDiagram
   P->>D: approve with one of the options
   P->>D: mentura merge
   D->>F: write the answer per activity, after the schema check
-  Note over F: nothing reads it yet
+  Note over F: a function agent's brief reads it (EE-173)
+```
+
+- Acting on the assignments (EE-173): `packages/naive/src/engine/agents/assignments.ts` reads a venture's assignments for a function agent. `agentBrief(role, dir)` for a function agent in a venture carries `assignments`, the catalog activities under the function's process groups that the venture has assigned, each with its statement, `performer`, `approval` and a `rule` in plain sentences: a person performs it, so the agent asks or hands it over and does not perform it; or the agent performs it and a person checks a sample; and where a person approves, the agent raises the result as a decision and does not treat the activity as done until a person decides. A workflow step whose `activity` is assigned carries the same `assignment`. `naive agent run` puts the list in the prompt, and `mentura_agent_brief` returns it. A brief with no venture, and a lead's brief, carry none. The rule is an instruction to the agent. The gate does not enforce it, because a write does not say which activity it is for.
+
+```mermaid
+flowchart LR
+  F[operations/activity-assignments.json] --> A[assignments.ts]
+  C[activities.json] --> A
+  T[tools.json process groups] --> A
+  A -->|assignments, with a rule each| B[agentBrief for a function agent]
+  W[workflows/*.json steps] -->|step.activity assigned| B
+  B --> M[mentura_agent_brief]
+  B --> R[naive agent run prompt]
 ```
 
 - The seed (EE-167): `node scripts/import-scinet.ts` wrote 38 activities under process group 3.1, process 3.1.1 Perform customer and market intelligence analysis. They are SciNet v1.10.0's Data Gathering and Data Analysis tasks for the subfields Entrepreneurship & Innovation and Marketing, and the universal task of obtaining ethical approval and informed consent. Each keeps SciNet's statement, names SciNet as its source, and carries SciNet's scores. Those scores rate the task as researchers perform it, and each activity's `rated.basis` says it is not rated for a business. A rerun on the same release writes the same bytes, and the script replaces only SciNet's activities under the process group it is given.
@@ -115,7 +128,8 @@ sequenceDiagram
 - Naming an activity on every workflow step. The field is optional, and two steps of the marketing and sales workflows name one so far.
 - Proposing a venture's lines from its market and industry, as gate calibration does for the phase gates. A person writes them by hand.
 - An activity for one NAICS industry. The matching is built, and the catalog holds none yet.
-- Acting on the assignments. Nothing reads `operations/activity-assignments.json` yet: no agent, workflow step, decision level or done-criterion changes with it.
+- Enforcing an assignment. A function agent's brief tells it the rule (EE-173), and the gate, decision levels and done criteria do not change with `operations/activity-assignments.json`.
+- A shipped workflow step that names a catalog activity. The two steps that name an activity name APQC activities, which a venture cannot assign, so today an assignment reaches an agent through the brief's list and not through a step.
 - Rating the seeded activities for a business. The scores are SciNet's, for researchers.
 - Activities outside process group 3.1.
 - A list of valid NAICS codes. The check holds a code to two to six digits only.
