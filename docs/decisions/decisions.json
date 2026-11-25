@@ -2344,6 +2344,27 @@
       ]
     },
     {
+      "id": "EE-176",
+      "date": "2026-11-25",
+      "status": "in-force",
+      "decision": "A venture's activity assignments may name an APQC level 4 activity by its hierarchy id, as well as an activity in the activity catalog. These are the same two forms a workflow step's activity takes. A person writes such an assignment through the record's route. No proposal rule covers APQC activities and a decision's merge does not set one. Nothing above level 4 can be assigned.",
+      "why": "EE-173 marks a workflow step whose activity is assigned, and every shipped step that names an activity names an APQC activity, which the assignments could not hold. So the marking never applied. Accepting the id a step already uses makes it apply with no new record. Proposals stay with the catalog because APQC activities carry no scores, and a score is what a rule reads. Levels 1 to 3 are left out because who holds them is still being decided.",
+      "related": [
+        "EE-165",
+        "EE-168",
+        "EE-172",
+        "EE-173"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/records/activity-assignments.schema.json",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
       "id": "EE-177",
       "date": "2026-11-25",
       "status": "in-force",
