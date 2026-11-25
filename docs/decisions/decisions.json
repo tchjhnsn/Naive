@@ -2114,6 +2114,33 @@
           "expect": "exists"
         }
       ]
+    },
+    {
+      "id": "EE-167",
+      "date": "2026-11-25",
+      "status": "in-force",
+      "decision": "The activity catalog's first activities are taken from SciNet v1.10.0 (CC BY 4.0) by scripts/import-scinet.ts: the Data Gathering and Data Analysis tasks of the subfields Entrepreneurship & Innovation and Marketing, and the universal task of obtaining ethical approval and informed consent, 38 in all, filed cross-industry under APQC process group 3.1 Understand markets, customers, and capabilities and its process 3.1.1 Perform customer and market intelligence analysis. Each keeps SciNet's statement, names SciNet and the task's place in it as its source, and carries SciNet's scores on the catalog's scales with rated.by SciNet and a basis that says the scores rate the task as researchers perform it and not as a business does. The script selects by subfield, category and named universal task, replaces only SciNet's activities under the process group it is given, and writes the same bytes on a rerun. SciNet's files are not kept in the repository. A person reviews which activities enter before the seed merges.",
+      "why": "Naive has no Research function, and the work SciNet describes that a venture also does is market and customer research, which APQC files under 3.1. SciNet's entrepreneurship and marketing tasks are the closest published, scored task statements to that work, so they test the catalog with real data instead of statements written for the purpose. Their scores were given for academic researchers, so they are carried as SciNet's judgment and labelled, never as a rating of a business. A script with a fixed selection makes the seed repeatable when SciNet releases again and keeps hand edits out of the file.",
+      "related": [
+        "EE-014",
+        "EE-164",
+        "EE-165",
+        "EE-166"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "scripts/import-scinet.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/functions/activities.json",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
     }
   ]
 }

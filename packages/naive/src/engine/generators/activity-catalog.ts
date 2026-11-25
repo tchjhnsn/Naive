@@ -25,4 +25,26 @@ export function draft(a: Partial<Activity>, { root = repo }: { root?: string } =
   return { ok: v.ok, record, file: FILE, draft: rec, added: id, errors: v.errors };
 }
 
+/** The catalog as the file holds it: the header and scales as written, then one activity per line, so the same activities always give the same bytes. */
+export function format(rec: ActivityCatalog): string {
+  const { scales, activities, ...header } = rec;
+  const head = JSON.stringify(header, null, 2).slice(0, -2);
+  const flat = (v: unknown): string =>
+    Array.isArray(v) ? `[${v.map(flat).join(", ")}]`
+      : typeof v === "object" && v !== null ? `{${Object.entries(v).map(([k, x]) => `${JSON.stringify(k)}: ${flat(x)}`).join(", ")}}`
+        : JSON.stringify(v);
+  const lines = (xs: unknown[]) => (xs.length ? `[\n${xs.map((x) => `    ${flat(x)}`).join(",\n")}\n  ]` : "[]");
+  return `${head},\n  "scales": ${lines(scales)},\n  "activities": ${lines(activities)}\n}\n`;
+}
+
+/** Replaces the activities `replaces` picks with `activities`, keeps the rest in place before them, and validates the result. */
+export function replaceActivities(activities: Activity[], replaces: (_a: Activity) => boolean, { root = repo }: { root?: string } = {}) {
+  const now = readJson(join(root, FILE)) as ActivityCatalog | null;
+  if (!now) return { ok: false, record, errors: [`${FILE} is missing`] };
+  const kept = now.activities.filter((a) => !replaces(a));
+  const rec = { ...now, activities: [...kept, ...activities] };
+  const v = validate(record, rec);
+  return { ok: v.ok, record, file: FILE, draft: rec, errors: v.errors };
+}
+
 if (import.meta.url === `file://${process.argv[1]}`) process.exitCode = await cli({ record, describe, draft });

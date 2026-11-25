@@ -37,11 +37,11 @@ const valid: Activity = {
 };
 
 let n = 0;
-/** A copy of the repository's files with the catalog holding the valid activity, then changed, run through the check. */
+/** A copy of the repository's files with the catalog holding only the valid activity, then changed, run through the check. */
 function broken(change: (_c: ActivityCatalog) => void) {
   const root = join(tmp, `r-${++n}`);
   for (const f of COPIED) { mkdirSync(dirname(join(root, f)), { recursive: true }); cpSync(join(repo, f), join(root, f)); }
-  const c = structuredClone(original); c.activities.push(structuredClone(valid)); change(c);
+  const c = structuredClone(original); c.activities = [structuredClone(valid)]; change(c);
   writeFileSync(join(root, CATALOG), JSON.stringify(c, null, 2) + "\n");
   return run({ EE_ROOT: root });
 }
