@@ -44,7 +44,7 @@
         "properties": {
           "id": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
           "process_group": { "type": "string", "pattern": "^\\d{1,2}\\.\\d{1,2}$", "description": "An APQC level 2 process group id in packages/naive/src/functions/tools.json, such as 3.1." },
-          "process": { "type": "string", "pattern": "^\\d{1,2}\\.\\d{1,2}\\.\\d{1,2}$", "description": "An APQC level 3 process id under the process group, such as 3.1.2." },
+          "process": { "type": "string", "pattern": "^\\d{1,2}\\.\\d{1,2}\\.\\d{1,2}$", "description": "An APQC level 3 process under the process group: the hierarchy id of a level 3 element in packages/naive/src/functions/pcf.json (PCF 8.0), such as 3.1.2." },
           "statement": {
             "type": "string",
             "pattern": "^[A-Z][a-z]+ [^\\n]+\\.$",
