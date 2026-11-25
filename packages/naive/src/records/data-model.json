@@ -971,7 +971,7 @@
           "checked_by": "packages/naive/src/engine/activity-proposals.ts"
         }
       ],
-      "note": "Who performs each activity of the activity catalog in this venture, agent or person, and whether a person approves it first (EE-172). Written by merging a person's decided answer to an activity proposal; nothing reads it yet"
+      "note": "Who performs each activity of the activity catalog in this venture, agent or person, and whether a person approves it first (EE-172). Written by merging a person's decided answer to an activity proposal; a function agent's brief carries them with the rule to follow (EE-173)"
     },
     {
       "id": "activity-catalog",
