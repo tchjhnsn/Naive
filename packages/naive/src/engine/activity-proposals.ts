@@ -13,7 +13,12 @@
 // A score never decides anything. A rerun leaves a decision it already filed, open or decided, as it is, so a
 // catalog that changed later does not rewrite it. It never edits the catalog, a workflow or any other record. An
 // activity for one NAICS industry is left out: matching it to the venture's industry is not built. The rules' lines
-// are unvalidated priors, and a line per venture is not built.
+// are unvalidated priors.
+//
+// A venture sets its own lines (EE-170) in naive.config.json: activity_proposals.rules.<rule id> is "off", so the rule
+// proposes nothing there, or { when }, lines that replace all of the catalog's for that rule. A rule left out keeps
+// the catalog's lines. The proposal's note says whose lines found it. packages/naive/src/checks/check-config.ts holds
+// the venture's lines to the catalog's rule ids and scales.
 
 import { join } from "node:path";
 import { Effect } from "effect";
@@ -22,8 +27,9 @@ import { readJson } from "../core/effect/fs.ts";
 import { describe, runMain, runSync } from "../core/effect/run.ts";
 import { ventureFile } from "../core/venture-paths.ts";
 import { decisionFile, propose } from "./decisions.ts";
+import { CONFIG, rawConfig } from "./naive-config.ts";
 import { functionsOf } from "./research-programs.ts";
-import type { ActivityCatalog } from "../records/types/records.d.ts";
+import type { ActivityCatalog, NaiveConfig } from "../records/types/records.d.ts";
 
 const repo = new URL("../../../..", import.meta.url).pathname;
 export const CATALOG = "packages/naive/src/functions/activities.json";
@@ -32,7 +38,10 @@ export const PROPOSER = "activity-proposals";
 
 type Activity = ActivityCatalog["activities"][number];
 type Rule = NonNullable<ActivityCatalog["proposal_rules"]>[number];
-export type Found = { rule: Rule; function: string; id: string; activities: Activity[] };
+/** The venture's lines per rule id, as naive.config.json activity_proposals.rules holds them. */
+export type VentureLines = NonNullable<NonNullable<NaiveConfig["activity_proposals"]>["rules"]>;
+/** `lines` says whose lines found the activities: the catalog's, or the venture's own. */
+export type Found = { rule: Rule; function: string; id: string; lines: "catalog" | "venture"; activities: Activity[] };
 export type Proposed = { id: string; ok: boolean; error?: string; result?: { proposed?: string; kept?: string; file: string; status?: unknown } };
 
 const isObject = (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null && !Array.isArray(v);
@@ -45,12 +54,42 @@ export function matches(a: Activity, rule: Rule): boolean {
   });
 }
 
-/** One entry per rule and function with at least one matching cross-industry activity, in the rules' then the functions' order. Pure. */
-export function find(catalog: ActivityCatalog, groups: Map<string, string>, functions: string[]): Found[] {
+/** What is wrong with a rule's lines against the catalog's scales: an unknown scale, a line outside the scale's range, or lines no score meets. `who` starts each message. Pure. */
+export function lineProblems(who: string, when: Rule["when"], scales: ActivityCatalog["scales"]): string[] {
+  const out: string[] = [];
+  for (const c of when) {
+    const scale = scales.find((s) => s.id === c.scale);
+    if (!scale) { out.push(`${who} names the scale ${c.scale}, which the catalog does not list`); continue; }
+    for (const at of [c.at_least, c.at_most]) if (at !== undefined && (at < scale.range[0] || at > scale.range[1])) out.push(`${who} draws a line at ${at} on ${c.scale}, outside its range ${scale.range[0]} to ${scale.range[1]}`);
+    if (c.at_least !== undefined && c.at_most !== undefined && c.at_least > c.at_most) out.push(`${who} asks for ${c.scale} at least ${c.at_least} and at most ${c.at_most}, which no score meets`);
+  }
+  return out;
+}
+
+/** What is wrong with a venture's lines: a rule id the catalog lacks, and each line as lineProblems reads it. Pure. */
+export function ventureLineProblems(catalog: ActivityCatalog, lines: VentureLines = {}): string[] {
+  const rules = new Set((catalog.proposal_rules ?? []).map((r) => r.id));
+  return Object.entries(lines).flatMap(([id, set]) => [
+    ...(rules.has(id) ? [] : [`activity_proposals.rules.${id}: ${CATALOG} has no proposal rule ${id} (one of ${[...rules].join(", ")})`]),
+    ...(set === "off" ? [] : !isObject(set) || !Array.isArray(set.when) ? [`activity_proposals.rules.${id} is neither off nor { when }`] : lineProblems(`activity_proposals.rules.${id}`, set.when, catalog.scales)),
+  ]);
+}
+
+/**
+ * One entry per rule and function with at least one matching cross-industry activity, in the rules' then the
+ * functions' order. A rule the venture's lines turn off finds nothing, and one they redraw matches by the venture's
+ * lines in place of all of the catalog's. Pure.
+ */
+export function find(catalog: ActivityCatalog, groups: Map<string, string>, functions: string[], lines: VentureLines = {}): Found[] {
   const out: Found[] = [];
-  for (const rule of catalog.proposal_rules ?? []) for (const fn of functions) {
-    const activities = catalog.activities.filter((a) => a.scope.kind === "cross-industry" && groups.get(a.process_group) === fn && matches(a, rule));
-    if (activities.length) out.push({ rule, function: fn, id: `activity-${rule.id}-${fn}`, activities });
+  for (const listed of catalog.proposal_rules ?? []) {
+    const set = lines[listed.id];
+    if (set === "off") continue;
+    const rule = set ? { ...listed, when: set.when } : listed;
+    for (const fn of functions) {
+      const activities = catalog.activities.filter((a) => a.scope.kind === "cross-industry" && groups.get(a.process_group) === fn && matches(a, rule));
+      if (activities.length) out.push({ rule, function: fn, id: `activity-${rule.id}-${fn}`, lines: set ? "venture" : "catalog", activities });
+    }
   }
   return out;
 }
@@ -64,7 +103,9 @@ export const question = (f: Found) => `${f.function}: ${f.rule.asks.replace(/\?$
 export function note(f: Found): string {
   const scores = (a: Activity) => f.rule.when.map((c) => `${c.scale} ${a.ratings?.[c.scale]}`).join(", ");
   return [
-    `Proposed by rule ${f.rule.id} in ${CATALOG}: ${f.rule.when.map(line).join(", ")}. ${f.rule.basis}`,
+    f.lines === "venture"
+      ? `Proposed by rule ${f.rule.id} in ${CATALOG}, with the venture's own lines from ${CONFIG} activity_proposals: ${f.rule.when.map(line).join(", ")}. The catalog's basis, written for the catalog's lines: ${f.rule.basis}`
+      : `Proposed by rule ${f.rule.id} in ${CATALOG}: ${f.rule.when.map(line).join(", ")}. ${f.rule.basis}`,
     "A score is one rater's judgment and decides nothing. Accepting this means a person sets who does these activities; nothing is changed by this proposal.",
     ...f.activities.map((a) => `- ${a.id} (${a.process ?? a.process_group}): ${a.statement} Scores: ${scores(a)}. Rated by ${a.rated?.by} on ${a.rated?.on}: ${a.rated?.basis}`),
   ].join("\n");
@@ -72,13 +113,19 @@ export function note(f: Found): string {
 
 const read = (file: string) => readJson(join(repo, file)).pipe(Effect.mapError((e) => new CannotRun({ message: `${file}: ${describe(e)}`, cause: e })));
 
-/** What the catalog's rules find for the functions a venture lists. */
+/** The shipped catalog. */
+export const readCatalog = () => Effect.map(read(CATALOG), (c) => c as ActivityCatalog);
+
+/** What the catalog's rules find for the functions a venture lists, by the venture's lines where it set them. Fails on lines the catalog cannot hold. */
 export const findFor = (dir: string) => Effect.gen(function* () {
-  const catalog = (yield* read(CATALOG)) as ActivityCatalog;
+  const catalog = yield* readCatalog();
+  const lines = rawConfig(dir).activity_proposals?.rules ?? {};
+  const wrong = ventureLineProblems(catalog, lines);
+  if (wrong.length) return yield* Effect.fail(new CannotRun({ message: `${CONFIG}: ${wrong.join("; ")}` }));
   const tools = yield* read(TOOLS);
   const groups = new Map<string, string>();
   for (const g of isObject(tools) && Array.isArray(tools.process_groups) ? tools.process_groups.filter(isObject) : []) if (typeof g.id === "string" && typeof g.function === "string") groups.set(g.id, g.function);
-  return find(catalog, groups, functionsOf(dir));
+  return find(catalog, groups, functionsOf(dir), lines);
 });
 
 /** Files one open decision per entry, and keeps one already filed, open or decided, as it is. */
@@ -103,11 +150,11 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   }
   await runMain(Effect.map(findFor(dir), (found) => {
     const proposed = what === "propose" ? proposeFound(dir, found) : null;
-    if (json) console.log(JSON.stringify({ found: found.map((f) => ({ id: f.id, rule: f.rule.id, function: f.function, question: question(f), activities: f.activities.map((a) => a.id) })), ...(proposed ? { proposed } : {}) }, null, 2));
+    if (json) console.log(JSON.stringify({ found: found.map((f) => ({ id: f.id, rule: f.rule.id, function: f.function, lines: f.lines, question: question(f), activities: f.activities.map((a) => a.id) })), ...(proposed ? { proposed } : {}) }, null, 2));
     else {
       if (!functionsOf(dir).length) console.log("The venture lists no functions in venture.json departments, so no activity applies to it.");
       for (const f of found) {
-        console.log(`\n${f.id}\n  ${question(f)}`);
+        console.log(`\n${f.id}${f.lines === "venture" ? " (the venture's lines)" : ""}\n  ${question(f)}`);
         for (const a of f.activities) console.log(`  - ${a.id}`);
       }
       if (proposed) console.log(`\nproposed ${proposed.filter((p) => p.result?.proposed).length} open decisions, kept ${proposed.filter((p) => p.result?.kept).length} already filed`);
