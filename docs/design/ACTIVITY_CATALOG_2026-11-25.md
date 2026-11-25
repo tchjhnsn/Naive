@@ -162,9 +162,10 @@ flowchart TD
   Q -- yes --> B[listed in the briefing with why and when]
 ```
 
+- Competitor research as a workflow. The strategy function's `competitor-review` names APQC 1.1.1.1 (Identify competitors), 1.1.1.2 (Analyze and evaluate competition) and 1.1.1.3 (Identify potential product or service alternatives) on its steps, loads the `competitor-research` skill, and marks four steps to consider: predicting a competitor's next move, trying its product, win and loss reasons, and proposing a stance. Marketing and sales' weekly pipeline review has one step to consider, the competitive pricing review (3.3.3.11).
+
 ## Not built
 
-- A shipped workflow with a step to consider. The field exists and no workflow uses it yet.
 - Evaluating a step's `when`. It is a sentence the agent reads, and nothing records that a step was considered.
 
 - Requiring an activity to name its PCF process. `process` is still optional.

@@ -1,0 +1,114 @@
+{
+  "id": "competitor-review",
+  "function": "strategy",
+  "title": "Review competitors and the customer's alternatives",
+  "trigger": {
+    "kind": "schedule",
+    "cadence": "monthly"
+  },
+  "reads": [
+    "decisions/*",
+    "foundation/icp",
+    "foundation/problem",
+    "product",
+    "purpose/competitor",
+    "purpose/competitor-signals",
+    "validation/*"
+  ],
+  "steps": [
+    {
+      "id": "name-the-decision",
+      "do": "Name the open decision or goal this review serves and the date it is needed by, and when there is none say so and keep the review to bringing the records up to date.",
+      "skill": "competitor-research"
+    },
+    {
+      "id": "identify-competitors",
+      "do": "List who serves the same customer with an offering that can replace the venture's, from public sources only, and write or update one competitor record each, citing every source and the date it was read.",
+      "skill": "competitor-research",
+      "activity": "1.1.1.1",
+      "writes": [
+        "purpose/competitor/[id]"
+      ]
+    },
+    {
+      "id": "identify-alternatives",
+      "do": "List what the customer does today in place of the venture's offering, doing nothing included, from the interview records, and mark each one a guess where no interview says it.",
+      "skill": "competitor-research",
+      "activity": "1.1.1.3",
+      "writes": [
+        "purpose/competitor/[id]"
+      ]
+    },
+    {
+      "id": "evaluate",
+      "do": "For each competitor that bears on the decision, write what it does and does not do next to the venture's product as the records describe it, and say which claims rest on the competitor's own words.",
+      "skill": "competitor-research",
+      "activity": "1.1.1.2",
+      "writes": [
+        "purpose/competitor/[id]"
+      ]
+    },
+    {
+      "id": "predict-next-move",
+      "do": "For each competitor that bears on the decision, write what it is likely to do next from its goals, its assumptions, its present strategy and its capabilities, and what would show the prediction wrong.",
+      "skill": "competitor-research",
+      "activity": "1.1.1.2",
+      "consider": {
+        "why": "What a competitor does next can change what the venture should build or say first.",
+        "when": "A competitor bears on a decision that is open."
+      }
+    },
+    {
+      "id": "try-the-product",
+      "do": "Sign up for the competitor's product as an ordinary customer under the venture's real name, use it for the customer's main task, and record what it does.",
+      "skill": "competitor-research",
+      "consider": {
+        "why": "A product page says what a competitor claims, and using the product shows what it does."
+      }
+    },
+    {
+      "id": "win-loss",
+      "do": "Read the reason recorded on each sale won or lost since the last review and count which competitor or alternative the buyer chose in its place.",
+      "skill": "competitor-research",
+      "consider": {
+        "why": "Buyers say which alternatives they weighed, which a competitor's site cannot.",
+        "when": "The venture has won or lost at least one sale since the last review."
+      }
+    },
+    {
+      "id": "propose-stance",
+      "do": "Propose the venture's stance toward a competitor (compete, ignore, partner or build on) as a decision for the founder, with the evidence for each option.",
+      "skill": "competitor-research",
+      "raises": [
+        "strategy-or-constitution"
+      ],
+      "consider": {
+        "why": "A competitor can also be a supplier, a channel or a partner, and only the founder chooses how to stand toward it.",
+        "when": "A competitor that bears on an open decision has no stance on its record."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "For each finding, name the open decision it confirms or changes and add it there as evidence, and raise what to look into next to the strategy lead.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/records/validate.ts"
+    },
+    {
+      "id": "every-claim-sourced",
+      "kind": "review",
+      "check": "Does every competitor record written in this review cite a public source and the date it was read, and is every alternative with no interview behind it marked a guess?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}
