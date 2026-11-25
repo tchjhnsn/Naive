@@ -1,6 +1,6 @@
 // Breaks check-pcf on copies (EE-165). Each case copies pcf.json, the tool catalog and the references files into a
 // small EE_ROOT, breaks one rule, and expects the check to name it. The repository passes, element ids that APQC repeats
-// included, and the tool catalog's drift from the PCF is reported in --json without failing.
+// included, and a tool catalog whose process groups drift from the PCF fails.
 //
 //   node packages/naive/src/checks/check-pcf-test.ts
 
@@ -77,11 +77,17 @@ type Report = { ok: boolean; levels: Record<string, number>; categories: { id: s
 const parse = (out: string): Report | null => { try { return JSON.parse(out) as Report; } catch { return null; } };
 const j = parse(run({}, ["--json"]).out);
 t("--json counts each level and each of the 13 categories", j?.ok === true && j.levels.categories === 13 && j.levels.tasks === 215 && j.categories.length === 13, j?.levels);
-const drift = j?.tool_catalog_drift ?? [];
-t("--json lists tool catalog drift: 5.3 renamed in PCF 8.0 and 13.10, which tools.json lacks", drift.some((d) => d.id === "5.3" && d.kind === "differs" && d.fields?.includes("name")) && drift.some((d) => d.id === "13.10" && d.kind === "not-in-tools"), drift.slice(0, 5));
-const moved = broken(() => {}, (c) => { c.process_groups[0].id = "1.9"; }, ["--json"]);
-const movedReport = parse(moved.out);
-t("a tool catalog group the PCF lacks is reported as missing and fails nothing", moved.status === 0 && !!movedReport?.tool_catalog_drift.some((d) => d.id === "1.9" && d.kind === "missing"), moved);
+t("--json reports no tool catalog drift for the repository", j?.tool_catalog_drift.length === 0, j?.tool_catalog_drift.slice(0, 5));
+const drifts = (name: string, change: (_c: ToolCatalog) => void, says: RegExp, kind: string) => {
+  const r = broken(() => {}, change);
+  const report = parse(broken(() => {}, change, ["--json"]).out);
+  t(name, r.status === 1 && says.test(r.out) && report?.ok === false && report.tool_catalog_drift.some((d) => d.kind === kind), r);
+};
+drifts("a tool catalog group the PCF lacks", (c) => { c.process_groups[0].id = "1.9"; }, /tools\.json: process group 1\.9 .* is not a level 2 element/, "missing");
+drifts("a tool catalog group named differently from APQC", (c) => { c.process_groups[0].name = "Define the vision"; }, /tools\.json: process group 1\.1 differs from .*pcf\.json in name/, "differs");
+drifts("a tool catalog group with another element id", (c) => { c.process_groups[0].pcf = 1; }, /process group 1\.1 differs from .* in pcf/, "differs");
+drifts("a tool catalog group with no element id", (c) => { delete c.process_groups[0].pcf; }, /process group 1\.1 differs from .* in pcf/, "differs");
+drifts("a PCF process group the tool catalog lacks", (c) => { c.process_groups = c.process_groups.filter((g) => g.id !== "13.10"); for (const x of c.tools) x.process_groups = x.process_groups.filter((g) => g !== "13.10"); }, /process group 13\.10 \(Manage sustainability\) of .*pcf\.json is missing/, "not-in-tools");
 
 rmSync(tmp, { recursive: true, force: true });
 if (failed) { console.error(`${failed} failed`); process.exit(1); }

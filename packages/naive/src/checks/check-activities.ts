@@ -9,7 +9,7 @@
 //   - a scale's range does not run from a lower to a higher number;
 //   - an activity names a process group that is not in packages/naive/src/functions/tools.json, or a process whose id
 //     does not start with its process group's or is not a level 3 element of packages/naive/src/functions/pcf.json
-//     (APQC's PCF 8.0, EE-165). The process group is not looked up in pcf.json: tools.json is still on PCF 7.4;
+//     (APQC's PCF 8.0, EE-165). check-pcf.ts holds tools.json's process groups to pcf.json's level 2;
 //   - a statement is over 30 words, is more than one sentence, or starts with an article or pronoun instead of a verb;
 //   - a rating names a scale the catalog does not list, or its value is outside that scale's range;
 //   - a scale's source or an activity's source.ref is not an id in any

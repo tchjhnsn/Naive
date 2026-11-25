@@ -18,14 +18,14 @@ The record type `activity` already exists and means something else: the time spe
 
 An activity sits on two axes at once.
 
-The work axis is APQC's hierarchy: category (level 1, one of Naive's 13 functions), process group (level 2, the groups in `packages/naive/src/functions/tools.json`), process (level 3), activity (level 4) and task (level 5). Levels 1 to 5 of PCF 8.0 are in `pcf.json`. The tool catalog still uses PCF 7.4's process group numbers and names, so an activity's process group is looked up in `tools.json` and its process in `pcf.json`. Below APQC's levels, Naive's own unit is the workflow step: a step in a function's workflow is the work an agent does to perform an activity.
+The work axis is APQC's hierarchy: category (level 1, one of Naive's 13 functions), process group (level 2, the groups in `packages/naive/src/functions/tools.json`), process (level 3), activity (level 4) and task (level 5). Levels 1 to 5 of PCF 8.0 are in `pcf.json`. The tool catalog uses PCF 8.0's process group numbers, names and element ids (EE-166), and `check-pcf.ts` fails when they differ, so an activity's process group is looked up in `tools.json` and its process in `pcf.json`. Below APQC's levels, Naive's own unit is the workflow step: a step in a function's workflow is the work an agent does to perform an activity.
 
 The context axis says where the activity applies. It is either cross-industry, true of any business, or one industry named by a NAICS code of two to six digits. The same statement can appear once in each scope, so an industry may keep its own reading of a cross-industry activity.
 
 ```mermaid
 flowchart TD
   subgraph work [Work axis, APQC]
-    C[Category, level 1: a function in departments.json] --> PG[Process group, level 2: tools.json, on PCF 7.4]
+    C[Category, level 1: a function in departments.json] --> PG[Process group, level 2: tools.json, held to pcf.json]
     PG --> P[Process, level 3: pcf.json, PCF 8.0]
     P --> PA[APQC activity, level 4: pcf.json]
     PA --> PT[APQC task, level 5: pcf.json]
@@ -73,11 +73,10 @@ A score is one rater's judgment. Every rated activity names who rated it, on wha
 - `packages/naive/src/checks/check-activities.ts` checks the catalog across files. It fails on a schema error; a scale or activity id listed twice; a statement repeated within one process group and scope; a scale range that does not rise; a process group not in `tools.json`; a process whose id does not start with its process group's or that is not a level 3 element of `pcf.json`; a statement over 30 words, of more than one sentence, or starting with an article or pronoun; a rating on a scale the catalog does not list or outside its range; and a source that is not a reference id in any layer's `references/references.json`. It reads files through VentureFs, exits 1 on findings and 2 when a file cannot be read, and `--json` prints the number of activities per function and process group. `packages/naive/src/checks/check-activities-test.ts` adds one valid rated activity to a copy, shows it passes, and breaks each rule.
 - `packages/naive/src/engine/generators/activity-catalog.ts` drafts the catalog with one more activity and refuses an id already in it. Adding an activity is a change to the framework, made in a pull request.
 - The sources are references in `packages/naive/src/records/layers/operations/references/references.json`: SciNet, O*NET, the CDR taxonomy and the RL feasibility index. NAICS reuses `naics-2022` in the purpose layer's references, and the process groups cite `apqc-pcf-cross-industry`.
-- `tools.json` and `tool-catalog.schema.json` are unchanged.
+- The activity catalog and `pcf.json` left `tools.json` and `tool-catalog.schema.json` unchanged. A later change (EE-166) moved `tools.json` from PCF 7.4 to 8.0: 5.3 Deliver service to customer became 5.4, 13.6 to 13.9 became 13.7 to 13.10, the new 5.3 and 13.6 went to the Engagements and Knowledge base tools, two human capital groups took APQC's 8.0 wording, and every group has its element id. A console that copied `tools.json` copies it again.
 
 ## Not built
 
-- Moving `tools.json` to PCF 8.0. It keeps PCF 7.4's numbers and names: 5.3 is renumbered 5.4 in 8.0, 13.6 to 13.9 become 13.7 to 13.10, a few groups are reworded and 26 have no element id. `node packages/naive/src/checks/check-pcf.ts --json` lists each difference as `tool_catalog_drift` and fails on none. Until it moves, an activity's process is checked to be a level 3 element of `pcf.json` and to start with its process group's id, but not to sit under a process group of the same name.
 - Requiring an activity to name its PCF process. `process` is still optional.
 - The link from a workflow step to the activity it performs.
 - A command that reads rated activities and proposes open decisions, such as a decision level or a done-criterion kind for a function.
