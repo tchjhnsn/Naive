@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "pcf.schema.json",
+  "title": "Pcf",
+  "description": "APQC's Process Classification Framework at packages/naive/src/functions/pcf.json (EE-165): one version and edition of the PCF, levels 1 to 5, as APQC publishes it, with the attribution APQC's licence requires. Each element has a hierarchy id (1.0 for a category, 1.1 for a process group, 1.1.1 for a process, then activities and tasks), its name verbatim from APQC and its five-digit element id. Hierarchy ids can change between PCF versions and element ids do not. Element ids are not unique within a version: APQC files a few elements at two hierarchy ids, so nothing here requires them to be. The elements are written by scripts/import-pcf.ts and checked across elements by packages/naive/src/checks/check-pcf.ts.",
+  "type": "object",
+  "required": ["version", "edition", "published", "source", "attribution", "elements"],
+  "additionalProperties": false,
+  "properties": {
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+$", "description": "The PCF version, such as 8.0." },
+    "edition": { "enum": ["cross-industry"], "description": "Which PCF this is. Only the cross-industry edition is carried." },
+    "published": { "type": "string", "pattern": "^\\d{4}-(0[1-9]|1[0-2])$", "description": "The year and month APQC published this version." },
+    "source": { "type": "string", "pattern": "^[a-z0-9-]+$", "description": "A reference id in packages/naive/src/records/layers/<layer>/references/references.json." },
+    "attribution": { "type": "string", "minLength": 1, "description": "The attribution APQC's licence requires in every copy and derivative work of the PCF, verbatim." },
+    "note": { "type": "string" },
+    "elements": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Every element of levels 1 to 5, sorted by hierarchy id.",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "pcf", "level"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "description": "The hierarchy id. A category's ends in .0 (4.0); below it each part counts from 1 (4.1, 4.1.1)." },
+          "name": { "type": "string", "pattern": "^\\S(.*\\S)?$", "description": "The element's name, verbatim from APQC, with no space at either end." },
+          "pcf": { "type": "integer", "minimum": 10000, "maximum": 99999, "description": "APQC's five-digit element id." },
+          "level": { "enum": [1, 2, 3, 4, 5], "description": "1 category, 2 process group, 3 process, 4 activity, 5 task." }
+        },
+        "if": { "properties": { "level": { "const": 1 } } },
+        "then": { "properties": { "id": { "pattern": "^[1-9]\\d?\\.0$" } } },
+        "else": { "properties": { "id": { "pattern": "^[1-9]\\d?(\\.[1-9]\\d{0,2}){1,4}$" } } }
+      }
+    }
+  }
+}
