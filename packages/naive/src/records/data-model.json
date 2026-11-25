@@ -939,6 +939,23 @@
       "note": "The departments a venture can import: APQC categories tagged with Porter's value chain, with need-now priors (EE-047)"
     },
     {
+      "id": "activity-catalog",
+      "layer": "operations",
+      "function": null,
+      "level": "method",
+      "schema": "packages/naive/src/records/activity-catalog.schema.json",
+      "generator": "packages/naive/src/engine/generators/activity-catalog.ts",
+      "paths": [
+        "packages/naive/src/functions/activities.json"
+      ],
+      "refs": [
+        { "field": "activities[].process_group", "to": "tool-catalog", "checked_by": "packages/naive/src/checks/check-activities.ts" },
+        { "field": "activities[].source.ref", "to": "reference", "checked_by": "packages/naive/src/checks/check-activities.ts" },
+        { "field": "scales[].source", "to": "reference", "checked_by": "packages/naive/src/checks/check-activities.ts" }
+      ],
+      "note": "The activities a business performs (EE-164): units of work in O*NET task statement form, each under an APQC level 2 process group from the tool catalog, cross-industry or for one NAICS industry, optionally scored on published scales with who rated it. Scores are one rater's judgment and decide nothing"
+    },
+    {
       "id": "tool-catalog",
       "layer": "operations",
       "function": null,

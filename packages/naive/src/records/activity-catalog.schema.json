@@ -1,0 +1,114 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "activity-catalog.schema.json",
+  "title": "Activity catalog",
+  "description": "The catalog of activities at packages/naive/src/functions/activities.json (EE-164). An activity is a unit of work (APQC level 4) written as an O*NET task statement and filed under an APQC level 2 process group from packages/naive/src/functions/tools.json, optionally under a level 3 process. Its scope is cross-industry or one NAICS industry. It may be scored on the published scales the catalog lists, and a scored activity names who rated it, when and on what basis. Every object allows only the properties listed. packages/naive/src/checks/check-activities.ts checks it across files.",
+  "type": "object",
+  "required": ["version", "scales", "activities"],
+  "additionalProperties": false,
+  "properties": {
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "note": { "type": "string" },
+    "scales": {
+      "type": "array",
+      "minItems": 1,
+      "description": "The published scales an activity may be scored on. A rating's value must sit inside its scale's range.",
+      "items": {
+        "type": "object",
+        "required": ["id", "source", "range", "means"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "enum": ["regulatory-restriction", "physical-deployment", "cognitive-complexity", "verification", "importance", "share", "frequency"],
+            "description": "regulatory-restriction, physical-deployment and cognitive-complexity are from the CDR taxonomy; verification from the RL feasibility index; importance, share and frequency from O*NET."
+          },
+          "source": { "type": "string", "pattern": "^[a-z0-9-]+$", "description": "A reference id in packages/naive/src/records/layers/<layer>/references/references.json." },
+          "range": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 2,
+            "items": { "type": "number" },
+            "description": "The lowest and highest value, inclusive."
+          },
+          "means": { "type": "string", "minLength": 1, "description": "What the scale measures, and what its ends mean." }
+        }
+      }
+    },
+    "activities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "process_group", "statement", "scope"],
+        "additionalProperties": false,
+        "dependentRequired": { "ratings": ["rated"] },
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+          "process_group": { "type": "string", "pattern": "^\\d{1,2}\\.\\d{1,2}$", "description": "An APQC level 2 process group id in packages/naive/src/functions/tools.json, such as 3.1." },
+          "process": { "type": "string", "pattern": "^\\d{1,2}\\.\\d{1,2}\\.\\d{1,2}$", "description": "An APQC level 3 process id under the process group, such as 3.1.2." },
+          "statement": {
+            "type": "string",
+            "pattern": "^[A-Z][a-z]+ [^\\n]+\\.$",
+            "description": "One sentence in O*NET task statement form: a capitalized verb first, then its object and, where useful, how or why, ending with a period; at most 30 words."
+          },
+          "scope": {
+            "description": "Where the activity applies: every industry, or one NAICS industry.",
+            "oneOf": [
+              {
+                "type": "object",
+                "required": ["kind"],
+                "additionalProperties": false,
+                "properties": { "kind": { "const": "cross-industry" } }
+              },
+              {
+                "type": "object",
+                "required": ["kind", "naics"],
+                "additionalProperties": false,
+                "properties": {
+                  "kind": { "const": "industry" },
+                  "naics": { "type": "string", "pattern": "^\\d{2,6}$", "description": "A NAICS code, two to six digits." }
+                }
+              }
+            ]
+          },
+          "source": {
+            "type": "object",
+            "required": ["ref"],
+            "additionalProperties": false,
+            "description": "Where the statement comes from.",
+            "properties": {
+              "ref": { "type": "string", "pattern": "^[a-z0-9-]+$", "description": "A reference id in packages/naive/src/records/layers/<layer>/references/references.json." },
+              "locator": { "type": "string", "minLength": 1, "description": "Where in the source, such as a task id or a page." },
+              "changed": { "type": "boolean", "description": "True when the statement was reworded from the source." }
+            }
+          },
+          "ratings": {
+            "type": "object",
+            "minProperties": 1,
+            "additionalProperties": false,
+            "description": "Scores on the catalog's scales. A score is one rater's judgment.",
+            "properties": {
+              "regulatory-restriction": { "type": "number" },
+              "physical-deployment": { "type": "number" },
+              "cognitive-complexity": { "type": "number" },
+              "verification": { "type": "number" },
+              "importance": { "type": "number" },
+              "share": { "type": "number" },
+              "frequency": { "type": "number" }
+            }
+          },
+          "rated": {
+            "type": "object",
+            "required": ["by", "on", "basis"],
+            "additionalProperties": false,
+            "description": "Who rated the activity, when, and on what. Required with ratings.",
+            "properties": {
+              "by": { "type": "string", "minLength": 1 },
+              "on": { "type": "string", "format": "date" },
+              "basis": { "type": "string", "minLength": 1 }
+            }
+          }
+        }
+      }
+    }
+  }
+}

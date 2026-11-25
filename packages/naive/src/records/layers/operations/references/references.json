@@ -34,11 +34,95 @@
       "checked": "2026-10-28",
       "informs": [
         "field:venture.departments",
-        "field:department.apqc"
+        "field:department.apqc",
+        "field:activity-catalog.process_group"
       ],
       "stance": {
         "is": "adopted",
         "why": "A venture's departments are the PCF's top-level categories under short ids; the catalog maps to them and cites them rather than copying the framework's text, which carries licence terms."
+      }
+    },
+    {
+      "id": "alamos-althoff-2026-scinet",
+      "title": "SciNet: The Anatomy of Science",
+      "authors": [
+        "Cristian Alamos",
+        "Lukas Althoff"
+      ],
+      "year": 2026,
+      "kind": "dataset",
+      "summary": "A database of the tasks researchers perform across all scientific disciplines, modeled on O*NET: 7,262 task statements in 10 categories, grouped into 140 work activities and broken into 90,583 steps, each placed in a context (all research, or one of 6 domains, 34 fields and 318 subfields) and scored on importance, share of researchers, frequency and descriptive dimensions. Release v1.10.0, repository https://github.com/lukasalthoff/scinet, licensed CC BY 4.0.",
+      "url": "https://www.anatomyofscience.com",
+      "checked": "2026-11-25",
+      "informs": [
+        "field:activity-catalog.statement",
+        "field:activity-catalog.scope",
+        "field:activity-catalog.scales",
+        "rule:activity-catalog-method"
+      ],
+      "stance": {
+        "is": "adopted",
+        "why": "Naive takes SciNet's method and choice of scales, not its research tasks: an activity is a task statement in O*NET form, the catalog grows by adding a statement and checking it, work is placed on one axis and context on another, and activities are scored on the CDR, RL feasibility and O*NET scales SciNet uses. Any statement taken from SciNet cites it with source.ref, as CC BY 4.0 requires."
+      }
+    },
+    {
+      "id": "onet-online",
+      "title": "O*NET OnLine",
+      "authors": [
+        "US Department of Labor, Employment and Training Administration"
+      ],
+      "year": 2026,
+      "kind": "dataset",
+      "summary": "The US occupational database: each occupation's tasks as task statements (a verb, its object and, where useful, how or why), rated for importance (1 to 5), relevance (the percent of incumbents who report the task) and frequency (seven categories from yearly or less to hourly or more).",
+      "url": "https://www.onetonline.org/",
+      "checked": "2026-11-25",
+      "informs": [
+        "field:activity-catalog.statement",
+        "field:activity-catalog.ratings"
+      ],
+      "stance": {
+        "is": "adopted",
+        "why": "An activity's statement follows the O*NET task statement structure, and the importance, share and frequency scales are O*NET's importance, relevance and frequency scales."
+      }
+    },
+    {
+      "id": "parshall-lopez-luzuriaga-2026-cdr",
+      "title": "Measuring AI's Economic Reach: A Multi-Dimensional Task Taxonomy",
+      "authors": [
+        "Daniel Parshall",
+        "Andrea Lopez-Luzuriaga"
+      ],
+      "year": 2026,
+      "kind": "paper",
+      "summary": "The CDR taxonomy (GWU Center for Economic Research working paper 2026-005): three ordinal axes for a task, Cognitive complexity (C0 to C4), Deployment difficulty (D0 to D4) and Regulatory restrictions (R0 to R4), applied to the O*NET task universe.",
+      "url": "https://www2.gwu.edu/~forcpgm/2026-005.pdf",
+      "checked": "2026-11-25",
+      "informs": [
+        "field:activity-catalog.ratings"
+      ],
+      "stance": {
+        "is": "adopted",
+        "why": "The cognitive-complexity, physical-deployment and regulatory-restriction scales are the CDR axes with their 0 to 4 levels, because they separate whether a task can be done from whether it can be deployed and whether institutions permit it."
+      }
+    },
+    {
+      "id": "moreira-tomei-klein-teeselink-2026-rl-feasibility",
+      "title": "What Jobs Can AI Learn? Measuring Exposure by Reinforcement Learning",
+      "authors": [
+        "Philip Moreira Tomei",
+        "Bouke Klein Teeselink"
+      ],
+      "year": 2026,
+      "kind": "paper",
+      "summary": "The RL Feasibility Index (arXiv 2605.02598): every O*NET task scored on eight dimensions of reinforcement learning training feasibility, each from 1 to 10; dimension D1, verification method, runs from contested expert judgment with no inspectable artifact (1) to a fully deterministic programmatic check (10).",
+      "url": "https://arxiv.org/abs/2605.02598",
+      "checked": "2026-11-25",
+      "informs": [
+        "field:activity-catalog.ratings"
+      ],
+      "stance": {
+        "is": "adopted",
+        "why": "The verification scale is the index's verification method dimension, on its 1 to 10 range: how an activity's result can be checked bears on what evidence a handoff can ask for."
       }
     }
   ]
