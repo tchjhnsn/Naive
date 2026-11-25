@@ -2292,6 +2292,33 @@
       ]
     },
     {
+      "id": "EE-174",
+      "date": "2026-11-25",
+      "status": "in-force",
+      "decision": "A working copy that was offline syncs with its business store by pull and push, and conflicting edits merge field by field. Pull fetches what changed since the sync point and merges each record from its base, local and store copies; push sends each change with its base version and is refused whole if the store moved. A field changed on one side lands without asking. The same field changed to different values on both sides is a conflict: the record keeps the store's value and a person decides between both values, never the sync and never an agent. Files are addressed by their sha256 and never conflict. The field merge is built as packages/naive/src/engine/merge.ts. Not built: filing a conflict as a decision, provenance re-chaining, the host's sync API, device sign-in and naive sync.",
+      "why": "Torian, 2026-11-25 06:21Z: a founder working offline must be able to sync what they changed with their database. On a decision card at 06:26Z he chose field merge with conflicts as decisions over last writer wins, which silently loses work, and CRDTs, which are heavy for small JSON records. Keeping both values and asking a person matches Naive's rule that agents propose and people decide. The design is docs/design/OFFLINE_SYNC_2026-11-25.md.",
+      "related": [
+        "EE-031",
+        "EE-037",
+        "EE-042",
+        "EE-085"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/merge.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "docs/design/OFFLINE_SYNC_2026-11-25.md",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
       "id": "EE-150",
       "date": "2026-11-19",
       "status": "in-force",
