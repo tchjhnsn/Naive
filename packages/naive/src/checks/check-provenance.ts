@@ -2,10 +2,14 @@
 //   errors: a line that is not JSON; a broken chain (a line's prev is not the hash of the line
 //     before, or its hash does not match its content), which means a line was edited, removed or
 //     reordered; an entity outside the venture folder (a record in another source is logged by
-//     its address, <source>://<path>, and carries the source's version; EE-037).
+//     its address, <source>://<path>, and carries the source's version; EE-037); a re-chained line
+//     (one a push wrote again on top of this chain, EE-177) whose rechained_from block does not
+//     hold: no original hash, prev or working copy, or an original hash that is not this line as
+//     the working copy wrote it (packages/naive/src/core/rechain.ts).
 //   warnings: a logged file that has changed since its last entry, or is gone, so its later
 //     history is only in git; a derived_from path (not a URL or a decision id) that is not in the
-//     venture folder; time going backwards.
+//     venture folder; time going backwards. A re-chained line keeps the time the working copy
+//     wrote it, which is older than the store lines before it, so it is not time going backwards.
 // The schema of each line is checked by packages/naive/src/records/validate.ts.
 //
 //   node packages/naive/src/checks/check-provenance.ts <workspace or venture dir>
@@ -19,6 +23,7 @@ import { ventureFile } from "../core/venture-paths.ts";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { contentHash, gateLineKey, gateSidecar, lineHash, LOG, packageForSidecar } from "../core/provenance.ts";
+import { isRechained, rechainProblem } from "../core/rechain.ts";
 import type { ProvenanceEntry, Venture } from "../records/types/records.d.ts";
 
 const errors: string[] = [], warnings: string[] = [];
@@ -43,6 +48,8 @@ function checkSidecar(packageFile: string) {
     if (e.activity !== "gate") errors.push(`${where}: a package sidecar holds gate lines only`);
     if (prev !== null && e.prev !== prev) errors.push(`${where}: chain broken: prev does not match the line before (a line was edited, removed or reordered)`);
     if (e.hash !== lineHash(e.prev, e)) errors.push(`${where}: hash does not match the line's content (the line was edited)`);
+    const rechained = rechainProblem(e);
+    if (rechained) errors.push(`${where}: ${rechained}`);
     if (!/^[0-9a-f]{64}$/.test(e.sha256 ?? "")) errors.push(`${where}: sha256 is not the package body's hash`);
     if (!e.judgment || !e.gate) errors.push(`${where}: a gate line names the function and the verdict`);
     const key = e.judgment ? gateLineKey(e) : "";
@@ -94,8 +101,15 @@ for (const root of walk(dir)) {
     if (prev !== null && e.prev !== prev) errors.push(`${where}: chain broken: prev does not match the line before (a line was edited, removed or reordered)`);
     if (e.hash !== lineHash(e.prev, e)) errors.push(`${where}: hash does not match the line's content (the line was edited)`);
     if (/^\/|(^|\/)\.\.(\/|$)/.test(e.entity ?? "") || (/^[a-z][a-z0-9+.-]*:\/\//.test(e.entity ?? "") && !e.source)) errors.push(`${where}: entity ${e.entity} is outside the venture folder`);
-    if (e.at < at) warnings.push(`${where}: time goes backwards`);
-    at = e.at; prev = e.hash;
+    const rechained = rechainProblem(e);
+    if (rechained) errors.push(`${where}: ${rechained}`);
+    // A re-chained line keeps the time the working copy wrote it, which is older than the store lines
+    // already in this chain, so it neither warns nor moves the time this check compares against.
+    if (!isRechained(e)) {
+      if (e.at < at) warnings.push(`${where}: time goes backwards`);
+      at = e.at;
+    }
+    prev = e.hash;
     if (typeof e.entity !== "string") { errors.push(`${where}: no entity`); return; }
     if (!e.source) last.set(e.entity, e);
     for (const d of e.derived_from ?? []) if (!/^[a-z][a-z0-9+.-]*:\/\//.test(d) && !/^[A-Z]+-\d+$/.test(d) && !d.startsWith("_drafts/") && !existsSync(ventureFile(root, d))) warnings.push(`${where}: derived from ${d}, which is not in the venture folder`);
