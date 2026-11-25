@@ -1,6 +1,38 @@
 {
-  "version": "0.2.0",
-  "note": "The activities a business performs, as Naive data (EE-164). An activity is a unit of work (APQC level 4) written as an O*NET task statement and filed under an APQC level 2 process group from tools.json, cross-industry or for one NAICS industry. An activity may be scored on the scales below. A score is one rater's judgment, and every scored activity names who rated it, when and on what basis. This catalog is version 0.x and unevaluated: no score has been compared with an outcome. A score never decides anything: the most it may do is propose an open decision for a person, and nothing reads scores yet. The first activities come from SciNet (CC BY 4.0) by scripts/import-scinet.ts, with SciNet's scores, which rate a task as researchers perform it and not as a business does (EE-167). Checked by packages/naive/src/checks/check-activities.ts.",
+  "version": "0.3.0",
+  "note": "The activities a business performs, as Naive data (EE-164). An activity is a unit of work (APQC level 4) written as an O*NET task statement and filed under an APQC level 2 process group from tools.json, cross-industry or for one NAICS industry. An activity may be scored on the scales below. A score is one rater's judgment, and every scored activity names who rated it, when and on what basis. This catalog is version 0.x and unevaluated: no score has been compared with an outcome. A score never decides anything: the most it may do is propose an open decision for a person, and it does so only through the proposal rules below, whose lines are unvalidated priors (EE-169). The first activities come from SciNet (CC BY 4.0) by scripts/import-scinet.ts, with SciNet's scores, which rate a task as researchers perform it and not as a business does (EE-167). Checked by packages/naive/src/checks/check-activities.ts.",
+  "proposal_rules": [
+    {
+      "id": "agent-with-checked-result",
+      "when": [
+        {
+          "scale": "verification",
+          "at_least": 7
+        },
+        {
+          "scale": "physical-deployment",
+          "at_most": 1
+        },
+        {
+          "scale": "regulatory-restriction",
+          "at_most": 1
+        }
+      ],
+      "asks": "Should an agent perform these activities, with a person checking a sample of the results?",
+      "basis": "An unvalidated prior: the result can mostly be checked against an artifact (verification 7 or more of 10), with little physical work (D1 or less) and little regulatory restriction (R1 or less). No line has been compared with an outcome."
+    },
+    {
+      "id": "person-approves-restricted",
+      "when": [
+        {
+          "scale": "regulatory-restriction",
+          "at_least": 2
+        }
+      ],
+      "asks": "Should a person approve each of these activities before it is done?",
+      "basis": "An unvalidated prior: R2 or more on the CDR regulatory restrictions axis means an institution restricts the activity. No line has been compared with an outcome."
+    }
+  ],
   "scales": [
     {"id": "regulatory-restriction", "source": "parshall-lopez-luzuriaga-2026-cdr", "range": [0, 4], "means": "How far legal, professional or social institutions restrict the activity, from R0 (no professional or statutory barrier) to R4, on the CDR taxonomy's regulatory restrictions axis"},
     {"id": "physical-deployment", "source": "parshall-lopez-luzuriaga-2026-cdr", "range": [0, 4], "means": "How much physical deployment or embodiment the activity needs, from D0 (no physical interaction) to D4, on the CDR taxonomy's deployment difficulty axis"},
