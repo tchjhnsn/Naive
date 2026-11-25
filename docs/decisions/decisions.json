@@ -2319,6 +2319,31 @@
       ]
     },
     {
+      "id": "EE-175",
+      "date": "2026-11-25",
+      "status": "in-force",
+      "decision": "A conflict offline sync finds is an ordinary decision. It is proposed once by the agent sync, carries sync_conflict in the decision record (the file, the path, the base, local and store values and who wrote each) and stays open while the record keeps the store's value. A person approves store, local or a value of their own written as JSON, and merging the decided version writes that value at the path, checked against the record's schema and logged in provenance like any merge. Resolving a conflict over a whole record from a decision is not built.",
+      "why": "EE-174 says a person decides every same-field conflict and nothing is lost. Naive already has one door for that: an agent proposes, a person approves, a merge applies the answer (EE-058). Using it means conflicts appear in the decision queue and console like every other decision, and need no second approval path. applies_to writes a string at a dotted field, which cannot hold a number, an object or an item of a list by id, so the conflict carries its own path and values.",
+      "related": [
+        "EE-058",
+        "EE-174"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/sync-conflicts.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/sync-apply.ts",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
       "id": "EE-176",
       "date": "2026-11-25",
       "status": "in-force",
