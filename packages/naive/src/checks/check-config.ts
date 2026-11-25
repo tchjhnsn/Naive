@@ -3,7 +3,8 @@
 // packages/naive/src/records/naive-config.schema.json; rule ids are unique; every route pattern in fail_closed and the
 // rules matches at least one route in the router's table (X-6); every check named in checks exists;
 // every package pinned is installed at that version (U-4); every owner is a role in the team plan
-// when the venture has one; every question setting names a framework that asks System 1 questions.
+// when the venture has one; every question setting names a framework that asks System 1 questions; every rule under
+// activity_proposals is a proposal rule of the activity catalog, with lines on its scales and inside their ranges (EE-170).
 //
 //   node packages/naive/src/checks/check-config.ts <venture dir> [--json]        check; exit 1 on a problem
 //   node packages/naive/src/checks/check-config.ts <venture dir> --resolved      the config with the defaults filled in
@@ -20,6 +21,8 @@ import { tmpdir } from "node:os";
 import { join, resolve as resolvePath } from "node:path";
 import { CONFIG, configFor, installed, pinProblems, rawConfig } from "../engine/naive-config.ts";
 import { evaluate, patternRe, rulesFor } from "../engine/gate.ts";
+import { readCatalog, ventureLineProblems } from "../engine/activity-proposals.ts";
+import { runSync } from "../core/effect/run.ts";
 import { teamPlan } from "../engine/access.ts";
 import { gateOf, repo, resolve, routes } from "../records/routes/routes.ts";
 import { agentFromEnv, record } from "../core/provenance.ts";
@@ -57,6 +60,9 @@ export function check(dir: string): { errors: string[], warnings: string[], note
   for (const [fn, role] of Object.entries(config.owners ?? {})) {
     if (plan && !(plan.roles ?? []).some((r: { id: string }) => r.id === role)) errors.push(`owners: ${fn} names ${role}, which is not a role in the team plan`);
     if (!plan) warnings.push(`owners: ${fn} names ${role}, and there is no team plan to check it against`);
+  }
+  if (v.status === 0 && config.activity_proposals?.rules) {
+    try { errors.push(...ventureLineProblems(runSync(readCatalog()), config.activity_proposals.rules)); } catch (e) { errors.push(e instanceof Error ? e.message : String(e)); }
   }
   for (const fw of Object.keys(config.questions ?? {})) if (!FRAMEWORKS.includes(fw)) errors.push(`questions: ${fw} asks no System 1 questions (one of ${FRAMEWORKS.join(", ")})`);
   return { errors, warnings };
