@@ -1,6 +1,6 @@
 # The activity catalog
 
-Date: 2026-11-25. Decisions: EE-164, EE-165, EE-166, EE-167, EE-168, EE-169, EE-170, EE-171, EE-172. Status: the record type, the scales, the check and the generator are built, and APQC's Process Classification Framework 8.0, levels 1 to 5, is built as `packages/naive/src/functions/pcf.json`; the catalog holds a first seed of 38 activities from SciNet, and the rest is listed under Not built.
+Date: 2026-11-25. Decisions: EE-164, EE-165, EE-166, EE-167, EE-168, EE-169, EE-170, EE-171, EE-172, EE-173, EE-176, EE-179. Status: the record type, the scales, the check and the generator are built, and APQC's Process Classification Framework 8.0, levels 1 to 5, is built as `packages/naive/src/functions/pcf.json`; the catalog holds a first seed of 38 activities from SciNet, and the rest is listed under Not built.
 
 ## Domain
 
@@ -122,6 +122,19 @@ flowchart LR
 - The sources are references in `packages/naive/src/records/layers/operations/references/references.json`: SciNet, O*NET, the CDR taxonomy and the RL feasibility index. NAICS reuses `naics-2022` in the purpose layer's references, and the process groups cite `apqc-pcf-cross-industry`.
 - The activity catalog and `pcf.json` left `tools.json` and `tool-catalog.schema.json` unchanged. A later change (EE-166) moved `tools.json` from PCF 7.4 to 8.0: 5.3 Deliver service to customer became 5.4, 13.6 to 13.9 became 13.7 to 13.10, the new 5.3 and 13.6 went to the Engagements and Knowledge base tools, two human capital groups took APQC's 8.0 wording, and every group has its element id. A console that copied `tools.json` copies it again.
 - APQC activities in the assignments (EE-176): a key of `operations/activity-assignments.json` is the id of a catalog activity or the hierarchy id of an APQC level 4 activity in `pcf.json`, the same two forms a workflow step's `activity` takes. The two shipped steps that name an activity name APQC activities, so a business can now assign them: a person writes the record through the route `operations/activity-assignments`, the step in the agent's brief carries the assignment, and the brief lists it with APQC's name. `naive activities` and the record's generator refuse an APQC id the framework lacks or one that is not level 4. No proposal rule covers APQC activities, because they carry no scores, and a decision's merge cannot set one, because its field path splits on the dots of the id.
+- Defaults by kind (EE-179): a person performs four kinds of activity at any APQC level, a decision, a value, a commitment and a relationship, and agents perform the rest. The line is the kind of the activity and not its level, because level 4 holds decisions such as approving a price, hiring a candidate and negotiating a contract. The catalog holds the kinds as data, `kinds`, each `{id, performer, when, basis}`. A kind is told from the words of an activity's statement, or of an APQC activity's name: the first word is the verb and the words after it are the terms. A clause names verbs, terms or both, and the first kind with a clause the statement meets is the activity's kind (`packages/naive/src/engine/activity-kinds.ts`). An activity the business has not assigned, whose kind a person performs, has an entry in the function agent's brief marked `default` with its kind, and a step that names it carries the same. The business's own assignment replaces a default, in either direction. The words are unvalidated priors: 54 of APQC's 1,352 level 4 activities have a kind today, and `naive activities defaults` lists them so a person can read every one. `check-activities.ts` fails on a kind listed twice and on a verb an earlier kind already takes with no terms.
+
+```mermaid
+flowchart TD
+  S[activity statement or APQC name] --> W[first word is the verb, later words are the terms]
+  W --> A{the business assigned this activity?}
+  A -->|yes| R[its own assignment, marked assigned]
+  A -->|no| K{a kind's clause is met?}
+  K -->|decision, value, commitment or relationship| D[a person performs it, marked default with the kind]
+  K -->|no kind| N[no entry: the function's agent performs it]
+  R --> B[function agent's brief and the step that names it]
+  D --> B
+```
 
 ## Not built
 
@@ -131,7 +144,9 @@ flowchart LR
 - An activity for one NAICS industry. The matching is built, and the catalog holds none yet.
 - Enforcing an assignment. A function agent's brief tells it the rule (EE-173), and the gate, decision levels and done criteria do not change with `operations/activity-assignments.json`.
 - Proposing an assignment for an APQC activity. A person writes it by hand, and a decision's merge cannot set it.
-- Assigning anything above APQC level 4. Who holds a category, process group or process, and what the agent needs from the person there, is not decided.
+- Levels 1 and 2 as the briefing a person reads. It is decided (EE-179) and not built. Nothing above APQC level 4 can be assigned.
+- Telling a kind from anything but the words of the statement. A statement that names a decision with another verb has no kind, and a business corrects that with its own assignment.
+- A default for approval. A kind sets who performs the activity and nothing else.
 - Rating the seeded activities for a business. The scores are SciNet's, for researchers.
 - Activities outside process group 3.1.
 - A list of valid NAICS codes. The check holds a code to two to six digits only.
