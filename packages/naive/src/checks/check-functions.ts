@@ -12,14 +12,16 @@
 //   - every capability cluster is in packages/naive/src/functions/it/capability-clusters.json;
 //   - the intake names a workflow the module has, and that workflow's trigger is intake;
 //   - a step's skill is a folder in the module's skills/ with a SKILL.md; a step writes only routes in the function's
-//     write reach (WRITE_REACH below); a step raises only classes the module's decisions.json has a row for;
+//     write reach (WRITE_REACH below); a step raises only classes the module's decisions.json has a row for; a step's
+//     activity is a level 4 element of packages/naive/src/functions/pcf.json or an activity in
+//     packages/naive/src/functions/activities.json, under the function's APQC category (EE-168);
 //   - agent.md has frontmatter naming role <id>-agent and its function.
 // With --complete, a module must also have every piece: function.json, agent.md, decisions.json, at least two
 // workflows, at least one skill, and at least one venture-level record type in data-model.json whose function is its
 // id, and its function must sit in exactly one lead's portfolio. Until every module is filled, test.mjs runs it without.
 //
 // It reads files through VentureFs (EE-125). Findings exit 1; a shared file it needs (departments, decision rights,
-// delegation, the cluster catalog) that cannot be read exits 2.
+// delegation, the cluster catalog, pcf.json, the activity catalog) that cannot be read exits 2.
 
 import { join } from "node:path";
 import { PLANS } from "../engine/access.ts";
@@ -75,6 +77,23 @@ export const checkFunctions = Effect.gen(function* () {
   const leads = (yield* Effect.forEach(roleFiles, (f) => readJson(join(ROLES, f)))).filter(isObject)
     .filter((r) => Array.isArray(r.portfolio)).map((r) => ({ id: String(r.id), portfolio: strings(r.portfolio) }));
 
+  // Each function's APQC category number, APQC's level 4 activities and the activity catalog's ids with their category.
+  const departmentsFile = yield* required(join(FUNCTIONS, "departments.json"));
+  const category = new Map((isObject(departmentsFile) && Array.isArray(departmentsFile.departments) ? departmentsFile.departments.filter(isObject) : [])
+    .map((d) => [String(d.id), isObject(d.apqc) ? String(d.apqc.id).split(".")[0] ?? "" : ""]));
+  const pcf = yield* required(join(FUNCTIONS, "pcf.json"));
+  const apqcActivities = new Set((isObject(pcf) && Array.isArray(pcf.elements) ? pcf.elements.filter(isObject) : []).filter((e) => e.level === 4).map((e) => String(e.id)));
+  const catalog = yield* required(join(FUNCTIONS, "activities.json"));
+  const catalogActivities = new Map((isObject(catalog) && Array.isArray(catalog.activities) ? catalog.activities.filter(isObject) : [])
+    .map((a) => [String(a.id), String(a.process_group).split(".")[0] ?? ""]));
+  /** Why a step's activity is wrong for a function, or null. */
+  const activityError = (fn: string, id: string): string | null => {
+    const apqc = /^\d/.test(id);
+    if (apqc ? !apqcActivities.has(id) : !catalogActivities.has(id)) return `which is not ${apqc ? "a level 4 activity in pcf.json" : "an activity in activities.json"}`;
+    const major = apqc ? id.split(".")[0] : catalogActivities.get(id);
+    return major === category.get(fn) ? null : `which is under APQC category ${major}.0, not the function's ${category.get(fn)}.0`;
+  };
+
   const findings: Finding[] = [];
   const fail = (fn: string, file: string, error: string) => { findings.push({ fn, file, error }); };
 
@@ -119,6 +138,7 @@ export const checkFunctions = Effect.gen(function* () {
         if (s.skill && !skills.includes(String(s.skill))) fail(fn, file, `step ${String(s.id)} loads skill ${String(s.skill)}, which skills/ does not have`);
         for (const r of strings(s.writes)) if (!reaches(reach, r)) fail(fn, file, `step ${String(s.id)} writes ${r}, outside the function's write reach`);
         for (const c of strings(s.raises)) if (!rows.has(c)) fail(fn, file, `step ${String(s.id)} raises ${c}, which decisions.json has no row for`);
+        if (typeof s.activity === "string") { const e = activityError(fn, s.activity); if (e) fail(fn, file, `step ${String(s.id)} performs activity ${s.activity}, ${e}`); }
       }
     }
     if (complete && workflows.size < 2) fail(fn, rel("workflows/"), `has ${workflows.size} workflow${workflows.size === 1 ? "" : "s"}; a complete module has at least two`);
