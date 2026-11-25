@@ -948,6 +948,9 @@
       "paths": [
         "packages/naive/src/functions/pcf.json"
       ],
+      "refs": [
+        { "field": "source", "to": "reference", "checked_by": "packages/naive/src/checks/check-pcf.ts" }
+      ],
       "note": "APQC's Process Classification Framework 8.0, cross-industry, levels 1 to 5 (EE-165): each element's hierarchy id, name verbatim from APQC and element id, with the attribution APQC's licence requires. Written by scripts/import-pcf.ts"
     },
     {

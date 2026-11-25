@@ -102,7 +102,7 @@ export const coverage = (cat: ActivityCatalog, groups: Map<string, string>) => {
 const read = (file: string) => readJson(join(root, file)).pipe(Effect.mapError((e) => new CannotRun({ message: `${file}: ${describe(e)}`, cause: e })));
 
 /** Every reference id in the layers' references files. */
-const referenceIds = Effect.gen(function* () {
+export const referenceIds = Effect.gen(function* () {
   const fs = yield* VentureFs;
   const layers = yield* fs.list(join(root, LAYERS)).pipe(Effect.mapError((e) => new CannotRun({ message: `${LAYERS}: ${describe(e)}`, cause: e })));
   const ids = new Set<string>();
