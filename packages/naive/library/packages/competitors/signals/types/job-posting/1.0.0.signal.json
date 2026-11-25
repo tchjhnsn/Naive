@@ -1,0 +1,140 @@
+{
+  "id": "job-posting",
+  "version": "1.0.0",
+  "title": "Job posting",
+  "description": "A company posted a job: the organization at org and the role at role. It folds each title once into the competitor's signals record, as a sign of where the company is putting people.",
+  "subject": "The organization's slug",
+  "props": {
+    "type": "object",
+    "required": [
+      "org",
+      "role"
+    ],
+    "additionalProperties": false,
+    "properties": {
+      "org": {
+        "type": "object"
+      },
+      "role": {
+        "type": "object",
+        "required": [
+          "title"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "function": {
+            "type": "string",
+            "description": "The function the role sits in, in the venture's own function ids where the producer knows them"
+          },
+          "url": {
+            "type": "string",
+            "pattern": "^https?://"
+          }
+        }
+      }
+    }
+  },
+  "composes": [
+    {
+      "at": "org",
+      "type": "organization@^1"
+    }
+  ],
+  "projects": [
+    {
+      "route": "competitors/[id]/signals",
+      "subject_field": "competitor",
+      "fields": {
+        "hiring": {
+          "reducer": "append",
+          "value": "props.role",
+          "unique_by": [
+            "props.role.title"
+          ]
+        },
+        "first_seen": {
+          "reducer": "min",
+          "value": "time"
+        },
+        "last_seen": {
+          "reducer": "max",
+          "value": "time"
+        }
+      }
+    }
+  ],
+  "freshness": {
+    "max_age": "60d"
+  },
+  "cases": [
+    {
+      "id": "each-title-once",
+      "given": [
+        {
+          "subject": "acme-robotics",
+          "time": "2026-11-02",
+          "props": {
+            "org": {
+              "name": "Acme Robotics"
+            },
+            "role": {
+              "title": "Enterprise account executive",
+              "function": "marketing-and-sales"
+            }
+          }
+        },
+        {
+          "subject": "acme-robotics",
+          "time": "2026-11-09",
+          "props": {
+            "org": {
+              "name": "Acme Robotics"
+            },
+            "role": {
+              "title": "Enterprise account executive",
+              "function": "marketing-and-sales"
+            }
+          }
+        },
+        {
+          "subject": "acme-robotics",
+          "time": "2026-11-10",
+          "props": {
+            "org": {
+              "name": "Acme Robotics"
+            },
+            "role": {
+              "title": "Security engineer",
+              "function": "it"
+            }
+          }
+        }
+      ],
+      "expect": {
+        "competitors/acme-robotics/signals": {
+          "competitor": "acme-robotics",
+          "first_seen": "2026-11-02",
+          "last_seen": "2026-11-10",
+          "hiring": [
+            {
+              "title": "Enterprise account executive",
+              "function": "marketing-and-sales",
+              "support": "supported"
+            },
+            {
+              "title": "Security engineer",
+              "function": "it",
+              "support": "supported"
+            }
+          ]
+        }
+      },
+      "note": "A posting seen twice is listed once."
+    }
+  ],
+  "note": "Open type in the competitors package (the implicit library naive)."
+}

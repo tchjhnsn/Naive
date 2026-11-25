@@ -103,7 +103,7 @@ try {
   const notProjected = naive(["recipes", "init", "competitors/[id]", "--venture", gamma, "--by", "dana"]);
   expect("init refuses a pattern that is not a projected record type", notProjected.status === 1 && /not a projected record type/.test(notProjected.stderr), notProjected.stderr);
   const init = naive(["recipes", "init", PATTERN, "--venture", gamma, "--by", "dana"]);
-  expect("naive recipes init writes the starter recipe", init.status === 0 && existsSync(recipeFile(gamma)) && /the plain fold of competitor-funding@\^1, product-launch@\^1/.test(init.stdout), init.stdout + init.stderr);
+  expect("naive recipes init writes the starter recipe", init.status === 0 && existsSync(recipeFile(gamma)) && /the plain fold of competitor-funding@\^1, job-posting@\^1, price-change@\^1, product-launch@\^1/.test(init.stdout), init.stdout + init.stderr);
   const initLine = (entries(gamma) as { entity: string; agent?: { kind?: string; id?: string }; sha256?: string }[]).find((e) => e.entity === "competitors/[id]/signals.recipe.ts");
   expect("the starter is logged in provenance as the person's, its bytes in the blob store", initLine?.agent?.kind === "person" && initLine.agent.id === "dana" && initLine.sha256 === sha(recipeFile(gamma)) && hasBlob(gamma, initLine.sha256), show(initLine));
   const twice = naive(["recipes", "init", PATTERN, "--venture", gamma, "--by", "dana"]);
