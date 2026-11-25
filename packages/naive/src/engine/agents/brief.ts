@@ -28,9 +28,9 @@ export interface AgentBrief {
   readonly spec: Record<string, unknown>,
   /** function agent: the module's agent.md. */
   readonly instructions?: BriefFile | null,
-  /** function agent: each workflows/<id>.json. With a venture, a step whose activity it has assigned carries `assignment`. */
+  /** function agent: each workflows/<id>.json. With a venture, a step whose activity it has assigned, or whose kind gives a default, carries `assignment`. */
   readonly workflows?: readonly BriefJson[],
-  /** function agent, with a venture: the function's activities the venture has assigned, each with the rule to follow. */
+  /** function agent, with a venture: the function's activities the venture has assigned and the ones a person performs by default for their kind (EE-179), each with the rule to follow. */
   readonly assignments?: readonly AssignedActivity[],
   /** function agent: the module's decisions.json. */
   readonly decisions?: BriefJson | null,
@@ -73,14 +73,14 @@ export function agentBrief(role: string, dir: string | null): AgentBrief | Error
     const s = functionAgent(fn);
     const assigned = dir ? assignmentsFor(dir, fn) : null;
     const workflows = s.workflows.map((w) => json(join(s.module, "workflows", `${w}.json`), w)).filter((w): w is BriefJson => !!w)
-      .map((w) => (assigned?.record ? { ...w, content: assignedSteps(w.content, assigned.record) } : w));
+      .map((w) => (assigned ? { ...w, content: assignedSteps(w.content, assigned.record, assigned.activities) } : w));
     return {
       kind: "function-agent", role: s.role,
       spec: { ...s, module: rel(s.module), instructions: s.instructions ? rel(s.instructions) : null, decisions: s.decisions ? rel(s.decisions) : null },
       instructions: text(s.instructions), workflows, decisions: json(s.decisions, "decisions"),
       ...(assigned ? { assignments: assigned.activities } : {}),
       env: { MENTURA_ACTOR_ID: s.role }, team_plan_entry: teamPlanEntry(s, phase), ...staffing(s.role),
-      how: `Act as ${s.role}: follow instructions, run a workflow's steps in order, raise a question in decisions/* when the decision matrix says escalate, and write only the routes in spec.writes. Skill paths under /function/ are relative to spec.module.${assigned?.activities.length ? " The venture has assigned some of your activities: follow the rule of each entry in assignments, and of a step's assignment." : ""}`,
+      how: `Act as ${s.role}: follow instructions, run a workflow's steps in order, raise a question in decisions/* when the decision matrix says escalate, and write only the routes in spec.writes. Skill paths under /function/ are relative to spec.module.${assigned?.activities.length ? " Some of your activities have a rule, from the venture's own assignments or by default from the activity's kind: follow the rule of each entry in assignments, and of a step's assignment." : ""}`,
     };
   }
   if ((leadIds() as string[]).includes(role)) {
