@@ -156,6 +156,12 @@ const approvalIds: string[] = listedFound.find((f) => f.id === approvalId)?.acti
 ok(merge(acted, approvalId, { by: "Torian" }).ok && approvalIds.every((id) => assigned()[id].approval === "person") && performerIds.every((id) => assigned()[id].performer === "agent"), "a second rule's answer joins the same file and leaves the first rule's fields as they are");
 writeFileSync(join(acted, ASSIGNMENTS), JSON.stringify({ activities: { ...assigned(), "no-such-activity": { performer: "person" } } }));
 ok(run(acted).status !== 0 && /assigns no-such-activity, which is not an activity/.test(run(acted).out), "the command refuses assignments that name an activity the catalog lacks");
+const kept = Object.fromEntries(Object.entries(assigned()).filter(([id]) => id !== "no-such-activity"));
+writeFileSync(join(acted, ASSIGNMENTS), JSON.stringify({ activities: { ...kept, "3.5.1.6": { approval: "person" } } }));
+ok(run(acted).status === 0, "assignments may name an APQC level 4 activity (EE-176)");
+writeFileSync(join(acted, ASSIGNMENTS), JSON.stringify({ activities: { ...kept, "99.9.9.9": { approval: "person" } } }));
+ok(run(acted).status !== 0 && /assigns 99\.9\.9\.9, which is not a level 4 activity/.test(run(acted).out), "the command refuses assignments that name an APQC activity the framework lacks");
+writeFileSync(join(acted, ASSIGNMENTS), JSON.stringify({ activities: kept }));
 ok(/"activity":"merge"/.test(readFileSync(join(acted, "provenance.jsonl"), "utf8").replace(/\s/g, "")), "each merge is logged in provenance");
 
 rmSync(tmp, { recursive: true, force: true });
