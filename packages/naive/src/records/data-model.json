@@ -965,6 +965,7 @@
       ],
       "refs": [
         { "field": "activities[].process_group", "to": "tool-catalog", "checked_by": "packages/naive/src/checks/check-activities.ts" },
+        { "field": "activities[].process", "to": "pcf", "checked_by": "packages/naive/src/checks/check-activities.ts" },
         { "field": "activities[].source.ref", "to": "reference", "checked_by": "packages/naive/src/checks/check-activities.ts" },
         { "field": "scales[].source", "to": "reference", "checked_by": "packages/naive/src/checks/check-activities.ts" }
       ],

@@ -46,7 +46,7 @@ export type ActivityCatalog = {
     id: string;
     /** An APQC level 2 process group id in packages/naive/src/functions/tools.json, such as 3.1. */
     process_group: string;
-    /** An APQC level 3 process id under the process group, such as 3.1.2. */
+    /** An APQC level 3 process under the process group: the hierarchy id of a level 3 element in packages/naive/src/functions/pcf.json (PCF 8.0), such as 3.1.2. */
     process?: string;
     /** One sentence in O*NET task statement form: a capitalized verb first, then its object and, where useful, how or why, ending with a period; at most 30 words. */
     statement: string;
