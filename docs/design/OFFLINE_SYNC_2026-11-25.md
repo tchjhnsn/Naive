@@ -1,6 +1,6 @@
 # Offline sync between a working copy and a business store
 
-Date: 2026-11-25. Decision: EE-174. Status: the field merge is built (`packages/naive/src/engine/merge.ts`); the rest is listed under Not built. Torian's review copy of this design is the Claude Doc "Syncing an offline business with Mentura".
+Date: 2026-11-25. Decision: EE-174. Status: the field merge (`packages/naive/src/engine/merge.ts`) and conflict decisions (`packages/naive/src/engine/sync-conflicts.ts`, EE-175) are built; the rest is listed under Not built. Torian's review copy of this design is the Claude Doc "Syncing an offline business with Mentura".
 
 ## The ask
 
@@ -52,6 +52,7 @@ stateDiagram-v2
 ```
 
 - **Pull.** Fetch every record newer than the sync point. For each, compare the base (from the blob store, `packages/naive/src/core/blobs.ts`, by the hash the last pull recorded), the local copy and the store copy, and merge with `mergeRecord`. Copy down missing file hashes. Move the sync point only after every record is written, so a stopped pull can run again.
+- **Conflict decisions** (built, `packages/naive/src/engine/sync-conflicts.ts`). Each conflict is filed once as an open decision proposed by the agent `sync`, holding `sync_conflict` in the decision record: the file, the path, the three values and who wrote each. A person approves `store`, `local` or a value of their own written as JSON, and merging the decision writes it at the path (`applySyncConflict` in `packages/naive/src/engine/sync-apply.ts`), checked against the record's schema and logged in provenance like any merge.
 - **Field merge** (built, `packages/naive/src/engine/merge.ts`). Objects merge key by key; arrays whose items are objects with unique string ids merge item by item; any other array is one value. A merged record must still pass its schema and the gate, or it becomes a conflict decision.
 - **Push.** Upload missing file hashes, then send every change with its base version. The store accepts the batch only if every base still matches, and writes it through its router, so the gate, decision rights and provenance apply as for any write. A refused push pulls, merges and tries again, at most twice.
 - **Provenance.** On push each local provenance line is written again on top of the store's chain, naming its original hash and the working copy it came from, as a rebase keeps the original commit.
@@ -59,4 +60,4 @@ stateDiagram-v2
 
 ## Not built
 
-In the order of the design's pull requests: filing a conflict as a decision; provenance re-chaining and `check-provenance.ts` accepting it; the host's sync API; device sign-in; `naive sync link`, `pull`, `push` and `status`; files to the host's object storage; a production check. Out of scope for now: live sync on every write, merging inside one text field, syncing a code repository, and two-way sync with outside tools (a connector job under the source-of-truth matrix, EE-042).
+In the order of the design's pull requests: resolving a conflict over a whole record (a record removed on one side and edited on the other) from a decision; provenance re-chaining and `check-provenance.ts` accepting it; the host's sync API; device sign-in; `naive sync link`, `pull`, `push` and `status`; files to the host's object storage; a production check. Out of scope for now: live sync on every write, merging inside one text field, syncing a code repository, and two-way sync with outside tools (a connector job under the source-of-truth matrix, EE-042).
