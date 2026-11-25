@@ -61,6 +61,8 @@ export const REGISTRY: Registry = {
   "packages/naive/src/checks/check-connections-test.ts": plain("proves the connections check breaks on each rule on copies"),
   "packages/naive/src/checks/check-tools.ts": plain("the tool catalog: schema shape, unique ids and titles, process group ids that start with their function's APQC number, references to departments, process groups, data model record types and capability clusters, and coverage of every function and group; it compares ids, it does not decide what a thing is"),
   "packages/naive/src/checks/check-tools-test.ts": plain("proves the tools check breaks on each rule on copies"),
+  "packages/naive/src/checks/check-activities.ts": plain("the activity catalog: schema shape, unique ids, statements unique per process group and scope, word and sentence counts and a fixed list of first words that are not verbs, process ids that start with their process group's, references to tool catalog process groups and reference ids, and ratings inside the ranges the catalog's scales give; it compares ids and numbers, it does not decide what a thing is"),
+  "packages/naive/src/checks/check-activities-test.ts": plain("proves the activities check breaks on each rule on copies"),
   "packages/naive/src/checks/check-data-model.ts": plain("every JSON file maps to a declared record type by path; record types are schema types, not glossary terms"),
   "packages/naive/src/checks/check-data-packages.ts": plain("data package layout, append-only streams and immutable raw sources"),
   "packages/naive/src/checks/check-delegation.ts": plain("grant chains, scopes and expiry between roles named in templates"),

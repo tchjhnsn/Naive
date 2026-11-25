@@ -1,0 +1,14 @@
+{
+  "version": "0.1.0",
+  "note": "The activities a business performs, as Naive data (EE-164). An activity is a unit of work (APQC level 4) written as an O*NET task statement and filed under an APQC level 2 process group from tools.json, cross-industry or for one NAICS industry. An activity may be scored on the scales below. A score is one rater's judgment, and every scored activity names who rated it, when and on what basis. This catalog is version 0.x and unevaluated: no score has been compared with an outcome. A score never decides anything: the most it may do is propose an open decision for a person, and nothing reads scores yet. The list of activities is empty until it is seeded. Checked by packages/naive/src/checks/check-activities.ts.",
+  "scales": [
+    {"id": "regulatory-restriction", "source": "parshall-lopez-luzuriaga-2026-cdr", "range": [0, 4], "means": "How far legal, professional or social institutions restrict the activity, from R0 (no professional or statutory barrier) to R4, on the CDR taxonomy's regulatory restrictions axis"},
+    {"id": "physical-deployment", "source": "parshall-lopez-luzuriaga-2026-cdr", "range": [0, 4], "means": "How much physical deployment or embodiment the activity needs, from D0 (no physical interaction) to D4, on the CDR taxonomy's deployment difficulty axis"},
+    {"id": "cognitive-complexity", "source": "parshall-lopez-luzuriaga-2026-cdr", "range": [0, 4], "means": "The level of reasoning and judgment the activity requires, from C0 to C4, on the CDR taxonomy's cognitive complexity axis"},
+    {"id": "verification", "source": "moreira-tomei-klein-teeselink-2026-rl-feasibility", "range": [1, 10], "means": "Where checking the activity's result falls, from 1 (rare experts who disagree, no inspectable artifact) to 10 (a fully deterministic programmatic check), on the RL feasibility index's verification method dimension"},
+    {"id": "importance", "source": "onet-online", "range": [1, 5], "means": "How important the activity is to the work, from 1 (not important) to 5 (extremely important), as O*NET rates a task's importance"},
+    {"id": "share", "source": "onet-online", "range": [0, 100], "means": "The percent of practitioners who perform the activity, as O*NET's relevance scale counts the incumbents who report a task"},
+    {"id": "frequency", "source": "onet-online", "range": [1, 7], "means": "How often the activity is performed, from 1 (yearly or less) to 7 (hourly or more), on O*NET's seven frequency categories"}
+  ],
+  "activities": []
+}
