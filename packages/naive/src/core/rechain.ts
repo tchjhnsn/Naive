@@ -14,6 +14,12 @@
 // re-chained line proves what it was before the push, and check-provenance refuses one whose block does not
 // hold (rechainProblem). It does not prove the working copy's whole chain, which stays in that working copy.
 //
+// The lines a push sends are a subsequence of that log, not a run of it: a working copy leaves out the lines
+// about records it does not sync, because a line's entity is a path, so a line about a private record would
+// name that record to the host even though its content never travels (EE-178, packages/naive/src/engine/sync.ts).
+// So each line is checked on its own, by its own hash over its own prev, and never against the line handed in
+// before it. What a store holds is each line as its working copy wrote it, in the order it received them.
+//
 // The module is pure: no I/O, no clock, no model. It imports lineHash and the line's shape from provenance.ts.
 
 import { lineHash, type Entry } from "./provenance.ts";
@@ -45,28 +51,27 @@ export function originalHash(entry: RechainedEntry): string {
  * `storeTip` is the hash of the store log's last line, or genesis when it has none. Each returned line keeps
  * its original hash and prev in `rechained_from`, with the working copy it came from.
  *
- * The lines handed in must be a run of one log, oldest first, each line's hash matching its content and each
- * prev naming the line before (the first line's prev is whatever the log held, so a tail of the log may be
- * pushed). A line that does not hold, or one that was already re-chained, is refused: re-chaining it would
- * hide an edit, and a line re-chained twice could no longer prove its original hash.
+ * The lines handed in are one log's, oldest first, each line's hash matching its content over its own prev.
+ * They need not be contiguous: a push leaves out the lines about records it does not sync, so a line's prev
+ * may name a line the store never sees. A line whose own hash does not hold, or one that was already
+ * re-chained, is refused: re-chaining it would hide an edit, and a line re-chained twice could no longer
+ * prove its original hash.
  */
 export function rechain(storeTip: string, localLines: readonly Entry[], workingCopy: string): RechainedEntry[] {
   if (typeof workingCopy !== "string" || !workingCopy.trim()) throw new Error("re-chaining names the working copy the lines came from");
   if (!isChainPoint(storeTip)) throw new Error(`the store tip is a line hash or genesis, not ${JSON.stringify(storeTip)}`);
-  let prev = storeTip, localPrev: string | null = null;
+  let prev = storeTip;
   const out: RechainedEntry[] = [];
   for (const line of localLines) {
     const which = `${line.entity ?? "a line"} at ${line.at ?? "no time"}`;
     if (isRechained(line)) throw new Error(`${which}: already written again from working copy ${line.rechained_from.working_copy}; re-chaining a re-chained line is not built`);
     if (!HASH.test(line.hash) || !isChainPoint(line.prev)) throw new Error(`${which}: a line to re-chain carries its own hash and prev`);
     if (lineHash(line.prev, line) !== line.hash) throw new Error(`${which}: hash does not match the line's content, so the working copy's log was edited`);
-    if (localPrev !== null && line.prev !== localPrev) throw new Error(`${which}: prev does not match the line before it, so these are not one run of a log`);
     const { hash, prev: originalPrev, ...rest } = line;
     const fields = { ...rest, prev, rechained_from: { hash, prev: originalPrev, working_copy: workingCopy } };
     const entry: RechainedEntry = { ...fields, hash: lineHash(prev, fields) };
     out.push(entry);
     prev = entry.hash;
-    localPrev = hash;
   }
   return out;
 }

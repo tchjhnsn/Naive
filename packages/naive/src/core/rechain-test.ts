@@ -47,12 +47,16 @@ const SPEND = JSON.stringify({ id: "q4", amount: 1200, currency: "USD" }, null, 
 const TOOLS = JSON.stringify({ id: "tools", amount: 300, currency: "USD" }, null, 2);
 const person = { kind: "person", via: "cli", id: "Torian" };
 
-// The working copy: two writes made offline, on 2026-11-20.
-const localLines: Entry[] = [];
-{
-  const first = line("genesis", { at: "2026-11-20T09:00:00.000Z", entity: "finance/spend.json", route: "finance/spend", activity: "write", agent: person, sha256: sha(SPEND) });
-  localLines.push(first, line(first.hash, { at: "2026-11-20T09:05:00.000Z", entity: "finance/tools.json", route: "finance/spend", activity: "write", agent: person, sha256: sha(TOOLS) }));
-}
+// The working copy: three writes made offline, on 2026-11-20, the middle one to a record it does not sync.
+// A push leaves that line out, because a line's entity is a path and would name a private record to the host
+// (EE-178), so the lines handed to rechain are a subsequence of the log: the last one's prev names the held
+// line, which the store never sees. That is what the push really sends, so every test below uses it.
+const held = line(line("genesis", { at: "2026-11-20T09:00:00.000Z", entity: "finance/spend.json", route: "finance/spend", activity: "write", agent: person, sha256: sha(SPEND) }).hash,
+  { at: "2026-11-20T09:02:00.000Z", entity: "_private/pay.json", activity: "write", agent: person, sha256: sha("{}") });
+const localLines: Entry[] = [
+  line("genesis", { at: "2026-11-20T09:00:00.000Z", entity: "finance/spend.json", route: "finance/spend", activity: "write", agent: person, sha256: sha(SPEND) }),
+  line(held.hash, { at: "2026-11-20T09:05:00.000Z", entity: "finance/tools.json", route: "finance/spend", activity: "write", agent: person, sha256: sha(TOOLS) }),
+];
 
 // The store: one write of its own, made later, through record(), so the chain under the re-chained lines is real.
 const store = venture("store", { "finance/budget.json": JSON.stringify({ id: "2027", amount: 50000 }, null, 2) });
@@ -80,7 +84,8 @@ expect("re-chaining onto a different tip gives different hashes, so a line belon
 throws("re-chaining with no working copy named is refused", () => rechain(tip, localLines, "  "), /names the working copy/);
 throws("a store tip that is not a line hash is refused", () => rechain("nope", localLines, "laptop"), /store tip is a line hash or genesis/);
 throws("a local line edited after it was written is refused", () => rechain(tip, [{ ...(localLines[0] as Entry), entity: "finance/other.json" }], "laptop"), /hash does not match the line's content/);
-throws("lines that are not one run of a log are refused", () => rechain(tip, [localLines[0] as Entry, rehash({ ...(localLines[1] as Entry), prev: "genesis" })], "laptop"), /not one run of a log/);
+expect("lines a push filtered are not contiguous, and re-chain all the same", localLines[1]?.prev === held.hash && localLines[1]?.prev !== localLines[0]?.hash && re[1]?.rechained_from.prev === held.hash, { pushed: localLines[1]?.prev, held: held.hash });
+expect("a line the push left out is nowhere in what the store gets, path included", !JSON.stringify(re).includes("_private"), re);
 throws("a line that was already re-chained is refused", () => rechain(tip, re, "other-laptop"), /re-chaining a re-chained line is not built/);
 
 // What rechainProblem refuses. Each copy keeps the line's own hash right, so the store chain still holds.
