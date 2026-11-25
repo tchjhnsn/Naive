@@ -135,7 +135,7 @@ flowchart TD
   R --> B[function agent's brief and the step that names it]
   D --> B
 ```
-- The briefing a person reads (EE-180): APQC levels 1 and 2. `naive activities briefing` (`packages/naive/src/engine/activity-briefing.ts`) gives one entry per function the business lists, with its APQC category, and under it each process group with three things: the activities a person performs, the activities an agent performs and a person approves, and the number left to the function's agent. Each listed activity says whether the business assigned it or it is the default for its kind. The briefing is derived from the level 4 assignments and the kinds each time it is read, so no record holds it and nothing is assigned above level 4.
+- The briefing a person reads (EE-180): APQC levels 1 and 2. `naive activities briefing` (`packages/naive/src/engine/activity-briefing.ts`) gives one entry per function the business lists, with its APQC category, and under it each process group with three things: the activities a person performs, the activities an agent performs and a person approves, and the number left to the function's agent. Each listed activity says whether the business assigned it or it is the default for its kind. The briefing is derived from the level 4 assignments and the kinds each time it is read, so no record holds it and nothing is assigned above level 4. The routes `operations/activity-briefing` and `operations/activity-briefing/<function>` return it through the router, which is how an app such as a console reads it.
 
 ```mermaid
 flowchart LR
@@ -158,7 +158,7 @@ flowchart LR
 - An activity for one NAICS industry. The matching is built, and the catalog holds none yet.
 - Enforcing an assignment. A function agent's brief tells it the rule (EE-173), and the gate, decision levels and done criteria do not change with `operations/activity-assignments.json`.
 - Proposing an assignment for an APQC activity. A person writes it by hand, and a decision's merge cannot set it.
-- A briefing that says what happened. It names who performs each activity and counts the rest; open decisions, handoffs and results are not in it, and it has no route.
+- A briefing that says what happened. It names who performs each activity and counts the rest; open decisions, handoffs and results are not in it.
 - Assigning anything above APQC level 4. The briefing is derived from level 4.
 - Telling a kind from anything but the words of the statement. A statement that names a decision with another verb has no kind, and a business corrects that with its own assignment.
 - A default for approval. A kind sets who performs the activity and nothing else.

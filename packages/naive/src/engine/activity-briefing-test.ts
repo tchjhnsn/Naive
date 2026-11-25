@@ -1,6 +1,6 @@
 // Tests the briefing a person reads (EE-180): per function its APQC category and process groups, what each needs
 // from a person by the venture's assignment or by default, and how many activities are left to the agent. It reads
-// the shipped catalog and framework, and one venture folder made here.
+// the shipped catalog and framework, and one venture folder made here, then reads the same briefing through its routes.
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -47,6 +47,26 @@ try {
   expect("--json prints the same briefing", asJson.status === 0 && JSON.stringify((JSON.parse(asJson.stdout) as { briefing: unknown }).briefing) === JSON.stringify(forVenture));
   expect("a function the venture does not list is refused", cli(dir, "--function", "assets").status === 2 && cli().status === 2);
 } finally { rmSync(dir, { recursive: true, force: true }); }
+
+// ---- Through the router: the whole briefing, and each function's at its own route ----
+const ws = mkdtempSync(join(tmpdir(), "naive-briefing-ws-"));
+try {
+  const repo = new URL("../../../../", import.meta.url).pathname;
+  const node = (...args: string[]) => spawnSync(process.execPath, args, { cwd: repo, encoding: "utf8", env: { ...process.env, MENTURA_WORKSPACE: ws } });
+  const acme = join(ws, "acme");
+  const made = node("packages/naive/src/engine/init-venture.ts", acme, "acme", "--type", "software-startup");
+  expect("a venture is made for the route", made.status === 0, made.stderr || made.stdout);
+  const direct = runSync(briefingFor(acme));
+  const route = (r: string) => node("packages/naive/src/interfaces/cli/mentura.ts", r, "run", "--venture", "acme");
+  const read = (out: string): unknown => { try { return (JSON.parse(out) as { briefing?: unknown }).briefing; } catch { return null; } };
+  const whole = route("operations/activity-briefing");
+  expect("operations/activity-briefing returns the briefing for every function the venture lists", whole.status === 0 && direct.length > 1 && JSON.stringify(read(whole.stdout)) === JSON.stringify(direct), whole.stderr || whole.stdout.slice(0, 300));
+  const one = route("operations/activity-briefing/strategy");
+  expect("operations/activity-briefing/<function> returns that one function", one.status === 0 && JSON.stringify(read(one.stdout)) === JSON.stringify(direct.filter((b) => b.function === "strategy")), one.stderr || one.stdout.slice(0, 300));
+  const unlisted = route("operations/activity-briefing/assets");
+  expect("a function the venture does not list is refused through the route, naming the ones it lists", unlisted.status !== 0 && /does not list the function assets/.test(unlisted.stdout + unlisted.stderr), [unlisted.status, unlisted.stdout.slice(0, 300), unlisted.stderr.slice(0, 300)]);
+  expect("a function Naive does not have has no route", /no route/.test((() => { const x = route("operations/activity-briefing/nope"); return x.stdout + x.stderr; })()));
+} finally { rmSync(ws, { recursive: true, force: true }); }
 
 console.log(failed ? `${failed} failed` : "all passed");
 process.exit(failed ? 1 : 0);
