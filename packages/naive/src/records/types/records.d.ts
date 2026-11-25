@@ -3380,6 +3380,11 @@ export type NaiveConfig = {
   durable?: {
     engine?: "memory" | "sqlite" | "postgres";
   };
+  /** Offline sync with a business store (EE-178, docs/design/OFFLINE_SYNC_2026-11-25.md). host is the address naive sync link signs in to when --host is not passed; Naive ships no host of its own, so there is no default. No token lives here: it goes to the operating system's keychain, and the working copy's own sync state to .naive/sync.json. */
+  sync?: {
+    /** The host's base URL, such as https://example.test */
+    host?: string;
+  };
   /** Traces in the venture's files (EE-121): true writes one span per step of an agent run to traces/<session>.jsonl, hash-chained and linked from provenance. content keeps inputs and outputs too, redacted; off by default because a trace is internal. Off by default. */
   traces?: boolean | {
     spans?: boolean;
