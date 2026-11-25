@@ -1,6 +1,6 @@
 # The activity catalog
 
-Date: 2026-11-25. Decisions: EE-164, EE-165, EE-166, EE-167, EE-168, EE-169, EE-170, EE-171. Status: the record type, the scales, the check and the generator are built, and APQC's Process Classification Framework 8.0, levels 1 to 5, is built as `packages/naive/src/functions/pcf.json`; the catalog holds a first seed of 38 activities from SciNet, and the rest is listed under Not built.
+Date: 2026-11-25. Decisions: EE-164, EE-165, EE-166, EE-167, EE-168, EE-169, EE-170, EE-171, EE-172. Status: the record type, the scales, the check and the generator are built, and APQC's Process Classification Framework 8.0, levels 1 to 5, is built as `packages/naive/src/functions/pcf.json`; the catalog holds a first seed of 38 activities from SciNet, and the rest is listed under Not built.
 
 ## Domain
 
@@ -86,6 +86,21 @@ flowchart LR
 ```
 
 - Industry activities (EE-171): an activity whose scope is a NAICS industry applies to a venture when the code in venture.json `industry` starts with the activity's code, because a NAICS code holds its parents as prefixes. NAICS numbers three sectors with a range (31-33 manufacturing, 44-45 retail trade, 48-49 transportation and warehousing), so a two-digit code in one of them names the whole sector. A venture with no industry gets the cross-industry activities only. An industry activity joins the same decision as the cross-industry ones of its rule and function, and the note names its NAICS code.
+- Applying an answer (EE-172): a proposal rule may name what its answer sets. `sets` is a field of the venture's activity assignments, `operations/activity-assignments.json` (`packages/naive/src/records/activity-assignments.schema.json`): `performer`, agent or person, or `approval`, person or none. The decision a rule files then offers the field's values as its options and lists one `applies_to` entry per activity found. Approving and merging stay separate steps, as for every decision: a person decides, and `mentura merge <decision>` writes the answer for each activity, checked against the schema first, so an answer outside the options is refused and nothing is written. A second rule's answer joins the same file. `agent-with-checked-result` sets `performer` and `person-approves-restricted` sets `approval`. `naive activities` refuses assignments that name an activity the catalog lacks.
+
+```mermaid
+sequenceDiagram
+  participant A as activity-proposals (agent)
+  participant D as decision
+  participant P as person
+  participant F as operations/activity-assignments.json
+  A->>D: propose, open, with options and applies_to
+  P->>D: approve with one of the options
+  P->>D: mentura merge
+  D->>F: write the answer per activity, after the schema check
+  Note over F: nothing reads it yet
+```
+
 - The seed (EE-167): `node scripts/import-scinet.ts` wrote 38 activities under process group 3.1, process 3.1.1 Perform customer and market intelligence analysis. They are SciNet v1.10.0's Data Gathering and Data Analysis tasks for the subfields Entrepreneurship & Innovation and Marketing, and the universal task of obtaining ethical approval and informed consent. Each keeps SciNet's statement, names SciNet as its source, and carries SciNet's scores. Those scores rate the task as researchers perform it, and each activity's `rated.basis` says it is not rated for a business. A rerun on the same release writes the same bytes, and the script replaces only SciNet's activities under the process group it is given.
 - `packages/naive/src/records/activity-catalog.schema.json` is its schema, with `additionalProperties: false` on every object. An activity is `{id, process_group, process?, statement, scope, source?, ratings?, rated?}`. `scope` is `{kind: "cross-industry"}` or `{kind: "industry", naics}`. `source` is `{ref, locator?, changed?}`, where `changed` says the statement was reworded from the source. `rated` (`{by, on, basis}`) is required when `ratings` is present.
 - The record type `activity-catalog` is in `packages/naive/src/records/data-model.json` (operations layer, no function, method level) and in the operations layer manifest. Its type is `ActivityCatalog` in `packages/naive/src/records/types/records.d.ts`.
@@ -100,7 +115,7 @@ flowchart LR
 - Naming an activity on every workflow step. The field is optional, and two steps of the marketing and sales workflows name one so far.
 - Proposing a venture's lines from its market and industry, as gate calibration does for the phase gates. A person writes them by hand.
 - An activity for one NAICS industry. The matching is built, and the catalog holds none yet.
-- Applying an accepted proposal. A person's answer changes no workflow step, decision level or done-criterion on its own.
+- Acting on the assignments. Nothing reads `operations/activity-assignments.json` yet: no agent, workflow step, decision level or done-criterion changes with it.
 - Rating the seeded activities for a business. The scores are SciNet's, for researchers.
 - Activities outside process group 3.1.
 - A list of valid NAICS codes. The check holds a code to two to six digits only.
