@@ -2224,6 +2224,26 @@
       ]
     },
     {
+      "id": "EE-171",
+      "date": "2026-11-25",
+      "status": "in-force",
+      "decision": "An activity the catalog files for one NAICS industry applies to a venture when the NAICS code in venture.json industry starts with the activity's code. A two-digit code in one of the three sectors NAICS numbers with a range (31-33, 44-45, 48-49) names the whole sector. A venture with no industry gets the cross-industry activities only. An industry activity is proposed in the same decision as the cross-industry activities of its rule and function, and the note names its NAICS code. The catalog holds no industry activity yet.",
+      "why": "EE-164 gave an activity a scope, cross-industry or one NAICS industry, and EE-169 left the industry ones out of proposals because nothing matched them to a venture. venture.json already records the venture's industry as a NAICS code. NAICS is hierarchical by prefix, so a prefix test is the standard reading of membership, with the three ranged sectors as its one exception. Keeping industry activities in the same decision keeps the docket to one decision per rule and function.",
+      "related": [
+        "EE-164",
+        "EE-169",
+        "EE-170"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/activity-proposals.ts",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
       "id": "EE-129",
       "date": "2026-11-19",
       "status": "proposed",
