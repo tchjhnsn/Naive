@@ -12,6 +12,7 @@ import * as detector from "./detector.ts";
 import * as detectorTrial from "./detector-trial.ts";
 import * as connection from "./connection.ts";
 import * as capabilityCluster from "./capability-cluster.ts";
+import * as activityCatalog from "./activity-catalog.ts";
 import * as toolCatalog from "./tool-catalog.ts";
 import * as leadPlan from "./lead-plan.ts";
 import * as rawDump from "./raw-dump.ts";
@@ -128,6 +129,14 @@ const tc = toolCatalog.draft({ title: "Grants", function: "finance", kind: "work
 t("tool-catalog: a new tool is added to the catalog and passes the schema", tc.ok && tc.added === "grants" && tc.draft?.tools.at(-1)?.function === "finance");
 t("tool-catalog: a tool already in the catalog is refused", !toolCatalog.draft({ title: "Books", kind: "view", phase: "validation", about: "x" }).ok);
 t("tool-catalog: a tool with no kind is refused", !toolCatalog.draft({ title: "Ledger", phase: "validation", about: "x" }).ok);
+const ac = activityCatalog.draft({ id: "interview-customers", process_group: "3.1", statement: "Interview prospective customers to learn how they solve the problem today.", ratings: { importance: 4 }, rated: { by: "generators-test", on: "2026-11-25", basis: "a fixture" } });
+t("activity-catalog: a new activity is added cross-industry and passes the schema", ac.ok && ac.added === "interview-customers" && ac.draft?.activities.at(-1)?.scope.kind === "cross-industry");
+const acRoot = mkdtempSync(join(tmpdir(), "activity-catalog-"));
+mkdirSync(join(acRoot, "packages/naive/src/functions"), { recursive: true });
+writeFileSync(join(acRoot, activityCatalog.FILE), JSON.stringify(ac.draft));
+t("activity-catalog: an activity already in the catalog is refused", !activityCatalog.draft({ id: "interview-customers", process_group: "3.1", statement: "Interview customers again." }, { root: acRoot }).ok);
+t("activity-catalog: ratings with no rated fail the schema", !activityCatalog.draft({ process_group: "3.1", statement: "Survey customers about the problem.", ratings: { importance: 4 } }).ok);
+t("activity-catalog: an activity with no process group is refused", !activityCatalog.draft({ statement: "Survey customers about the problem." }).ok);
 
 const op = opportunity.draft({ title: "Corner Bakery POS", source: "inbound", created: "2026-11-20T15:00:00Z", value: { amount: 600, currency: "USD", cadence: "annual" } });
 t("opportunity: draft starts at lead with no reply yet and passes the schema", op.ok && op.route === "sales/opportunities/corner-bakery-pos" && op.draft.pipeline_stage === "lead" && op.draft.first_response === null);

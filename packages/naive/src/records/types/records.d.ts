@@ -27,6 +27,68 @@ export type Account = {
   note?: string;
 };
 
+/** The catalog of activities at packages/naive/src/functions/activities.json (EE-164). An activity is a unit of work (APQC level 4) written as an O*NET task statement and filed under an APQC level 2 process group from packages/naive/src/functions/tools.json, optionally under a level 3 process. Its scope is cross-industry or one NAICS industry. It may be scored on the published scales the catalog lists, and a scored activity names who rated it, when and on what basis. Every object allows only the properties listed. packages/naive/src/checks/check-activities.ts checks it across files. */
+export type ActivityCatalog = {
+  version: string;
+  note?: string;
+  /** The published scales an activity may be scored on. A rating's value must sit inside its scale's range. */
+  scales: {
+    /** regulatory-restriction, physical-deployment and cognitive-complexity are from the CDR taxonomy; verification from the RL feasibility index; importance, share and frequency from O*NET. */
+    id: "regulatory-restriction" | "physical-deployment" | "cognitive-complexity" | "verification" | "importance" | "share" | "frequency";
+    /** A reference id in packages/naive/src/records/layers/<layer>/references/references.json. */
+    source: string;
+    /** The lowest and highest value, inclusive. */
+    range: number[];
+    /** What the scale measures, and what its ends mean. */
+    means: string;
+  }[];
+  activities: {
+    id: string;
+    /** An APQC level 2 process group id in packages/naive/src/functions/tools.json, such as 3.1. */
+    process_group: string;
+    /** An APQC level 3 process id under the process group, such as 3.1.2. */
+    process?: string;
+    /** One sentence in O*NET task statement form: a capitalized verb first, then its object and, where useful, how or why, ending with a period; at most 30 words. */
+    statement: string;
+    /** Where the activity applies: every industry, or one NAICS industry. */
+    scope: {
+      kind: "cross-industry";
+    } | {
+      kind: "industry";
+      /** A NAICS code, two to six digits. */
+      naics: string;
+    };
+    /** Where the statement comes from. */
+    source?: {
+      /** A reference id in packages/naive/src/records/layers/<layer>/references/references.json. */
+      ref: string;
+      /** Where in the source, such as a task id or a page. */
+      locator?: string;
+      /** True when the statement was reworded from the source. */
+      changed?: boolean;
+    };
+    /** Scores on the catalog's scales. A score is one rater's judgment. */
+    ratings?: {
+      "regulatory-restriction"?: number;
+      "physical-deployment"?: number;
+      "cognitive-complexity"?: number;
+      verification?: number;
+      importance?: number;
+      share?: number;
+      frequency?: number;
+    };
+    /** Who rated the activity, when, and on what. Required with ratings. */
+    rated?: {
+      by: string;
+      /**
+       * @format date
+       */
+      on: string;
+      basis: string;
+    };
+  }[];
+};
+
 /** Days since the founder last touched the venture and the current streak, at operations/activity/_summary.json (naive activity --write); feeds the docket. A long silence is a gentle nudge, never an alarm. Internal by default. */
 export type ActivitySummary = {
   venture: string;
