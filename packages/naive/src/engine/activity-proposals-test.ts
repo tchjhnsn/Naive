@@ -1,6 +1,8 @@
 // Tests packages/naive/src/engine/activity-proposals.ts (EE-169): a rule picks only rated cross-industry activities
 // whose scores meet every condition, under the functions the venture lists; propose files one open decision per rule
-// and function, a rerun files nothing more, a decided proposal is left alone, and list writes nothing.
+// and function, a rerun files nothing more, a decided proposal is left alone, and list writes nothing. A venture's
+// own lines in naive.config.json (EE-170) turn a rule off or replace its lines, the note says whose lines they are,
+// and lines the catalog cannot hold fail check-config and the command.
 //
 //   node packages/naive/src/engine/activity-proposals-test.ts
 
@@ -9,7 +11,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { approve } from "./decisions.ts";
-import { find, matches, note, proposeFound, question } from "./activity-proposals.ts";
+import { find, matches, note, proposeFound, question, ventureLineProblems } from "./activity-proposals.ts";
 import type { ActivityCatalog } from "../records/types/records.d.ts";
 
 let failed = 0;
@@ -83,6 +85,41 @@ const none = run(venture("none", []));
 ok(none.status === 0 && /lists no functions/.test(none.out), "a venture with no functions is told so");
 ok(run().status === 2 && run(real, "decide").status === 2, "a missing folder or an unknown action is a usage error");
 
+const scaled: ActivityCatalog = { ...catalog, scales: [
+  { id: "verification", range: [1, 10], source: "a-fixture", means: "a fixture" },
+  { id: "regulatory-restriction", range: [0, 3], source: "a-fixture", means: "a fixture" },
+] };
+const own = find(scaled, groups, ["marketing-and-sales"], { checked: { when: [{ scale: "verification", at_least: 6.5 }] }, restricted: "off" });
+ok(own.length === 1 && own[0].lines === "venture" && own[0].activities.map((a) => a.id).join() === "survey-buyers,line-met-exactly,low-verification,no-score-on-a-scale", "a venture's lines replace all of the catalog's for the rule, and off finds nothing");
+ok(found.every((f) => f.lines === "catalog") && own[0].id === found[0].id, "a rule the venture leaves out keeps the catalog's lines, and the decision id does not change");
+ok(/venture's own lines from naive\.config\.json activity_proposals: verification at least 6\.5\./.test(note(own[0])) && !/venture's own lines/.test(note(found[0])), "the note says whose lines found the activities");
+const wrong = ventureLineProblems(scaled, { missing: "off", checked: { when: [{ scale: "verification", at_least: 11 }, { scale: "regulatory-restriction", at_least: 2, at_most: 1 }, { scale: "share", at_most: 50 }] } });
+ok(wrong.length === 4 && /no proposal rule missing/.test(wrong[0]) && /line at 11 on verification, outside its range 1 to 10/.test(wrong[1]) && /which no score meets/.test(wrong[2]) && /names the scale share/.test(wrong[3]), "a rule the catalog lacks, a line outside its scale, lines no score meets and an unknown scale are each named");
+ok(ventureLineProblems(scaled, { checked: { when: [{ scale: "verification", at_least: 10 }] }, restricted: "off" }).length === 0 && ventureLineProblems(scaled).length === 0, "lines on the range's edge, off and no lines at all are fine");
+
+const CHECK_CONFIG = new URL("../checks/check-config.ts", import.meta.url).pathname;
+const checkConfig = (dir: string): { errors: string[] } => JSON.parse(spawnSync("node", [CHECK_CONFIG, dir, "--json"], { encoding: "utf8" }).stdout);
+const config = (dir: string, value: unknown): void => writeFileSync(join(dir, "naive.config.json"), JSON.stringify(value, null, 2) + "\n");
+const strict = venture("strict", ["marketing-and-sales"]);
+config(strict, { activity_proposals: { rules: { "agent-with-checked-result": { when: [{ scale: "verification", at_least: 10 }] }, "person-approves-restricted": "off" } } });
+ok(checkConfig(strict).errors.length === 0 && run(strict, "--json").out.replace(/\s/g, "").includes('"found":[]'), "a venture that raises one line to the top and turns the other rule off gets no proposal from the shipped catalog");
+const loose = venture("loose", ["marketing-and-sales"]);
+config(loose, { activity_proposals: { rules: { "person-approves-restricted": { when: [{ scale: "regulatory-restriction", at_least: 0 }] } } } });
+const looseFound: { id: string; lines: string; activities: string[] }[] = JSON.parse(run(loose, "--json").out).found;
+const widened = looseFound.find((f) => f.id === "activity-person-approves-restricted-marketing-and-sales");
+ok(widened?.lines === "venture" && widened.activities.length > (listedFound.find((f) => f.id === widened.id)?.activities.length ?? 0) && looseFound.some((f) => f.lines === "catalog"), "a venture that lowers a line gets more activities under that rule, and the other rule keeps the catalog's lines");
+ok(/\(the venture's lines\)/.test(run(loose).out), "list marks a proposal found by the venture's lines");
+const bad = venture("bad", ["marketing-and-sales"]);
+config(bad, { activity_proposals: { rules: { "no-such-rule": "off", "person-approves-restricted": { when: [{ scale: "regulatory-restriction", at_least: 99 }] } } } });
+const badCheck = checkConfig(bad).errors.join("\n");
+ok(/no proposal rule no-such-rule/.test(badCheck) && /line at 99 on regulatory-restriction/.test(badCheck), "check-config refuses a rule the catalog lacks and a line outside its scale");
+const badRun = run(bad, "propose");
+ok(badRun.status !== 0 && /no proposal rule no-such-rule/.test(badRun.out) && !existsSync(join(bad, "decisions")), "the command refuses such lines and files nothing");
+config(bad, { activity_proposals: { rules: { "person-approves-restricted": { when: [{ scale: "regulatory-restriction" }] } } } });
+ok(/does not match/.test(checkConfig(bad).errors.join("\n")), "a line with neither at_least nor at_most fails the schema");
+config(bad, { activity_proposals: { rules: { "person-approves-restricted": "on" } } });
+ok(/neither off nor \{ when \}/.test(run(bad).out) && run(bad).status !== 0, "a setting that is neither off nor lines is refused by the command");
+
 rmSync(tmp, { recursive: true, force: true });
 if (failed) { console.error(`${failed} failed`); process.exit(1); }
-console.log("activity-proposals: scores only propose, once, and never decide");
+console.log("activity-proposals: scores only propose, once, by the catalog's lines or the venture's, and never decide");

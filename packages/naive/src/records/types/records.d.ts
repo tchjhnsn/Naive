@@ -3300,6 +3300,28 @@ export type MoneySummary = {
 
 /** A venture's overrides to Naive's defaults, at the venture root (P-2, like next.config.js): the gate (fail-closed routes, rules over the router's path patterns, which package rules it imports), function owners, check settings (P-7, like eslint.config.mjs), thresholds, which System 1 questions run, pinned package versions (U-4) and how strictly the acting role is checked (M-18). Every field is optional; a missing one keeps the default in packages/naive/src/engine/naive-config.ts. node packages/naive/src/checks/check-config.ts <venture dir> checks it. */
 export type NaiveConfig = {
+  /** The venture's own lines for the activity catalog's proposal rules (EE-170, packages/naive/src/engine/activity-proposals.ts, naive activities). A rule left out keeps the catalog's lines. packages/naive/src/checks/check-config.ts holds each rule id to the catalog and each line to its scale's range. */
+  activity_proposals?: {
+    /** Per rule id in packages/naive/src/functions/activities.json proposal_rules: off, so the rule proposes nothing in this venture, or the venture's lines */
+    rules?: {
+      [key: string]: "off" | {
+        /** The venture's lines for the rule, in place of all of the catalog's. An activity with no score on a named scale does not match. */
+        when: ({
+          scale: "regulatory-restriction" | "physical-deployment" | "cognitive-complexity" | "verification" | "importance" | "share" | "frequency";
+          /** The score is this or higher. */
+          at_least?: number;
+          /** The score is this or lower. */
+          at_most?: number;
+        } & ({
+          /** The score is this or higher. */
+          at_least: number;
+        } | {
+          /** The score is this or lower. */
+          at_most: number;
+        }))[];
+      };
+    };
+  };
   $schema?: string;
   /** Autoresearch over the venture's recipes (everything-ecosystem docs/design/AUTORESEARCH_RECORDS_2026-11-06.md). */
   research?: {

@@ -6,6 +6,78 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
+    "activity_proposals": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "The venture's own lines for the activity catalog's proposal rules (EE-170, packages/naive/src/engine/activity-proposals.ts, naive activities). A rule left out keeps the catalog's lines. packages/naive/src/checks/check-config.ts holds each rule id to the catalog and each line to its scale's range.",
+      "properties": {
+        "rules": {
+          "type": "object",
+          "description": "Per rule id in packages/naive/src/functions/activities.json proposal_rules: off, so the rule proposes nothing in this venture, or the venture's lines",
+          "additionalProperties": {
+            "oneOf": [
+              {
+                "const": "off"
+              },
+              {
+                "type": "object",
+                "required": [
+                  "when"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "when": {
+                    "type": "array",
+                    "minItems": 1,
+                    "description": "The venture's lines for the rule, in place of all of the catalog's. An activity with no score on a named scale does not match.",
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "scale"
+                      ],
+                      "additionalProperties": false,
+                      "anyOf": [
+                        {
+                          "required": [
+                            "at_least"
+                          ]
+                        },
+                        {
+                          "required": [
+                            "at_most"
+                          ]
+                        }
+                      ],
+                      "properties": {
+                        "scale": {
+                          "enum": [
+                            "regulatory-restriction",
+                            "physical-deployment",
+                            "cognitive-complexity",
+                            "verification",
+                            "importance",
+                            "share",
+                            "frequency"
+                          ]
+                        },
+                        "at_least": {
+                          "type": "number",
+                          "description": "The score is this or higher."
+                        },
+                        "at_most": {
+                          "type": "number",
+                          "description": "The score is this or lower."
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
     "$schema": {
       "type": "string"
     },
