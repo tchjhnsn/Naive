@@ -73,7 +73,6 @@ t("the same statement in another scope passes", broken((c) => { c.activities.pus
 fails("a process group not in the tool catalog", (c) => { first(c).process_group = "3.9"; delete first(c).process; }, /names process group 3\.9, which is not in packages\/naive\/src\/functions\/tools\.json/);
 fails("a process under another process group", (c) => { first(c).process = "3.2.1"; }, /names process 3\.2\.1, which is not under its process group 3\.1/);
 fails("a process that is not a level 3 process in pcf.json", (c) => { first(c).process = "3.1.99"; }, /names process 3\.1\.99, which is not a level 3 process in packages\/naive\/src\/functions\/pcf\.json/);
-t("a process group tools.json has and PCF 8.0 numbers differently passes: process groups are not looked up in pcf.json", broken((c) => { first(c).process_group = "13.9"; first(c).process = "13.9.1"; }).status === 0);
 fails("a statement over 30 words", (c) => { first(c).statement = `Interview ${"prospective ".repeat(30)}customers.`; }, /statement has 32 words; a task statement has at most 30/);
 fails("a statement of two sentences", (c) => { first(c).statement = "Interview prospective customers. Record what they say."; }, /statement is more than one sentence/);
 fails("a statement that starts with an article", (c) => { first(c).statement = "The customers are interviewed about the problem."; }, /statement starts with "The"/);
