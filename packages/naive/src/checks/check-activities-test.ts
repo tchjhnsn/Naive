@@ -91,6 +91,10 @@ rmSync(tmp, { recursive: true, force: true });
 if (failed) { console.error(`${failed} failed`); process.exit(1); }
 const rule = (c: ActivityCatalog) => (c.proposal_rules ??= [{ id: "r", when: [{ scale: "verification", at_least: 7 }], asks: "Should an agent do these?", basis: "a fixture" }])[0];
 fails("a proposal rule listed twice", (c) => { const r = rule(c); c.proposal_rules = [r, structuredClone(r)]; }, /proposal rule \S+ is listed twice/);
+fails("a kind listed twice", (c) => { const k = (c.kinds ?? [])[0]; c.kinds = [k, structuredClone(k)]; }, /kind \S+ is listed twice/);
+fails("a kind's verb that an earlier kind takes with no terms", (c) => { const [a, b] = c.kinds ?? []; b.when.push({ verbs: [(a.when[0].verbs ?? [])[0]], terms: ["contract"] }); }, /already takes with no terms/);
+fails("a kind whose performer is not a person", (c) => { ((c.kinds ?? [])[0] as { performer: string }).performer = "agent"; }, /kinds/);
+fails("a kind clause with neither verbs nor terms", (c) => { ((c.kinds ?? [])[0].when as unknown[]).push({}); }, /kinds/);
 fails("a proposal rule on a scale the catalog does not list", (c) => { const r = rule(c); c.scales = c.scales.filter((s) => s.id !== r.when[0].scale); }, /proposal rule \S+ names the scale \S+, which the catalog does not list/);
 fails("a proposal rule with a line outside its scale", (c) => { rule(c).when[0].at_least = 99; }, /draws a line at 99 on \S+, outside its range/);
 fails("a proposal rule no score meets", (c) => { const w = rule(c).when[0]; w.at_least = 3; w.at_most = 2; }, /which no score meets/);

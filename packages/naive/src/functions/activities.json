@@ -1,6 +1,6 @@
 {
-  "version": "0.4.0",
-  "note": "The activities a business performs, as Naive data (EE-164). An activity is a unit of work (APQC level 4) written as an O*NET task statement and filed under an APQC level 2 process group from tools.json, cross-industry or for one NAICS industry. An activity may be scored on the scales below. A score is one rater's judgment, and every scored activity names who rated it, when and on what basis. This catalog is version 0.x and unevaluated: no score has been compared with an outcome. A score never decides anything: the most it may do is propose an open decision for a person, and it does so only through the proposal rules below, whose lines are unvalidated priors (EE-169). The first activities come from SciNet (CC BY 4.0) by scripts/import-scinet.ts, with SciNet's scores, which rate a task as researchers perform it and not as a business does (EE-167). Checked by packages/naive/src/checks/check-activities.ts.",
+  "version": "0.5.0",
+  "note": "The activities a business performs, as Naive data (EE-164). An activity is a unit of work (APQC level 4) written as an O*NET task statement and filed under an APQC level 2 process group from tools.json, cross-industry or for one NAICS industry. An activity may be scored on the scales below. A score is one rater's judgment, and every scored activity names who rated it, when and on what basis. This catalog is version 0.x and unevaluated: no score has been compared with an outcome. A score never decides anything: the most it may do is propose an open decision for a person, and it does so only through the proposal rules below, whose lines are unvalidated priors (EE-169). The first activities come from SciNet (CC BY 4.0) by scripts/import-scinet.ts, with SciNet's scores, which rate a task as researchers perform it and not as a business does (EE-167). The kinds below say which activities a person performs by default (EE-179): a decision, a value, a commitment or a relationship, told from the words of the statement, an unvalidated prior that a business's own assignment replaces. Checked by packages/naive/src/checks/check-activities.ts.",
   "proposal_rules": [
     {
       "id": "agent-with-checked-result",
@@ -33,6 +33,137 @@
       "sets": "approval",
       "asks": "Should a person approve each of these activities before it is done?",
       "basis": "An unvalidated prior: R2 or more on the CDR regulatory restrictions axis means an institution restricts the activity. No line has been compared with an outcome."
+    }
+  ],
+  "kinds": [
+    {
+      "id": "decision",
+      "performer": "person",
+      "when": [
+        {
+          "verbs": [
+            "approve",
+            "authorize",
+            "select",
+            "prioritize",
+            "appoint",
+            "hire",
+            "adopt",
+            "decide",
+            "choose",
+            "award"
+          ]
+        },
+        {
+          "verbs": [
+            "set"
+          ],
+          "terms": [
+            "policy",
+            "policies",
+            "limits",
+            "targets",
+            "goals",
+            "objectives",
+            "strategy",
+            "direction",
+            "price",
+            "prices",
+            "pricing",
+            "budget",
+            "budgets"
+          ]
+        }
+      ],
+      "basis": "An unvalidated prior, read from the words of the activity's statement alone: its verb is a verb of deciding (approve, select, prioritize, hire and the like), or it sets a policy, limit, target, price or budget. No word list has been compared with what a business's people and agents did."
+    },
+    {
+      "id": "value",
+      "performer": "person",
+      "when": [
+        {
+          "verbs": [
+            "define",
+            "formulate",
+            "articulate",
+            "establish",
+            "develop",
+            "create",
+            "set"
+          ],
+          "terms": [
+            "vision",
+            "mission",
+            "values",
+            "ethics",
+            "principles",
+            "purpose"
+          ]
+        }
+      ],
+      "basis": "An unvalidated prior, read from the words of the activity's statement alone: it defines or sets a vision, mission, values, ethics, principles or purpose. No word list has been compared with what a business's people and agents did."
+    },
+    {
+      "id": "commitment",
+      "performer": "person",
+      "when": [
+        {
+          "verbs": [
+            "negotiate",
+            "sign",
+            "commit",
+            "agree"
+          ]
+        },
+        {
+          "verbs": [
+            "establish",
+            "create",
+            "define",
+            "finalize",
+            "execute",
+            "renew",
+            "extend"
+          ],
+          "terms": [
+            "contract",
+            "contracts",
+            "agreement",
+            "agreements",
+            "commitment",
+            "commitments"
+          ]
+        }
+      ],
+      "basis": "An unvalidated prior, read from the words of the activity's statement alone: its verb is negotiate, sign, commit or agree, or it establishes, defines or renews a contract, agreement or commitment. No word list has been compared with what a business's people and agents did."
+    },
+    {
+      "id": "relationship",
+      "performer": "person",
+      "when": [
+        {
+          "verbs": [
+            "manage",
+            "establish",
+            "build",
+            "develop",
+            "maintain",
+            "form"
+          ],
+          "terms": [
+            "relationship",
+            "relationships",
+            "partnership",
+            "partnerships"
+          ]
+        },
+        {
+          "verbs": [
+            "liaise"
+          ]
+        }
+      ],
+      "basis": "An unvalidated prior, read from the words of the activity's statement alone: it establishes, builds, manages or maintains a relationship or partnership, or its verb is liaise. No word list has been compared with what a business's people and agents did."
     }
   ],
   "scales": [

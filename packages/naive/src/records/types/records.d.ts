@@ -68,6 +68,27 @@ export type ActivityCatalog = {
     /** Why the lines sit where they do, and that they are unvalidated. */
     basis: string;
   }[];
+  /** The kinds of activity a person performs by default (EE-179): a decision, a value, a commitment or a relationship, at any APQC level. A kind is told from the words of an activity's statement, or of an APQC activity's name: the first word is its verb and the rest are its terms. The first kind with a clause the statement meets is the activity's kind, and an activity of no kind is left to the function's agent. A kind is an unvalidated prior. A venture's own assignment for the activity replaces it (packages/naive/src/records/activity-assignments.schema.json). */
+  kinds?: {
+    id: string;
+    /** Who performs an activity of this kind by default. */
+    performer: "person";
+    /** The clauses. A statement is of this kind when it meets any one of them. */
+    when: ({
+      /** The statement's first word is one of these. */
+      verbs?: string[];
+      /** A word after the first is one of these. With verbs, the clause needs both. */
+      terms?: string[];
+    } & ({
+      /** The statement's first word is one of these. */
+      verbs: string[];
+    } | {
+      /** A word after the first is one of these. With verbs, the clause needs both. */
+      terms: string[];
+    }))[];
+    /** Why the words mark this kind, and that they are unvalidated. */
+    basis: string;
+  }[];
   /** The published scales an activity may be scored on. A rating's value must sit inside its scale's range. */
   scales: {
     /** regulatory-restriction, physical-deployment and cognitive-complexity are from the CDR taxonomy; verification from the RL feasibility index; importance, share and frequency from O*NET. */
