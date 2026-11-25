@@ -3462,6 +3462,7 @@
     {"path": "instance/**/.naive/types/**/*", "kind": "derived", "reason": "Types written by naive typegen from the route table and the MCP tools"},
     {"path": "instance/**/.naive/upgrade/**/*", "kind": "derived", "reason": "A staged upgrade's copy of the venture (packages/naive/src/engine/upgrades.ts), discarded or landed"},
     {"path": "instance/**/.naive/publish/**/*", "kind": "derived", "reason": "Published frameworks built from the venture's folder (packages/naive/src/engine/user-frameworks.ts)"},
+    {"path": "instance/**/.naive/sync.json", "kind": "derived", "reason": "One working copy's own sync state (packages/naive/src/engine/sync.ts): the host, the business, this copy's id, the sync point and the base version of each record. Local to this copy, never sent to a host, and rebuilt by a full pull if it is lost"},
     {"path": "instance/**/.naive/decision-index-history.jsonl", "kind": "log", "reason": "Rank history of the decision index, one line per re-score"},
     {"path": "instance/**/.naive/trigger-errors.jsonl", "kind": "log", "reason": "Failed trigger runs, one line each (packages/naive/src/router/orchestration/triggers.ts)"},
     {"path": "instance/**/.naive/lint-findings.jsonl", "kind": "log", "reason": "Each publish lint run's findings (packages/naive/src/engine/publish-lint.ts)"},
