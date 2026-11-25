@@ -2365,6 +2365,34 @@
       ]
     },
     {
+      "id": "EE-177",
+      "date": "2026-11-25",
+      "status": "in-force",
+      "decision": "A push writes a working copy's provenance lines again on top of the business store's chain, as a rebase writes a commit again on top of another branch. A re-chained line keeps its own time, entity, activity, agent and sha256, so the push does not claim the write; only prev and hash are the store chain's, and the line carries rechained_from with the hash and prev it had in the working copy's log and the id of that working copy. Keeping the original prev makes the original hash checkable from the line alone, so packages/naive/src/checks/check-provenance.ts accepts a re-chained line only when the block names an original hash, an original prev and a working copy, and the original hash is this line as the working copy wrote it. The pure function is packages/naive/src/core/rechain.ts. Re-chaining a line that was already re-chained is refused. The lines a push sends are a subsequence of the working copy's log, because a push leaves out the lines about records it does not sync (EE-178), so each line is checked by its own hash over its own prev and never against the line sent before it. A working copy's own chain stays in that working copy: a store proves each line as the working copy wrote it, not the order it wrote them in.",
+      "why": "EE-174 says a working copy is a full business and every offline write goes into its local provenance log (EE-031). Those lines chain onto each other, so they cannot be appended to the store's chain as they are: their prev names a line the store does not have. Appending them unchanged would break the store's chain, and dropping them would lose who wrote what offline. Writing them again on top of the store tip keeps the chain checkable and keeps the writes, which is what git does on a rebase. The block names its original hash so nothing is silently rewritten in the move, and its original prev so a checker can recompute that hash with nothing but the line. The design is docs/design/OFFLINE_SYNC_2026-11-25.md, section Provenance.",
+      "related": [
+        "EE-031",
+        "EE-121",
+        "EE-174",
+        "EE-175",
+        "EE-178"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/core/rechain.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/checks/check-provenance.ts",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
       "id": "EE-153",
       "date": "2026-11-19",
       "status": "in-force",

@@ -4610,6 +4610,15 @@ export type ProvenanceEntry = {
   prev: string;
   /** sha256 of prev followed by this line without its hash field, as JSON with sorted keys */
   hash: string;
+  /** A line a working copy wrote offline and a push wrote again on top of the store's chain (EE-177, docs/design/OFFLINE_SYNC_2026-11-25.md). The line keeps its own time, entity, activity and agent, so the push does not claim the write; prev and hash are the store chain's. This block names where the line came from, as a rebase keeps the original commit, and makes the original hash checkable: it is the hash of this line with prev set to rechained_from.prev and this block left out. */
+  rechained_from?: {
+    /** The line's hash in the working copy's own log, before it was written again */
+    hash: string;
+    /** The line's prev in the working copy's own log, so the original hash can be recomputed */
+    prev: string;
+    /** The id of the working copy the line came from (working_copy in <venture>/.naive/sync.json) */
+    working_copy: string;
+  };
   /** confirm only: the id of the guiding statement confirmed (purpose/guiding-statements.json) */
   statement?: string;
   /** write to foundation/core only: the foundation statements this write confirms. Other statements in the same file stay as they were. */
