@@ -58,6 +58,10 @@
 //   naive activities defaults [--function <id>] [--json]
 //                                                   the activities a person performs by default for their kind: a
 //                                                   decision, a value, a commitment or a relationship (EE-179)
+//   naive activities briefing [--venture <dir>] [--function <id>] [--json]
+//                                                   what each function's APQC process groups need from a person: the
+//                                                   activities a person performs or approves, and how many are the
+//                                                   agent's (EE-180)
 //   naive workspace init [<dir>] [--name <name>] (--venture <name> | --port <folder> | --migrate <project>)
 //                                                   a workspace with its clock, its calendar and its first venture
 //   naive workspace rename <name>                   rename the workspace this runs in (logged in its meta/provenance.jsonl)
@@ -404,7 +408,9 @@ else if (cmd === "build" || cmd === "start") {
   const [what = "list", ...args] = rest.filter((a, i) => !(a === "--venture" || rest[i - 1] === "--venture"));
   // The activities a person performs by default for their kind (packages/naive/src/engine/activity-kinds.ts, EE-179).
   if (what === "defaults") process.exit(run("packages/naive/src/engine/activity-kinds.ts", args));
-  if (!["list", "propose"].includes(what)) { console.error("usage: naive activities [list|propose] [--venture <dir>] [--json], or naive activities defaults [--function <id>] [--json] (time spent is naive activity)"); process.exit(2); }
+  // The briefing a person reads, APQC levels 1 and 2 (packages/naive/src/engine/activity-briefing.ts, EE-180).
+  if (what === "briefing") process.exit(run("packages/naive/src/engine/activity-briefing.ts", [here(), ...args]));
+  if (!["list", "propose"].includes(what)) { console.error("usage: naive activities [list|propose] [--venture <dir>] [--json], naive activities defaults [--function <id>] [--json], or naive activities briefing [--venture <dir>] [--function <id>] [--json] (time spent is naive activity)"); process.exit(2); }
   process.exit(run("packages/naive/src/engine/activity-proposals.ts", [here(), what, ...args]));
 } else if (cmd === "signals") {
   // The signal library (signal library design, build item 5): packages/naive/src/router/orchestration/signals.ts.
