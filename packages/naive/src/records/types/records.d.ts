@@ -27,9 +27,9 @@ export type Account = {
   note?: string;
 };
 
-/** Who performs each activity of the activity catalog in this venture, and whether a person approves it first (EE-172). A person's decided answer to an activity proposal is merged into it (packages/naive/src/engine/activity-proposals.ts). The file is operations/activity-assignments.json. */
+/** Who performs each activity in this venture, and whether a person approves it first (EE-172). An activity is one in the activity catalog or an APQC level 4 activity (EE-176). A person's decided answer to an activity proposal is merged into it (packages/naive/src/engine/activity-proposals.ts), and a person may write it. The file is operations/activity-assignments.json. */
 export type ActivityAssignments = {
-  /** Per activity id in packages/naive/src/functions/activities.json */
+  /** Per activity: the id of an activity in packages/naive/src/functions/activities.json, or the hierarchy id of an APQC level 4 activity in packages/naive/src/functions/pcf.json, such as 3.5.1.6 */
   activities: {
     [key: string]: {
       /** Who performs the activity: an agent, with a person checking a sample of the results, or a person */
