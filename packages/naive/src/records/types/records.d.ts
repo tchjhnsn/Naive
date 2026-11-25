@@ -4106,6 +4106,32 @@ export type Ownership = {
   }[];
 };
 
+/** APQC's Process Classification Framework at packages/naive/src/functions/pcf.json (EE-165): one version and edition of the PCF, levels 1 to 5, as APQC publishes it, with the attribution APQC's licence requires. Each element has a hierarchy id (1.0 for a category, 1.1 for a process group, 1.1.1 for a process, then activities and tasks), its name verbatim from APQC and its five-digit element id. Hierarchy ids can change between PCF versions and element ids do not. Element ids are not unique within a version: APQC files a few elements at two hierarchy ids, so nothing here requires them to be. The elements are written by scripts/import-pcf.ts and checked across elements by packages/naive/src/checks/check-pcf.ts. */
+export type Pcf = {
+  /** The PCF version, such as 8.0. */
+  version: string;
+  /** Which PCF this is. Only the cross-industry edition is carried. */
+  edition: "cross-industry";
+  /** The year and month APQC published this version. */
+  published: string;
+  /** A reference id in packages/naive/src/records/layers/<layer>/references/references.json. */
+  source: string;
+  /** The attribution APQC's licence requires in every copy and derivative work of the PCF, verbatim. */
+  attribution: string;
+  note?: string;
+  /** Every element of levels 1 to 5, sorted by hierarchy id. */
+  elements: {
+    /** The hierarchy id. A category's ends in .0 (4.0); below it each part counts from 1 (4.1, 4.1.1). */
+    id: string;
+    /** The element's name, verbatim from APQC, with no space at either end. */
+    name: string;
+    /** APQC's five-digit element id. */
+    pcf: number;
+    /** 1 category, 2 process group, 3 process, 4 activity, 5 task. */
+    level: 1 | 2 | 3 | 4 | 5;
+  }[];
+};
+
 /** The venture's people (people/people.json): who is in it, in which role, and which functions (hats) each owns. It is to human capital what venture.json is to the venture. A founder also has a file in people/founders/. Names only: no personal details. */
 export type People = {
   venture: string;
