@@ -1,6 +1,6 @@
 # The activity catalog
 
-Date: 2026-11-25. Decisions: EE-164, EE-165. Status: the record type, the scales, the check and the generator are built, and APQC's Process Classification Framework 8.0, levels 1 to 5, is built as `packages/naive/src/functions/pcf.json`; the catalog holds no activities yet, and the rest is listed under Not built.
+Date: 2026-11-25. Decisions: EE-164, EE-165, EE-166, EE-167. Status: the record type, the scales, the check and the generator are built, and APQC's Process Classification Framework 8.0, levels 1 to 5, is built as `packages/naive/src/functions/pcf.json`; the catalog holds a first seed of 38 activities from SciNet, and the rest is listed under Not built.
 
 ## Domain
 
@@ -67,7 +67,8 @@ A score is one rater's judgment. Every rated activity names who rated it, on wha
 ## System
 
 - `packages/naive/src/functions/pcf.json` is APQC's Process Classification Framework 8.0 (March 2026), cross-industry, levels 1 to 5: each element's hierarchy id, its name verbatim from APQC and its five-digit element id, with the attribution APQC's licence requires in every copy. It has no definitions or measures. `scripts/import-pcf.ts` writes it from a hierarchy extracted from APQC's 13 Definitions and Key Measures articles, and `packages/naive/src/checks/check-pcf.ts` checks it (EE-165). Element ids are stable across PCF versions and hierarchy ids are not; APQC files four element ids at two hierarchy ids each, and the file keeps them.
-- `packages/naive/src/functions/activities.json` is the catalog: `version`, `note`, `scales` (the seven above) and `activities`, which is empty until it is seeded.
+- `packages/naive/src/functions/activities.json` is the catalog: `version`, `note`, `scales` (the seven above) and `activities`.
+- The seed (EE-167): `node scripts/import-scinet.ts` wrote 38 activities under process group 3.1, process 3.1.1 Perform customer and market intelligence analysis. They are SciNet v1.10.0's Data Gathering and Data Analysis tasks for the subfields Entrepreneurship & Innovation and Marketing, and the universal task of obtaining ethical approval and informed consent. Each keeps SciNet's statement, names SciNet as its source, and carries SciNet's scores. Those scores rate the task as researchers perform it, and each activity's `rated.basis` says it is not rated for a business. A rerun on the same release writes the same bytes, and the script replaces only SciNet's activities under the process group it is given.
 - `packages/naive/src/records/activity-catalog.schema.json` is its schema, with `additionalProperties: false` on every object. An activity is `{id, process_group, process?, statement, scope, source?, ratings?, rated?}`. `scope` is `{kind: "cross-industry"}` or `{kind: "industry", naics}`. `source` is `{ref, locator?, changed?}`, where `changed` says the statement was reworded from the source. `rated` (`{by, on, basis}`) is required when `ratings` is present.
 - The record type `activity-catalog` is in `packages/naive/src/records/data-model.json` (operations layer, no function, method level) and in the operations layer manifest. Its type is `ActivityCatalog` in `packages/naive/src/records/types/records.d.ts`.
 - `packages/naive/src/checks/check-activities.ts` checks the catalog across files. It fails on a schema error; a scale or activity id listed twice; a statement repeated within one process group and scope; a scale range that does not rise; a process group not in `tools.json`; a process whose id does not start with its process group's or that is not a level 3 element of `pcf.json`; a statement over 30 words, of more than one sentence, or starting with an article or pronoun; a rating on a scale the catalog does not list or outside its range; and a source that is not a reference id in any layer's `references/references.json`. It reads files through VentureFs, exits 1 on findings and 2 when a file cannot be read, and `--json` prints the number of activities per function and process group. `packages/naive/src/checks/check-activities-test.ts` adds one valid rated activity to a copy, shows it passes, and breaks each rule.
@@ -80,5 +81,6 @@ A score is one rater's judgment. Every rated activity names who rated it, on wha
 - Requiring an activity to name its PCF process. `process` is still optional.
 - The link from a workflow step to the activity it performs.
 - A command that reads rated activities and proposes open decisions, such as a decision level or a done-criterion kind for a function.
-- The seed: no activities are in the catalog yet. The first ones are planned to come from SciNet by a script, with a person choosing which enter.
+- Rating the seeded activities for a business. The scores are SciNet's, for researchers.
+- Activities outside process group 3.1.
 - A list of valid NAICS codes. The check holds a code to two to six digits only.
