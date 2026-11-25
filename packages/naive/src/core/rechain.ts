@@ -48,8 +48,13 @@ export function originalHash(entry: RechainedEntry): string {
 
 /**
  * Writes a working copy's provenance lines again on top of the store's chain, oldest first, and returns them.
- * `storeTip` is the hash of the store log's last line, or genesis when it has none. Each returned line keeps
- * its original hash and prev in `rechained_from`, with the working copy it came from.
+ * `storeTip` is the hash of the store log's last line as the log stands at this call, or genesis when it has
+ * none, and the returned lines go straight onto the end of that log in the order returned, with nothing
+ * between them. So a caller that writes records of its own in the same operation (a push writes them through
+ * the router, which appends its own lines) reads the tip after those writes, not before: a tip read earlier
+ * names a line the log has since written past, and the first re-chained line's prev would then skip the lines
+ * in between and break the chain. Each returned line keeps its original hash and prev in `rechained_from`,
+ * with the working copy it came from.
  *
  * The lines handed in are one log's, oldest first, each line's hash matching its content over its own prev.
  * They need not be contiguous: a push leaves out the lines about records it does not sync, so a line's prev
