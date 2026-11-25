@@ -34,6 +34,7 @@
               }
             }
           },
+          "sets": { "enum": ["performer", "approval"], "description": "The field of packages/naive/src/records/activity-assignments.schema.json this rule's decided answer sets for each activity it found. The decision then offers that field's values as its options and names operations/activity-assignments.json in applies_to, so a merge writes the answer (EE-172). A rule without it changes nothing when answered." },
           "asks": { "type": "string", "pattern": "\\?$", "description": "The question the decision puts to a person about the matching activities." },
           "basis": { "type": "string", "minLength": 1, "description": "Why the lines sit where they do, and that they are unvalidated." }
         }
