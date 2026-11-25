@@ -84,6 +84,13 @@
 //   naive recipes search <pattern> [--factor 2] [--shrinks 2] [--max-writes 200] [--json]
 //                                                   knob descent with no model: each knob step an experiment write to
 //                                                   recipes/<pattern>, scored by the router; keeps are held as drafts
+//   naive sync link <business> [--host <url>]      sign this working copy in to a business store with a device code,
+//                                                   and keep the token in the operating system's keychain
+//   naive sync pull [--json]                        what the store changed since the sync point, merged field by
+//                                                   field into the files; same-field conflicts become decisions
+//   naive sync push [--json]                        what this working copy changed, each record with its base
+//                                                   version; a store that moved is pulled, merged and tried again
+//   naive sync status [--json]                      where this working copy stands, with no network
 //   naive lint premises [<route>] [--drafts] [--json] [--propose]
 //                                                   attack the premises of the venture's goals, requirements, exit criteria,
 //                                                   constraints and decisions; --propose writes findings as open decisions
@@ -406,6 +413,12 @@ else if (cmd === "build" || cmd === "start") {
   const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
   if (args[0] === "search") process.exit(run("packages/naive/src/router/orchestration/recipe-search.ts", [here(), ...args.slice(1)]));
   process.exit(run("packages/naive/src/engine/recipes/cli.ts", [here(), ...args]));
+} else if (cmd === "sync") {
+  // Offline sync with the business store (EE-178, packages/naive/src/engine/sync.ts). Refused in hosted mode.
+  const args = rest.filter((a, i) => !(a === "--venture" || rest[i - 1] === "--venture"));
+  const [what = "status", ...more] = args;
+  if (!["link", "pull", "push", "status"].includes(what)) { console.error("usage: naive sync link <business> [--host <url>] | pull | push | status [--json] [--venture <dir>]"); process.exit(2); }
+  process.exit(run("packages/naive/src/engine/sync.ts", [here(), what, ...more]));
 } else if (cmd === "lint") {
   const [what, ...args] = rest.filter((a, i) => !(a === "--venture" || rest[i - 1] === "--venture"));
   if (what !== "premises") { console.error("usage: naive lint premises [<route>] [--drafts] [--json] [--propose]"); process.exit(2); }
