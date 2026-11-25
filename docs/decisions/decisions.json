@@ -2426,6 +2426,34 @@
       ]
     },
     {
+      "id": "EE-179",
+      "date": "2026-11-25",
+      "status": "in-force",
+      "decision": "Work is split between a person and agents by the kind of an activity and not by its APQC level. A person performs four kinds at any level: a decision, a value, a commitment and a relationship. Agents perform the rest. APQC levels 1 and 2 become the briefing a person reads (not built). The activity catalog holds the kinds as data (kinds in packages/naive/src/functions/activities.json): a kind is told from the verb and the terms of an activity's statement, or of an APQC level 4 activity's name, and the first kind with a clause the statement meets is the activity's kind (packages/naive/src/engine/activity-kinds.ts). An activity a venture has not assigned takes its kind's default, so a function agent's brief and a step that names the activity say a person performs it, marked default with the kind. A venture's own assignment in operations/activity-assignments.json replaces a default. The words that mark a kind are unvalidated priors, and naive activities defaults lists every activity that has one.",
+      "why": "Torian chose this on a decision card on 2026-11-25, over the alternative that the person owns levels 1 and 2 and agents perform level 3 and below. Level 4 holds decisions that matter, such as approving a price, hiring a candidate and negotiating a contract, so a line drawn at a level would hand those to agents. A default by kind means a business that has assigned nothing still keeps those with a person. The kinds are data and not code so a person can read and change the words, and a default is marked as one so nobody mistakes it for a person's decision about that business.",
+      "related": [
+        "EE-165",
+        "EE-168",
+        "EE-172",
+        "EE-173",
+        "EE-176"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/activity-kinds.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/agents/assignments.ts",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
       "id": "EE-152",
       "date": "2026-11-19",
       "status": "in-force",
