@@ -8,15 +8,16 @@
 //   - a scale or activity id is listed twice, or two activities in one process group and scope share a statement;
 //   - a scale's range does not run from a lower to a higher number;
 //   - an activity names a process group that is not in packages/naive/src/functions/tools.json, or a process whose id
-//     does not start with its process group's;
+//     does not start with its process group's or is not a level 3 element of packages/naive/src/functions/pcf.json
+//     (APQC's PCF 8.0, EE-165). The process group is not looked up in pcf.json: tools.json is still on PCF 7.4;
 //   - a statement is over 30 words, is more than one sentence, or starts with an article or pronoun instead of a verb;
 //   - a rating names a scale the catalog does not list, or its value is outside that scale's range;
 //   - a scale's source or an activity's source.ref is not an id in any
 //     packages/naive/src/records/layers/<layer>/references/references.json.
 // --json prints the number of activities per function and process group.
 //
-// It reads files through VentureFs (EE-125). Findings exit 1; a catalog, tool catalog or references file that cannot
-// be read exits 2.
+// It reads files through VentureFs (EE-125). Findings exit 1; a catalog, tool catalog, pcf.json or references file
+// that cannot be read exits 2.
 
 import { join } from "node:path";
 import { Effect } from "effect";
@@ -30,14 +31,15 @@ import type { ActivityCatalog } from "../records/types/records.d.ts";
 const root = process.env.EE_ROOT?.replace(/\/?$/, "/") ?? new URL("../../../..", import.meta.url).pathname;
 export const CATALOG = "packages/naive/src/functions/activities.json";
 const TOOLS = "packages/naive/src/functions/tools.json";
+const PCF = "packages/naive/src/functions/pcf.json";
 const LAYERS = "packages/naive/src/records/layers";
 const MAX_WORDS = 30;
 // A statement starts with its verb, so a first word from this list means the verb is missing.
 const NOT_VERBS = new Set(["A", "An", "The", "This", "That", "These", "Those", "It", "We", "They", "Our", "Their", "Each", "Every"]);
 
 type Activity = ActivityCatalog["activities"][number];
-/** What the catalog is checked against: each process group's function (from the tool catalog) and every reference id. */
-export type Known = { groups: Map<string, string>; references: Set<string> };
+/** What the catalog is checked against: each process group's function (from the tool catalog), the PCF's level 3 hierarchy ids and every reference id. */
+export type Known = { groups: Map<string, string>; processes: Set<string>; references: Set<string> };
 
 const isObject = (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null && !Array.isArray(v);
 const list = (v: unknown, key: string): Record<string, unknown>[] => (isObject(v) && Array.isArray(v[key]) ? v[key].filter(isObject) : []);
@@ -70,6 +72,7 @@ export function catalogErrors(cat: ActivityCatalog, known: Known): string[] {
     const at = `activity ${a.id}`;
     if (!known.groups.has(a.process_group)) out.push(`${at} names process group ${a.process_group}, which is not in ${TOOLS}`);
     if (a.process !== undefined && !a.process.startsWith(`${a.process_group}.`)) out.push(`${at} names process ${a.process}, which is not under its process group ${a.process_group}`);
+    if (a.process !== undefined && !known.processes.has(a.process)) out.push(`${at} names process ${a.process}, which is not a level 3 process in ${PCF}`);
 
     const words = a.statement.split(/\s+/).filter(Boolean);
     if (words.length > MAX_WORDS) out.push(`${at} statement has ${words.length} words; a task statement has at most ${MAX_WORDS}`);
@@ -102,7 +105,7 @@ export const coverage = (cat: ActivityCatalog, groups: Map<string, string>) => {
 const read = (file: string) => readJson(join(root, file)).pipe(Effect.mapError((e) => new CannotRun({ message: `${file}: ${describe(e)}`, cause: e })));
 
 /** Every reference id in the layers' references files. */
-const referenceIds = Effect.gen(function* () {
+export const referenceIds = Effect.gen(function* () {
   const fs = yield* VentureFs;
   const layers = yield* fs.list(join(root, LAYERS)).pipe(Effect.mapError((e) => new CannotRun({ message: `${LAYERS}: ${describe(e)}`, cause: e })));
   const ids = new Set<string>();
@@ -119,11 +122,13 @@ export const checkActivities = Effect.gen(function* () {
   const raw = yield* read(CATALOG);
   const groups = new Map<string, string>();
   for (const g of list(yield* read(TOOLS), "process_groups")) if (typeof g.id === "string" && typeof g.function === "string") groups.set(g.id, g.function);
+  const processes = new Set<string>();
+  for (const e of list(yield* read(PCF), "elements")) if (e.level === 3 && typeof e.id === "string") processes.add(e.id);
   const references = yield* referenceIds;
   const bad = schemaErrors(raw);
   if (bad.length) return { errors: bad.map((e) => `${CATALOG}: ${e}`), catalog: null, groups };
   const catalog = raw as ActivityCatalog;
-  return { errors: catalogErrors(catalog, { groups, references }).map((e) => `${CATALOG}: ${e}`), catalog, groups };
+  return { errors: catalogErrors(catalog, { groups, processes, references }).map((e) => `${CATALOG}: ${e}`), catalog, groups };
 });
 
 if (import.meta.url === `file://${process.argv[1]}`) {
