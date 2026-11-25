@@ -21,7 +21,8 @@
 // operations/activity-assignments.json (performer or approval). The decision then offers that field's values as its
 // options and names the file in applies_to, one field per activity found. Once a person decides it, a merge
 // (mentura merge <decision>) writes the answer for each activity, and refuses an answer that is not one of the
-// options because the file would no longer match its schema. Nothing reads the assignments yet.
+// options because the file would no longer match its schema. A function agent's brief reads the
+// assignments (EE-173, agents/assignments.ts).
 //
 // A venture sets its own lines (EE-170) in naive.config.json: activity_proposals.rules.<rule id> is "off", so the rule
 // proposes nothing there, or { when }, lines that replace all of the catalog's for that rule. A rule left out keeps
@@ -171,6 +172,13 @@ export const industryOf = (dir: string) => Effect.map(
 /** The shipped catalog. */
 export const readCatalog = () => Effect.map(read(CATALOG), (c) => c as ActivityCatalog);
 
+/** The function that owns each APQC process group, from the tool catalog. */
+export const readGroups = () => Effect.map(read(TOOLS), (tools) => {
+  const groups = new Map<string, string>();
+  for (const g of isObject(tools) && Array.isArray(tools.process_groups) ? tools.process_groups.filter(isObject) : []) if (typeof g.id === "string" && typeof g.function === "string") groups.set(g.id, g.function);
+  return groups;
+});
+
 /** What the catalog's rules find for the functions a venture lists, by the venture's lines where it set them. Fails on lines the catalog cannot hold. */
 export const findFor = (dir: string) => Effect.gen(function* () {
   const catalog = yield* readCatalog();
@@ -180,10 +188,7 @@ export const findFor = (dir: string) => Effect.gen(function* () {
   const assigned = ventureFile(dir, ASSIGNMENTS);
   const stray = existsSync(assigned) ? assignmentProblems(catalog, yield* readJson(assigned).pipe(Effect.mapError((e) => new CannotRun({ message: `${ASSIGNMENTS}: ${describe(e)}`, cause: e })))) : [];
   if (stray.length) return yield* Effect.fail(new CannotRun({ message: stray.join("; ") }));
-  const tools = yield* read(TOOLS);
-  const groups = new Map<string, string>();
-  for (const g of isObject(tools) && Array.isArray(tools.process_groups) ? tools.process_groups.filter(isObject) : []) if (typeof g.id === "string" && typeof g.function === "string") groups.set(g.id, g.function);
-  return find(catalog, groups, functionsOf(dir), lines, yield* industryOf(dir));
+  return find(catalog, yield* readGroups(), functionsOf(dir), lines, yield* industryOf(dir));
 });
 
 /** Files one open decision per entry, and keeps one already filed, open or decided, as it is. */
