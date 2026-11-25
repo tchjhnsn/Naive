@@ -40,6 +40,34 @@
         }
       }
     },
+    "kinds": {
+      "type": "array",
+      "description": "The kinds of activity a person performs by default (EE-179): a decision, a value, a commitment or a relationship, at any APQC level. A kind is told from the words of an activity's statement, or of an APQC activity's name: the first word is its verb and the rest are its terms. The first kind with a clause the statement meets is the activity's kind, and an activity of no kind is left to the function's agent. A kind is an unvalidated prior. A venture's own assignment for the activity replaces it (packages/naive/src/records/activity-assignments.schema.json).",
+      "items": {
+        "type": "object",
+        "required": ["id", "performer", "when", "basis"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+          "performer": { "const": "person", "description": "Who performs an activity of this kind by default." },
+          "when": {
+            "type": "array",
+            "minItems": 1,
+            "description": "The clauses. A statement is of this kind when it meets any one of them.",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "anyOf": [{ "required": ["verbs"] }, { "required": ["terms"] }],
+              "properties": {
+                "verbs": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "pattern": "^[a-z]+$" }, "description": "The statement's first word is one of these." },
+                "terms": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "pattern": "^[a-z]+$" }, "description": "A word after the first is one of these. With verbs, the clause needs both." }
+              }
+            }
+          },
+          "basis": { "type": "string", "minLength": 1, "description": "Why the words mark this kind, and that they are unvalidated." }
+        }
+      }
+    },
     "scales": {
       "type": "array",
       "minItems": 1,

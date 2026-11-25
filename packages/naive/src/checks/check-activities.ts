@@ -14,6 +14,8 @@
 //   - a rating names a scale the catalog does not list, or its value is outside that scale's range;
 //   - a proposal rule (EE-169) is listed twice, names a scale the catalog does not list, draws a line outside that
 //     scale's range, or asks for at least more than at most;
+//   - a kind (EE-179) is listed twice, or names a verb that an earlier kind already takes with no terms, so its
+//     clause can never apply;
 //   - a scale's source or an activity's source.ref is not an id in any
 //     packages/naive/src/records/layers/<layer>/references/references.json.
 // --json prints the number of activities per function and process group.
@@ -27,6 +29,7 @@ import { CannotRun } from "../core/effect/errors.ts";
 import { readJson, VentureFs } from "../core/effect/fs.ts";
 import { describe, runMain } from "../core/effect/run.ts";
 import { lineProblems } from "../engine/activity-proposals.ts";
+import { kindProblems } from "../engine/activity-kinds.ts";
 import { validateValue } from "../records/validate.ts";
 import type { ActivityCatalog } from "../records/types/records.d.ts";
 
@@ -63,6 +66,7 @@ export function catalogErrors(cat: ActivityCatalog, known: Known): string[] {
   twice("activity", cat.activities.map((a) => a.id));
   twice("proposal rule", (cat.proposal_rules ?? []).map((r) => r.id));
   for (const r of cat.proposal_rules ?? []) out.push(...lineProblems(`proposal rule ${r.id}`, r.when, cat.scales));
+  out.push(...kindProblems(cat.kinds ?? []));
 
   const range = new Map<string, [number, number]>();
   for (const s of cat.scales) {
