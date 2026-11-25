@@ -30,7 +30,7 @@ export function agentPrompt(brief: AgentBrief, task: string, venture: string | n
     `## What you may write\n\n${writes.length ? writes.map((w) => `- ${w}`).join("\n") : "Nothing outside decisions."}`,
     brief.instructions ? `## Instructions (${brief.instructions.path})\n\n${brief.instructions.text.trim()}` : "",
     brief.skill ? `## Skill (${brief.skill.path})\n\n${brief.skill.text.trim()}` : "",
-    brief.assignments?.length ? `## Activity assignments\n\nA person decided these for this venture. Follow each rule.\n\n${brief.assignments.map((a) => `- ${a.id}: ${a.statement} ${a.rule}`).join("\n")}` : "",
+    brief.assignments?.length ? `## Activity assignments\n\nFollow each rule. A person decided the ones marked assigned for this venture. The ones marked default follow from the activity's kind until the venture assigns them.\n\n${brief.assignments.map((a) => `- ${a.id} (${a.source}): ${a.statement} ${a.rule}`).join("\n")}` : "",
     brief.workflows?.length ? `## Workflows\n\n${brief.workflows.map((w) => fence(w.id, pretty(w.content))).join("\n\n")}` : "",
     brief.decisions ? `## Decision matrix\n\n${fence(brief.decisions.path, pretty(brief.decisions.content))}` : "",
   ].filter(Boolean).join("\n\n") + "\n";
