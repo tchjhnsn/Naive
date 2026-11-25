@@ -2042,6 +2042,27 @@
       ]
     },
     {
+      "id": "EE-164",
+      "date": "2026-11-25",
+      "status": "in-force",
+      "decision": "Naive keeps the activities a business performs as data, in packages/naive/src/functions/activities.json, beside the tool catalog and on its process groups. An activity is a unit of work (APQC level 4) written as an O*NET task statement: one sentence that starts with a verb, at most 30 words. Each activity is filed under an APQC level 2 process group from tools.json, optionally a level 3 process, and is cross-industry or for one NAICS industry. It may cite the source it comes from and may be scored on seven published scales the catalog lists with their ranges: the CDR taxonomy's regulatory restriction, physical deployment and cognitive complexity, the RL feasibility index's verification, and O*NET's importance, share and frequency. A scored activity names who rated it, when and on what basis. Scores are one rater's judgment in a version 0.x, unevaluated catalog, and they never decide anything; the most a score may do is propose an open decision for a person. check-activities.ts checks the catalog. Tools.json and its schema are unchanged.",
+      "why": "A workflow step says what an agent does but not which unit of work that is, so nothing tells a function how regulated, physical or checkable its work is. SciNet (Alamos and Althoff 2026) showed the method on research work: task statements in O*NET form, added and checked one at a time, placed on a work axis and a context axis, and scored on the CDR, RL feasibility and O*NET scales. APQC's framework already gives Naive its functions and process groups (EE-047, EE-163), and its level 4 is the activity, so the catalog files activities under the groups Naive has. Keeping the catalog in its own file leaves the tool catalog's schema, which a console copies, as it was.",
+      "related": [
+        "EE-014",
+        "EE-047",
+        "EE-099",
+        "EE-163"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/checks/check-activities-test.ts",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
       "id": "EE-129",
       "date": "2026-11-19",
       "status": "proposed",
