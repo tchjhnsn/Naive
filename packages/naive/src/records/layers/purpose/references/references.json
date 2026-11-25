@@ -195,7 +195,8 @@
       "url": "https://www.statcan.gc.ca/en/subjects/standard/naics/2022/v1/introduction",
       "checked": "2026-10-27",
       "informs": [
-        "field:venture.industry"
+        "field:venture.industry",
+        "field:activity-catalog.scope"
       ],
       "stance": {
         "is": "adopted",
