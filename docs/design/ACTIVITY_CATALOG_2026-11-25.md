@@ -150,7 +150,22 @@ flowchart LR
   B --> O[you perform, you approve, the agent does]
 ```
 
+- A step to consider (EE-181). A workflow step with `consider` says `why` a person might want it and, optionally, `when` the agent runs it unasked. A step without it is required. `check-functions.ts` fails a workflow whose every step is one to consider, the agent's brief tells it the rule, and the briefing lists each function's steps to consider.
+
+```mermaid
+flowchart TD
+  S[workflow step] --> Q{has consider?}
+  Q -- no --> R[required: run it or raise a decision]
+  Q -- yes --> W{when holds, or a person asked?}
+  W -- yes --> RUN[run it]
+  W -- no --> SKIP[report it was considered and why it did not run]
+  Q -- yes --> B[listed in the briefing with why and when]
+```
+
 ## Not built
+
+- A shipped workflow with a step to consider. The field exists and no workflow uses it yet.
+- Evaluating a step's `when`. It is a sentence the agent reads, and nothing records that a step was considered.
 
 - Requiring an activity to name its PCF process. `process` is still optional.
 - Naming an activity on every workflow step. The field is optional, and two steps of the marketing and sales workflows name one so far.
