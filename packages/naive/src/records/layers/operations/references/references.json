@@ -27,19 +27,21 @@
       "authors": [
         "APQC"
       ],
-      "year": 2025,
+      "year": 2026,
       "kind": "standard",
-      "summary": "A hierarchical taxonomy of business processes with 13 top-level categories (from Develop Vision and Strategy to Develop and Manage Business Capabilities), published cross-industry and in industry-specific versions.",
+      "summary": "A hierarchical taxonomy of business processes with 13 top-level categories (from Develop Vision and Strategy to Develop and Manage Business Capabilities), published cross-industry and in industry-specific versions. Each element has a hierarchy id, which can change between versions, and a five-digit element id, which does not. Version 8.0 (March 2026), cross-industry, has 13 categories, 74 process groups, 363 processes, 1,352 activities and 215 tasks; Naive carries its levels 1 to 5 in packages/naive/src/functions/pcf.json. Its licence, printed in each of APQC's 13 Definitions and Key Measures articles for version 8.0: \"The Process Classification Framework is the copyrighted intellectual property of APQC. APQC encourages the wide distribution, discussion, and use of the PCF for classifying and defining organizational processes. Accordingly, APQC hereby grants you a perpetual, worldwide, royalty-free license to use, copy, publish, modify, and create derivative works of the PCF, provided that all copies of the PCF and any derivative works contain the following attribution: APQC’s Process Classification Framework® (PCF) is an open standard developed by APQC, a nonprofit that promotes benchmarking and best practices worldwide. The PCF is intended to facilitate organizational improvement through process management and benchmarking, regardless of industry, size, or geography. To download the full PCF or industry-specific versions of the PCF, as well as associated measures and benchmarking, please visit www.apqc.org/pcf.\"",
       "url": "https://www.apqc.org/process-frameworks/industry-specific-process-frameworks",
       "checked": "2026-10-28",
       "informs": [
         "field:venture.departments",
         "field:department.apqc",
-        "field:activity-catalog.process_group"
+        "field:activity-catalog.process_group",
+        "field:activity-catalog.process",
+        "field:pcf.elements"
       ],
       "stance": {
         "is": "adopted",
-        "why": "A venture's departments are the PCF's top-level categories under short ids; the catalog maps to them and cites them rather than copying the framework's text, which carries licence terms."
+        "why": "A venture's departments are the PCF's top-level categories under short ids, and the tool and activity catalogs file their entries under its process groups and processes. Naive ships the cross-industry element names of version 8.0 as data under APQC's licence, with the attribution it requires, and none of APQC's definitions or measures."
       }
     },
     {
