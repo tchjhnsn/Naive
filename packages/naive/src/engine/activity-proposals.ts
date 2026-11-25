@@ -17,17 +17,25 @@
 // venture with no industry in venture.json gets the cross-industry activities only. The rules' lines are unvalidated
 // priors.
 //
+// A rule may say what its answer sets (EE-172): `sets` names a field of the venture's activity assignments,
+// operations/activity-assignments.json (performer or approval). The decision then offers that field's values as its
+// options and names the file in applies_to, one field per activity found. Once a person decides it, a merge
+// (mentura merge <decision>) writes the answer for each activity, and refuses an answer that is not one of the
+// options because the file would no longer match its schema. Nothing reads the assignments yet.
+//
 // A venture sets its own lines (EE-170) in naive.config.json: activity_proposals.rules.<rule id> is "off", so the rule
 // proposes nothing there, or { when }, lines that replace all of the catalog's for that rule. A rule left out keeps
 // the catalog's lines. The proposal's note says whose lines found it. packages/naive/src/checks/check-config.ts holds
 // the venture's lines to the catalog's rule ids and scales.
 
+import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { Effect } from "effect";
 import { CannotRun } from "../core/effect/errors.ts";
 import { readJson } from "../core/effect/fs.ts";
 import { describe, runMain, runSync } from "../core/effect/run.ts";
 import { ventureFile } from "../core/venture-paths.ts";
+import { readSchema } from "../records/index.ts";
 import { decisionFile, propose } from "./decisions.ts";
 import { CONFIG, rawConfig } from "./naive-config.ts";
 import { functionsOf } from "./research-programs.ts";
@@ -37,6 +45,8 @@ const repo = new URL("../../../..", import.meta.url).pathname;
 export const CATALOG = "packages/naive/src/functions/activities.json";
 const TOOLS = "packages/naive/src/functions/tools.json";
 export const PROPOSER = "activity-proposals";
+/** The venture record a decided answer is merged into. */
+export const ASSIGNMENTS = "operations/activity-assignments.json";
 
 type Activity = ActivityCatalog["activities"][number];
 type Rule = NonNullable<ActivityCatalog["proposal_rules"]>[number];
@@ -126,8 +136,28 @@ export function note(f: Found): string {
       ? `Proposed by rule ${f.rule.id} in ${CATALOG}, with the venture's own lines from ${CONFIG} activity_proposals: ${f.rule.when.map(line).join(", ")}. The catalog's basis, written for the catalog's lines: ${f.rule.basis}`
       : `Proposed by rule ${f.rule.id} in ${CATALOG}: ${f.rule.when.map(line).join(", ")}. ${f.rule.basis}`,
     "A score is one rater's judgment and decides nothing. Accepting this means a person sets who does these activities; nothing is changed by this proposal.",
+    ...(f.rule.sets ? [`Answer with one of: ${optionsFor(f.rule.sets).join(", ")}. Once it is decided, mentura merge ${f.id} writes the answer as ${f.rule.sets} for each activity below in ${ASSIGNMENTS}.`] : []),
     ...f.activities.map((a) => `- ${a.id} (${a.process ?? a.process_group}${a.scope.kind === "industry" ? `, NAICS ${a.scope.naics}` : ""}): ${a.statement} Scores: ${scores(a)}. Rated by ${a.rated?.by} on ${a.rated?.on}: ${a.rated?.basis}`),
   ].join("\n");
+}
+
+/** The values the assignments schema allows for a field a rule sets: the options of the decision. */
+export function optionsFor(sets: NonNullable<Rule["sets"]>): string[] {
+  const schema = readSchema("activity-assignments.schema.json");
+  const field = isObject(schema) && isObject(schema.properties) && isObject(schema.properties.activities) && isObject(schema.properties.activities.additionalProperties)
+    && isObject(schema.properties.activities.additionalProperties.properties) ? schema.properties.activities.additionalProperties.properties[sets] : undefined;
+  return isObject(field) && Array.isArray(field.enum) ? field.enum.filter((v): v is string => typeof v === "string") : [];
+}
+
+/** Where a merge writes the decided answer: the field the rule sets, for each activity found. Empty when the rule sets nothing. Pure. */
+export const appliesTo = (f: Found): { file: string; field: string }[] =>
+  f.rule.sets ? f.activities.map((a) => ({ file: ASSIGNMENTS, field: `activities.${a.id}.${f.rule.sets}` })) : [];
+
+/** What is wrong with a venture's activity assignments beyond their schema: an activity the catalog lacks. Pure. */
+export function assignmentProblems(catalog: ActivityCatalog, assignments: unknown): string[] {
+  const known = new Set(catalog.activities.map((a) => a.id));
+  const listed = isObject(assignments) && isObject(assignments.activities) ? Object.keys(assignments.activities) : [];
+  return listed.filter((id) => !known.has(id)).map((id) => `${ASSIGNMENTS} assigns ${id}, which is not an activity in ${CATALOG}`);
 }
 
 const read = (file: string) => readJson(join(repo, file)).pipe(Effect.mapError((e) => new CannotRun({ message: `${file}: ${describe(e)}`, cause: e })));
@@ -147,6 +177,9 @@ export const findFor = (dir: string) => Effect.gen(function* () {
   const lines = rawConfig(dir).activity_proposals?.rules ?? {};
   const wrong = ventureLineProblems(catalog, lines);
   if (wrong.length) return yield* Effect.fail(new CannotRun({ message: `${CONFIG}: ${wrong.join("; ")}` }));
+  const assigned = ventureFile(dir, ASSIGNMENTS);
+  const stray = existsSync(assigned) ? assignmentProblems(catalog, yield* readJson(assigned).pipe(Effect.mapError((e) => new CannotRun({ message: `${ASSIGNMENTS}: ${describe(e)}`, cause: e })))) : [];
+  if (stray.length) return yield* Effect.fail(new CannotRun({ message: stray.join("; ") }));
   const tools = yield* read(TOOLS);
   const groups = new Map<string, string>();
   for (const g of isObject(tools) && Array.isArray(tools.process_groups) ? tools.process_groups.filter(isObject) : []) if (typeof g.id === "string" && typeof g.function === "string") groups.set(g.id, g.function);
@@ -161,7 +194,8 @@ export function proposeFound(dir: string, found: Found[]): Proposed[] {
       const prior = runSync(readJson(ventureFile(dir, file)));
       return { id: f.id, ok: true, result: { kept: f.id, file, status: isObject(prior) ? prior.status : undefined } };
     }
-    return { id: f.id, ...propose(dir, { id: f.id, question: question(f), note: note(f) }, { agentId: PROPOSER, via: "cli" }) };
+    const sets = f.rule.sets ? { options: optionsFor(f.rule.sets), applies_to: appliesTo(f) } : {};
+    return { id: f.id, ...propose(dir, { id: f.id, question: question(f), note: note(f), ...sets }, { agentId: PROPOSER, via: "cli" }) };
   });
 }
 

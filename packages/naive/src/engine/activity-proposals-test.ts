@@ -3,7 +3,9 @@
 // and function, a rerun files nothing more, a decided proposal is left alone, and list writes nothing. A venture's
 // industry (EE-171) adds the activities filed under a NAICS code its own code starts with. A venture's
 // own lines in naive.config.json (EE-170) turn a rule off or replace its lines, the note says whose lines they are,
-// and lines the catalog cannot hold fail check-config and the command.
+// and lines the catalog cannot hold fail check-config and the command. A rule that says what its answer sets
+// (EE-172) files a decision with options and applies_to, and merging the decided answer writes it for each activity
+// in operations/activity-assignments.json.
 //
 //   node packages/naive/src/engine/activity-proposals-test.ts
 
@@ -11,8 +13,8 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, 
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
-import { approve } from "./decisions.ts";
-import { applies, find, inIndustry, matches, note, proposeFound, question, ventureLineProblems } from "./activity-proposals.ts";
+import { approve, merge } from "./decisions.ts";
+import { ASSIGNMENTS, applies, appliesTo, find, inIndustry, matches, note, optionsFor, proposeFound, question, ventureLineProblems } from "./activity-proposals.ts";
 import type { ActivityCatalog } from "../records/types/records.d.ts";
 
 let failed = 0;
@@ -130,6 +132,31 @@ config(bad, { activity_proposals: { rules: { "person-approves-restricted": { whe
 ok(/does not match/.test(checkConfig(bad).errors.join("\n")), "a line with neither at_least nor at_most fails the schema");
 config(bad, { activity_proposals: { rules: { "person-approves-restricted": "on" } } });
 ok(/neither off nor \{ when \}/.test(run(bad).out) && run(bad).status !== 0, "a setting that is neither off nor lines is refused by the command");
+
+ok(optionsFor("performer").join() === "agent,person" && optionsFor("approval").join() === "person,none", "a rule's options are the values the assignments schema allows for the field it sets");
+ok(appliesTo(found[0]).length === 0 && appliesTo({ ...found[0], rule: { ...found[0].rule, sets: "performer" } }).map((t) => `${t.file} ${t.field}`).join() === `${ASSIGNMENTS} activities.survey-buyers.performer,${ASSIGNMENTS} activities.line-met-exactly.performer`, "a rule that sets a field names it once per activity found, and a rule that sets nothing names no file");
+const acted = venture("acted", ["marketing-and-sales"]);
+mkdirSync(join(acted, "people"));
+writeFileSync(join(acted, "people/people.json"), JSON.stringify({ people: [{ id: "torian", name: "Torian" }] }));
+ok(run(acted, "propose").status === 0, "propose files the shipped rules' decisions");
+const performerId = "activity-agent-with-checked-result-marketing-and-sales", approvalId = "activity-person-approves-restricted-marketing-and-sales";
+const filedDecision = JSON.parse(readFileSync(join(acted, `decisions/${performerId}.decision.json`), "utf8"));
+const performerIds: string[] = listedFound.find((f) => f.id === performerId)?.activities ?? [];
+ok(filedDecision.options.join() === "agent,person" && filedDecision.applies_to.length === performerIds.length && performerIds.length > 0 && /Answer with one of: agent, person\./.test(filedDecision.note), "the filed decision offers the options, names one field per activity and says how the answer is applied");
+ok(!merge(acted, performerId, { by: "Torian" }).ok && !existsSync(join(acted, ASSIGNMENTS)), "an open proposal cannot be merged: nothing is written before a person decides");
+approve(acted, performerId, { answer: "Yes, mostly.", by: "Torian" });
+const loose_ = merge(acted, performerId, { by: "Torian" });
+ok(!loose_.ok && /would make operations\/activity-assignments\.json not match/.test(loose_.error ?? "") && !existsSync(join(acted, ASSIGNMENTS)), "an answer that is not one of the options is refused by the merge, and nothing is written");
+approve(acted, performerId, { answer: "agent", by: "Torian" });
+const merged = merge(acted, performerId, { by: "Torian" });
+const assigned = (): Record<string, { performer?: string; approval?: string }> => JSON.parse(readFileSync(join(acted, ASSIGNMENTS), "utf8")).activities;
+ok(merged.ok && Object.keys(assigned()).sort().join() === [...performerIds].sort().join() && Object.values(assigned()).every((x) => x.performer === "agent"), "merging the decided answer writes it as performer for each activity the rule found");
+approve(acted, approvalId, { answer: "person", by: "Torian" });
+const approvalIds: string[] = listedFound.find((f) => f.id === approvalId)?.activities ?? [];
+ok(merge(acted, approvalId, { by: "Torian" }).ok && approvalIds.every((id) => assigned()[id].approval === "person") && performerIds.every((id) => assigned()[id].performer === "agent"), "a second rule's answer joins the same file and leaves the first rule's fields as they are");
+writeFileSync(join(acted, ASSIGNMENTS), JSON.stringify({ activities: { ...assigned(), "no-such-activity": { performer: "person" } } }));
+ok(run(acted).status !== 0 && /assigns no-such-activity, which is not an activity/.test(run(acted).out), "the command refuses assignments that name an activity the catalog lacks");
+ok(/"activity":"merge"/.test(readFileSync(join(acted, "provenance.jsonl"), "utf8").replace(/\s/g, "")), "each merge is logged in provenance");
 
 rmSync(tmp, { recursive: true, force: true });
 if (failed) { console.error(`${failed} failed`); process.exit(1); }

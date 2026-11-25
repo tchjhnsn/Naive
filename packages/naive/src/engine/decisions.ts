@@ -482,6 +482,8 @@ export function merge(dir: string, id: string, { by, role, via = "cli", note, to
   }
   const files: string[] = [];
   for (const t of d.applies_to) {
+    // A merge may create the record, in a folder the venture does not have yet.
+    mkdirSync(dirname(ventureFile(dir, t.file)), { recursive: true });
     writeFileSync(ventureFile(dir, t.file), JSON.stringify(recs.get(t.file), null, 2) + "\n");
     prov(dir, { entity: t.file, route: "governance/decisions", activity: "write", agent: actor, decision: id, note: `merged ${id} version ${version} into ${t.field}` });
     files.push(t.file);
