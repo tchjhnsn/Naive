@@ -991,6 +991,29 @@ export type DecisionRecord = {
     file: string;
     field: string;
   }[];
+  /** A conflict offline sync found (EE-174): the same field of one record changed to different values in a working copy and in the business store. Merging the decided version writes the chosen value at the path: answer store, local, or a person's own value as JSON. Built by packages/naive/src/engine/sync-conflicts.ts */
+  sync_conflict?: {
+    /** The venture-relative record file */
+    file: string;
+    /** The path from the record's root: object keys, and [id=<id>] for an item of an array merged by id. Empty for the whole record */
+    path: string[];
+    /** The value both sides started from; absent when the field was new */
+    base?: unknown;
+    /** The working copy's value; absent when it removed the field */
+    local?: unknown;
+    /** The business store's value; absent when it removed the field. The record keeps it until a person decides */
+    store?: unknown;
+    /** Who wrote the local value */
+    local_by?: string;
+    /** Who wrote the store value */
+    store_by?: string;
+    /** The id of the working copy the local value came from */
+    working_copy?: string;
+    /**
+     * @format date-time
+     */
+    found_at?: string;
+  };
   /** The version a merge applied to applies_to, and who merged it. Approving and merging are separate steps, and merging may be delegated */
   merged?: {
     version: number;

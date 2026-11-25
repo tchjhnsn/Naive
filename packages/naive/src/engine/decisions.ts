@@ -23,6 +23,8 @@
 //   later (needed in a later phase; checked before waiting), waiting, stale, deferred, done, withdrawn.
 // Exit 1 on a duplicate id, an unknown parent, a cycle, or an id that takes a reserved root name.
 
+import { pathText } from "./merge.ts";
+import { applySyncConflict, chosenValue, type SyncConflict } from "./sync-apply.ts";
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -449,10 +451,13 @@ export function merge(dir: string, id: string, { by, role, via = "cli", note, to
   if (!by && !role) return { ok: false, error: "merging needs the name of who merges (--by)" };
   const d: DecisionRecord = load(ventureFile(dir, file));
   if (d.status !== "decided") return { ok: false, error: `${id} is not decided; approve it before merging` };
-  if (!d.applies_to?.length) return { ok: false, error: `${id} names no applies_to: nothing to merge into` };
+  const sc = d.sync_conflict as SyncConflict | undefined;
+  if (!d.applies_to?.length && !sc) return { ok: false, error: `${id} names no applies_to: nothing to merge into` };
   const version = d.version ?? 1;
   if (d.merged?.version === version) return { ok: false, error: `${id} version ${version} is already merged` };
-  const outside = d.applies_to.find((t) => !inside(t?.file));
+  // A sync conflict (EE-174) writes the chosen value at its path in its one file instead of an answer at applies_to.
+  const targets = sc ? [{ file: sc.file, field: pathText(sc.path) }] : d.applies_to ?? [];
+  const outside = targets.find((t) => !inside(t?.file));
   if (outside) return { ok: false, error: `${id} applies_to ${outside?.file} is not a path inside the venture` };
   const may = mayMerge(dir, d, { by, role, today });
   if (!may.ok) return { ok: false, error: may.error };
@@ -460,7 +465,15 @@ export function merge(dir: string, id: string, { by, role, via = "cli", note, to
   const actor = role ? agentFromEnv("agent", via, { id: role }) : agentFromEnv("person", via, { id: by });
   // Every target is built and checked against its record type's schema before any is written.
   const recs = new Map<string, Fields>();
-  for (const t of d.applies_to) {
+  if (sc) {
+    const chosen = chosenValue(d.answer, sc);
+    if (!chosen.ok) return { ok: false, error: `${id}: ${chosen.error}` };
+    const f = ventureFile(dir, sc.file);
+    const applied = applySyncConflict(existsSync(f) ? load(f) : {}, sc.path, chosen.value);
+    if (!applied.ok) return { ok: false, error: `${id}: ${applied.error}` };
+    recs.set(sc.file, applied.record);
+  }
+  else for (const t of targets) {
     const f = ventureFile(dir, t.file);
     const rec = recs.get(t.file) ?? (existsSync(f) ? load(f) : {});
     setField(rec, t.field, d.answer);
@@ -481,7 +494,7 @@ export function merge(dir: string, id: string, { by, role, via = "cli", note, to
     if (added.length) return { ok: false, error: `merging ${id} would make ${rel} not match schema/${schema}; nothing was written:\n${added.join("\n")}` };
   }
   const files: string[] = [];
-  for (const t of d.applies_to) {
+  for (const t of targets) {
     // A merge may create the record, in a folder the venture does not have yet.
     mkdirSync(dirname(ventureFile(dir, t.file)), { recursive: true });
     writeFileSync(ventureFile(dir, t.file), JSON.stringify(recs.get(t.file), null, 2) + "\n");
@@ -494,7 +507,7 @@ export function merge(dir: string, id: string, { by, role, via = "cli", note, to
   // Public variants written from a merged field (MDX with variant_of: <file>#<field>) were worded from
   // the old version: they are marked stale so they are re-linted before the next publish (the hook
   // item 11, republish-on-change, builds on).
-  const variants = d.applies_to.flatMap((t) => variantsOf(dir, t.file, t.field));
+  const variants = targets.flatMap((t) => variantsOf(dir, t.file, t.field));
   if (variants.length) mark(dir, variants, { paths: files, version: String(version), via: "merge" });
   const im = impact(dir, id, { via });
   return { ok: true, result: { merged: id, version, files, ...(may.grant ? { grant: may.grant } : {}), variants_stale: variants, provenance: e.hash, impact: im.ok ? im.result as ImpactSummary : { error: im.error as string } } };

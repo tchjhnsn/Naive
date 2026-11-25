@@ -560,6 +560,23 @@
         }
       }
     },
+    "sync_conflict": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["file", "path"],
+      "description": "A conflict offline sync found (EE-174): the same field of one record changed to different values in a working copy and in the business store. Merging the decided version writes the chosen value at the path: answer store, local, or a person's own value as JSON. Built by packages/naive/src/engine/sync-conflicts.ts",
+      "properties": {
+        "file": { "type": "string", "description": "The venture-relative record file" },
+        "path": { "type": "array", "items": { "type": "string" }, "description": "The path from the record's root: object keys, and [id=<id>] for an item of an array merged by id. Empty for the whole record" },
+        "base": { "description": "The value both sides started from; absent when the field was new" },
+        "local": { "description": "The working copy's value; absent when it removed the field" },
+        "store": { "description": "The business store's value; absent when it removed the field. The record keeps it until a person decides" },
+        "local_by": { "type": "string", "description": "Who wrote the local value" },
+        "store_by": { "type": "string", "description": "Who wrote the store value" },
+        "working_copy": { "type": "string", "description": "The id of the working copy the local value came from" },
+        "found_at": { "type": "string", "format": "date-time" }
+      }
+    },
     "merged": {
       "type": "object",
       "additionalProperties": false,
