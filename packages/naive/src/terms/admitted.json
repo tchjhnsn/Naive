@@ -2147,8 +2147,8 @@
       ]
     },
     {
-      "id": "modeled-venture",
-      "label": "Modeled venture",
+      "id": "observed-venture",
+      "label": "Observed venture",
       "form": "compound",
       "level": "conduct",
       "kind": "role",
@@ -2160,13 +2160,13 @@
         },
         "grade": "none"
       },
-      "meaning": "A venture agents are modeling. It is modeled, and it is not being run.",
+      "meaning": "A venture agents are modeling. It is observed, and it is not being run.",
       "status": "proposed",
-      "hash": "623474c07fd347b8",
+      "hash": "e552558c4f41632d",
       "properties": [
         {
           "id": "C1",
-          "says": "modeled"
+          "says": "observed"
         },
         {
           "id": "C2",
@@ -2188,7 +2188,7 @@
         }
       ],
       "lean": [
-        "modeled_not_run"
+        "observed_not_run"
       ],
       "sources": [
         "EE-188"
@@ -2208,9 +2208,9 @@
         },
         "grade": "none"
       },
-      "meaning": "A venture a person is running on Naive. It is run, and it is not being modeled.",
+      "meaning": "A venture a person is running on Naive. It is run, and it is not being observed.",
       "status": "proposed",
-      "hash": "3a07bc25ba6202c5",
+      "hash": "088693f596b7a13c",
       "properties": [
         {
           "id": "D1",
@@ -2218,26 +2218,26 @@
         },
         {
           "id": "D2",
-          "says": "not modeled"
+          "says": "not observed"
         }
       ],
       "rule": "every property, and P7 (confirmed facts)",
       "valid": true,
       "passes": 4570,
       "relations": {
-        "modeled-venture": "disjoint"
+        "observed-venture": "disjoint"
       },
       "predictions": [
         {
-          "other": "modeled-venture",
+          "other": "observed-venture",
           "expected": "disjoint",
           "found": "disjoint",
           "confirmed": true
         }
       ],
       "lean": [
-        "run_not_modeled",
-        "modeled_disjoint_run"
+        "run_not_observed",
+        "observed_disjoint_run"
       ],
       "sources": [
         "EE-188"

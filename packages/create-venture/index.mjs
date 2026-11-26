@@ -11,10 +11,10 @@
 //                      [--layers a,b] [--legal-form <form>] [--dump <file>]
 //                      [--use-npm | --use-pnpm | --use-yarn | --use-bun] [--skip-install] [--no-git]
 //                      [--framework <spec>] [--reset-preferences] [--venture-name "<name>"] [--no-workspace]
-//                      [--door <door>] [--account <id>] [--modeled] [--mode modeled|run]
+//                      [--door <door>] [--account <id>] [--observed] [--mode observed|run]
 //
-// venture.json mode (EE-188) is run unless --modeled or --mode says otherwise. --mode modeled|run is the
-// explicit form and is passed through to init-venture. --modeled writes modeled. The two disagreeing is
+// venture.json mode (EE-188) is run unless --observed or --mode says otherwise. --mode observed|run is the
+// explicit form and is passed through to init-venture. --observed writes observed. The two disagreeing is
 // refused. This is not people.json mode (solo or team) and not the loop mode.
 //
 // --name is the subject written into people/. It is not the provenance agent. The agent is the process:
@@ -72,9 +72,9 @@ const cyan = (s) => (process.stdout.isTTY ? `\x1b[36m${s}\x1b[39m` : s);
 const fail = (m) => { console.error(m); process.exit(1); };
 const modeAt = argv.indexOf("--mode");
 const askedMode = modeAt < 0 ? undefined : argv[modeAt + 1];
-if (modeAt >= 0 && askedMode !== "modeled" && askedMode !== "run") fail(`unknown mode ${askedMode ?? ""}: modeled or run`);
-if (flag("modeled") && askedMode === "run") fail("--modeled writes modeled, and --mode run says run");
-const ventureMode = askedMode === "modeled" || askedMode === "run" ? askedMode : (flag("modeled") ? "modeled" : "run");
+if (modeAt >= 0 && askedMode !== "observed" && askedMode !== "run") fail(`unknown mode ${askedMode ?? ""}: observed or run`);
+if (flag("observed") && askedMode === "run") fail("--observed writes observed, and --mode run says run");
+const ventureMode = askedMode === "observed" || askedMode === "run" ? askedMode : (flag("observed") ? "observed" : "run");
 const slug = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
 // Preferences, so a second venture can reuse the first one's answers (create-next-app's "reuse previous settings").

@@ -578,30 +578,30 @@ export const faithfulAuthor: Term<Authorship> = {
   lean: ["unconfirmed_not_author", "subject_not_author", "claim_not_author"],
 };
 
-export const modeledVenture: Term<Conduct> = {
-  id: "modeled-venture", form: "compound", label: "Modeled venture", level: "conduct", kind: "role",
+export const observedVenture: Term<Conduct> = {
+  id: "observed-venture", form: "compound", label: "Observed venture", level: "conduct", kind: "role",
   labels: sharedTerm("narrowed", "none"),
-  meaning: "A venture agents are modeling. It is modeled, and it is not being run.",
+  meaning: "A venture agents are modeling. It is observed, and it is not being run.",
   props: [
-    { id: "C1", says: "modeled", check: (f) => f.modeled },
+    { id: "C1", says: "observed", check: (f) => f.observed },
     { id: "C2", says: "not run", check: (f) => !f.run },
   ],
   sources: ["EE-188"],
-  lean: ["modeled_not_run"],
+  lean: ["observed_not_run"],
   predicts: { "run-venture": "disjoint" },
 };
 
 export const runVenture: Term<Conduct> = {
   id: "run-venture", form: "compound", label: "Run venture", level: "conduct", kind: "role",
   labels: sharedTerm("narrowed", "none"),
-  meaning: "A venture a person is running on Naive. It is run, and it is not being modeled.",
+  meaning: "A venture a person is running on Naive. It is run, and it is not being observed.",
   props: [
     { id: "D1", says: "run", check: (f) => f.run },
-    { id: "D2", says: "not modeled", check: (f) => !f.modeled },
+    { id: "D2", says: "not observed", check: (f) => !f.observed },
   ],
   sources: ["EE-188"],
-  lean: ["run_not_modeled", "modeled_disjoint_run"],
-  predicts: { "modeled-venture": "disjoint" },
+  lean: ["run_not_observed", "observed_disjoint_run"],
+  predicts: { "observed-venture": "disjoint" },
 };
 
 // Data labels (EE-191, packages/naive/lean/Naive/Labels.lean). Each check reads the facts and never the declared label.
@@ -745,4 +745,4 @@ export const pcfCitation: Term<CitationFacts> = {
   lean: ["citation_needs_element"],
 };
 
-export const TERMS = [founder, coFounder, earlyEmployee, mentor, coach, friend, unearnedCandour, thresholdGuardian, phaseGate, layer, area, topCategory, typedLink, detector, trial, hit, miss, falseAlarm, correctRejection, signal, listener, reception, salientReception, noise, experiment, keptExperiment, discardedExperiment, evalPlan, settledRecord, faithfulAuthor, modeledVenture, runVenture, sourcedRecord, estimatedRecord, syntheticRecord, goldRecord, allowedSource, heldOutItem, personLabel, pcfCitation];
+export const TERMS = [founder, coFounder, earlyEmployee, mentor, coach, friend, unearnedCandour, thresholdGuardian, phaseGate, layer, area, topCategory, typedLink, detector, trial, hit, miss, falseAlarm, correctRejection, signal, listener, reception, salientReception, noise, experiment, keptExperiment, discardedExperiment, evalPlan, settledRecord, faithfulAuthor, observedVenture, runVenture, sourcedRecord, estimatedRecord, syntheticRecord, goldRecord, allowedSource, heldOutItem, personLabel, pcfCitation];

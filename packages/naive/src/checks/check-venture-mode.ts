@@ -1,5 +1,5 @@
 // Whether a venture record says agents are modeling it or a person is running it (EE-188).
-// Absence passes as unknown. modeled and run pass their conduct terms. Any other present value is illegal.
+// Absence passes as unknown. observed and run pass their conduct terms. Any other present value is illegal.
 //
 //   node packages/naive/src/checks/check-venture-mode.ts <venture dir>
 
