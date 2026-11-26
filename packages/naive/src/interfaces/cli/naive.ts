@@ -4,7 +4,9 @@
 // alias, so `mentura typegen` and `mentura upgrade` run these same commands.
 //
 //   naive new [dir] [--yes] [--type <type>] [...]    start a venture: create-venture's questions and scaffold (EE-082)
-//   naive agent [list] | brief <role> | run <role> "<task>"   Naive's agents from the terminal: run uses NAIVE_AGENT_CMD (such as claude -p), else prints the prompt
+//   naive agent [list] | brief <role> | run <role> "<task>" | spawn <function>-agent --task "<text>"
+//                                                   Naive's agents from the terminal: run uses NAIVE_AGENT_CMD (such as claude -p), else prints
+//                                                   the prompt, and spawn records a temporary specialist of that agent and runs it (EE-213)
 //   naive <route> <action> | decide | decisions | accept | ...
 //                                                   every record command of mentura runs here too: see naive help
 //   naive dev [--port 4331]                         the setup page at /setup and the board, live: edit a record and it updates; each saved
