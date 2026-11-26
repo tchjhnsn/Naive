@@ -1087,6 +1087,22 @@
       "note": "The tools a business needs: each function's APQC level 2 process groups, and each tool's function, process groups and the record types it reads, writes or proposes. A tool with no function is universal. Consoles build their navigation from it (venture console spec, phase 3)"
     },
     {
+      "id": "document-catalog",
+      "layer": "interface",
+      "function": null,
+      "level": "method",
+      "schema": "packages/naive/src/records/document-catalog.schema.json",
+      "generator": "packages/naive/src/engine/generators/document-catalog.ts",
+      "paths": [
+        "packages/naive/src/functions/documents.json"
+      ],
+      "refs": [
+        { "field": "kinds[].function", "to": "department-catalog", "checked_by": "packages/naive/src/checks/check-documents.ts" },
+        { "field": "ladder.rungs[].requires.decisions", "to": "function-decisions", "checked_by": "packages/naive/src/checks/check-documents.ts" }
+      ],
+      "note": "Which documents a venture makes, in which format, from which records, and in what order (EE-218): the formats and what each is for, the rules for choosing one (slides for a live talk, a printed document for reading), the ladder a document climbs (a reading copy a person approved, then an interactive page, then the live site) and each kind's sections, so every claim in a rendered document cites a record. packages/naive/src/engine/render-document.ts writes the reading copy; the heavier formats are the harness's"
+    },
+    {
       "id": "operating-rules",
       "layer": "operations",
       "function": null,
