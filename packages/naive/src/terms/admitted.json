@@ -2094,6 +2094,284 @@
         "Murphy and Winkler, A general framework for forecast verification (1987)",
         "everything-ecosystem docs/design/AUTORESEARCH_RECORDS_2026-11-06.md"
       ]
+    },
+    {
+      "id": "sourced-record",
+      "label": "Sourced record",
+      "form": "compound",
+      "level": "data",
+      "kind": "act",
+      "labels": {
+        "designation": "term",
+        "scope": "shared",
+        "origin": {
+          "kind": "adapted"
+        },
+        "grade": "none"
+      },
+      "meaning": "A record taken from a source, with no method of its own, not generated, and not an accepted record from one of our own ventures.",
+      "status": "proposed",
+      "hash": "131bdc0f4ee0833e",
+      "properties": [
+        {
+          "id": "S1",
+          "says": "it names a source"
+        },
+        {
+          "id": "S2",
+          "says": "it names no method"
+        },
+        {
+          "id": "S3",
+          "says": "it was not generated"
+        },
+        {
+          "id": "S4",
+          "says": "it is not an accepted record from one of our own ventures"
+        }
+      ],
+      "rule": "every property, and P7 (confirmed facts)",
+      "valid": true,
+      "passes": 1717,
+      "relations": {
+        "estimated-record": "disjoint",
+        "synthetic-record": "disjoint",
+        "gold-record": "disjoint"
+      },
+      "predictions": [
+        {
+          "other": "estimated-record",
+          "expected": "disjoint",
+          "found": "disjoint",
+          "confirmed": true
+        },
+        {
+          "other": "synthetic-record",
+          "expected": "disjoint",
+          "found": "disjoint",
+          "confirmed": true
+        },
+        {
+          "other": "gold-record",
+          "expected": "disjoint",
+          "found": "disjoint",
+          "confirmed": true
+        }
+      ],
+      "lean": [
+        "sourced_disjoint_estimated",
+        "sourced_disjoint_synthetic",
+        "sourced_disjoint_gold"
+      ],
+      "sources": [
+        "EE-191"
+      ]
+    },
+    {
+      "id": "estimated-record",
+      "label": "Estimated record",
+      "form": "compound",
+      "level": "data",
+      "kind": "act",
+      "labels": {
+        "designation": "term",
+        "scope": "shared",
+        "origin": {
+          "kind": "adapted"
+        },
+        "grade": "none"
+      },
+      "meaning": "A record taken from a source by a named method, not generated, and not an accepted record from one of our own ventures.",
+      "status": "proposed",
+      "hash": "95b4474f5ec5784d",
+      "properties": [
+        {
+          "id": "E1",
+          "says": "it names a source"
+        },
+        {
+          "id": "E2",
+          "says": "it names a method"
+        },
+        {
+          "id": "E3",
+          "says": "it was not generated"
+        },
+        {
+          "id": "E4",
+          "says": "it is not an accepted record from one of our own ventures"
+        }
+      ],
+      "rule": "every property, and P7 (confirmed facts)",
+      "valid": true,
+      "passes": 1707,
+      "relations": {
+        "sourced-record": "disjoint",
+        "synthetic-record": "disjoint",
+        "gold-record": "disjoint"
+      },
+      "predictions": [
+        {
+          "other": "sourced-record",
+          "expected": "disjoint",
+          "found": "disjoint",
+          "confirmed": true
+        },
+        {
+          "other": "synthetic-record",
+          "expected": "disjoint",
+          "found": "disjoint",
+          "confirmed": true
+        },
+        {
+          "other": "gold-record",
+          "expected": "disjoint",
+          "found": "disjoint",
+          "confirmed": true
+        }
+      ],
+      "lean": [
+        "sourced_disjoint_estimated",
+        "estimated_disjoint_synthetic",
+        "estimated_disjoint_gold"
+      ],
+      "sources": [
+        "EE-191"
+      ]
+    },
+    {
+      "id": "synthetic-record",
+      "label": "Synthetic record",
+      "form": "compound",
+      "level": "data",
+      "kind": "act",
+      "labels": {
+        "designation": "term",
+        "scope": "shared",
+        "origin": {
+          "kind": "adapted"
+        },
+        "grade": "none"
+      },
+      "meaning": "A generated record that sits under no venture.",
+      "status": "proposed",
+      "hash": "fa2c5fe624dbd534",
+      "properties": [
+        {
+          "id": "N1",
+          "says": "it was generated"
+        },
+        {
+          "id": "N2",
+          "says": "it sits under no venture"
+        }
+      ],
+      "rule": "every property, and P7 (confirmed facts)",
+      "valid": true,
+      "passes": 4482,
+      "relations": {
+        "sourced-record": "disjoint",
+        "estimated-record": "disjoint",
+        "gold-record": "disjoint"
+      },
+      "predictions": [
+        {
+          "other": "sourced-record",
+          "expected": "disjoint",
+          "found": "disjoint",
+          "confirmed": true
+        },
+        {
+          "other": "estimated-record",
+          "expected": "disjoint",
+          "found": "disjoint",
+          "confirmed": true
+        },
+        {
+          "other": "gold-record",
+          "expected": "disjoint",
+          "found": "disjoint",
+          "confirmed": true
+        }
+      ],
+      "lean": [
+        "synthetic_not_under_venture",
+        "sourced_disjoint_synthetic",
+        "estimated_disjoint_synthetic",
+        "synthetic_disjoint_gold"
+      ],
+      "sources": [
+        "EE-191"
+      ]
+    },
+    {
+      "id": "gold-record",
+      "label": "Gold record",
+      "form": "compound",
+      "level": "data",
+      "kind": "act",
+      "labels": {
+        "designation": "term",
+        "scope": "shared",
+        "origin": {
+          "kind": "adapted"
+        },
+        "grade": "none"
+      },
+      "meaning": "A record a person accepted from one of our own ventures, and that was not generated.",
+      "status": "proposed",
+      "hash": "dccaf740655c51bd",
+      "properties": [
+        {
+          "id": "G1",
+          "says": "a person accepted it"
+        },
+        {
+          "id": "G2",
+          "says": "it comes from one of our own ventures"
+        },
+        {
+          "id": "G3",
+          "says": "it was not generated"
+        }
+      ],
+      "rule": "every property, and P7 (confirmed facts)",
+      "valid": true,
+      "passes": 2223,
+      "relations": {
+        "sourced-record": "disjoint",
+        "estimated-record": "disjoint",
+        "synthetic-record": "disjoint"
+      },
+      "predictions": [
+        {
+          "other": "sourced-record",
+          "expected": "disjoint",
+          "found": "disjoint",
+          "confirmed": true
+        },
+        {
+          "other": "estimated-record",
+          "expected": "disjoint",
+          "found": "disjoint",
+          "confirmed": true
+        },
+        {
+          "other": "synthetic-record",
+          "expected": "disjoint",
+          "found": "disjoint",
+          "confirmed": true
+        }
+      ],
+      "lean": [
+        "gold_needs_accepted_own",
+        "sourced_disjoint_gold",
+        "estimated_disjoint_gold",
+        "synthetic_disjoint_gold"
+      ],
+      "sources": [
+        "EE-191"
+      ]
     }
   ],
   "fixtures": [

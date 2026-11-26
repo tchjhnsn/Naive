@@ -195,6 +195,7 @@ const steps: Step[] = [
   ["founders before ventures: opaque ids, ideas, references, inspirations, _private/ secrets, only the founder confirms", "node", ["packages/naive/src/engine/founders-test.ts"]],
   ["founders: examples", "node", ["packages/naive/src/engine/founders.ts", "check", "packages/naive/src/records/examples/workspace"]],
   ["term engine: bad tests rejected, relations total, freezing notices change", "node", ["packages/naive/src/terms/engine-test.ts"]],
+  ["data labels: a generated record under a venture passes nothing, an accepted observed record is not gold, a sourced record with a method is estimated", "node", ["packages/naive/src/terms/labels-test.ts"]],
   ["every glossary term admitted: valid test, cross-run, Lean theorems named (regenerate with node packages/naive/src/terms/admit.ts)", "node", ["packages/naive/src/terms/admit.ts", "--check"]],
   ["no symbolic check bypasses EE-095: each check and gate is registered, and a symbolic one reaches the engine, admit or a Lean theorem", "node", ["packages/naive/src/terms/bypass-guard-test.ts"]],
   ["Lean agreement: every theorem an admitted term cites is declared in packages/naive/lean/Naive, and every Lean concept has an admitted term", "node", ["packages/naive/src/terms/lean-agreement-test.ts"]],
@@ -252,6 +253,7 @@ const cheap: Step[] = [
   ["packages/naive/src/terms/ontology.md matches packages/naive/src/terms/ontology.json (regenerate with node packages/naive/src/checks/check-nouns.ts --md)", "node", ["packages/naive/src/checks/check-nouns.ts", "--md"], rendered("packages/naive/src/terms/ontology.md", "\n### System")],
   ["layer relationships in docs/design/LAYERS_AND_KITS_2026-10-27.md match the kits (regenerate with node packages/naive/src/checks/check-data-model.ts --md)", "node", ["packages/naive/src/checks/check-data-model.ts", "--md"], rendered("docs/design/LAYERS_AND_KITS_2026-10-27.md", "### Layer relationships")],
   ["docs/reference/ROUTES.md matches the kits (regenerate with node packages/naive/src/router/router.ts --md)", "node", ["packages/naive/src/router/router.ts", "--md"], rendered("docs/reference/ROUTES.md", "## Routes")],
+  ["packages/naive/lean/Naive/Generated/ElementCases.lean matches packages/naive/src/engine/element-state.ts (regenerate with node packages/naive/src/engine/element-cases.ts; lake build checks the Lean model against it, EE-190)", "node", ["packages/naive/src/engine/element-cases.ts", "--check"]],
   ["packages/naive/lean/Naive/Generated/Ontology.lean matches packages/naive/src/terms/ontology.json (regenerate with node packages/naive/src/terms/gen-concepts.ts)", "node", ["packages/naive/src/terms/gen-concepts.ts", "--check"]],
 ];
 
