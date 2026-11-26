@@ -47,7 +47,7 @@ try {
   expect("changed wording does not reach the facts until re-approved", !JSON.parse(out).promise, out);
 
   w("foundation/problem.visibility.json", { fields: { statement: { visibility: "variant" } } });
-  w("marketing/content/problem.mdx", "---\nvariant_of: foundation/problem.json#statement\npublish: true\napproved_by: Founder\n---\nBuilding is easy now. Knowing what to decide next is not.\n");
+  w("marketing/content/problem.mdx", "---\nvariant_of: foundation/problem.json#statement\naudience: founders\npublish: true\napproved_by: Founder\n---\nBuilding is easy now. Knowing what to decide next is not.\n");
   out = facts();
   expect("a variant field reaches the facts only as its approved public variant", JSON.parse(out).problem?.value === "Building is easy now. Knowing what to decide next is not." && !out.includes("CANARY"), out);
 
