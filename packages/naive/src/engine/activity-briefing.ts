@@ -9,6 +9,9 @@
 // venture's own assignment or by default from the activity's kind (EE-179), and how many activities are left to the
 // function's agent. It reads the venture's assignments, the activity catalog and APQC's framework, and writes nothing.
 //
+// It also lists each workflow step the function marks as one to consider (EE-181), with why a person might want it and
+// when the agent would run it unasked.
+//
 // It counts activities and names who performs them. It does not say what happened: open decisions, handoffs and
 // results are not in the briefing (not built).
 
@@ -17,6 +20,9 @@ import { runMain } from "../core/effect/run.ts";
 import { readCatalog, readGroups, readPcf } from "./activity-proposals.ts";
 import { assignedActivities, readAssignments } from "./agents/assignments.ts";
 import type { AssignedActivity } from "./agents/assignments.ts";
+import { functionAgent } from "./agents/function-spec.ts";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { functionsOf } from "./research-programs.ts";
 import type { ActivityCatalog, Pcf } from "../records/types/records.d.ts";
 
@@ -33,6 +39,16 @@ export interface GroupBriefing {
   /** How many of the group's activities, APQC's level 4 and the catalog's, are left to the function's agent with no approval. */
   readonly agent: number,
 }
+/** A workflow step the function marks as one to consider, not one it requires (EE-181). */
+export interface ConsiderStep {
+  readonly workflow: string,
+  readonly step: string,
+  readonly do: string,
+  readonly why: string,
+  /** When the agent runs the step unasked. Absent when only a person's ask runs it. */
+  readonly when?: string,
+  readonly activity?: string,
+}
 export interface FunctionBriefing {
   readonly function: string,
   /** The function's APQC category, level 1. */
@@ -40,12 +56,28 @@ export interface FunctionBriefing {
   readonly process_groups: readonly GroupBriefing[],
   /** How many activities across the function a person performs or approves. */
   readonly needs_person: number,
+  /** The steps of the function's workflows that are ones to consider, in workflow and step order. */
+  readonly consider: readonly ConsiderStep[],
+}
+
+const isObject = (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null && !Array.isArray(v);
+
+/** The steps marked `consider` in the workflows given, in order. Pure. */
+export function considerSteps(workflows: readonly unknown[]): ConsiderStep[] {
+  return workflows.filter(isObject).flatMap((w) => (Array.isArray(w.steps) ? w.steps : []).filter(isObject).flatMap((s): ConsiderStep[] => {
+    if (!isObject(s.consider) || typeof s.consider.why !== "string") return [];
+    return [{
+      workflow: String(w.id), step: String(s.id), do: String(s.do), why: s.consider.why,
+      ...(typeof s.consider.when === "string" ? { when: s.consider.when } : {}),
+      ...(typeof s.activity === "string" ? { activity: s.activity } : {}),
+    }];
+  }));
 }
 
 const needed = (a: AssignedActivity): Needed => ({ id: a.id, from: a.from, statement: a.statement, source: a.source, ...(a.kind ? { kind: a.kind } : {}) });
 
 /** The briefing for the functions given, in their order, with each function's process groups in the framework's order. Pure. */
-export function briefing(catalog: ActivityCatalog, groups: Map<string, string>, pcf: Pcf, functions: readonly string[], assignments: unknown): FunctionBriefing[] {
+export function briefing(catalog: ActivityCatalog, groups: Map<string, string>, pcf: Pcf, functions: readonly string[], assignments: unknown, workflows: ReadonlyMap<string, readonly unknown[]> = new Map()): FunctionBriefing[] {
   const name = new Map(pcf.elements.filter((e) => e.level <= 2).map((e) => [e.id, e.name]));
   const total = new Map<string, number>();
   const count = (group: string) => total.set(group, (total.get(group) ?? 0) + 1);
@@ -66,6 +98,7 @@ export function briefing(catalog: ActivityCatalog, groups: Map<string, string>, 
       category: category && name.has(category) ? { id: category, name: name.get(category) ?? "" } : null,
       process_groups,
       needs_person: process_groups.reduce((n, g) => n + g.performs.length + g.approves.length, 0),
+      consider: considerSteps(workflows.get(fn) ?? []),
     };
   });
 }
@@ -73,7 +106,13 @@ export function briefing(catalog: ActivityCatalog, groups: Map<string, string>, 
 /** The briefing for a venture: the functions it lists, or the one named. */
 export const briefingFor = (dir: string, only?: string) => Effect.gen(function* () {
   const functions = functionsOf(dir).filter((f) => only === undefined || f === only);
-  return briefing(yield* readCatalog(), yield* readGroups(), yield* readPcf(), functions, yield* readAssignments(dir));
+  const groups = yield* readGroups();
+  const shipped = new Set(groups.values());
+  const workflows = new Map(functions.filter((f) => shipped.has(f)).map((f) => {
+    const spec = functionAgent(f);
+    return [f, spec.workflows.map((w): unknown => JSON.parse(readFileSync(join(spec.module, "workflows", `${w}.json`), "utf8")))] as const;
+  }));
+  return briefing(yield* readCatalog(), groups, yield* readPcf(), functions, yield* readAssignments(dir), workflows);
 });
 
 if (import.meta.url === `file://${process.argv[1]}`) {
@@ -102,6 +141,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
         for (const a of g.performs) console.log(line("perform", a));
         for (const a of g.approves) console.log(line("approve", a));
       }
+      for (const c of f.consider) console.log(`  consider ${c.workflow}/${c.step}  ${c.do}  Why: ${c.why}${c.when ? `  Runs when: ${c.when}` : "  Runs only when you ask."}`);
     }
     if (found.length) console.log("\nA default follows from the activity's kind and is an unvalidated prior. The venture's own assignment replaces it. Nothing written.");
   }));

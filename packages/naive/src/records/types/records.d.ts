@@ -2116,7 +2116,7 @@ export type FunctionModule = {
   note?: string;
 };
 
-/** One recurring piece of a function's work, at packages/naive/src/functions/<id>/workflows/<workflow id>.json: what starts it, the steps the function's agent takes, the records each step writes through the router, the decision classes a step may raise, the activity a step performs, and the done criteria in the handoff's form (handoff.schema.json done_criteria), so a workflow run can be handed off and verified like any other work. Every route a step writes must be in the function's write reach, and every class it raises must have a row in the function's decisions.json and every activity a step names must be an APQC activity or a catalog activity under the function's APQC category (packages/naive/src/checks/check-functions.ts). */
+/** One recurring piece of a function's work, at packages/naive/src/functions/<id>/workflows/<workflow id>.json: what starts it, the steps the function's agent takes, the records each step writes through the router, the decision classes a step may raise, the activity a step performs, whether a step is required or one to consider, and the done criteria in the handoff's form (handoff.schema.json done_criteria), so a workflow run can be handed off and verified like any other work. Every route a step writes must be in the function's write reach, and every class it raises must have a row in the function's decisions.json and every activity a step names must be an APQC activity or a catalog activity under the function's APQC category, and every workflow has at least one required step (packages/naive/src/checks/check-functions.ts). */
 export type FunctionWorkflow = {
   /** The file's name without .json. */
   id: string;
@@ -2144,6 +2144,13 @@ export type FunctionWorkflow = {
     writes?: string[];
     /** Decision classes this step may raise. */
     raises?: string[];
+    /** Present when the step is one to consider, not one the workflow requires (EE-181). The agent runs it only when `when` holds, or when a person asks, and otherwise reports that it considered the step and why it did not run it. A step without `consider` is required: the agent runs it or raises a decision. */
+    consider?: {
+      /** Why a person might want this step, in one plain sentence. */
+      why: string;
+      /** The condition under which the agent runs the step without being asked, in one plain sentence. Without it, only a person's ask runs the step. */
+      when?: string;
+    };
     /** The activity this step performs: the hierarchy id of an APQC level 4 activity in packages/naive/src/functions/pcf.json, such as 3.5.1.6, or the id of an activity in packages/naive/src/functions/activities.json. It must sit under the function's APQC category. */
     activity?: string;
   }[];
