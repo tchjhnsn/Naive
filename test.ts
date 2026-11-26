@@ -199,6 +199,8 @@ const steps: Step[] = [
   ["founders: examples", "node", ["packages/naive/src/engine/founders.ts", "check", "packages/naive/src/records/examples/workspace"]],
   ["term engine: bad tests rejected, relations total, freezing notices change", "node", ["packages/naive/src/terms/engine-test.ts"]],
   ["data labels: a generated record under a venture passes nothing, an accepted observed record is not gold, a sourced record with a method is estimated", "node", ["packages/naive/src/terms/labels-test.ts"]],
+  ["eval terms: a held-out id in an exemplar does not pass, and a label an agent set does not pass", "node", ["packages/naive/src/terms/evals-test.ts"]],
+  ["eval files: a held-out id in an exemplar fails, a missing canary fails, a Dogfood path fails, and an agent-set label fails", "node", ["packages/naive/src/checks/check-evals-test.ts"]],
   ["raw source write: text.md with the record, naive check passes, a second write, a duplicate text and a linkedin.com url are refused", "node", ["packages/naive/src/interfaces/tests/raw-source-write-test.ts"]],
   ["every glossary term admitted: valid test, cross-run, Lean theorems named (regenerate with node packages/naive/src/terms/admit.ts)", "node", ["packages/naive/src/terms/admit.ts", "--check"]],
   ["no symbolic check bypasses EE-095: each check and gate is registered, and a symbolic one reaches the engine, admit or a Lean theorem", "node", ["packages/naive/src/terms/bypass-guard-test.ts"]],

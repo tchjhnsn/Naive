@@ -1,0 +1,19 @@
+{
+  "canary": "f4c8a1e2-7b36-4d90-8e15-2a6c9b0d3f71",
+  "items": [
+    {
+      "id": "exemplar-discovery-subscription",
+      "split": "exemplar",
+      "record": "packages/naive/exemplars/synthetic/discovery-subscription/exemplar.json",
+      "label": null,
+      "labelled_by": null
+    },
+    {
+      "id": "held-out-9c2e7b14-6a08-4f3d-b5e1-0d8a7c6b5e42",
+      "split": "held-out",
+      "record": "packages/naive/founder-templates/discovery/cross-industry/subscription/template.json",
+      "label": null,
+      "labelled_by": null
+    }
+  ]
+}
