@@ -89,6 +89,9 @@ import { asRouted, findVenture } from "./find-venture.ts";
 import { ventureFile } from "../../core/venture-paths.ts";
 import { setPublic, visibilityOf } from "../../engine/visibility.ts";
 import type { StrategicFoundation } from "../../records/types/records.d.ts";
+import { blockingStdio } from "../../core/stdio.ts";
+
+blockingStdio();
 
 /** A foundation statement in the strategic foundation frame. */
 type Statement = StrategicFoundation["questions"][number]["statements"][number];
