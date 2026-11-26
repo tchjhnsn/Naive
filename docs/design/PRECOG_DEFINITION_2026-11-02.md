@@ -1,5 +1,7 @@
 <!-- Placement: tchjhnsn/Naive docs/design/PRECOG_DEFINITION_2026-11-02.md. Original research date: 2 November 2026 (America/Chicago). Moved from a box working note on 26 November 2026. Box-local paths were rewritten. Docs only. No secrets were added or removed. A path that matches exactly one current file now names that file, and line numbers stay as of the research date. Any other path that no longer resolves is marked on that claim. -->
 
+Status: research note, Nov 2, 2026. Not a decision.
+
 # What "precog" should mean in the Naive ontology
 
 Written Nov 2, 2026, about 3:00 AM CST. Repo facts were read remotely from tchjhnsn/everything-ecosystem on `main`. Code search pointed at commit cb502f9b. Every claim has a numbered source.
@@ -218,5 +220,5 @@ The example: Engineering writes a technical-debt record, and it moves finance ru
 26. IBM, "What is extended planning and analysis (xP&A)?" (Nov 26, 2025; term popularized by Gartner in 2020). https://www.ibm.com/think/topics/extended-planning-analysis
 27. W3C, SKOS Reference (2009). https://www.w3.org/TR/skos-reference/
 28. `docs/design/TYPESAFE_JEV_VS_LLM_2026-11-02.md` (Jev calibration by task; arithmetic at chance in SILT-RP-009, https://sentientindexlabs.com/publications/silt-rp-009)
-29. `docs/design/DIRECTIONAL_PAIR_AGENTS_2026-11-02.md` and impact-tiers-brief.md (X@Y lenses; Wilson and SPRT standing rules)
+29. `docs/design/DIRECTIONAL_PAIR_AGENTS_2026-11-02.md` and `docs/design/IMPACT_TIERS_BRIEF_2026-11-01.md` (X@Y lenses; Wilson and SPRT standing rules)
 30. R. Parasuraman and D. Manzey, "Complacency and Bias in Human Use of Automation," Human Factors 52(3), 2010. https://doi.org/10.1177/0018720810376055

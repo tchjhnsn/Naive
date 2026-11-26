@@ -1,5 +1,7 @@
 <!-- Placement: tchjhnsn/Naive docs/design/SYMBOLIC_SYSTEM_ONTOLOGY_2026-11-02.md. Original research date: 2 November 2026 (America/Chicago). Moved from a box working note on 26 November 2026. Box-local paths were rewritten. Docs only. No secrets were added or removed. A path that matches exactly one current file now names that file, and line numbers stay as of the research date. Any other path that no longer resolves is marked on that claim. -->
 
+Status: research note, Nov 2, 2026. Not a decision.
+
 # Naive as a symbolic system: analogs, ontology, capabilities
 
 Prepared Nov 2, 2026 for Torian. Research only. Nothing in the repo has changed.

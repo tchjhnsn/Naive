@@ -1,5 +1,7 @@
 <!-- Placement: tchjhnsn/Naive docs/design/COMPETITOR_RESEARCH_OWNER_AND_OBJECTS_2026-11-02.md. Original research date: 2 November 2026 (America/Chicago). Moved from a box working note on 26 November 2026. Box-local paths were rewritten. Docs only. No secrets were added or removed. A path that matches exactly one current file now names that file, and line numbers stay as of the research date. Any other path that no longer resolves is marked on that claim. -->
 
+Status: research note, Nov 2, 2026. Not a decision.
+
 # Who owns competitor research, and the objects it fetches and produces
 
 Prepared Mon Nov 2, 2026, about 1:45 PM CT, for Torian. Read-only research. Nothing in the repo, any PR or any account was changed.
@@ -64,7 +66,7 @@ Rule C is not in the repo. A search of `packages/naive/src/terms/ontology.json`,
 | marketing-and-sales "finds the buyer and sells the offering, including the price"; owns pricing decision | `packages/naive/src/terms/ontology.json` L1040-1052 |
 | pricing decision: marketing and sales owns it, every package lists finance in touches | `packages/naive/src/terms/ontology.json` L1083-1094 |
 | The earlier competitor scan sat under purpose/validation and says "The framework has no record type for competitors yet, so they live here and as evidence items" | `instance/ventures/everything-ecosystem/_private/research/competitive-landscape-2026-10-28.md` (as of 2026-11-02; since moved/removed) L11 |
-| A research cell has a required `function` that is "A department id from packages/naive/src/functions/departments.json" | `platform/research/schemas/research-cell.schema.json` (as of 2026-11-02; since moved/removed); data model entry `packages/naive/src/records/data-model.json` L2048 |
+| A research cell has a required `function` that is "A department id from packages/naive/src/functions/departments.json" | `platform/research/schemas/research-cell.schema.json` (as of 2026-11-02; since moved/removed). Proposed on Nov 2; not in `packages/naive/src/records/data-model.json` as of 08a5466 |
 | Scoped noun form `name@function`, where the suffix is a function id | `packages/naive/src/terms/ontology.md` L18 |
 | X@Y is a durable lens owned by X that reads Y's records and writes only X's record kinds through the Lead | memory, Nov 2, 2026; `docs/design/DIRECTIONAL_PAIR_AGENTS_2026-11-02.md` L77-92 |
 | strategy@product: "Strategy checks product records against bets to catch drift". product@strategy: "Product turns new bets into testable product records". Both temporary, logged, strategy@product expected to qualify first | memory, Nov 2, 2026 |
@@ -72,7 +74,7 @@ Rule C is not in the repo. A search of `packages/naive/src/terms/ontology.json`,
 | A scoped sense is added only when the meaning differs | memory, Nov 2, 2026 |
 | Dormant functions run as Jev-plus-code sentinels, and the Lead spawns a temporary function agent when one fires | memory, Nov 2, 2026 |
 
-The agent-to-function mapping is a proposal, not something the repo records. It reads: Strategy = strategy, Product = products, Growth = marketing-and-sales, Finance = finance. The Lead holds the other 9 functions (`docs/design/DIRECTIONAL_PAIR_AGENTS_2026-11-02.md` L64-73; memory, Nov 1, 2026).
+The agent-to-function mapping is a proposal, not something the repo records. It reads: Strategy = strategy, Product = products, Growth = marketing-and-sales, Finance = finance. The directional-pair table at `docs/design/DIRECTIONAL_PAIR_AGENTS_2026-11-02.md` L64-73 says the Lead performs none and is not a function. `docs/design/FUNCTIONS_TO_AGENTS_2026-11-02.md` counts 8 functions held by the Lead with no dedicated agent.
 
 ## 4. Solo or pair: the options
 
@@ -85,7 +87,7 @@ The agent-to-function mapping is a proposal, not something the repo records. It 
 | A different pair, strategy@growth | Would fit the price-tier comparison only, since Growth owns the pricing decision (`packages/naive/src/terms/ontology.json` L1083) | Not needed now. It is a temporary candidate if price comparisons start to recur |
 
 **Rule C check.** Two competitor scans are known: Oct 28 (the file above) and Nov 2 (Macro). That is about 2 in 5 days. This count was not measured from provenance:
-- research cells are gitignored at `.naive/research/*.jsonl` (`packages/naive/src/records/data-model.json` L2048-2095);
+- research cells gitignored at `.naive/research/*.jsonl` were proposed on Nov 2. Those record types are not in `packages/naive/src/records/data-model.json` as of 08a5466;
 - the Oct 28 file is free Markdown;
 - sigma, K, m and d are unknown.
 
@@ -125,14 +127,14 @@ So any pair stays temporary. Strategy alone needs no Rule C test, because it is 
 
 ## 6. Objects it produces (outputs)
 
-Verb and kind follow `packages/naive/src/terms/operating-rules.json` L46-60 and EE-107 decision 1. Tiers follow L83-92 (the max of four 1-to-3 scores). The tiers below are my proposed defaults.
+Verb and kind follow `packages/naive/src/terms/operating-rules.json` L46-60. EE-107 decision 1 was proposed on Nov 2 and is not a logged decision as of 08a5466. Tiers follow L83-92 (the max of four 1-to-3 scores). The tiers below are my proposed defaults.
 
 | # | Output | Noun | Record type | Verb / kind | Default tier | Status |
 | --- | --- | --- | --- | --- | --- | --- |
-| P1 | Research question for one company and aspect | **new** `research cell` | `research-cell` (L2048) | create / originate | low | New noun; record type exists |
-| P2 | Source read, with credibility | **new** `research source` | `research-source` (L2060) | create / originate | low | New noun; record type exists |
-| P3 | Sourced finding ("Macro relicensed to AGPLv3 on May 31, 2026") | **new** `claim` | `research-claim` (L2072) | create / derive (source: P2) | low | New noun; record type exists. Confidence is computed in code, not by a model (`claim.schema.json`) |
-| P4 | Link from claim to source with locator and short quote | **new** `citation` | `research-citation` (L2084) | create / derive (source: P3, P2) | low | New noun; record type exists |
+| P1 | Research question for one company and aspect | **new** `research cell` | `research-cell` | create / originate | low | New noun. Proposed on Nov 2; not in `packages/naive/src/records/data-model.json` as of 08a5466 |
+| P2 | Source read, with credibility | **new** `research source` | `research-source` | create / originate | low | New noun. Proposed on Nov 2; not in `packages/naive/src/records/data-model.json` as of 08a5466 |
+| P3 | Sourced finding ("Macro relicensed to AGPLv3 on May 31, 2026") | **new** `claim` | `research-claim` | create / derive (source: P2) | low | New noun. Proposed on Nov 2; not in the data model as of 08a5466. `claim.schema.json` (as of 2026-11-02; since moved/removed) is not in the repo |
+| P4 | Link from claim to source with locator and short quote | **new** `citation` | `research-citation` | create / derive (source: P3, P2) | low | New noun. Proposed on Nov 2; not in the data model as of 08a5466 |
 | P5 | Competitor record: name, offering, business model ids, license, funding, price tiers, barriers, `fresh_until` | **new** `competitor` | proposed: `account` with relationship `competitor` (`packages/naive/src/records/data-model.json` L217) | create / originate; later amend / append for dated changes, amend / revise for corrections, amend / deprecate when no longer a rival, delete / merge for duplicates | low | New noun. Needs `relationship` (L209) and the account schema's list amended (amend / append) |
 | P6 | Price tier of a competitor's offering | **new** `price tier` | field on P5 | create / derive (source: P3) | low | New noun, shared (function null), because Growth's pricing decision uses the same word with the same meaning |
 | P7 | Software license, CLA, trademark facts | **new** `software license`, `contributor license agreement`, `trademark` | fields on P5 | create / derive (source: P3) | low | New nouns, shared (function null). Legal decides Naive's own |
@@ -147,7 +149,7 @@ Existing nouns used: `repository (repo)`, `funding`, `product`, `business model`
 
 ### Proposed new nouns
 
-The ontology has no `id` or `broader` fields today. These are proposed values for when EE-107 decision 7 adds them.
+As of 2026-11-02 the ontology had no `id` or `broader` fields. As of 08a5466 `broader` is on all 149 nouns and there is still no `id`. These rows were proposed on Nov 2 for an EE-107 decision 7 that is not logged as of 08a5466.
 
 | Proposed id | Label | Broader | Function | Definition | Standard |
 | --- | --- | --- | --- | --- | --- |
@@ -165,7 +167,7 @@ The ontology has no `id` or `broader` fields today. These are proposed values fo
 | `judgment` | judgment | none | null | The typed output of one model step: what it read, its answer and confidence, and what code did with it | ours (`packages/naive/src/records/data-model.json` L1719) |
 | `artifact` | artifact | none | null | A view built from records for a reader, naming the records it read; artifacts are published, records never are | ours (`packages/naive/src/records/data-model.json` L1696) |
 
-All are created with create / originate in a reviewed framework PR. EE-107 decision 7 says a vocabulary change is the highest-risk change.
+All are created with create / originate in a reviewed framework PR. A Nov 2 proposal called EE-107 decision 7 said a vocabulary change is the highest-risk change. That decision is not logged as of 08a5466.
 
 ## 7. Conflicts and gaps
 
@@ -180,18 +182,18 @@ All are created with create / originate in a reviewed framework PR. EE-107 decis
    - The noun check could read `strategy@product` as a scoped noun with an unknown function.
    - Two fixes would work: name pairs with function ids (`strategy@products`), or give pairs a different separator.
 3. **Some record types have no noun.**
-   - `research-cell`, `research-source`, `research-claim`, `research-citation`, `judgment` and `artifact` are in `packages/naive/src/records/data-model.json`, but none has a noun in `packages/naive/src/terms/ontology.json`.
-   - The EE-107 vocabulary-parent check (decision 7, PR #163) would fail them.
+   - `research-cell`, `research-source`, `research-claim` and `research-citation` were proposed on Nov 2 and are not in `packages/naive/src/records/data-model.json` as of 08a5466. `judgment` and `artifact` are named in that file. None of the four research ids is a noun in `packages/naive/src/terms/ontology.json`.
+   - A vocabulary-parent check was proposed on Nov 2 as EE-107 decision 7, from preserved PR #163. It is not a logged decision as of 08a5466.
 4. **There is no competitor record type.**
    - The Oct 28 scan says so itself (`competitive-landscape-2026-10-28.md` (as of 2026-11-02; since moved/removed) L11).
    - It filed competitor research under purpose/validation, as input to the problem and solution records.
 5. **"bet" is not a noun.** Both Strategy x Product pair definitions depend on it.
 6. **No strategy frame exists.**
-   - `research-cell` requires a `frame` id from `packages/*/frames`.
-   - The frames that exist today are finance and marketing ones, for example `packages/naive/library/packages/finance/frames/fund-without-ceding-control.frame.json` and `packages/marketing/frames/brand-*.frame.json`.
+   - A `research-cell` that requires a `frame` id was proposed on Nov 2. It is not in the data model as of 08a5466.
+   - The frames that exist are finance and marketing ones, for example `packages/naive/library/packages/finance/frames/fund-without-ceding-control.frame.json` and the six `brand-*.frame.json` files under `packages/naive/library/packages/marketing/frames/`. `packages/*/frames` and `packages/marketing/frames/brand-*.frame.json` (as of 2026-11-02; since moved/removed) do not match a path.
    - A "competitor assessment" frame for Strategy would be needed.
 7. **Confidentiality.**
-   - Research cells, sources, claims and citations are marked confidential and gitignored (`packages/naive/src/records/data-model.json` L2048-2095).
+   - Research cells, sources, claims and citations marked confidential and gitignored were proposed on Nov 2. Those ids are not in `packages/naive/src/records/data-model.json` as of 08a5466, and that file does not use the word confidential.
    - Competitor records committed to a venture folder would not be.
    - Decide where competitor records live: `_private/` (as of 2026-11-02; since moved/removed) like the Oct 28 file, or the research store.
 8. **Pricing ownership splits the work.**

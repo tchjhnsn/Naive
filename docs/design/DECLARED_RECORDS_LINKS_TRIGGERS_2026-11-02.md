@@ -1,5 +1,7 @@
 <!-- Placement: tchjhnsn/Naive docs/design/DECLARED_RECORDS_LINKS_TRIGGERS_2026-11-02.md. Original research date: 2 November 2026 (America/Chicago). Moved from a box working note on 26 November 2026. Box-local paths were rewritten. Docs only. No secrets were added or removed. A path that matches exactly one current file now names that file, and line numbers stay as of the research date. Any other path that no longer resolves is marked on that claim. -->
 
+Status: research note, Nov 2, 2026. Not a decision.
+
 # Declared records, links and triggers: two layers, typed questions, blind reproduction, scoped agents and premise rate (revision 4)
 
 Prepared Mon Nov 2, 2026, about 4:00 PM CT, for Torian. Design only. Nothing in the repo, any PR or any account was changed.
@@ -122,7 +124,7 @@ The manifest (`module.json`):
 
 This extends what exists:
 - `packages/naive/src/router/orchestration/model-steps.ts` L1-32 already declares model steps in a package's `use_model`, with typed kinds (classify, noul, choice, score, draft), field-path state, batching, an `after` order, a `when` condition and speculation. The rule "When a judgment and a code check disagree, the code wins" is already there.
-- `packages/*/package.json` already declares `required`, `refs` and `use_model`, for example `packages/finance/package.json` (as of 2026-11-02; since moved/removed).
+- `packages/naive/library/packages/<name>/package.json` declares `required`, `refs` and `use_model`, for example `packages/naive/library/packages/finance/package.json`. `packages/create-venture/package.json` does not.
 
 So "the Jev question lives in the module's schema before execution" is EE-073's "use model", moved down from package to module. Each question is visible, testable and cacheable before anything runs.
 
@@ -145,7 +147,7 @@ Replay gives you the same answer for the same input. That is reproducibility, no
 - **Per-venture configuration** decides which modules are on. That uses the venture's packages and need-now scores, the same switch the router already uses for partial adoption (`packages/naive/src/router/router.ts` L37).
 - **Fan-out is bounded:**
   - by budget per run and per module (`max_usd`);
-  - by AI Gateway budgets (EE-106);
+  - by AI Gateway budgets (proposed on Nov 2; not in the repo as of 08a5466. There is no EE-106 record. EE-113 says EE-101 to EE-107 and EE-110 are taken by open pull requests);
   - by the tier rules, because a module whose outputs would be one_way_door stops at a draft for you.
 
 ### 2.3 Venture in a box
@@ -161,7 +163,7 @@ Replay gives you the same answer for the same input. That is reproducibility, no
   - funding (`funding`);
   - known competitors (optional).
 
-  Every one of these, except the seed itself and the optional competitors, is an existing noun in `packages/naive/src/terms/ontology.json`.
+  `market`, `job`, `technology`, `ambition`, `legal form` and `funding` are nouns in `packages/naive/src/terms/ontology.json`. The founder is a term in `packages/naive/src/terms/admitted.json`, not a noun. The idea statement is not a noun. The seed and the optional competitors were proposed on Nov 2 and are not in the repo as of 08a5466.
 - **Completeness first.**
   - The seed is checked against its shape before anything runs. An incomplete seed fails closed with `missing_kind` listing what is absent. No partial fan-out.
   - That is the "one complete input with the correct type of information and its kinds".
@@ -177,7 +179,7 @@ Replay gives you the same answer for the same input. That is reproducibility, no
 ``
 key = sha256(canonical JSON of {
   module id, module content hash (manifest + index.ts + properties.ts),
-  vocabulary version (schema/vocabulary.json + packages/naive/src/terms/ontology.json hash),
+  vocabulary version (schema/vocabulary.json (as of 2026-11-02; since moved/removed) + packages/naive/src/terms/ontology.json hash),
   declared input fields only, canonicalized,
   pinned model ids and versions for each declared step (jev-1.14.0, not jev-latest),
   source snapshot hashes for observed inputs,
@@ -220,12 +222,12 @@ Users fetch by key or by noun and inputs, like importing a component. A module w
 | `public library` | every tenant | only objects whose entire provenance closure is public sources and public modules, with no tenant input fields and no label above `public`, verified to the level its tier requires |
 
 Rules:
-- **Labels flow down.** Security is label nouns inherited through provenance (EE-107 decision 6). Any confidential or internal ancestor blocks promotion. The four visibility levels already exist: public, variant, internal, confidential (`packages/naive/src/engine/visibility.ts` L3-7).
-- **Research records stay confidential.** `research-cell`, `research-source`, `research-claim` and `research-citation` are marked `confidential` (`packages/naive/src/records/data-model.json` L2048-2095).
+- **Labels flow down.** Security as label nouns inherited through provenance was proposed on Nov 2 (called EE-107 decision 6). That decision is not in the repo as of 08a5466. EE-113 says the metamodel follows the EE-107 vocabulary objects and change line from preserved PRs 164 and 163. Any confidential or internal ancestor would block promotion. The four visibility levels already exist: public, variant, internal, confidential (`packages/naive/src/engine/visibility.ts` L3-7).
+- **Research records stay confidential.** Proposed on Nov 2: `research-cell`, `research-source`, `research-claim` and `research-citation` would be marked confidential. Those ids are not in `packages/naive/src/records/data-model.json` as of 08a5466, and that file does not use the word confidential.
   - A tenant's research run never becomes a library object.
   - The library gets its own object: a platform-owned run of the same public module over the same public sources. It does not depend on the tenant's question, cell or notes.
   - So yes: shared library objects are only public-source derived.
-- **Text is not redistributed.** Sources store a hash and a locator, "never the full text" (`platform/research/schemas/source.schema.json` (as of 2026-11-02; since moved/removed)). Citation quotes are capped at 300 characters (`citation.schema.json`). Library objects carry claims and citations, not page copies.
+- **Text is not redistributed.** Sources store a hash and a locator, "never the full text" (`platform/research/schemas/source.schema.json` (as of 2026-11-02; since moved/removed)). A 300-character cap on citation quotes was proposed on Nov 2 (`citation.schema.json` (as of 2026-11-02; since moved/removed)). No such schema is in the repo as of 08a5466. Library objects carry claims and citations, not page copies.
 - **Promotion is a platform decision.**
   - A tenant consents to having its module runs reused as triggers for public recomputation. It never consents to having its data reused.
   - Promotion requires the public object to pass verification at its tier, and two independent derivations from different sources to agree.
@@ -353,7 +355,7 @@ Changing a question is a change line like any other write.
 | Move thresholds inside the theorem's bounds | the owning function's agent, with the calibration evidence attached | amend/revise, a new version | the highest tier among the outputs the question gates | the gate for low; a veto window for costly; you for one_way_door |
 | Change bindings or a free-text slot | the owning agent | amend/revise, a new version; conformance must pass | as above, at least costly | same |
 | Retire a question | the owning agent | amend/deprecate (never delete; history is append-only) | low | lands |
-| Change a theorem's template, invariants or bounds | the Lead's capabilities function, or a fork (section 6) | amend/revise on the vocabulary object | costly at least; one_way_door when it reaches one_way_door outputs or loosens an invariant protecting them | a reviewed framework PR (EE-107 decision 7) |
+| Change a theorem's template, invariants or bounds | the Lead's capabilities function, or a fork (section 6) | amend/revise on the vocabulary object | costly at least; one_way_door when it reaches one_way_door outputs or loosens an invariant protecting them | a reviewed framework PR (proposed on Nov 2 as EE-107 decision 7; not a logged decision as of 08a5466) |
 
 Every run pins question and theorem versions, so a change never rewrites the past. The cache key gains both versions (section 2.4).
 
@@ -419,7 +421,7 @@ Every disagreement:
 - routes to the next rung, or to the owner and you when it is already at the top.
 
 **Keeping it blind:**
-- One Vercel Sandbox per reproduction, with no shared memory. EE-106 already calls for one sandbox per run, scoped reads and no shared agent memory.
+- One Vercel Sandbox per reproduction, with no shared memory. One sandbox per run, scoped reads and no shared agent memory was proposed on Nov 2 under the name EE-106. There is no EE-106 record as of 08a5466.
 - An MCP scope with exactly two read tools: `theorems.read(type)` and `snapshot.read(token)`. No write tools, and no route to the router, cache or store.
 - Inputs passed by value with random tokens, so nothing in the prompt can be looked up or matched to a cache key.
 - A different provider from any model used upstream for that object, so the reproducer does not share the upstream model's mistakes on the same text.
@@ -510,7 +512,7 @@ The Lead's capabilities function checks the vocabulary. Then:
 
 Scope:
 - A fork starts **venture-local**, as an overlay on that venture's vocabulary.
-- It becomes a framework theorem only through a reviewed framework PR, once the same fork recurs across ventures (EE-107 decision 7).
+- It becomes a framework theorem only through a reviewed framework PR, once the same fork recurs across ventures (proposed on Nov 2 as EE-107 decision 7; not a logged decision as of 08a5466).
 
 ### 6.4 Migration
 
@@ -543,14 +545,7 @@ Your Nov 2 lean: only the top-level function agents are standing agents. Everyth
 
 ### 7.1 Who is standing
 
-- **Standing agents are the function agents:** Lead, Strategy, Product, Growth and Finance. Each maps to one function id in `packages/naive/src/functions/departments.json`:
-  - Lead: `capabilities`;
-  - Strategy: `strategy`;
-  - Product: `products`;
-  - Growth: `marketing-and-sales`;
-  - Finance: `finance`.
-
-  The functions are nouns at level `function` (`packages/naive/src/terms/ontology.json`; the function check is `packages/naive/src/terms/ontology-gate.ts` L196-198).
+- **Standing agents are the function agents:** Lead, Strategy, Product, Growth and Finance. Strategy, Product, Growth and Finance map to function ids in `packages/naive/src/functions/departments.json`: `strategy`, `products`, `marketing-and-sales` and `finance`. Those four are the nouns at level `function` in `packages/naive/src/terms/ontology.json`. `capabilities` is a department id, not a function-level noun. The Lead is not one of those nouns.
 - **Everything else is temporary.** It lives for one run, writes only through the router, and ends.
 
   Revision 3 had a separate concept called a "channel". It is gone: a scope does its job. That also clears a collision, because `channel` is already a governance noun meaning a place the venture publishes to (`packages/naive/src/terms/ontology.json` L811).
@@ -709,8 +704,8 @@ These still hold, now applied to modules as well as scopes:
   - It declares the golden reads and allowed writes, and fails closed with typed reasons to whoever routed the request.
   - Its tiers are in section 7.3.
 - **Missing records.**
-  - A missing instance becomes a handoff to the noun's owner, whose generator drafts it (EE-099).
-  - A missing type becomes an EE-100 research item and then a framework PR.
+  - A missing instance was proposed on Nov 2 as a handoff to the noun's owner. EE-099 says a record generator drafts one valid record and hands it to the write chain. It does not say a missing instance becomes a handoff.
+  - EE-100 opens a research item when an endpoint's record type has no schema, route or generator yet. A person admits the schema, the generator and the route.
   - A waiting run suspends on a server-side Workflow hook ([hooks](https://workflow-sdk.dev/docs/foundations/hooks)), never a public webhook token ([advisory](https://github.com/vercel/workflow/security/advisories/GHSA-9r75-g2cr-3h76)).
 - **Records are data.**
   - No code in records. Code lives in module folders with `// vocabulary_parent:` (PR #164).
@@ -725,7 +720,7 @@ These still hold, now applied to modules as well as scopes:
   - Agents only propose. Modules propose outputs, and the gate or you accept them.
   - One write path: every module output goes through the router.
   - Policies are data: manifests are checked by one policy engine, the gate (`packages/naive/src/engine/gate.ts`), which never calls a model (L9).
-  - Postgres with RDF and JSON-LD export holds the object store and the link index.
+  - Postgres with an RDF and JSON-LD export was proposed on Nov 2 to hold the object store and the link index. There is no such export as of 08a5466.
   - Trigger order stays: manual and scheduled runs, then record changes, then webhooks.
   - Runtime is Vercel Workflow plus AI SDK: one durable step per module, with the cache key as the step's idempotency key.
   - History is append-only.
@@ -819,7 +814,7 @@ These still hold, now applied to modules as well as scopes:
 
 ## 13. Build PRs after #164, one piece each
 
-1. **EE-108 decision record:** the two layers, questions and theorems, blind reproduction, forking, standing function agents with scoped temporary agents, the data-rate clock, and the answers above.
+1. **A decision record for this design** (the Nov 2 build list called it EE-108): the two layers, questions and theorems, blind reproduction, forking, standing function agents with scoped temporary agents, the data-rate clock, and the answers above. The logged EE-108, dated 2026-11-03, is the repository top level. That assignment is not the logged decision as of 08a5466.
 2. **Nouns,** through the glossary loop (`docs/design/GLOSSARY_LOOP_HARNESS_2026-11-02.md`):
    - module, handler, venture-seed, library-object, verification-level;
    - question, question-theorem, question-run, theorem-fork;
@@ -827,7 +822,7 @@ These still hold, now applied to modules as well as scopes:
    - the competitor-research nouns.
 
    `channel` is not added in the graph sense.
-3. **Change line on every provenance write** (EE-107 decision 5).
+3. **Change line on every provenance write** (proposed on Nov 2 as EE-107 decision 5; not a logged decision as of 08a5466).
 4. **Question and theorem schemas, `check-questions.mjs`** (conformance 1 to 3), and the first six root theorems.
 5. **Module manifest schema and `check-modules.mjs`,** referencing question ids.
 6. **`question-run` log and the calibration report:** ECE, Brier, Wilson, invariants, IRT once there is enough data.

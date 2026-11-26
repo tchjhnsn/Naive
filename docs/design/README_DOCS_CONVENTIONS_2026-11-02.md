@@ -1,5 +1,7 @@
 <!-- Placement: tchjhnsn/Naive docs/design/README_DOCS_CONVENTIONS_2026-11-02.md. Original research date: 2 November 2026 (America/Chicago). Moved from a box working note on 26 November 2026. Box-local paths were rewritten. Docs only. No secrets were added or removed. A path that matches exactly one current file now names that file, and line numbers stay as of the research date. Any other path that no longer resolves is marked on that claim. -->
 
+Status: research note, Nov 2, 2026. Not a decision.
+
 # READMEs as the docs: a book-shaped convention for Naive
 
 Prepared Nov 2, 2026 (CST). Read only. Repo snapshot: `tchjhnsn/everything-ecosystem` at main, commit `cb502f9` (Nov 1, 2026, 11:24 PM CST), 1,462 files and 467 folders. Repo evidence is cited as `path:line` at that commit (base URL: https://github.com/tchjhnsn/everything-ecosystem/blob/cb502f9b8a68b8d90c72440e5e52a732c1bcef6e/). Outside sources are numbered [n] and listed at the end.
@@ -107,7 +109,7 @@ Knuth: "Instead of imagining that our main task is to instruct a computer what t
 | Fact | Owner (hand-edited) | Views (generated, never hand-edited) |
 |---|---|---|
 | A layer's purpose, skills, records, reads, writes, checks, gaps | `<layer>/layer.json` | Layer README blocks, root contents, AGENTS.md links |
-| A package's purpose and contents | `packages/<name>/package.json`, `packages/catalog.json` (as of 2026-11-02; since moved/removed) | `packages/README.md` catalog, package README header |
+| A package's purpose and contents | `packages/<name>/package.json`, `packages/naive/library/packages/catalog.json` | `packages/README.md` catalog, package README header |
 | A kit or framework | `kit.json`, `framework.json` | Its README header |
 | Noun meanings | `packages/naive/src/terms/ontology.json` | `packages/naive/src/terms/ontology.md` (already checked, `test.mjs:172`) |
 | Decisions | `docs/decisions/decisions.json` | "Decisions" block in each README that a decision cites |
@@ -168,7 +170,7 @@ Applied to the snapshot, these rules require 61 READMEs. 55 of them are missing:
 - **README and layer.json agree in exactly 1 of 7 folders.** Only `schema/` has both. The other six layer folders have a `layer.json` and no README.
 - **`platform/` (as of 2026-11-02; since moved/removed) has a README but no `layer.json`.**
 - **Totals across the `layer.json` files:** 34 skills, 108 records, 60 checks and 22 gaps. All of it is ready to render, and none of it is rendered.
-- **`layer.json` against the filesystem:** every listed skill and check path exists, with one gap. `purpose/kits/validation/skills/problem-validation/SKILL.md` (as of 2026-11-02; since moved/removed) exists on disk but is not in `purpose/layer.json` (as of 2026-11-02; since moved/removed). The other layers match: knowledge 2/2, operations 3/3, evidence 6/6, governance 15/15, interface 5/5.
+- **`layer.json` against the filesystem:** every listed skill and check path exists, with one gap. `purpose/kits/validation/skills/problem-validation/SKILL.md` (as of 2026-11-02; since moved/removed) was not in `packages/naive/src/records/layers/purpose/layer.json` on that reading. The other layers match: knowledge 2/2, operations 3/3, evidence 6/6, governance 15/15, interface 5/5.
 - **Other docs files:** 8 `AGENTS.md`, 48 `SKILL.md`, and 351 `.md`/`.mdx` files in all.
 
 ### 5.3 Template compliance (15 READMEs read in full)
@@ -186,7 +188,7 @@ Applied to the snapshot, these rules require 61 READMEs. 55 of them are missing:
 | `README.md` (root) | 31 | 14 |
 | `console/README.md` (as of 2026-11-02; since moved/removed) | 12 | 9 |
 | `governance/venture-template/README.md` (as of 2026-11-02; since moved/removed) | 8 | 5 |
-| `lean/README.md` (as of 2026-11-02; since moved/removed) | 6 | 3 |
+| `packages/naive/lean/README.md` | 6 | 3 |
 
 At file level, `platform/README.md:33-47` (as of 2026-11-02; since moved/removed) lists `connectors/` (as of 2026-11-02; since moved/removed), `mcp/` (as of 2026-11-02; since moved/removed), `integrations/` (as of 2026-11-02; since moved/removed), `kits/` (as of 2026-11-02; since moved/removed) and `webhooks/` (as of 2026-11-02; since moved/removed). It never mentions `platform/research/` (as of 2026-11-02; since moved/removed) (14 files: `run.mjs`, `cells.mjs`, `store.mjs`, `credibility.mjs`, 5 adapters, 4 schemas, a test). It also omits `integrations/langsmith-setup.mjs` and `integrations/remote-image.mjs`.
 
@@ -203,10 +205,10 @@ At file level, `platform/README.md:33-47` (as of 2026-11-02; since moved/removed
    - That README is a companion to `[[project-view-mockup-2026-05-14.html]]` (`interface/operator-console/README.md:5,35` (as of 2026-11-02; since moved/removed)). No such file is in the repo; the link is an Obsidian-style link to the vault.
    - The built console is `console/` (as of 2026-11-02; since moved/removed), a Next.js app on the platform side (`AGENTS.md:25`).
    - So `interface/operator-console/` (as of 2026-11-02; since moved/removed) is an orphaned doc for an earlier mockup.
-6. **Two framework homes.** There is a top-level `frameworks/` (`ambition-tier/` (as of 2026-11-02; since moved/removed), `telos/` (as of 2026-11-02; since moved/removed), each with `framework.json` and `adapter.mjs`) beside `purpose/frameworks/` (as of 2026-11-02; since moved/removed). Neither layer README nor the root README explains the split, apart from `frameworks/README.md`.
+6. **Two framework homes.** There is a top-level `frameworks/` (`frameworks/ambition-tier/`, `frameworks/telos/`, each with `framework.json` and `adapter.ts`) beside `purpose/frameworks/` (as of 2026-11-02; since moved/removed). Neither layer README nor the root README explains the split, apart from `frameworks/README.md`.
 7. **Near-duplicate names:**
-   - `packages/investor/` (as of 2026-11-02; since moved/removed) and `packages/investors/` (as of 2026-11-02; since moved/removed);
-   - `packages/marketing/` (as of 2026-11-02; since moved/removed) has both `skill/` (as of 2026-11-02; since moved/removed) and `skills/` (as of 2026-11-02; since moved/removed) (from the earlier tree scan).
+   - `packages/naive/library/packages/investor/` and `packages/naive/library/packages/investors/`;
+   - `packages/naive/library/packages/marketing/` has both `skill/` and `skills/`.
 8. **`docs/design/` is an unindexed archive.** It holds 25 dated files: designs, 4 `HANDOFF_*` notes, a `PR_CATCHUP_PLAN`, and both `EVERYTHING_ECOSYSTEM_DOMAIN_DESIGN_2026-10-10.md` and a `_PUBLIC` copy. It has no README and no status per file, though `test.mjs:173` treats one of them (`LAYERS_AND_KITS_2026-10-27.md`) as live, generated reference. Google's rule is that built designs become archives [3].
 
 ### 5.5 The docs gate, measured
@@ -218,20 +220,20 @@ At file level, `platform/README.md:33-47` (as of 2026-11-02; since moved/removed
 
   It skips `AGENTS.md`, `docs/design/` and `packages/naive/src/terms/ontology.md`, so the stale `execution/` (as of 2026-11-02; since moved/removed) paths in AGENTS.md are invisible to it.
 - **Which paths it checks.** `REPO_DIRS` at line 93 is only `schema`, `interface`, `purpose`, `packages` and `docs`. A backticked path under `knowledge`, `operations`, `evidence`, `governance`, `platform`, `console`, `site`, `lean` or `frameworks` is never checked.
-- **What counts as code.** Code is `^(schema|interface|packages|purpose)/` (as of 2026-11-02; since moved/removed) (line 42). That leaves 232 code files outside the gate entirely:
+- **What counts as code.** Code is `^(schema|interface|packages|purpose)/` (`packages/naive/src/checks/check-docs-claims.ts`). That leaves 232 code files outside the gate entirely:
   - `site` 80, `console` 50, `verification` 41, `platform` 28;
   - `knowledge` 7, `operations` 6, `scripts` 6, `lean` 5;
   - `evidence` 3, `frameworks` 2, `governance` 2;
   - plus 2 root files.
 - **Code that owes no README.** `nearestReadme` (lines 43-46) stops at the top-level folder and returns `null` when it finds nothing. Of 548 in-scope files, 86 owe nothing: all 47 in `interface/` (as of 2026-11-02; since moved/removed), all 31 in `packages/`, and 8 in `purpose/` (as of 2026-11-02; since moved/removed).
 - **Concentration on one README.** 396 of the in-scope files resolve to `schema/README.md` (as of 2026-11-02; since moved/removed), so one 74-line index absorbs every schema change.
-- **The gate condition.** `docs-required.yml:21` passes when there is no code, or when *any* scanned doc changed and nothing is owed. A PR that edits `packages/naive/src/router/router.ts` (744 lines, 18 exports) plus any unrelated README or SKILL.md therefore passes.
+- **The gate condition.** `docs-required.yml` passes when there is no code, or when the scanned docs that are owed were updated. A pull request that edits `packages/naive/src/router/router.ts` owes `packages/naive/src/router/README.md`. An unrelated README or SKILL.md leaves that README owed, so the check does not pass.
 - **What already works.** Three generated docs are compared to a fresh render (`test.mjs:162-174`). The helper `rendered(path, marker)` compares from a marker to the end of the file. So a generated block must be the last thing in its file. Begin and end markers would remove that limit.
 
 ### 5.6 interface/ top level
 - 22 direct files, about 349 KB.
 - The large ones are `packages/naive/src/router/router.ts` (65,705 bytes), `context.mjs` (35,542), `writes-test.mjs` (28,541), `test.mjs` (as of 2026-11-02; since moved/removed) (25,344), `context-test.mjs` (22,264) and `brand.mjs` (17,451).
-- Also: `boundaries.mjs`, `writes.mjs`, `package-routes.mjs`, `adapters.mjs`, `reads.mjs`, `provenance.mjs`, `vitals.mjs`, `kit-boundary.mjs`, `instrumentation.mjs`, `acting.mjs`, `plugin-test.mjs`, `route-aliases.json`, `gate-hooks.mjs`, `release-card.mjs` and `plugin-mcp.json`.
+- Also: `boundaries.mjs`, `writes.mjs`, `package-routes.mjs`, `adapters.mjs`, `reads.mjs`, `provenance.mjs`, `vitals.mjs`, `kit-boundary.mjs`, `instrumentation.mjs`, `acting.mjs`, `plugin-test.mjs`, `packages/naive/src/router/route-aliases.json`, `gate-hooks.mjs`, `release-card.mjs` and `packages/naive/src/interfaces/plugin-mcp.json`.
 - 12 subfolders: `adapters`, `api`, `cli`, `create-venture`, `demo`, `dev`, `harness`, `mcp`, `operator-console`, `references`, `skills`, `tooling`. Only `operator-console` has a README, and it holds no code.
 - `interface/` (as of 2026-11-02; since moved/removed) is the busiest folder in the framework and has no chapter at all.
 
@@ -243,7 +245,7 @@ At file level, `platform/README.md:33-47` (as of 2026-11-02; since moved/removed
 - A folder holding a manifest is a chapter. The ordering of parts and chapters lives in `docs/book.json` (as of 2026-11-02; since moved/removed), an ordered list of folder paths with a part title for each group.
 - A folder stays under about 12 direct code files. Past that, it splits into subfolders, each a chapter. `interface/` (as of 2026-11-02; since moved/removed) (21 non-manifest files) is the first case.
 - A possible split, inferred from file names only, so check the imports before moving anything:
-  - `interface/router/` (as of 2026-11-02; since moved/removed) (`packages/naive/src/router/router.ts`, `route-aliases.json`, `package-routes.mjs`);
+  - `interface/router/` (as of 2026-11-02; since moved/removed) (`packages/naive/src/router/router.ts`, `packages/naive/src/router/route-aliases.json`, `package-routes.mjs`);
   - `interface/context/` (as of 2026-11-02; since moved/removed) (`context.mjs`, `reads.mjs`, tests);
   - `interface/writes/` (as of 2026-11-02; since moved/removed) (`writes.mjs`, `provenance.mjs`, `acting.mjs`, `gate-hooks.mjs`, tests);
   - `interface/boundaries/` (as of 2026-11-02; since moved/removed) (`boundaries.mjs`, `kit-boundary.mjs`);
@@ -322,7 +324,7 @@ It wires in as one entry in the `cheap` list in `test.mjs` (as of 2026-11-02; si
 3. Widen `REPO_DIRS` and `CODE` to all top-level folders, and make `nearestReadme` never return `null` (D10 in report mode).
 4. Generalize `rendered()` in `test.mjs` (as of 2026-11-02; since moved/removed) to begin and end markers.
 5. Add `docs/book.json` (as of 2026-11-02; since moved/removed) and the generated root contents block and `docs/SUMMARY.md` (as of 2026-11-02; since moved/removed). This makes the root README the title page.
-6. to 11. One layer README per PR, generated from its `layer.json` plus a hand-written "What this is": purpose, knowledge, operations, evidence, governance, interface. Add `problem-validation` to `purpose/layer.json` (as of 2026-11-02; since moved/removed) in the purpose PR.
+6. to 11. One layer README per PR, generated from its `layer.json` plus a hand-written "What this is": purpose, knowledge, operations, evidence, governance, interface. Add `problem-validation` to `packages/naive/src/records/layers/purpose/layer.json` in the purpose PR.
 12. `packages/README.md` and generated per-package READMEs. Resolve `investor`/`investors` in a separate PR.
 13. Fix the `platform/README.md` (as of 2026-11-02; since moved/removed) contents (research/, two integrations).
 14. Decide `interface/operator-console/` (as of 2026-11-02; since moved/removed): archive it to `docs/design/` or merge it into `console/README.md` (as of 2026-11-02; since moved/removed).

@@ -1,5 +1,7 @@
 <!-- Placement: tchjhnsn/Naive docs/design/TYPESAFE_JEV_VS_LLM_2026-11-02.md. Original research date: 2 November 2026 (America/Chicago). Moved from a box working note on 26 November 2026. Box-local paths were rewritten. Docs only. No secrets were added or removed. A path that matches exactly one current file now names that file, and line numbers stay as of the research date. Any other path that no longer resolves is marked on that claim. -->
 
+Status: research note, Nov 2, 2026. Not a decision.
+
 # TypeSafe Jev vs language models for Naive's functions
 
 Written Nov 2, 2026, about 1:40 AM CST. Live probes were run on Nov 2, 2026, at about 1:37 AM CST against `jev-1.14.0`. Every number below has a source in brackets, or is marked as measured (probe) or as an assumption.
@@ -132,15 +134,15 @@ Assumptions are marked; everything else comes from the sources cited.
 | Work | Owner | Why |
 | --- | --- | --- |
 | Packages, ADRs, plans, code, summaries, explanations to Torian | LLM agents | Only LLMs generate [7][11]. |
-| Gate verdicts that need judgment (terminology sense match, completeness, verifiability) | Jev | Typed, cheap, consistent; produces gate proofs today [22]. |
-| Fact scores (the author claims, Jev scores, Torian confirms one-way doors) | Jev | Already in place. Torian's confirmations double as calibration labels. |
+| Gate verdicts that need judgment (terminology sense match, completeness, verifiability) | Jev | Typed, cheap, consistent. Gate proofs were proposed on Nov 2 and are not in the repo as of 08a5466. `packages/naive/src/engine/beta-gate.ts` routes feedback to Jev only when `beta.jev.send` is true and `beta.jev.set_by` names a person [22]. |
+| Fact scores (the author claims, Jev scores, Torian confirms one-way doors) | Jev | Proposed on Nov 2; not in the repo as of 08a5466. There is no fact-score record, command, or route under `packages/naive/src`. |
 | Impact tier scoring (the four 1-to-3 scores; tier = max) | Jev Score questions; code takes the max | The max and the tier mapping are code and provable in Lean. |
 | Router rewards and bandit arm choice | Jev for the reward signal; code for the bandit math, Wilson and SPRT | The math is deterministic [26]. |
 | Arithmetic, dates, counts, schema checks, type gate, hashes, links | Deterministic code | Jev is at chance on arithmetic [14] and "not a calculator" [7]. |
 | Hard judgments (did the agent's work actually hold; will a command destroy data) | Jev first, escalating to an LLM or Torian when Jev is unsure | Jev trails by about 14 points on "did the work hold" [14]. Its uncertain band catches most ambiguous items (79.4%) [14]. |
 
 **Effect on the 13-function staffing question.**
-- The hybrid recommended in Task 7 gets cheaper. The 9 functions the Lead holds had zero measured provenance activity [25]. Each one can be a **Jev-plus-code sentinel** instead of an LLM agent. A sentinel is a fixed set of Noul and Choice questions run on every record, such as:
+- The hybrid recommended in Task 7 gets cheaper. `docs/design/FUNCTIONS_TO_AGENTS_2026-11-02.md` counts 8 functions held by the Lead with no dedicated agent, not 9. Human-capital, one of those eight, has 1 provenance write in that note, so the eight did not all have zero activity [25]. Each of the quiet functions can be a **Jev-plus-code sentinel** instead of an LLM agent. A sentinel is a fixed set of Noul and Choice questions run on every record, such as:
   - "Does this touch customer data or contracts?" (risk-and-compliance);
   - "Does this commit spend above the threshold?" (finance);
   - "Does this change hiring or roles?" (human-capital).
@@ -164,7 +166,7 @@ Assumptions are marked; everything else comes from the sources cited.
 
 1. **Adopt the split "LLMs generate, Jev judges and routes, code checks" as Naive's standing rule?** Recommendation: **yes.** It matches what Jev is built for [7][11] and what independent tests found [13][14]. Judging at 1M decisions a day then costs about $8k a month instead of $200k to $542k.
 2. **Keep Jev-only scoring, with local calibration (pinned version, per-question-form calibration on your confirmed outcomes, arithmetic and dates moved to code)?** Recommendation: **yes, Jev-only with local calibration.** The alternatives are Jev scores as returned, or a hybrid LLM blend. Calibration varies with the task and question form [13][15], and recalibrating Jev's own output keeps the rule intact.
-3. **Staff the 9 dormant functions as Jev-plus-code sentinels that spawn an LLM agent only when triggered?** Recommendation: **yes.** The 5 current LLM bots stay. Sentinels are almost free per record (measured) and give each function its own measurable track record before it earns a bot [25].
+3. **Staff the dormant functions as Jev-plus-code sentinels that spawn an LLM agent only when triggered?** Recommendation: **yes.** The functions note counts 8 held by the Lead, and human-capital already has 1 provenance write, so the dormant set is not 9 functions with zero activity [25]. The 5 current LLM bots stay. Sentinels are almost free per record (measured) and give each quiet function its own measurable track record before it earns a bot.
 
 ## Sources
 

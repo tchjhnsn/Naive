@@ -1,8 +1,10 @@
 <!-- Placement: tchjhnsn/Naive docs/design/TERM_GRADE_NAMES_PREMISE_2026-11-02.md. Original research date: 2 November 2026 (America/Chicago). Moved from a box working note on 26 November 2026. Box-local paths were rewritten. Docs only. No secrets were added or removed. A path that matches exactly one current file now names that file, and line numbers stay as of the research date. Any other path that no longer resolves is marked on that claim. -->
 
+Status: research note, Nov 2, 2026. Not a decision.
+
 # Attacking "scoped sense" and "invention", and choosing past participles for how we took a term
 
-Prepared Mon Nov 2, 2026, about 5:50 PM CT, for Torian. Research and design only. Nothing in the repo, any PR or any account was changed. Inputs: `glossary-loop-harness.v2.md` (as of 2026-11-02; since moved/removed) (rev 2) section 7, and `tchjhnsn/everything-ecosystem` read through the GitHub API: `framework` at the time of reading, and PR #164 head `7da7909` for `schema/vocabulary.json` (as of 2026-11-02; since moved/removed).
+Prepared Mon Nov 2, 2026, about 5:50 PM CT, for Torian. Research and design only. Nothing in the repo, any PR or any account was changed. Inputs: `glossary-loop-harness.v2.md` (as of 2026-11-02; since moved/removed) (rev 2) section 7, and `tchjhnsn/everything-ecosystem` read through the GitHub API: `framework` at the time of reading, and PR #164 head `7da7909` for `schema/vocabulary.json` (as of 2026-11-02; since moved/removed). That commit does not resolve in this repository. EE-113 still names preserved PRs 164 and 163.
 
 **Update, Nov 2, about 6:35 PM CT (applied with glossary rev 4).** Torian decided:
 - every term carries three labels: scope (the `name@function` subject field), origin (adopted, adapted, narrowed, broadened, borrowed, operationally coined) and grade (standard with siblings regulatory and codified, convention with sibling seminal, none);
@@ -60,7 +62,7 @@ Each premise, written down:
 | ISO 25964-2 mapping types ([ISO](https://www.iso.org/standard/53658.html), [preview](https://webstore.ansi.org/preview-pages/ISO/preview_ISO+25964-2-2013.pdf)) | the target vocabulary | exact equivalence, inexact, partial, broader (BM), narrower (NM), associative (RM) | the mapping type is the relation alone |
 | W3C SKOS ([Reference §10](https://www.w3.org/TR/skos-reference/#mapping)) | the target concept scheme | exactMatch, closeMatch, broadMatch, narrowMatch, relatedMatch | the property is the relation alone |
 
-**Verdict: P-A is false.** Each of the six standards keeps the source and the relation in separate places. My search found none that ranks "how we used it" on the same ladder as "how authoritative the source is". That search was not exhaustive. Naive already keeps them apart in one place: reference records carry `kind` (the source type) and, separately, `stance.is` (adopted 19, adapted 5, alternative 2, read in rev 2 and confirmed in `purpose/references/references.json` (as of 2026-11-02; since moved/removed) on `framework`).
+**Verdict: P-A is false.** Each of the six standards keeps the source and the relation in separate places. My search found none that ranks "how we used it" on the same ladder as "how authoritative the source is". That search was not exhaustive. Naive already keeps them apart in one place: reference records carry `kind` (the source type) and, separately, `stance.is` (adopted 19, adapted 5, alternative 2, read in rev 2 and confirmed on Nov 2 in `purpose/references/references.json` (as of 2026-11-02; the current file is `packages/naive/src/records/layers/purpose/references/references.json`).
 
 ### 2.2 P-B: scoped sense is a grade
 
@@ -149,7 +151,7 @@ How this applies to rev 2's own examples:
 
 The participles describe a state: how the noun relates to its source right now. EE-107 kinds describe the change that produced that state. Each piece of EE-107 maps onto them like this:
 
-| EE-107 (PR #164 `schema/vocabulary.json` (as of 2026-11-02; since moved/removed), `packages/naive/src/terms/operating-rules.json` `design.diff.verbs`) | Relation to `origin` |
+| EE-107 verbs, as proposed on Nov 2 (PR #164 head `7da7909` does not resolve here; `schema/vocabulary.json` (as of 2026-11-02; since moved/removed)). The rows match `design.diff.verbs` in `packages/naive/src/terms/operating-rules.json`. EE-107 is not a logged decision as of 08a5466. EE-113 still names preserved PRs 164 and 163. | Relation to `origin` |
 | --- | --- |
 | `create/derive` (names `source`) | adopted, adapted, narrowed, broadened and borrowed are all derive lines. `origin` is computed from the mapping on the derived noun, so derive needs no new kinds. |
 | `create/originate` | operationally coined |
@@ -287,7 +289,7 @@ Secondary and other sources:
 - TypeScript handbook, extending types: https://www.typescriptlang.org/docs/handbook/2/objects.html#extending-types
 
 Naive repo, read only:
-- `tchjhnsn/everything-ecosystem` `framework`: `packages/naive/src/terms/ontology.json` (112 nouns, 99 live, 11 "ours", 2 scoped), `packages/naive/src/terms/ontology.md` L18, `purpose/references/references.json` (as of 2026-11-02; since moved/removed) (`stance.is`), `packages/naive/src/terms/operating-rules.json` `design.diff`.
-- PR #164 head `7da7909`: `schema/vocabulary.json` (as of 2026-11-02; since moved/removed).
+- `tchjhnsn/everything-ecosystem` `framework`: `packages/naive/src/terms/ontology.json` (112 nouns, 99 live, 11 "ours", 2 scoped), `packages/naive/src/terms/ontology.md` L18, `packages/naive/src/records/layers/purpose/references/references.json` (`stance.is`). The Nov 2 path `purpose/references/references.json` (as of 2026-11-02; since moved/removed) is this file, `packages/naive/src/terms/operating-rules.json` `design.diff`.
+- PR #164 head `7da7909` does not resolve in this repository. `schema/vocabulary.json` (as of 2026-11-02; since moved/removed). The verb rows match `design.diff.verbs` in `packages/naive/src/terms/operating-rules.json`. EE-113 still names preserved PRs 164 and 163.
 
 Not reachable: the ISO 1087 and ISO 704 full texts are paywalled, and the ANSI ISO 704:2022 preview did not download as a PDF. The ISO 1087-1:2000 neologism wording is therefore quoted from Valeontis and Mantzari, not from ISO directly.

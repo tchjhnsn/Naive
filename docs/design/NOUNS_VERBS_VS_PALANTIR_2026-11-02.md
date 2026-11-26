@@ -1,5 +1,7 @@
 <!-- Placement: tchjhnsn/Naive docs/design/NOUNS_VERBS_VS_PALANTIR_2026-11-02.md. Original research date: 2 November 2026 (America/Chicago). Moved from a box working note on 26 November 2026. Box-local paths were rewritten. Docs only. No secrets were added or removed. A path that matches exactly one current file now names that file, and line numbers stay as of the research date. Any other path that no longer resolves is marked on that claim. -->
 
+Status: research note, Nov 2, 2026. Not a decision.
+
 # Naive's nouns and verbs vs Palantir's semantic and kinetic halves
 
 Prepared Nov 2, 2026 (America/Chicago). Read only. Naive sources are the `framework` branch of tchjhnsn/everything-ecosystem at `cb502f9`, read through the GitHub connector, plus the decision patches in PR #157 (EE-103), PR #161 (EE-105) and PR #162 (EE-106). Palantir sources are `docs/design/PALANTIR_ONTOLOGY_2026-11-02.md` and the saved pages in `palantir-src/` (as of 2026-11-02; since moved/removed). Where a Naive rule exists only in Torian's saved decisions and research notes, and not yet in the repo, it says so.
@@ -80,12 +82,12 @@ What they do: they describe any change, to a design, a record or a branch, in a 
 - "If the data elements in the Ontology are 'the nouns' of the enterprise (the semantic, real-world objects and links), then the actions can be considered 'the verbs' (the kinetic, real-world execution)" (`palantir-src/www_palantir_com_docs_foundry_ontology_why_ontology.clean` (as of 2026-11-02; since moved/removed)).
 
 **Semantic half** (`docs/design/PALANTIR_ONTOLOGY_2026-11-02.md` section 2.1).
-- An object type is "the schema definition of a real-world entity or event", and an object is one instance (`palantir-src/..._object_link_types_object_types_overview.clean`). Palantir maps it straight onto tables: object type is a dataset, object a row, property a column, link type a join.
+- An object type is "the schema definition of a real-world entity or event", and an object is one instance (`palantir-src/..._object_link_types_object_types_overview.clean` (as of 2026-11-02; since moved/removed)). Palantir maps it straight onto tables: object type is a dataset, object a row, property a column, link type a join.
 - Shared properties share metadata across object types. Value types wrap a field type with constraints and are versioned. Interfaces give abstract types. Object sets are saved lists or filters.
 - Objects are indexed from backing datasets, or created only through actions.
 
 **Kinetic half** (`docs/design/PALANTIR_ONTOLOGY_2026-11-02.md` sections 2.2, 3.2 and 4).
-- Action types: "An action is a single transaction that changes the properties of one or more objects, based on a user-defined logic" (`palantir-src/..._action_types_overview.clean`). Each has parameters, rules, side effects and submission criteria. In Object Storage v2, "user edits" happen only through actions.
+- Action types: "An action is a single transaction that changes the properties of one or more objects, based on a user-defined logic" (`palantir-src/..._action_types_overview.clean` (as of 2026-11-02; since moved/removed)). Each has parameters, rules, side effects and submission criteria. In Object Storage v2, "user edits" happen only through actions.
 - Functions: server-side TypeScript or Python that reads objects, follows links and makes edits.
 - Dynamic security: markings that "travel with the data" (`palantir-src/www_palantir_com_docs_foundry_security_markings.clean` (as of 2026-11-02; since moved/removed)) and "propagate through derivation", plus row and column policies that filter reads only.
 - Around these: an action log, opt-in edit history, ontology proposals on branches for protected types, AIP Evals in an "Ontology simulation", a per-model allowlist of markings, two MCP servers (one for data via actions, one for schema), and the Agent Stack's sessions with typed context items and events.

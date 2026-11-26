@@ -1,5 +1,7 @@
 <!-- Placement: tchjhnsn/Naive docs/design/AGENT_SPAWN_COALITION_RESEARCH_2026-11-02.md. Original research date: 2 November 2026 (America/Chicago). Moved from a box working note on 26 November 2026. Box-local paths were rewritten. Docs only. No secrets were added or removed. A path that matches exactly one current file now names that file, and line numbers stay as of the research date. Any other path that no longer resolves is marked on that claim. -->
 
+Status: research note, Nov 2, 2026. Not a decision.
+
 # When to spawn, keep, and include agents: a coalition and transaction-cost rule for Naive
 
 Prepared Nov 2, 2026, 12:07 AM CST, for Torian. Status: research and a candidate rule. Nothing was built or changed.

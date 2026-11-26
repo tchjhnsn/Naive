@@ -1,5 +1,7 @@
 <!-- Placement: tchjhnsn/Naive docs/design/PALANTIR_ONTOLOGY_2026-11-02.md. Original research date: 2 November 2026 (America/Chicago). Moved from a box working note on 26 November 2026. Box-local paths were rewritten. Docs only. No secrets were added or removed. A path that matches exactly one current file now names that file, and line numbers stay as of the research date. Any other path that no longer resolves is marked on that claim. -->
 
+Status: research note, Nov 2, 2026. Not a decision.
+
 # Palantir and its Ontology: deep research for Naive
 
 Prepared Nov 2, 2026 (America/Chicago). Builds on `docs/design/SYMBOLIC_SYSTEM_ONTOLOGY_2026-11-02.md`, `docs/design/AGENT_RUNTIME_2026-11-02.md` and `docs/design/VENTURE_ORG_ONTOLOGY_2026-11-02.md`, and does not repeat them. Most claims come from pages fetched this session: Palantir's docs at palantir.com/docs, its FY2025 10-K, the Q2 2026 press release and the AIP launch letter. Anything seen only in a search snippet is marked **[snippet only]**. Raw page text is saved in a local Palantir page-text checkout not kept in the repo.
@@ -12,7 +14,7 @@ Note on timing: Palantir reports Q3 2026 after the market closes today, Nov 2, a
 
 - **What Palantir's Ontology is.** It is a typed operational model of an organization. Object types, properties and link types are the "semantic" half. Action types, functions and dynamic security are the "kinetic" half. Data from datasets is indexed into object databases, and every change goes through governed actions. Palantir pitches it as "the decisions in an enterprise, not simply the data" ([Why create an Ontology?](https://www.palantir.com/docs/foundry/ontology/why-ontology/)).
 - **Closest match in Naive.** Naive's knowledge graph plus its agent runtime. The biggest difference is the unit. Palantir's unit is the **object**, a current-state row with an edit history. Naive's unit is the **sourced statement**, with judgments as their own records. Naive is closer to a provenance graph, and Palantir is closer to a governed operational database.
-- **What Naive already does as well as Palantir or better:** append-only history from day one (in Palantir's newer storage, edit history is opt-in), open RDF/JSON-LD export (Palantir has no open export, which is the core of the lock-in critique), per-person multi-organization membership, and judgments stored as records.
+- **What Naive already does as well as Palantir or better:** append-only history from day one (in Palantir's newer storage, edit history is opt-in), per-person multi-organization membership, and judgments stored as records. An open RDF/JSON-LD export was proposed on Nov 2 and is not in the repo as of 08a5466. `packages/naive/src/records/ontology-metamodel.schema.json` maps names to SKOS and OWL.
 - **What Palantir has that Naive lacks:**
   1. **Mandatory, propagating labels (markings)** that follow data into everything derived from it.
   2. **Typed action types** as the only write path, with parameters and submission criteria.
@@ -21,7 +23,7 @@ Note on timing: Palantir reports Q3 2026 after the market closes today, Nov 2, a
   5. **A per-model allowlist** of data labels that can reach an LLM.
   6. **Evals that run in a simulated ontology.**
   7. **A typed agent session model**: sessions, typed context items, events and state transitions.
-- **Top lesson.** Palantir's own docs warn that row and column filters "filter what a user can read" and do not carry into function outputs, action edits or an LLM's context. Only mandatory controls propagate ([Access control propagation](https://www.palantir.com/docs/foundry/security/access-control-propagation/)). Naive's declared reads are read-time filters. Without a propagating label, a consent restriction on a puzzle transcript would not follow the statements an agent derives from it.
+- **Top lesson.** Palantir's own docs warn that row and column filters "filter what a user can read" and do not carry into function outputs, action edits or an LLM's context. Only mandatory controls propagate ([Access control propagation](https://www.palantir.com/docs/foundry/security/access-control-propagation/)). Declared reads were proposed on Nov 2 as read-time filters. As of 08a5466, `reads` arrays on kits and model steps are not read-time security filters. Without a propagating label, a consent restriction on a puzzle transcript would not follow the statements an agent derives from it.
 
 ---
 
@@ -252,19 +254,19 @@ Each row is marked **Match**, **Gap** (Palantir has it and Naive does not) or **
 | Shared property | SKOS concepts, framework plus per-organization extensions | Match | |
 | Value types (validated, versioned) | SHACL shapes (proposed, not yet decided) | Gap | Decide shapes plus versioning together. |
 | Link type | Typed relations (PROV, derived-from, part-of) | Match | |
-| Interfaces | `KnowledgeItem` parent class | Partial | Enough for now. |
+| Interfaces | `KnowledgeItem` parent class | Gap | Proposed on Nov 2; not in the repo as of 08a5466. |
 | Action type + submission criteria | Agents propose; a gate or person accepts; policies as data | Gap | **Make typed action types the only write path** (Q2), with criteria in the one policy engine. |
 | OSv2 "edits only via Actions" | Same intent | Match | Confirms Naive's direction. |
 | Functions | Jev, gate code, extraction code | Match | |
 | Object sets (static/dynamic) | None | Gap (low) | Saved queries later. |
 | Action log + opt-in edit history | Append-only history; Run record; Activity and Transaction | Naive stronger | History is on from the first write, never a toggle. Palantir's migration lost history. |
-| Writeback dataset / materialization | RDF/JSON-LD export | Diff | Naive's open export answers the lock-in critique. |
+| Writeback dataset / materialization | RDF/JSON-LD export | Gap | Proposed on Nov 2; not in the repo as of 08a5466. `packages/naive/src/records/ontology-metamodel.schema.json` maps names to SKOS and OWL. |
 | Funnel indexing (copies data in) | Outside sources referenced, statements extracted with links | Diff | Naive avoids a second copy, the "seam" risk LaRochelle names. |
 | Organization (one per user, guests) | Person has memberships in many orgs; personal org per account | Diff | Naive's model fits founders in several ventures. |
 | Space + shared ontology | Joint venture forms a shared organization; guests for lighter work | Match | Palantir confirms shared schema does not expose source data. Naive's share-by-reference has the same rule. |
 | Project (discretionary roles) | Roles across the org or one venture | Match | |
 | Markings (mandatory, propagating) | Org scoping, consent records, declared reads | **Gap (top)** | **Add propagating labels** (Q1). |
-| Object/property security, restricted views (read-time only) | Declared reads | Match, same limit | Palantir documents the leak into LLM context. Q1 closes it. |
+| Object/property security, restricted views (read-time only) | Declared reads | Diff | `reads` arrays on kits and model steps are not read-time security filters as of 08a5466. Proposed on Nov 2 as read-time filters. |
 | Global Branching, ontology proposals, protected types | No knowledge branching; draft/accepted; framework PRs | Diff for data, Gap for schema | **Schema changes via reviewed proposals** (Q8). |
 | Scenarios (data what-ifs) | Covered in `docs/design/PRECOG_DEFINITION_2026-11-02.md` | Later | |
 | Approvals inbox | A person approves outward actions and gate-changing accepts | Match | Store approvals as records. |
@@ -272,7 +274,7 @@ Each row is marked **Match**, **Gap** (Palantir has it and Naive does not) or **
 | Audit logs (who, what, when, where; SIEM) | Activity and Transaction cover writes | Gap (reads) | Log agent reads against declared reads. |
 | AIP Logic / Automate staged proposals | AI SDK functions; Workflow; manual and scheduled triggers first | Match | |
 | Agent Stack: session, typed context items, events, states | Run record with trace summary | Gap (shape) | **Type the Run record** (Q7). |
-| Agent Builder config | AgentConfiguration (instructions, model, capabilities, reads, role, owner) | Match | Naive adds a named owner and acting on behalf of a person. |
+| Agent Builder config | AgentConfiguration (instructions, model, capabilities, reads, role, owner) | Gap | Proposed on Nov 2; not in the repo as of 08a5466. No such record. |
 | AIP Evals in Ontology simulation | Jev calibration; draft status | Gap | **Evals in a simulated scope** (Q6). |
 | Marking allowlist per model | ZDR via AI Gateway; per-org keys | Gap | **Label allowlist per model** (Q5). |
 | Ontology MCP (data via actions) vs Palantir MCP (schema, on branches) | MCP main interface plus REST | Gap (split) | **Two MCP scopes** (Q4). |
@@ -287,7 +289,7 @@ Each row is marked **Match**, **Gap** (Palantir has it and Naive does not) or **
 3. **History is not optional.** Palantir's edit history is a toggle, and its storage migration dropped history by default. Naive's append-only rule should be enforced in the schema, not in configuration.
 4. **Separate "use the graph" from "change the graph's shape"** for agents. Palantir ships two MCP servers for this.
 5. **Avoid the prescriptive trap.** Critics say a heavy ontology goes stale. Naive's statement-first design, with small base types and per-org SKOS, tolerates change better than object-first schemas.
-6. **Openness is a differentiator.** The lock-in critique is entirely about the semantic and action layers not being exportable. Naive's RDF/JSON-LD export and referenced sources are a direct answer worth stating in positioning.
+6. **Openness is a differentiator.** The lock-in critique is entirely about the semantic and action layers not being exportable. An RDF/JSON-LD export was proposed on Nov 2 and is not in the repo as of 08a5466. Referenced sources are the part that is already the design.
 
 ---
 

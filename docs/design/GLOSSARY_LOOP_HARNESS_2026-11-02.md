@@ -1,5 +1,7 @@
 <!-- Placement: tchjhnsn/Naive docs/design/GLOSSARY_LOOP_HARNESS_2026-11-02.md. Original research date: 2 November 2026 (America/Chicago). Moved from a box working note on 26 November 2026. Box-local paths were rewritten. Docs only. No secrets were added or removed. A path that matches exactly one current file now names that file, and line numbers stay as of the research date. Any other path that no longer resolves is marked on that claim. -->
 
+Status: research note, Nov 2, 2026. Not a decision.
+
 # Glossary loop and harness: clearing the term backlog into vocabulary objects, keeping them current and used
 
 Prepared Mon Nov 2, 2026, about 4:45 PM CT, for Torian (revision 4, about 6:35 PM CT). Design and build spec only. Nothing in the repo, any PR or any account was changed. Revision 1 is an earlier draft of this note, not included in this pull request. Revision 2 adds sections 6 to 9 (standards intake, the provenance grade, the Kahneman case study, the promotion and invention rules) and updates acceptance, ratchets, backfill, the build spec, the decisions and the risks. Revision 2 is an earlier draft of this note, not included in this pull request. Revision 3 splits the one grade ladder into two fields, `grade` (how authoritative the source is) and a computed `origin` participle (adopted, adapted, narrowed, broadened, borrowed, operationally coined). It drops "scoped sense" and "invention" as grades and fixes a SKOS direction error. The evidence is in `docs/design/TERM_GRADE_NAMES_PREMISE_2026-11-02.md`. Revision 3 is an earlier draft of this note, not included in this pull request. Revision 4 records your Nov 2 decision: every term carries three labels, scope (the `name@function` subject field), origin and grade. "Scoped sense" and "invention" are dropped as labels, and the origin `coined` is renamed `operationally-coined` (operationally coined).
@@ -21,8 +23,8 @@ Sources:
 ## 0. The answer in plain words
 
 1. **The repo already has four places terms live, and they are not joined yet:**
-   - the noun registry `packages/naive/src/terms/ontology.json` (112 nouns);
-   - the term engine `schema/terms/` (as of 2026-11-02; since moved/removed) (9 terms admitted as proposed);
+   - the noun registry `packages/naive/src/terms/ontology.json`. As of 2026-11-02 it read as 112 nouns. As of 08a5466 it is v0.7.0 with 149 nouns: 67 new, 23 kept, 46 proposed, 13 retired. `broader` is on all 149. There is still no `id`, `related`, or alternate-label field.
+   - the term engine `packages/naive/src/terms/`. As of 2026-11-02, 9 terms were admitted as proposed. As of 08a5466 `admitted.json` has 29 terms, all `proposed`.
    - package glossaries `glossary/<package>.json`;
    - PR #164's vocabulary objects `schema/vocabulary.json` (as of 2026-11-02; since moved/removed), which hold the verbs, kinds, tiers and one shape (`noun:venture`).
 
@@ -39,7 +41,7 @@ Sources:
    71 of those can be closed now, with no new noun at all, because their noun already exists (section 12.3).
 4. **The loop has eight steps: intake, triage, draft, shape, accept, land, check usage, check drift.**
    - Code does every step except drafting and accepting.
-   - A temporary agent under `vocabulary-drafting@capabilities` drafts. The Lead's capabilities function owns vocabulary.
+   - A temporary agent under `vocabulary-drafting@capabilities` drafts. `capabilities` is a department id, not a function-level noun.
    - Gates and you accept, by tier.
    - Two ratchets keep it moving. The term backlog drift list and the code-literal list may only shrink, the same way PR #164's baseline does.
 5. **Backfill means finding code and designs that should be calling these objects:**
@@ -49,10 +51,10 @@ Sources:
    - `PHASES` is hardcoded in `packages/naive/src/engine/decisions.ts` L44, and the same five values are the phase enum in `noun:venture`'s shape (PR #164 `schema/vocabulary.json` (as of 2026-11-02; since moved/removed)).
    - There are three different lists of "layers": `packages/naive/src/engine/caching.ts` L192 (9 entries), `schema/vocabulary.ts` (as of 2026-11-02; since moved/removed) L33-36 (10) and the `layer` noun (6).
 6. **Standards feed the loop, and every term carries three labels: scope, origin and grade** (sections 6 to 9; decided Nov 2).
-   - Naive cites 26 reference records and 83 free-text `standard` strings. Only 13 of 99 live nouns resolve to a reference record.
+   - As of 2026-11-02 Naive cited 26 reference records and 83 free-text `standard` strings, and only 13 of 99 live nouns resolved to a reference record. As of 08a5466 there are 46 reference records (book 16, article 11, standard 7, paper 5, law 4, dataset 2, conversation 1), stance is adopted 30, adapted 11, alternative 5, there are 115 distinct `standard` strings on 149 nouns, 15 live nouns have `references`, and 9 live nouns have `standard` `ours`.
    - Labels (decided): scope is the `name@function` subject field, `origin` is the participle below, and `grade` is standard (with siblings regulatory and codified), then convention (with sibling seminal), then `none`. `origin` is a past participle: adopted, adapted, narrowed, broadened, borrowed or operationally coined.
    - Code computes both from the reference records and their SKOS mappings.
-   - Operationally coined terms need a written "none fits" with three alternatives checked. Operationally coined and borrowed terms (meaning is ours) are costly at least, capped at 10% of live nouns (at most 8 of 99 today, after Everything Ecosystem, Product Anatomy and Succession Matrix are classed as proper names; proper names never count), and reviewed every quarter.
+   - Operationally coined terms need a written "none fits" with three alternatives checked. Operationally coined and borrowed terms (meaning is ours) are costly at least, capped at 10% of live nouns (as of 2026-11-02, at most 8 of 99, after Everything Ecosystem, Product Anatomy and Succession Matrix are classed as proper names; proper names never count), and reviewed every quarter.
 7. **Thinking, Fast and Slow shows how a term rises.**
    - None of its coinages reached a standards body. The ceiling is a professional dictionary (APA) and use by government or regulators.
    - Independent adoption marked the move to convention (planning fallacy). Codification marked the move to standard (availability heuristic, anchoring, prospect theory).
@@ -64,16 +66,16 @@ Sources:
 
 | Piece | Path | What it does | Gap the loop fills |
 | --- | --- | --- | --- |
-| Noun registry | `packages/naive/src/terms/ontology.json` (v0.6.0, `nouns` from L13) | 112 nouns: 67 new, 23 kept, 9 proposed, 13 retired. Each has level, meaning, standard, function and status | no `id`, `broader`, `related` or alternate labels; no usage counts |
+| Noun registry | `packages/naive/src/terms/ontology.json` | As of 2026-11-02: v0.6.0, 112 nouns (67 new, 23 kept, 9 proposed, 13 retired) and no `broader`. As of 08a5466: v0.7.0, 149 nouns (67 new, 23 kept, 46 proposed, 13 retired), `broader` on all 149, still no `id`, `related`, or alternate-label field | no usage counts |
 | Readable glossary | `packages/naive/src/terms/ontology.md` | generated by `node packages/naive/src/checks/check-nouns.ts --md`; L18 is the scoped noun rule `name@function` | none (keep generating) |
 | Noun check | `packages/naive/src/checks/check-nouns.ts` | fails on retired nouns reappearing (`retired_pattern`), unknown references and membership rules (`checkOntology` in `packages/naive/src/terms/ontology-gate.ts`); runs in `test.mjs` (as of 2026-11-02; since moved/removed) L26 | does not catch new unknown terms (drift) |
-| Term engine | `packages/naive/src/terms/engine.ts`, `packages/naive/src/terms/admit.ts`, `packages/naive/src/terms/terms.ts`, `packages/naive/src/terms/levels.ts`, `packages/naive/src/terms/admitted.json`; `packages/naive/lean/Naive/Terms.lean` | EE-095: define as properties over facts, freeze by hash, check as a valid test, cross-run, name Lean theorems, record as proposed. `admit.ts --check` exits 1 when `packages/naive/src/terms/admitted.json` is stale | `admit.ts --check` is not among the `test.mjs` (as of 2026-11-02; since moved/removed) steps at this commit; only 9 terms are admitted |
+| Term engine | `packages/naive/src/terms/engine.ts`, `packages/naive/src/terms/admit.ts`, `packages/naive/src/terms/terms.ts`, `packages/naive/src/terms/levels.ts`, `packages/naive/src/terms/admitted.json`; `packages/naive/lean/Naive/Terms.lean` | EE-095: define as properties over facts, freeze by hash, check as a valid test, cross-run, name Lean theorems, record as proposed. `admit.ts --check` exits 1 when `packages/naive/src/terms/admitted.json` is stale | As of 2026-11-02 only 9 terms were admitted. As of 08a5466 `admitted.json` has 29 terms, all `proposed` |
 | Public term list | `docs/design/term-harvest/TERM_LIST_2026-11-01.json` (as of 2026-11-02; since moved/removed) | 199 terms in 8 subjects: 36 run in the sandbox, 163 pending; a `how` list (6 steps); `collides_with` marks contested terms | step 5 names a `usage.json` that does not exist in the repo |
 | Package glossary | `packages/naive/src/records/glossary.schema.json`, `packages/naive/src/engine/generators/glossary.ts`, `packages/naive/src/functions/capabilities/templates/glossary.md` | per-package terms, local unless `export: true`; two exports with different meanings fail `packages/naive/src/checks/check-brand.ts` | local terms never meet the ontology |
 | Internal terms | `packages/naive/src/engine/internal-terms.json`, record type `internal-terms` | patterns that must never appear in public output (`packages/naive/src/engine/check-leaks.ts`) | the stop list must exclude these from intake |
 | Vocabulary objects (PR #164) | `schema/vocabulary.json` (as of 2026-11-02; since moved/removed), `schema/vocabulary.ts` (as of 2026-11-02; since moved/removed), `schema/check-vocabulary.mjs` (as of 2026-11-02; since moved/removed), `schema/vocabulary-baseline.json` (as of 2026-11-02; since moved/removed), `schema/vocabulary-test.ts` (as of 2026-11-02; since moved/removed) | ids `noun:<slug>` (`nounId`, L150-153), `verb:`, `kind:`; `vocabulary_parent` on record types, records, and modules (first 40 lines); a shrink-only baseline of 389 gaps (`evaluate`, L615-645) | only one noun shape; no loader for enum values; no term-level ratchet |
 | Premise lint | `packages/naive/src/checks/premise-lint.ts` (described in `AGENTS.md` L44) | flags `undefined-term` among premise aspects of goals and decisions | its findings are an intake source |
-| References | `governance/references/references.json` (as of 2026-11-02; since moved/removed), `interface/references/references.json` (as of 2026-11-02; since moved/removed), `operations/references/references.json` (as of 2026-11-02; since moved/removed), `purpose/references/references.json` (as of 2026-11-02; since moved/removed), `purpose/kits/validation/references/references.json` (as of 2026-11-02; since moved/removed) | 26 records with `kind`, `url`, `checked`, `informs` and `stance.is` (adopted, adapted, alternative); `packages/naive/src/checks/check-nouns.ts` fails a noun that cites an unknown id | no quote, mapping type, version, jurisdiction or `superseded_by`; 86 live nouns cite none |
+| References | `packages/naive/src/records/layers/governance/references/references.json`, `packages/naive/src/records/layers/interface/references/references.json`, `packages/naive/src/records/layers/operations/references/references.json`, `packages/naive/src/records/layers/purpose/references/references.json`, `packages/naive/src/functions/strategy/kits/validation/references/references.json` | As of 2026-11-02: 26 records. As of 08a5466: 46 records (book 16, article 11, standard 7, paper 5, law 4, dataset 2, conversation 1), stance adopted 30, adapted 11, alternative 5. `packages/naive/src/checks/check-nouns.ts` fails a noun that cites an unknown id | no quote, mapping type, version, jurisdiction or `superseded_by`. As of 2026-11-02, 86 live nouns cited none. As of 08a5466, 15 live nouns have `references` |
 | Decisions | `docs/decisions/decisions.json` | EE-014 standards first; EE-089 knowledge base and code joined at the glossary (stale marking "planned as schema/terms/stale.ts", not built); EE-095 one admission for every new or contested term | the loop implements EE-089's missing half |
 
 ## 2. The actual backlog
@@ -213,7 +215,7 @@ Ties break by first-seen commit. The rank is code, so it never needs a model.
 
 ## 5. Drafting, shape and parent
 
-- **Owner.** The Lead's capabilities function owns vocabulary. `capabilities` is one of the 13 functions in `packages/naive/src/functions/departments.json`, confirmed by EE-090.
+- **Owner.** `capabilities` is a department id in `packages/naive/src/functions/departments.json`, not a function-level noun. The function-level nouns are `strategy`, `products`, `marketing-and-sales` and `finance`. The Nov 2 note gave vocabulary to that department.
 - **Drafter.** A temporary agent spawned under the scope `vocabulary-drafting@capabilities` (revision 4, section 7). Its foreground nouns are just `noun:noun-draft`. It may write drafts, never the ontology.
 - **A draft** is `docs/glossary/drafts/<id>.json`, produced by a record generator in the EE-099 pattern, like `packages/naive/src/engine/generators/glossary.ts`. It holds:
   - id (from `nounId`);
@@ -242,17 +244,17 @@ Ties break by first-seen commit. The rank is code, so it never needs a model.
 
 ### 6.1 What Naive cites today
 
-Counted from `packages/naive/src/terms/ontology.json` (`standard` and `references` on the 99 live nouns) and the five reference files: `governance/` (as of 2026-11-02; since moved/removed), `interface/` (as of 2026-11-02; since moved/removed), `operations/` (as of 2026-11-02; since moved/removed), `purpose/` (as of 2026-11-02; since moved/removed) and `purpose/kits/validation/references/references.json` (as of 2026-11-02; since moved/removed).
+The Nov 2 count below was read from `packages/naive/src/terms/ontology.json` and the five reference files, now at `packages/naive/src/records/layers/governance/references/references.json`, `packages/naive/src/records/layers/interface/references/references.json`, `packages/naive/src/records/layers/operations/references/references.json`, `packages/naive/src/records/layers/purpose/references/references.json` and `packages/naive/src/functions/strategy/kits/validation/references/references.json`.
 
-- **26 reference records,** by kind: 13 book, 6 article, 4 standard, 1 paper, 1 law, 1 conversation.
-  - Each has a `stance.is`: 19 adopted, 5 adapted, 2 alternative.
-- **83 distinct `standard` strings** on 112 nouns. These are free text, and code cannot resolve them.
-- **Only 13 of 99 live nouns resolve to a reference record** through `references`:
+- **As of 2026-11-02, 26 reference records,** by kind: 13 book, 6 article, 4 standard, 1 paper, 1 law, 1 conversation. As of 08a5466 there are 46: book 16, article 11, standard 7, paper 5, law 4, dataset 2, conversation 1.
+  - Stance as of 2026-11-02: 19 adopted, 5 adapted, 2 alternative. As of 08a5466: adopted 30, adapted 11, alternative 5.
+- **As of 2026-11-02, 83 distinct `standard` strings** on 112 nouns. As of 08a5466 there are 115 distinct `standard` strings on 149 nouns. These are free text, and code cannot resolve them.
+- **As of 2026-11-02, only 13 of 99 live nouns resolved to a reference record** through `references`. As of 08a5466, 15 live nouns have `references` and 9 live nouns have `standard` `ours`:
   - phase, gate, ambition, industry, core product, market, job, technology, business model, wedge, agent harness, AI harness, evidence grade.
 - 55 name a source in text with no record.
 - 20 say a generic "common ... usage".
-- 11 are `ours`.
-- **APQC is cited in 6 nouns' `standard` text, but no noun lists the reference `apqc-pcf-cross-industry`** (`operations/references/references.json` (as of 2026-11-02; since moved/removed)).
+- As of 2026-11-02, 11 were `ours`. As of 08a5466, 9 live nouns have `standard` `ours`.
+- **APQC is cited in 6 nouns' `standard` text, but no noun lists the reference `apqc-pcf-cross-industry`** (as of 2026-11-02; the file is now `packages/naive/src/records/layers/operations/references/references.json`).
 
 **Standards and sources cited, with counts** (nouns whose `standard` names them):
 
@@ -450,7 +452,7 @@ The grade then drops to what the remaining evidence supports.
 - **Tier.** Costly at least. One_way_door if it would type more than 10 subjects. You accept every one.
 - **Cap and ratchet.**
   - `docs/glossary/own-meaning.json` (as of 2026-11-02; since moved/removed) lists every operationally coined and borrowed noun, and no proper names (decided Nov 2, G17). It is a ratchet: an addition needs `approved` with your decision id.
-  - A hard cap of 10% of live nouns (decided Nov 2, G17). Operationally coined and borrowed nouns count. Proper names such as Everything Ecosystem do not count and are not listed. Proper names are marked by `designation: proper-name` (section 7). Today at most 8 of 99 count: 11 "ours" nouns minus the 3 proper names Everything Ecosystem, Product Anatomy and Succession Matrix (decided Nov 2, G24). The backfill sort decides how much room is left.
+  - A hard cap of 10% of live nouns (decided Nov 2, G17). Operationally coined and borrowed nouns count. Proper names such as Everything Ecosystem do not count and are not listed. Proper names are marked by `designation: proper-name` (section 7). As of 2026-11-02 at most 8 of 99 counted: 11 "ours" nouns minus the 3 proper names Everything Ecosystem, Product Anatomy and Succession Matrix (decided Nov 2, G24). As of 08a5466, 9 live nouns have `standard` `ours`. The backfill sort decides how much room is left.
 - **Review.** Every quarter, for each operationally coined or borrowed noun:
   - rerun the standards intake (section 6.2), looking for a new match. A match is a replace proposal: amend/rename to the standard label, keeping the id;
   - rerun the promotion test.
@@ -474,7 +476,7 @@ A draft fails unless all of these hold:
    - `adapted` allows adapted, narrowed, broadened or borrowed;
    - `alternative` allows only borrowed (`relatedMatch` or `deliberateDifference`).
 
-**Migration.** 86 of today's 99 live nouns do not resolve to a reference record. They go into `docs/glossary/standard-baseline.json` (as of 2026-11-02; since moved/removed), which may only shrink. New nouns must pass from day one.
+**Migration.** As of 2026-11-02, 86 of 99 live nouns did not resolve to a reference record. As of 08a5466 there are 136 live nouns and 15 of them have `references`. They go into `docs/glossary/standard-baseline.json` (as of 2026-11-02; since moved/removed), which may only shrink. New nouns must pass from day one.
 
 ### 9.5 Rank order with grades
 
@@ -543,7 +545,7 @@ All are change lines (EE-107 verbs) in a framework PR. PR #164's note says the v
 
 | When | What runs | Output |
 | --- | --- | --- |
-| Every PR (`test.mjs` (as of 2026-11-02; since moved/removed), which `.github/workflows/test.yml` runs) | intake on the diff only, drift ratchet, literal ratchet, vocabulary baseline, `admit.ts --check`, SKOS checks | pass or fail |
+| Every PR (`node test.ts`, which `.github/workflows/test.yml` runs; as of 2026-11-02 the workflow ran `node test.mjs`) | intake on the diff only, drift ratchet, literal ratchet, vocabulary baseline, `admit.ts --check`, SKOS checks | pass or fail |
 | Weekly (new `.github/workflows/glossary.yml` (as of 2026-11-02; since moved/removed), cron Monday 14:00 UTC, 8 AM CT) | full intake, rank, usage, stale report, then drafts for the top 10 | a report artifact; a draft PR only if you approve (question G10) |
 | Monthly | unused and doc-only review | deprecate or merge proposals |
 
@@ -730,7 +732,7 @@ These run as `naive glossary <command>`, with the same entry also wired to `node
   - `["glossary: drift, literals, SKOS, stale", "node", ["schema/check-glossary.mjs"]]` (as of 2026-11-02; since moved/removed);
   - `["glossary loop tests", "node", ["schema/glossary/glossary-loop-test.ts"]]` (as of 2026-11-02; since moved/removed);
   - `["term engine admitted.json is current", "node", ["packages/naive/src/terms/admit.ts", "--check"]]`.
-- `.github/workflows/test.yml` already runs `node test.mjs` on every pull request with `fetch-depth: 0`, which the ratchet's merge-base read needs (`previousBaseline`, `schema/vocabulary.ts` (as of 2026-11-02; since moved/removed) L596-607).
+- `.github/workflows/test.yml` runs `node test.ts` on every pull request with `fetch-depth: 0`, which the ratchet's merge-base read needs. As of 2026-11-02 it ran `node test.mjs` (`schema/vocabulary.ts` (as of 2026-11-02; since moved/removed) L596-607).
 - A new `.github/workflows/glossary.yml` (as of 2026-11-02; since moved/removed) runs the weekly job (section 11.4).
 
 ## 14. Build spec for Claude Code: ordered PRs

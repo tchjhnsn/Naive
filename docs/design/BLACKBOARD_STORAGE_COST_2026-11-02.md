@@ -1,5 +1,7 @@
 <!-- Placement: tchjhnsn/Naive docs/design/BLACKBOARD_STORAGE_COST_2026-11-02.md. Original research date: 2 November 2026 (America/Chicago). Moved from a box working note on 26 November 2026. Box-local paths were rewritten. Docs only. No secrets were added or removed. A path that matches exactly one current file now names that file, and line numbers stay as of the research date. Any other path that no longer resolves is marked on that claim. -->
 
+Status: research note, Nov 2, 2026. Not a decision.
+
 # Storage cost of the blackboard method
 
 Prepared Nov 2, 2026, about 12:50 AM CST, for Torian. Research and a cost model only. Nothing in the repo or any account was changed.
@@ -30,10 +32,10 @@ All sizes are bytes of the real files or lines [1].
 | Provenance chain entry (one line of `provenance.jsonl`) | `instance/ventures/everything-ecosystem/provenance.jsonl` (as of 2026-11-02; since moved/removed), 127 lines | mean 539, median 530, min 435, max 1,489 |
 | Gate sidecar line, admit | Shape from `interface/provenance.mjs` (as of 2026-11-02; since moved/removed) (merged in PR #150), simulated with a real package hash | 405 |
 | Gate sidecar line, reject with disposition | Same, with the `judgment.disposition` block from `packages/naive/src/records/provenance-entry.schema.json` | 554 |
-| Handoff package with ontology block (fixture) | `schema/fixtures/ontology-gate/*.json`, 6 files | 576 to 1,317 (`pricing-admit.json` 599) |
+| Handoff package with ontology block (fixture) | `packages/naive/src/terms/fixtures/ontology-gate/*.json`, 6 files | 576 to 1,317 (`pricing-admit.json` 599) |
 | Handoff package, real | `operations/handoffs/naive-packages-and-design-additions.json` (as of 2026-11-02; since moved/removed) | 4,517 |
 | Decision record (question and answer) | 13 files in `instance/ventures/everything-ecosystem/decisions/` (as of 2026-11-02; since moved/removed) | median 448, largest 2,632 |
-| Gate result (evidence of done criteria) | `evidence/results/naive-packages-and-design-additions-20261029005843.json` | 4,351 |
+| Gate result (evidence of done criteria) | `evidence/results/naive-packages-and-design-additions-20261029005843.json` (as of 2026-11-02; since moved/removed) | 4,351 |
 
 No `<id>.provenance.jsonl` gate sidecar exists on `main` yet. The sidecar sizes above are built from the code that writes them, not read from a stored file.
 

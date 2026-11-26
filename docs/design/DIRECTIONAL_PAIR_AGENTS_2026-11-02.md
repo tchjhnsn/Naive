@@ -1,5 +1,7 @@
 <!-- Placement: tchjhnsn/Naive docs/design/DIRECTIONAL_PAIR_AGENTS_2026-11-02.md. Original research date: 2 November 2026 (America/Chicago). Moved from a box working note on 26 November 2026. Box-local paths were rewritten. Docs only. No secrets were added or removed. A path that matches exactly one current file now names that file, and line numbers stay as of the research date. Any other path that no longer resolves is marked on that claim. -->
 
+Status: research note, Nov 2, 2026. Not a decision.
+
 # Directional pair agents (X@Y): design and light research
 
 Prepared Nov 2, 2026, about 1:30 AM CST, for Torian. Design and research only. Nothing in the repo or any account was changed.
@@ -61,7 +63,7 @@ I read these remotely from `main` on Nov 2, 2026, without cloning [1].
 
 **CI facts.**
 - `test.yml` runs on every `pull_request` with no `paths` filter.
-- `docs-required.yml` and the `checks` job in `pr-review.yml` also run on every PR.
+- `docs-required.yml` runs on every `pull_request`. `pr-review.yml` runs on `deployment_status` and `workflow_dispatch`, and its only job is `preview`. It has no `checks` job.
 
 **Proposed mapping of agents to functions** (my proposal, not in the repo):
 
@@ -145,7 +147,7 @@ X@Y reads as "X at Y": X's specialist, stationed on Y's records.
 | --- | --- | --- | --- |
 | finance@engineering | Gatekeeper | Durable | Recurs on every ADR and dependency (two reports already); the role file already has a cost reviewer |
 | finance@growth | Gatekeeper | Durable | Spend and price decisions recur; live price is a one-way door, so Torian confirms |
-| engineering@finance | Platform | Temporary until recurrence | `instance/.../finance/` holds only `.gitkeep` today, so there is no flow yet |
+| engineering@finance | Platform | Temporary until recurrence | As of 2026-11-02 this note said `instance/.../finance/` (as of 2026-11-02; since moved/removed) held only `.gitkeep`. There is no `instance/` directory as of 08a5466, so there is no flow yet |
 | strategy@product | Advisory | Temporary | Strategy-fit checks on product plans: Cooper's "must meet: does this align with our strategy" [11] |
 | growth@product | Advisory | Temporary | Demand signals into product plans |
 | finance@product | Advisory | Temporary; may merge into finance@engineering | Unit economics per feature |

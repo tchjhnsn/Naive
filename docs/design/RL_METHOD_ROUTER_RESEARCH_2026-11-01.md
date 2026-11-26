@@ -1,5 +1,7 @@
 <!-- Placement: tchjhnsn/Naive docs/design/RL_METHOD_ROUTER_RESEARCH_2026-11-01.md. Original research date: 1 November 2026 (America/Chicago). Moved from a box working note on 26 November 2026. Box-local paths were rewritten. Docs only. No secrets were added or removed. A path that matches exactly one current file now names that file, and line numbers stay as of the research date. Any other path that no longer resolves is marked on that claim. -->
 
+Status: research note, Nov 1, 2026. Not a decision.
+
 # Reinforcement Learning Method Router: does it exist?
 
 Prepared for Torian, Sunday Nov 1, 2026 (CST). Every source below was opened and checked during this research (arXiv API, Crossref, publisher pages, or the X API). Numbers in brackets point to the source list at the end.
