@@ -3283,6 +3283,50 @@
       ]
     },
     {
+      "id": "EE-217",
+      "date": "2026-11-26",
+      "status": "in-force",
+      "decision": "The work has an order, and the order is enforced. Each function workflow says in requires what must exist before anyone may run it, in three kinds and no others: records, routes whose record is live in the venture; meetings, a function workflow a meeting walked and closed with its goal reached (EE-200); and decisions, ids a person has decided. A step may add entries of its own. It fails closed: an entry that cannot be resolved, for any reason, counts as missing, so a workflow whose ground is unknown does not run, and a draft the gate holds is not live, so an agent cannot settle its own prerequisite. prerequisitesOf(dir, \"<function>/<workflow>\", step) in packages/naive/src/engine/prerequisites.ts is the one verdict every caller reads, { met, missing }, each missing entry with its kind, ref, why and state. The lock holds people as well as agents: naive due marks a blocked workflow blocked, naive loop starts nothing whatever the mode, naive agent run --workflow refuses it, and the router refuses a write to a route that only blocked workflows write, for an agent and a person alike, naming what unblocks it first. decisions/* and operations/handoff are never locked, so the answer to a lock is always reachable, and the rule is scoped to the functions the venture lists. A person may pass mentura <route> write --override --by <person> --why <text>, and the provenance line keeps the rule, the person, the reason and the missing list; an agent never may. The chain Naive ships is data in the workflow files, not code: the strategy foundation before products, products before what is sold, and strategy/intake the root that waits on nothing. A venture loosens or tightens an entry under prerequisites in naive.config.json, which the schema holds to set_by a person, so only a person ever opens a lock. naive blocked lists the venture's workflows in phase, function and workflow order with what unblocks each first.",
+      "why": "Torian, 2026-11-26: a fail-closed system on many activities, a hierarchical workflow that is highly opinionated and actually locks you out from doing certain things until others are done, such as the strategy and the foundational records that must exist first, blocking people as well as agents from starting or completing work until they have held certain meetings, each meeting drafting durable objects. The order of the work was already implicit in the function modules, read by need-now and the phase gates as advice, so nothing stopped a product card being written before anyone knew who it was for. Making the chain data in the workflows keeps it contextual: it is read, checked and overridden, never hard-coded, and the override is a person's alone because a lock an agent can open is no lock.",
+      "related": [
+        "EE-168",
+        "EE-181",
+        "EE-182",
+        "EE-183",
+        "EE-200",
+        "EE-220"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/prerequisites.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/prerequisites-test.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "record",
+          "target": "function-workflow.requires",
+          "expect": "exists"
+        },
+        {
+          "kind": "record",
+          "target": "naive-config.prerequisites",
+          "expect": "exists"
+        },
+        {
+          "kind": "record",
+          "target": "provenance-entry.override",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
       "id": "EE-223",
       "date": "2026-11-26",
       "status": "in-force",

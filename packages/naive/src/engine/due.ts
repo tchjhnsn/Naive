@@ -11,6 +11,9 @@
 //             not count until the person accepts it.
 //   request   never due on its own: a lead or a person hands it off.
 //
+// Whatever its trigger says, a workflow whose prerequisites are not met is blocked, never due (EE-217,
+// packages/naive/src/engine/prerequisites.ts): its entry carries what it waits on, and the loop never starts it.
+//
 // A trigger may also say `during` a campaign or a sprint (EE-186). Then the workflow is due only while a time box of
 // that kind is open (operations/time-boxes/<id>.json: active, after `starts` and before `ends`) that lists the
 // workflow or its function, and an event counts only from the time box's start. Each entry names the open time box
@@ -41,6 +44,8 @@ import { entriesEffect } from "../core/provenance.ts";
 import { ventureFile } from "../core/venture-paths.ts";
 import { loadPhase } from "../phases/phases.ts";
 import { functionAgent } from "./agents/function-spec.ts";
+import { blockedForEffect } from "./prerequisites.ts";
+import type { Missing, Prerequisites } from "./prerequisites.ts";
 import { functionsOf } from "./research-programs.ts";
 import type { FunctionWorkflow, TimeBox } from "../records/types/records.d.ts";
 
@@ -56,7 +61,7 @@ export type DueWorkflow = { id: string; function: string; title: string; trigger
 export type WorkflowRun = { workflow: string; at: string; outcome: "done" | "failed" | "skipped"; by: string; steps?: readonly string[] };
 /** A write the provenance log holds: the route written and when. */
 export type Written = { route: string; at: string };
-export type DueStatus = "due" | "not-due" | "on-request";
+export type DueStatus = "due" | "not-due" | "on-request" | "blocked";
 /** The part of a time box this reads (time-box.schema.json). */
 export type DueBox = Pick<TimeBox, "id" | "kind" | "starts" | "ends" | "status" | "workflows" | "loop_mode" | "set_by"> & { functions?: readonly string[] };
 /** The open time box that covers a workflow, as an entry names it. */
@@ -82,6 +87,8 @@ export interface DueEntry {
   readonly in_phase: boolean,
   /** The open time box that covers it, or null. With a trigger `during`, one of that kind. */
   readonly time_box: CoveringBox | null,
+  /** What its prerequisites are waiting on (EE-217), empty when nothing is. A blocked workflow is never started. */
+  readonly missing: readonly Missing[],
 }
 
 export { timeBoxSpan } from "./time-box-span.ts";
@@ -116,7 +123,7 @@ export function routeMatches(pattern: string, route: string): boolean {
 }
 
 /** What is due at `now`, one entry per workflow, due ones first and then in the order given. */
-export function due(workflows: readonly DueWorkflow[], runs: readonly WorkflowRun[], written: readonly Written[], now: string, active: ReadonlySet<string> = new Set(), boxes: readonly DueBox[] = []): DueEntry[] {
+export function due(workflows: readonly DueWorkflow[], runs: readonly WorkflowRun[], written: readonly Written[], now: string, active: ReadonlySet<string> = new Set(), boxes: readonly DueBox[] = [], blocked: ReadonlyMap<string, Prerequisites> = new Map()): DueEntry[] {
   const out = workflows.map((w): DueEntry => {
     const key = `${w.function}/${w.id}`;
     const during = w.trigger.during;
@@ -127,15 +134,21 @@ export function due(workflows: readonly DueWorkflow[], runs: readonly WorkflowRu
     const named = during ? (duringBox ? cover : null) : cover;
     const time_box: CoveringBox | null = named ? { id: named.id, kind: named.kind, loop_mode: named.loop_mode ?? null, set_by: named.set_by?.person ?? null } : null;
     const entry = dueOne(w, key, runs, written, now, active, duringBox ? duringBox.starts : null);
-    if (!during || entry.status === "on-request") return { ...entry, time_box };
-    if (!duringBox) return { ...entry, status: "not-due", why: `It runs only while a ${during} that lists it is open, and none is.`, next_due: null, time_box };
-    return { ...entry, why: `${entry.why} The ${during} ${duringBox.id} is open until ${duringBox.ends.slice(0, 10)}.`, time_box };
+    // Prerequisites (EE-217): a workflow whose ground is not there is blocked, not due, whatever its trigger says.
+    const block = (e: DueEntry): DueEntry => {
+      const v = blocked.get(key);
+      return !v || v.met || e.status !== "due" ? e
+        : { ...e, status: "blocked", why: `${e.why} It is blocked: ${v.missing.map((m) => m.why).join("; ")}.`, missing: v.missing };
+    };
+    if (!during || entry.status === "on-request") return block({ ...entry, time_box, missing: [] });
+    if (!duringBox) return { ...entry, status: "not-due", why: `It runs only while a ${during} that lists it is open, and none is.`, next_due: null, time_box, missing: [] };
+    return block({ ...entry, why: `${entry.why} The ${during} ${duringBox.id} is open until ${duringBox.ends.slice(0, 10)}.`, time_box, missing: [] });
   });
   return [...out.filter((e) => e.status === "due"), ...out.filter((e) => e.status !== "due")];
 }
 
 /** One workflow's entry, before time boxes. With `from`, an event counts only from then. */
-function dueOne(w: DueWorkflow, key: string, runs: readonly WorkflowRun[], written: readonly Written[], now: string, active: ReadonlySet<string>, from: string | null): Omit<DueEntry, "time_box"> {
+function dueOne(w: DueWorkflow, key: string, runs: readonly WorkflowRun[], written: readonly Written[], now: string, active: ReadonlySet<string>, from: string | null): Omit<DueEntry, "time_box" | "missing"> {
   const mine = runs.filter((r) => r.workflow === key && r.at <= now);
   const last = mine.reduce<string | null>((m, r) => (m === null || r.at > m ? r.at : m), null);
   const last_done = mine.filter((r) => r.outcome !== "failed").reduce<string | null>((m, r) => (m === null || r.at > m ? r.at : m), null);
@@ -206,7 +219,7 @@ export const dueFor = (dir: string, now: string, only?: string): Effect.Effect<D
   const venture = (yield* readJson(join(dir, "venture.json"))) as { phase?: string };
   const active = venture.phase ? new Set((yield* loadPhase(venture.phase)).workflows) : new Set<string>();
   const written = (yield* entriesEffect(dir)).flatMap((e) => (e.route && e.at && LIVE.has(e.activity) ? [{ route: e.route, at: e.at }] : []));
-  return due(yield* workflowsOf(dir, only), yield* readRuns(dir), written, now, active, yield* readTimeBoxes(dir));
+  return due(yield* workflowsOf(dir, only), yield* readRuns(dir), written, now, active, yield* readTimeBoxes(dir), yield* blockedForEffect(dir));
 });
 
 if (import.meta.url === `file://${process.argv[1]}`) {

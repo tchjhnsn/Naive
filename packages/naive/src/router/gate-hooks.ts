@@ -8,6 +8,8 @@ import { Cause, Effect, Exit } from "effect";
 import { existsSync, readFileSync } from "node:fs";
 import { confidenceCall, writerRule } from "../engine/gate.ts";
 import { askGate } from "../engine/gate-service.ts";
+import { blockedWrite, overrideProblem } from "../engine/prerequisites.ts";
+import type { Override, OverrideRecord } from "../engine/prerequisites.ts";
 import { runSync } from "../core/effect/run.ts";
 import { trialOf, writeHeld } from "../engine/gate-drafts.ts";
 import { reachRefusal } from "../engine/agents/reach.ts";
@@ -42,6 +44,31 @@ export function ownerOfWrite({ dir, r, route, file, projector, remote = false, a
 }): Refusal | null {
   const v = writerRule({ route, writer: r.writer, projector, exists: remote || existsSync(ventureFile(dir, file)), actor, acting, role, fn: r.function });
   return v ? { ok: false, error: v.why, gate_rule: v.rule, refused_by: v.source, ...(v.fix ? { fix: v.fix } : {}) } : null;
+}
+
+/**
+ * Prerequisites, checked on every write before the schema (EE-217, packages/naive/src/engine/prerequisites.ts): a
+ * route that only blocked function workflows write is refused, for an agent and for a person alike, naming the record
+ * or meeting that unblocks it. Decisions and handoffs are never locked, so the question that opens a lock always gets
+ * through, and the signal projector is not asked, since its writes are renderings of what signals already say.
+ *
+ * A person may pass an explicit override (--override --by <person> --why <text>); then the write goes on and the
+ * provenance line keeps who overrode what and why. An agent never may, whatever role it acts in.
+ * Returns { refusal } to stop the write, { override } to let it through on the record, or null when nothing is locked.
+ */
+export function prerequisiteOfWrite({ dir, r, route, actor = "agent", acting = false, projector = false, override }: {
+  dir: string; r: GateRoute; route: string; actor?: string; acting?: boolean; projector?: boolean; override?: Override | null;
+}): { refusal?: Refusal; override?: OverrideRecord } | null {
+  if (projector) return null;
+  const blocked = blockedWrite(dir, { route, table: r.route });
+  if (!blocked) return null;
+  const refs = blocked.missing.map((m) => `${m.kind} ${m.ref}`);
+  const no = overrideProblem({ actor, acting, override });
+  if (!no) return { override: { rule: blocked.rule, by: String(override?.by).trim(), why: String(override?.why).trim(), missing: refs } };
+  const fix = override
+    ? `That override does not count: ${no}.`
+    : `A person may pass --override --by <person> --why <text>, which this line will keep, or take the entry off under prerequisites in naive.config.json. Run naive blocked to see what to do first.`;
+  return { refusal: { ok: false, error: `${blocked.why}. ${fix}`, gate_rule: blocked.rule, refused_by: blocked.source, fix: { command: "naive blocked --json", built: true, then: "what each workflow is missing, and what unblocks it first" } } };
 }
 
 /**

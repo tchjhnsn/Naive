@@ -46,6 +46,8 @@ export type Entry = Omit<ProvenanceEntry, "activity" | "agent" | "judgment"> & {
 export type RecordInput = {
   entity: string; route?: string; activity: string; agent?: EntryAgent; derived_from?: string[]; decision?: string; note?: string;
   sha256?: string; content?: string | Buffer; source?: ProvenanceEntry["source"]; statement?: string; statements?: string[];
+  /** A person's explicit override of a fail-closed rule on this write (EE-217), which the line keeps. */
+  override?: ProvenanceEntry["override"];
 };
 /** A file's identity when a stale lock was judged. */
 export type LockStat = { ino: number; mtimeMs: number };
@@ -241,7 +243,7 @@ export function actingAgent(by?: string): string | null {
  * (a log append, a publish) stores no blob: an append-only log would otherwise keep a whole copy of
  * itself per line.
  */
-export const recordEffect = (dir: string, { entity, route, activity, agent, derived_from, decision, note, sha256, content, source, statement, statements }: RecordInput): Effect.Effect<Entry, IoError | NotFound | ParseError, "naive/VentureFs"> => Effect.gen(function* () {
+export const recordEffect = (dir: string, { entity, route, activity, agent, derived_from, decision, note, override, sha256, content, source, statement, statements }: RecordInput): Effect.Effect<Entry, IoError | NotFound | ParseError, "naive/VentureFs"> => Effect.gen(function* () {
   const fs = yield* VentureFs;
   // The blob first: a line written from here on always has its bytes in the store.
   // With no sha256 the bytes are the content, else the local file's; with one, only content that hashes to it is kept.
@@ -266,7 +268,7 @@ export const recordEffect = (dir: string, { entity, route, activity, agent, deri
     const cur = currentSpan() ?? Option.match(effectSpan, { onNone: () => null, onSome: (s) => traceContextOf(s, dir) });
     const span = cur ? { trace_id: cur.trace_id, span_id: cur.span_id, ...(cur.session && cur.session !== cur.trace_id ? { session: cur.session } : {}) } : undefined;
     const fields: Omit<Entry, "hash"> = { at: new Date().toISOString(), entity, route, activity, agent,
-      derived_from: derived_from?.length ? derived_from : undefined, span, decision, note, source, statement, statements, sha256: hash, prev };
+      derived_from: derived_from?.length ? derived_from : undefined, span, decision, note, override, source, statement, statements, sha256: hash, prev };
     for (const [k, v] of Object.entries(fields)) if (v === undefined) Reflect.deleteProperty(fields, k);
     const entry: Entry = { ...fields, hash: lineHash(prev, fields) };
     yield* fs.append(log, JSON.stringify(entry) + "\n");

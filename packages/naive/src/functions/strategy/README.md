@@ -13,9 +13,9 @@ The strategy function (APQC 1.0, Develop Vision and Strategy). Its governance si
 | [function.json](./function.json) | The manifest: purpose, intake, measures, capability clusters |
 | [agent.md](./agent.md) | The strategy agent's instructions |
 | [decisions.json](./decisions.json) | The decision matrix |
-| [workflows/competitor-review.json](./workflows/competitor-review.json) | Workflow: review competitors and the customer's alternatives. Its steps name APQC activities 1.1.1.1, 1.1.1.2 and 1.1.1.3, and four are steps to consider (EE-181) |
-| [workflows/intake.json](./workflows/intake.json) | Workflow: learn the venture's strategy. Its telos step drafts the venture goal telos (`foundation/goals/[id]`), which starts in Discovery; the limits step is one to consider from Validation (check-functions.ts). |
-| [workflows/strategy-review.json](./workflows/strategy-review.json) | Workflow: review the strategy against the evidence |
+| [workflows/competitor-review.json](./workflows/competitor-review.json) | Workflow: review competitors and the customer's alternatives. It waits on a live problem record and ICP (EE-217). Its steps name APQC activities 1.1.1.1, 1.1.1.2 and 1.1.1.3, and four are steps to consider (EE-181) |
+| [workflows/intake.json](./workflows/intake.json) | Workflow: learn the venture's strategy. It is the root of the shipped prerequisite chain and waits on nothing (EE-217), so the first lock can always be opened. Its telos step drafts the venture goal telos (`foundation/goals/[id]`), which starts in Discovery; the limits step is one to consider from Validation (check-functions.ts). |
+| [workflows/strategy-review.json](./workflows/strategy-review.json) | Workflow: review the strategy against the evidence. It waits on the strategy foundation (problem, ICP, goals) and on a meeting that walked `strategy/intake` and closed with its goal reached (EE-217) |
 | [features/decisions.feature](./features/decisions.feature) | Gherkin behaviors (EE-050) |
 | [features/decisions.steps.mjs](./features/decisions.steps.ts) | Step definitions for the behaviors beside it |
 | [features/strategic-foundation.feature](./features/strategic-foundation.feature) | Gherkin behaviors (EE-050) |
