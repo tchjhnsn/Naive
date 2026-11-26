@@ -32,7 +32,7 @@ The reasons are claims to test with the venture's own customers, not findings.
 
 - **The ICP.** It comes, in order of preference, from:
   - the founder's own sentence;
-  - the venture's ICP record (`purpose/icp.json`);
+  - the venture's ICP records (one file per profile under `foundation/icp/`, or the older single `foundation/icp.json` or `purpose/icp.json`);
   - failing both, the home page's opening text, marked inferred.
 - **Placing the ICP.** Jev places the ICP into types. It answers "mainly" conservatively, so a type counts at 0.25 or more and within 0.6 of the strongest type.
 - **Several types at once.** A customer who is several types needs what the most demanding one needs.
@@ -62,7 +62,7 @@ The result is drawn as the site's sitemap. The home page sits on top, with the p
   - the MDX component;
   - the audiences and why;
   - any condition;
-  - the internal record it draws on;
+  - the internal record it draws on: the first file of that record type the venture has, found at the data model's current or older paths and wherever the venture's layout (flat, structured or src) keeps it, or, when there is none, where the record would go;
   - the public variant a marketing agent writes, at `marketing/content/<page>/<item>.mdx`, through the route `marketing/content/<page>/<item>` with the whole text as `{ "text": "..." }`.
 - **The public gate.** `packages/naive/src/engine/check-public.ts` checks every content file before it can be published:
   - it names the internal record it is a variant of, its audience, and whether it is published;
