@@ -3469,6 +3469,106 @@ export type MarketingSitemap = {
   [key: string]: unknown;
 };
 
+/** One meeting (EE-200), at operations/meetings/<id>.json (route operations/meeting/[id]): a goal, the outcome that shows it was reached, who attends (people and agents), an agenda worked in order, the minutes, the outcome and what each attendee takes away. A meeting may walk a function workflow (`workflow`), with one agenda item per step. It follows the practice that a meeting states its purpose and desired outcome before it starts and ends with decisions and owned actions recorded (Lencioni, Death by Meeting, 2004; Rogelberg, The Surprising Science of Meetings, 2019). Status: planned, then open, then closed or abandoned. A closed meeting has its outcome and the time it closed, and no agenda item is still pending. Closed meetings are what agents read as shared memory: an app derives each attendee's memory from them, and nothing copies a meeting into a second record. A meeting spans functions, so the type names none (function null); the gate and the team plan decide who writes it. */
+export type Meeting = {
+  /** The file name without .json */
+  id: string;
+  title: string;
+  /** What the meeting must achieve, in one sentence, stated before it opens */
+  goal: string;
+  /** What exists when the meeting has done its job: records written, decisions raised, an answer. Read at close to say whether the goal was reached */
+  outcome_expected: string[];
+  /** The function workflow this meeting walks, `<function>/<workflow>`. Its steps become agenda items, in order */
+  workflow?: string;
+  /** Who called it: a person's id or a team-plan role id */
+  called_by: string;
+  /** Who runs the agenda, a person's id or a role id. Defaults to called_by */
+  facilitator?: string;
+  attendees: {
+    /** A person's id or a team-plan role id (strategy-agent) */
+    id: string;
+    kind: "person" | "agent";
+  }[];
+  /** planned: called, not started. open: the agenda is being worked. closed: ended with an outcome. abandoned: ended without one */
+  status: "planned" | "open" | "closed" | "abandoned";
+  /**
+   * @format date-time
+   */
+  scheduled_for?: string;
+  /**
+   * @format date-time
+   */
+  opened_at?: string;
+  /**
+   * @format date-time
+   */
+  closed_at?: string;
+  agenda: {
+    id: string;
+    title: string;
+    /** The workflow step this item works, when the meeting walks a workflow */
+    step?: string;
+    /** Who answers for the item, a person's id or a role id */
+    owner?: string;
+    /** True when the item needs a person's answer before it is done */
+    ask?: boolean;
+    /** pending: not yet worked. done: worked. skipped: passed over for now, to loop back to. handed-off: given to an agent or a person to recommend or finish, named in handed_to */
+    status: "pending" | "done" | "skipped" | "handed-off";
+    /** What came of it, in a sentence */
+    result?: string;
+    /** Routes written or drafted while working it */
+    writes?: string[];
+    /** Decision ids raised or settled while working it */
+    decisions?: string[];
+    /** Who the item was handed to, for handed-off */
+    handed_to?: string;
+    /** What the agent it was handed to recommends */
+    recommendation?: string;
+  }[];
+  /** What was said, in order */
+  minutes?: {
+    /**
+     * @format date-time
+     */
+    at: string;
+    by: string;
+    /** The agenda item id this note is about */
+    item?: string;
+    text: string;
+  }[];
+  outcome?: {
+    /** Whether outcome_expected exists */
+    reached: "yes" | "partly" | "no";
+    summary: string;
+    /** Routes written or drafted */
+    records?: string[];
+    /** Decision ids raised or settled */
+    decisions?: string[];
+    /** Handoff ids opened */
+    handoffs?: string[];
+    /** What happens next, and who starts it */
+    follow_up?: string;
+  };
+  /** What each attendee takes away. An app gives an agent its own takeaways, and the outcomes of every closed meeting, as memory */
+  takeaways?: {
+    attendee: string;
+    /** What this attendee should remember from the meeting */
+    text: string;
+  }[];
+  /** How the meeting was recorded, so that agents can see what was said */
+  recording?: {
+    /** What recorded the meeting: the agent run, or a meeting tool the business uses */
+    tool: string;
+    /**
+     * @format uri
+     */
+    url?: string;
+    /** Where the transcript is kept, a path or route in the business */
+    transcript?: string;
+  };
+  note?: string;
+};
+
 /** The money package's summary (money/_summary.json, EE-070): cash, monthly flows and runway as of the last sync from the system of record (a bank such as Rho), the one money record that is versioned and the only one an agent or a trace sees. source says whether it came from a sandbox, a saved fixture, or the founder's live account. */
 export type MoneySummary = {
   /** rho-sandbox, rho-live, or a fixture's name */

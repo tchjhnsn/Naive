@@ -2869,6 +2869,26 @@
       ]
     },
     {
+      "id": "EE-200",
+      "date": "2026-11-26",
+      "status": "in-force",
+      "decision": "A meeting is a venture record type `meeting` at operations/meetings/<id>.json (route operations/meeting/[id]), in the operations layer with function null, data transactional and writer any, so the gate and the team plan decide who writes it. It states a goal and the outcome that shows the goal was reached before it opens, names who called it and who attends (people and agents), and holds an agenda worked in order. A meeting may walk a function workflow (`workflow`, `<function>/<workflow>`), one agenda item per step. Each item is pending, done, skipped (to loop back to) or handed-off (to an agent or person to recommend or finish). Its status is planned, open, closed or abandoned; an open meeting has `opened_at`, and a closed one has its outcome, `closed_at` and no pending item. It keeps minutes, the outcome (records, decisions, handoffs, follow-up), what each attendee takes away and how it was recorded. Closed meetings are an app's shared memory for its agents; Naive copies a meeting into no second record. A command that runs a meeting is not built in Naive: Mentura's agent runtime runs one.",
+      "why": "The founder asked on 2026-11-26 to work through each function's workflow in order with agents as if in a meeting, with defined goals and outcomes, stored so every agent can read the record and have its memory updated, and with skipped steps looped back to or handed to an agent for its recommendation.",
+      "related": [
+        "EE-123",
+        "EE-182",
+        "EE-186"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/records/meeting.schema.json",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
       "id": "EE-153",
       "date": "2026-11-19",
       "status": "in-force",
