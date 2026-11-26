@@ -16,7 +16,7 @@ expect("the repository's function modules pass", real.status === 0, real.stdout 
 
 const copy = (): string => {
   const d = mkdtempSync(join(tmpdir(), "check-functions-"));
-  for (const p of ["packages/naive/src/functions", "packages/naive/src/records", "packages/naive/template/governance"]) cpSync(join(repo, p), join(d, p), { recursive: true });
+  for (const p of ["packages/naive/src/functions", "packages/naive/src/records", "packages/naive/template/governance", "packages/naive/src/engine/need-now.json"]) cpSync(join(repo, p), join(d, p), { recursive: true });
   return d;
 };
 type Row = { class: string, level: string, examples: string[] };
@@ -35,6 +35,10 @@ const cases: [string, (d: string) => void, RegExp][] = [
   ["a step that raises a class with no row fails", (d) => edit(d, `${FIN}/workflows/intake.json`, (j) => { j.steps[0].raises = ["production-ship"]; }), /raises production-ship, which decisions.json has no row for/],
   ["a workflow whose every step is one to consider fails", (d) => edit(d, `${FIN}/workflows/intake.json`, (j) => { for (const s of j.steps) s.consider = { why: "It may help." }; }), /every step is one to consider/],
   ["a step to consider that gives no reason fails the schema", (d) => edit(d, `${FIN}/workflows/intake.json`, (j) => { j.steps[0].consider = { when: "There is a price." }; }), /consider/],
+  ["a required intake step that writes a record type need-now suggests only later fails", (d) => edit(d, `${FIN}/workflows/intake.json`, (j) => { delete j.steps[2].consider; }), /intake step ask-spend is required but writes finance\/spend\/\[id\], whose record type spend-register need-now suggests from Beachhead/],
+  ["a required intake step that writes master data need-now never suggests fails", (d) => edit(d, `${FIN}/workflows/intake.json`, (j) => { delete j.steps[1].consider; }), /intake step ask-accounts is required but writes money\/\[id\], whose record type money-account need-now suggests only when a person asks/],
+  ["an intake step to consider whose when does not name the phase its record type starts in fails", (d) => edit(d, `${FIN}/workflows/intake.json`, (j) => { j.steps[2].consider = { why: "Costs renew.", when: "The venture pays for a tool." }; }), /writes finance\/spend\/\[id\], which starts in Beachhead, but its consider\.when does not name Beachhead/],
+  ["the strategy intake asking for the legacy telos record as a required step fails", (d) => edit(d, "packages/naive/src/functions/strategy/workflows/intake.json", (j) => { j.steps[1].writes = ["foundation/telos"]; }), /intake step ask-telos is required but writes foundation\/telos, whose record type telos need-now suggests from Validation/],
   ["a step whose activity APQC does not have fails", (d) => edit(d, `${FIN}/workflows/intake.json`, (j) => { j.steps[0].activity = "9.1.1.99"; }), /performs activity 9\.1\.1\.99, which is not a level 4 activity in pcf\.json/],
   ["a step whose activity is an APQC process, not an activity, fails the schema", (d) => edit(d, `${FIN}/workflows/intake.json`, (j) => { j.steps[0].activity = "9.1.1"; }), /activity/],
   ["a step whose APQC activity is under another function's category fails", (d) => edit(d, `${FIN}/workflows/intake.json`, (j) => { j.steps[0].activity = "3.5.1.6"; }), /performs activity 3\.5\.1\.6, which is under APQC category 3\.0, not the function's 9\.0/],
