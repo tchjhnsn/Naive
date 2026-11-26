@@ -2650,6 +2650,33 @@
       ]
     },
     {
+      "id": "EE-190",
+      "date": "2026-11-26",
+      "status": "in-force",
+      "decision": "An element's state, quality and effects are derived, not stored. State is a statechart with five states (absent, started, operating, degraded, retired) as a tagged union and a pure, total transition function over eight events (record written with its data category, run finished, run failed, run overdue, record stale, upstream down, cause cleared, retire); degraded keeps its causes and the state it left and returns there when the last cause clears, and retired is absorbing. Each element's own state replays its live provenance writes to its record types, its workflows' runs, and at now its overdue schedules and stale records. Quality is a capability level after ISO/IEC 33020 read only from evidence Naive keeps and capped at 3, with the run counts behind levels 2 and 3 labelled unvalidated priors; levels 4 and 5 need element measures Naive does not keep. Effects propagate over the feeds edges of the element graph (EE-188): every feed is a need, an absent, retired or degraded upstream degrades every started, operating or degraded element it feeds with the cause named, and a level is capped at the weakest upstream level plus a slack of 1 (an unvalidated prior), to the least fixpoint, which terminates because each round climbs a finite lattice. packages/naive/src/engine/element-state.ts holds the pure rules for the Lean proofs of step 8, packages/naive/src/engine/element-effects.ts reads a venture into them, and `naive effects` prints each element or one element's what-if. No record type and no schema change.",
+      "why": "Step 7 of the hooks and loops design (docs/design/HOOKS_AND_LOOPS_2026-11-26.md). Torian asked to know, for each element, what state it is in, what its quality is and what happens to other elements when it is absent, weak or strong, and to test and formally verify that. Deriving from the logs Naive already keeps avoids a second store that could drift, and keeping the transition and propagation pure and small lets step 8 state them in Lean 4 without Mathlib.",
+      "related": [
+        "EE-182",
+        "EE-183",
+        "EE-184",
+        "EE-188"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/element-state.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/element-effects.ts",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
       "id": "EE-129",
       "date": "2026-11-19",
       "status": "proposed",
