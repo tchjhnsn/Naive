@@ -1,0 +1,32 @@
+{
+  "id": "discovery-subscription-synthetic",
+  "label": "synthetic",
+  "generated": true,
+  "under_venture": false,
+  "template": "packages/naive/founder-templates/discovery/cross-industry/subscription/template.json",
+  "derived_from": [
+    {
+      "url": "https://www.apqc.org/process-frameworks",
+      "archive_of": null,
+      "logged_in": false,
+      "path": null
+    },
+    {
+      "url": null,
+      "archive_of": null,
+      "logged_in": false,
+      "path": "packages/naive/founder-templates/discovery/cross-industry/subscription/template.json"
+    },
+    {
+      "url": null,
+      "archive_of": null,
+      "logged_in": false,
+      "path": "packages/naive/src/records/vocab/business-models.json"
+    }
+  ],
+  "record": {
+    "customer": "<who pays the recurring fee>",
+    "problem": "<the problem they pay to remove>",
+    "monthly_price": null
+  }
+}

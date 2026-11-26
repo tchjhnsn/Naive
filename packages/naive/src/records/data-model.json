@@ -3602,6 +3602,18 @@
     {
       "path": "naive.data-model.json",
       "reason": "An app's own record types and ignore entries, merged into this data model by packages/naive/src/records when the file sits at the root of the repository being checked; not a record"
+    },
+    {
+      "path": "packages/naive/founder-templates/**/*.json",
+      "reason": "A founder template (EE-198): placeholders, ranges and labelled examples, never a real company's values. Not a venture record"
+    },
+    {
+      "path": "packages/naive/exemplars/**/*.json",
+      "reason": "A public synthetic exemplar (EE-198), generated from public inputs and labelled synthetic. Gold exemplars are not in this repository. Not a venture record"
+    },
+    {
+      "path": "packages/naive/evals/**/*.json",
+      "reason": "An eval file (EE-198): a canary and items, some held out. Not a venture record"
     }
   ],
   "files": [

@@ -2132,11 +2132,13 @@
       ],
       "rule": "every property, and P7 (confirmed facts)",
       "valid": true,
-      "passes": 1717,
+      "passes": 1620,
       "relations": {
         "estimated-record": "disjoint",
         "synthetic-record": "disjoint",
-        "gold-record": "disjoint"
+        "gold-record": "disjoint",
+        "held-out-item": "overlap",
+        "person-label": "overlap"
       },
       "predictions": [
         {
@@ -2204,11 +2206,13 @@
       ],
       "rule": "every property, and P7 (confirmed facts)",
       "valid": true,
-      "passes": 1707,
+      "passes": 1690,
       "relations": {
         "sourced-record": "disjoint",
         "synthetic-record": "disjoint",
-        "gold-record": "disjoint"
+        "gold-record": "disjoint",
+        "held-out-item": "overlap",
+        "person-label": "overlap"
       },
       "predictions": [
         {
@@ -2268,11 +2272,13 @@
       ],
       "rule": "every property, and P7 (confirmed facts)",
       "valid": true,
-      "passes": 4482,
+      "passes": 4583,
       "relations": {
         "sourced-record": "disjoint",
         "estimated-record": "disjoint",
-        "gold-record": "disjoint"
+        "gold-record": "disjoint",
+        "held-out-item": "overlap",
+        "person-label": "overlap"
       },
       "predictions": [
         {
@@ -2337,11 +2343,13 @@
       ],
       "rule": "every property, and P7 (confirmed facts)",
       "valid": true,
-      "passes": 2223,
+      "passes": 2247,
       "relations": {
         "sourced-record": "disjoint",
         "estimated-record": "disjoint",
-        "synthetic-record": "disjoint"
+        "synthetic-record": "disjoint",
+        "held-out-item": "overlap",
+        "person-label": "overlap"
       },
       "predictions": [
         {
@@ -2410,6 +2418,96 @@
       ],
       "sources": [
         "EE-192"
+      ]
+    },
+    {
+      "id": "held-out-item",
+      "label": "Held-out item",
+      "form": "compound",
+      "level": "data",
+      "kind": "act",
+      "labels": {
+        "designation": "term",
+        "scope": "shared",
+        "origin": {
+          "kind": "adapted"
+        },
+        "grade": "none"
+      },
+      "meaning": "An eval item whose split is held-out, and whose id appears in no exemplar file and no prompt fixture.",
+      "status": "proposed",
+      "hash": "2b8eedb64b613d69",
+      "properties": [
+        {
+          "id": "H1",
+          "says": "the split is held-out"
+        },
+        {
+          "id": "H2",
+          "says": "its id appears in no exemplar file"
+        },
+        {
+          "id": "H3",
+          "says": "its id appears in no prompt fixture"
+        }
+      ],
+      "rule": "every property, and P7 (confirmed facts)",
+      "valid": true,
+      "passes": 2286,
+      "relations": {
+        "sourced-record": "overlap",
+        "estimated-record": "overlap",
+        "synthetic-record": "overlap",
+        "gold-record": "overlap",
+        "person-label": "overlap"
+      },
+      "predictions": [],
+      "lean": [
+        "held_out_disjoint_exemplar"
+      ],
+      "sources": [
+        "EE-198"
+      ]
+    },
+    {
+      "id": "person-label",
+      "label": "Person label",
+      "form": "compound",
+      "level": "data",
+      "kind": "act",
+      "labels": {
+        "designation": "term",
+        "scope": "shared",
+        "origin": {
+          "kind": "adapted"
+        },
+        "grade": "none"
+      },
+      "meaning": "An eval item's label is non-null only when labelled_by names a person. An agent does not set it. Null until a person acts.",
+      "status": "proposed",
+      "hash": "9ad4da7b7961ffa6",
+      "properties": [
+        {
+          "id": "P1",
+          "says": "the label is null, or labelled_by names a person"
+        }
+      ],
+      "rule": "every property, and P7 (confirmed facts)",
+      "valid": true,
+      "passes": 13567,
+      "relations": {
+        "sourced-record": "overlap",
+        "estimated-record": "overlap",
+        "synthetic-record": "overlap",
+        "gold-record": "overlap",
+        "held-out-item": "overlap"
+      },
+      "predictions": [],
+      "lean": [
+        "agent_label_never_passes"
+      ],
+      "sources": [
+        "EE-198"
       ]
     },
     {
