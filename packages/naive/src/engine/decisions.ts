@@ -66,7 +66,7 @@ type Person = People["people"][number];
 /** What ownScore reads from a decision. */
 // status is optional and outcomes need only a total: a docket scenario (docket-eval.ts) ranks decisions that carry
 // no status and count outcomes without due dates, and ownScore reads nothing more.
-export type Scorable = Pick<ResolvedDecision, "id"> & Partial<Pick<ResolvedDecision, "status" | "render" | "boundary" | "due" | "stale_because" | "reasons_changed" | "unlocks" | "part_of" | "awaiting" | "reasons">>
+export type Scorable = Pick<ResolvedDecision, "id"> & Partial<Pick<ResolvedDecision, "status" | "render" | "boundary" | "due" | "stale_because" | "reasons_changed" | "unlocks" | "part_of" | "awaiting" | "reasons" | "one_way">>
   & { outcomes?: Pick<NonNullable<ResolvedDecision["outcomes"]>, "total"> };
 /** A boundary once inheritance is resolved. */
 export type Boundary = "fail-closed" | "fail-open";
@@ -107,6 +107,8 @@ export type ResolvedDecision = {
   stale_because?: "reasons";
   outcomes?: { total: number; pending: number; due: string[] };
   unlocks?: string[];
+  /** A one-way door: the record says door one-way, or its class is one of the delegation's one_way_doors. */
+  one_way?: true;
   action?: Action;
 };
 /** A why entry with the refs its reasons cite. */
@@ -167,6 +169,7 @@ function decisionsAt(dir: string, now = Date.parse(process.env.DECISIONS_NOW ?? 
   const statements = report.flatMap((q) => q.statements);
   const settled = statements.filter((s) => s.status !== "planned").every((s) => s.status === "confirmed");
   const errors: string[] = [];
+  const doors = oneWayDoors(dir);
 
   const list: Entry[] = [
     { id: "venture", question: `Build ${venture.name} as a venture`, source: "root", layer: "governance", parent: null, boundary: productOnly ? "fail-open" : "fail-closed", status: "decided", decided_at: null },
@@ -277,6 +280,7 @@ function decisionsAt(dir: string, now = Date.parse(process.env.DECISIONS_NOW ?? 
       ...(d.outcomes?.length ? { outcomes: { total: d.outcomes.length, pending: d.outcomes.filter((o) => (o.result ?? "pending") === "pending").length,
         due: d.outcomes.filter((o) => (o.result ?? "pending") === "pending" && /^\d{4}-\d{2}-\d{2}/.test(o.by ?? "") && Date.parse(o.by ?? "") < now).map((o) => o.id) } } : {}),
       ...(d.unlocks?.length ? { unlocks: d.unlocks.map((u) => u.activity) } : {}),
+      ...(d.door === "one-way" || (d.class !== undefined && doors.has(d.class)) ? { one_way: true as const } : {}),
       ...(["open", "deferred"].includes(d.status) ? { action: actionFor(d, venture.id) } : {}) };
   });
   return { venture: venture.id, phase: venture.phase, kind: productOnly ? "product" : "venture", errors, decisions: rank(resolved, venture.phase, now) };
@@ -316,6 +320,9 @@ export function ownScore(d: Scorable, phase: string, now = Date.now()): { score:
   }
   // An open fail-closed decision stops the work behind it until a person decides it (naive#72).
   if (d.status === "open" && d.boundary === "fail-closed") { s += 15; why.push("fails closed: the work behind it waits"); }
+  // A one-way door is a person's alone and hard to undo, so it ranks above any placeholder the framework
+  // raises (a foundation statement that fails closed scores 35 in Discovery).
+  if (d.status === "open" && d.one_way) { s += 40; why.push("a one-way door: only you decide it, and it is hard to undo"); }
   // A why entry may carry cites (the refs a reason supplies); why stays a list of strings, and
   // why_cites pairs each cited entry with its refs (backward compatible).
   const cites: WhyCite[] = [];
@@ -515,6 +522,14 @@ export function merge(dir: string, id: string, { by, role, via = "cli", note, to
 
 /** The venture's delegation record (governance/delegation.json, the delegation suite), or null. */
 const delegationOf = (dir: string): Delegation | null => { const f = ventureFile(dir, "governance/delegation.json"); return existsSync(f) ? readDelegation(f) : null; };
+/** The classes a venture treats as one-way doors: the template delegation's one_way_doors and the venture's own,
+ *  which only add to them, as for merging. */
+export function oneWayDoors(dir: string): Set<string> {
+  let del: Delegation | null = null;
+  try { del = delegationOf(dir); } catch {} // ranking still runs on a delegation file that does not parse; approve reports it
+  const f = join(new URL("../../../..", import.meta.url).pathname, "packages/naive/template/governance/delegation.json");
+  return new Set([...((load(f) as Delegation).one_way_doors ?? []), ...(del?.one_way_doors ?? [])]);
+}
 // Classes that are one-way doors: every class the decision-rights register marks escalate (the
 // founder decides), plus production-ship. Built from the register so a class it escalates can never
 // be merged by a role, and a venture's one_way_doors only adds to them.
