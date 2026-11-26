@@ -13,7 +13,8 @@
 // record type or from the data model's files entries; a typescript record type's paths end in .ts, and a
 // settles block sits only on a projected type and names only properties of its schema; every record type names its
 // function (a departments.json id, or null when shared), and that agrees with PACKAGE_FUNCTION and the owning package; a
-// record type with writer function names a function.
+// record type with writer function names a function. Every workspace and venture record type Naive ships names its data
+// category (master, reference, transactional or derived), and a log is transactional.
 //
 //   node packages/naive/src/checks/check-data-model.ts          check, and list unchecked references
 //   node packages/naive/src/checks/check-data-model.ts --md     print the layer relationships derived from the manifests
@@ -83,6 +84,12 @@ for (const r of types.values()) for (const ref of r.refs ?? []) {
 // Kinds (hosted working copy design, section 2): an append-only record type is a log, and a log is append-only.
 for (const r of types.values()) if ((r.form === "json-lines") !== (r.kind === "log")) errors.push(`${r.id}: kind ${r.kind ?? "record"} with form ${r.form ?? "json"}; a record type is a log exactly when its form is json-lines`);
 // A typescript record (a recipe) is a .ts file. Its schema governs what the module exports, so validate.ts never reads it.
+// What the records are to the business (data): every workspace and venture record type Naive ships says, and a log is transactional.
+for (const r of model.records.filter((x) => x.level !== "method")) {
+  if (!r.data) errors.push(`${r.id}: names no data category; say master, reference, transactional or derived`);
+  else if (r.kind === "log" && r.data !== "transactional") errors.push(`${r.id}: a log is transactional, not ${r.data}`);
+  else if (r.kind === "derived" && r.data !== "derived") errors.push(`${r.id}: kind derived, so its data category is derived, not ${r.data}`);
+}
 for (const r of types.values()) if (r.form === "typescript" && r.paths.some((p) => !p.endsWith(".ts"))) errors.push(`${r.id}: form typescript, so every path ends in .ts`);
 // settles (autoresearch design, "The metric"): only a projected type is scored, and each field it scores or forecasts
 // is a top-level property of its schema, scored one way only; a forecast field is a number (a probability).
