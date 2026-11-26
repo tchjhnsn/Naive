@@ -4,7 +4,8 @@
 // rules matches at least one route in the router's table (X-6); every check named in checks exists;
 // every package pinned is installed at that version (U-4); every owner is a role in the team plan
 // when the venture has one; every question setting names a framework that asks System 1 questions; every rule under
-// activity_proposals is a proposal rule of the activity catalog, with lines on its scales and inside their ranges (EE-170).
+// activity_proposals is a proposal rule of the activity catalog, with lines on its scales and inside their ranges (EE-170);
+// every function and workflow under loops is one the venture has, and a mode of ask or auto names who set it (EE-183).
 //
 //   node packages/naive/src/checks/check-config.ts <venture dir> [--json]        check; exit 1 on a problem
 //   node packages/naive/src/checks/check-config.ts <venture dir> --resolved      the config with the defaults filled in
@@ -22,6 +23,9 @@ import { join, resolve as resolvePath } from "node:path";
 import { CONFIG, configFor, installed, pinProblems, rawConfig } from "../engine/naive-config.ts";
 import { evaluate, patternRe, rulesFor } from "../engine/gate.ts";
 import { readCatalog, ventureLineProblems } from "../engine/activity-proposals.ts";
+import { loopProblems } from "../engine/loop.ts";
+import { workflowsOf } from "../engine/due.ts";
+import { functionsOf } from "../engine/research-programs.ts";
 import { runSync } from "../core/effect/run.ts";
 import { teamPlan } from "../engine/access.ts";
 import { gateOf, repo, resolve, routes } from "../records/routes/routes.ts";
@@ -63,6 +67,9 @@ export function check(dir: string): { errors: string[], warnings: string[], note
   }
   if (v.status === 0 && config.activity_proposals?.rules) {
     try { errors.push(...ventureLineProblems(runSync(readCatalog()), config.activity_proposals.rules)); } catch (e) { errors.push(e instanceof Error ? e.message : String(e)); }
+  }
+  if (v.status === 0 && config.loops) {
+    try { errors.push(...loopProblems(config.loops, functionsOf(dir), runSync(workflowsOf(dir)).map((w) => `${w.function}/${w.id}`))); } catch (e) { errors.push(e instanceof Error ? e.message : String(e)); }
   }
   for (const fw of Object.keys(config.questions ?? {})) if (!FRAMEWORKS.includes(fw)) errors.push(`questions: ${fw} asks no System 1 questions (one of ${FRAMEWORKS.join(", ")})`);
   return { errors, warnings };
