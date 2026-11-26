@@ -18,8 +18,12 @@
           "label": { "type": "string" },
           "apqc": {
             "type": "object",
-            "required": ["id", "name"],
-            "properties": { "id": { "type": "string", "pattern": "^\\d+\\.0$" }, "name": { "type": "string" } },
+            "required": ["id", "name", "element"],
+            "properties": {
+              "id": { "type": "string", "pattern": "^\\d+\\.0$" },
+              "name": { "type": "string" },
+              "element": { "type": "integer", "description": "The element's id in packages/naive/src/functions/pcf.json" }
+            },
             "additionalProperties": false
           },
           "value_chain": { "enum": ["primary", "support"] },
