@@ -67,16 +67,56 @@ What Effect gives the later steps, from the vendored source in `repos/effect`: `
 
 One pull request each.
 
-1. What is due. Built: `naive due [--at <iso>] [--function <id>] [--json]` and `naive due record <function>/<workflow> [--outcome done|failed] [--by <who>]`.
-2. The loop. Not built: a durable runner that starts due workflows as their function agent, retries, and raises a failure as a decision.
-3. Owners. Not built: one accountable owner per element, inherited from its parent, and a check that nothing is unowned.
-4. The element graph. Not built: edges from workflow reads and writes.
-5. State and quality. Not built: the statechart above, a capability level per element from evidence, and the effect of an absent or weak element on the elements it feeds.
-6. Proofs. Not built: Lean proofs of the transition function and of propagation.
+1. What is due. Built: `naive due [--at <iso>] [--function <id>] [--json]` and `naive due record <function>/<workflow> [--outcome done|failed|skipped] [--by <who>]`.
+2. The loop with modes (EE-183). Built: `naive loop plan`, `naive loop tick`, `naive loop watch` and `naive loop mode`, described below.
+3. Record kinds and time boxes. Not built: `kind` master or transactional on each record type, a time box record for a campaign or a sprint, and a trigger "while a time box is open".
+4. Owners. Not built: one accountable owner per element, inherited from its parent, and a check that nothing is unowned.
+5. The element graph. Not built: edges from workflow reads and writes.
+6. State and quality. Not built: the statechart above, a capability level per element from evidence, and the effect of an absent or weak element on the elements it feeds.
+7. Proofs. Not built: Lean proofs of the transition function and of propagation.
+
+## The loop and its modes
+
+The loop reads what is due and acts as far as a mode allows. A person sets the mode in `naive.config.json` under `loops`, for the venture, per function and per workflow. The most specific one wins.
+
+| Mode | What the loop does with a due workflow |
+|---|---|
+| manual | Nothing. A person starts it. This is the default. |
+| ask | Files one open decision per due occurrence, with the options start and skip. On start it starts the workflow. On skip it records the occurrence as skipped. |
+| auto | Starts the workflow as its function agent through `NAIVE_AGENT_CMD` and records the run as done or failed by the exit code. |
+
+```mermaid
+flowchart TD
+  due[naive due: a workflow is due] --> phase{active in the phase, or a mode names this workflow?}
+  phase -- no --> leave[leave it]
+  phase -- yes --> mode{mode}
+  mode -- manual --> leave
+  mode -- ask --> asked{decision for this occurrence}
+  mode -- auto --> failed{last run failed?}
+  failed -- yes --> asked
+  failed -- no --> start
+  asked -- none --> file[file the decision]
+  asked -- open --> wait[wait for a person]
+  asked -- skip --> skipped[record skipped]
+  asked -- start --> start[start the function agent]
+  start --> gate[every write meets the gate as that role]
+  gate --> run[record done or failed]
+```
+
+Rules that hold in every mode:
+
+- No mode goes past the gate. A start only starts the function agent. A write the gate holds waits as a draft for a person, and a one-way door is a person's. There is no bypass mode.
+- A draft does not make the next workflow due. An event workflow is due only when a record on its route went live, so a draft a person has not accepted starts nothing downstream.
+- A workflow whose last run failed is not started again on the loop's own word. The loop asks first, in ask and in auto.
+- An agent cannot set a mode. `naive loop mode` needs `--by <person>` and refuses an acting agent, and `check-config.ts` fails on ask or auto with no person named.
+- One tick at a time per venture, held by the lock file `.naive/loop.lock`.
+
+`naive loop watch` ticks on `Schedule.spaced` from Effect in one process. It does not survive a restart on its own: a host's scheduler or a person runs it again, and a tick is safe to rerun because the run log and the decisions hold its state.
 
 ## Not built
 
-- Everything in steps 2 to 6.
+- Everything in steps 3 to 7.
+- A mode per time box (step 3 adds the time box). Retries with backoff inside one tick. A durable watch on `workflow/DurableClock`. Starting more than one workflow at once. A hosted starter: with `NAIVE_RUNTIME=hosted` there is no `NAIVE_AGENT_CMD`, so a start is blocked.
 - The run log is not synced (`naive sync` skips `.naive/`), no route serves it, and it has no hash chain.
 - A workflow step's `when` (EE-181) is still a sentence an agent reads.
 - Language choice: Naive is TypeScript on Effect, with Lean for proofs. A rubric for choosing another language for a system is not written.
