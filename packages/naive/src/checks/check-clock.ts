@@ -18,7 +18,7 @@ export type Finding = { readonly file: string; readonly line: number; readonly t
 /** Files that read the system clock on purpose, each with its reason. */
 export const ALLOW: Readonly<Record<string, string>> = {
   "packages/naive/src/core/clock.ts": "the one clock: wallClock() is the only place Naive reads the system clock",
-  "packages/naive/src/engine/recipes/sandbox.ts": "the recipe sandbox names Date() and Date.now() in the code it injects to make them throw",
+  "packages/naive/src/engine/recipes/sandbox.ts": "the recipe sandbox injects code that makes the Date constructor and its now method throw",
   "packages/naive/src/interfaces/demo/board.ts": "browser code inside a page template: the time shown is the viewer's own",
 };
 
