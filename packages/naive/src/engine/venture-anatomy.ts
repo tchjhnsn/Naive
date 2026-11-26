@@ -72,7 +72,8 @@ export type CellSource =
   | { kind: "presence", record: string };
 type ModelRecord = { id: string, function?: string | null, schema?: string | null, paths: string[] };
 type Model = { records: ModelRecord[] };
-export type Link = { from: string, field: string, to: string, record: string, resolved: boolean };
+/** A reference from one record to another. held: the target exists only as an agent's draft held for a person (in _drafts/), so the reference rests on a record no one has accepted. */
+export type Link = { from: string, field: string, to: string, record: string, resolved: boolean, held?: true };
 export type Detail = { file: string, cells: Record<string, Status> };
 export type Nesting = NonNullable<Submatrix["nesting"]> & { links?: Link[], files?: string[] };
 export type SubResult = {
@@ -348,13 +349,18 @@ const linksEffect = (dir: string, subs: SubResult[], opts: Options) => Effect.ge
       const parent = subs.find((x) => x.id === nesting.in);
       const parentIds = idsOf(yield* read(parent?.files ?? []));
       const icpIds = idsOf(yield* read(yield* filesEffect(dir, "icp", opts.asOf)));
+      // ICP profiles held as drafts (_drafts/foundation__icp__<id>.json.draft). Drafts keep no history, so a read as of
+      // a past time names none.
+      const fs = yield* VentureFs;
+      const drafts = opts.asOf ? [] : (yield* fs.list(ventureFile(dir, "_drafts")));
+      const heldIcp = new Set(drafts.flatMap((f) => { const m = /^foundation__icp__(.+)\.json\.draft$/.exec(f); return m ? [m[1]] : []; }));
       const links: Link[] = [];
       for (const f of s.files) {
         const rec = yield* recordEffect(dir, f, opts.asOf);
         if (!isObject(rec)) continue;
         const to = nesting.field ? rec[nesting.field] : undefined;
         if (nesting.field && typeof to === "string") links.push({ from: f, field: nesting.field, to, record: parent?.record ?? "", resolved: parentIds.has(to) });
-        if (typeof rec.icp === "string") links.push({ from: f, field: "icp", to: rec.icp, record: "icp", resolved: icpIds.has(rec.icp) });
+        if (typeof rec.icp === "string") links.push({ from: f, field: "icp", to: rec.icp, record: "icp", resolved: icpIds.has(rec.icp), ...(!icpIds.has(rec.icp) && heldIcp.has(rec.icp) ? { held: true as const } : {}) });
       }
       nesting.links = links;
     }
@@ -423,6 +429,10 @@ export const problems = (): string[] => runSync(Effect.match(definitionEffect, {
 const pct = (n: number) => `${Math.round(n * 100)}%`;
 const line = (s: SubResult) => `${s.label.padEnd(16)} ${String(s.owner).padEnd(22)} ${String(s.cells.known).padStart(3)} known ${String(s.cells.estimated).padStart(3)} estimated ${String(s.cells.unknown).padStart(3)} unknown  ${pct(s.confidence).padStart(4)}  ${s.covers.join(", ")}${s.expected ? "" : `  (from ${s.from_phase})`}`;
 
+/** One line per reference that names no record: a held draft no person has accepted, or nothing at all. */
+const unresolved = (subs: readonly SubResult[]): string[] => subs.flatMap((s) => (s.nesting?.links ?? []).filter((l) => !l.resolved)
+  .map((l) => `  ${l.from}: ${l.field} ${l.to} ${l.held ? "is only a held draft; accept or reject it" : `is no ${l.record} record`}`));
+
 const cli = (argv: readonly string[]) => Effect.gen(function* () {
   const usage = "usage: node packages/naive/src/engine/venture-anatomy.ts <venture dir> [--as-of <iso>] [--valid-at <date>] [--sub <id>] [--view <id>] [--json]";
   const flag = (n: string): string | undefined => { const i = argv.indexOf(n); return i >= 0 ? argv[i + 1] : undefined; };
@@ -440,12 +450,13 @@ const cli = (argv: readonly string[]) => Effect.gen(function* () {
   } else if (sub !== undefined) {
     const s = yield* submatrixOfEffect(dir, sub, raw);
     if (!s) return yield* Effect.fail(new CannotRun({ message: `no sub-matrix ${sub}; the matrix has ${def.submatrices.map((x) => x.id).join(", ")}` }));
-    yield* print(json ? JSON.stringify(s, null, 2) : [line(s), ...s.detail.map((d) => `  ${d.file}: ${Object.entries(d.cells).map(([k, v]) => `${k} ${v}`).join(", ")}`)].join("\n"));
+    yield* print(json ? JSON.stringify(s, null, 2) : [line(s), ...s.detail.map((d) => `  ${d.file}: ${Object.entries(d.cells).map(([k, v]) => `${k} ${v}`).join(", ")}`), ...unresolved([s])].join("\n"));
   } else {
     const m = yield* ventureAnatomyEffect(dir, raw);
     yield* print(json ? JSON.stringify(m, null, 2) : [
       `Venture Anatomy Matrix for ${m.venture}, ${m.phase}${m.as_of ? `, as of ${m.as_of}` : ""}${m.valid_at ? `, valid at ${m.valid_at}` : ""}: ${pct(m.confidence)} of ${m.cells.total} cells known or estimated.`,
       ...m.submatrices.map(line),
+      ...unresolved(m.submatrices),
       `S-K coverage: ${m.covered.length ? m.covered.join(", ") : "none"} covered; ${m.uncovered.length ? m.uncovered.join(", ") : "none"} not yet.`,
     ].join("\n"));
   }
