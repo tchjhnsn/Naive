@@ -2,6 +2,8 @@
   "id": "intake",
   "function": "strategy",
   "title": "Learn the venture's strategy",
+  "goal": "The venture's telos, problem, primary customer, this quarter's goal and its exit criterion each exist as a record the founder has seen, and the first assumption to test is named.",
+  "measures": ["learning"],
   "trigger": {
     "kind": "intake"
   },

@@ -21,8 +21,10 @@ const copy = (): string => {
 };
 type Row = { class: string, level: string, approver?: string, examples: string[] };
 type Step = { reads?: string[], writes?: string[], raises?: string[], skill?: string, activity?: string, consider?: { why?: string, when?: string } };
-type Doc = { rows: Row[], steps: Step[], reads?: string[], intake?: string, clusters?: string[], grants: { id: string }[] };
+type Trigger = { kind: string, cadence?: string, route?: string };
+type Doc = { rows: Row[], steps: Step[], reads?: string[], intake?: string, clusters?: string[], grants: { id: string }[], measures?: string[], trigger?: Trigger };
 const edit = (root: string, rel: string, f: (j: Doc) => void) => { const p = join(root, rel); const j = JSON.parse(readFileSync(p, "utf8")) as Doc; f(j); writeFileSync(p, JSON.stringify(j, null, 2) + "\n"); };
+const editText = (root: string, rel: string, f: (t: string) => string) => { const p = join(root, rel); writeFileSync(p, f(readFileSync(p, "utf8"))); };
 const CATALOG_ACTIVITY = (JSON.parse(readFileSync(join(repo, "packages/naive/src/functions/activities.json"), "utf8")) as { activities: { id: string, process_group: string }[] }).activities.find((x) => x.process_group.startsWith("3."))?.id ?? "";
 const FIN = "packages/naive/src/functions/finance";
 const cases: [string, (d: string) => void, RegExp][] = [
@@ -50,6 +52,22 @@ const cases: [string, (d: string) => void, RegExp][] = [
   ["an approver who holds no grant of the class fails", (d) => edit(d, "packages/naive/src/functions/it/decisions.json", (j) => { const row = j.rows.find((r) => r.class === "new-dependency-free"); if (row) row.approver = "product-lead"; }), /class new-dependency-free names approver product-lead, who holds no live grant of new-dependency-free reaching founder/],
   ["an approver whose grants miss a folder of the function's records fails", (d) => edit(d, "packages/naive/template/governance/delegation.json", (j) => { j.grants = j.grants.filter((g) => g.id !== "chief-of-staff-to-finance-lead-priorities-fund"); }), /class set-priorities names approver finance-lead, whose grants of set-priorities do not cover fund, where the function's records sit/],
   ["an agent.md that names another role fails", (d) => writeFileSync(join(d, `${FIN}/agent.md`), "---\nrole: strategy-agent\nfunction: finance\n---\n"), /does not name role: finance-agent/],
+  // EE-215: goals, measures, the reach in prose, and the sections an agent reads.
+  ["a workflow measure the function does not list fails", (d) => edit(d, `${FIN}/workflows/intake.json`, (j) => { j.measures = ["learning"]; }), /moves measure kind learning, which function\.json does not list for finance/],
+  ["a workflow with no goal fails the schema", (d) => editText(d, `${FIN}/workflows/intake.json`, (t) => t.replace(/^ {2}"goal":.*\n/m, "")), /goal/],
+  ["a schedule with no cadence fails the schema", (d) => edit(d, `${FIN}/workflows/monthly-spend-review.json`, (j) => { delete j.trigger?.cadence; }), /cadence|trigger/],
+  ["a cadence on an intake trigger fails the schema", (d) => edit(d, `${FIN}/workflows/intake.json`, (j) => { if (j.trigger) j.trigger.cadence = "weekly"; }), /cadence|trigger/],
+  ["an event trigger with no route fails the schema", (d) => edit(d, "packages/naive/src/functions/customer-service/workflows/case-triage.json", (j) => { delete j.trigger?.route; }), /route|trigger/],
+  ["an event trigger watching a route no route serves fails", (d) => edit(d, "packages/naive/src/functions/customer-service/workflows/case-triage.json", (j) => { if (j.trigger) j.trigger.route = "support/nowhere"; }), /event trigger watches support\/nowhere, which no route serves/],
+  ["a step that writes a route the router serves without a write action fails", (d) => edit(d, "packages/naive/src/functions/products/workflows/intake.json", (j) => { j.steps[0].writes = ["product/anatomy-answers"]; }), /writes product\/anatomy-answers, which the router serves without a write action/],
+  ["a recommend row whose approver is not in the function's line fails", (d) => edit(d, `${FIN}/decisions.json`, (j) => { const row = j.rows.find((r) => r.class === "set-priorities"); if (row) row.approver = "no-such-role"; }), /recommends to no-such-role, who is not in this function's line/],
+  ["an agent.md with no \"When you do not know\" section fails", (d) => editText(d, `${FIN}/agent.md`, (t) => t.replace("## When you do not know", "## Notes")), /has no "## When you do not know" section/],
+  ["an agent.md whose sections are out of order fails", (d) => editText(d, `${FIN}/agent.md`, (t) => t.replace("## What you work toward", "## Skills").replace(/## Skills\n\nLoad a skill/, "## What you work toward\n\nLoad a skill")), /sections are out of order/],
+  ["an agent.md whose Writes line claims a route outside the reach fails", (d) => editText(d, `${FIN}/agent.md`, (t) => t.replace("Writes: ", "Writes: the team plan (`people/team-plan`), ")), /Writes line claims people\/team-plan, which is outside the function's write reach/],
+  ["an agent.md whose Writes line leaves out a route fails", (d) => editText(d, `${FIN}/agent.md`, (t) => t.replace("exits (`governance/exit`) and", "exits and")), /Writes line leaves out governance\/exit/],
+  ["an agent.md with no Writes line fails", (d) => editText(d, `${FIN}/agent.md`, (t) => t.replace("\nWrites: ", "\nIt writes ")), /has no "Writes: " line/],
+  ["an agent.md that never names a skill the module ships fails", (d) => editText(d, `${FIN}/agent.md`, (t) => t.replace(", `exit-planning`", "")), /never names skill exit-planning, which the module ships/],
+  ["an agent.md naming a lead whose portfolio does not hold the function fails", (d) => editText(d, `${FIN}/agent.md`, (t) => t.replace("lead: finance-lead", "lead: growth-lead")), /names lead growth-lead, but finance-lead is the lead whose portfolio holds finance/],
 ];
 for (const [name, breakIt, want] of cases) {
   const d = copy();

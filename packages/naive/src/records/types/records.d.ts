@@ -2248,18 +2248,22 @@ export type FunctionModule = {
   note?: string;
 };
 
-/** One recurring piece of a function's work, at packages/naive/src/functions/<id>/workflows/<workflow id>.json: what starts it, the steps the function's agent takes, the records each step writes through the router, the decision classes a step may raise, the activity a step performs, whether a step is required or one to consider, and the done criteria in the handoff's form (handoff.schema.json done_criteria), so a workflow run can be handed off and verified like any other work. Every route a step writes must be in the function's write reach, and every class it raises must have a row in the function's decisions.json and every activity a step names must be an APQC activity or a catalog activity under the function's APQC category, and every workflow has at least one required step (packages/naive/src/checks/check-functions.ts). */
+/** One recurring piece of a function's work, at packages/naive/src/functions/<id>/workflows/<workflow id>.json: what the run is for (goal) and which telos measure kinds it moves (measures), what starts it, the steps the function's agent takes, the records each step writes through the router, the decision classes a step may raise, the activity a step performs, whether a step is required or one to consider, and the done criteria in the handoff's form (handoff.schema.json done_criteria), so a workflow run can be handed off and verified like any other work. Every route a step writes must be in the function's write reach, and every class it raises must have a row in the function's decisions.json and every activity a step names must be an APQC activity or a catalog activity under the function's APQC category, every measure must be one of the function's in function.json, and every workflow has a goal, a done criterion and at least one required step (packages/naive/src/checks/check-functions.ts). */
 export type FunctionWorkflow = {
   /** The file's name without .json. */
   id: string;
   function: string;
   title: string;
+  /** What one run is for, in one plain sentence: the state the venture's records are in when the run is done. The title names the work; the goal names the outcome, so an agent can tell a finished run from a performed one. */
+  goal: string;
+  /** The telos measure kinds this workflow moves (foundation/telos measures[].kind), each one of its function's measures in function.json. This is how an agent says which of the venture's goals its work serves: a goal binds a measure, and a lead weighs the workflow by it. */
+  measures: string[];
   trigger: {
     /** intake: once, when the function joins a venture, and again when its records are missing. schedule: on a cadence. event: when a route is written. request: when a lead or person hands it off. */
     kind: "intake" | "schedule" | "event" | "request";
-    /** For schedule. */
+    /** For schedule, and only for schedule: without it a schedule is never due. */
     cadence?: "daily" | "weekly" | "monthly" | "quarterly";
-    /** For event: the route pattern whose write starts it. */
+    /** For event, and only for event: the route pattern whose write starts it. Without it an event trigger is never due. */
     route?: string;
     /** Only while a time box of this kind is open that lists the workflow or its function (operations/time-boxes/<id>.json, EE-186). Outside one the workflow is not due, whatever its kind says. */
     during?: "campaign" | "sprint";
@@ -3720,6 +3724,17 @@ export type NaiveConfig = {
     set_by?: {
       person: string;
       at: string;
+    };
+  };
+  /** The venture's own lines for the visibility rubric (EE-222, packages/naive/src/functions/it/visibility-rubric.json, naive tools recommend). A criterion left out keeps the rubric's default weight, which is an unvalidated prior. packages/naive/src/checks/check-config.ts holds each criterion id to the rubric. */
+  visibility?: {
+    /** Per criterion id: the weight for this venture in place of the rubric's default. A weight of 0 leaves the criterion out of the score, and never out of the blind spot. */
+    weights?: {
+      [key: string]: number;
+    };
+    /** Per criterion id: the lowest score a candidate needs. A candidate below it is ruled out whatever the rest. */
+    must?: {
+      [key: string]: number;
     };
   };
   /** The venture's own lines for the activity catalog's proposal rules (EE-170, packages/naive/src/engine/activity-proposals.ts, naive activities). A rule left out keeps the catalog's lines. packages/naive/src/checks/check-config.ts holds each rule id to the catalog and each line to its scale's range. */
@@ -7188,6 +7203,114 @@ export type VentureLayer = false | {
   /** Folder path, relative to the folder that holds venture.json */
   location: string;
   tools?: string[];
+};
+
+/** The rubric for judging how far a tool gives the system visibility of an activity, and how far the venture owns the record (EE-222), which Naive ships at packages/naive/src/functions/it/visibility-rubric.json. Each criterion asks one question about a tool and an activity, says why it matters, describes the levels of a 0 to 4 scale and carries a default weight that is an unvalidated prior a venture overrides under visibility in naive.config.json. A gate criterion rules out a candidate scored 0 on it; a blind_spot criterion scored 0 means the tool leaves the activity unrecorded, which is flagged and never rules a candidate out, because only a person does that. A channel says how an activity is performed, and therefore what must capture it, told from the words of its statement as an activity's kind is (EE-179). A tool kind is a kind of tool and never a vendor, with the prior scores Naive ships for it. A score never decides: packages/naive/src/engine/visibility-rubric.ts ranks candidates and a person chooses. packages/naive/src/checks/check-visibility-rubric.ts checks what this schema cannot: weights that sum to 1, sources that are reference ids, decisions that are EE ids, channels and tool kinds that resolve, and examples that name only the rubric's criteria. */
+export type VisibilityRubric = {
+  version: string;
+  note?: string;
+  /** Two candidates whose totals (0 to 1) differ by no more than this are reported as tied, not ordered. */
+  tie_band: number;
+  criteria: {
+    id: string;
+    title: string;
+    /** The one question to ask about a tool and the activity it would cover. */
+    question: string;
+    /** Why the answer can change the choice. */
+    why: string;
+    /** The ISO/IEC 25010:2023 product quality characteristics the criterion serves. A criterion the standard does not cover names none. */
+    iso25010?: ("functional-suitability" | "performance-efficiency" | "compatibility" | "interaction-capability" | "reliability" | "security" | "maintainability" | "flexibility" | "safety")[];
+    /** What a score means on this criterion. Scores 0 and 4 must be described; packages/naive/src/checks/check-visibility-rubric.ts checks it. */
+    levels: {
+      score: number;
+      means: string;
+    }[];
+    /** The default weight, an unvalidated prior. The criteria's weights sum to 1; a venture may set others under visibility in naive.config.json. */
+    weight: number;
+    /** True when a score of 0 rules a candidate out, whatever its other scores. */
+    gate?: boolean;
+    /** True when a score of 0 means the tool leaves the activity unrecorded. Such a candidate is flagged as a blind spot and still ranked: only a person rules it out. */
+    blind_spot?: boolean;
+    /** Reference ids in packages/naive/src/records/layers/operations/references/references.json. */
+    sources: string[];
+    /** EE decisions the criterion draws on. */
+    decisions?: string[];
+  }[];
+  /** How an activity is performed, and therefore what must capture it. Read in order: the first channel whose clauses the activity's statement meets is its channel, and the one marked default takes an activity whose words meet none. */
+  channels: {
+    id: string;
+    title: string;
+    /** How the activity happens. */
+    means: string;
+    /** What a record of an activity on this channel looks like. */
+    record: string;
+    /** Clauses on the words of the activity's statement, as the activity catalog's kinds hold them (EE-179): the first word is its verb and the rest are its terms. A statement meets a clause when its verb is one of the verbs and one of its terms is one of the terms. An unvalidated prior. */
+    when?: {
+      verbs?: string[];
+      terms?: string[];
+    }[];
+    /** True for the one channel that takes an activity whose words meet no clause. It names no clauses. */
+    default?: boolean;
+    /** The tool kinds that could capture this channel, by id. */
+    tool_kinds: string[];
+  }[];
+  /** A kind of tool, never a vendor: Naive names no vendor in code, and a venture's own connection record (it/connections/<id>.json) names its system. */
+  tool_kinds: {
+    id: string;
+    /** What kind of tool it is, in plain words, with no product or company name. */
+    kind: string;
+    /** The channels this kind of tool could capture, by id. */
+    captures: string[];
+    /** The prior score on each criterion, an unvalidated prior for the kind and not a measurement of any product. */
+    scores: {
+      [key: string]: number;
+    };
+    /** The reason for each score, citing a reference, a decision or a file. */
+    why: {
+      [key: string]: string;
+    };
+    /** Who gave the scores, when and from what. */
+    rated: {
+      by: string;
+      /**
+       * @format date
+       */
+      on: string;
+      basis: string;
+    };
+  }[];
+  /** Worked examples: an activity that must be visible, the candidates considered and the choice a person made. */
+  examples: {
+    id: string;
+    /** The activity that must be visible, and where it comes from. */
+    activity: string;
+    /** The channel it is performed on, by id. */
+    channel: string;
+    /** Weights for this activity that replace the rubric's defaults, by criterion id. A weight of 0 leaves the criterion out, unscored. */
+    weights?: {
+      [key: string]: number;
+    };
+    /** Must-haves: the lowest score a candidate needs on a criterion. A candidate below it is ruled out. */
+    must?: {
+      [key: string]: number;
+    };
+    /** The tool kinds considered, by id. Each must capture the example's channel. */
+    candidates: string[];
+    /** The candidate a person chose. It may differ from the top score. */
+    chosen: string;
+    /** The EE decisions that record the choice. */
+    decided_by: string[];
+    /** Who judged the example, when and from what. The choice is the decisions'. */
+    rated: {
+      by: string;
+      /**
+       * @format date
+       */
+      on: string;
+      basis: string;
+    };
+    note?: string;
+  }[];
 };
 
 /** A venture's where-used list (<venture>/knowledge/where-used.json, EE-042): for each fact kept once in its system of record (a parent, such as a product's price), every place that repeats it (its children: a pricing page, a newsletter, a payment provider, a constant in code). Update the parent once and the children show what must follow. The framework checks live children offline and reports drift (packages/naive/src/checks/check-where-used.ts); delivering the change into a vendor's system is the platform's (coexistence or centralized style). Written for a fast model to read: every field present. */

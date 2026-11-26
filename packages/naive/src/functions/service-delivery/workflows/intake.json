@@ -2,6 +2,8 @@
   "id": "intake",
   "function": "service-delivery",
   "title": "Learn the venture's services and engagements",
+  "goal": "Every service the venture sells is an offer, every running engagement has its deliverables with an acceptance test each, and every unsigned statement of work is named.",
+  "measures": ["revenue", "flow_and_lead_time"],
   "trigger": { "kind": "intake" },
   "reads": ["venture", "foundation/telos", "product", "customers", "validation/pricing", "service-delivery/offers", "service-delivery/engagements", "operations/handoff"],
   "steps": [

@@ -76,6 +76,11 @@
 //   naive owners [--function <id>] [--level <n>] [--json]
 //                                                   the accountable owner of each APQC element the venture runs, a
 //                                                   person or an agent, and where it came from (EE-187)
+//   naive tools recommend [--goal <id>] [--activity <id>] [--function <id>] [--json] [--propose]
+//                                                   which activities a goal needs to be visible, the tool kinds that
+//                                                   cover each, how they score on visibility and ownership, and the
+//                                                   blind spots; --propose files one open decision per function for a
+//                                                   person (EE-222)
 //   naive graph [--function <id>] [--element <id>] [--json] [--mermaid]
 //                                                   the element graph: which APQC elements feed which through the
 //                                                   routes the function workflows write and read, and the routes
@@ -459,6 +464,15 @@ else if (cmd === "build" || cmd === "start") {
   // The loop that starts due workflows as far as the venture's mode allows (packages/naive/src/engine/loop.ts, EE-183).
   const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
   process.exit(run("packages/naive/src/engine/loop.ts", [here(), ...args]));
+} else if (cmd === "tools") {
+  // Tool recommendations for a goal or an activity, scored on the visibility rubric
+  // (packages/naive/src/engine/tool-recommendations.ts, EE-222). --goal, --activity, --function, --json and --propose
+  // pass through.
+  const given = rest.filter((a, i) => !(a === "--venture" || rest[i - 1] === "--venture"));
+  const args = given[0] && !given[0].startsWith("--") ? given : ["recommend", ...given];
+  const [what, ...more] = args;
+  if (what !== "recommend") { console.error("usage: naive tools recommend [--goal <id>] [--activity <id>] [--function <id>] [--json] [--propose] [--venture <dir>]"); process.exit(2); }
+  process.exit(run("packages/naive/src/engine/tool-recommendations.ts", [here(), ...more]));
 } else if (cmd === "owners") {
   // Who is accountable for each element of APQC's framework (packages/naive/src/engine/element-owners.ts, EE-187).
   const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
