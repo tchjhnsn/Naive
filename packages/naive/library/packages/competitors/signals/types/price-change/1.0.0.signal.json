@@ -1,0 +1,167 @@
+{
+  "id": "price-change",
+  "version": "1.0.0",
+  "title": "Price change",
+  "description": "A company published a price for a plan: the organization at org and the price at price. It folds each plan and amount once into the competitor's signals record, so a changed amount is a new entry beside the old one.",
+  "subject": "The organization's slug",
+  "props": {
+    "type": "object",
+    "required": [
+      "org",
+      "price"
+    ],
+    "additionalProperties": false,
+    "properties": {
+      "org": {
+        "type": "object"
+      },
+      "price": {
+        "type": "object",
+        "required": [
+          "plan",
+          "amount",
+          "currency"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "plan": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The plan's name on the pricing page"
+          },
+          "amount": {
+            "type": "number",
+            "minimum": 0
+          },
+          "currency": {
+            "type": "string",
+            "pattern": "^[A-Z]{3}$"
+          },
+          "period": {
+            "enum": [
+              "month",
+              "year",
+              "once",
+              "use"
+            ],
+            "description": "What the amount is charged per"
+          },
+          "url": {
+            "type": "string",
+            "pattern": "^https?://"
+          }
+        }
+      }
+    }
+  },
+  "composes": [
+    {
+      "at": "org",
+      "type": "organization@^1"
+    }
+  ],
+  "projects": [
+    {
+      "route": "competitors/[id]/signals",
+      "subject_field": "competitor",
+      "fields": {
+        "prices": {
+          "reducer": "append",
+          "value": "props.price",
+          "unique_by": [
+            "props.price.plan",
+            "props.price.amount"
+          ]
+        },
+        "first_seen": {
+          "reducer": "min",
+          "value": "time"
+        },
+        "last_seen": {
+          "reducer": "max",
+          "value": "time"
+        }
+      }
+    }
+  ],
+  "freshness": {
+    "max_age": "90d"
+  },
+  "cases": [
+    {
+      "id": "a-raised-price-is-a-second-entry",
+      "given": [
+        {
+          "subject": "acme-robotics",
+          "time": "2026-10-01",
+          "props": {
+            "org": {
+              "name": "Acme Robotics"
+            },
+            "price": {
+              "plan": "Team",
+              "amount": 20,
+              "currency": "USD",
+              "period": "month"
+            }
+          }
+        },
+        {
+          "subject": "acme-robotics",
+          "time": "2026-10-04",
+          "props": {
+            "org": {
+              "name": "Acme Robotics"
+            },
+            "price": {
+              "plan": "Team",
+              "amount": 20,
+              "currency": "USD",
+              "period": "month"
+            }
+          }
+        },
+        {
+          "subject": "acme-robotics",
+          "time": "2026-11-20",
+          "props": {
+            "org": {
+              "name": "Acme Robotics"
+            },
+            "price": {
+              "plan": "Team",
+              "amount": 25,
+              "currency": "USD",
+              "period": "month"
+            }
+          }
+        }
+      ],
+      "expect": {
+        "competitors/acme-robotics/signals": {
+          "competitor": "acme-robotics",
+          "first_seen": "2026-10-01",
+          "last_seen": "2026-11-20",
+          "prices": [
+            {
+              "plan": "Team",
+              "amount": 20,
+              "currency": "USD",
+              "period": "month",
+              "support": "supported"
+            },
+            {
+              "plan": "Team",
+              "amount": 25,
+              "currency": "USD",
+              "period": "month",
+              "support": "supported"
+            }
+          ]
+        }
+      },
+      "note": "The same price reported twice is listed once. The raised price is a second entry, so the record keeps the history; append never replaces an entry."
+    }
+  ],
+  "note": "Open type in the competitors package (the implicit library naive)."
+}

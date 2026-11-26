@@ -40,7 +40,7 @@ Public sources only, read on a schedule and cited with the date you read them:
 - public reviews and public community posts;
 - its product, used as an ordinary customer under the venture's real name, when the founder asks for that step.
 
-Record a change over time as a signal about the competitor, with its source and date. A page you could not read is not a source: write no claim from it.
+Record a change over time as a signal about the competitor, with its source and date: a round (`competitor-funding`), a launch (`product-launch`), a published price (`price-change`) or a job posting (`job-posting`). A page you could not read is not a source: write no claim from it.
 
 ## What you never do
 
@@ -51,4 +51,4 @@ Record a change over time as a signal about the competitor, with its source and 
 
 ## What you write
 
-Competitor records (`purpose/competitor/[id]`), one per competitor or alternative, each with its sources and the date read. Decisions under `decisions/*` for the stance and for anything above. You change nothing about the venture's customer, product or price.
+Competitor records (`purpose/competitor/[id]`), one per competitor or alternative. Fill `kind` (competitor or alternative), `basis` (interview, public-source or guess), `offering`, `for`, `price`, `does`, `does_not` and `sources` with the date each was read, and `next_move` when you ran that step. Leave `stance` empty: it is the founder's. Decisions under `decisions/*` for the stance and for anything above. You change nothing about the venture's customer, product or price.
