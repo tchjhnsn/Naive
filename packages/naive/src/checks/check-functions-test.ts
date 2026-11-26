@@ -19,9 +19,9 @@ const copy = (): string => {
   for (const p of ["packages/naive/src/functions", "packages/naive/src/records", "packages/naive/template/governance"]) cpSync(join(repo, p), join(d, p), { recursive: true });
   return d;
 };
-type Row = { class: string, level: string, examples: string[] };
+type Row = { class: string, level: string, approver?: string, examples: string[] };
 type Step = { writes?: string[], raises?: string[], skill?: string, activity?: string, consider?: { why?: string, when?: string } };
-type Doc = { rows: Row[], steps: Step[], intake?: string, clusters?: string[] };
+type Doc = { rows: Row[], steps: Step[], intake?: string, clusters?: string[], grants: { id: string }[] };
 const edit = (root: string, rel: string, f: (j: Doc) => void) => { const p = join(root, rel); const j = JSON.parse(readFileSync(p, "utf8")) as Doc; f(j); writeFileSync(p, JSON.stringify(j, null, 2) + "\n"); };
 const CATALOG_ACTIVITY = (JSON.parse(readFileSync(join(repo, "packages/naive/src/functions/activities.json"), "utf8")) as { activities: { id: string, process_group: string }[] }).activities.find((x) => x.process_group.startsWith("3."))?.id ?? "";
 const FIN = "packages/naive/src/functions/finance";
@@ -41,6 +41,8 @@ const cases: [string, (d: string) => void, RegExp][] = [
   ["a step that loads a missing skill fails", (d) => edit(d, `${FIN}/workflows/intake.json`, (j) => { j.steps[0].skill = "no-such-skill"; }), /skills\/ does not have/],
   ["an intake that is not a workflow fails", (d) => edit(d, `${FIN}/function.json`, (j) => { j.intake = "missing"; }), /intake missing is not a workflow/],
   ["an unknown capability cluster fails", (d) => edit(d, `${FIN}/function.json`, (j) => { j.clusters = ["vendor-x"]; }), /cluster vendor-x is not in capability-clusters/],
+  ["an approver who holds no grant of the class fails", (d) => edit(d, "packages/naive/src/functions/it/decisions.json", (j) => { const row = j.rows.find((r) => r.class === "new-dependency-free"); if (row) row.approver = "product-lead"; }), /class new-dependency-free names approver product-lead, who holds no live grant of new-dependency-free reaching founder/],
+  ["an approver whose grants miss a folder of the function's records fails", (d) => edit(d, "packages/naive/template/governance/delegation.json", (j) => { j.grants = j.grants.filter((g) => g.id !== "chief-of-staff-to-finance-lead-priorities-fund"); }), /class set-priorities names approver finance-lead, whose grants of set-priorities do not cover fund, where the function's records sit/],
   ["an agent.md that names another role fails", (d) => writeFileSync(join(d, `${FIN}/agent.md`), "---\nrole: strategy-agent\nfunction: finance\n---\n"), /does not name role: finance-agent/],
 ];
 for (const [name, breakIt, want] of cases) {

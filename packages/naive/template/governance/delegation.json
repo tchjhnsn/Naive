@@ -2,7 +2,7 @@
   "register": "delegation",
   "updated": "2026-10-29",
   "template": true,
-  "note": "Default delegation. The founder grants the chief of staff the operations classes, which it may pass on; strategy, experience design, public commitments and money are granted directly and never passed on (the spend register's upkeep and cancel-or-downgrade go straight to the finance agent, founder-to-finance-agent); one-way doors stay with the founder. The chief of staff grants each lead (a role with a portfolio) accept-verified-work and defer-or-route over the venture, and set-priorities over its own lead plan only (operations/leads/<lead>), a two-way door (lead agents design, defaults 3 and 4). A venture customizes this in <venture>/governance/delegation.json.",
+  "note": "Default delegation. The founder grants the chief of staff the operations classes, which it may pass on; strategy, experience design, public commitments and money are granted directly and never passed on (the spend register's upkeep and cancel-or-downgrade go straight to the finance agent, founder-to-finance-agent); one-way doors stay with the founder. The chief of staff grants each lead (a role with a portfolio) accept-verified-work and defer-or-route over the venture, and set-priorities, a two-way door, over its own lead plan (operations/leads/<lead>) and over the folders where its portfolio's functions keep their records, so a lead holds the grant its functions' decision matrices name it approver for (lead agents design, defaults 3 and 4, and open question 4). A folder another function's records share, such as governance/ or people/, is not granted. A venture customizes this in <venture>/governance/delegation.json.",
   "root": "founder",
   "never_redelegated": ["strategy-or-constitution", "experience-design", "public-commitment", "spend-money", "cancel-or-downgrade", "move-payment-method", "spend-register-upkeep"],
   "one_way_doors": ["irreversible-data-change", "ownership-or-control", "legal-or-terms", "continue-or-stop", "change-direction", "contradicts-ledger", "production-ship"],
@@ -88,6 +88,66 @@
       "expires": null
     },
     {
+      "id": "chief-of-staff-to-growth-lead-priorities-support",
+      "from": "chief-of-staff",
+      "to": "growth-lead",
+      "classes": ["set-priorities"],
+      "scope": "support/",
+      "may_redelegate": false,
+      "may_merge": false,
+      "expires": null
+    },
+    {
+      "id": "chief-of-staff-to-growth-lead-priorities-customers",
+      "from": "chief-of-staff",
+      "to": "growth-lead",
+      "classes": ["set-priorities"],
+      "scope": "customers/",
+      "may_redelegate": false,
+      "may_merge": false,
+      "expires": null
+    },
+    {
+      "id": "chief-of-staff-to-growth-lead-priorities-deals",
+      "from": "chief-of-staff",
+      "to": "growth-lead",
+      "classes": ["set-priorities"],
+      "scope": "deals/",
+      "may_redelegate": false,
+      "may_merge": false,
+      "expires": null
+    },
+    {
+      "id": "chief-of-staff-to-growth-lead-priorities-marketing",
+      "from": "chief-of-staff",
+      "to": "growth-lead",
+      "classes": ["set-priorities"],
+      "scope": "marketing/",
+      "may_redelegate": false,
+      "may_merge": false,
+      "expires": null
+    },
+    {
+      "id": "chief-of-staff-to-growth-lead-priorities-markets",
+      "from": "chief-of-staff",
+      "to": "growth-lead",
+      "classes": ["set-priorities"],
+      "scope": "markets/",
+      "may_redelegate": false,
+      "may_merge": false,
+      "expires": null
+    },
+    {
+      "id": "chief-of-staff-to-growth-lead-priorities-sales",
+      "from": "chief-of-staff",
+      "to": "growth-lead",
+      "classes": ["set-priorities"],
+      "scope": "sales/",
+      "may_redelegate": false,
+      "may_merge": false,
+      "expires": null
+    },
+    {
       "id": "chief-of-staff-to-product-lead",
       "from": "chief-of-staff",
       "to": "product-lead",
@@ -103,6 +163,66 @@
       "to": "product-lead",
       "classes": ["set-priorities"],
       "scope": "operations/leads/product-lead",
+      "may_redelegate": false,
+      "may_merge": false,
+      "expires": null
+    },
+    {
+      "id": "chief-of-staff-to-product-lead-priorities-it",
+      "from": "chief-of-staff",
+      "to": "product-lead",
+      "classes": ["set-priorities"],
+      "scope": "it/",
+      "may_redelegate": false,
+      "may_merge": false,
+      "expires": null
+    },
+    {
+      "id": "chief-of-staff-to-product-lead-priorities-product",
+      "from": "chief-of-staff",
+      "to": "product-lead",
+      "classes": ["set-priorities"],
+      "scope": "product/",
+      "may_redelegate": false,
+      "may_merge": false,
+      "expires": null
+    },
+    {
+      "id": "chief-of-staff-to-product-lead-priorities-operations-activity",
+      "from": "chief-of-staff",
+      "to": "product-lead",
+      "classes": ["set-priorities"],
+      "scope": "operations/activity/",
+      "may_redelegate": false,
+      "may_merge": false,
+      "expires": null
+    },
+    {
+      "id": "chief-of-staff-to-product-lead-priorities-operations-handoffs",
+      "from": "chief-of-staff",
+      "to": "product-lead",
+      "classes": ["set-priorities"],
+      "scope": "operations/handoffs/",
+      "may_redelegate": false,
+      "may_merge": false,
+      "expires": null
+    },
+    {
+      "id": "chief-of-staff-to-product-lead-priorities-service-delivery",
+      "from": "chief-of-staff",
+      "to": "product-lead",
+      "classes": ["set-priorities"],
+      "scope": "service-delivery/",
+      "may_redelegate": false,
+      "may_merge": false,
+      "expires": null
+    },
+    {
+      "id": "chief-of-staff-to-product-lead-priorities-supply-chain",
+      "from": "chief-of-staff",
+      "to": "product-lead",
+      "classes": ["set-priorities"],
+      "scope": "supply-chain/",
       "may_redelegate": false,
       "may_merge": false,
       "expires": null
@@ -128,6 +248,56 @@
       "expires": null
     },
     {
+      "id": "chief-of-staff-to-finance-lead-priorities-assets",
+      "from": "chief-of-staff",
+      "to": "finance-lead",
+      "classes": ["set-priorities"],
+      "scope": "assets/",
+      "may_redelegate": false,
+      "may_merge": false,
+      "expires": null
+    },
+    {
+      "id": "chief-of-staff-to-finance-lead-priorities-finance",
+      "from": "chief-of-staff",
+      "to": "finance-lead",
+      "classes": ["set-priorities"],
+      "scope": "finance/",
+      "may_redelegate": false,
+      "may_merge": false,
+      "expires": null
+    },
+    {
+      "id": "chief-of-staff-to-finance-lead-priorities-fund",
+      "from": "chief-of-staff",
+      "to": "finance-lead",
+      "classes": ["set-priorities"],
+      "scope": "fund/",
+      "may_redelegate": false,
+      "may_merge": false,
+      "expires": null
+    },
+    {
+      "id": "chief-of-staff-to-finance-lead-priorities-money",
+      "from": "chief-of-staff",
+      "to": "finance-lead",
+      "classes": ["set-priorities"],
+      "scope": "money/",
+      "may_redelegate": false,
+      "may_merge": false,
+      "expires": null
+    },
+    {
+      "id": "chief-of-staff-to-finance-lead-priorities-legal",
+      "from": "chief-of-staff",
+      "to": "finance-lead",
+      "classes": ["set-priorities"],
+      "scope": "legal/",
+      "may_redelegate": false,
+      "may_merge": false,
+      "expires": null
+    },
+    {
       "id": "chief-of-staff-to-strategy-lead",
       "from": "chief-of-staff",
       "to": "strategy-lead",
@@ -143,6 +313,96 @@
       "to": "strategy-lead",
       "classes": ["set-priorities"],
       "scope": "operations/leads/strategy-lead",
+      "may_redelegate": false,
+      "may_merge": false,
+      "expires": null
+    },
+    {
+      "id": "chief-of-staff-to-strategy-lead-priorities-capabilities",
+      "from": "chief-of-staff",
+      "to": "strategy-lead",
+      "classes": ["set-priorities"],
+      "scope": "capabilities/",
+      "may_redelegate": false,
+      "may_merge": false,
+      "expires": null
+    },
+    {
+      "id": "chief-of-staff-to-strategy-lead-priorities-investor-relations",
+      "from": "chief-of-staff",
+      "to": "strategy-lead",
+      "classes": ["set-priorities"],
+      "scope": "investor-relations/",
+      "may_redelegate": false,
+      "may_merge": false,
+      "expires": null
+    },
+    {
+      "id": "chief-of-staff-to-strategy-lead-priorities-investors",
+      "from": "chief-of-staff",
+      "to": "strategy-lead",
+      "classes": ["set-priorities"],
+      "scope": "investors/",
+      "may_redelegate": false,
+      "may_merge": false,
+      "expires": null
+    },
+    {
+      "id": "chief-of-staff-to-strategy-lead-priorities-people-founders",
+      "from": "chief-of-staff",
+      "to": "strategy-lead",
+      "classes": ["set-priorities"],
+      "scope": "people/founders/",
+      "may_redelegate": false,
+      "may_merge": false,
+      "expires": null
+    },
+    {
+      "id": "chief-of-staff-to-strategy-lead-priorities-competitors",
+      "from": "chief-of-staff",
+      "to": "strategy-lead",
+      "classes": ["set-priorities"],
+      "scope": "competitors/",
+      "may_redelegate": false,
+      "may_merge": false,
+      "expires": null
+    },
+    {
+      "id": "chief-of-staff-to-strategy-lead-priorities-foundation",
+      "from": "chief-of-staff",
+      "to": "strategy-lead",
+      "classes": ["set-priorities"],
+      "scope": "foundation/",
+      "may_redelegate": false,
+      "may_merge": false,
+      "expires": null
+    },
+    {
+      "id": "chief-of-staff-to-strategy-lead-priorities-ideas",
+      "from": "chief-of-staff",
+      "to": "strategy-lead",
+      "classes": ["set-priorities"],
+      "scope": "ideas/",
+      "may_redelegate": false,
+      "may_merge": false,
+      "expires": null
+    },
+    {
+      "id": "chief-of-staff-to-strategy-lead-priorities-industries",
+      "from": "chief-of-staff",
+      "to": "strategy-lead",
+      "classes": ["set-priorities"],
+      "scope": "industries/",
+      "may_redelegate": false,
+      "may_merge": false,
+      "expires": null
+    },
+    {
+      "id": "chief-of-staff-to-strategy-lead-priorities-validation",
+      "from": "chief-of-staff",
+      "to": "strategy-lead",
+      "classes": ["set-priorities"],
+      "scope": "validation/",
       "may_redelegate": false,
       "may_merge": false,
       "expires": null

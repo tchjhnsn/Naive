@@ -12,7 +12,7 @@ The information technology function (APQC 8.0, Manage Information Technology (IT
 |---|---|
 | [function.json](./function.json) | The manifest: purpose, intake, measures, capability clusters |
 | [agent.md](./agent.md) | The IT agent's instructions |
-| [decisions.json](./decisions.json) | The decision matrix |
+| [decisions.json](./decisions.json) | The decision matrix. The architect approves a free new dependency (`new-dependency-free`), because the architect holds that grant in the default delegation and product-lead does not |
 | [workflows/intake.json](./workflows/intake.json) | Workflow: learn the venture's systems and access |
 | [workflows/quarterly-access-review.json](./workflows/quarterly-access-review.json) | Workflow: review access and tools each quarter |
 | [skills/access-review](./skills/access-review) | Skill: keep each person's and agent role's access to the least the work needs: MFA, scoped credentials, leavers, rotation and restore tests (CIS Controls v8.1 IG1, OWASP LLM06) |
