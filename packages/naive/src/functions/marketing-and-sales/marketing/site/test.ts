@@ -7,6 +7,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { plan, offeringsOf } from "./plan.ts";
 import { check } from "../../../../engine/check-public.ts";
+import { validateValue } from "../../../../records/validate.ts";
 import { weights, needs, score, request, pageType, typesOf, customerNeeds, icpOf, MATRIX } from "./presence.ts";
 import type { Site } from "./presence.ts";
 
@@ -114,6 +115,21 @@ t("an audience that is not a priority gets no page, only a note on when it would
   const quiet = plan(venture), raising = plan(venture, { flags: { raising: true } });
   ok(!quiet.pages.some((x) => x.type === "investors") && quiet.omitted.some((o) => o.item === "raising" && /raising/.test(String(o.when))), JSON.stringify(quiet.omitted));
   ok(raising.pages.find((x) => x.type === "investors")?.level === "nav", JSON.stringify(raising.pages.map((x) => [x.path, x.level])));
+});
+
+t("a section holds drafted copy, and an invented field is refused by name (EE-214)", () => {
+  const p = plan(venture) as unknown as { pages: { sections: Record<string, unknown>[] }[] };
+  const section = must(p.pages[0]?.sections[0], "a section");
+  ok(validateValue("marketing-sitemap.schema.json", p).status === 0, "the plan as written validates");
+  section.draft_copy = { status: "draft", text: "Fewer empty slots for the partners who run clinics' front offices.", sources: ["purpose/icp.json"] };
+  ok(validateValue("marketing-sitemap.schema.json", p).status === 0, "drafted copy validates");
+  section.draft_copy = { text: "no status" };
+  ok(validateValue("marketing-sitemap.schema.json", p).status !== 0, "drafted copy without a status is refused");
+  delete section.draft_copy;
+  section.site_text = "words in a field the schema never had";
+  const bad = validateValue("marketing-sitemap.schema.json", p);
+  ok(bad.status !== 0 && /site_text/.test(bad.stdout + bad.stderr), `an unknown section field is refused by name: ${bad.stdout}${bad.stderr}`);
+  delete section.site_text;
 });
 
 t("the public gate blocks content that copies its internal record or is published unapproved", () => {

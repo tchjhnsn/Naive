@@ -734,6 +734,16 @@
       },
       "why": "Public variants of the venture's records, gated before they are published (EE-064)"
     },
+    "publish-terms": {
+      "base": {
+        "discovery": 0.1,
+        "validation": 0.4,
+        "beachhead": 0.8,
+        "scale": 0.8,
+        "platform": 0.8
+      },
+      "why": "The names public copy must not carry, needed when the venture starts writing copy, so it tracks the copy itself (EE-214)"
+    },
     "venture-package": {
       "base": {
         "discovery": 0.7,

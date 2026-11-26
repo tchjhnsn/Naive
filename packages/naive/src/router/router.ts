@@ -93,7 +93,7 @@ import { schemaNameOf } from "../records/index.ts";
 import type { DecisionRecord, Goal, TeamPlan, Venture } from "../records/types/records.d.ts";
 import type { RecordRoute, Route } from "../records/routes/routes.ts";
 import {
-  PHASES, allowed, deepItem, defaultWorkspace, files, gateOf, glob, groups, kits, load, repo, resolve, routes, skillsOf, ventureDir, ventures,
+  ID_CHECKS, PHASES, allowed, deepItem, defaultWorkspace, files, gateOf, glob, groups, kits, load, repo, resolve, routes, skillsOf, ventureDir, ventures,
 } from "../records/routes/routes.ts";
 // The route table lives in packages/naive/src/records/routes so that schema/ can read it without importing this file.
 export { PHASES, allowed, files, gateOf, glob, groups, kits, repo, resolve, routes, ventureDir, ventures };
@@ -438,7 +438,10 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
   if (action === "check") {
     // Gate group hook (P-7): the checks settings in naive.config.json turn a check off or make it warn only.
     const plan = checkPlan(dir, r.checks);
-    const outs = plan.filter((p) => p.mode !== "off").map((p) => ({ check: p.check, mode: p.mode, ...spawnSync("node", [join(repo, p.check), dir], { encoding: "utf8" }) }));
+    // A check that takes a record id (ID_CHECKS) is given the item's, so an item route checks that item; every other
+    // check takes the venture dir alone.
+    const args = (check: string) => ID_CHECKS.has(check) && r.collection === "item" && params.id ? [dir, String(params.id)] : [dir];
+    const outs = plan.filter((p) => p.mode !== "off").map((p) => ({ check: p.check, mode: p.mode, ...spawnSync("node", [join(repo, p.check), ...args(p.check)], { encoding: "utf8" }) }));
     const ok = outs.every((o) => o.status === 0 || o.mode === "warn");
     return { ok, result: [...outs.map((o) => ({ check: o.check, passed: o.status === 0, ...(o.mode === "warn" ? { warn_only: true } : {}), output: (o.stdout + o.stderr).trim() })), ...plan.filter((p) => p.mode === "off").map((p) => ({ check: p.check, passed: null, off: true }))], ...(ok ? {} : { fix: fix(r) }), ...deprecated };
   }

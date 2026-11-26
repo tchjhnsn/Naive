@@ -82,6 +82,53 @@ try {
   expect("--report prints the loop and exits 0", out.status === 0 && /most waived/.test(out.stdout) && /found after publish/.test(out.stdout), out.stdout);
   cli([join(v, "pages/clean.mdx"), "--venture", v]);
   expect("the default log is the venture's .naive/lint-findings.jsonl", existsSync(join(v, ".naive/lint-findings.jsonl")));
+
+  // Marks (EE-214): whole words, any case, and a private name is an error whatever the rule's level.
+  w("naive.config.json", { publish_lint: { marks: ["Nightjar"] } });
+  w("pages/case.mdx", page("title: Case", "We build nightjar for everyone. NIGHTJAR ships soon. Nightjarring is not it."));
+  const ci = await run("case.mdx");
+  expect("marks: a mark matches whatever its case", ci.filter((f) => f.rule === "marks").length === 2 && ci.every((f) => f.severity === "warn"), ci);
+  expect("marks: a longer word is not the mark", !ci.some((f) => /Nightjarring/i.test(f.text)), ci);
+  w("marketing/publish-terms.json", { marks: [{ name: "Nightjar", private: true, why: "the product is unannounced" }] });
+  const priv = await run("case.mdx");
+  expect("marks: a name the venture keeps private is an error while the rule only warns", priv.filter((f) => f.rule === "marks").length === 2 && priv.every((f) => f.severity === "error") && !priv[0].at_least, priv);
+  expect("marks: the private name fails the run", !(await check([join(v, "pages/case.mdx")], { venture: v })).ok);
+  expect("the marks of marketing/publish-terms.json are added to the config's", configFor(v).marks.some((m) => m.name === "Nightjar" && m.private));
+
+  // A record's copy (EE-214): the sitemap's drafted copy is linted as a page's body is.
+  const sitemap = (copy: unknown) => ({ version: "1", venture: "acme", facts: {}, offerings: [], audience: { offered_to: [], partner_led: false, types: [] },
+    pages: [{ path: "/", parent: null, label: "Home", type: "home", level: "home", sections: [{ item: "what", component: "Hero", need: 1, for: ["customers"], why: [], source: {}, variant: "x.mdx", draft_copy: copy }] }],
+    omitted: [], handoff: { to: "engineering" } });
+  w("operations/marketing/sitemap.json", sitemap({ status: "draft", text: "As decided in EE-045, over 500 customers rely on Nightjar. Write to jane.doe@example.com." }));
+  const sm = await check([join(v, "operations/marketing/sitemap.json")], { venture: v });
+  const found = (rule: string) => sm.findings.filter((f) => f.rule === rule);
+  expect("record copy: an internal term in drafted copy is a leak", found("leaks").length === 1 && found("leaks")[0].severity === "error", sm.findings);
+  expect("record copy: an uncited number is a claim", found("claims").length === 1, sm.findings);
+  expect("record copy: a private name is an error", found("marks").length === 1 && found("marks")[0].severity === "error", sm.findings);
+  expect("record copy: an email address warns", found("personal-data").length === 1, sm.findings);
+  expect("record copy: every finding names the field it sits in", sm.findings.every((f) => f.field === "pages[0].sections[0].draft_copy.text"), sm.findings);
+  expect("record copy: drafted copy is not published yet", sm.findings.every((f) => !f.published), sm.findings);
+  w("operations/marketing/sitemap.json", sitemap({ status: "published", text: "Over 500 customers rely on us.", sources: ["evidence/survey.json"] }));
+  const cited = await check([join(v, "operations/marketing/sitemap.json")], { venture: v });
+  expect("record copy: a source that exists clears the claim", !cited.findings.some((f) => f.rule === "claims"), cited.findings);
+  expect("record copy: published copy is marked published", cited.ok, cited.findings);
+
+  // A field a person approved as public is copy too; an internal field is not.
+  w("people/people.json", { people: [{ id: "founder", name: "Torian" }] });
+  w("foundation/core.json", { statement: "We ship in EE-045 time.", notes: "internal, EE-045 again" });
+  const { setPublic } = await import("./visibility.ts");
+  setPublic(v, "foundation/core.json", "statement", { by: "Torian" });
+  const pub = await check([join(v, "foundation/core.json")], { venture: v });
+  expect("record copy: a public field is linted", pub.findings.some((f) => f.rule === "leaks" && f.field === "statement"), pub.findings);
+  expect("record copy: an internal field is not", !pub.findings.some((f) => f.field === "notes"), pub.findings);
+
+  // The config is read where the router reads it: meta/naive.config.json in a structured venture.
+  const s = join(ws, "struct");
+  mkdirSync(join(s, "meta"), { recursive: true });
+  writeFileSync(join(s, "venture.json"), JSON.stringify({ id: "s", name: "S", type: "software-startup", parent: null, owner: "self", status: "active", layers: {}, phase: "discovery", layout: "structured" }));
+  writeFileSync(join(s, "meta/naive.config.json"), JSON.stringify({ publish_lint: { rules: { marks: "error" }, marks: ["Pineapple"] } }));
+  const meta = configFor(s);
+  expect("a structured venture's meta/naive.config.json is the config", meta.rules.marks === "error" && meta.marks.length === 1 && meta.marks[0].name === "Pineapple", meta);
 } finally {
   rmSync(ws, { recursive: true, force: true });
 }
