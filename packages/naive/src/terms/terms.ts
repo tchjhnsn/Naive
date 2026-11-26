@@ -2,7 +2,7 @@
 // Definitions: founder suite doc and mentor/coach and unearned-candour docs (2026-10-31); status proposed until Torian decides.
 
 import type { Term } from "./engine.ts";
-import type { Arrangement, Detector, Encounter, EvalPlan, Experiment, Hierarchy, LabelFacts, LinkGraph, Membership, Reception, Relationship, Settlement, SourceFacts, Trial } from "./levels.ts";
+import type { Arrangement, Detector, Encounter, EvalPlan, Experiment, HeldOutFacts, Hierarchy, LabelFacts, LinkGraph, Membership, PersonLabelFacts, Reception, Relationship, Settlement, SourceFacts, Trial } from "./levels.ts";
 import { known, mayBeNew, RELATIONS, relationTable, type RelationName } from "./relations.ts";
 
 // The four labels every term carries (N-051 to N-055, docs/design/TERM_LABELS_2026-11-02.md). They sit on the term,
@@ -647,4 +647,42 @@ export const allowedSource: Term<SourceFacts> = {
   lean: ["denied_host_never_allowed"],
 };
 
-export const TERMS = [founder, coFounder, earlyEmployee, mentor, coach, friend, unearnedCandour, thresholdGuardian, phaseGate, layer, area, topCategory, typedLink, detector, trial, hit, miss, falseAlarm, correctRejection, signal, listener, reception, salientReception, noise, experiment, keptExperiment, discardedExperiment, evalPlan, settledRecord, sourcedRecord, estimatedRecord, syntheticRecord, goldRecord, allowedSource];
+// Eval items (EE-198). held-out-item is id membership, so it is a term. person-label is the same rule the
+// faithful-author term would state, and that term is not on main, so this term states it here.
+// Neither check reads the label text or the item id. Those stay out of the facts.
+
+/** True when the split string is the held-out split. */
+export function splitIsHeldOut(split: string): boolean {
+  return split === "held-out";
+}
+
+/** True when labelled_by's kind is a person. Any other kind, including an agent, is not. */
+export function authorIsPerson(kind: string | null): boolean {
+  return kind === "person";
+}
+
+export const heldOutItem: Term<HeldOutFacts> = {
+  id: "held-out-item", form: "compound", label: "Held-out item", level: "data", kind: "act",
+  labels: sharedTerm("adapted", "none"),
+  meaning: "An eval item whose split is held-out, and whose id appears in no exemplar file and no prompt fixture.",
+  props: [
+    { id: "H1", says: "the split is held-out", check: (f) => f.splitHeldOut, uses: [splitIsHeldOut] },
+    { id: "H2", says: "its id appears in no exemplar file", check: (f) => !f.inExemplar },
+    { id: "H3", says: "its id appears in no prompt fixture", check: (f) => !f.inPromptFixture },
+  ],
+  sources: ["EE-198"],
+  lean: ["held_out_disjoint_exemplar"],
+};
+
+export const personLabel: Term<PersonLabelFacts> = {
+  id: "person-label", form: "compound", label: "Person label", level: "data", kind: "act",
+  labels: sharedTerm("adapted", "none"),
+  meaning: "An eval item's label is non-null only when labelled_by names a person. An agent does not set it. Null until a person acts.",
+  props: [
+    { id: "P1", says: "the label is null, or labelled_by names a person", check: (f) => !f.labelSet || f.byPerson, uses: [authorIsPerson] },
+  ],
+  sources: ["EE-198"],
+  lean: ["agent_label_never_passes"],
+};
+
+export const TERMS = [founder, coFounder, earlyEmployee, mentor, coach, friend, unearnedCandour, thresholdGuardian, phaseGate, layer, area, topCategory, typedLink, detector, trial, hit, miss, falseAlarm, correctRejection, signal, listener, reception, salientReception, noise, experiment, keptExperiment, discardedExperiment, evalPlan, settledRecord, sourcedRecord, estimatedRecord, syntheticRecord, goldRecord, allowedSource, heldOutItem, personLabel];
