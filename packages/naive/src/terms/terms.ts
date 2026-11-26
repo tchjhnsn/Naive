@@ -2,7 +2,7 @@
 // Definitions: founder suite doc and mentor/coach and unearned-candour docs (2026-10-31); status proposed until Torian decides.
 
 import type { Term } from "./engine.ts";
-import type { Arrangement, Detector, Encounter, EvalPlan, Experiment, Hierarchy, LabelFacts, LinkGraph, Membership, Reception, Relationship, Settlement, SourceFacts, Trial } from "./levels.ts";
+import type { Arrangement, CitationFacts, Detector, Encounter, EvalPlan, Experiment, Hierarchy, LabelFacts, LinkGraph, Membership, Reception, Relationship, Settlement, SourceFacts, Trial } from "./levels.ts";
 import { known, mayBeNew, RELATIONS, relationTable, type RelationName } from "./relations.ts";
 
 // The four labels every term carries (N-051 to N-055, docs/design/TERM_LABELS_2026-11-02.md). They sit on the term,
@@ -647,4 +647,18 @@ export const allowedSource: Term<SourceFacts> = {
   lean: ["denied_host_never_allowed"],
 };
 
-export const TERMS = [founder, coFounder, earlyEmployee, mentor, coach, friend, unearnedCandour, thresholdGuardian, phaseGate, layer, area, topCategory, typedLink, detector, trial, hit, miss, falseAlarm, correctRejection, signal, listener, reception, salientReception, noise, experiment, keptExperiment, discardedExperiment, evalPlan, settledRecord, sourcedRecord, estimatedRecord, syntheticRecord, goldRecord, allowedSource];
+// An APQC citation (EE-199, packages/naive/lean/Naive/Citations.lean). All three facts must hold.
+export const pcfCitation: Term<CitationFacts> = {
+  id: "pcf-citation", form: "compound", label: "PCF citation", level: "citation", kind: "act",
+  labels: sharedTerm("adapted", "standard"),
+  meaning: "A citation of one element of APQC's Process Classification Framework: the element id is in the PCF, the cited name is that element's name, and the cited version is the PCF's version.",
+  props: [
+    { id: "C1", says: "the element id is in the PCF", check: (f) => f.elementKnown },
+    { id: "C2", says: "the cited name is that element's name", check: (f) => f.nameMatches },
+    { id: "C3", says: "the cited version is the PCF's version", check: (f) => f.versionMatches },
+  ],
+  sources: ["EE-199", "APQC Process Classification Framework, cross-industry 8.0"],
+  lean: ["citation_needs_element"],
+};
+
+export const TERMS = [founder, coFounder, earlyEmployee, mentor, coach, friend, unearnedCandour, thresholdGuardian, phaseGate, layer, area, topCategory, typedLink, detector, trial, hit, miss, falseAlarm, correctRejection, signal, listener, reception, salientReception, noise, experiment, keptExperiment, discardedExperiment, evalPlan, settledRecord, sourcedRecord, estimatedRecord, syntheticRecord, goldRecord, allowedSource, pcfCitation];
