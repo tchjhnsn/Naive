@@ -5,13 +5,14 @@
 // each sub-matrix answer at their routes.
 
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { addCounts, type ApplicationDate, cellStatuses, isApplicationDate, confidenceOf, countOf, coverageOf, problems, problemsOf, statusAt, submatrix, ventureAnatomy, viewOf } from "./venture-anatomy.ts";
 import { leanCanvas } from "./lean-canvas.ts";
 import { CannotRun } from "../core/effect/errors.ts";
 import { draft as draftMarket } from "./generators/market-anatomy.ts";
+import { ventureFile } from "../core/venture-paths.ts";
 import type { VentureAnatomy } from "../records/types/records.d.ts";
 
 let failed = 0;
@@ -107,6 +108,24 @@ const text = node(["packages/naive/src/engine/venture-anatomy.ts", dir, "--valid
 expect("the command prints the matrix and its coverage", text.status === 0 && text.stdout.includes("S-K coverage") && text.stdout.includes("valid at 2026-10-15"), text.stdout || text.stderr);
 const bad = node(["packages/naive/src/engine/venture-anatomy.ts", dir, "--valid-at", "soon"]);
 expect("a bad --valid-at is a bad call", bad.status === 2, bad.stderr);
+
+// ---- A reference to a held draft ----
+// The market names an ICP profile that exists only as an agent's draft held for a person: the link says so.
+const marketFile = ventureFile(dir, "markets/primary.json");
+const market = JSON.parse(readFileSync(marketFile, "utf8")) as Record<string, unknown>;
+const icpLink = (id: string) => { writeFileSync(marketFile, JSON.stringify({ ...market, icp: id }, null, 2) + "\n"); return ventureAnatomy(dir).submatrices.find((s) => s.id === "market")?.nesting?.links?.find((l) => l.field === "icp"); };
+mkdirSync(ventureFile(dir, "_drafts"), { recursive: true });
+writeFileSync(ventureFile(dir, "_drafts/foundation__icp__shop-owners.json.draft"), JSON.stringify({ id: "shop-owners", name: "Shop owners" }) + "\n");
+const held = icpLink("shop-owners");
+expect("a market naming an ICP held as a draft links to it as held, not resolved", held?.resolved === false && held.held === true, held);
+const heldText = node(["packages/naive/src/engine/venture-anatomy.ts", dir]);
+expect("the command names the reference to a held draft", heldText.stdout.includes("markets/primary.json: icp shop-owners is only a held draft"), heldText.stdout);
+const nothing = icpLink("nobody");
+expect("a market naming no ICP at all is unresolved and not held", nothing?.resolved === false && nothing.held === undefined, nothing);
+mkdirSync(ventureFile(dir, "foundation/icp"), { recursive: true });
+writeFileSync(ventureFile(dir, "foundation/icp/shop-owners.json"), JSON.stringify({ id: "shop-owners", name: "Shop owners" }) + "\n");
+const accepted = icpLink("shop-owners");
+expect("once the profile is a record the link resolves and is no longer held", accepted?.resolved === true && accepted.held === undefined, accepted);
 
 rmSync(ws, { recursive: true, force: true });
 if (failed) { console.log(`${failed} failed`); process.exit(1); }

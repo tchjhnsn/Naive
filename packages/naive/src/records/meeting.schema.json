@@ -1,0 +1,127 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "meeting.schema.json",
+  "title": "Meeting",
+  "description": "One meeting (EE-200), at operations/meetings/<id>.json (route operations/meeting/[id]): a goal, the outcome that shows it was reached, who attends (people and agents), an agenda worked in order, the minutes, the outcome and what each attendee takes away. A meeting may walk a function workflow (`workflow`), with one agenda item per step. It follows the practice that a meeting states its purpose and desired outcome before it starts and ends with decisions and owned actions recorded (Lencioni, Death by Meeting, 2004; Rogelberg, The Surprising Science of Meetings, 2019). Status: planned, then open, then closed or abandoned. A closed meeting has its outcome and the time it closed, and no agenda item is still pending. Closed meetings are what agents read as shared memory: an app derives each attendee's memory from them, and nothing copies a meeting into a second record. A meeting spans functions, so the type names none (function null); the gate and the team plan decide who writes it.",
+  "type": "object",
+  "required": ["id", "title", "goal", "outcome_expected", "called_by", "attendees", "status", "agenda"],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": { "properties": { "status": { "const": "closed" } }, "required": ["status"] },
+      "then": {
+        "required": ["outcome", "closed_at"],
+        "properties": { "agenda": { "items": { "properties": { "status": { "not": { "const": "pending" } } } } } }
+      }
+    },
+    {
+      "if": { "properties": { "status": { "enum": ["open", "closed", "abandoned"] } }, "required": ["status"] },
+      "then": { "required": ["opened_at"] }
+    }
+  ],
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9-]+$", "description": "The file name without .json" },
+    "title": { "type": "string", "minLength": 1 },
+    "goal": { "type": "string", "minLength": 1, "description": "What the meeting must achieve, in one sentence, stated before it opens" },
+    "outcome_expected": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 },
+      "description": "What exists when the meeting has done its job: records written, decisions raised, an answer. Read at close to say whether the goal was reached"
+    },
+    "workflow": { "type": "string", "pattern": "^[a-z][a-z-]*/[a-z0-9-]+$", "description": "The function workflow this meeting walks, `<function>/<workflow>`. Its steps become agenda items, in order" },
+    "called_by": { "type": "string", "minLength": 1, "description": "Who called it: a person's id or a team-plan role id" },
+    "facilitator": { "type": "string", "minLength": 1, "description": "Who runs the agenda, a person's id or a role id. Defaults to called_by" },
+    "attendees": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "kind"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "minLength": 1, "description": "A person's id or a team-plan role id (strategy-agent)" },
+          "kind": { "enum": ["person", "agent"] }
+        }
+      }
+    },
+    "status": { "enum": ["planned", "open", "closed", "abandoned"], "description": "planned: called, not started. open: the agenda is being worked. closed: ended with an outcome. abandoned: ended without one" },
+    "scheduled_for": { "type": "string", "format": "date-time" },
+    "opened_at": { "type": "string", "format": "date-time" },
+    "closed_at": { "type": "string", "format": "date-time" },
+    "agenda": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "status"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+          "title": { "type": "string", "minLength": 1 },
+          "step": { "type": "string", "pattern": "^[a-z0-9-]+$", "description": "The workflow step this item works, when the meeting walks a workflow" },
+          "owner": { "type": "string", "minLength": 1, "description": "Who answers for the item, a person's id or a role id" },
+          "ask": { "type": "boolean", "description": "True when the item needs a person's answer before it is done" },
+          "status": { "enum": ["pending", "done", "skipped", "handed-off"], "description": "pending: not yet worked. done: worked. skipped: passed over for now, to loop back to. handed-off: given to an agent or a person to recommend or finish, named in handed_to" },
+          "result": { "type": "string", "description": "What came of it, in a sentence" },
+          "writes": { "type": "array", "items": { "type": "string", "minLength": 1 }, "description": "Routes written or drafted while working it" },
+          "decisions": { "type": "array", "items": { "type": "string", "minLength": 1 }, "description": "Decision ids raised or settled while working it" },
+          "handed_to": { "type": "string", "minLength": 1, "description": "Who the item was handed to, for handed-off" },
+          "recommendation": { "type": "string", "description": "What the agent it was handed to recommends" }
+        }
+      }
+    },
+    "minutes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["at", "by", "text"],
+        "additionalProperties": false,
+        "properties": {
+          "at": { "type": "string", "format": "date-time" },
+          "by": { "type": "string", "minLength": 1 },
+          "item": { "type": "string", "description": "The agenda item id this note is about" },
+          "text": { "type": "string", "minLength": 1 }
+        }
+      },
+      "description": "What was said, in order"
+    },
+    "outcome": {
+      "type": "object",
+      "required": ["reached", "summary"],
+      "additionalProperties": false,
+      "properties": {
+        "reached": { "enum": ["yes", "partly", "no"], "description": "Whether outcome_expected exists" },
+        "summary": { "type": "string", "minLength": 1 },
+        "records": { "type": "array", "items": { "type": "string" }, "description": "Routes written or drafted" },
+        "decisions": { "type": "array", "items": { "type": "string" }, "description": "Decision ids raised or settled" },
+        "handoffs": { "type": "array", "items": { "type": "string" }, "description": "Handoff ids opened" },
+        "follow_up": { "type": "string", "description": "What happens next, and who starts it" }
+      }
+    },
+    "takeaways": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["attendee", "text"],
+        "additionalProperties": false,
+        "properties": {
+          "attendee": { "type": "string", "minLength": 1 },
+          "text": { "type": "string", "minLength": 1, "description": "What this attendee should remember from the meeting" }
+        }
+      },
+      "description": "What each attendee takes away. An app gives an agent its own takeaways, and the outcomes of every closed meeting, as memory"
+    },
+    "recording": {
+      "type": "object",
+      "required": ["tool"],
+      "additionalProperties": false,
+      "properties": {
+        "tool": { "type": "string", "minLength": 1, "description": "What recorded the meeting: the agent run, or a meeting tool the business uses" },
+        "url": { "type": "string", "format": "uri" },
+        "transcript": { "type": "string", "description": "Where the transcript is kept, a path or route in the business" }
+      },
+      "description": "How the meeting was recorded, so that agents can see what was said"
+    },
+    "note": { "type": "string" }
+  }
+}
