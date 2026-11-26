@@ -17,7 +17,8 @@
       "properties": {
         "kind": { "enum": ["intake", "schedule", "event", "request"], "description": "intake: once, when the function joins a venture, and again when its records are missing. schedule: on a cadence. event: when a route is written. request: when a lead or person hands it off." },
         "cadence": { "enum": ["daily", "weekly", "monthly", "quarterly"], "description": "For schedule." },
-        "route": { "type": "string", "description": "For event: the route pattern whose write starts it." }
+        "route": { "type": "string", "description": "For event: the route pattern whose write starts it." },
+        "during": { "enum": ["campaign", "sprint"], "description": "Only while a time box of this kind is open that lists the workflow or its function (operations/time-boxes/<id>.json, EE-186). Outside one the workflow is not due, whatever its kind says." }
       }
     },
     "reads": { "type": "array", "items": { "type": "string" }, "description": "Route patterns the agent reads first." },

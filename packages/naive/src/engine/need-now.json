@@ -240,6 +240,17 @@
       ],
       "why": "A lead plans cross-function work once more than one function runs at once; until then the founder holds every seam"
     },
+    "time-box": {
+      "base": {
+        "discovery": 0.05,
+        "validation": 0.2,
+        "beachhead": 0.5,
+        "scale": 0.7,
+        "platform": 0.7
+      },
+      "when": [],
+      "why": "A campaign or a sprint bounds work once there is an audience to reach or a product to build in stretches; in Discovery the founder works without them"
+    },
     "evidence": {
       "base": {
         "discovery": 0.3,

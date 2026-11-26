@@ -1302,6 +1302,21 @@
       "note": "One lead's plan (lead agents design, build plan item 3): its portfolio, the telos measures it is bound to, its bets citing measure and handoff ids, and its review cadence. A lead spans functions, so the type names none (function null). Route operations/lead/[id]; the file name avoids *.plan.json, which evidence/eval-plan matches"
     },
     {
+      "id": "time-box",
+      "layer": "operations",
+      "function": null,
+      "level": "venture",
+      "data": "transactional",
+      "schema": "packages/naive/src/records/time-box.schema.json",
+      "generator": "packages/naive/src/engine/generators/time-box.ts",
+      "writer": "person",
+      "paths": [
+        "instance/**/operations/time-boxes/*.json",
+        "packages/naive/src/records/examples/**/operations/time-boxes/*.json"
+      ],
+      "note": "One campaign or sprint (EE-186): a stretch of time a person sets for some of the business's work, with a goal, a start, an end and the functions or workflows it covers. While it is open, a workflow whose trigger says during its kind is due (packages/naive/src/engine/due.ts) and the loop takes its loop_mode (packages/naive/src/engine/loop.ts). A time box spans functions, so the type names none (function null). Only a person writes it (writer person). Route operations/time-box/[id]"
+    },
+    {
       "id": "activity",
       "layer": "operations",
       "function": "service-delivery",

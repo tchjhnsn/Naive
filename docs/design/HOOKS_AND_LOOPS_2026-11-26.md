@@ -70,7 +70,7 @@ One pull request each.
 1. What is due. Built: `naive due [--at <iso>] [--function <id>] [--json]` and `naive due record <function>/<workflow> [--outcome done|failed|skipped] [--by <who>]`.
 2. The loop with modes (EE-183). Built: `naive loop plan`, `naive loop tick`, `naive loop watch` and `naive loop mode`, described below.
 3. Record data categories (EE-184). Built: every workspace and venture record type in the data model names `data`, master, reference, transactional or derived, and `check-data-model.ts` requires it. Nothing reads it yet: steps 6 and 7 do.
-4. Time boxes. Not built: a time box record for a campaign or a sprint, and a trigger "while a time box is open".
+4. Time boxes (EE-186). Built: the time box record for a campaign or a sprint, the trigger `during`, and a loop mode per time box, described below.
 5. Owners. Not built: one accountable owner per element, inherited from its parent, and a check that nothing is unowned.
 6. The element graph. Not built: edges from workflow reads and writes.
 7. State and quality. Not built: the statechart above, a capability level per element from evidence, and the effect of an absent or weak element on the elements it feeds.
@@ -114,10 +114,34 @@ Rules that hold in every mode:
 
 `naive loop watch` ticks on `Schedule.spaced` from Effect in one process. It does not survive a restart on its own: a host's scheduler or a person runs it again, and a tick is safe to rerun because the run log and the decisions hold its state.
 
+## Time boxes
+
+A campaign or a sprint is a time box: `operations/time-boxes/<id>.json`, route `operations/time-box/[id]`, transactional data that only a person writes. It names its kind, a goal, `starts`, `ends`, a status, and the functions or workflows it covers. It is open while its status is active, from `starts` until `ends`.
+
+```mermaid
+flowchart TD
+  tb[time box: campaign or sprint] --> open{active, started, not ended?}
+  open -- no --> none[covers nothing]
+  open -- yes --> cov[covers its functions and named workflows]
+  cov --> d1{workflow trigger says during this kind?}
+  d1 -- yes --> due[due as its kind says; an event counts from the start of the time box]
+  d1 -- no --> plain[due as before]
+  cov --> m{loop_mode with set_by?}
+  m -- yes --> mode[mode for the workflows it covers, below a mode named for the workflow]
+  m -- no --> cfg[mode from naive.config.json]
+```
+
+- A workflow whose trigger says `during: campaign` or `during: sprint` is not due outside such a time box, whatever its kind says. `marketing-and-sales/campaign-daily-review` is the shipped one: daily, during a campaign.
+- Every due entry names the open time box that covers it. When two cover it, the later to start wins.
+- The order of modes is: a mode named for the workflow, then the open time box's, then the function's, then the venture's, then manual. A time box's mode counts only with the person in `set_by`, and a workflow a time box covers by mode is started even when the phase does not list it.
+- The gate, drafts and the rule about failed runs apply inside a time box as everywhere.
+
+Not built: a time box's own measures and review, a check that a time box names workflows the venture has, and a command to open or close one (a person writes the record through its route).
+
 ## Not built
 
-- Everything in steps 4 to 8.
-- A mode per time box (step 4 adds the time box). Retries with backoff inside one tick. A durable watch on `workflow/DurableClock`. Starting more than one workflow at once. A hosted starter: with `NAIVE_RUNTIME=hosted` there is no `NAIVE_AGENT_CMD`, so a start is blocked.
+- Everything in steps 5 to 8.
+- Retries with backoff inside one tick. A durable watch on `workflow/DurableClock`. Starting more than one workflow at once. A hosted starter: with `NAIVE_RUNTIME=hosted` there is no `NAIVE_AGENT_CMD`, so a start is blocked.
 - The run log is not synced (`naive sync` skips `.naive/`), no route serves it, and it has no hash chain.
 - A workflow step's `when` (EE-181) is still a sentence an agent reads.
 - Language choice: Naive is TypeScript on Effect, with Lean for proofs. A rubric for choosing another language for a system is not written.
