@@ -586,7 +586,7 @@ export const observedVenture: Term<Conduct> = {
     { id: "C1", says: "observed", check: (f) => f.observed },
     { id: "C2", says: "not run", check: (f) => !f.run },
   ],
-  sources: ["EE-188"],
+  sources: ["EE-193"],
   lean: ["observed_not_run"],
   predicts: { "run-venture": "disjoint" },
 };
@@ -599,7 +599,7 @@ export const runVenture: Term<Conduct> = {
     { id: "D1", says: "run", check: (f) => f.run },
     { id: "D2", says: "not observed", check: (f) => !f.observed },
   ],
-  sources: ["EE-188"],
+  sources: ["EE-193"],
   lean: ["run_not_observed", "observed_disjoint_run"],
   predicts: { "observed-venture": "disjoint" },
 };

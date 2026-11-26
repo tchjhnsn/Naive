@@ -1,4 +1,4 @@
-// venture.json mode (EE-188): observed or run, written by init-venture and create-venture.
+// venture.json mode (EE-193): observed or run, written by init-venture and create-venture.
 // Absence stays unknown. This file may import the conduct terms. It does not import packages/naive/src/checks.
 
 import { spawnSync } from "node:child_process";

@@ -5,7 +5,7 @@
 //   node packages/naive/src/engine/init-venture.ts <dir> <id> [--phase discovery] [--parent <id>] [--legal-form llc] [--layers purpose,governance]
 //                                [--type <venture type>] [--layout flat|structured|src] [--mode observed|run]
 //
-// --mode (EE-188) writes venture.json mode. observed means agents are modeling the venture. run means a person
+// --mode (EE-193) writes venture.json mode. observed means agents are modeling the venture. run means a person
 // is running it. With no --mode the field stays absent, and absence is not read as run. This is not the loop
 // mode and not people.json mode (solo or team).
 //

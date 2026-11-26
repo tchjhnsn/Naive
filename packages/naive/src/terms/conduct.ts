@@ -1,4 +1,4 @@
-// Whether a venture record is observed or run (EE-188). The terms live in terms.ts. Absence of mode is
+// Whether a venture record is observed or run (EE-193). The terms live in terms.ts. Absence of mode is
 // unknown and passes. Any other present value is illegal. This is not the loop mode and not people.json mode.
 
 import { run, type Result } from "./engine.ts";

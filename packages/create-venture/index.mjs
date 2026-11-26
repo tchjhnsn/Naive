@@ -13,7 +13,7 @@
 //                      [--framework <spec>] [--reset-preferences] [--venture-name "<name>"] [--no-workspace]
 //                      [--door <door>] [--account <id>] [--observed] [--mode observed|run]
 //
-// venture.json mode (EE-188) is run unless --observed or --mode says otherwise. --mode observed|run is the
+// venture.json mode (EE-193) is run unless --observed or --mode says otherwise. --mode observed|run is the
 // explicit form and is passed through to init-venture. --observed writes observed. The two disagreeing is
 // refused. This is not people.json mode (solo or team) and not the loop mode.
 //
