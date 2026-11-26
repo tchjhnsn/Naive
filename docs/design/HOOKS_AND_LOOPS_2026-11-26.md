@@ -1,6 +1,6 @@
 # Hooks and loops across the 13 functions
 
-Date: 2026-11-26. Decision: EE-182. Status: steps 1 to 3 and 5 are built: what is due (`packages/naive/src/engine/due.ts`, `naive due`), the loop (EE-183), record data categories (EE-184) and owners (EE-187, `packages/naive/src/engine/element-owners.ts`, `naive owners`). Steps 4 and 6 to 8 are not built.
+Date: 2026-11-26. Decisions: EE-182, EE-183, EE-184, EE-186, EE-187, EE-188. Status: steps 1 to 6 are built: what is due (`packages/naive/src/engine/due.ts`, `naive due`), the loop (EE-183), record data categories (EE-184), time boxes (EE-186), owners (EE-187, `packages/naive/src/engine/element-owners.ts`, `naive owners`) and the element graph (EE-188, `packages/naive/src/engine/element-graph.ts`, `naive graph`). Steps 7 and 8 are not built.
 
 ## The ask
 
@@ -72,7 +72,7 @@ One pull request each.
 3. Record data categories (EE-184). Built: every workspace and venture record type in the data model names `data`, master, reference, transactional or derived, and `check-data-model.ts` requires it. Nothing reads it yet: steps 6 and 7 do.
 4. Time boxes (EE-186). Built: the time box record for a campaign or a sprint, the trigger `during`, and a loop mode per time box, described below.
 5. Owners (EE-187). Built: one accountable owner per element, inherited from its parent, and a check that nothing is unowned, described below.
-6. The element graph. Not built: edges from workflow reads and writes.
+6. The element graph (EE-188). Built: `naive graph [--function <id>] [--element <id>] [--json] [--mermaid]`, described below.
 7. State and quality. Not built: the statechart above, a capability level per element from evidence, and the effect of an absent or weak element on the elements it feeds.
 8. Proofs. Not built: Lean proofs of the transition function and of propagation.
 
@@ -176,9 +176,41 @@ A role is a role template, Naive's (`packages/naive/template/governance/roles/`)
 
 Not built for owners: a route that serves the list, the catalog's own activities (`activities.json`) as elements, the gate refusing a write by a role that does not own the element, a consulted and informed list for the C and I of RACI, and a person's name checked against the venture's people.
 
+## The element graph
+
+`buildGraph()` in `packages/naive/src/engine/element-graph.ts` reads the 13 function modules' workflows, APQC's PCF and the activity catalog, and resolves each route pattern a workflow names to record types through the route table (`packages/naive/src/records/routes/routes.ts`). It builds one directed Effect `Graph`. It is pure: the same workflows in any order give the same graph.
+
+```mermaid
+flowchart LR
+  E1[Element: a function, level 1] -->|contains| E2[Element: process group, process, activity]
+  W[Workflow] -->|belongs-to| E1
+  W -->|performs, naming the step| E2
+  W -->|writes, naming the step| RW[Route written]
+  W -->|reads| RR[Route read]
+  W -->|listens: event trigger| RR
+  RW -->|resolves| T[Record type]
+  RR -->|resolves| T
+  E1 -.feeds, derived, with evidence.-> E1b[Another element of the same level]
+```
+
+| Edge | From | To | Comes from |
+|---|---|---|---|
+| contains | element | element | The PCF hierarchy. A catalog activity sits under its process, else its process group. |
+| belongs-to | workflow | element | The workflow's function, through its APQC category in departments.json. |
+| performs | workflow | element | A step's `activity`, naming the step. |
+| writes | workflow | route | A step's `writes`, naming the step. |
+| reads | workflow | route | The workflow's `reads`. |
+| listens | workflow | route | An event trigger's `route`. |
+| resolves | route | record type | The route table. `*` and `[id]` stand for one segment. |
+| feeds | element | element | Derived, below. |
+
+A step is attached to its activity, every ancestor of that activity and its function's category. A workflow is attached to every element one of its steps is attached to. Element A feeds element B when both have the same level and a route a step attached to A writes resolves to a record type that a workflow attached to B reads or is triggered by. Each feed names its evidence: the writing workflow and step, the route written, the reading workflow, the route read, whether by read or trigger, and the record type. A workflow reading what it wrote itself is a loop, not a feed, so it is left out. A route that resolves to no record type matches only the same pattern.
+
+The graph answers `upstream(element)` and `downstream(element)`, the routes some workflow reads that no workflow writes (`unfed`: inputs a person, an intake or an outside source must give, such as `venture`, which every intake reads) and the routes some workflow writes that none reads (`unread`). `naive graph` prints the feeds between functions and both lists, `--element` and `--function` print one element's neighbours with their evidence, and `--mermaid` prints the feeds between functions.
+
 ## Not built
 
-- Everything in steps 6 to 8.
+- Everything in steps 7 and 8.
 - Retries with backoff inside one tick. A durable watch on `workflow/DurableClock`. Starting more than one workflow at once. A hosted starter: with `NAIVE_RUNTIME=hosted` there is no `NAIVE_AGENT_CMD`, so a start is blocked.
 
 - The run log is not synced (`naive sync` skips `.naive/`), no route serves it, and it has no hash chain.
