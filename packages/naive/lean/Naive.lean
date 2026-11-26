@@ -1,6 +1,7 @@
 import Naive.Authorship
 import Naive.Citations
 import Naive.Concept
+import Naive.Conduct
 import Naive.Detection
 import Naive.Elements
 import Naive.Evals

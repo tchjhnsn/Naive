@@ -429,6 +429,23 @@ export function authorshipCases(seed = 59): Authorship[] {
   });
 }
 
+/** Whether a venture is an outside-in model of a company or a person is running it (EE-193). A field the record does not
+ *  hold is not a fact here. The judge reads a missing mode as unknown. */
+export type Conduct = Base & {
+  observed: boolean;
+  run: boolean;
+};
+
+/** Each combination of confirmed, observed and run, so each property passes and fails. */
+export function conductCases(seed = 59): Conduct[] {
+  const r = rng(seed);
+  const b = (p = 0.5) => r() < p;
+  return Array.from({ length: N }, () => ({
+    confirmed: b(0.9), label: ["observed venture", "run venture", "solo", undefined][Math.floor(r() * 4)],
+    observed: b(), run: b(),
+  }));
+}
+
 /** Most outcomes are settled by a person or two producers; some rest on one producer; agents claim at random. */
 export function settlementCases(seed = 53): Settlement[] {
   const r = rng(seed);

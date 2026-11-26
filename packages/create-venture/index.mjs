@@ -11,7 +11,11 @@
 //                      [--layers a,b] [--legal-form <form>] [--dump <file>]
 //                      [--use-npm | --use-pnpm | --use-yarn | --use-bun] [--skip-install] [--no-git]
 //                      [--framework <spec>] [--reset-preferences] [--venture-name "<name>"] [--no-workspace]
-//                      [--door <door>] [--account <id>]
+//                      [--door <door>] [--account <id>] [--observed] [--mode observed|run]
+//
+// venture.json mode (EE-193) is run unless --observed or --mode says otherwise. --mode observed|run is the
+// explicit form and is passed through to init-venture. --observed writes observed. The two disagreeing is
+// refused. This is not people.json mode (solo or team) and not the loop mode.
 //
 // --name is the subject written into people/. It is not the provenance agent. The agent is the process:
 // MENTURA_ACTOR, MENTURA_ACTOR_ID, MENTURA_MODEL, MENTURA_SESSION, MENTURA_HARNESS. An agent process is
@@ -61,11 +65,17 @@ const FORMS = readSchema("venture").properties.form.properties.legal_form.enum;
 const argv = process.argv.slice(2);
 const opt = (n) => { const i = argv.indexOf(`--${n}`); return i >= 0 ? argv[i + 1] : undefined; };
 const flag = (n) => argv.includes(`--${n}`);
-const valued = new Set(["phase", "layers", "legal-form", "dump", "framework", "type", "describe", "role", "name", "by", "team", "layout", "venture-name", "door", "account"]);
+const valued = new Set(["phase", "layers", "legal-form", "dump", "framework", "type", "describe", "role", "name", "by", "team", "layout", "venture-name", "door", "account", "mode"]);
 const positional = argv.filter((a, i) => !a.startsWith("--") && !(i > 0 && valued.has(argv[i - 1].slice(2))));
 const bold = (s) => (process.stdout.isTTY ? `\x1b[1m${s}\x1b[22m` : s);
 const cyan = (s) => (process.stdout.isTTY ? `\x1b[36m${s}\x1b[39m` : s);
 const fail = (m) => { console.error(m); process.exit(1); };
+if (argv.includes("--modeled")) fail("unknown flag --modeled");
+const modeAt = argv.indexOf("--mode");
+const askedMode = modeAt < 0 ? undefined : argv[modeAt + 1];
+if (modeAt >= 0 && askedMode !== "observed" && askedMode !== "run") fail(`unknown mode ${askedMode ?? ""}: observed or run`);
+if (flag("observed") && askedMode === "run") fail("--observed writes observed, and --mode run says run");
+const ventureMode = askedMode === "observed" || askedMode === "run" ? askedMode : (flag("observed") ? "observed" : "run");
 const slug = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
 // Preferences, so a second venture can reuse the first one's answers (create-next-app's "reuse previous settings").
@@ -241,7 +251,7 @@ rl?.close();
 // 4. The venture itself, by the framework's own scaffold.
 console.log(`\nCreating a new ${vtype.label.toLowerCase()} in ${bold(dir)}, with ${mode === "solo" ? `${me} as its ${role}, wearing every hat` : `${people.length} founders`}.\n`);
 const initScript = fwModule("packages/naive/src/engine/init-venture.ts");
-const init = spawnSync("node", [initScript, dir, id, "--phase", answers.phase, "--type", vtype.id, "--layout", layout,
+const init = spawnSync("node", [initScript, dir, id, "--phase", answers.phase, "--type", vtype.id, "--layout", layout, "--mode", ventureMode,
   ...(answers.layers ? ["--layers", answers.layers] : []), ...(answers.legalForm ? ["--legal-form", answers.legalForm] : [])], { encoding: "utf8" });
 if (init.status !== 0) fail((init.stderr || init.stdout).trim());
 const vfile = join(dir, "venture.json");
