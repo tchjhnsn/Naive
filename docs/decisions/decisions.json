@@ -2746,6 +2746,29 @@
           "expect": "defined"
         }
       ]
+    },
+    {
+      "id": "EE-194",
+      "date": "2026-11-26",
+      "status": "proposed",
+      "decision": "Naive ships as code. Hosted needs belong to Mentura. This record is exploratory and not in force. Naive is a CLI and a repo format that runs next to the venture repo. A founder who has the code needs no remote service to use it. Mentura is Naive hosted for anyone who must reach a venture from where the code is not. The working hypothesis, the four hosted needs, and the evidence are in docs/design/HOSTED_NEED_2026-11-26.md. Torian will test the hypothesis by running Naive on his own ventures before any GUI is built. These questions stay open. How Naive ships to other founders, as an npm package, a repo template, or a public repo to fork, and under what license. That choice is a one-way door for Torian. Whether mentura.xyz is held to the GUI rule. Whether to run a hooks canary to test if repo hooks fire in Cursor cloud agents.",
+      "why": "Torian asked on 2026-11-26 for a record of which parts of Naive and Mentura actually need a host, before any GUI is built. The audit found four hosted needs, and a split between code that runs next to the venture repo and a host for everyone else. Recording it as proposed keeps the split testable. Nothing in the repository is required to change until he adopts it.",
+      "related": [
+        "EE-030",
+        "EE-121",
+        "EE-162",
+        "EE-178",
+        "EE-182",
+        "EE-183"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "docs/design/HOSTED_NEED_2026-11-26.md",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
     }
   ]
 }
