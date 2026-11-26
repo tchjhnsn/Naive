@@ -46,7 +46,7 @@ try {
   const clean = await checkLibrary(lib(), "clean");
   t("the example library passes as it is", clean.errors.length === 0 && clean.types === 3 && clean.signals === 1 && clean.cases === 3, clean);
   const pclean = await checkDir(pkg(), []);
-  t("the competitors package's types pass as they are", pclean.errors.length === 0 && pclean.types === 4, pclean);
+  t("the competitors package's types pass as they are", pclean.errors.length === 0 && pclean.types === 6, pclean);
   const repoRun = spawnSync(process.execPath, [join(repo, "packages/naive/src/checks/check-signals.ts")], { encoding: "utf8" });
   t("the repository passes: Naive's packages and the example library", repoRun.status === 0 && /^pass {2}signals:/m.test(repoRun.stdout), repoRun.stdout + repoRun.stderr);
   const pk = checkPackages();

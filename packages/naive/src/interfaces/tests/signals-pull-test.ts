@@ -88,9 +88,9 @@ try {
     TRACK,
     { id: "rival-raised", hears: "competitor-funding@^1", consumer: { decision: "rival-raised" }, criterion: { rating: { reliability: "B", credibility: 2 }, predicates: [{ id: "in-our-markets", field: "props.org.domain", op: "exists" }] }, then: "propose", max_age: "14d", note: "Bears on when to raise" },
     { id: "big-rounds", hears: "funding-event@^1", consumer: { route: "competitors/[id]" }, criterion: { predicates: [{ id: "ten-million-or-more", field: "props.amount", op: "gte", value: 10000000, why: "Only rounds that move the market" }] }, then: "revalidate" },
-  ], ["name-competitors", "track-launches", "launch-revalidates-stance"]);
+  ], ["name-competitors", "track-launches", "launch-revalidates-stance", "track-prices", "track-hiring", "price-revalidates-stance"]);
   // beta tracks only companies a person already made competitors: it turns off every other package listener.
-  const beta = venture("beta", [TRACK], ["name-competitors", "rival-raised", "track-launches", "launch-revalidates-stance"]);
+  const beta = venture("beta", [TRACK], ["name-competitors", "rival-raised", "track-launches", "launch-revalidates-stance", "track-prices", "track-hiring", "price-revalidates-stance"]);
   const signalsFile = (dir: string) => join(dir, "competitors/acme-robotics/signals.json");
   const masterFile = (dir: string) => join(dir, "competitors/acme-robotics.json");
   const projectorLines = (dir: string, file: string) => (entries(dir) as { entity: string; agent?: { kind?: string; id?: string }; derived_from?: string[] }[]).filter((e) => e.entity === file && e.agent?.id === "projector");
@@ -193,7 +193,7 @@ try {
 
   // ---- the cursor moves only after the commit ----
   const gamma = venture("gamma", [TRACK]);
-  expect("a venture that turns nothing off hears the competitors package's listeners", ["name-competitors", "rival-raised", "track-launches", "launch-revalidates-stance"].every((id) => listenersOf(gamma).listeners.some((l) => l.id === id && l.from === "package competitors")), show(listenersOf(gamma)));
+  expect("a venture that turns nothing off hears the competitors package's listeners", ["name-competitors", "rival-raised", "track-launches", "launch-revalidates-stance", "track-prices", "track-hiring", "price-revalidates-stance"].every((id) => listenersOf(gamma).listeners.some((l) => l.id === id && l.from === "package competitors")), show(listenersOf(gamma)));
   await call({ venture: "gamma", workspace: ws, route: "purpose/competitor/acme-robotics", action: "write", input: { id: "acme-robotics", name: "Acme Robotics" }, actor: "person" });
   mkdirSync(signalsFile(gamma), { recursive: true }); // a folder where the record goes: the write fails
   let crashed: PullResult | string;
