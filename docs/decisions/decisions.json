@@ -2815,6 +2815,60 @@
       ]
     },
     {
+      "id": "EE-198",
+      "date": "2026-11-26",
+      "status": "in-force",
+      "decision": "Founder templates and synthetic exemplars made from public inputs live in Naive, which is public. Gold exemplars, and anything seeded from gold or from a run venture, live in Dogfood, which is private. A synthetic exemplar in Naive passes synthetic-record and declares that label. Each source it cites passes allowed-source, and none is a Dogfood path or a run venture. An eval file has one fixed canary and items. A held-out item passes held-out-item: the split is held-out, and the id is in no exemplar file and no prompt fixture. A label is non-null only when labelled_by names a person, judged by person-label. The faithful-author term is not on main, so person-label states that rule in this change.",
+      "why": "Torian decided this split on 2026-11-26 (Q5 in docs/design/OBSERVED_VENTURES_2026-11-26.md). Gold comes from our own ventures and can hold private data. Synthetic data keeps the statistical traits of its seed (NIST SP 800-188), so a synthetic exemplar seeded from gold stays private too.",
+      "related": [
+        "EE-095",
+        "EE-191",
+        "EE-192"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/founder-templates/discovery/cross-industry/subscription/template.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/exemplars/synthetic/discovery-subscription/exemplar.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/evals/discovery-subscription.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/lean/Naive/Evals.lean",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/exemplars/gold/**",
+          "root": "repo",
+          "expect": "absent"
+        },
+        {
+          "kind": "term",
+          "target": "held-out-item",
+          "expect": "defined"
+        },
+        {
+          "kind": "term",
+          "target": "person-label",
+          "expect": "defined"
+        }
+      ]
+    },
+    {
       "id": "EE-153",
       "date": "2026-11-19",
       "status": "in-force",

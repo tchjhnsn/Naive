@@ -405,6 +405,22 @@ export type LabelFacts = Base & {
   underVenture: boolean;  // it sits under some venture
 };
 
+/** One eval item judged as held-out (EE-198). The id's membership is a fact. The declared label is not. */
+export type HeldOutFacts = Base & {
+  splitHeldOut: boolean;    // the split is held-out
+  inExemplar: boolean;      // the id appears in an exemplar file
+  inPromptFixture: boolean; // the id appears in a prompt fixture
+};
+
+/** One eval item's label (EE-198). byPerson is authorIsPerson of labelled_by's kind. The label text is not a fact. */
+export type PersonLabelFacts = Base & {
+  labelSet: boolean; // the label is non-null
+  byPerson: boolean; // labelled_by names a person
+};
+
+/** The data level's cases: the six label flags and the eval flags, each drawn on its own. */
+export type DataCase = LabelFacts & HeldOutFacts & PersonLabelFacts;
+
 /** One citation of an APQC element (EE-199). The three flags are the facts. The words of the citation are not. */
 export type CitationFacts = Base & {
   elementKnown: boolean;   // the cited element id is in pcf.json
@@ -422,13 +438,14 @@ export function citationCases(seed = 71): CitationFacts[] {
   }));
 }
 
-/** Each of the six flags is drawn on its own, so each property passes and fails. */
-export function dataCases(seed = 67): LabelFacts[] {
+/** Each flag is drawn on its own, so each property passes and fails. */
+export function dataCases(seed = 67): DataCase[] {
   const r = rng(seed);
   const b = (p = 0.5) => r() < p;
   return Array.from({ length: N }, () => ({
     confirmed: b(0.9), label: ["sourced", "estimated", "synthetic", "gold", undefined][Math.floor(r() * 5)],
     hasSource: b(), hasMethod: b(), generated: b(), accepted: b(), ownVenture: b(), underVenture: b(),
+    splitHeldOut: b(), inExemplar: b(), inPromptFixture: b(), labelSet: b(), byPerson: b(),
   }));
 }
 

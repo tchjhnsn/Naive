@@ -92,7 +92,7 @@ const selfNamer: Term<Relationship> = { ...friend, id: "self-namer", label: "sel
 expect("a test that reads its own label in rare cases is caught", validTest(selfNamer, cases).some((p) => /label changes a verdict/.test(p)));
 { const r = rng(11); const seen = new Set<number>(); for (let i = 0; i < 1_000_000; i++) seen.add(r());
   expect("the generator does not cycle within a million draws", seen.size > 999_000, `${seen.size} distinct`); }
-// dataCases is six booleans, so its draws repeat. Admission checks that each data property fails on its own.
+// dataCases draws the label flags and the eval flags on their own, so its draws repeat. Admission checks that each property fails.
 for (const [name, gen] of [["membership", membershipCases], ["relationship", relationshipCases], ["encounter", encounterCases], ["arrangement", arrangementCases], ["detector", detectorCases], ["trial", trialCases], ["reception", receptionCases], ["experiment", experimentCases], ["plan", evalPlanCases], ["settlement", settlementCases]] as const) {
   const c = gen(); const distinct = new Set(c.map((x) => JSON.stringify(x))).size;
   expect(`${name} cases are mostly distinct (not repeats of a short cycle)`, distinct > c.length / 2, `${distinct} of ${c.length}`);
