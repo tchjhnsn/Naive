@@ -134,6 +134,8 @@ export const checkFunctions = Effect.gen(function* () {
       workflows.set(String(w.id), w);
       if (`${String(w.id)}.json` !== f) fail(fn, file, `id ${String(w.id)} is not the file's name`);
       if (w.function !== fn) fail(fn, file, `names function ${String(w.function)}, not ${fn}`);
+      const steps = Array.isArray(w.steps) ? w.steps.filter(isObject) : [];
+      if (steps.length && steps.every((s) => isObject(s.consider))) fail(fn, file, "every step is one to consider; a workflow has at least one required step");
       for (const s of Array.isArray(w.steps) ? w.steps.filter(isObject) : []) {
         if (s.skill && !skills.includes(String(s.skill))) fail(fn, file, `step ${String(s.id)} loads skill ${String(s.skill)}, which skills/ does not have`);
         for (const r of strings(s.writes)) if (!reaches(reach, r)) fail(fn, file, `step ${String(s.id)} writes ${r}, outside the function's write reach`);

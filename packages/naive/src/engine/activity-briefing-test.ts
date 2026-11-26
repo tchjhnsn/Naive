@@ -6,7 +6,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { runSync } from "../core/effect/run.ts";
-import { briefing, briefingFor } from "./activity-briefing.ts";
+import { briefing, briefingFor, considerSteps } from "./activity-briefing.ts";
 import { readCatalog, readGroups, readPcf } from "./activity-proposals.ts";
 
 let failed = 0;
@@ -31,6 +31,20 @@ expect("the venture's assignment moves an activity: a person approves what an ag
 expect("an activity the venture gave a person is listed as assigned, with no kind", o35?.performs.some((a) => a.id === "3.5.1.6" && a.source === "assigned" && a.kind === undefined) === true, o35?.performs);
 expect("an activity assigned to an agent with no approval is counted with the agent's", !o35?.performs.some((a) => a.id === "3.5.1.2") && !o35?.approves.some((a) => a.id === "3.5.1.2") && (o35?.performs.length ?? 0) + (o35?.approves.length ?? 0) + (o35?.agent ?? 0) === level4("3.5"));
 expect("a function with no process group has no category and nothing to need", (() => { const [x] = briefing(catalog, groups, pcf, ["no-such-function"], null); return x.category === null && x.process_groups.length === 0 && x.needs_person === 0; })());
+
+// Steps to consider (EE-181).
+const wf = { id: "review", steps: [
+  { id: "read", do: "Read the records." },
+  { id: "pricing", do: "Compare prices.", activity: "3.3.3.11", consider: { why: "Prices move.", when: "The business has a price." } },
+  { id: "call", do: "Call a customer.", consider: { why: "A person may want it." } },
+] };
+const steps = considerSteps([wf, { id: "empty", steps: [{ id: "a", do: "A." }] }, null]);
+expect("only the steps marked consider are listed, in order, with why, when and activity", JSON.stringify(steps) === JSON.stringify([
+  { workflow: "review", step: "pricing", do: "Compare prices.", why: "Prices move.", when: "The business has a price.", activity: "3.3.3.11" },
+  { workflow: "review", step: "call", do: "Call a customer.", why: "A person may want it." },
+]), steps);
+const [withSteps, without] = briefing(catalog, groups, pcf, ["marketing-and-sales", "finance"], null, new Map([["marketing-and-sales", [wf]]]));
+expect("a function's briefing carries its steps to consider, and a function with none carries an empty list", withSteps.consider.length === 2 && without.consider.length === 0 && sales.consider.length === 0);
 
 const dir = mkdtempSync(join(tmpdir(), "naive-briefing-"));
 try {

@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "function-workflow.schema.json",
   "title": "Function workflow",
-  "description": "One recurring piece of a function's work, at packages/naive/src/functions/<id>/workflows/<workflow id>.json: what starts it, the steps the function's agent takes, the records each step writes through the router, the decision classes a step may raise, the activity a step performs, and the done criteria in the handoff's form (handoff.schema.json done_criteria), so a workflow run can be handed off and verified like any other work. Every route a step writes must be in the function's write reach, and every class it raises must have a row in the function's decisions.json and every activity a step names must be an APQC activity or a catalog activity under the function's APQC category (packages/naive/src/checks/check-functions.ts).",
+  "description": "One recurring piece of a function's work, at packages/naive/src/functions/<id>/workflows/<workflow id>.json: what starts it, the steps the function's agent takes, the records each step writes through the router, the decision classes a step may raise, the activity a step performs, whether a step is required or one to consider, and the done criteria in the handoff's form (handoff.schema.json done_criteria), so a workflow run can be handed off and verified like any other work. Every route a step writes must be in the function's write reach, and every class it raises must have a row in the function's decisions.json and every activity a step names must be an APQC activity or a catalog activity under the function's APQC category, and every workflow has at least one required step (packages/naive/src/checks/check-functions.ts).",
   "type": "object",
   "required": ["id", "function", "title", "trigger", "steps", "done_criteria"],
   "additionalProperties": false,
@@ -35,6 +35,16 @@
           "ask": { "type": "boolean", "description": "True when the step asks the person, because only they know the answer." },
           "writes": { "type": "array", "items": { "type": "string" }, "description": "Route patterns this step writes." },
           "raises": { "type": "array", "items": { "type": "string", "pattern": "^[a-z0-9-]+$" }, "description": "Decision classes this step may raise." },
+          "consider": {
+            "type": "object",
+            "required": ["why"],
+            "additionalProperties": false,
+            "description": "Present when the step is one to consider, not one the workflow requires (EE-181). The agent runs it only when `when` holds, or when a person asks, and otherwise reports that it considered the step and why it did not run it. A step without `consider` is required: the agent runs it or raises a decision.",
+            "properties": {
+              "why": { "type": "string", "minLength": 1, "description": "Why a person might want this step, in one plain sentence." },
+              "when": { "type": "string", "minLength": 1, "description": "The condition under which the agent runs the step without being asked, in one plain sentence. Without it, only a person's ask runs the step." }
+            }
+          },
           "activity": {
             "type": "string",
             "pattern": "^(\\d{1,2}(\\.\\d{1,2}){3}|[a-z0-9]+(-[a-z0-9]+)*)$",
