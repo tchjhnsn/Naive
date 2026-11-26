@@ -93,7 +93,6 @@ const cliW = spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/me
 const cliOut = JSON.parse(cliW.stdout || "{}");
 expect("M-3 and M-17 through the CLI: the answer carries changed and next", cliW.status === 0 && cliOut.changed?.record?.to === "confirmed" && cliOut.next?.route, cliW.stderr || cliOut);
 
-// A next write is suggested only when that route has the action. knowledge/venture-profile has read, view and layout.
 type RouteRow = { route: string; kind: string; record?: string; actions: string[]; collection?: string };
 type Hint = { route: string | null; action: string | null; command?: string };
 const routeTable = routes() as RouteRow[];
