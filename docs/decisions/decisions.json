@@ -2992,6 +2992,27 @@
           "expect": "exists"
         }
       ]
+    },
+    {
+      "id": "EE-223",
+      "date": "2026-11-26",
+      "status": "in-force",
+      "decision": "Naive is tested by simulating businesses end to end. A simulator in packages/simulate/, outside the package's files so it never ships, drives Naive's real router, gate, loop and function agents against a seeded world of synthetic customers, competitors, money and simulated tools, with simulated people answering every decision. Three invented seed businesses together reach all 13 functions and all five phases: a solo founder in Discovery, an existing service business onboarded at Beachhead, and a seven-year physical-product run to Platform. Every simulated record carries the synthetic-record label (EE-198), and only a simulation flag, refused outside a simulation folder, lets a gate grade synthetic evidence. Lean proves the lifecycle rules in packages/naive/lean/Naive/Lifecycle.lean, and each run's trace is exported as cases lake build checks. Design: docs/design/SIMULATION_2026-11-26.md. Nothing is built yet.",
+      "why": "Torian on 2026-11-26 attacked the premise of starting with solo founders: testing only there leaves ten of the 13 functions and four of the five phases unrun, and existing businesses are where onboarding and the source-of-truth matrix meet real data. He asked to simulate long-running businesses on the platform, verify formally that the process holds across functions, phases and tools, and later demo the runs. Open simulators (YC-Bench, CEO-Bench) cover parts of one company and are Python, so their designs are rewritten in TypeScript on Effect.",
+      "related": [
+        "EE-125",
+        "EE-183",
+        "EE-190",
+        "EE-198"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "docs/design/SIMULATION_2026-11-26.md",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
     }
   ]
 }
