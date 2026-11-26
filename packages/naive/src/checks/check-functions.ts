@@ -8,7 +8,9 @@
 //     function-workflow), and each names its own function and, for a workflow, its own file;
 //   - every decision class is a class in packages/naive/template/governance/decision-rights.json, and a class in
 //     delegation.json one_way_doors or never_redelegated is escalate (a function's matrix never loosens them); a
-//     recommend row names its approver;
+//     recommend row names its approver, and that approver holds, in the default delegation, a live grant of the
+//     row's class that reaches the founder and whose scope is the venture or covers every folder the function's record
+//     types sit in (functionScopes below), so the matrix never names an approver without authority;
 //   - every capability cluster is in packages/naive/src/functions/it/capability-clusters.json;
 //   - the intake names a workflow the module has, and that workflow's trigger is intake;
 //   - every route a workflow or a step reads is one the router serves (readable below);
@@ -37,7 +39,9 @@ import { Effect } from "effect";
 import { CannotRun } from "../core/effect/errors.ts";
 import { readJson, VentureFs } from "../core/effect/fs.ts";
 import { describe, runMain } from "../core/effect/run.ts";
-import { recordsIn } from "../records/index.ts";
+import { grantBacked, liveGrant, scopeWithin } from "../core/venture-paths.ts";
+import type { Delegation } from "../records/types/records.d.ts";
+import { recordsIn, venturePaths } from "../records/index.ts";
 import { PHASES, resolve, routes } from "../records/routes/routes.ts";
 import { startOf, type Prior } from "../engine/need-now.ts";
 import { validateValue } from "../records/validate.ts";
@@ -60,7 +64,29 @@ const ids = (v: unknown, key: string): string[] =>
   isObject(v) && Array.isArray(v[key]) ? v[key].flatMap((x: unknown) => (isObject(x) && typeof x.id === "string" ? [x.id] : [])) : [];
 
 const FUNCTIONS = join(root, "packages/naive/src/functions");
-const model = recordsIn(root).readDataModel() as { records: { id: string, function?: string | null, level?: string }[] };
+const model = recordsIn(root).readDataModel() as { records: { id: string, function?: string | null, level?: string, paths?: string[] }[] };
+
+/**
+ * The folders a function's venture record types sit in, as delegation scopes: each record type's folder (the first
+ * path's folder before its wildcard), widened to its top folder when no other function's record type sits under that
+ * folder, and narrowed to nothing when another function's record type sits in the very same folder (shared, such as
+ * governance/ or people/), since a scope is a folder and cannot name one file.
+ */
+export function functionScopes(records: typeof model.records, fn: string): { scopes: string[], shared: string[] } {
+  const folderOf = (p: string) => { const head = p.includes("*") ? p.slice(0, p.indexOf("*")) : p; return head.includes("/") ? head.slice(0, head.lastIndexOf("/")) : ""; };
+  const venture = records.filter((r) => r.level === "venture");
+  const others = venture.filter((r) => r.function !== fn).flatMap((r) => venturePaths(r).map(folderOf));
+  const scopes = new Set<string>(), shared = new Set<string>();
+  for (const r of venture.filter((x) => x.function === fn)) {
+    const first = venturePaths(r)[0];
+    if (first === undefined) continue;
+    const folder = folderOf(first);
+    if (!folder || others.includes(folder)) { shared.add(folder || "(venture top)"); continue; }
+    const top = folder.split("/")[0];
+    scopes.add(others.some((o) => o === top || o.startsWith(`${top}/`)) ? folder : top);
+  }
+  return { scopes: [...scopes].filter((d) => ![...scopes].some((e) => e !== d && d.startsWith(`${e}/`))).sort(), shared: [...shared].sort() };
+}
 const ROLES = join(root, "packages/naive/template/governance/roles");
 
 // The team plan sets every agent's reach, so no agent writes it, whichever function owns its record type.
@@ -88,6 +114,7 @@ export const checkFunctions = Effect.gen(function* () {
   const departments = ids(yield* required(join(FUNCTIONS, "departments.json")), "departments");
   const classes = new Set(ids(yield* required(join(root, "packages/naive/template/governance/decision-rights.json")), "classes"));
   const delegation = yield* required(join(root, "packages/naive/template/governance/delegation.json"));
+  const today = new Date().toISOString().slice(0, 10);
   const personOnly = new Set(isObject(delegation) ? [...strings(delegation.one_way_doors), ...strings(delegation.never_redelegated)] : []);
   const clusters = new Set(ids(yield* required(join(FUNCTIONS, "it/capability-clusters.json")), "clusters"));
   const roleFiles = (yield* fs.list(ROLES)).filter((f) => f.endsWith(".json"));
@@ -147,6 +174,14 @@ export const checkFunctions = Effect.gen(function* () {
           if (!classes.has(c)) fail(fn, rel("decisions.json"), `class ${c} is not in decision-rights.json`);
           if (personOnly.has(c) && row.level !== "escalate") fail(fn, rel("decisions.json"), `class ${c} is a one-way door or never redelegated, so it must be escalate, not ${String(row.level)}`);
           if (row.level === "recommend" && !row.approver) fail(fn, rel("decisions.json"), `class ${c} is recommend but names no approver`);
+          if (typeof row.approver === "string" && isObject(delegation)) {
+            const del = delegation as Delegation, who = row.approver;
+            const held = del.grants.filter((g) => g.to === who && g.classes.includes(c) && liveGrant(g, today) && grantBacked(del, g, today).ok);
+            const { scopes } = functionScopes(model.records, fn);
+            const uncovered = scopes.filter((f) => !held.some((g) => scopeWithin(f, g.scope)));
+            if (!held.length) fail(fn, rel("decisions.json"), `class ${c} names approver ${who}, who holds no live grant of ${c} reaching ${del.root} in packages/naive/template/governance/delegation.json`);
+            else if (uncovered.length) fail(fn, rel("decisions.json"), `class ${c} names approver ${who}, whose grants of ${c} do not cover ${uncovered.join(", ")}, where the function's records sit`);
+          }
         }
       }
     } else if (complete) fail(fn, rel("decisions.json"), "missing");
