@@ -9,9 +9,9 @@
 import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { addCandidate, approve, decisions, merge, propose, reopen, rollback, undecidedFor, withdraw } from "./decisions.ts";
-import { brief, liveCandidates, optionsOf, proposesOf, writeOf } from "./decision-candidates.ts";
-import { call } from "../router/router.ts";
+import { addCandidate, approve, decisions, merge, propose, reopen, rollback, undecidedFor, withdraw } from "../../engine/decisions.ts";
+import { brief, liveCandidates, optionsOf, proposesOf, writeOf } from "../../engine/decision-candidates.ts";
+import { call } from "../../router/router.ts";
 
 let failed = 0;
 const expect = (name: string, ok: unknown, detail?: unknown) => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${JSON.stringify(detail)}`}`); if (!ok) failed++; };

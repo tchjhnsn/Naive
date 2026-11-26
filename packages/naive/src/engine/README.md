@@ -170,7 +170,7 @@ flowchart TD
   RE -->|"free in Discovery and Validation<br/>--override after, and for a one-way door"| C
 ```
 
-`node packages/naive/src/engine/decision-candidates-test.ts` tests it on a goal: two agents' ideas coexisting, a patch idea, the matrix and the route read, one command withdrawing an idea and a person putting it back, the chosen body written and the rest kept, a body that breaks the record's schema refused, and reopening in Discovery, past Validation and through a one-way door. Not built: a route action for adding an option (the CLI is the surface, and an MCP tool over `addCandidate` is a small follow-up), reopening through the router, and ranking a decision by how many ideas are on it.
+`node packages/naive/src/interfaces/tests/decision-candidates-test.ts` tests it on a goal: two agents' ideas coexisting, a patch idea, the matrix and the route read, one command withdrawing an idea and a person putting it back, the chosen body written and the rest kept, a body that breaks the record's schema refused, and reopening in Discovery, past Validation and through a one-way door. Not built: a route action for adding an option (the CLI is the surface, and an MCP tool over `addCandidate` is a small follow-up), reopening through the router, and ranking a decision by how many ideas are on it.
 
 `locked()` in `decisions.ts` reads a decision's `unlocks` through the route aliases, so a lock written under a route's old name still holds. `init-venture.ts` writes the founding decisions with the current route names.
 
