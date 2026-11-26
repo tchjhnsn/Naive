@@ -80,6 +80,7 @@ import { brandLayout } from "../engine/brand.ts";
 // Legal lint hook: legal/lint (packages/naive/src/checks/lint-legal.ts). A lint, not legal advice.
 // Upgrades hook (V-9): a read says when what the record reads changed in its system of record.
 import { staleOf } from "../engine/stale.ts";
+import { frontmatter } from "../engine/check-public.ts";
 import { ventureFile } from "../core/venture-paths.ts";
 import { isFunction, templateOf } from "../engine/research-programs.ts";
 import { coreOf, statementsIn, withCore } from "../engine/venture-core.ts";
@@ -89,7 +90,7 @@ import { schemaNameOf } from "../records/index.ts";
 import type { DecisionRecord, TeamPlan, Venture } from "../records/types/records.d.ts";
 import type { RecordRoute, Route } from "../records/routes/routes.ts";
 import {
-  PHASES, allowed, defaultWorkspace, files, gateOf, glob, groups, kits, load, repo, resolve, routes, skillsOf, ventureDir, ventures,
+  PHASES, allowed, deepItem, defaultWorkspace, files, gateOf, glob, groups, kits, load, repo, resolve, routes, skillsOf, ventureDir, ventures,
 } from "../records/routes/routes.ts";
 // The route table lives in packages/naive/src/records/routes so that schema/ can read it without importing this file.
 export { PHASES, allowed, files, gateOf, glob, groups, kits, repo, resolve, routes, ventureDir, ventures };
@@ -131,7 +132,8 @@ type Attr = { attribute: string; source: Source; store: ReadStore | Store };
 // Prefer a file that is already there, so an unmigrated venture keeps its old path. A new write uses the first path, which is the package layout.
 const fileFor = (r: RecordRoute, params: { id?: string }, dir: string | null): string => {
   if (r.view_of) return "venture.json";
-  const cands = (r.collection === "item" ? r.files.map((f) => f.replace("*", String(params.id))) : r.files).filter((f) => !f.includes("*"));
+  // A deep item (marketing/content/home/what) fills the folder of any depth and the file name at once.
+  const cands = (r.collection === "item" ? r.files.map((f) => f.replace(/\*\*\/\*|\*/, String(params.id))) : r.files).filter((f) => !f.includes("*"));
   if (dir) {
     const hit = cands.find((f) => existsSync(ventureFile(dir, f)));
     if (hit) return hit;
@@ -460,10 +462,10 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
   if (action === "write") {
     forget(dir); // Caching hook (H-3): a write never uses the cache, and what this action memoized for the venture is read again after it.
     if (!src || !writable(store)) return { ok: false, error: `${route} has no source to write` }; // a record route always has one by here
-    // Prose a person owns (writer person: a research program) is written whole as text, not as a JSON record.
-    const prose = r.writer === "person" && (r.form === "prose" || r.form === "markdown");
+    // Prose and Markdown (a research program, a public variant) are written whole as text, not as a JSON record.
+    const prose = r.form === "prose" || r.form === "markdown";
     if (!prose && (!input || typeof input !== "object")) return { ok: false, error: "write needs the record as input" };
-    if (r.collection === "item" && !/^[a-z0-9][a-z0-9-]*$/.test(String(params.id))) return { ok: false, error: `${params.id} is not a valid id (lowercase letters, digits and hyphens)` };
+    if (r.collection === "item" && !String(params.id).split(deepItem(r) ? "/" : "\0").every((x) => /^[a-z0-9][a-z0-9-]*$/.test(x))) return { ok: false, error: `${params.id} is not a valid id (lowercase letters, digits and hyphens${deepItem(r) ? ", in folders split by /" : ""})` };
     const file = fileFor(r, params, dir);
     if (isRecipeFile(file)) return { ...recipeRefusal(route, file), ...deprecated };
     // Gate group hook: one writer per file. A projection record is the projector's alone, and the projector writes
@@ -618,11 +620,13 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
   return { ok: false, error: `unhandled action ${action}` };
 }
 
-// A person's write of prose they own (writer person in the data model: programs/<function>.md, a function's research
-// program; autoresearch design, everything-ecosystem docs/design/AUTORESEARCH_RECORDS_2026-11-06.md). ownerOfWrite has
-// already refused every agent. The input is the whole text, as { text } or a string. It is kept only in the venture's
-// own folder, meets the venture's gate (a refusal stops it; a person is never held), lands live, and its provenance
-// line keeps the bytes in the blob store, so an as-of read returns the program as it was.
+// A write of prose or Markdown, whole: a research program (writer person in the data model, programs/<function>.md;
+// autoresearch design, everything-ecosystem docs/design/AUTORESEARCH_RECORDS_2026-11-06.md), whose agents ownerOfWrite
+// has already refused, or a public variant (marketing/content/<page>/<item>, EE-064) an agent writes. The input is the
+// whole text, as { text } or a string. It is kept only in the venture's own folder and meets the venture's gate: a
+// refusal stops it, and a person is never held. An agent's write is held as a draft for a person to accept when the
+// record's decision class drafts, the gate holds it, or its frontmatter names who approved it (approved_by), since only
+// a person approves (EE-025). Its provenance line keeps the bytes in the blob store, so an as-of read returns it as it was.
 async function writeProse({ dir, r, route, requested, file, input, actor, actor_id, via, provenance, store, remote, src, params, projector }: {
   dir: string; r: RouteEntry; route: string; requested: string; file: string; input: unknown; actor: string; actor_id?: string; via: string; provenance: CallProvenance;
   store: Store; remote: boolean | undefined; src: Source; params: { id?: string }; projector: boolean;
@@ -631,13 +635,20 @@ async function writeProse({ dir, r, route, requested, file, input, actor, actor_
   if (r.record === "research-program" && !isFunction(params.id ?? "")) return { ok: false, error: `${params.id} is not a function: a research program is programs/<function>.md for a function in packages/naive/src/functions/departments.json` };
   const raw = typeof input === "string" ? input : isObj(input) && typeof input.text === "string" ? input.text : null;
   if (raw === null || !raw.trim()) return { ok: false, error: `write ${route} with its whole text as input: { "text": "..." }` };
+  const text = raw.endsWith("\n") ? raw : `${raw}\n`;
   const gate = gateOf(r, dir);
   const configured = gateWrite({ dir, r, route, requested, file, actor, actor_id, provenance, gate, projector });
   if (configured?.then === "refuse") return { ok: false, error: configured.why, gate_rule: configured.rule, refused_by: configured.source };
-  await store.write(file, raw.endsWith("\n") ? raw : `${raw}\n`);
-  const agent = agentFromEnv("person", via, { ...provenance.agent });
-  const entry = prov(dir, { entity: file, route, activity: provenance.activity ?? "write", agent, derived_from: provenance.derived_from, decision: provenance.decision ?? gate?.class ?? undefined, note: provenance.note });
-  return { ok: true, result: { written: file, draft: false, gate: gate?.class ?? null, provenance: entry.hash, note: "written" } };
+  const person = actor === "person" && !actingAgent(provenance.agent?.id);
+  const approves = frontmatter(text).meta.approved_by !== undefined;
+  const draft = !person && (!!gate?.drafts || !!configured || approves);
+  const agent = agentFromEnv(person ? "person" : "agent", via, { ...(actor_id && !person ? { id: actor_id } : {}), ...provenance.agent });
+  const held = draft ? heldDraft(dir, { draft: draftPath(file), file, text, verdict: configured, route, agent }) : null;
+  if (!held) await store.write(file, text);
+  const written = held ? held.written : file;
+  const entry = prov(dir, { entity: written, route, activity: draft ? "draft" : provenance.activity ?? "write", agent, derived_from: provenance.derived_from, decision: provenance.decision ?? gate?.class ?? undefined, note: provenance.note });
+  const why = configured ? configured.why : gate?.drafts ? `${r.record} is a ${gate.class} decision (${gate.level}, owner ${gate.owner}): written as a draft for a person to accept` : "only a person approves a public variant (approved_by): written as a draft for a person to accept";
+  return { ok: true, result: { written, draft, gate: gate?.class ?? null, provenance: entry.hash, note: draft ? why : "written", ...(configured && draft ? { gate_rule: configured.rule } : {}) } };
 }
 
 // Views (pages): Markdown for people. A generic renderer: objects become headings and lists,
