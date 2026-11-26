@@ -27,6 +27,13 @@ put(dir, "foundation/exit-criteria/discovery.json", { phase: "discovery", criter
   { id: "no-parent", statement: "Ten paying customers", evidence: "invoices" },
 ] });
 put(dir, "foundation/constraints.json", { must_not: [{ id: "bare", statement: "Sell user data" }] });
+// Bets (EE-221): a bet with every hole in it, and the premise it rests on, refuted.
+put(dir, "foundation/bets/small-teams.json", { id: "small-teams", kind: "forecast", statement: "Many small teams will reach significant revenue.", premises: ["tools-exist"] });
+put(dir, "foundation/bets/tools-exist.json", { id: "tools-exist", kind: "premise", statement: "The tools a small team needs exist today.", status: "refuted", owner: "Torian",
+  registered_at: "2026-11-01T00:00:00Z", registered_by: "Torian", resolution: { outcome: "did-not-happen", at: "2026-11-20T00:00:00Z", by: "Torian" },
+  claim: { population: "teams of five or fewer", measure: "the share whose stack is available today", comparator: ">=", threshold: { value: 90, unit: "%", set_by: "Torian" }, resolves_by: "2026-11-20", source: "a review of the tools" },
+  falsified_by: "Fewer than 90 % of the stack is available by 2026-11-20.", confidence: [{ p: 0.6, set_by: "Torian", at: "2026-10-01T00:00:00Z", data_seen: "before-access" }],
+  evidence: [{ ref: "evidence/tools", supports: false }], rivals: [{ statement: "The tools exist but cannot be joined up." }] });
 put(dir, "decisions/pick.decision.json", { id: "pick", question: "Which pricing?", status: "decided", answer: "flat", parent: "missing-parent" });
 // A draft stands for the record it would become.
 put(dir, "_drafts/foundation__goals__drafted.json.draft", { id: "drafted", statement: "Be stable enough.", kind: "venture", why: "x", owner: "T" });
@@ -54,6 +61,15 @@ ok(has("unmeasurable", "foundation/goals/ownerless", "measures"), "goal with no 
 ok(has("undefined-term", "foundation/goals/grow", "statement"), "'good' with no definition is an undefined term");
 ok(has("unsupported-premise", "foundation/constraints#bare", "statement"), "constraint with no why or source is unsupported");
 ok(has("no-owner", "decisions/pick", "decided_by") && has("unsupported-premise", "decisions/pick", "answer") && has("dependency", "decisions/pick", "parent"), "decided decision with no decider, reasons or real parent");
+const bet = "foundation/bets/small-teams";
+ok(has("undefined-term", bet, "statement"), "'many' and 'significant' in a bet are undefined terms");
+ok(has("unmeasurable", bet, "claim"), "a bet with no population, measure, line, date or source is unmeasurable");
+ok(has("unmeasurable", bet, "falsified_by"), "a bet that says nothing would show it wrong is unmeasurable");
+ok(has("unmeasurable", bet, "confidence"), "a bet nobody put odds on is unmeasurable");
+ok(has("no-counter-evidence", bet, "evidence"), "a bet with no evidence against it and no rival is attacked");
+ok(has("orphan", bet, "used_by"), "a bet nothing rests on and that serves nothing is an orphan");
+ok(has("conflict", bet, "premises"), "a bet resting on a refuted bet is a conflict");
+ok(!all.some((f) => f.record === "foundation/bets/tools-exist" && f.aspect === "no-counter-evidence"), "a bet with evidence against it and a rival is not attacked for it");
 ok(Object.keys(ASPECTS).every((a) => all.some((f) => f.aspect === a)), "every aspect is triggered");
 ok(all.every((f) => f.question && f.severity === "warn" && Array.isArray(f.links)), "findings carry question, links and default warn severity");
 ok(!all.some((f) => f.record === "foundation/goals/drafted"), "drafts are left out by default");

@@ -572,6 +572,16 @@
       },
       "why": "Write down what would have to be true, and what does not count, before the mission and the vision; an unvalidated prior (EE-220)"
     },
+    "bet": {
+      "base": {
+        "discovery": 0.85,
+        "validation": 0.85,
+        "beachhead": 0.7,
+        "scale": 0.6,
+        "platform": 0.6
+      },
+      "why": "The claims the strategy rests on, each written so it can fail, before anything is built on them; an unvalidated prior (EE-221)"
+    },
     "goal": {
       "base": {
         "discovery": 0.7,

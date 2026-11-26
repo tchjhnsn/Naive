@@ -90,6 +90,8 @@ It registers `engine/gate-service.ts` as plain too: the gate as an Effect servic
 
 `bypass-guard-test.ts` registers `packages/naive/src/checks/check-canary.ts` as a plain check: an eval file's canary is equal to one fixed string. It registers `packages/naive/src/checks/check-evals.ts` as symbolic, because that check runs held-out-item, person-label, synthetic-record and allowed-source. The test beside it is plain.
 
+`bypass-guard-test.ts` registers `packages/naive/src/checks/check-bets.ts` (bets, EE-221) as a plain check: it compares bet ids, frozen fields with the stored version and registered lines as intervals, so no term is decided.
+
 `bypass-guard-test.ts` registers `packages/naive/src/checks/check-pre-registration.ts` (pre-registration, EE-220) and its test as plain checks: they compare a registered record's frozen fields with the stored version, so no term is decided.
 
 `bypass-guard-test.ts` registers `packages/naive/src/checks/check-problems.ts` (the problem hierarchy, EE-219) and its test as plain checks: they resolve parent and cause ids and count targets, so no term is decided.

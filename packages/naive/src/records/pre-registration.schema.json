@@ -48,6 +48,11 @@
         "falsified_if": { "type": "string", "minLength": 1, "description": "What would show the claim is wrong. A claim with no such state is not a thesis" }
       }
     },
+    "tests": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+      "description": "The bets this plan tests, by id (foundation/bets/<id>.json, EE-221). It is one of the registered fields, so a registered plan cannot be pointed at a different claim afterwards, and registering the plan fixes each named bet's claim as the plan was written against it. A plan may name none, for a thesis the venture has not written as a bet"
+    },
     "assumptions": {
       "type": "array",
       "description": "What the thesis rests on, after discovery-driven planning's assumption checklist. The ones that are critical and uncertain are the ones to test first",

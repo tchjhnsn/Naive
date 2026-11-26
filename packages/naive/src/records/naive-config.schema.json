@@ -764,6 +764,13 @@
                 "error"
               ]
             },
+            "no-counter-evidence": {
+              "enum": [
+                "off",
+                "warn",
+                "error"
+              ]
+            },
             "orphan": {
               "enum": [
                 "off",
