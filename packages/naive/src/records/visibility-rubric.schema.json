@@ -1,0 +1,204 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "visibility-rubric.schema.json",
+  "title": "Visibility rubric",
+  "description": "The rubric for judging how far a tool gives the system visibility of an activity, and how far the venture owns the record (EE-222), which Naive ships at packages/naive/src/functions/it/visibility-rubric.json. Each criterion asks one question about a tool and an activity, says why it matters, describes the levels of a 0 to 4 scale and carries a default weight that is an unvalidated prior a venture overrides under visibility in naive.config.json. A gate criterion rules out a candidate scored 0 on it; a blind_spot criterion scored 0 means the tool leaves the activity unrecorded, which is flagged and never rules a candidate out, because only a person does that. A channel says how an activity is performed, and therefore what must capture it, told from the words of its statement as an activity's kind is (EE-179). A tool kind is a kind of tool and never a vendor, with the prior scores Naive ships for it. A score never decides: packages/naive/src/engine/visibility-rubric.ts ranks candidates and a person chooses. packages/naive/src/checks/check-visibility-rubric.ts checks what this schema cannot: weights that sum to 1, sources that are reference ids, decisions that are EE ids, channels and tool kinds that resolve, and examples that name only the rubric's criteria.",
+  "type": "object",
+  "required": ["version", "tie_band", "criteria", "channels", "tool_kinds", "examples"],
+  "additionalProperties": false,
+  "properties": {
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "note": { "type": "string" },
+    "tie_band": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Two candidates whose totals (0 to 1) differ by no more than this are reported as tied, not ordered."
+    },
+    "criteria": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "question", "why", "levels", "weight", "sources"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+          "title": { "type": "string", "minLength": 1 },
+          "question": { "type": "string", "minLength": 1, "description": "The one question to ask about a tool and the activity it would cover." },
+          "why": { "type": "string", "minLength": 1, "description": "Why the answer can change the choice." },
+          "iso25010": {
+            "type": "array",
+            "uniqueItems": true,
+            "description": "The ISO/IEC 25010:2023 product quality characteristics the criterion serves. A criterion the standard does not cover names none.",
+            "items": { "enum": ["functional-suitability", "performance-efficiency", "compatibility", "interaction-capability", "reliability", "security", "maintainability", "flexibility", "safety"] }
+          },
+          "levels": {
+            "type": "array",
+            "minItems": 2,
+            "description": "What a score means on this criterion. Scores 0 and 4 must be described; packages/naive/src/checks/check-visibility-rubric.ts checks it.",
+            "items": {
+              "type": "object",
+              "required": ["score", "means"],
+              "additionalProperties": false,
+              "properties": {
+                "score": { "type": "integer", "minimum": 0, "maximum": 4 },
+                "means": { "type": "string", "minLength": 1 }
+              }
+            }
+          },
+          "weight": { "type": "number", "minimum": 0, "maximum": 1, "description": "The default weight, an unvalidated prior. The criteria's weights sum to 1; a venture may set others under visibility in naive.config.json." },
+          "gate": { "type": "boolean", "description": "True when a score of 0 rules a candidate out, whatever its other scores." },
+          "blind_spot": { "type": "boolean", "description": "True when a score of 0 means the tool leaves the activity unrecorded. Such a candidate is flagged as a blind spot and still ranked: only a person rules it out." },
+          "sources": {
+            "type": "array",
+            "uniqueItems": true,
+            "description": "Reference ids in packages/naive/src/records/layers/operations/references/references.json.",
+            "items": { "type": "string", "pattern": "^[a-z0-9-]+$" }
+          },
+          "decisions": {
+            "type": "array",
+            "uniqueItems": true,
+            "description": "EE decisions the criterion draws on.",
+            "items": { "type": "string", "pattern": "^EE-\\d{3}$" }
+          }
+        }
+      }
+    },
+    "channels": {
+      "type": "array",
+      "minItems": 1,
+      "description": "How an activity is performed, and therefore what must capture it. Read in order: the first channel whose clauses the activity's statement meets is its channel, and the one marked default takes an activity whose words meet none.",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "means", "record", "tool_kinds"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+          "title": { "type": "string", "minLength": 1 },
+          "means": { "type": "string", "minLength": 1, "description": "How the activity happens." },
+          "record": { "type": "string", "minLength": 1, "description": "What a record of an activity on this channel looks like." },
+          "when": {
+            "type": "array",
+            "minItems": 1,
+            "description": "Clauses on the words of the activity's statement, as the activity catalog's kinds hold them (EE-179): the first word is its verb and the rest are its terms. A statement meets a clause when its verb is one of the verbs and one of its terms is one of the terms. An unvalidated prior.",
+            "items": {
+              "type": "object",
+              "minProperties": 1,
+              "additionalProperties": false,
+              "properties": {
+                "verbs": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "pattern": "^[a-z]+$" } },
+                "terms": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "pattern": "^[a-z]+$" } }
+              }
+            }
+          },
+          "default": { "type": "boolean", "description": "True for the one channel that takes an activity whose words meet no clause. It names no clauses." },
+          "tool_kinds": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "description": "The tool kinds that could capture this channel, by id.",
+            "items": { "type": "string", "pattern": "^[a-z0-9-]+$" }
+          }
+        }
+      }
+    },
+    "tool_kinds": {
+      "type": "array",
+      "minItems": 1,
+      "description": "A kind of tool, never a vendor: Naive names no vendor in code, and a venture's own connection record (it/connections/<id>.json) names its system.",
+      "items": {
+        "type": "object",
+        "required": ["id", "kind", "captures", "scores", "why", "rated"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+          "kind": { "type": "string", "minLength": 1, "description": "What kind of tool it is, in plain words, with no product or company name." },
+          "captures": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "description": "The channels this kind of tool could capture, by id.",
+            "items": { "type": "string", "pattern": "^[a-z0-9-]+$" }
+          },
+          "scores": {
+            "type": "object",
+            "description": "The prior score on each criterion, an unvalidated prior for the kind and not a measurement of any product.",
+            "propertyNames": { "pattern": "^[a-z0-9-]+$" },
+            "additionalProperties": { "type": "integer", "minimum": 0, "maximum": 4 }
+          },
+          "why": {
+            "type": "object",
+            "description": "The reason for each score, citing a reference, a decision or a file.",
+            "propertyNames": { "pattern": "^[a-z0-9-]+$" },
+            "additionalProperties": { "type": "string", "minLength": 1 }
+          },
+          "rated": {
+            "type": "object",
+            "required": ["by", "on", "basis"],
+            "additionalProperties": false,
+            "description": "Who gave the scores, when and from what.",
+            "properties": {
+              "by": { "type": "string", "minLength": 1 },
+              "on": { "type": "string", "format": "date" },
+              "basis": { "type": "string", "minLength": 1 }
+            }
+          }
+        }
+      }
+    },
+    "examples": {
+      "type": "array",
+      "description": "Worked examples: an activity that must be visible, the candidates considered and the choice a person made.",
+      "items": {
+        "type": "object",
+        "required": ["id", "activity", "channel", "candidates", "chosen", "decided_by", "rated"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+          "activity": { "type": "string", "minLength": 1, "description": "The activity that must be visible, and where it comes from." },
+          "channel": { "type": "string", "pattern": "^[a-z0-9-]+$", "description": "The channel it is performed on, by id." },
+          "weights": {
+            "type": "object",
+            "description": "Weights for this activity that replace the rubric's defaults, by criterion id. A weight of 0 leaves the criterion out, unscored.",
+            "propertyNames": { "pattern": "^[a-z0-9-]+$" },
+            "additionalProperties": { "type": "number", "minimum": 0, "maximum": 1 }
+          },
+          "must": {
+            "type": "object",
+            "description": "Must-haves: the lowest score a candidate needs on a criterion. A candidate below it is ruled out.",
+            "propertyNames": { "pattern": "^[a-z0-9-]+$" },
+            "additionalProperties": { "type": "integer", "minimum": 1, "maximum": 4 }
+          },
+          "candidates": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "description": "The tool kinds considered, by id. Each must capture the example's channel.",
+            "items": { "type": "string", "pattern": "^[a-z0-9-]+$" }
+          },
+          "chosen": { "type": "string", "pattern": "^[a-z0-9-]+$", "description": "The candidate a person chose. It may differ from the top score." },
+          "decided_by": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "description": "The EE decisions that record the choice.",
+            "items": { "type": "string", "pattern": "^EE-\\d{3}$" }
+          },
+          "rated": {
+            "type": "object",
+            "required": ["by", "on", "basis"],
+            "additionalProperties": false,
+            "description": "Who judged the example, when and from what. The choice is the decisions'.",
+            "properties": {
+              "by": { "type": "string", "minLength": 1 },
+              "on": { "type": "string", "format": "date" },
+              "basis": { "type": "string", "minLength": 1 }
+            }
+          },
+          "note": { "type": "string" }
+        }
+      }
+    }
+  }
+}

@@ -61,6 +61,25 @@
         }
       }
     },
+    "visibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "The venture's own lines for the visibility rubric (EE-222, packages/naive/src/functions/it/visibility-rubric.json, naive tools recommend). A criterion left out keeps the rubric's default weight, which is an unvalidated prior. packages/naive/src/checks/check-config.ts holds each criterion id to the rubric.",
+      "properties": {
+        "weights": {
+          "type": "object",
+          "description": "Per criterion id: the weight for this venture in place of the rubric's default. A weight of 0 leaves the criterion out of the score, and never out of the blind spot.",
+          "propertyNames": { "pattern": "^[a-z0-9-]+$" },
+          "additionalProperties": { "type": "number", "minimum": 0, "maximum": 1 }
+        },
+        "must": {
+          "type": "object",
+          "description": "Per criterion id: the lowest score a candidate needs. A candidate below it is ruled out whatever the rest.",
+          "propertyNames": { "pattern": "^[a-z0-9-]+$" },
+          "additionalProperties": { "type": "integer", "minimum": 1, "maximum": 4 }
+        }
+      }
+    },
     "activity_proposals": {
       "type": "object",
       "additionalProperties": false,

@@ -2994,6 +2994,47 @@
       ]
     },
     {
+      "id": "EE-222",
+      "date": "2026-11-26",
+      "status": "in-force",
+      "decision": "Naive recommends tools per goal and per activity, and the recommendation favours tools that give the system visibility of the activity and tools the venture owns. The visibility rubric is data (packages/naive/src/functions/it/visibility-rubric.json): five criteria, each with a question, why it matters, described levels on a 0 to 4 scale, its sources and a default weight that is an unvalidated prior a venture overrides under visibility in naive.config.json. The weights are activity-record 0.3, ownership 0.25, export-and-api 0.2, events 0.15 and consent-and-retention 0.1, so visibility carries 0.65 and ownership 0.25. consent-and-retention is a gate: a 0 rules a candidate out, because recording a person needs a lawful basis, a retention period and a way to erase (GDPR articles 5, 6, 7, 13 and 17). activity-record is not a gate: a 0 means the tool leaves the activity unrecorded, which is reported as a blind spot and still ranked, because only a person rules a tool out. The rubric also names the channel an activity is performed on, read from the words of its statement as an activity's kind is (EE-179), and the tool kinds that capture each channel, named as kinds and never as vendors. scoreTools in packages/naive/src/engine/visibility-rubric.ts is the pure scorer, and naive tools recommend [--goal <id>] [--activity <id>] [--function <id>] [--json] [--propose] reads a goal, says which activities it needs to be visible and which are blind spots, and with --propose files one open decision per goal and function as that function's agent. An agent never decides. The recommendation's home is that open decision, which holds every candidate as an option so the choice stays open and a person can withdraw it (EE-185); no record type is added, because a Discovery venture can write a decision and it/connections starts at Validation and describes a connection the venture already has.",
+      "why": "Torian's instruction of 2026-11-26: agents must be hyper-vigilant that tools give the agents and the system visibility over every activity, for example meeting software that records so every meeting has notes, and the venture should favour owning its own tooling. The asymmetry that makes it a rubric is that an agent's work is visible by construction through the router and provenance (EE-031), while a person's work is visible only as far as a tool captures it, so the activities at risk are the ones a person performs or approves and the ones no workflow step writes a record for.",
+      "related": [
+        "EE-031",
+        "EE-163",
+        "EE-179",
+        "EE-185",
+        "EE-187",
+        "EE-189"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/functions/it/visibility-rubric.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/visibility-rubric.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/tool-recommendations.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/checks/check-visibility-rubric.ts",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
       "id": "EE-223",
       "date": "2026-11-26",
       "status": "in-force",
