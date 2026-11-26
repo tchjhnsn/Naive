@@ -12,11 +12,12 @@
 //   request   never due on its own: a lead or a person hands it off.
 //
 // A run is one line of <venture>/.naive/workflow-runs.jsonl. A failed run does not move a schedule: the workflow
-// stays due. The phase module (packages/naive/src/phases/<id>/phase.json) lists the workflows active in the venture's
+// stays due. A skipped run is a person saying this occurrence will not run, so it settles the occurrence the way a
+// finished run does. The phase module (packages/naive/src/phases/<id>/phase.json) lists the workflows active in the venture's
 // phase, and each entry says whether its workflow is one of them.
 //
 //   node packages/naive/src/engine/due.ts <venture dir> [--at <iso>] [--function <id>] [--json]
-//   node packages/naive/src/engine/due.ts <venture dir> record <function>/<workflow> [--outcome done|failed] [--by <who>] [--at <iso>]
+//   node packages/naive/src/engine/due.ts <venture dir> record <function>/<workflow> [--outcome done|failed|skipped] [--by <who>] [--at <iso>]
 //   naive due [record ...]
 //
 // due() is pure. Reading and writing files is an Effect through VentureFs (EE-125).
@@ -42,7 +43,7 @@ export type WorkflowTrigger = { kind: "intake" | "schedule" | "event" | "request
 /** The part of a function workflow this reads. */
 export type DueWorkflow = { id: string; function: string; title: string; trigger: WorkflowTrigger };
 /** One line of the run log. */
-export type WorkflowRun = { workflow: string; at: string; outcome: "done" | "failed"; by: string };
+export type WorkflowRun = { workflow: string; at: string; outcome: "done" | "failed" | "skipped"; by: string };
 /** A write the provenance log holds: the route written and when. */
 export type Written = { route: string; at: string };
 export type DueStatus = "due" | "not-due" | "on-request";
@@ -57,8 +58,10 @@ export interface DueEntry {
   readonly status: DueStatus,
   /** One sentence a person can read. */
   readonly why: string,
-  /** When it last finished, or null. */
+  /** When it last finished or a person skipped it, or null. */
   readonly last_done: string | null,
+  /** When its last run failed, if nothing has settled it since, or null. */
+  readonly last_failed: string | null,
   /** For a schedule that has run: when it is next due. */
   readonly next_due: string | null,
   /** Whether the venture's phase lists it as active. */
@@ -89,9 +92,9 @@ export function due(workflows: readonly DueWorkflow[], runs: readonly WorkflowRu
     const key = `${w.function}/${w.id}`;
     const mine = runs.filter((r) => r.workflow === key && r.at <= now);
     const last = mine.reduce<string | null>((m, r) => (m === null || r.at > m ? r.at : m), null);
-    const last_done = mine.filter((r) => r.outcome === "done").reduce<string | null>((m, r) => (m === null || r.at > m ? r.at : m), null);
+    const last_done = mine.filter((r) => r.outcome !== "failed").reduce<string | null>((m, r) => (m === null || r.at > m ? r.at : m), null);
     const failed = last !== null && last !== last_done;
-    const base = { workflow: key, function: w.function, title: w.title, role: `${w.function}-agent`, trigger: w.trigger, last_done, in_phase: active.has(key) };
+    const base = { workflow: key, function: w.function, title: w.title, role: `${w.function}-agent`, trigger: w.trigger, last_done, last_failed: failed ? last : null, in_phase: active.has(key) };
     const t = w.trigger;
     if (t.kind === "request") return { ...base, status: "on-request", why: "It starts when a lead or a person hands it off.", next_due: null };
     if (t.kind === "intake") {
@@ -158,13 +161,13 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const valued = ["--at", "--function", "--outcome", "--by"];
   const [dir, cmd, target] = args.filter((a, i) => !a.startsWith("--") && !valued.includes(args[i - 1]));
   const at = flag("--at") ?? new Date().toISOString();
-  const usage = "usage: node packages/naive/src/engine/due.ts <venture dir> [--at <iso>] [--function <id>] [--json]\n       node packages/naive/src/engine/due.ts <venture dir> record <function>/<workflow> [--outcome done|failed] [--by <who>] [--at <iso>]";
+  const usage = "usage: node packages/naive/src/engine/due.ts <venture dir> [--at <iso>] [--function <id>] [--json]\n       node packages/naive/src/engine/due.ts <venture dir> record <function>/<workflow> [--outcome done|failed|skipped] [--by <who>] [--at <iso>]";
   const program: Effect.Effect<void, NaiveError, "naive/VentureFs"> = Effect.gen(function* () {
     if (!dir || Number.isNaN(Date.parse(at)) || (cmd !== undefined && cmd !== "record") || (cmd === "record" && !target)) return yield* new CannotRun({ message: usage });
     const now = new Date(at).toISOString();
     if (cmd === "record") {
       const outcome = flag("--outcome") ?? "done";
-      if (outcome !== "done" && outcome !== "failed") return yield* new CannotRun({ message: usage });
+      if (outcome !== "done" && outcome !== "failed" && outcome !== "skipped") return yield* new CannotRun({ message: usage });
       const run = yield* recordRun(dir, { workflow: target, at: now, outcome, by: flag("--by") ?? process.env.MENTURA_ACTOR_ID ?? "person" });
       console.log(args.includes("--json") ? JSON.stringify(run) : `recorded ${run.workflow} ${run.outcome} at ${run.at} by ${run.by}`);
       return;

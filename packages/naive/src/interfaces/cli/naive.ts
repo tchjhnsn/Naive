@@ -64,8 +64,16 @@
 //                                                   agent's (EE-180)
 //   naive due [--at <iso>] [--function <id>] [--json]  which function workflows are due now and why, from each workflow's
 //                                                   trigger, the run log and the provenance log (EE-182)
-//   naive due record <function>/<workflow> [--outcome done|failed] [--by <who>]
+//   naive due record <function>/<workflow> [--outcome done|failed|skipped] [--by <who>]
 //                                                   record that a workflow ran
+//   naive loop [plan] [--at <iso>] [--json]         what the loop would do with each due workflow under the venture's
+//                                                   loop modes; writes nothing (EE-183)
+//   naive loop tick [--max <n>] [--json]            ask, skip and start once: an ask files a decision, a start runs the
+//                                                   workflow as its function agent through NAIVE_AGENT_CMD
+//   naive loop watch [--every <duration>] [--max <n>]
+//                                                   tick now and again every 15 minutes, or every <duration>
+//   naive loop mode [<manual|ask|auto> [--function <id> | --workflow <function>/<workflow>] --by <person>]
+//                                                   show each workflow's mode, or set one as a person
 //   naive workspace init [<dir>] [--name <name>] (--venture <name> | --port <folder> | --migrate <project>)
 //                                                   a workspace with its clock, its calendar and its first venture
 //   naive workspace rename <name>                   rename the workspace this runs in (logged in its meta/provenance.jsonl)
@@ -411,6 +419,10 @@ else if (cmd === "build" || cmd === "start") {
   // Which function workflows are due, and recording a run (packages/naive/src/engine/due.ts, EE-182).
   const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
   process.exit(run("packages/naive/src/engine/due.ts", [here(), ...args]));
+} else if (cmd === "loop") {
+  // The loop that starts due workflows as far as the venture's mode allows (packages/naive/src/engine/loop.ts, EE-183).
+  const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
+  process.exit(run("packages/naive/src/engine/loop.ts", [here(), ...args]));
 } else if (cmd === "activities") {
   // What the activity catalog's scores propose for this venture (packages/naive/src/engine/activity-proposals.ts, EE-169).
   const [what = "list", ...args] = rest.filter((a, i) => !(a === "--venture" || rest[i - 1] === "--venture"));
