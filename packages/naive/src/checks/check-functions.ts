@@ -11,6 +11,7 @@
 //     recommend row names its approver;
 //   - every capability cluster is in packages/naive/src/functions/it/capability-clusters.json;
 //   - the intake names a workflow the module has, and that workflow's trigger is intake;
+//   - every route a workflow or a step reads is one the router serves (readable below);
 //   - a step's skill is a folder in the module's skills/ with a SKILL.md; a step writes only routes in the function's
 //     write reach (WRITE_REACH below); a step raises only classes the module's decisions.json has a row for; a step's
 //     activity is a level 4 element of packages/naive/src/functions/pcf.json or an activity in
@@ -62,6 +63,12 @@ export const writeReach = (fn: string): Set<string> => new Set([...SHARED,
   ...(routes() as { kind: string, record?: string, route: string, files?: string[] }[]).filter((r) => r.kind === "record" && r.record && owner.get(r.record) === fn
     && !(r.files ?? []).some((f) => PLANS.includes(f))).map((r) => r.route)]);
 const reaches = (reach: Set<string>, route: string) => reach.has(route) || [...reach].some((r) => r.endsWith("/*") && route.startsWith(r.slice(0, -1)));
+
+// What a workflow or a step may read: venture.json ("venture", which no route claims), a route, or a glob ending in
+// /* that some route falls under. A read the router has no route for fails at run time, so it is a finding here.
+const ROUTES = new Set((routes() as { route: string }[]).map((r) => r.route));
+export const readable = (read: string): boolean => read === "venture" || ROUTES.has(read)
+  || (read.endsWith("/*") && [...ROUTES].some((r) => r.startsWith(read.slice(0, -1))));
 
 type Finding = { fn: string, file: string, error: string };
 
@@ -135,9 +142,11 @@ export const checkFunctions = Effect.gen(function* () {
       if (`${String(w.id)}.json` !== f) fail(fn, file, `id ${String(w.id)} is not the file's name`);
       if (w.function !== fn) fail(fn, file, `names function ${String(w.function)}, not ${fn}`);
       const steps = Array.isArray(w.steps) ? w.steps.filter(isObject) : [];
+      for (const r of strings(w.reads)) if (!readable(r)) fail(fn, file, `reads ${r}, which no route serves`);
       if (steps.length && steps.every((s) => isObject(s.consider))) fail(fn, file, "every step is one to consider; a workflow has at least one required step");
       for (const s of Array.isArray(w.steps) ? w.steps.filter(isObject) : []) {
         if (s.skill && !skills.includes(String(s.skill))) fail(fn, file, `step ${String(s.id)} loads skill ${String(s.skill)}, which skills/ does not have`);
+        for (const r of strings(s.reads)) if (!readable(r)) fail(fn, file, `step ${String(s.id)} reads ${r}, which no route serves`);
         for (const r of strings(s.writes)) if (!reaches(reach, r)) fail(fn, file, `step ${String(s.id)} writes ${r}, outside the function's write reach`);
         for (const c of strings(s.raises)) if (!rows.has(c)) fail(fn, file, `step ${String(s.id)} raises ${c}, which decisions.json has no row for`);
         if (typeof s.activity === "string") { const e = activityError(fn, s.activity); if (e) fail(fn, file, `step ${String(s.id)} performs activity ${s.activity}, ${e}`); }

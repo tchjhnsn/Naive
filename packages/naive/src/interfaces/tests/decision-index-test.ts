@@ -121,4 +121,23 @@ try {
   expect("a nearer due date scores higher", five.score > far.score && far.score > 0, { five, far });
   expect("fail-closed adds weight over the same decision failing open", five.score > open.score && open.score > 0, { five, open });
 }
+// The dogfood run: a one-way door ranked 0, below the framework's foundation placeholders. It now ranks above them,
+// whether the record says door one-way or its class is one of the delegation's one_way_doors.
+{
+  const w2 = mkdtempSync(join(tmpdir(), "dindex-door-"));
+  const d2 = join(w2, "door");
+  try {
+    mkdirSync(d2, { recursive: true });
+    writeFileSync(join(d2, "venture.json"), JSON.stringify({ id: "door", name: "Door", type: "software-startup", parent: null, phase: "discovery", owner: "self", status: "active", layers: { purpose: true, knowledge: true, operations: false, evidence: false, governance: true, interface: false } }));
+    propose(d2, { at: "governance", id: "who-owns", question: "Who owns the business?", class: "ownership-or-control" }, { agentId: "cos" });
+    propose(d2, { at: "governance", id: "licence", question: "Which licence?", door: "one-way" }, { agentId: "cos" });
+    propose(d2, { at: "governance", id: "two-way", question: "Which colour?", class: "set-priorities" }, { agentId: "cos" });
+    const ds = decisions(d2).decisions;
+    const rankOf = (id: string): number => ds.find((x) => x.id === id)?.rank ?? -1;
+    const placeholders = ds.filter((x) => x.source !== "file" && x.rank !== null).map((x) => x.rank ?? 0);
+    expect("a decision whose class is a one-way door is marked one", ds.find((x) => x.id === "who-owns")?.one_way === true && ds.find((x) => x.id === "two-way")?.one_way === undefined, ds.map((x) => [x.id, x.one_way]));
+    expect("a one-way door ranks above every framework placeholder", placeholders.length > 0 && Math.min(rankOf("who-owns"), rankOf("licence")) > Math.max(...placeholders), { ranks: ds.map((x) => [x.id, x.rank]) });
+    expect("it says why", (ds.find((x) => x.id === "who-owns")?.why ?? []).some((w) => /one-way door/.test(w)));
+  } finally { rmSync(w2, { recursive: true, force: true }); }
+}
 if (failed) { console.log(`\n${failed} failing`); process.exit(1); }

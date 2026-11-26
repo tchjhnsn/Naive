@@ -19,3 +19,5 @@ The legal, risk and compliance function (APQC 11.0, Manage Enterprise Risk, Comp
 | [skills/compliance-calendar](./skills/compliance-calendar) | Skill: keep the obligations register (`legal/obligations/[id]`), raise each duty in time and record its evidence |
 | [skills/risk-register](./skills/risk-register) | Skill: keep the risk register (`legal/risks/[id]`) short, owned and ranked by expected loss |
 | [templates/research-program.md](./templates/research-program.md) | Template: the function's starter research program (autoresearch). Init and `naive upgrade` copy it to a venture's `programs/risk-and-compliance.md` once, when the venture lists this function in venture.json departments and has no program; the copy is then the founder's, and only a person writes it |
+
+Each workflow's done criterion `records-valid` runs `node packages/naive/src/checks/check-records.ts "$NAIVE_VENTURE"`: it validates the business's records, the folder the handoff runner names in `NAIVE_VENTURE`, not Naive's own.

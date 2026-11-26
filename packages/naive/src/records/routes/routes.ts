@@ -262,6 +262,13 @@ function aliases(): RouteAliases["aliases"] {
   return existsSync(f) ? load<RouteAliases>(f).aliases : [];
 }
 
+/** A route, or a glob over routes, under its current name: an alias's old prefix becomes its new one
+ *  (purpose/product/* becomes product/*). Anything no alias names comes back unchanged. */
+export function canonical(route: string): string {
+  const alias = aliases().find((a) => a.from === route || route.startsWith(`${a.from}/`));
+  return alias ? alias.to + route.slice(alias.from.length) : route;
+}
+
 /** Matches a concrete route (purpose/product/kettle) to its table entry and params. Follows aliases. */
 export function resolve(route: string): Resolved {
   const rs = routes();

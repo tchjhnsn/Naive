@@ -49,6 +49,9 @@ expect("nothing is written while the decision is open", waiting.status === 0 && 
 
 const d = mentura("decide", "migrate-product", "--venture", "kettle", "--by", "Test", "--confirm", "migrate-product");
 expect("a person decides", d.status === 0, d.stderr);
+// A product card also waits on product-exists, the framework's question whether a product exists (product-lock-test.ts).
+const pe = mentura("decide", "product-exists", "--venture", "kettle", "--by", "Test", "--confirm", "product-exists", "--answer", "Yes: one or more products exist");
+expect("a person answers product-exists", pe.status === 0, pe.stderr);
 const a = mentura("migrate", "--venture", "kettle", "--apply");
 expect("apply writes the record through the router", a.status === 0 && /1 brought/.test(a.stdout), a.stdout + a.stderr);
 const applied: { items: { status: string; at?: unknown }[] } = JSON.parse(readFileSync(join(dir, ".release/migrate-plan.json"), "utf8"));

@@ -1,6 +1,6 @@
 // One CLI: naive new starts a venture, and every record command of mentura runs through naive in it.
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { existsSync, mkdtempSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -45,5 +45,20 @@ t("an unknown command still fails with usage", () => {
   const r = naive(root, "no-such-command");
   assert.notEqual(r.status, 0);
 });
+
+// Output larger than a pipe's buffer reaches a slow reader whole: naive routes was cut at 65,536 bytes before.
+const slowRead = (...args: string[]): Promise<string> => new Promise((done, fail) => {
+  const p = spawn("node", [cli, ...args], { cwd: root, env: { ...process.env, MENTURA_WORKSPACE: "" } });
+  const chunks: Buffer[] = [];
+  p.stdout.on("data", (c: Buffer) => chunks.push(c));
+  p.stdout.pause();
+  setTimeout(() => p.stdout.resume(), 500);
+  p.on("error", fail);
+  p.on("close", (code) => (code === 0 ? done(Buffer.concat(chunks).toString("utf8")) : fail(new Error(`exit ${code}`))));
+});
+const routes = await slowRead("routes", "--json");
+assert.ok(routes.length > 65_536, `only ${routes.length} bytes`);
+assert.ok((JSON.parse(routes) as { route: string }[]).some((r) => r.route === "validation/interviews"));
+pass++; console.log("pass  naive routes reaches a slow reader whole, past one pipe buffer");
 
 console.log(`naive-cli: ${pass} passed`);
