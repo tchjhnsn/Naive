@@ -45,9 +45,9 @@ export async function main(cmd: string, argv: string[], workspace?: string): Pro
     if (!target) { console.error("usage: mentura phase <phase> --venture <id> --as person"); return 2; }
     // A phase change is the founder's decision: an agent may suggest it, not make it.
     if (opt("as") !== "person") { console.error(`a phase change is a person's: run mentura phase ${target} --venture ${venture} --as person`); return 1; }
-    // The process is the author. --as person does not record an agent as a person (EE-188).
-    const author = authorFromProcess({ via: "cli", by: opt("by"), claim: "person" });
-    if (author.kind !== "person") { console.error("a phase change is a person's decision; an agent can suggest it, never make it"); return 1; }
+    // The process is the author. --as person does not record an agent as a person (EE-189).
+    const author = authorFromProcess({ via: "cli", by: opt("by") });
+    if (author.kind !== "person") { console.error("a phase change is a person's decision; set MENTURA_ACTOR=person. An agent can suggest it, never make it"); return 1; }
     // Through the lifecycle gate (packages/naive/src/engine/lifecycle.ts), as naive phase does: exit criteria first.
     r = (await import("../../engine/lifecycle.ts")).advance(dir, target, { reason: opt("reason"), override: opt("override"), by: author, now });
   } else if (cmd === "freshness") {

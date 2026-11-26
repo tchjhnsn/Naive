@@ -1,4 +1,4 @@
-// Faithful author (EE-188). The process that writes a record is the author. --name is the subject in
+// Faithful author (EE-189). The process that writes a record is the author. --name is the subject in
 // people/, and it is not copied into the provenance agent. phase --override records a person only when
 // the process is a person.
 //
@@ -46,6 +46,8 @@ const mismatch = run(faithfulAuthor, authorshipFacts("agent", "person", false));
 expect("a written person for an agent process fails A2", !mismatch.pass && mismatch.failed.includes("A2"), mismatch.failed);
 const unconfirmed = run(faithfulAuthor, authorshipFacts("person", "person", false, false));
 expect("unconfirmed facts fail P7", !unconfirmed.pass && unconfirmed.failed.includes("P7"), unconfirmed.failed);
+const claimed = run(faithfulAuthor, authorshipFacts("unverified", "person", false, true, true));
+expect("a command claim fails A4", !claimed.pass && claimed.failed.includes("A4"), claimed.failed);
 
 try {
   setEnv("agent", "research-agent");
@@ -58,6 +60,9 @@ try {
   setEnv("person", undefined);
   const named = authorFromProcess({ via: "cli", by: "mina", claim: "person" });
   expect("--by names a person when MENTURA_ACTOR_ID is unset", named.kind === "person" && named.id === "mina", named);
+  setEnv(undefined, undefined);
+  const unset = authorFromProcess({ via: "cli", by: "ada-lovelace", claim: "person" });
+  expect("an unset process stays unverified when a command claims person", unset.kind === "unverified" && unset.id !== "ada-lovelace", unset);
 } finally {
   restoreEnv();
 }
@@ -108,6 +113,19 @@ try {
     expect("meet writes no person line", logText() === beforeMeet);
     const criterion = JSON.parse(readFileSync(criteria, "utf8")) as { criteria: { met?: unknown }[] };
     expect("the criterion stays unmet", criterion.criteria[0]?.met == null);
+
+    const bareDir = join(root, "bare");
+    const bare = runNode("packages/create-venture/index.mjs", [bareDir, "--type", "software-startup", "--name", "Ada Lovelace", "--yes", "--skip-install", "--no-git"], childEnv({}));
+    expect("create-venture --name with no actor exits 0", bare.status === 0, (bare.stdout ?? "") + (bare.stderr ?? ""));
+    if (bare.status === 0) {
+      const bareLog = readFileSync(ventureFile(bareDir, "provenance.jsonl"), "utf8").split("\n").filter((l) => l.trim()).map((l) => JSON.parse(l) as Line);
+      expect("create-venture --name with no actor records no person author", bareLog.length > 0 && bareLog.every((l) => l.agent?.kind !== "person" && l.agent?.id !== "ada-lovelace"), bareLog.map((l) => l.agent));
+    }
+
+    const beforeUnset = logText();
+    const unsetPhase = runNode("packages/naive/src/interfaces/cli/naive.ts", ["phase", "validation", "--override", "nobody claimed", "--venture", dir], childEnv({}));
+    expect("phase --override with MENTURA_ACTOR unset is refused", unsetPhase.status !== 0, (unsetPhase.stdout ?? "") + (unsetPhase.stderr ?? ""));
+    expect("an unset override writes no provenance line", logText() === beforeUnset);
 
     const beforePerson = logText();
     const personPhase = runNode("packages/naive/src/interfaces/cli/naive.ts", ["phase", "validation", "--override", "the founder asked", "--venture", dir], childEnv({ MENTURA_ACTOR: "person", MENTURA_ACTOR_ID: "torian" }));

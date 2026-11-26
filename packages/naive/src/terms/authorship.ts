@@ -1,9 +1,11 @@
-// The process that writes a record (EE-188). The people and roles inside the venture are subjects.
+// The process that writes a record (EE-189). The people and roles inside the venture are subjects.
 // This module reads the process and builds the provenance agent. It never copies a subject in as the author.
 //
 // MENTURA_ACTOR, MENTURA_ACTOR_ID, MENTURA_MODEL, MENTURA_SESSION and MENTURA_HARNESS name the process.
 // An agent process is kind agent with that id. A person process is kind person. --by may name a person
 // only when the process is a person and MENTURA_ACTOR_ID is unset. An agent ignores --by.
+// A command's claim is not the process. With MENTURA_ACTOR unset the kind is unverified.
+// An account a door checked is evidence of a person, because a provenance account is only valid on kind person.
 
 import { agentFromEnv, type EntryAgent } from "../core/provenance.ts";
 import { run } from "./engine.ts";
@@ -19,9 +21,8 @@ export type AuthorRequest = {
   /** An account a door checked. Kept only on a person. */
   account?: string;
   /**
-   * The kind to use when MENTURA_ACTOR does not name the process.
-   * Ignored when MENTURA_ACTOR is agent or person. The CLI door passes person. A door with no
-   * sign-in passes unverified.
+   * Ignored. A command used to pass person here when MENTURA_ACTOR was unset. That claim is not
+   * the process, and the faithful-author term refuses a line that was made from it.
    */
   claim?: AuthorKind;
 };
@@ -35,7 +36,7 @@ export function processKind(): AuthorKind {
 }
 
 /** Facts for one write. Names stay out of them. */
-export function authorshipFacts(process: AuthorKind, written: AuthorKind, subjectCopied: boolean, confirmed = true): Authorship {
+export function authorshipFacts(process: AuthorKind, written: AuthorKind, subjectCopied: boolean, confirmed = true, commandClaimed = false): Authorship {
   return {
     confirmed,
     processPerson: process === "person",
@@ -45,6 +46,7 @@ export function authorshipFacts(process: AuthorKind, written: AuthorKind, subjec
     writtenAgent: written === "agent",
     writtenUnverified: written === "unverified",
     subjectCopied,
+    commandClaimed,
   };
 }
 
@@ -55,7 +57,9 @@ export function authorshipFacts(process: AuthorKind, written: AuthorKind, subjec
  */
 export function authorFromProcess(input: AuthorRequest): EntryAgent {
   const envKind = processKind();
-  const kind: AuthorKind = envKind === "unverified" ? (input.claim ?? "unverified") : envKind;
+  // The process is what MENTURA_ACTOR names. A command claim is not applied. An account is evidence
+  // a door checked a person, which is the only kind a provenance account may sit on.
+  const kind: AuthorKind = envKind === "unverified" && input.account ? "person" : envKind;
   const extra: Record<string, unknown> = {};
   if (kind === "person" && !process.env.MENTURA_ACTOR_ID && input.by) extra.id = input.by;
   if (kind === "person" && input.account) extra.account = input.account;

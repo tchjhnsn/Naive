@@ -41,23 +41,24 @@ type Criterion = ExitCriteria["criteria"][number];
 type Agent = EntryAgent;
 
 /**
- * The person a phase change or a met criterion is recorded as. An agent process is refused before
- * any provenance line, even when the caller passes kind person. A person process is that person:
- * MENTURA_ACTOR_ID when it is set, otherwise the id the caller passed.
+ * The person a phase change or a met criterion is recorded as. An agent process is refused.
+ * MENTURA_ACTOR=person is that person. With the process unset, an explicit person id is the
+ * caller naming who decided. A command that only claims person, with no id and no process, is refused.
  */
 function phaseAuthor(by: Agent | undefined, error: string): { ok: true; agent: Agent } | { ok: false; error: string } {
-  const fromProcess = authorFromProcess({
-    via: typeof by?.via === "string" ? by.via : "cli",
-    by: typeof by?.id === "string" ? by.id : undefined,
-    account: typeof by?.account === "string" ? by.account : undefined,
-    claim: by?.kind === "agent" ? "agent" : "person",
-  });
-  if (fromProcess.kind === "agent" || by?.kind === "agent") return { ok: false, error };
-  if (fromProcess.kind !== "person") return { ok: false, error };
-  // The process did not name itself. Keep the person object the caller passed, so a person who
-  // has not set MENTURA_ACTOR is recorded as that person.
-  if (process.env.MENTURA_ACTOR?.trim().toLowerCase() !== "person" && by?.kind === "person") return { ok: true, agent: by };
-  return { ok: true, agent: fromProcess };
+  const env = process.env.MENTURA_ACTOR?.trim().toLowerCase();
+  if (env === "agent" || by?.kind === "agent") return { ok: false, error };
+  if (env === "person") {
+    const fromProcess = authorFromProcess({
+      via: typeof by?.via === "string" ? by.via : "cli",
+      by: typeof by?.id === "string" ? by.id : undefined,
+      account: typeof by?.account === "string" ? by.account : undefined,
+    });
+    if (fromProcess.kind !== "person") return { ok: false, error };
+    return { ok: true, agent: fromProcess };
+  }
+  if (by?.kind === "person" && typeof by.id === "string" && by.id.length > 0) return { ok: true, agent: by };
+  return { ok: false, error };
 }
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "../../../..");
@@ -177,7 +178,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const opt = (k: string) => { const i = all.indexOf(`--${k}`); return i < 0 ? undefined : all[i + 1]; };
   if (!dir || !existsSync(join(dir, "venture.json"))) { console.error("usage: node packages/naive/src/engine/lifecycle.ts <venture dir> [meet <criterion> | advance <phase>]"); process.exit(2); }
   const named = opt("by");
-  const by = named ? authorFromProcess({ via: "cli", by: named, claim: "person" }) : undefined;
+  const by = named ? authorFromProcess({ via: "cli", by: named }) : undefined;
   const out = <R,>(r: { ok: boolean; error?: string; result?: R }): R => { if (!r.ok || r.result === undefined) { console.error(r.error); process.exit(1); } return r.result; };
   if (!cmd || cmd.startsWith("--")) { const l = lifecycle(dir); console.log(all.includes("--json") ? JSON.stringify(l, null, 2) : text(l)); }
   else if (cmd === "meet") console.log(text(out(meet(dir, arg, { evidence: opt("evidence"), by }))));

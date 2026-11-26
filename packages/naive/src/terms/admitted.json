@@ -2110,9 +2110,9 @@
           "quote": "An agent is something that bears some form of responsibility for an activity taking place, for the existence of an entity, or for another agent's activity."
         }
       },
-      "meaning": "The process that wrote a record, one of person, agent or unverified, recorded as that same kind. The subject of the record is not copied in as the author.",
+      "meaning": "The process that wrote a record, one of person, agent or unverified, recorded as that same kind. The subject of the record is not copied in as the author. A command's claim of a kind is not the process.",
       "status": "proposed",
-      "hash": "d61e460102073ead",
+      "hash": "4c0d7035805eefad",
       "properties": [
         {
           "id": "A1",
@@ -2125,20 +2125,25 @@
         {
           "id": "A3",
           "says": "subjectCopied is false"
+        },
+        {
+          "id": "A4",
+          "says": "a command claim is not the process"
         }
       ],
       "rule": "every property, and P7 (confirmed facts)",
       "valid": true,
-      "passes": 4611,
+      "passes": 3703,
       "relations": {},
       "predictions": [],
       "lean": [
         "unconfirmed_not_author",
-        "subject_not_author"
+        "subject_not_author",
+        "claim_not_author"
       ],
       "sources": [
         "W3C PROV-O (2013): prov:Agent",
-        "EE-188"
+        "EE-193"
       ]
     },
     {

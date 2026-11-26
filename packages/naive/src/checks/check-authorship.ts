@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Faithful author (EE-188). Judges one write: the process kind, the kind written on the provenance
+// Faithful author (EE-189). Judges one write: the process kind, the kind written on the provenance
 // line, and whether the subject was copied in as the author. It reads no venture, so an old record
 // is not failed for a field it does not have. The decision is the faithful-author term.
 //

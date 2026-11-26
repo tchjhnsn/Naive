@@ -394,6 +394,7 @@ export type Authorship = Base & {
   writtenAgent: boolean;
   writtenUnverified: boolean;
   subjectCopied: boolean;
+  commandClaimed: boolean;
 };
 
 /** A quarter of the cases are faithful. The other three quarters break one property each, so each check fails
@@ -406,8 +407,9 @@ export function authorshipCases(seed = 59): Authorship[] {
     const process = [false, false, false];
     process[pick()] = true;
     const written = [...process];
-    const which = Math.floor(r() * 4);
+    const which = Math.floor(r() * 5);
     let subjectCopied = false;
+    let commandClaimed = false;
     if (which === 1) {
       if (b()) { process[0] = true; process[1] = true; }
       else { process[0] = false; process[1] = false; process[2] = false; }
@@ -416,11 +418,13 @@ export function authorshipCases(seed = 59): Authorship[] {
       written[0] = w === 0; written[1] = w === 1; written[2] = w === 2;
       if (written[0] === process[0] && written[1] === process[1] && written[2] === process[2]) written[0] = !written[0];
     } else if (which === 3) subjectCopied = true;
+    else if (which === 4) commandClaimed = true;
     return {
       confirmed: b(0.9), label: ["author", "Faithful author", "agent", "subject", undefined][Math.floor(r() * 5)],
       processPerson: process[0], processAgent: process[1], processUnverified: process[2],
       writtenPerson: written[0], writtenAgent: written[1], writtenUnverified: written[2],
       subjectCopied,
+      commandClaimed,
     };
   });
 }
