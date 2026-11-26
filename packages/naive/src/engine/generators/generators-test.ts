@@ -33,6 +33,7 @@ import * as gateCalibration from "./gate-calibration.ts";
 import * as marketAnatomy from "./market-anatomy.ts";
 import * as industryAnatomy from "./industry-anatomy.ts";
 import * as ventureAnatomy from "./venture-anatomy.ts";
+import * as risk from "./risk.ts";
 import { readFileSync } from "node:fs";
 
 let fails = 0;
@@ -215,6 +216,22 @@ t("industry-anatomy: a NAICS code names the id, and every cell starts unknown", 
 const shippedVam = JSON.parse(readFileSync(new URL("../../functions/strategy/venture-anatomy.json", import.meta.url), "utf8"));
 t("venture-anatomy: the shipped matrix redrafts and passes", ventureAnatomy.draft(shippedVam).ok);
 t("venture-anatomy: a viewpoint reading a sub-matrix the matrix lacks is refused", !ventureAnatomy.draft({ ...shippedVam, viewpoints: [{ id: "x", label: "X", concerns: "?", kind: "submatrices", reads: ["nope"] }] }).ok);
+
+// Risk (EE-212): the impact range cites a source or is marked an estimate, and expected loss carries the same label.
+const riskBase = { title: "A former employer claims the code", cause: "A founder wrote early code while employed", consequence: "An injunction stops sales",
+  category: "legal" as const, owner: "ana-ruiz", likelihood: { low: 0.02, high: 0.1 }, treatment: "reduce" as const, review_date: "2027-03-01" };
+const sourced = risk.draft({ ...riskBase, impact: { low: 20000, high: 150000, currency: "USD", source: "legal/obligations/ip-assignment" } });
+t("risk: an impact that cites a source passes, and expected loss carries the source", sourced.ok && sourced.draft !== undefined
+  && JSON.stringify(risk.expectedLoss(sourced.draft)) === JSON.stringify({ low: 400, high: 15000, currency: "USD", source: "legal/obligations/ip-assignment" }));
+const estimated = risk.draft({ ...riskBase, impact: { low: 20000, high: 150000, currency: "USD", estimate: { basis: "Counsel's fees for a demand letter to a short trial", by: "risk-and-compliance-agent" } } });
+t("risk: an impact marked an estimate passes, and expected loss carries the estimate", estimated.ok && estimated.draft !== undefined
+  && JSON.stringify(risk.expectedLoss(estimated.draft).estimate) === JSON.stringify({ basis: "Counsel's fees for a demand letter to a short trial", by: "risk-and-compliance-agent" }) && !("source" in risk.expectedLoss(estimated.draft)));
+const bare = risk.draft(invalid({ ...riskBase, impact: { low: 20000, high: 150000, currency: "USD" } }));
+t("risk: an impact with neither a source nor an estimate is refused", !bare.ok && bare.errors.some((e) => /exactly one of source/.test(e)));
+const both = risk.draft(invalid({ ...riskBase, impact: { low: 1, high: 2, currency: "USD", source: "finance/spend/counsel", estimate: { basis: "x", by: "ana-ruiz" } } }));
+t("risk: an impact with both a source and an estimate is refused", !both.ok);
+t("risk: an estimate with no one named as estimating it is refused", !risk.draft(invalid({ ...riskBase, impact: { low: 1, high: 2, currency: "USD", estimate: { basis: "a guess" } } })).ok);
+t("risk: a guess written into source as an assumption is refused, so it goes in estimate", !risk.draft({ ...riskBase, impact: { low: 1, high: 2, currency: "USD", source: "assumption: about what counsel charges" } }).ok);
 
 console.log(fails ? `${fails} failed` : "record generators: all pass");
 process.exitCode = fails ? 1 : 0;

@@ -1737,7 +1737,7 @@
         "instance/**/legal/risks/*.json",
         "packages/naive/src/records/examples/**/legal/risks/*.json"
       ],
-      "note": "One entry of the risk register: cause, consequence, owner, likelihood and impact as 90% ranges, treatment and review date (ISO 31000:2018 6.4 to 6.6). Only the risk-and-compliance agent (risk-and-compliance-agent) or a person writes it (writer function)"
+      "note": "One entry of the risk register: cause, consequence, owner, likelihood and impact as 90% ranges, the impact citing a source or marked an estimate (EE-212), treatment and review date (ISO 31000:2018 6.4 to 6.6). Only the risk-and-compliance agent (risk-and-compliance-agent) or a person writes it (writer function)"
     },
     {
       "id": "obligation",
