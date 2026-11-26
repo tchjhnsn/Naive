@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
 """Emit the public site's page content as Markdown from venture:naive's records.
 
-Reads only records: workspace/naive/k-base (written records first, then _drafts),
-then interim/ (records Naive refused; see GAPS.md). Writes site-content/*.md.
+Reads only records: instance/naive (written records first, then _drafts),
+then ventures/naive/interim/ (records Naive refused; see GAPS.md). Writes site-content/*.md.
 Every page carries front matter naming its source records and whether any is a
 draft, proposed or interim, so nothing ships before Torian decides.
-Usage: python3 tools/gen_site.py   (from /workspace/naive-self)
+Usage: python3 tools/gen_site.py   (from ventures/naive)
 """
 import json, os, glob, datetime
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-KB = os.path.join(ROOT, "workspace/naive/k-base")
-INTERIM = os.path.join(ROOT, "interim")
-OUT = os.path.join(ROOT, "site-content")
+HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+REPO = os.path.dirname(os.path.dirname(HERE))
+KB = os.path.join(REPO, "instance/naive")
+INTERIM = os.path.join(HERE, "interim")
+OUT = os.path.join(HERE, "site-content")
 TBD = "_TBD by Torian_"
 
 def rec(route):
@@ -20,21 +21,21 @@ def rec(route):
                         (f"{KB}/_drafts/{route.replace('/', '__')}.json.draft", "draft"),
                         (f"{INTERIM}/{route}.json", "interim")]:
         if os.path.exists(path):
-            return json.load(open(path)), os.path.relpath(path, ROOT), state
+            return json.load(open(path)), os.path.relpath(path, REPO), state
     return None, None, "missing"
 
 def decision(id_):
     p = f"{KB}/decisions/{id_}.decision.json"
     if not os.path.exists(p): return None, None, "missing"
     d = json.load(open(p))
-    return d, os.path.relpath(p, ROOT), ("decided" if d.get("answer") else "proposed")
+    return d, os.path.relpath(p, REPO), ("decided" if d.get("answer") else "proposed")
 
 def many(prefix):
     out = []
     for p in sorted(glob.glob(f"{KB}/{prefix}/*.json")):
-        out.append((json.load(open(p)), os.path.relpath(p, ROOT), "written"))
+        out.append((json.load(open(p)), os.path.relpath(p, REPO), "written"))
     for p in sorted(glob.glob(f"{KB}/_drafts/{prefix.replace('/', '__')}__*.json.draft")):
-        out.append((json.load(open(p)), os.path.relpath(p, ROOT), "draft"))
+        out.append((json.load(open(p)), os.path.relpath(p, REPO), "draft"))
     return out
 
 def page(name, title, srcs, body):
@@ -175,4 +176,4 @@ if os.path.exists(sm):
     lines = [f"- `{p['path']}` {p['label']}: " + ", ".join(x['item'] for x in p['sections']) for p in s["pages"]]
     om = ", ".join(o.get("item", "?") for o in s.get("omitted", []))
     open(f"{OUT}/_naive-sitemap.md", "w").write("# Naive's own site plan (operations/marketing/sitemap)\n\n" + "\n".join(lines) + f"\n\nOmitted by Naive: {om}\n")
-print("wrote", len(pages), "pages to", os.path.relpath(OUT, ROOT), ":", ", ".join(pages))
+print("wrote", len(pages), "pages to", os.path.relpath(OUT, REPO), ":", ", ".join(pages))

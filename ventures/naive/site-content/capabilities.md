@@ -3,7 +3,7 @@ title: What's built
 status: not-publishable
 source_states: [interim]
 sources:
-  - interim/capabilities.json
+  - ventures/naive/interim/capabilities.json
 generated: 2026-11-26
 ---
 # What's built

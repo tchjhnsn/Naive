@@ -3,8 +3,8 @@ title: Start
 status: not-publishable
 source_states: [interim, proposed]
 sources:
-  - workspace/naive/k-base/decisions/signup-door.decision.json
-  - interim/foundation/core.json
+  - instance/naive/decisions/signup-door.decision.json
+  - ventures/naive/interim/foundation/core.json
 generated: 2026-11-26
 ---
 # Start your venture

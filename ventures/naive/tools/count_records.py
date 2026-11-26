@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Count venture:naive records per APQC function, with state and null-field counts. Writes runs/<id>/record-counts.json."""
 import json, glob, os, sys
-ROOT=os.path.dirname(os.path.dirname(os.path.abspath(__file__))); KB=f"{ROOT}/workspace/naive/k-base"
+HERE=os.path.dirname(os.path.dirname(os.path.abspath(__file__))); REPO=os.path.dirname(os.path.dirname(HERE)); KB=os.path.join(REPO, "instance/naive")
 FN=["strategy","products","marketing-and-sales","supply-chain","service-delivery","customer-service","human-capital","it","finance","assets","risk-and-compliance","external-relationships","capabilities"]
 def fn(rel):
     r=rel.replace("_drafts/","").replace("__","/")
@@ -19,10 +19,12 @@ def nulls(x):
 rows=[]
 for p in glob.glob(f"{KB}/**/*",recursive=True):
     if not (p.endswith(".json") or p.endswith(".draft")) or "/raw/sources/" in p and not p.endswith("source.json"): continue
-    rel=os.path.relpath(p,KB); st="draft" if "_drafts" in rel else "written"
-    rows.append((fn(rel),st,nulls(json.load(open(p))),"k-base/"+rel))
-for p in glob.glob(f"{ROOT}/interim/**/*.json",recursive=True):
-    rel=os.path.relpath(p,f"{ROOT}/interim"); rows.append((fn(rel),"interim",nulls(json.load(open(p))),"interim/"+rel))
+    rel=os.path.relpath(p,KB)
+    if rel in ("package.json", "venture.json"): continue
+    st="draft" if "_drafts" in rel else "written"
+    rows.append((fn(rel),st,nulls(json.load(open(p))),rel))
+for p in glob.glob(f"{HERE}/interim/**/*.json",recursive=True):
+    rel=os.path.relpath(p,f"{HERE}/interim"); rows.append((fn(rel),"interim",nulls(json.load(open(p))),"interim/"+rel))
 out={}
 for f in FN+["knowledge (cross-function)","unmapped"]:
     rs=[r for r in rows if r[0]==f]

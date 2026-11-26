@@ -3,9 +3,9 @@ title: Pricing
 status: not-publishable
 source_states: [interim, proposed, written]
 sources:
-  - workspace/naive/k-base/validation/pricing.json
-  - workspace/naive/k-base/decisions/pricing-model.decision.json
-  - interim/cost-model.json
+  - instance/naive/validation/pricing.json
+  - instance/naive/decisions/pricing-model.decision.json
+  - ventures/naive/interim/cost-model.json
 generated: 2026-11-26
 ---
 # Pricing

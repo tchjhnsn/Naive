@@ -8,26 +8,14 @@
   "status": "active",
   "profile": "README.md",
   "layers": {
-    "purpose": {
-      "location": "k-base/"
-    },
-    "knowledge": {
-      "location": "k-base/"
-    },
-    "operations": {
-      "location": "k-base/"
-    },
-    "evidence": {
-      "location": "k-base/"
-    },
-    "governance": {
-      "location": "k-base/"
-    },
-    "interface": {
-      "location": "k-base/"
-    }
+    "purpose": false,
+    "knowledge": false,
+    "operations": false,
+    "evidence": false,
+    "governance": false,
+    "interface": false
   },
-  "layout": "structured",
+  "layout": "flat",
   "functions": {
     "foundation": {
       "owner": "founder"

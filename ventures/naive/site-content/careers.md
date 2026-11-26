@@ -3,8 +3,8 @@ title: Careers
 status: not-publishable
 source_states: [proposed, written]
 sources:
-  - workspace/naive/k-base/people/team-plan.json
-  - workspace/naive/k-base/decisions/first-hires.decision.json
+  - instance/naive/people/team-plan.json
+  - instance/naive/decisions/first-hires.decision.json
 generated: 2026-11-26
 ---
 # Careers

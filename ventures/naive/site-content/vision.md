@@ -3,8 +3,8 @@ title: Vision
 status: not-publishable
 source_states: [interim, written]
 sources:
-  - interim/foundation/telos.json
-  - workspace/naive/k-base/validation/plan.json
+  - ventures/naive/interim/foundation/telos.json
+  - instance/naive/validation/plan.json
 generated: 2026-11-26
 ---
 # Vision

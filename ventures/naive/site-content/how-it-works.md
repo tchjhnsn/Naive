@@ -3,9 +3,9 @@ title: How it works
 status: not-publishable
 source_states: [interim, proposed]
 sources:
-  - interim/foundation/core.json
-  - workspace/naive/k-base/decisions/term-engine-position.decision.json
-  - interim/capabilities.json
+  - ventures/naive/interim/foundation/core.json
+  - instance/naive/decisions/term-engine-position.decision.json
+  - ventures/naive/interim/capabilities.json
 generated: 2026-11-26
 ---
 # How it works

@@ -3,11 +3,11 @@ title: Home
 status: not-publishable
 source_states: [draft, interim, proposed]
 sources:
-  - interim/foundation/core.json
-  - workspace/naive/k-base/_drafts/foundation__problem.json.draft
-  - workspace/naive/k-base/_drafts/foundation__icp__ai-native-solo-founder.json.draft
-  - interim/capabilities.json
-  - workspace/naive/k-base/decisions/signup-door.decision.json
+  - ventures/naive/interim/foundation/core.json
+  - instance/naive/_drafts/foundation__problem.json.draft
+  - instance/naive/_drafts/foundation__icp__ai-native-solo-founder.json.draft
+  - ventures/naive/interim/capabilities.json
+  - instance/naive/decisions/signup-door.decision.json
 generated: 2026-11-26
 ---
 # If you have an idea, you are a founder.

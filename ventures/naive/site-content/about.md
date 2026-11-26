@@ -3,8 +3,8 @@ title: About
 status: not-publishable
 source_states: [draft, interim]
 sources:
-  - interim/foundation/core.json
-  - workspace/naive/k-base/_drafts/marketing__design-system.json.draft
+  - ventures/naive/interim/foundation/core.json
+  - instance/naive/_drafts/marketing__design-system.json.draft
 generated: 2026-11-26
 ---
 # About
