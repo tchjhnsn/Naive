@@ -67,6 +67,8 @@ export const REGISTRY: Registry = {
   "packages/naive/src/checks/check-records-test.ts": plain("proves the records check passes a new business, fails a broken record and skips a draft"),
   "packages/naive/src/checks/check-owners.ts": plain("they resolve each element's owner by a fixed precedence and compare role ids, so no term is decided"),
   "packages/naive/src/checks/check-owners-test.ts": plain("proves the owners check breaks on each rule on copies"),
+  "packages/naive/src/checks/check-language-rubric.ts": plain("they check the rubric's shape, that weights sum to 1 and that every source is a reference id, so no term is decided"),
+  "packages/naive/src/checks/check-language-rubric-test.ts": plain("proves the language rubric check breaks on each rule on copies"),
   "packages/naive/src/checks/check-pcf.ts": plain("APQC's PCF as data: schema shape, an attribution that names APQC, a source that is a reference id, unique hierarchy ids, levels that agree with an id's number of parts, parents that exist, sibling numbers 1 to n with no gap and 13 categories, and a drift report that compares the tool catalog's process group ids, names and element ids with the PCF's; it compares ids, strings and counts, it does not decide what a thing is"),
   "packages/naive/src/checks/check-pcf-test.ts": plain("proves the PCF check breaks on each rule on copies"),
   "packages/naive/src/checks/check-data-model.ts": plain("every JSON file maps to a declared record type by path; record types are schema types, not glossary terms"),
@@ -119,6 +121,7 @@ export const REGISTRY: Registry = {
   "packages/naive/src/engine/gate-service.ts": plain("the write gate as an Effect service: its default runs gate.ts's route rules, pins and role access, not a term"),
   "packages/naive/src/terms/ontology-gate-test.ts": plain("tests the membership gate, which is registered as symbolic"),
   "packages/naive/src/terms/ontology-gate.ts": symbolic,
+  "packages/naive/src/router/raw-source.ts": plain("a second write is whether source.json or text.md already exists, and a duplicate text is an equal sha256. Neither decides what a source is. A denied host or a logged-in fetch is refused by the allowed-source term through judgeSource"),
 };
 
 const ENGINE = "packages/naive/src/terms/engine.ts";

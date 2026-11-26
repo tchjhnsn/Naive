@@ -8,5 +8,6 @@ import Naive.Labels
 import Naive.Layer
 import Naive.Recipes
 import Naive.Signals
+import Naive.Sources
 import Naive.Terms
 import Naive.Upper
