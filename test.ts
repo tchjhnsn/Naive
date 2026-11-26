@@ -44,6 +44,7 @@ const steps: Step[] = [
   ["context: header first, session layouts, prefetch, context budget, agent vitals", "node", ["packages/naive/src/interfaces/context-test.ts"]],
   ["model steps: use model, judgments, kit boundaries, uncertain routing", "node", ["packages/naive/src/interfaces/tests/model-steps-test.ts"]],
   ["the gate: naive.config.json, one gate per venture, who is acting", "node", ["packages/naive/src/interfaces/tests/gate-test.ts"]],
+  ["a decision under a renamed route still locks what it unlocks; product-exists holds an agent's product card", "node", ["packages/naive/src/interfaces/tests/product-lock-test.ts"]],
   ["one CLI: naive new, and every record command through naive", "node", ["packages/naive/src/interfaces/tests/naive-cli-test.ts"]],
   ["naive agent: list, brief and run an agent from the terminal", "node", ["packages/naive/src/interfaces/tests/naive-agent-test.ts"]],
   ["the setup page (people, sources of truth, the docket, a discovery goal)", "node", ["packages/naive/src/interfaces/dev/test.ts"]],
