@@ -38,3 +38,5 @@ The ways a person, or an agent, works with a venture: the `naive` and `mentura` 
 `naive dev` checks each record as it is saved with `validateFile` from [`packages/naive/src/records/validate.ts`](../records/README.md), and `naive info` no longer reports a Python version, because nothing here needs one.
 
 `naive upgrade --framework` moves a git pin (`git+https://...#<sha>`, which create-venture writes from a clone) to the commit of the Naive running it and installs from that clone with `npm install --no-save`, so the update needs no network. The clone is `PACKAGE_ROOT` from [`core/scripts.mjs`](../core/scripts.ts), the folder above `dist/` when the CLI runs compiled (EE-159).
+
+`naive copy gaps|draft|check|one-shot` (EE-216) is dispatched from `cli/naive.ts` to [`copy.ts`](../functions/marketing-and-sales/marketing/copy.ts): a public page's words are `marketing-message` records a person approves before any design is built.

@@ -1826,6 +1826,22 @@
       "note": "How present the venture's public records are on its marketing site, item by item, with a score weighed by who the site must speak to now (EE-062)"
     },
     {
+      "id": "marketing-message",
+      "layer": "operations",
+      "function": "marketing-and-sales",
+      "level": "venture",
+      "data": "master",
+      "schema": "packages/naive/src/records/marketing-message.schema.json",
+      "generator": "packages/naive/src/engine/generators/marketing-message.ts",
+      "writer": "function",
+      "decision_class": "public-commitment",
+      "paths": [
+        "instance/**/marketing/message/*.json",
+        "packages/naive/src/records/examples/**/marketing/message/*.json"
+      ],
+      "note": "One element of the words a public page shows (EE-216): the tagline, a headline, the value proposition, a call to action with where it leads, a proof point, an objection answered, the contact line. Each element is its own record and cites the records its words come from, so a person approves the text element by element before any page is built, and the gap report says which element is missing and which upstream record a draft would come from (naive copy gaps). Owned by the marketing and sales function; the agent's write is held as a draft under public-commitment until a person accepts it. Route marketing/message/[id]"
+    },
+    {
       "id": "marketing-sitemap",
       "layer": "operations",
       "function": "marketing-and-sales",
