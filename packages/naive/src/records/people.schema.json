@@ -17,9 +17,10 @@
     "mode": {
       "enum": [
         "solo",
-        "team"
+        "team",
+        null
       ],
-      "description": "solo: one person owns every function the venture imports"
+      "description": "solo: one person owns every function the venture imports. team: the people share them. null: ownership is not known (an observed venture, EE-189). solo still means one person owns every function."
     },
     "people": {
       "type": "array",
@@ -69,6 +70,13 @@
           "founder_file": {
             "type": "string",
             "pattern": "^people/founders/[a-z0-9-]+\\.json$"
+          },
+          "reports_to": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Another person's id, or null when the org link is unknown (EE-189). A string that names nobody, or a cycle, fails the check."
           }
         }
       }

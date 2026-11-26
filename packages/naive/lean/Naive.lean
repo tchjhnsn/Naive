@@ -10,6 +10,7 @@ import Naive.Generated.ElementCases
 import Naive.Generated.Ontology
 import Naive.Labels
 import Naive.Layer
+import Naive.Org
 import Naive.Recipes
 import Naive.Signals
 import Naive.Sources

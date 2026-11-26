@@ -22,3 +22,8 @@ export function judgeConduct(record: unknown): ConductJudgment {
   if (mode === "run") return { verdict: "run", result: run(runVenture, { confirmed: true, observed: false, run: true }) };
   return { verdict: "illegal", value: mode };
 }
+
+/** Whether the observed-venture term passes for this mode. The lint uses this. */
+export function ventureObserved(mode: unknown): boolean {
+  return judgeConduct({ mode }).verdict === "observed";
+}

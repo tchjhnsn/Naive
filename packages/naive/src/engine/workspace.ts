@@ -18,6 +18,7 @@
 
 import { appendFileSync, existsSync, mkdirSync, readdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { basename, dirname, join, relative, resolve } from "node:path";
+import { agentFromEnv } from "../core/provenance.ts";
 import { ventureFile } from "../core/venture-paths.ts";
 import { systemZone, validZone } from "./clock.ts";
 import { initCalendar } from "./calendar.ts";
@@ -74,7 +75,13 @@ export function loadWorkspace(root: string) {
   return { root, file, ws, settings: { ...DEFAULTS, ...(ws.settings ?? {}) }, ventures };
 }
 
-const log = (root: string, file: string, entry: Record<string, unknown>) => { mkdirSync(join(root, "meta"), { recursive: true }); appendFileSync(join(root, "meta", file), JSON.stringify({ at: now(), ...entry }) + "\n"); };
+/** The process, when MENTURA_ACTOR names one. An agent line keeps id, model, session and harness. */
+function processAgent(): { agent?: ReturnType<typeof agentFromEnv> } {
+  const kind = process.env.MENTURA_ACTOR?.trim().toLowerCase();
+  if (kind !== "agent" && kind !== "person") return {};
+  return { agent: agentFromEnv(kind, "cli") };
+}
+const log = (root: string, file: string, entry: Record<string, unknown>) => { mkdirSync(join(root, "meta"), { recursive: true }); appendFileSync(join(root, "meta", file), JSON.stringify({ at: now(), ...processAgent(), ...entry }) + "\n"); };
 
 /** Whether a session in fromVenture may read path in toVenture: { ok, reason }. */
 export function canRead(workspace: LoadedWorkspace, fromVenture: string, toVenture: string, path: string): { ok: true, reason: string } | { ok: false, reason: string } {
@@ -186,7 +193,7 @@ export const DEFAULT_NAME = "Naive workspace";
 /**
  *  Create the workspace at root, or fill in what an older one lacks (timeZone, the calendar). Returns { root, file, ws, created }.
  */
-export function ensureWorkspace(root: string, { name, timeZone, owner }: { name?: string, timeZone?: string, owner?: string } = {}) {
+export function ensureWorkspace(root: string, { name, timeZone, owner }: { name?: string, timeZone?: string, owner?: string | null } = {}) {
   root = resolve(root);
   mkdirSync(root, { recursive: true });
   const file = workspaceFile(root);
@@ -203,7 +210,7 @@ export function ensureWorkspace(root: string, { name, timeZone, owner }: { name?
   if (!existsSync(join(root, "AGENTS.md"))) writeFileSync(join(root, "AGENTS.md"), `# ${ws.name}\n\nRules for agents across every venture in this workspace: who you are, how you work, what is off limits. A venture's own AGENTS.md adds to these, and the nearer file wins when two say the same thing.\n`);
   // raw/ keeps what the founder captures, inbox/ holds what waits for them, meta/ the logs, founder/ the founder record once.
   for (const d of ["raw", "inbox", "meta", "founder"]) { mkdirSync(join(root, d), { recursive: true }); if (!readdirSync(join(root, d)).length) writeFileSync(join(root, d, ".gitkeep"), ""); }
-  initCalendar(root, { owner: owner ?? "founder" });
+  initCalendar(root, { owner });
   if (created) log(root, "provenance.jsonl", { action: "workspace-init", name: ws.name, timeZone: ws.timeZone });
   return { root, file, ws, created };
 }

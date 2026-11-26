@@ -163,6 +163,7 @@ const steps: Step[] = [
   ["publication: examples", "node", ["packages/naive/src/checks/check-publication.ts", "packages/naive/src/records/examples/workspace"]],
   ["venture types and people: examples", "node", ["packages/naive/src/checks/check-people.ts", "packages/naive/src/records/examples/workspace"]],
   ["people lint: role, hire, decision", "node", ["packages/naive/src/checks/lint-people-test.ts"]],
+  ["observed org: null owners and decision-makers, no guessed founder or agent (EE-189)", "node", ["packages/naive/src/engine/observed-org-test.ts"]],
   ["provenance: examples", "node", ["packages/naive/src/checks/check-provenance.ts", "packages/naive/src/records/examples/workspace"]],
   ["traces: examples", "node", ["packages/naive/src/checks/check-traces.ts", "packages/naive/src/records/examples/workspace"]],
   ["recipes: the example venture's recipe, plan, experiment log and receptions agree (check-recipes)", "node", ["packages/naive/src/checks/check-recipes.ts"]],

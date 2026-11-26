@@ -38,7 +38,7 @@ for (const dir of walk(ws)) {
   rosters++;
   const roster = load<Roster>(rosterFile);
   // contributors is read though the schema has no such field, so a function entry is read with it.
-  const functions = Object.entries(v.functions ?? {}) as [string, { owner: string, contributors?: string[] }][];
+  const functions = Object.entries(v.functions ?? {}) as [string, { owner: string | null, contributors?: string[] }][];
   // In the structured layout (EE-086) the org chart is venture.json's functions, and a person's hats are the
   // functions they own there; in the flat layout, the departments venture.json imports, worn as hats in people/.
   const structured = v.layout === "structured" || (v.layout === "src" && v.functions !== undefined);
@@ -71,6 +71,7 @@ for (const dir of walk(ws)) {
       }
     }
   }
+  // null mode (EE-189) means ownership is not known, so it skips this rule. solo still means one person owns every function.
   if (roster.mode === "solo") {
     if (roster.people.length !== 1) at(`a solo venture has one person; people/people.json lists ${roster.people.length}`);
     else if (roles.get(roster.people[0].role)?.owns_when_solo && imported.size) {

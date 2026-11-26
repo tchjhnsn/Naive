@@ -3,6 +3,7 @@
 // which is named, not guessed. The authorship level holds faithful author (EE-193): one write, with no names.
 
 import { rng, type Base } from "./engine.ts";
+import type { JoinFacts, MakerFacts, OrgFacts, SeatFacts } from "./makers.ts";
 import { namesBetween, type Target } from "./relations.ts";
 
 /** One person's relationship to one venture. */
@@ -444,6 +445,63 @@ export function conductCases(seed = 59): Conduct[] {
     confirmed: b(0.9), label: ["observed venture", "run venture", "solo", undefined][Math.floor(r() * 4)],
     observed: b(), run: b(),
   }));
+}
+
+const makerLabel = ["open maker", "named maker", "decision-maker", undefined] as const;
+const orgLabel = ["org link", "reports to", "manager", undefined] as const;
+
+/** Coherent open makers and named makers, plus independent bits so each property fails on its own. */
+export function makerCases(seed = 59): MakerFacts[] {
+  const r = rng(seed);
+  const b = (p = 0.5) => r() < p;
+  const label = () => makerLabel[Math.floor(r() * makerLabel.length)];
+  return Array.from({ length: N }, () => {
+    const confirmed = b(0.9);
+    const roll = r();
+    if (roll < 0.25) return { confirmed, label: label(), unknown: true, named: false, resolves: false, isActor: false, guessed: false };
+    if (roll < 0.5) return { confirmed, label: label(), unknown: false, named: true, resolves: true, isActor: false, guessed: false };
+    return { confirmed, label: label(), unknown: b(), named: b(), resolves: b(), isActor: b(0.3), guessed: b(0.3) };
+  });
+}
+
+/** Absent links and links with both ends, plus cycles and missing ends so each property fails on its own. */
+export function orgCases(seed = 61): OrgFacts[] {
+  const r = rng(seed);
+  const b = (p = 0.5) => r() < p;
+  const label = () => orgLabel[Math.floor(r() * orgLabel.length)];
+  return Array.from({ length: N }, () => {
+    const confirmed = b(0.9);
+    const roll = r();
+    if (roll < 0.3) return { confirmed, label: label(), absent: true, fromKnown: b(), toKnown: b(), cycle: false };
+    if (roll < 0.6) return { confirmed, label: label(), absent: false, fromKnown: true, toKnown: true, cycle: false };
+    return { confirmed, label: label(), absent: b(0.2), fromKnown: b(), toKnown: b(), cycle: b() };
+  });
+}
+
+/** Unknown join dates, sourced dates, and guessed run dates, so each property fails on its own. */
+export function joinCases(seed = 63): JoinFacts[] {
+  const r = rng(seed);
+  const b = (p = 0.5) => r() < p;
+  return Array.from({ length: N }, () => {
+    const confirmed = b(0.9);
+    const roll = r();
+    if (roll < 0.34) return { confirmed, label: "open join", unknown: true, dated: false, sourced: false, guessed: false };
+    if (roll < 0.67) return { confirmed, label: "sourced join", unknown: false, dated: true, sourced: true, guessed: false };
+    return { confirmed, label: "guessed join", unknown: b(), dated: b(), sourced: b(), guessed: b() };
+  });
+}
+
+/** An unknown seat, the principal, and the named subject, so each property fails on its own. */
+export function seatCases(seed = 65): SeatFacts[] {
+  const r = rng(seed);
+  const b = (p = 0.5) => r() < p;
+  return Array.from({ length: N }, () => {
+    const confirmed = b(0.9);
+    const roll = r();
+    if (roll < 0.34) return { confirmed, label: "unknown owner", unknown: true, principal: false, subject: false };
+    if (roll < 0.67) return { confirmed, label: "principal", unknown: false, principal: true, subject: false };
+    return { confirmed, label: "subject", unknown: b(), principal: b(), subject: b() };
+  });
 }
 
 /** Most outcomes are settled by a person or two producers; some rest on one producer; agents claim at random. */

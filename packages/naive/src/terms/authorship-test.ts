@@ -122,10 +122,16 @@ try {
       expect("create-venture --name with no actor records no person author", bareLog.length > 0 && bareLog.every((l) => l.agent?.kind !== "person" && l.agent?.id !== "ada-lovelace"), bareLog.map((l) => l.agent));
     }
 
+
     const beforeUnset = logText();
     const unsetPhase = runNode("packages/naive/src/interfaces/cli/naive.ts", ["phase", "validation", "--override", "nobody claimed", "--venture", dir], childEnv({}));
     expect("phase --override with MENTURA_ACTOR unset is refused", unsetPhase.status !== 0, (unsetPhase.stdout ?? "") + (unsetPhase.stderr ?? ""));
     expect("an unset override writes no provenance line", logText() === beforeUnset);
+
+    const helpDir = join(root, "no-venture");
+    const help = runNode("packages/naive/src/interfaces/cli/naive.ts", ["new", helpDir, "--help"], childEnv({}));
+    expect("naive new --help prints usage and exits 0", help.status === 0 && /create-venture/.test(help.stdout ?? "") && /--name/.test(help.stdout ?? ""), (help.stdout ?? "") + (help.stderr ?? ""));
+    expect("naive new --help writes no venture", !existsSync(helpDir));
 
     const beforePerson = logText();
     const personPhase = runNode("packages/naive/src/interfaces/cli/naive.ts", ["phase", "validation", "--override", "the founder asked", "--venture", dir], childEnv({ MENTURA_ACTOR: "person", MENTURA_ACTOR_ID: "torian" }));

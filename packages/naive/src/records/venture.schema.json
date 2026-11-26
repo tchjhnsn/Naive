@@ -29,17 +29,17 @@
       "default": "venture",
       "description": "venture: building a venture, whose root and strategic foundation fail closed. product: a product without a venture, which fails open (EE-054)."
     },
+    "type": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$",
+      "description": "The venture type, an id from packages/naive/src/engine/venture-types.json: what kind of venture this is (a software startup, a VC fund), which decides its starting packages, first decisions, functions and roles (EE-082)"
+    },
     "mode": {
       "enum": [
         "observed",
         "run"
       ],
       "description": "Whether the venture is observed or a person is running it (EE-193). observed means an outside-in model of a company built from public information, and the people, roles and org links in it are subjects. run means a person is running it on Naive. Left out, the record was written before this field and is not read as run. This field is not the loop mode in naive.config.json (manual, ask or auto) and not the mode on people.json (solo or team)."
-    },
-    "type": {
-      "type": "string",
-      "pattern": "^[a-z0-9-]+$",
-      "description": "The venture type, an id from packages/naive/src/engine/venture-types.json: what kind of venture this is (a software startup, a VC fund), which decides its starting packages, first decisions, functions and roles (EE-082)"
     },
     "layout": {
       "enum": [
@@ -52,7 +52,7 @@
     },
     "functions": {
       "type": "object",
-      "description": "The venture's functions and their one accountable owner each (EE-071), keyed by function id from packages/naive/src/functions/departments.json. A solo founder owns them all, which is what the manifest assumes when this is left out.",
+      "description": "The venture's functions and their one accountable owner each (EE-071), keyed by function id from packages/naive/src/functions/departments.json. A solo founder owns them all, which is what the manifest assumes when this is left out. An owner is null when nobody is known (EE-189).",
       "additionalProperties": {
         "type": "object",
         "required": [
@@ -60,8 +60,11 @@
         ],
         "properties": {
           "owner": {
-            "type": "string",
-            "description": "A role or a person's name; no personal details"
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "A person id or a role id, or null when no owner is known (EE-189). Never a guess of the founder or the agent."
           }
         },
         "additionalProperties": false
@@ -236,11 +239,8 @@
       "additionalProperties": false
     },
     "owner": {
-      "enum": [
-        "self",
-        "shared",
-        "other"
-      ]
+      "description": "Who the venture is for: self, shared or other. null when an observed venture has not named an owner.",
+      "anyOf": [{ "enum": ["self", "shared", "other"] }, { "type": "null" }]
     },
     "members": {
       "type": "array",

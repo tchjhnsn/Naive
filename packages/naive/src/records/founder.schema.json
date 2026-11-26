@@ -49,8 +49,12 @@
       "description": "The functions this founder owns, in the flat layout. In the structured layout (EE-086) they are read from venture.json"
     },
     "joined": {
+      "description": "When this person joined, or null when that is not known. An observed venture writes null unless a date is supplied with joined_source. The run date is not a default.",
+      "anyOf": [{ "type": "string", "format": "date" }, { "type": "null" }]
+    },
+    "joined_source": {
       "type": "string",
-      "format": "date"
+      "description": "Where a join date came from. An observed venture requires this when joined is a date."
     },
     "agreement": {
       "type": "object",

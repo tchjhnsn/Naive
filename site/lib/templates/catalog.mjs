@@ -248,10 +248,16 @@ function decisionSets(initSource) {
   }
   const product = extractLiteral(initSource, "const productFoundation = ");
   const fund = extractLiteral(initSource, "const fundFoundation = ");
-  const teamQuestion = initSource.match(/id: "founding-team", question: "([^"]+)"/);
-  const teamOptions = initSource.match(/id: "founding-team"[\s\S]*?options: \[([^\]]+)\]/);
-  if (!teamQuestion || !teamOptions) throw new Error("catalog: founding-team decision is not in schema/init-venture.mjs");
-  const options = [...teamOptions[1].matchAll(/"([^"]+)"/g)].map((match) => match[1]);
+  // init-venture writes one founding question for a run venture and another for an observed venture.
+  // The card shows the run question, which is what naive new writes. A single literal beside the id
+  // is that same question. The observed question is the other object.
+  const pairs = [...initSource.matchAll(/question: "([^"]+)", options: \[([^\]]+)\]/g)];
+  const inline = initSource.match(/id: "founding-team", question: "([^"]+)"/);
+  const inlineOptions = initSource.match(/id: "founding-team"[\s\S]*?options: \[([^\]]+)\]/);
+  const chosen = inline && inlineOptions ? { question: inline[1], options: inlineOptions[1] } : pairs.length >= 2 ? { question: pairs[1][1], options: pairs[1][2] } : pairs.length === 1 ? { question: pairs[0][1], options: pairs[0][2] } : null;
+  if (!chosen) throw new Error("catalog: founding-team decision is not in schema/init-venture.mjs");
+  const options = [...chosen.options.matchAll(/"([^"]+)"/g)].map((match) => match[1]);
+  const teamQuestion = [chosen.question];
   const comment = (needle) => {
     const at = initSource.indexOf(needle);
     const before = initSource.slice(0, at);
@@ -266,7 +272,7 @@ function decisionSets(initSource) {
   return {
     product,
     fund,
-    team: { id: "founding-team", question: teamQuestion[1], options },
+    team: { id: "founding-team", question: chosen.question, options },
     comments: {
       product: comment("const productFoundation = "),
       fund: comment("const fundFoundation = "),
