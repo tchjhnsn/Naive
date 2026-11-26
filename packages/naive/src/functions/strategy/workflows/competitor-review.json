@@ -102,7 +102,7 @@
     {
       "id": "records-valid",
       "kind": "conformance",
-      "check": "node packages/naive/src/records/validate.ts"
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
     },
     {
       "id": "every-claim-sourced",

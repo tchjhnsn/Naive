@@ -27,3 +27,5 @@ The marketing and sales function (APQC 3.0, Market and Sell Products and Service
 | [templates/marketing-brand.md](./templates/marketing-brand.md) | Template: brand |
 | [templates/public-assets.md](./templates/public-assets.md) | Template: public assets |
 | [templates/research-program.md](./templates/research-program.md) | Template: the function's starter research program (autoresearch). Init and `naive upgrade` copy it to a venture's `programs/marketing-and-sales.md` once, when the venture lists this function in venture.json departments and has no program; the copy is then the founder's, and only a person writes it |
+
+Each workflow's done criterion `records-valid` runs `node packages/naive/src/checks/check-records.ts "$NAIVE_VENTURE"`: it validates the business's records, the folder the handoff runner names in `NAIVE_VENTURE`, not Naive's own.
