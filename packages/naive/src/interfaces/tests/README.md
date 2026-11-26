@@ -33,7 +33,7 @@ Tests that run a module in `packages/naive/src/engine/` through the router: its 
 | [`caching-test.ts`](./caching-test.ts) | Record and judgment caches, lifetimes, the per-action memo. |
 | [`freshness-test.ts`](./freshness-test.ts) | Revalidating records by time and on demand. |
 | [`model-steps-test.ts`](./model-steps-test.ts) | Model steps, judgments, kit boundaries, uncertain routing. |
-| [`setup-test.ts`](./setup-test.ts) | Setup in the model's harness over MCP, including that the docket carries each decision's statement and options. |
+| [`setup-test.ts`](./setup-test.ts) | Setup in the model's harness over MCP, including that the docket carries each decision's statement and options. A venture from create-venture already has `founding-team` decided, so one decision is settled before a relayed answer is open. |
 | [`brand-test.ts`](./brand-test.ts) | Brand tokens, voice, glossary, sitemap and assets. A remote image is recorded through `addAsset` and `addRemote` in [`packages/naive/src/router/brand.ts`](../../router/brand.ts), the calls an app's fetcher makes; fetching is not Naive's. |
 | [`raw-source-write-test.ts`](./raw-source-write-test.ts) | A raw source write (EE-192) through `naive new` and `naive check`. The write lands `source.json` and `text.md` together and check passes. A second write, a duplicate text, a linkedin.com url and a logged-in fetch are refused, and nothing new is written. |
 | `lint-*-test.mjs` | The function lint suites (customers, finance, foundation, investors, legal, product, validation) run through their routes. The clean ventures they expect silence from are the examples in `packages/naive/src/records/examples/workspace` and `packages/naive/src/records/examples/software`. |

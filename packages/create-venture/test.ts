@@ -162,6 +162,21 @@ t("structured layout: the org chart in venture.json names each function's owner,
   ok(r.status === 0, r.stdout);
 });
 
+t("the team answer decides the founding-team question as the founder's own: solo, or cofounders on a team", () => {
+  ok(create(["solo-shop", "--type", "software-startup", "--name", "Sam Lee", "--yes", "--skip-install", "--no-git"]).status === 0);
+  for (const [name, founder, answer] of [["solo-shop", "sam-lee", "Solo: I am founding it alone"], ["duo", "ana-ruiz", "Cofounders: we are founding it together"]]) {
+    const dir = join(base, name);
+    const d = load(ventureFile(dir, "decisions/venture.team.decision.json"));
+    ok(d.status === "decided" && d.answer === answer, `${name}: ${JSON.stringify(d)}`);
+    ok(d.provenance.approved_by === founder && d.provenance.wording === "own" && d.provenance.drafted_by.kind === "framework", `${name}: ${JSON.stringify(d.provenance)}`);
+    const log = readFileSync(join(dir, "meta/provenance.jsonl"), "utf8").trim().split("\n").map((l) => JSON.parse(l));
+    ok(log.some((e) => e.entity === "decisions/venture.team.decision.json" && e.activity === "accept" && e.agent?.kind === "person" && e.agent?.id === founder), `${name}: no accept line by ${founder}`);
+    const open = spawnSync("node", [join(repo, "packages/naive/src/engine/decisions.ts"), dir, "--json"], { encoding: "utf8" });
+    const m = JSON.parse(open.stdout) as { decisions: { id: string; render: string }[] };
+    ok(m.decisions.find((x) => x.id === "founding-team")?.render === "done", `${name}: ${JSON.stringify(m.decisions.find((x) => x.id === "founding-team"))}`);
+  }
+});
+
 t("the setup questions: nothing is scaffolded until the type and role are set; customize asks layers, legal form and a dump", () => {
   // name, what (Enter: the list), type 1 (software startup), role, your name, solo, phase,
   // where each function keeps its truth (products, marketing and sales, customer service, IT, finance, legal),
