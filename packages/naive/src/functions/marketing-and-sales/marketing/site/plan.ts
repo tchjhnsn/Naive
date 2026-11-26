@@ -10,7 +10,7 @@
 // one exception: an audience with content of its own (candidates, investors, contributors) gets its
 // own page, labelled for it. The plan is a marketing record (operations/marketing/sitemap.json). It
 // names, for each section, the internal record it draws on and the public variant a marketing agent
-// writes (operations/marketing/content/<page>/<item>.mdx), so nothing internal is published as is
+// writes (marketing/content/<page>/<item>.mdx, through the route marketing/content/<page>/<item>), so nothing internal is published as is
 // (packages/naive/src/engine/check-public.ts). Planning the sitemap and designing the site are separate agents: this plan is
 // part of the marketing package handed to engineering, which builds the site (EE-065).
 //
@@ -28,7 +28,7 @@ type Page = MarketingSitemap["pages"][number];
 
 const load = (p: string): unknown => JSON.parse(readFileSync(p, "utf8"));
 export const SITEMAP = "operations/marketing/sitemap.json";
-export const CONTENT = "operations/marketing/content";
+export const CONTENT = "marketing/content";
 const LABELS = MATRIX.page_labels;
 const RANK = Object.fromEntries(Object.entries(MATRIX.prominence).map(([k, v]) => [k, v.rank]));
 

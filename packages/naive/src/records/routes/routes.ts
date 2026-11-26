@@ -122,6 +122,14 @@ const APPENDS = new Set(["detector-trial"]);
 // Records the router claims for the acting role, once (packages/naive/src/router/handoff-claim.ts, the handoff claim of
 // docs/design/LEAD_AGENTS_2026-11-08.md).
 const CLAIMS = new Set(["handoff"]);
+// Text records written one file at a time under a folder of any depth (<root>/**/*.<ext>): each file is the item
+// <base>/[id], its id the path below the root without the extension, slashes included (marketing/content/home/what).
+// The site planner names these variants (packages/naive/src/functions/marketing-and-sales/marketing/site/plan.ts) and
+// the public gate checks them (packages/naive/src/engine/check-public.ts).
+const TEXT_ITEMS = new Set(["marketing-content"]);
+const DEEP = /\/\*\*\/\*\.[a-z]+$/;
+/** Whether an item route's id may hold slashes: its files sit under a folder of any depth. */
+export const deepItem = (r: { collection?: string; files?: string[] }): boolean => r.collection === "item" && !!r.files?.length && r.files.every((f) => DEEP.test(f));
 
 /** The route table, generated from packages/naive/src/records/data-model.json, the kit manifests and packages/naive/src/engine/need-now.json. */
 // Caching hook (F-12): built once per action and shared.
@@ -170,6 +178,8 @@ function buildRoutes(): Route[] {
     } else {
       out.push({ ...common, route: base, files: filesOf,
         actions: ["read", "view", "layout", ...(writable && !filesOf[0]?.includes("*") ? ["write"] : []), ...(checks.length ? ["check"] : []), ...(template ? ["template"] : [])] });
+      if (TEXT_ITEMS.has(r.id) && filesOf.length && filesOf.every((f) => DEEP.test(f)))
+        out.push({ ...common, route: `${base}/[id]`, files: filesOf, collection: "item" as const, actions: ["read", "view", "layout", "write", ...(checks.length ? ["check"] : [])] });
     }
   }
   // Recipe writes (autoresearch build plan item 6, everything-ecosystem docs/design/AUTORESEARCH_RECORDS_2026-11-06.md,
@@ -274,9 +284,10 @@ export function resolve(route: string): Resolved {
     const head = r.route.slice(0, -"/[...pattern]".length);
     if (concrete.startsWith(`${head}/`) && concrete.length > head.length + 1) return { r, params: { pattern: concrete.slice(head.length + 1) }, alias };
   }
+  // A deep item's id is the rest of the route, slashes included: marketing/content/home/what.
   for (const r of rs.filter((x) => x.route.endsWith("/[id]"))) {
     const head = r.route.slice(0, -"/[id]".length);
-    if (concrete.startsWith(`${head}/`) && !concrete.slice(head.length + 1).includes("/")) return { r, params: { id: concrete.slice(head.length + 1) }, alias };
+    if (concrete.startsWith(`${head}/`) && concrete.length > head.length + 1 && (deepItem(r) || !concrete.slice(head.length + 1).includes("/"))) return { r, params: { id: concrete.slice(head.length + 1) }, alias };
   }
   return { r: null, params: {}, alias };
 }

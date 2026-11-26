@@ -105,7 +105,7 @@ t("the plan puts what customers need on the home page, with components, reasons 
   const p = plan(venture);
   const home = must(p.pages.find((x) => x.path === "/"), "the home page");
   const hero = must(home.sections.find((s) => s.item === "what"), "the hero section");
-  ok(hero.component === "Hero" && hero.why.length && hero.variant === "operations/marketing/content/home/what.mdx", JSON.stringify(hero));
+  ok(hero.component === "Hero" && hero.why.length && hero.variant === "marketing/content/home/what.mdx", JSON.stringify(hero));
   ok(home.sections[0].need >= must(home.sections.at(-1), "the last section").need, "sections ordered by need");
   ok(must(home.sections.find((s) => s.item === "problem"), "the problem section").source.exists, "problem record found");
 });
