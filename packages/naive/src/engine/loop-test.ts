@@ -18,7 +18,7 @@ for (const k of ["NAIVE_AGENT_CMD", "MENTURA_ACTOR", "MENTURA_ACTOR_ID", "MENTUR
 const cfg: LoopConfig = { mode: "ask", functions: { f: "auto" }, workflows: { "f/slow": "manual" } };
 expect("the workflow's mode wins, then the function's, then the venture's, then manual", modeFor(cfg, "f/slow").mode === "manual" && modeFor(cfg, "f/slow").from === "workflow" && modeFor(cfg, "f/fast").mode === "auto" && modeFor(cfg, "f/fast").from === "function" && modeFor(cfg, "g/any").mode === "ask" && modeFor(cfg, "g/any").from === "venture" && modeFor(undefined, "g/any").mode === "manual" && modeFor(undefined, "g/any").from === "default");
 
-const entry = (id: string, over: Partial<DueEntry> = {}): DueEntry => ({ workflow: `f/${id}`, function: "f", title: id, role: "f-agent", trigger: { kind: "schedule", cadence: "weekly" }, status: "due", why: "It runs weekly and has never run.", last_done: null, last_failed: null, next_due: null, in_phase: true, ...over });
+const entry = (id: string, over: Partial<DueEntry> = {}): DueEntry => ({ workflow: `f/${id}`, function: "f", title: id, role: "f-agent", trigger: { kind: "schedule", cadence: "weekly" }, status: "due", why: "It runs weekly and has never run.", last_done: null, last_failed: null, next_due: null, in_phase: true, time_box: null, ...over });
 expect("the question about an occurrence is named by the workflow and its last run", askId(entry("w")) === "run-f-w-first" && askId(entry("w", { last_done: "2026-06-08T09:30:00.000Z" })) === "run-f-w-20260608t0930" && askId(entry("w", { last_done: "2026-06-08T09:30:00.000Z", last_failed: "2026-06-14T10:00:00.000Z" })) === "run-f-w-20260614t1000");
 
 const none = new Map<string, Asked>();
@@ -34,6 +34,14 @@ expect("a workflow the phase does not list is left alone, unless a mode names th
 const broke = entry("w", { last_done: "2026-06-01T00:00:00.000Z", last_failed: "2026-06-14T00:00:00.000Z" });
 expect("auto asks before it starts a workflow whose last run failed", one(broke, { mode: "auto" }).action === "ask" && /failed/.test(one(broke, { mode: "auto" }).why) && one(broke, { mode: "manual" }).action === "leave");
 expect("with no agent harness a start is blocked and says why", one(entry("w"), { mode: "auto" }, none, false).action === "blocked" && /NAIVE_AGENT_CMD/.test(one(entry("w"), { mode: "auto" }, none, false).why));
+
+// Time boxes (EE-186): an open campaign or sprint's mode applies to the workflows it covers.
+const sprint = { id: "s1", kind: "sprint" as const, loop_mode: "auto" as const, set_by: "Founder" };
+expect("an open time box's mode wins over the function's and the venture's, and a workflow's mode wins over it", modeFor({ mode: "manual", functions: { f: "ask" } }, "f/w", sprint).mode === "auto" && modeFor({ mode: "manual", functions: { f: "ask" } }, "f/w", sprint).from === "time-box" && modeFor({ workflows: { "f/w": "manual" } }, "f/w", sprint).mode === "manual");
+expect("a time box's mode with no person who set it does not count", modeFor({ mode: "ask" }, "f/w", { ...sprint, set_by: null }).from === "venture" && modeFor(undefined, "f/w", { ...sprint, loop_mode: null }).from === "default");
+const inSprint = one(entry("w", { in_phase: false, time_box: sprint }), { mode: "manual" });
+expect("inside a sprint set to auto the loop starts a covered workflow, even one the phase does not list, and says whose mode it is", inSprint.action === "start" && inSprint.from === "time-box" && /set by Founder for the sprint s1/.test(inSprint.why), inSprint);
+expect("a sprint still asks before it restarts a failed workflow", one({ ...broke, time_box: sprint }, undefined).action === "ask");
 
 expect("a config check finds a mode outside the three, an unknown function or workflow, and a mode past manual with no person", loopProblems({ mode: "bypass" as "auto" }, [], []).length === 1 && loopProblems({ functions: { g: "manual" } }, ["f"], []).length === 1 && loopProblems({ workflows: { "f/x": "manual" } }, ["f"], ["f/w"]).length === 1 && loopProblems({ mode: "auto" }, [], []).length === 1 && loopProblems({ mode: "auto", set_by: { person: "Ada", at: "2026-06-01" } }, [], []).length === 0 && loopProblems({ mode: "manual" }, [], []).length === 0);
 

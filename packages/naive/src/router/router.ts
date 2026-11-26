@@ -47,6 +47,7 @@ import { logWrite as prov, schemaFailure } from "./write-effects.ts";
 import type { Entry } from "../core/provenance.ts";
 import { address } from "../store/connectors/contract.ts";
 import { decisionFile, holding, locked } from "../engine/decisions.ts";
+import { timeBoxSpan } from "../engine/time-box-span.ts";
 import { configOf, hold } from "../engine/gate.ts";
 import { blocked as betaBlocked } from "../engine/beta-gate.ts";
 // Freshness (Revalidating, V-1 to V-8): stale flags on reads, and the freshness and revalidate commands.
@@ -505,6 +506,8 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
     // The schema first, through RecordValidator, so nothing reaches any source unless it matches.
     const failed = schemaFailure(schemaNameOf(String(r.schema)), JSON.parse(text));
     if (failed !== null) return { ok: false, error: `does not match ${r.schema}:\n${failed}`, fix: fix(r) };
+    // The schema describes ends as after starts. A start that is not a time, or an end that is not after it, never opens.
+    if (r.record === "time-box") { const span = timeBoxSpan(rec.starts, rec.ends); if (span) return { ok: false, error: span }; }
     const base = r.view_of ? readFileSync(ventureFile(dir, file), "utf8") : null;
     const whole = base && JSON.stringify(withCore(JSON.parse(base), rec), null, 2) + "\n";
     if (whole) {
