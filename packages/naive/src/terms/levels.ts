@@ -394,3 +394,23 @@ export function settlementCases(seed = 53): Settlement[] {
     outcomes: Array.from({ length: Math.floor(r() * 6) }, () => ({ person: b(0.4), producers: b(0.9) ? 2 + Math.floor(r() * 4) : Math.floor(r() * 2), agents: Math.floor(r() * 10) })),
   }));
 }
+
+/** Where a record's contents came from (EE-191). The six flags are the facts. The declared label is not one of them. */
+export type LabelFacts = Base & {
+  hasSource: boolean;     // a source is named
+  hasMethod: boolean;     // a method is named
+  generated: boolean;     // a generator produced the record
+  accepted: boolean;      // a person accepted it
+  ownVenture: boolean;    // it comes from one of our own ventures
+  underVenture: boolean;  // it sits under some venture
+};
+
+/** Each of the six flags is drawn on its own, so each property passes and fails. */
+export function dataCases(seed = 67): LabelFacts[] {
+  const r = rng(seed);
+  const b = (p = 0.5) => r() < p;
+  return Array.from({ length: N }, () => ({
+    confirmed: b(0.9), label: ["sourced", "estimated", "synthetic", "gold", undefined][Math.floor(r() * 5)],
+    hasSource: b(), hasMethod: b(), generated: b(), accepted: b(), ownVenture: b(), underVenture: b(),
+  }));
+}
