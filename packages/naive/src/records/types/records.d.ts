@@ -5468,7 +5468,7 @@ export type Requirement = {
   conversation?: ConversationRef[];
 };
 
-/** One entry of the venture's risk register (ISO 31000:2018 clauses 6.4 to 6.6: risk assessment, risk treatment, monitoring and review), at legal/risks/<id>.json (route legal/risks/[id]): what could happen, why, what it would cost, who owns it and what the venture does about it. Likelihood and impact are 90% ranges, not ordinal scores (Hubbard, The Failure of Risk Management; Cox 2008), so expected loss can be computed and compared. Every live risk has a person owner and a review date. The risk-and-compliance function owns it, and only the risk-and-compliance agent (role risk-and-compliance-agent) or a person writes it (writer function in packages/naive/src/records/data-model.json). */
+/** One entry of the venture's risk register (ISO 31000:2018 clauses 6.4 to 6.6: risk assessment, risk treatment, monitoring and review), at legal/risks/<id>.json (route legal/risks/[id]): what could happen, why, what it would cost, who owns it and what the venture does about it. Likelihood and impact are 90% ranges, not ordinal scores (Hubbard, The Failure of Risk Management; Cox 2008), so expected loss can be computed and compared. The impact cites a source or is marked an estimate, and expected loss carries the same label (EE-212). Every live risk has a person owner and a review date. The risk-and-compliance function owns it, and only the risk-and-compliance agent (role risk-and-compliance-agent) or a person writes it (writer function in packages/naive/src/records/data-model.json). */
 export type Risk = {
   /** The risk's id, the file name without .json */
   id: string;
@@ -5486,12 +5486,32 @@ export type Risk = {
     low: number;
     high: number;
   };
-  /** What it would cost if it happens, as a 90% range */
+  /** What it would cost if it happens, as a 90% range, with exactly one of source or estimate so a money figure is never unsourced (EE-212, the finance function's rule that a number with no source is a guess and says so) */
   impact: {
     low: number;
     high: number;
     currency: string;
-  };
+    /** What the range rests on, as the finance function's figures name it: a record route (such as finance/spend/<id>, assets/leases/<id> or legal/obligations/<id>) or a reference id, so a reader can check it. A guess goes in estimate, not here */
+    source?: string;
+    /** Marks the range as an estimate: no record or reference supports it */
+    estimate?: {
+      /** How the range was reached: the reasoning, the comparable cases or the calculation */
+      basis: string;
+      /** Who estimated it: a person by people record id, or the role of the agent that did (such as risk-and-compliance-agent) */
+      by: string;
+    };
+  } & ({
+    /** What the range rests on, as the finance function's figures name it: a record route (such as finance/spend/<id>, assets/leases/<id> or legal/obligations/<id>) or a reference id, so a reader can check it. A guess goes in estimate, not here */
+    source: string;
+  } | {
+    /** Marks the range as an estimate: no record or reference supports it */
+    estimate: {
+      /** How the range was reached: the reasoning, the comparable cases or the calculation */
+      basis: string;
+      /** Who estimated it: a person by people record id, or the role of the agent that did (such as risk-and-compliance-agent) */
+      by: string;
+    };
+  });
   /** The ISO 31000 6.5 options in short: avoid (stop the activity), reduce (add a control), transfer (insurance or a contract), accept (live with it, with a reason) */
   treatment: "avoid" | "reduce" | "transfer" | "accept";
   /** What the venture does, and the handoff or decision that carries it */

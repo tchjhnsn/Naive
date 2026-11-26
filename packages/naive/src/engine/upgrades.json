@@ -78,6 +78,14 @@
       "to": "0.5.0",
       "decision": "Torian, 2026-10-30: an opinionated schema with swappable frameworks for thinking; the telos and ambition tiers become frameworks over canonical goals and exit criteria",
       "aliases": "packages/naive/src/router/route-aliases.json"
+    },
+    {
+      "id": "risk-impact-label",
+      "module": "packages/naive/src/engine/migrations/risk-impact-label.ts",
+      "package": "legal",
+      "from": "0.3.0",
+      "to": "0.4.0",
+      "decision": "EE-212"
     }
   ],
   "packages": {
@@ -162,7 +170,7 @@
       "channel": "stable"
     },
     "legal": {
-      "version": "0.3.0",
+      "version": "0.4.0",
       "channel": "experimental",
       "note": "Not modeled: matters after Validation or under another governance model (EE-069)"
     },
