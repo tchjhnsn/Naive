@@ -45,6 +45,20 @@
         "$ref": "#/$defs/entry"
       },
       "description": "Product launches, one per launch (fold append)"
+    },
+    "prices": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/entry"
+      },
+      "description": "Published prices, one per plan and amount (fold append)"
+    },
+    "hiring": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/entry"
+      },
+      "description": "Job postings, one per title (fold append)"
     }
   },
   "$defs": {

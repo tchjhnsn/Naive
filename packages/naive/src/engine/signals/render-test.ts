@@ -57,7 +57,7 @@ for (const ty of pkg) for (const c of ty.cases) {
   const got = result.status === "rendered" ? Object.fromEntries(result.records.map((r) => [r.route, r.record])) : { raised: result.why };
   t(`competitors package case ${ty.id}/${c.id} renders to its expected records`, canonicalJson(strip(c.expect, got)) === canonicalJson(c.expect), { got, expect: c.expect });
 }
-t("every competitors package type has a worked case, and each ran", pkg.length === 4 && pkg.every((x) => x.cases.length > 0) && pkgCases >= pkg.length);
+t("every competitors package type has a worked case, and each ran", pkg.length === 6 && pkg.every((x) => x.cases.length > 0) && pkgCases >= pkg.length);
 t("a case's signals get fixed addresses", caseSignal(type("organization"), type("organization").cases[0].given[0]).id === caseSignal(type("organization"), type("organization").cases[0].given[0]).id);
 
 // ---- Versions and views ----

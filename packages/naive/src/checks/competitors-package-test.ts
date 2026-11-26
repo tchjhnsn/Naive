@@ -33,8 +33,8 @@ const failures = (value: unknown, schema: unknown, base: string): string => v.va
 const model = readDataModel() as { records: ModelRecord[] };
 const layer = json<{ records: string[] }>(join(repo, "packages/naive/src/records/layers/purpose/layer.json"));
 
-expect("the package ships organization@1, funding-event@1, competitor-funding@1 and product-launch@1",
-  ["organization", "funding-event", "competitor-funding", "product-launch"].every((id) => types.some((t) => t.id === id && t.version.startsWith("1."))), types.map((t) => `${t.id}@${t.version}`).join(", "));
+expect("the package ships organization@1, funding-event@1, competitor-funding@1, product-launch@1, price-change@1 and job-posting@1",
+  ["organization", "funding-event", "competitor-funding", "product-launch", "price-change", "job-posting"].every((id) => types.some((t) => t.id === id && t.version.startsWith("1."))), types.map((t) => `${t.id}@${t.version}`).join(", "));
 expect("the package owns competitor and competitor-signals, and the purpose layer no longer lists them",
   manifest.records.includes("competitor") && manifest.records.includes("competitor-signals") && !layer.records.includes("competitor") && !layer.records.includes("competitor-signals"));
 expect("the upgrade registry lists the package as it does the other data packages",
