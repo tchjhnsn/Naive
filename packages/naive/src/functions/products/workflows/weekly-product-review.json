@@ -12,7 +12,7 @@
     { "id": "propose-order", "do": "Propose the order of next week's product work to the product lead, with the bug or evidence behind each item.", "raises": ["set-priorities"] }
   ],
   "done_criteria": [
-    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/records/validate.ts" },
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
     { "id": "build-has-evidence", "kind": "review", "check": "Does every build handoff proposed this week cite evidence for value, usability, feasibility and viability?", "reviewer": "product-lead" }
   ]
 }

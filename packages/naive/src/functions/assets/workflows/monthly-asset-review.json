@@ -12,7 +12,7 @@
     { "id": "check-against-budget", "do": "Compare this month's equipment and rent spend with the budget's lines for those categories, and raise priorities to the finance lead when they run over.", "raises": ["set-priorities"] }
   ],
   "done_criteria": [
-    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/records/validate.ts" },
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
     { "id": "no-silent-dates", "kind": "review", "check": "Is every lease notice date in the next 90 days open as a decision for the founder, and is every item held by a departed person flagged?", "reviewer": "finance-lead" }
   ]
 }

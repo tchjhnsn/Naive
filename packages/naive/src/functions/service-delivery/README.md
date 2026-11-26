@@ -18,3 +18,5 @@ The service delivery function (APQC 5.0, Deliver Services). Its governance side 
 | [skills/engagement-delivery](./skills/engagement-delivery) | Skill: run a client engagement from statement of work to close: acceptance criteria, change requests, margin and capacity, close review and productizing |
 | [checklists/vault-and-tooling-consultancy-setup.md](./checklists/vault-and-tooling-consultancy-setup.md) | Vault + Tooling Consultancy Setup Checklist |
 | [templates/research-program.md](./templates/research-program.md) | Template: the function's starter research program (autoresearch). Init and `naive upgrade` copy it to a venture's `programs/service-delivery.md` once, when the venture lists this function in venture.json departments and has no program; the copy is then the founder's, and only a person writes it |
+
+Each workflow's done criterion `records-valid` runs `node packages/naive/src/checks/check-records.ts "$NAIVE_VENTURE"`: it validates the business's records, the folder the handoff runner names in `NAIVE_VENTURE`, not Naive's own.
