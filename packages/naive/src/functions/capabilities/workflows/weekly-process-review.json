@@ -2,6 +2,8 @@
   "id": "weekly-process-review",
   "function": "capabilities",
   "title": "Review process health each week",
+  "goal": "Every active process's measures are current from this week's handoffs and evidence, and exactly one change is proposed at the bottleneck with the measure that will show whether it worked.",
+  "measures": ["flow_and_lead_time"],
   "trigger": {
     "kind": "schedule",
     "cadence": "weekly"

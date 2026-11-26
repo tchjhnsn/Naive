@@ -2,6 +2,8 @@
   "id": "weekly-pipeline-review",
   "function": "marketing-and-sales",
   "title": "Review the sales pipeline each week",
+  "goal": "Every open opportunity has a next step dated this week or later, every lead a reply sent or drafted, and every opportunity closed this week its outcome and reason.",
+  "measures": ["revenue"],
   "trigger": { "kind": "schedule", "cadence": "weekly" },
   "reads": ["sales/opportunities", "customers", "foundation/icp", "purpose/competitor", "governance/publication-policy"],
   "steps": [

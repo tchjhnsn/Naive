@@ -2,6 +2,8 @@
   "id": "weekly-engagement-review",
   "function": "service-delivery",
   "title": "Review every engagement each week",
+  "goal": "Every deliverable's status is current, every scope change is approved or open as a decision with no work started on it, and every engagement's margin and the founder's delivery hours are compared with the plan.",
+  "measures": ["revenue", "flow_and_lead_time", "cost_or_time_saved"],
   "trigger": { "kind": "schedule", "cadence": "weekly" },
   "reads": ["service-delivery/engagements", "service-delivery/offers", "operations/handoff", "evidence", "operations/activity", "customers"],
   "steps": [

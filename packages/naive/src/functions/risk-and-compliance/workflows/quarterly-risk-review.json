@@ -2,6 +2,8 @@
   "id": "quarterly-risk-review",
   "function": "risk-and-compliance",
   "title": "Review the risk register each quarter",
+  "goal": "The register is ranked by expected loss and holds about fifteen live risks at most, each with a person owner and a future review date, and the top risks have treatments proposed with their cost.",
+  "measures": ["compliance_met", "cost_or_time_saved"],
   "trigger": { "kind": "schedule", "cadence": "quarterly" },
   "reads": ["legal/risks", "legal/obligations", "foundation/telos", "purpose/money/summary", "finance/budget"],
   "steps": [

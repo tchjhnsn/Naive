@@ -2,6 +2,8 @@
   "id": "weekly-product-review",
   "function": "products",
   "title": "Review discovery, bugs and the next build each week",
+  "goal": "Every open bug has a priority, every proposed build cites evidence for all four risks, and next week's product order is proposed with the bug or evidence behind each item.",
+  "measures": ["usage_or_adoption", "flow_and_lead_time"],
   "trigger": { "kind": "schedule", "cadence": "weekly" },
   "reads": ["product", "product/bugs", "validation/interviews", "validation/feedback", "validation/product-market-fit", "operations/handoff", "foundation/telos"],
   "steps": [

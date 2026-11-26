@@ -2,6 +2,8 @@
   "id": "intake",
   "function": "risk-and-compliance",
   "title": "Learn the venture's legal duties and risks",
+  "goal": "Every legal duty the venture has is an obligation with an owner and a due date, the ones that cannot be cured if missed first, and the risks that could hurt it most are drafted with owners.",
+  "measures": ["compliance_met"],
   "trigger": { "kind": "intake" },
   "reads": ["venture", "foundation/constraints", "governance/ownership", "governance/decision-rights", "legal/obligations", "legal/risks", "assets/leases", "it/connections/[id]"],
   "steps": [
