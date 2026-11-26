@@ -7,7 +7,8 @@
 //
 //   intake    due until it has run once.
 //   schedule  due when it has never run, or when the cadence has passed since its last finished run.
-//   event     due when a record on its route was written after its last run started.
+//   event     due when a record on its route went live after its last finished run. A draft held for a person does
+//             not count until the person accepts it.
 //   request   never due on its own: a lead or a person hands it off.
 //
 // A run is one line of <venture>/.naive/workflow-runs.jsonl. A failed run does not move a schedule: the workflow
@@ -33,6 +34,8 @@ import { functionAgent } from "./agents/function-spec.ts";
 import { functionsOf } from "./research-programs.ts";
 
 export const RUNS = ".naive/workflow-runs.jsonl";
+/** The provenance activities that put a record's content live. A draft is not one: it waits for a person. */
+export const LIVE = new Set(["write", "accept", "merge", "rollback"]);
 
 export type Cadence = "daily" | "weekly" | "monthly" | "quarterly";
 export type WorkflowTrigger = { kind: "intake" | "schedule" | "event" | "request"; cadence?: Cadence; route?: string };
@@ -145,7 +148,7 @@ export const recordRun = (dir: string, run: WorkflowRun): Effect.Effect<Workflow
 export const dueFor = (dir: string, now: string, only?: string): Effect.Effect<DueEntry[], NaiveError, "naive/VentureFs"> => Effect.gen(function* () {
   const venture = (yield* readJson(join(dir, "venture.json"))) as { phase?: string };
   const active = venture.phase ? new Set((yield* loadPhase(venture.phase)).workflows) : new Set<string>();
-  const written = (yield* entriesEffect(dir)).flatMap((e) => (e.route && e.at ? [{ route: e.route, at: e.at }] : []));
+  const written = (yield* entriesEffect(dir)).flatMap((e) => (e.route && e.at && LIVE.has(e.activity) ? [{ route: e.route, at: e.at }] : []));
   return due(yield* workflowsOf(dir, only), yield* readRuns(dir), written, now, active);
 });
 

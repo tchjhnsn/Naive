@@ -61,7 +61,12 @@ try {
   expect("a run of a workflow the venture does not have is refused", /finance\/intake is not a workflow/.test(refused) && runSync(readRuns(dir)).length === 1, refused);
 
   mkdirSync(join(dir, "support/cases"), { recursive: true });
-  writeFileSync(join(dir, "provenance.jsonl"), `${JSON.stringify({ at: "2026-06-14T12:00:00.000Z", entity: "support/cases/c-1.json", route: "support/cases/c-1", activity: "write" })}\n`);
+  const line = (activity: string) => `${JSON.stringify({ at: "2026-06-14T12:00:00.000Z", entity: "support/cases/c-1.json", route: "support/cases/c-1", activity })}\n`;
+  writeFileSync(join(dir, "provenance.jsonl"), line("draft"));
+  expect("a draft held for a person does not make the event workflow due", by(runSync(dueFor(dir, now)))["customer-service/case-triage"].status === "not-due");
+  writeFileSync(join(dir, "provenance.jsonl"), line("draft") + line("accept"));
+  expect("the person's accept does", by(runSync(dueFor(dir, now)))["customer-service/case-triage"].status === "due");
+  writeFileSync(join(dir, "provenance.jsonl"), line("write"));
   expect("a write in the provenance log makes the event workflow due", by(runSync(dueFor(dir, now)))["customer-service/case-triage"].status === "due");
 
   const cli = (...a: string[]) => spawnSync(process.execPath, ["packages/naive/src/engine/due.ts", dir, ...a], { encoding: "utf8" });

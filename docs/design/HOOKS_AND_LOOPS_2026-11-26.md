@@ -56,7 +56,7 @@ What is due, by trigger kind (`due()` in `packages/naive/src/engine/due.ts`, a p
 |---|---|
 | intake | It has not finished once. |
 | schedule | It has never finished, or its cadence (daily, weekly, monthly, quarterly) has passed since it last finished. A month is a calendar month in UTC. |
-| event | A record on its route was written after it last finished. |
+| event | A record on its route went live after it last finished: a write, accept, merge or rollback. A draft held for a person does not count until the person accepts it. |
 | request | Never on its own. A lead or a person hands it off. |
 
 A failed run does not move a schedule. Each entry says whether the venture's phase module lists the workflow as active.
