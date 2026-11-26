@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // The public gate for marketing content (EE-064): marketing records are public variants of internal
 // records, written by marketing agents as their own MDX, never internal records published as they are.
-// Every file in operations/marketing/content/ must name the internal record it is a variant of, the
+// Every file in marketing/content/ (or the older operations/marketing/content/) must name the internal record it is a variant of, the
 // audience it is for, and whether it is published; a published file must name the person who approved
 // it (EE-025). And it must not copy the internal record: any run of ten words shared with it is a leak,
 // unless the run is a public field (the venture's name and tagline, a product's name).
@@ -14,6 +14,8 @@ import { ventureFile } from "../core/venture-paths.ts";
 import type { Product, Venture } from "../records/types/records.d.ts";
 
 export const CONTENT = "operations/marketing/content";
+/** Where marketing content sits: the data model's marketing/content, then the older operations/marketing/content. */
+export const CONTENT_ROOTS = ["marketing/content", CONTENT];
 const RUN = 10;
 const words = (s: string): string[] => s.toLowerCase().replace(/<[^>]+>/g, " ").match(/[a-z0-9$%']+/g) ?? [];
 const runs = (s: string) => { const w = words(s), out = new Set<string>(); for (let i = 0; i + RUN <= w.length; i++) out.add(w.slice(i, i + RUN).join(" ")); return out; };
@@ -41,7 +43,7 @@ export function check(dir: string) {
   const pdir = join(ventureFile(dir, "products"));
   if (existsSync(pdir)) for (const f of readdirSync(pdir).filter((f) => f.endsWith(".json"))) publicText.push((JSON.parse(readFileSync(join(pdir, f), "utf8")) as Product).name ?? "");
   const allowed = new Set(publicText.flatMap((t) => [...runs(t)]));
-  const results = files(ventureFile(dir, CONTENT)).map((f) => {
+  const results = CONTENT_ROOTS.flatMap((root) => files(ventureFile(dir, root))).map((f) => {
     const rel = relative(dir, f), { meta, body } = frontmatter(readFileSync(f, "utf8")), errors: string[] = [];
     // variant_of names a record (foundation/problem.json) or one field of it (foundation/problem.json#statement,
     // the form packages/naive/src/engine/visibility.ts variantOf reads); a field narrows the copy check to that field's text.

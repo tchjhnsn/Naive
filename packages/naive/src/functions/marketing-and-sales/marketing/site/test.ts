@@ -105,7 +105,7 @@ t("the plan puts what customers need on the home page, with components, reasons 
   const p = plan(venture);
   const home = must(p.pages.find((x) => x.path === "/"), "the home page");
   const hero = must(home.sections.find((s) => s.item === "what"), "the hero section");
-  ok(hero.component === "Hero" && hero.why.length && hero.variant === "operations/marketing/content/home/what.mdx", JSON.stringify(hero));
+  ok(hero.component === "Hero" && hero.why.length && hero.variant === "marketing/content/home/what.mdx", JSON.stringify(hero));
   ok(home.sections[0].need >= must(home.sections.at(-1), "the last section").need, "sections ordered by need");
   ok(must(home.sections.find((s) => s.item === "problem"), "the problem section").source.exists, "problem record found");
 });
@@ -125,6 +125,31 @@ t("the public gate blocks content that copies its internal record or is publishe
   const bad = must<{ file: string; errors: string[] }>(r.errors.find((x: { file: string }) => x.file.endsWith("problem.mdx")), "the problem.mdx error");
   ok(r.files === 2 && r.errors.length === 1 && bad.errors.some((e) => /approval/.test(e)) && bad.errors.some((e) => /copies/.test(e)), JSON.stringify(r.errors));
 });
+
+// The same venture in the structured and src layouts, with the records at the data model's current paths
+// (one file per ICP profile under foundation/icp/, the problem at foundation/problem.json): the planner
+// finds them where each layout puts them.
+for (const [layout, at] of [["structured", (f: string) => `k-base/${f}`], ["src", (f: string) => f.startsWith("foundation/") ? `src/strategy/${f}` : f]] as const) {
+  t(`the planner reads the records where the ${layout} layout keeps them`, () => {
+    const v = mkdtempSync(join(tmpdir(), `plan-${layout}-`));
+    const w = (f: string, x: unknown) => { mkdirSync(join(v, f, ".."), { recursive: true }); writeFileSync(join(v, f), JSON.stringify(x)); };
+    w("venture.json", { id: "relay", name: "Relay", phase: "validation", layout });
+    w(at("foundation/icp/billing-partners.json"), { id: "billing-partners", who: "medical billing companies that run the front office for small physical therapy clinics, and their investors", primary: true, customer: "b2b" });
+    w(at("foundation/icp/clinics.json"), { id: "clinics", who: "solo physical therapy clinics", customer: "b2b", reached_through: ["billing-partners"] });
+    w(at("products/relay.json"), { id: "relay", name: "Relay", offering: "service", status: "live" });
+    w(at("foundation/problem.json"), { statement: "Solo clinics lose visits to no-shows" });
+    const p = plan(v);
+    ok(p.audience.partner_led && p.audience.offered_to[0]?.id === "billing-partners" && p.offerings[0]?.id === "relay", JSON.stringify(p.audience));
+    ok(p.facts.raising, "the ICP's words set the facts");
+    const sources = Object.fromEntries(p.pages.flatMap((x) => x.sections).map((x) => [x.item, x.source]));
+    ok(sources.problem?.exists && sources.problem.file === "foundation/problem.json", JSON.stringify(sources.problem));
+    const icp = Object.values(sources).find((x) => x.record === "icp");
+    ok(icp?.exists && icp.file === "foundation/icp/billing-partners.json", JSON.stringify(icp));
+    const telos = Object.values(sources).find((x) => x.record === "telos");
+    ok(!telos || (!telos.exists && telos.file === "foundation/telos.json"), JSON.stringify(telos));
+    plan(v, { flags: { raising: true } });
+  });
+}
 
 if (failed) { console.log(`\n${failed} failing`); process.exit(1); }
 console.log("\nall passing");
