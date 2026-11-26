@@ -70,6 +70,10 @@
 //                                                   the element graph: which APQC elements feed which through the
 //                                                   routes the function workflows write and read, and the routes
 //                                                   read that no workflow writes or written that none reads (EE-188)
+//   naive effects [<element>] [--at <iso>] [--json]  each element's state, capability level (ISO/IEC 33020, capped at
+//                                                   3) and the harm and caps it takes from what feeds it; for one
+//                                                   element, what happens downstream if it were absent, weak or
+//                                                   strong (EE-190)
 //   naive loop [plan] [--at <iso>] [--json]         what the loop would do with each due workflow under the venture's
 //                                                   loop modes; writes nothing (EE-183)
 //   naive loop tick [--max <n>] [--json]            ask, skip and start once: an ask files a decision, a start runs the
@@ -427,6 +431,11 @@ else if (cmd === "build" || cmd === "start") {
   // The element graph over the shipped function modules (packages/naive/src/engine/element-graph.ts, EE-188), with
   // --function <id>, --element <id>, --json and --mermaid passed through. It needs no venture.
   process.exit(run("packages/naive/src/engine/element-graph.ts", rest));
+} else if (cmd === "effects") {
+  // Each element's state, capability level and effects for the venture (packages/naive/src/engine/element-effects.ts,
+  // EE-190), or for one element what happens downstream if it were absent, weak or strong. --at and --json pass through.
+  const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
+  process.exit(run("packages/naive/src/engine/element-effects.ts", [here(), ...args]));
 } else if (cmd === "loop") {
   // The loop that starts due workflows as far as the venture's mode allows (packages/naive/src/engine/loop.ts, EE-183).
   const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
