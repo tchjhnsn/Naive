@@ -2558,6 +2558,28 @@
           "expect": "exists"
         }
       ]
+    },
+    {
+      "id": "EE-188",
+      "date": "2026-11-26",
+      "status": "in-force",
+      "decision": "The element graph is derived from the function workflows and the route table, not stored. Its nodes are APQC elements (the 13 functions, every activity a workflow step names, and their ancestors, a catalog activity under its process or process group), the workflows, the route patterns they name and the record types those routes resolve to. Its edges are contains (the PCF hierarchy), belongs-to (a workflow to its function's category), performs (a step to its activity), writes (a step to a route), reads (a workflow to a route), listens (an event trigger to its route), resolves (a route to a record type) and the derived feeds: element A feeds element B of the same level when a route a step attached to A writes resolves to a record type that a workflow attached to B reads or is triggered by, and each feed names its evidence (writer workflow and step, the route written, reader workflow, the route read, read or trigger, and the record type). A step is attached to its activity, every ancestor of it and its function's category. A workflow reading what it wrote itself is a loop, not a feed. packages/naive/src/engine/element-graph.ts builds it with Effect's Graph module as a pure, deterministic function, answers upstream, downstream, the routes read that no workflow writes and the routes written that none reads, and `naive graph` prints it. No record type and no schema change.",
+      "why": "Step 6 of the hooks and loops design (docs/design/HOOKS_AND_LOOPS_2026-11-26.md). Step 7 needs to know what each element feeds before it can say what an absent or weak element does to others, and the workflows already declare what they read and write, so the edges can be read off them instead of being kept by hand where they would drift.",
+      "related": [
+        "EE-165",
+        "EE-168",
+        "EE-182",
+        "EE-183",
+        "EE-184"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/element-graph.ts",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
     }
   ]
 }
