@@ -10,7 +10,8 @@
 //   judge     stands in for NAIVE_JUDGE_CMD: (args, input) => { status, stdout, stderr }, or a promise of it
 //   site      stands in for NAIVE_SITE_CMD, the same shape
 //   trace     stands in for NAIVE_TRACE_CMD, the same shape
-//   sandbox   runs a handoff's bash done-criterion: (command, { cwd }) => { status, stdout, stderr }, or a promise of it
+//   sandbox   runs a handoff's bash done-criterion: (command, { cwd, env }) => { status, stdout, stderr }, or a promise of it;
+//             env holds NAIVE_VENTURE, the business folder the criterion checks
 //   git       a git working copy: (args, opts) => { status, stdout, stderr }, answered at once (the same shape as spawnSync)
 //   sql       the host's SQL client for durable work on durable.engine postgres: () => an effect/sql SqlClient, or a promise of
 //             it. The host owns the pool and its driver (@effect/sql-pg), so Naive depends on no database driver (EE-161).
@@ -24,7 +25,7 @@ export const isHosted = (): boolean => process.env.NAIVE_RUNTIME === "hosted";
 
 export type CommandResult = { status: number | null; stdout: string; stderr: string; error?: Error };
 export type CommandHook = (args: string[], input?: string) => CommandResult | Promise<CommandResult>;
-export type SandboxHook = (command: string, opts: { cwd: string }) => CommandResult | Promise<CommandResult>;
+export type SandboxHook = (command: string, opts: { cwd: string, env?: Record<string, string> }) => CommandResult | Promise<CommandResult>;
 export type GitHook = (args: string[], opts?: SpawnSyncOptions) => CommandResult;
 export type SqlHook = () => SqlClient | Promise<SqlClient>;
 export type Hooks = { judge: CommandHook; site: CommandHook; trace: CommandHook; sandbox: SandboxHook; git: GitHook; sql: SqlHook };

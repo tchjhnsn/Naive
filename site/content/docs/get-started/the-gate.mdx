@@ -14,7 +14,10 @@ Use this page to decide which writes an agent may make without you, who gets the
 ```sh
 node packages/naive/src/interfaces/cli/mentura.ts init ~/ventures/gate-demo --id gate-demo --layers purpose
 export MENTURA_WORKSPACE=~/ventures
+node packages/naive/src/interfaces/cli/mentura.ts decide product-exists --venture gate-demo --by Founder --answer "No: it is still an idea" --confirm product-exists
 ```
+
+The last line answers the first decision init opens. Until it is made, `product-exists` locks the product routes this page writes to.
 
 ## Fail a package closed
 

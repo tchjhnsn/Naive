@@ -911,6 +911,15 @@ export type DecisionRecord = {
     /** The trial line's id in governance/detectors/<detector>.trials.jsonl */
     trial: string;
   };
+  /** The decision this one asks again. A person marks it with mentura withdraw <id> --duplicate-of <other>, which withdraws it, so the queue keeps one question; the other decision must exist and is not this one (packages/naive/src/engine/decisions.ts). */
+  duplicate_of?: string;
+  /** The person who withdrew this decision */
+  withdrawn_by?: string;
+  /**
+   * When a person withdrew this decision
+   * @format date-time
+   */
+  withdrawn_at?: string;
   /** The decision class (governance/decision-rights.json) this decision belongs to. A delegation grant can let a role merge decisions of a class (may_merge); a one-way-door class is never delegated, and with no class only the founder merges */
   class?: string;
   /** The decision this one depends on. Defaults to foundation for a foundation record, else venture. */
