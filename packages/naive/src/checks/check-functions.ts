@@ -15,13 +15,20 @@
 //     write reach (WRITE_REACH below); a step raises only classes the module's decisions.json has a row for; a step's
 //     activity is a level 4 element of packages/naive/src/functions/pcf.json or an activity in
 //     packages/naive/src/functions/activities.json, under the function's APQC category (EE-168);
-//   - agent.md has frontmatter naming role <id>-agent and its function.
+//   - agent.md has frontmatter naming role <id>-agent and its function;
+//   - an intake workflow asks only for what Discovery allows. Intake runs when a function is added, and a business can
+//     add any function in Discovery, so a required step (one without `consider`) of a workflow whose trigger is intake
+//     writes only record types that need-now suggests to every venture in Discovery. A record type need-now suggests
+//     later, or never (master data), is written only by a step to consider, and that step's `when` names the phase the
+//     record type starts in (the route table's first phase group). Need-now's priors are the one source of when a record
+//     type starts (startOf in packages/naive/src/engine/need-now.ts); a route to no record type need-now lists, such
+//     as decisions/*, is not checked.
 // With --complete, a module must also have every piece: function.json, agent.md, decisions.json, at least two
 // workflows, at least one skill, and at least one venture-level record type in data-model.json whose function is its
 // id, and its function must sit in exactly one lead's portfolio. Until every module is filled, test.mjs runs it without.
 //
 // It reads files through VentureFs (EE-125). Findings exit 1; a shared file it needs (departments, decision rights,
-// delegation, the cluster catalog, pcf.json, the activity catalog) that cannot be read exits 2.
+// delegation, the cluster catalog, pcf.json, the activity catalog, need-now.json) that cannot be read exits 2.
 
 import { join } from "node:path";
 import { PLANS } from "../engine/access.ts";
@@ -30,7 +37,8 @@ import { CannotRun } from "../core/effect/errors.ts";
 import { readJson, VentureFs } from "../core/effect/fs.ts";
 import { describe, runMain } from "../core/effect/run.ts";
 import { recordsIn } from "../records/index.ts";
-import { routes } from "../records/routes/routes.ts";
+import { PHASES, resolve, routes } from "../records/routes/routes.ts";
+import { startOf, type Prior } from "../engine/need-now.ts";
 import { validateValue } from "../records/validate.ts";
 
 const args = process.argv.slice(2);
@@ -64,6 +72,8 @@ export const writeReach = (fn: string): Set<string> => new Set([...SHARED,
 const reaches = (reach: Set<string>, route: string) => reach.has(route) || [...reach].some((r) => r.endsWith("/*") && route.startsWith(r.slice(0, -1)));
 
 type Finding = { fn: string, file: string, error: string };
+const PHASE_IDS = PHASES.map((p) => p.id);
+const phaseName = (id: string) => PHASES.find((p) => p.id === id)?.name ?? id;
 
 /** Checks every function module under root and returns the findings, in department order. */
 export const checkFunctions = Effect.gen(function* () {
@@ -92,6 +102,17 @@ export const checkFunctions = Effect.gen(function* () {
     if (apqc ? !apqcActivities.has(id) : !catalogActivities.has(id)) return `which is not ${apqc ? "a level 4 activity in pcf.json" : "an activity in activities.json"}`;
     const major = apqc ? id.split(".")[0] : catalogActivities.get(id);
     return major === category.get(fn) ? null : `which is under APQC category ${major}.0, not the function's ${category.get(fn)}.0`;
+  };
+
+  // When each record type starts, from need-now's priors. startsIn is undefined for a route to a record type need-now
+  // does not list (decisions/*), which the intake rule does not check.
+  const need = yield* required(join(root, "packages/naive/src/engine/need-now.json"));
+  const priors: Record<string, Prior> = isObject(need) && isObject(need.records) ? need.records as Record<string, Prior> : {};
+  const suggest = isObject(need) && typeof need.suggest === "number" ? need.suggest : 0.5;
+  const startsIn = (route: string): { record: string, start: string | null } | undefined => {
+    const r = resolve(route.replace(/\[[a-z]+\]|\*/g, "x")).r;
+    if (r?.kind !== "record" || !priors[r.record]) return undefined;
+    return { record: r.record, start: startOf(priors[r.record], PHASE_IDS, suggest).start };
   };
 
   const findings: Finding[] = [];
@@ -141,6 +162,14 @@ export const checkFunctions = Effect.gen(function* () {
         for (const r of strings(s.writes)) if (!reaches(reach, r)) fail(fn, file, `step ${String(s.id)} writes ${r}, outside the function's write reach`);
         for (const c of strings(s.raises)) if (!rows.has(c)) fail(fn, file, `step ${String(s.id)} raises ${c}, which decisions.json has no row for`);
         if (typeof s.activity === "string") { const e = activityError(fn, s.activity); if (e) fail(fn, file, `step ${String(s.id)} performs activity ${s.activity}, ${e}`); }
+        if (!isObject(w.trigger) || w.trigger.kind !== "intake") continue;
+        for (const r of strings(s.writes)) {
+          const at = startsIn(r);
+          if (!at || at.start === "discovery") continue;
+          const when = at.start ? `from ${phaseName(at.start)}` : "only when a person asks for it (need-now never suggests it)";
+          if (!isObject(s.consider)) fail(fn, file, `intake step ${String(s.id)} is required but writes ${r}, whose record type ${at.record} need-now suggests ${when}; make it a step to consider`);
+          else if (at.start && !(typeof s.consider.when === "string" && s.consider.when.includes(phaseName(at.start)))) fail(fn, file, `intake step ${String(s.id)} writes ${r}, which starts in ${phaseName(at.start)}, but its consider.when does not name ${phaseName(at.start)}`);
+        }
       }
     }
     if (complete && workflows.size < 2) fail(fn, rel("workflows/"), `has ${workflows.size} workflow${workflows.size === 1 ? "" : "s"}; a complete module has at least two`);

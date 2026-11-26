@@ -13,7 +13,7 @@ The finance and accounting function (APQC 9.0, Manage Financial Resources). Its 
 | [function.json](./function.json) | The manifest: purpose, intake, measures, capability clusters |
 | [agent.md](./agent.md) | The finance agent's instructions |
 | [decisions.json](./decisions.json) | The decision matrix |
-| [workflows/intake.json](./workflows/intake.json) | Workflow: learn the venture's money |
+| [workflows/intake.json](./workflows/intake.json) | Workflow: learn the venture's money. Its steps for records need-now suggests only after Discovery, or never, are steps to consider that name the phase they start in (check-functions.ts). |
 | [workflows/monthly-spend-review.json](./workflows/monthly-spend-review.json) | Workflow: review spend against the budget and runway each month |
 | [skills/budget-and-runway](./skills/budget-and-runway) | Skill: draft and keep the budget (`finance/budget/[id]`), each line citing its source, and project runway from it |
 | [skills/equity-and-share-classes](./skills/equity-and-share-classes) | Skill: Help a founder decide how ownership is counted and which share types to have, and when: common, preferred, super-voting (dual-class), non-voting, LLC units, the employee  |

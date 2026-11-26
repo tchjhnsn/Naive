@@ -22,11 +22,11 @@
     },
     {
       "id": "ask-telos",
-      "do": "Ask what the venture is for when it has done its job and how anyone would know, and draft the telos for the founder to confirm.",
+      "do": "Ask what the venture is for when it has done its job and how anyone would know, and draft the venture goal telos (the end and its measures) for the founder to confirm.",
       "skill": "telos",
       "ask": true,
       "writes": [
-        "foundation/telos"
+        "foundation/goals/[id]"
       ],
       "raises": [
         "strategy-or-constitution"
@@ -50,7 +50,11 @@
       "ask": true,
       "writes": [
         "foundation/constraints"
-      ]
+      ],
+      "consider": {
+        "why": "Hard limits on money, time and values keep later plans honest.",
+        "when": "The business is in Validation or later, or the founder names a limit on money, time or values."
+      }
     },
     {
       "id": "ask-goals-and-kill-criteria",

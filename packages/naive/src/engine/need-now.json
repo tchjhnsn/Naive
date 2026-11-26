@@ -977,7 +977,7 @@
     "marketing-brand": {
       "base": {
         "discovery": 0.2,
-        "validation": 0.4,
+        "validation": 0.5,
         "beachhead": 0.7,
         "scale": 0.8,
         "platform": 0.8
@@ -987,7 +987,7 @@
     "marketing-design-system": {
       "base": {
         "discovery": 0.2,
-        "validation": 0.4,
+        "validation": 0.5,
         "beachhead": 0.7,
         "scale": 0.8,
         "platform": 0.8
@@ -1143,7 +1143,7 @@
     "connection": {
       "base": {
         "discovery": 0.1,
-        "validation": 0.3,
+        "validation": 0.5,
         "beachhead": 0.5,
         "scale": 0.7,
         "platform": 0.8

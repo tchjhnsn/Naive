@@ -13,7 +13,7 @@ The assets and facilities function (APQC 10.0, Acquire, Construct, and Manage As
 | [function.json](./function.json) | The function's manifest: purpose, intake workflow, measures and capability clusters |
 | [agent.md](./agent.md) | The assets agent's instructions |
 | [decisions.json](./decisions.json) | The decision matrix |
-| [workflows/intake.json](./workflows/intake.json) | Workflow: learn the venture's equipment and space |
+| [workflows/intake.json](./workflows/intake.json) | Workflow: learn the venture's equipment and space. Its steps for records need-now suggests only after Discovery, or never, are steps to consider that name the phase they start in (check-functions.ts). |
 | [workflows/monthly-asset-review.json](./workflows/monthly-asset-review.json) | Workflow: review equipment custody and lease dates each month |
 | [skills/asset-register](./skills/asset-register) | Skill: keep the asset register (`assets/register/[id]`): what to register, custody and disposal |
 | [skills/lease-review](./skills/lease-review) | Skill: abstract a lease into `assets/leases/[id]`, flag hard-to-exit terms and raise notice dates in time |

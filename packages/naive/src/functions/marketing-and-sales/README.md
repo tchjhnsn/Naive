@@ -13,7 +13,7 @@ The marketing and sales function (APQC 3.0, Market and Sell Products and Service
 | [function.json](./function.json) | The manifest: purpose, intake, measures, capability clusters |
 | [agent.md](./agent.md) | The marketing and sales agent's instructions |
 | [decisions.json](./decisions.json) | The decision matrix |
-| [workflows/intake.json](./workflows/intake.json) | Workflow: learn who the venture sells to and where each sale stands. Its pipeline step names APQC activity 3.5.1.2 Identify/receive leads/opportunities (EE-168) |
+| [workflows/intake.json](./workflows/intake.json) | Workflow: learn who the venture sells to and where each sale stands. Its pipeline step names APQC activity 3.5.1.2 Identify/receive leads/opportunities (EE-168). Its steps for records need-now suggests only after Discovery, or never, are steps to consider that name the phase they start in (check-functions.ts). |
 | [workflows/weekly-pipeline-review.json](./workflows/weekly-pipeline-review.json) | Workflow: review the sales pipeline each week. Its stage check names APQC activity 3.5.1.6 Manage opportunity pipeline (EE-168). Its `competitive-pricing` step is one to consider (EE-181): compare the price with each competitor's published price, APQC activity 3.3.3.11 Conduct competitive pricing review, when the venture has a price and a competitor publishes one |
 | [marketing/canaries-test.mjs](./marketing/canaries-test.ts) | Its test |
 | [marketing/fixtures](./marketing/fixtures) | A folder |

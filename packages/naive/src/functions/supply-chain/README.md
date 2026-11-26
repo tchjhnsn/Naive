@@ -13,7 +13,7 @@ The supply chain function (APQC 4.0, Manage Supply Chain for Physical Products).
 | [function.json](./function.json) | The manifest: purpose, intake, measures, capability clusters |
 | [agent.md](./agent.md) | The supply chain agent's instructions |
 | [decisions.json](./decisions.json) | The decision matrix |
-| [workflows/intake.json](./workflows/intake.json) | Workflow: learn the venture's suppliers and orders |
+| [workflows/intake.json](./workflows/intake.json) | Workflow: learn the venture's suppliers and orders. Its steps for records need-now suggests only after Discovery, or never, are steps to consider that name the phase they start in (check-functions.ts). |
 | [workflows/monthly-supply-review.json](./workflows/monthly-supply-review.json) | Workflow: review suppliers, orders and supply risk each month |
 | [skills/supplier-and-purchasing](./skills/supplier-and-purchasing) | Skill: keep the approved supplier list and purchase orders: supplier evaluation, Kraljic risk classes and single sources, Incoterms 2020, landed cost and reorder points |
 | [templates/research-program.md](./templates/research-program.md) | Template: the function's starter research program (autoresearch). Init and `naive upgrade` copy it to a venture's `programs/supply-chain.md` once, when the venture lists this function in venture.json departments and has no program; the copy is then the founder's, and only a person writes it |

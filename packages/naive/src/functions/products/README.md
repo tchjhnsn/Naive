@@ -13,7 +13,7 @@ The products and services function (APQC 2.0, Develop and Manage Products and Se
 | [function.json](./function.json) | The manifest: purpose, intake, measures, capability clusters |
 | [agent.md](./agent.md) | The products agent's instructions |
 | [decisions.json](./decisions.json) | The decision matrix |
-| [workflows/intake.json](./workflows/intake.json) | Workflow: learn the venture's products |
+| [workflows/intake.json](./workflows/intake.json) | Workflow: learn the venture's products. Its steps for records need-now suggests only after Discovery, or never, are steps to consider that name the phase they start in (check-functions.ts). |
 | [workflows/weekly-product-review.json](./workflows/weekly-product-review.json) | Workflow: review discovery, bugs and the next build each week |
 | [skills/four-risks-review](./skills/four-risks-review) | Skill: check a product or a build for evidence on the four risks (value, usability, feasibility, viability), weekly customer touchpoints and the product-market fit survey |
 | [frameworks/product-anatomy](./frameworks/product-anatomy) | Product Anatomy Matrix: fix the venture's core product first, judge every product against it with typed questions (Jev plus a reasoning model), then deduce each product's |

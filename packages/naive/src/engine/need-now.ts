@@ -83,6 +83,22 @@ export function probability(spec: Prior, phase: string, f: Facts): number {
   return p;
 }
 
+/**
+ * When a record type starts, from its prior: the first phase whose base prior reaches the suggest line (`start`, what
+ * the route table's phase groups show and what every venture is suggested), and the first phase in which a condition
+ * can lift it there (`earliest`, for some venture). Null when it never does: master data and records only a person asks
+ * for. Need-now's priors are the one source of when a record starts; the tool catalog and intake workflows are checked
+ * against this (check-tools.ts, check-functions.ts).
+ */
+export function startOf(spec: Prior | undefined, phases: readonly string[], suggest: number): { start: string | null; earliest: string | null } {
+  if (!spec) return { start: null, earliest: null };
+  const lifted = (p: string) => (spec.when ?? []).some((w) => (!w.phase || w.phase === p) && (w.at_least ?? 0) >= suggest);
+  return {
+    start: phases.find((p) => (spec.base[p] ?? 0) >= suggest) ?? null,
+    earliest: phases.find((p) => (spec.base[p] ?? 0) >= suggest || lifted(p)) ?? null,
+  };
+}
+
 export function needNow(dir: string) {
   const N: { suggest: number; records: Record<string, Prior> } = load(join(root, "packages/naive/src/engine/need-now.json"));
   const model: DataModel = readDataModel();
