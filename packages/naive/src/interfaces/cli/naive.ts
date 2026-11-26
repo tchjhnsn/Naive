@@ -62,6 +62,10 @@
 //                                                   what each function's APQC process groups need from a person: the
 //                                                   activities a person performs or approves, and how many are the
 //                                                   agent's (EE-180)
+//   naive due [--at <iso>] [--function <id>] [--json]  which function workflows are due now and why, from each workflow's
+//                                                   trigger, the run log and the provenance log (EE-182)
+//   naive due record <function>/<workflow> [--outcome done|failed] [--by <who>]
+//                                                   record that a workflow ran
 //   naive workspace init [<dir>] [--name <name>] (--venture <name> | --port <folder> | --migrate <project>)
 //                                                   a workspace with its clock, its calendar and its first venture
 //   naive workspace rename <name>                   rename the workspace this runs in (logged in its meta/provenance.jsonl)
@@ -403,6 +407,10 @@ else if (cmd === "build" || cmd === "start") {
   // Traces in the venture's files (packages/naive/src/engine/trace-cli.ts, EE-121).
   const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
   process.exit(run("packages/naive/src/engine/trace-cli.ts", [here(), ...(args.length ? args : ["show"])]));
+} else if (cmd === "due") {
+  // Which function workflows are due, and recording a run (packages/naive/src/engine/due.ts, EE-182).
+  const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
+  process.exit(run("packages/naive/src/engine/due.ts", [here(), ...args]));
 } else if (cmd === "activities") {
   // What the activity catalog's scores propose for this venture (packages/naive/src/engine/activity-proposals.ts, EE-169).
   const [what = "list", ...args] = rest.filter((a, i) => !(a === "--venture" || rest[i - 1] === "--venture"));
