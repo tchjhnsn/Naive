@@ -129,6 +129,8 @@ The engine's modules (decisions, freshness, generators, lifecycle, upgrades, use
 
 ## Decision scores
 
+`withdraw(dir, id, { by, duplicateOf })` in `decisions.ts` is a person's: it withdraws an open or deferred decision, as a duplicate of another when `duplicateOf` names one, and logs it in provenance (EE-185). Function agents (`<function>-agent`), researchers and the role templates are roles, so neither `approve` nor `withdraw` takes one as the person.
+
 A resolved decision in `decisions.ts` keeps its record's `options`, `statement`, `version`, `applies_to` and `decided_at`, so setup, the merge prompt and freshness read them from the matrix.
 
 `locked()` in `decisions.ts` reads a decision's `unlocks` through the route aliases, so a lock written under a route's old name still holds. `init-venture.ts` writes the founding decisions with the current route names.

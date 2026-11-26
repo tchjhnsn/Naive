@@ -22,6 +22,7 @@
 //                                                   a person accepts the held recipe tip: the one-bit holdout check runs,
 //                                                   and the tip goes live on a pass, or over a failed check with --over-holdout
 //   mentura decide <decision> --venture <id> --by <name> [--answer <text>] [--rollback <version>] [--confirm <decision>]
+//   mentura withdraw <decision> --venture <id> --by <name> [--duplicate-of <decision>] [--note <text>] [--confirm <decision>]
 //          [--reason "<claim>" | --against "<claim>" | --context "<claim>"] [--cite <ref> [--locator <where>]] ...
 //                                                   reasons with citations, frozen with each cited file's sha256 at approval
 //   mentura decisions --venture <id> [--why <decision>] [--json]
@@ -80,7 +81,7 @@ import { spawnSync } from "node:child_process";
 import { call, draftOf, files, glob, groups, repo, routes, routesMd, ventureDir, ventures } from "../../router/router.ts";
 import { agentFromEnv, entries, record } from "../../core/provenance.ts";
 import { FRAME, filesOf, statementFiles } from "../../engine/foundation.ts";
-import { approve, decisionFile, decisions, merge, propose, rollback } from "../../engine/decisions.ts";
+import { approve, decisionFile, decisions, merge, propose, rollback, withdraw } from "../../engine/decisions.ts";
 import { reasonsFromArgs, whyLines } from "../../engine/reasons.ts";
 import { impact } from "../../engine/impact.ts";
 // Gate group hook (X-2): held drafts kept side by side.
@@ -380,6 +381,22 @@ if (cmd === "decide") {
   const r = back !== undefined
     ? rollback(dir, id, back, { by: opt("by") ?? process.env.MENTURA_PERSON })
     : approve(dir, id, { by: opt("by") ?? process.env.MENTURA_PERSON, answer: opt("answer"), note: opt("note"), reasons: givenReasons.length ? givenReasons : undefined });
+  if (!r.ok) { console.error(r.error); process.exit(1); }
+  out(r.result);
+  process.exit(0);
+}
+
+if (cmd === "withdraw") {
+  // A person withdraws an open decision, as a duplicate of another with --duplicate-of, so the queue keeps one
+  // question. Typing the decision's id confirms it.
+  const venture = opt("venture"), id = action;
+  const dir = venture && ventureDir(venture, workspace);
+  if (!dir || !id) usage();
+  const d = listed(dir).find((x) => x.id === id);
+  if (!d || d.source !== "file") { console.error(`no decision record ${id} in ${venture}`); process.exit(1); }
+  const dup = opt("duplicate-of");
+  if (!(await typed(id, `Withdrawing ${id}: ${d.question}${dup ? `\n  as a duplicate of ${dup}` : ""}`, "Its question leaves the queue."))) { console.error("not withdrawn: the confirmation did not match"); process.exit(1); }
+  const r = withdraw(dir, id, { by: opt("by") ?? process.env.MENTURA_PERSON, duplicateOf: dup, note: opt("note") });
   if (!r.ok) { console.error(r.error); process.exit(1); }
   out(r.result);
   process.exit(0);
