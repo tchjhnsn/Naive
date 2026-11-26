@@ -3405,6 +3405,24 @@ export type MoneySummary = {
 
 /** A venture's overrides to Naive's defaults, at the venture root (P-2, like next.config.js): the gate (fail-closed routes, rules over the router's path patterns, which package rules it imports), function owners, check settings (P-7, like eslint.config.mjs), thresholds, which System 1 questions run, pinned package versions (U-4) and how strictly the acting role is checked (M-18). Every field is optional; a missing one keeps the default in packages/naive/src/engine/naive-config.ts. node packages/naive/src/checks/check-config.ts <venture dir> checks it. */
 export type NaiveConfig = {
+  /** How far the loop goes on its own when a function workflow is due (EE-183, packages/naive/src/engine/loop.ts, naive loop): manual, the default, starts nothing; ask files a decision per due occurrence and starts on the answer start; auto starts the workflow as its function agent. The most specific mode wins: workflow, then function, then mode. No mode goes past the gate. packages/naive/src/checks/check-config.ts holds each name to the venture's functions and workflows. */
+  loops?: {
+    /** The mode for every workflow that has none of its own */
+    mode?: "manual" | "ask" | "auto";
+    /** Per function id in venture.json departments */
+    functions?: {
+      [key: string]: "manual" | "ask" | "auto";
+    };
+    /** Per workflow, named <function>/<workflow>. A mode here also lets the loop act on a workflow the venture's phase does not list as active. */
+    workflows?: {
+      [key: string]: "manual" | "ask" | "auto";
+    };
+    /** The person who last set a mode, and when. A mode of ask or auto counts only with it. */
+    set_by?: {
+      person: string;
+      at: string;
+    };
+  };
   /** The venture's own lines for the activity catalog's proposal rules (EE-170, packages/naive/src/engine/activity-proposals.ts, naive activities). A rule left out keeps the catalog's lines. packages/naive/src/checks/check-config.ts holds each rule id to the catalog and each line to its scale's range. */
   activity_proposals?: {
     /** Per rule id in packages/naive/src/functions/activities.json proposal_rules: off, so the rule proposes nothing in this venture, or the venture's lines */
