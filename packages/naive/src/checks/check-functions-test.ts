@@ -20,7 +20,7 @@ const copy = (): string => {
   return d;
 };
 type Row = { class: string, level: string, examples: string[] };
-type Step = { writes?: string[], raises?: string[], skill?: string, activity?: string };
+type Step = { writes?: string[], raises?: string[], skill?: string, activity?: string, consider?: { why?: string, when?: string } };
 type Doc = { rows: Row[], steps: Step[], intake?: string, clusters?: string[] };
 const edit = (root: string, rel: string, f: (j: Doc) => void) => { const p = join(root, rel); const j = JSON.parse(readFileSync(p, "utf8")) as Doc; f(j); writeFileSync(p, JSON.stringify(j, null, 2) + "\n"); };
 const CATALOG_ACTIVITY = (JSON.parse(readFileSync(join(repo, "packages/naive/src/functions/activities.json"), "utf8")) as { activities: { id: string, process_group: string }[] }).activities.find((x) => x.process_group.startsWith("3."))?.id ?? "";
@@ -31,6 +31,8 @@ const cases: [string, (d: string) => void, RegExp][] = [
   ["a step that writes outside the function's reach fails", (d) => edit(d, `${FIN}/workflows/intake.json`, (j) => { j.steps[0].writes = ["foundation/problem"]; }), /outside the function's write reach/],
   ["a step that writes the team plan fails, whoever owns its record type", (d) => edit(d, "packages/naive/src/functions/human-capital/workflows/intake.json", (j) => { j.steps[0].writes = ["people/team-plan"]; }), /writes people\/team-plan, outside the function's write reach/],
   ["a step that raises a class with no row fails", (d) => edit(d, `${FIN}/workflows/intake.json`, (j) => { j.steps[0].raises = ["production-ship"]; }), /raises production-ship, which decisions.json has no row for/],
+  ["a workflow whose every step is one to consider fails", (d) => edit(d, `${FIN}/workflows/intake.json`, (j) => { for (const s of j.steps) s.consider = { why: "It may help." }; }), /every step is one to consider/],
+  ["a step to consider that gives no reason fails the schema", (d) => edit(d, `${FIN}/workflows/intake.json`, (j) => { j.steps[0].consider = { when: "There is a price." }; }), /consider/],
   ["a step whose activity APQC does not have fails", (d) => edit(d, `${FIN}/workflows/intake.json`, (j) => { j.steps[0].activity = "9.1.1.99"; }), /performs activity 9\.1\.1\.99, which is not a level 4 activity in pcf\.json/],
   ["a step whose activity is an APQC process, not an activity, fails the schema", (d) => edit(d, `${FIN}/workflows/intake.json`, (j) => { j.steps[0].activity = "9.1.1"; }), /activity/],
   ["a step whose APQC activity is under another function's category fails", (d) => edit(d, `${FIN}/workflows/intake.json`, (j) => { j.steps[0].activity = "3.5.1.6"; }), /performs activity 3\.5\.1\.6, which is under APQC category 3\.0, not the function's 9\.0/],

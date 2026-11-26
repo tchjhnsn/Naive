@@ -1,12 +1,12 @@
 // Tests the briefing a person reads (EE-180): per function its APQC category and process groups, what each needs
 // from a person by the venture's assignment or by default, and how many activities are left to the agent. It reads
-// the shipped catalog and framework, and one venture folder made here.
+// the shipped catalog and framework, and one venture folder made here, then reads the same briefing through its routes.
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { runSync } from "../core/effect/run.ts";
-import { briefing, briefingFor } from "./activity-briefing.ts";
+import { briefing, briefingFor, considerSteps } from "./activity-briefing.ts";
 import { readCatalog, readGroups, readPcf } from "./activity-proposals.ts";
 
 let failed = 0;
@@ -32,6 +32,20 @@ expect("an activity the venture gave a person is listed as assigned, with no kin
 expect("an activity assigned to an agent with no approval is counted with the agent's", !o35?.performs.some((a) => a.id === "3.5.1.2") && !o35?.approves.some((a) => a.id === "3.5.1.2") && (o35?.performs.length ?? 0) + (o35?.approves.length ?? 0) + (o35?.agent ?? 0) === level4("3.5"));
 expect("a function with no process group has no category and nothing to need", (() => { const [x] = briefing(catalog, groups, pcf, ["no-such-function"], null); return x.category === null && x.process_groups.length === 0 && x.needs_person === 0; })());
 
+// Steps to consider (EE-181).
+const wf = { id: "review", steps: [
+  { id: "read", do: "Read the records." },
+  { id: "pricing", do: "Compare prices.", activity: "3.3.3.11", consider: { why: "Prices move.", when: "The business has a price." } },
+  { id: "call", do: "Call a customer.", consider: { why: "A person may want it." } },
+] };
+const steps = considerSteps([wf, { id: "empty", steps: [{ id: "a", do: "A." }] }, null]);
+expect("only the steps marked consider are listed, in order, with why, when and activity", JSON.stringify(steps) === JSON.stringify([
+  { workflow: "review", step: "pricing", do: "Compare prices.", why: "Prices move.", when: "The business has a price.", activity: "3.3.3.11" },
+  { workflow: "review", step: "call", do: "Call a customer.", why: "A person may want it." },
+]), steps);
+const [withSteps, without] = briefing(catalog, groups, pcf, ["marketing-and-sales", "finance"], null, new Map([["marketing-and-sales", [wf]]]));
+expect("a function's briefing carries its steps to consider, and a function with none carries an empty list", withSteps.consider.length === 2 && without.consider.length === 0 && sales.consider.length === 0);
+
 const dir = mkdtempSync(join(tmpdir(), "naive-briefing-"));
 try {
   writeFileSync(join(dir, "venture.json"), JSON.stringify({ id: "t", name: "T", phase: "discovery", departments: ["finance", "marketing-and-sales"] }));
@@ -47,6 +61,26 @@ try {
   expect("--json prints the same briefing", asJson.status === 0 && JSON.stringify((JSON.parse(asJson.stdout) as { briefing: unknown }).briefing) === JSON.stringify(forVenture));
   expect("a function the venture does not list is refused", cli(dir, "--function", "assets").status === 2 && cli().status === 2);
 } finally { rmSync(dir, { recursive: true, force: true }); }
+
+// ---- Through the router: the whole briefing, and each function's at its own route ----
+const ws = mkdtempSync(join(tmpdir(), "naive-briefing-ws-"));
+try {
+  const repo = new URL("../../../../", import.meta.url).pathname;
+  const node = (...args: string[]) => spawnSync(process.execPath, args, { cwd: repo, encoding: "utf8", env: { ...process.env, MENTURA_WORKSPACE: ws } });
+  const acme = join(ws, "acme");
+  const made = node("packages/naive/src/engine/init-venture.ts", acme, "acme", "--type", "software-startup");
+  expect("a venture is made for the route", made.status === 0, made.stderr || made.stdout);
+  const direct = runSync(briefingFor(acme));
+  const route = (r: string) => node("packages/naive/src/interfaces/cli/mentura.ts", r, "run", "--venture", "acme");
+  const read = (out: string): unknown => { try { return (JSON.parse(out) as { briefing?: unknown }).briefing; } catch { return null; } };
+  const whole = route("operations/activity-briefing");
+  expect("operations/activity-briefing returns the briefing for every function the venture lists", whole.status === 0 && direct.length > 1 && JSON.stringify(read(whole.stdout)) === JSON.stringify(direct), whole.stderr || whole.stdout.slice(0, 300));
+  const one = route("operations/activity-briefing/strategy");
+  expect("operations/activity-briefing/<function> returns that one function", one.status === 0 && JSON.stringify(read(one.stdout)) === JSON.stringify(direct.filter((b) => b.function === "strategy")), one.stderr || one.stdout.slice(0, 300));
+  const unlisted = route("operations/activity-briefing/assets");
+  expect("a function the venture does not list is refused through the route, naming the ones it lists", unlisted.status !== 0 && /does not list the function assets/.test(unlisted.stdout + unlisted.stderr), [unlisted.status, unlisted.stdout.slice(0, 300), unlisted.stderr.slice(0, 300)]);
+  expect("a function Naive does not have has no route", /no route/.test((() => { const x = route("operations/activity-briefing/nope"); return x.stdout + x.stderr; })()));
+} finally { rmSync(ws, { recursive: true, force: true }); }
 
 console.log(failed ? `${failed} failed` : "all passed");
 process.exit(failed ? 1 : 0);
