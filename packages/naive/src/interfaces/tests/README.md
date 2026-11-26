@@ -41,6 +41,7 @@ Tests that run a module in `packages/naive/src/engine/` through the router: its 
 | `lint-*-test.mjs` | The function lint suites (customers, finance, foundation, investors, legal, product, validation) run through their routes. The clean ventures they expect silence from are the examples in `packages/naive/src/records/examples/workspace` and `packages/naive/src/records/examples/software`. |
 | `decision-index-test.ts`, `decision-reasons-test.ts` | The live decision index and frozen decision reasons. |
 | `decision-withdraw-test.ts` | A person withdraws a decision as a duplicate of another; an agent, a role, itself, a missing or withdrawn target are refused (EE-185). |
+| `decision-candidates-test.ts` | Several ideas on one undecided record: candidates added by agents and people, one withdrawn and restored, the chosen one merged into the record, the route read showing `undecided`, and a person reopening a decided decision (EE-211). It lives here, not beside the engine module, because it drives the router. |
 | [`time-box-write-test.ts`](./time-box-write-test.ts) | A time box write through the router is refused unless the end is after the start (EE-186). |
 | [`time-box-write-test.ts`](./time-box-write-test.ts) | A time box write through the router is refused unless the end is after the start (EE-186). |
 | [`validation-study-test.ts`](./validation-study-test.ts) | Interviews, feedback, bugs, telemetry, the beta gate. |
