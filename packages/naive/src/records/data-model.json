@@ -15,6 +15,7 @@
       "layer": "system",
       "function": null,
       "level": "workspace",
+      "data": "master",
       "schema": "packages/naive/src/records/workspace.schema.json",
       "paths": [
         "instance/workspace.json",
@@ -30,6 +31,7 @@
       "layer": "system",
       "function": null,
       "level": "workspace",
+      "data": "master",
       "schema": "packages/naive/src/records/calendar.schema.json",
       "paths": [
         "instance/calendar/calendars/*.json",
@@ -42,6 +44,7 @@
       "layer": "system",
       "function": null,
       "level": "workspace",
+      "data": "master",
       "schema": "packages/naive/src/records/workspace-founder.schema.json",
       "paths": [
         "instance/founders/*/founder.json",
@@ -54,6 +57,7 @@
       "layer": "system",
       "function": null,
       "level": "workspace",
+      "data": "transactional",
       "schema": "packages/naive/src/records/founder-idea.schema.json",
       "paths": [
         "instance/people/*/ideas/*.json",
@@ -68,6 +72,7 @@
       "layer": "system",
       "function": null,
       "level": "workspace",
+      "data": "transactional",
       "schema": "packages/naive/src/records/founder-reference.schema.json",
       "paths": [
         "instance/people/*/references/*.json",
@@ -82,6 +87,7 @@
       "layer": "system",
       "function": null,
       "level": "workspace",
+      "data": "transactional",
       "schema": "packages/naive/src/records/founder-inspiration.schema.json",
       "paths": [
         "instance/founders/*/inspirations/*.json",
@@ -94,6 +100,7 @@
       "layer": "system",
       "function": null,
       "level": "workspace",
+      "data": "master",
       "schema": "packages/naive/src/records/founder-private.schema.json",
       "paths": [
         "instance/founders/*/_private/**/*.json",
@@ -106,6 +113,7 @@
       "layer": "system",
       "function": null,
       "level": "workspace",
+      "data": "transactional",
       "schema": "packages/naive/src/records/calendar-event.schema.json",
       "paths": [
         "instance/calendar/events/*.json",
@@ -125,6 +133,7 @@
       "layer": "system",
       "function": null,
       "level": "venture",
+      "data": "master",
       "schema": "packages/naive/src/records/venture.schema.json",
       "paths": [
         "instance/**/venture.json",
@@ -183,6 +192,7 @@
       "layer": "purpose",
       "function": "strategy",
       "level": "venture",
+      "data": "master",
       "schema": "packages/naive/src/records/venture-core.schema.json",
       "view_of": "venture",
       "decision_class": "strategy-or-constitution",
@@ -194,6 +204,7 @@
       "layer": "knowledge",
       "function": null,
       "level": "venture",
+      "data": "master",
       "schema": null,
       "form": "prose",
       "paths": [
@@ -206,6 +217,7 @@
       "layer": "purpose",
       "function": "products",
       "level": "venture",
+      "data": "master",
       "schema": "packages/naive/src/records/product.schema.json",
       "paths": [
         "instance/**/product/*.json",
@@ -236,6 +248,7 @@
       "layer": "purpose",
       "function": null,
       "level": "venture",
+      "data": "master",
       "schema": "packages/naive/src/records/account.schema.json",
       "paths": [
         "instance/**/accounts/*/account.json",
@@ -255,6 +268,7 @@
       "layer": "purpose",
       "function": "strategy",
       "level": "venture",
+      "data": "master",
       "schema": "packages/naive/src/records/telos.schema.json",
       "paths": [
         "instance/**/foundation/telos.json",
@@ -287,6 +301,7 @@
       "layer": "purpose",
       "function": "strategy",
       "level": "venture",
+      "data": "master",
       "schema": "packages/naive/src/records/goal.schema.json",
       "paths": [
         "instance/**/foundation/goals/*.json",
@@ -300,6 +315,7 @@
       "layer": "purpose",
       "function": "strategy",
       "level": "venture",
+      "data": "master",
       "schema": "packages/naive/src/records/requirement.schema.json",
       "paths": [
         "instance/**/foundation/requirements/*.json",
@@ -320,6 +336,7 @@
       "layer": "purpose",
       "function": "strategy",
       "level": "venture",
+      "data": "master",
       "schema": "packages/naive/src/records/exit-criteria.schema.json",
       "paths": [
         "instance/**/foundation/exit-criteria/*.json",
@@ -345,6 +362,7 @@
       "layer": "purpose",
       "function": "strategy",
       "level": "venture",
+      "data": "master",
       "schema": "packages/naive/src/records/constraints.schema.json",
       "paths": [
         "instance/**/foundation/constraints.json",
@@ -369,6 +387,7 @@
       "layer": "purpose",
       "function": null,
       "level": "venture",
+      "data": "transactional",
       "schema": null,
       "form": "prose",
       "paths": [
@@ -384,6 +403,7 @@
       "layer": "purpose",
       "function": "strategy",
       "level": "venture",
+      "data": "master",
       "schema": null,
       "form": "markdown",
       "paths": [
@@ -399,6 +419,7 @@
       "layer": "purpose",
       "function": "strategy",
       "level": "venture",
+      "data": "derived",
       "schema": "packages/naive/src/records/idea-graph.schema.json",
       "paths": [
         "instance/**/ideas/graph.json",
@@ -413,6 +434,7 @@
       "layer": "purpose",
       "function": "strategy",
       "level": "venture",
+      "data": "master",
       "schema": "packages/naive/src/records/validation-problem.schema.json",
       "paths": [
         "instance/**/foundation/problem.json",
@@ -435,6 +457,7 @@
       "layer": "purpose",
       "function": "strategy",
       "level": "venture",
+      "data": "transactional",
       "schema": "packages/naive/src/records/validation-interview.schema.json",
       "paths": [
         "instance/**/validation/interviews/*.json",
@@ -464,6 +487,7 @@
       "layer": "purpose",
       "function": "strategy",
       "level": "venture",
+      "data": "transactional",
       "schema": "packages/naive/src/records/validation-feedback.schema.json",
       "paths": [
         "instance/**/validation/feedback/*.json",
@@ -483,6 +507,7 @@
       "layer": "purpose",
       "function": "strategy",
       "level": "venture",
+      "data": "master",
       "schema": "packages/naive/src/records/validation-solution.schema.json",
       "paths": [
         "instance/**/validation/solution.json",
@@ -504,6 +529,7 @@
       "layer": "purpose",
       "function": "strategy",
       "level": "venture",
+      "data": "master",
       "schema": "packages/naive/src/records/validation-product-market-fit.schema.json",
       "paths": [
         "instance/**/validation/product-market-fit.json",
@@ -525,6 +551,7 @@
       "layer": "purpose",
       "function": "strategy",
       "level": "venture",
+      "data": "master",
       "schema": "packages/naive/src/records/validation-pricing.schema.json",
       "paths": [
         "instance/**/validation/pricing.json",
@@ -546,6 +573,7 @@
       "layer": "purpose",
       "function": "strategy",
       "level": "venture",
+      "data": "master",
       "schema": "packages/naive/src/records/validation-plan.schema.json",
       "generator": "packages/naive/src/engine/generators/validation-plan.ts",
       "paths": [
@@ -561,6 +589,7 @@
       "layer": "purpose",
       "function": "marketing-and-sales",
       "level": "venture",
+      "data": "master",
       "schema": "packages/naive/src/records/market-anatomy.schema.json",
       "generator": "packages/naive/src/engine/generators/market-anatomy.ts",
       "paths": [
@@ -578,6 +607,7 @@
       "layer": "purpose",
       "function": "strategy",
       "level": "venture",
+      "data": "master",
       "schema": "packages/naive/src/records/industry-anatomy.schema.json",
       "generator": "packages/naive/src/engine/generators/industry-anatomy.ts",
       "paths": [
@@ -591,6 +621,7 @@
       "layer": "purpose",
       "function": "strategy",
       "level": "venture",
+      "data": "master",
       "schema": "packages/naive/src/records/validation-go-to-market.schema.json",
       "paths": [
         "instance/**/validation/go-to-market.json",
@@ -612,6 +643,7 @@
       "layer": "purpose",
       "function": null,
       "level": "venture",
+      "data": "master",
       "schema": "packages/naive/src/records/validation-team.schema.json",
       "paths": [
         "instance/**/people/team.json",
@@ -633,6 +665,7 @@
       "layer": "purpose",
       "function": "strategy",
       "level": "venture",
+      "data": "master",
       "schema": "packages/naive/src/records/validation-operations-readiness.schema.json",
       "paths": [
         "instance/**/validation/operations-readiness.json",
@@ -713,6 +746,7 @@
       "layer": "purpose",
       "function": "products",
       "level": "venture",
+      "data": "transactional",
       "schema": null,
       "form": "json",
       "paths": [
@@ -736,6 +770,7 @@
       "layer": "purpose",
       "function": "products",
       "level": "venture",
+      "data": "master",
       "schema": null,
       "form": "json",
       "paths": [
@@ -760,6 +795,7 @@
       "layer": "governance",
       "function": null,
       "level": "venture",
+      "data": "transactional",
       "schema": "packages/naive/src/records/decision-record.schema.json",
       "paths": [
         "instance/**/decisions/*.decision.json",
@@ -772,6 +808,7 @@
       "layer": "governance",
       "function": null,
       "level": "venture",
+      "data": "derived",
       "schema": "packages/naive/src/records/decision-impact.schema.json",
       "paths": [
         "instance/**/decisions/*.impact.json",
@@ -814,6 +851,7 @@
       "layer": "knowledge",
       "function": null,
       "level": "venture",
+      "data": "reference",
       "schema": "packages/naive/src/records/knowledge-sources.schema.json",
       "paths": [
         "instance/**/knowledge/sources.json",
@@ -839,6 +877,7 @@
       "layer": "knowledge",
       "function": null,
       "level": "venture",
+      "data": "derived",
       "schema": "packages/naive/src/records/where-used.schema.json",
       "paths": [
         "instance/**/knowledge/where-used.json",
@@ -911,6 +950,7 @@
       "layer": "knowledge",
       "function": null,
       "level": "venture",
+      "data": "transactional",
       "schema": "packages/naive/src/records/freshness-log.schema.json",
       "form": "json-lines",
       "kind": "log",
@@ -958,6 +998,7 @@
       "layer": "operations",
       "function": null,
       "level": "venture",
+      "data": "master",
       "schema": "packages/naive/src/records/activity-assignments.schema.json",
       "generator": "packages/naive/src/engine/generators/activity-assignments.ts",
       "paths": [
@@ -1030,6 +1071,7 @@
       "layer": "operations",
       "function": null,
       "level": "venture",
+      "data": "master",
       "schema": "packages/naive/src/records/department.schema.json",
       "paths": [
         "instance/**/departments/*/department.json",
@@ -1188,6 +1230,7 @@
       "layer": "operations",
       "function": "service-delivery",
       "level": "venture",
+      "data": "transactional",
       "schema": "packages/naive/src/records/handoff.schema.json",
       "paths": [
         "instance/**/operations/handoffs/*.json",
@@ -1232,6 +1275,7 @@
       "layer": "operations",
       "function": null,
       "level": "venture",
+      "data": "master",
       "schema": "packages/naive/src/records/lead-plan.schema.json",
       "generator": "packages/naive/src/engine/generators/lead-plan.ts",
       "paths": [
@@ -1262,6 +1306,7 @@
       "layer": "operations",
       "function": "service-delivery",
       "level": "venture",
+      "data": "transactional",
       "schema": "packages/naive/src/records/activity.schema.json",
       "paths": [
         "instance/**/operations/activity/*.json",
@@ -1274,6 +1319,7 @@
       "layer": "operations",
       "function": "service-delivery",
       "level": "venture",
+      "data": "derived",
       "schema": "packages/naive/src/records/activity-summary.schema.json",
       "paths": [
         "instance/**/operations/activity/_summary.json",
@@ -1286,6 +1332,7 @@
       "layer": "operations",
       "function": "service-delivery",
       "level": "venture",
+      "data": "master",
       "schema": "packages/naive/src/records/service-offer.schema.json",
       "generator": "packages/naive/src/engine/generators/service-offer.ts",
       "writer": "function",
@@ -1307,6 +1354,7 @@
       "layer": "operations",
       "function": "service-delivery",
       "level": "venture",
+      "data": "transactional",
       "schema": "packages/naive/src/records/engagement.schema.json",
       "generator": "packages/naive/src/engine/generators/engagement.ts",
       "writer": "function",
@@ -1338,6 +1386,7 @@
       "layer": "evidence",
       "function": null,
       "level": "venture",
+      "data": "transactional",
       "schema": "packages/naive/src/records/evidence.schema.json",
       "paths": [
         "instance/**/evidence/results/*.json",
@@ -1372,6 +1421,7 @@
       "layer": "operations",
       "function": "capabilities",
       "level": "venture",
+      "data": "master",
       "schema": "packages/naive/src/records/process.schema.json",
       "generator": "packages/naive/src/engine/generators/process.ts",
       "writer": "function",
@@ -1386,6 +1436,7 @@
       "layer": "operations",
       "function": "capabilities",
       "level": "venture",
+      "data": "transactional",
       "schema": "packages/naive/src/records/postmortem.schema.json",
       "generator": "packages/naive/src/engine/generators/postmortem.ts",
       "writer": "function",
@@ -1438,6 +1489,7 @@
       "layer": "governance",
       "function": null,
       "level": "venture",
+      "data": "master",
       "schema": "packages/naive/src/records/decision-rights.schema.json",
       "paths": [
         "packages/naive/template/governance/decision-rights.json",
@@ -1475,6 +1527,7 @@
       "layer": "governance",
       "function": null,
       "level": "venture",
+      "data": "master",
       "schema": null,
       "form": "prose",
       "paths": [
@@ -1488,6 +1541,7 @@
       "layer": "governance",
       "function": "finance",
       "level": "venture",
+      "data": "master",
       "schema": "packages/naive/src/records/ownership.schema.json",
       "paths": [
         "instance/**/governance/ownership.json",
@@ -1513,6 +1567,7 @@
       "layer": "governance",
       "function": null,
       "level": "venture",
+      "data": "master",
       "schema": "packages/naive/src/records/board.schema.json",
       "paths": [
         "instance/**/governance/board.json",
@@ -1533,6 +1588,7 @@
       "layer": "governance",
       "function": null,
       "level": "venture",
+      "data": "master",
       "schema": "packages/naive/src/records/founder-agreement.schema.json",
       "paths": [
         "instance/**/governance/founder-agreement.json",
@@ -1558,6 +1614,7 @@
       "layer": "governance",
       "function": "finance",
       "level": "venture",
+      "data": "master",
       "schema": "packages/naive/src/records/exit.schema.json",
       "paths": [
         "instance/**/governance/exit.json",
@@ -1583,6 +1640,7 @@
       "layer": "governance",
       "function": null,
       "level": "venture",
+      "data": "master",
       "schema": "packages/naive/src/records/publication-policy.schema.json",
       "paths": [
         "instance/**/governance/publication-policy.json",
@@ -1608,6 +1666,7 @@
       "layer": "governance",
       "function": "risk-and-compliance",
       "level": "venture",
+      "data": "master",
       "schema": "packages/naive/src/records/risk.schema.json",
       "generator": "packages/naive/src/engine/generators/risk.ts",
       "writer": "function",
@@ -1622,6 +1681,7 @@
       "layer": "governance",
       "function": "risk-and-compliance",
       "level": "venture",
+      "data": "master",
       "schema": "packages/naive/src/records/obligation.schema.json",
       "generator": "packages/naive/src/engine/generators/obligation.ts",
       "writer": "function",
@@ -1636,6 +1696,7 @@
       "layer": "governance",
       "function": null,
       "level": "venture",
+      "data": "master",
       "schema": "packages/naive/src/records/internal-terms.schema.json",
       "paths": [
         "packages/naive/src/engine/internal-terms.json",
@@ -1650,6 +1711,7 @@
       "layer": "governance",
       "function": null,
       "level": "venture",
+      "data": "master",
       "schema": "packages/naive/src/records/publications.schema.json",
       "paths": [
         "instance/**/governance/publications.json",
@@ -1674,6 +1736,7 @@
       "layer": "operations",
       "function": null,
       "level": "venture",
+      "data": "master",
       "schema": "packages/naive/src/records/site-presence.schema.json",
       "paths": [
         "instance/**/operations/marketing/site-presence.json",
@@ -1686,6 +1749,7 @@
       "layer": "operations",
       "function": "marketing-and-sales",
       "level": "venture",
+      "data": "master",
       "schema": "packages/naive/src/records/marketing-sitemap.schema.json",
       "paths": [
         "instance/**/marketing/sitemap.json",
@@ -1700,6 +1764,7 @@
       "layer": "operations",
       "function": "marketing-and-sales",
       "level": "venture",
+      "data": "master",
       "schema": null,
       "form": "markdown",
       "paths": [
@@ -1774,6 +1839,7 @@
       "layer": "system",
       "function": null,
       "level": "venture",
+      "data": "derived",
       "schema": null,
       "form": "json",
       "paths": [
@@ -1788,6 +1854,7 @@
       "layer": "system",
       "function": null,
       "level": "venture",
+      "data": "transactional",
       "schema": null,
       "form": "json",
       "paths": [
@@ -1801,6 +1868,7 @@
       "layer": "operations",
       "function": "human-capital",
       "level": "venture",
+      "data": "master",
       "schema": "packages/naive/src/records/team-plan.schema.json",
       "paths": [
         "instance/**/people/team-plan.json",
@@ -1855,6 +1923,7 @@
       "layer": "system",
       "function": null,
       "level": "venture",
+      "data": "transactional",
       "schema": "packages/naive/src/records/provenance-entry.schema.json",
       "form": "json-lines",
       "kind": "log",
@@ -1876,6 +1945,7 @@
       "layer": "system",
       "function": null,
       "level": "venture",
+      "data": "transactional",
       "schema": "packages/naive/src/records/trace-span.schema.json",
       "generator": "packages/naive/src/engine/generators/trace-span.ts",
       "form": "json-lines",
@@ -1898,6 +1968,7 @@
       "layer": "system",
       "function": null,
       "level": "venture",
+      "data": "reference",
       "schema": "packages/naive/src/records/naive-config.schema.json",
       "paths": [
         "instance/**/naive.config.json",
@@ -1984,6 +2055,7 @@
       "layer": "purpose",
       "function": "strategy",
       "level": "venture",
+      "data": "master",
       "schema": "packages/naive/src/records/icp-profile.schema.json",
       "paths": [
         "instance/**/foundation/icp/*.json",
@@ -2004,6 +2076,7 @@
       "layer": "purpose",
       "function": "strategy",
       "level": "venture",
+      "data": "master",
       "schema": "packages/naive/src/records/alignment.schema.json",
       "paths": [
         "instance/**/foundation/alignment.json",
@@ -2071,6 +2144,7 @@
       "layer": "purpose",
       "function": "marketing-and-sales",
       "level": "venture",
+      "data": "master",
       "schema": "packages/naive/src/records/data-master.schema.json",
       "paths": [
         "instance/**/customers/*.json",
@@ -2083,6 +2157,7 @@
       "layer": "operations",
       "function": "customer-service",
       "level": "venture",
+      "data": "master",
       "schema": "packages/naive/src/records/support-policy.schema.json",
       "generator": "packages/naive/src/engine/generators/support-policy.ts",
       "writer": "function",
@@ -2105,6 +2180,7 @@
       "layer": "operations",
       "function": "customer-service",
       "level": "venture",
+      "data": "transactional",
       "schema": "packages/naive/src/records/support-case.schema.json",
       "generator": "packages/naive/src/engine/generators/support-case.ts",
       "writer": "function",
@@ -2141,6 +2217,7 @@
       "layer": "purpose",
       "function": "external-relationships",
       "level": "venture",
+      "data": "master",
       "schema": "packages/naive/src/records/data-master.schema.json",
       "paths": [
         "instance/**/investors/*.json",
@@ -2153,6 +2230,7 @@
       "layer": "purpose",
       "function": "external-relationships",
       "level": "venture",
+      "data": "transactional",
       "schema": "packages/naive/src/records/raise.schema.json",
       "generator": "packages/naive/src/engine/generators/raise.ts",
       "writer": "function",
@@ -2184,6 +2262,7 @@
       "layer": "purpose",
       "function": "external-relationships",
       "level": "venture",
+      "data": "transactional",
       "schema": "packages/naive/src/records/stakeholder-update.schema.json",
       "generator": "packages/naive/src/engine/generators/stakeholder-update.ts",
       "writer": "function",
@@ -2199,6 +2278,7 @@
       "layer": "purpose",
       "function": "finance",
       "level": "venture",
+      "data": "master",
       "schema": "packages/naive/src/records/data-master.schema.json",
       "paths": [
         "instance/**/money/*.json",
@@ -2211,6 +2291,7 @@
       "layer": "purpose",
       "function": "finance",
       "level": "venture",
+      "data": "derived",
       "schema": "packages/naive/src/records/money-summary.schema.json",
       "paths": [
         "instance/**/money/_summary.json",
@@ -2223,6 +2304,7 @@
       "layer": "purpose",
       "function": "finance",
       "level": "venture",
+      "data": "transactional",
       "schema": "packages/naive/src/records/spend-register.schema.json",
       "generator": "packages/naive/src/engine/generators/spend-register.ts",
       "writer": "function",
@@ -2245,6 +2327,7 @@
       "layer": "operations",
       "function": "supply-chain",
       "level": "venture",
+      "data": "master",
       "schema": "packages/naive/src/records/supplier.schema.json",
       "generator": "packages/naive/src/engine/generators/supplier.ts",
       "writer": "function",
@@ -2260,6 +2343,7 @@
       "layer": "operations",
       "function": "supply-chain",
       "level": "venture",
+      "data": "transactional",
       "schema": "packages/naive/src/records/purchase-order.schema.json",
       "generator": "packages/naive/src/engine/generators/purchase-order.ts",
       "writer": "function",
@@ -2282,6 +2366,7 @@
       "layer": "purpose",
       "function": "finance",
       "level": "venture",
+      "data": "master",
       "schema": "packages/naive/src/records/budget.schema.json",
       "generator": "packages/naive/src/engine/generators/budget.ts",
       "writer": "function",
@@ -2296,6 +2381,7 @@
       "layer": "operations",
       "function": "assets",
       "level": "venture",
+      "data": "master",
       "schema": "packages/naive/src/records/fixed-asset.schema.json",
       "generator": "packages/naive/src/engine/generators/fixed-asset.ts",
       "writer": "function",
@@ -2322,6 +2408,7 @@
       "layer": "operations",
       "function": "assets",
       "level": "venture",
+      "data": "master",
       "schema": "packages/naive/src/records/lease.schema.json",
       "generator": "packages/naive/src/engine/generators/lease.ts",
       "writer": "function",
@@ -2343,6 +2430,7 @@
       "layer": "purpose",
       "function": null,
       "level": "venture",
+      "data": "master",
       "schema": "packages/naive/src/records/stream.schema.json",
       "paths": [
         "instance/**/customers/_streams/*/stream.json",
@@ -2359,6 +2447,7 @@
       "layer": "purpose",
       "function": null,
       "level": "venture",
+      "data": "transactional",
       "schema": "packages/naive/src/records/raw-source.schema.json",
       "paths": [
         "instance/**/raw/sources/*/source.json",
@@ -2371,6 +2460,7 @@
       "layer": "interface",
       "function": null,
       "level": "venture",
+      "data": "transactional",
       "schema": "packages/naive/src/records/artifact.schema.json",
       "paths": [
         "instance/**/artifacts/*.json",
@@ -2383,6 +2473,7 @@
       "layer": "purpose",
       "function": null,
       "level": "venture",
+      "data": "transactional",
       "schema": null,
       "form": "markdown",
       "paths": [
@@ -2396,6 +2487,7 @@
       "layer": "purpose",
       "function": null,
       "level": "venture",
+      "data": "transactional",
       "schema": null,
       "generator": "packages/naive/src/engine/generators/raw-dump.ts",
       "form": "markdown",
@@ -2411,6 +2503,7 @@
       "layer": "purpose",
       "function": null,
       "level": "venture",
+      "data": "transactional",
       "schema": "packages/naive/src/records/triage.schema.json",
       "generator": "packages/naive/src/engine/generators/triage.ts",
       "paths": [
@@ -2424,6 +2517,7 @@
       "layer": "knowledge",
       "function": null,
       "level": "venture",
+      "data": "transactional",
       "schema": "packages/naive/src/records/judgment.schema.json",
       "paths": [
         "instance/**/knowledge/judgments/*.json",
@@ -2506,6 +2600,7 @@
       "layer": "governance",
       "function": null,
       "level": "venture",
+      "data": "master",
       "schema": "packages/naive/src/records/delegation.schema.json",
       "paths": [
         "packages/naive/template/governance/delegation.json",
@@ -2536,6 +2631,7 @@
       "layer": "governance",
       "function": null,
       "level": "venture",
+      "data": "reference",
       "schema": "packages/naive/src/records/detector.schema.json",
       "generator": "packages/naive/src/engine/generators/detector.ts",
       "paths": [
@@ -2551,6 +2647,7 @@
       "layer": "governance",
       "function": null,
       "level": "venture",
+      "data": "transactional",
       "schema": "packages/naive/src/records/detector-trial.schema.json",
       "generator": "packages/naive/src/engine/generators/detector-trial.ts",
       "form": "json-lines",
@@ -2573,6 +2670,7 @@
       "layer": "operations",
       "function": "human-capital",
       "level": "venture",
+      "data": "master",
       "schema": "packages/naive/src/records/people.schema.json",
       "paths": [
         "instance/**/people/people.json",
@@ -2586,6 +2684,7 @@
       "layer": "operations",
       "function": "human-capital",
       "level": "venture",
+      "data": "master",
       "schema": "packages/naive/src/records/founder.schema.json",
       "paths": [
         "instance/**/people/founders/*.json",
@@ -2598,6 +2697,7 @@
       "layer": "purpose",
       "function": "finance",
       "level": "venture",
+      "data": "master",
       "schema": "packages/naive/src/records/fund-thesis.schema.json",
       "paths": [
         "instance/**/fund/thesis.json",
@@ -2610,6 +2710,7 @@
       "layer": "purpose",
       "function": "finance",
       "level": "venture",
+      "data": "master",
       "schema": "packages/naive/src/records/fund-terms.schema.json",
       "paths": [
         "instance/**/fund/terms.json",
@@ -2622,6 +2723,7 @@
       "layer": "purpose",
       "function": "marketing-and-sales",
       "level": "venture",
+      "data": "transactional",
       "schema": "packages/naive/src/records/deal.schema.json",
       "paths": [
         "instance/**/deals/*.json",
@@ -2755,6 +2857,7 @@
       "layer": "operations",
       "function": "it",
       "level": "venture",
+      "data": "master",
       "schema": "packages/naive/src/records/connection.schema.json",
       "generator": "packages/naive/src/engine/generators/connection.ts",
       "writer": "function",
@@ -2791,6 +2894,7 @@
       "layer": "knowledge",
       "function": null,
       "level": "venture",
+      "data": "reference",
       "schema": "packages/naive/src/records/glossary.schema.json",
       "generator": "packages/naive/src/engine/generators/glossary.ts",
       "paths": [
@@ -2812,6 +2916,7 @@
       "layer": "operations",
       "function": "marketing-and-sales",
       "level": "venture",
+      "data": "master",
       "schema": "packages/naive/src/records/marketing-design-system.schema.json",
       "paths": [
         "instance/**/marketing/design-system.json",
@@ -2842,6 +2947,7 @@
       "layer": "operations",
       "function": "marketing-and-sales",
       "level": "venture",
+      "data": "master",
       "schema": "packages/naive/src/records/marketing-brand.schema.json",
       "paths": [
         "instance/**/marketing/brand.json",
@@ -2867,6 +2973,7 @@
       "layer": "purpose",
       "function": "marketing-and-sales",
       "level": "venture",
+      "data": "transactional",
       "schema": "packages/naive/src/records/opportunity.schema.json",
       "generator": "packages/naive/src/engine/generators/opportunity.ts",
       "writer": "function",
@@ -2903,6 +3010,7 @@
       "layer": "operations",
       "function": null,
       "level": "venture",
+      "data": "master",
       "schema": "packages/naive/src/records/public-assets.schema.json",
       "paths": [
         "instance/**/public/assets.json",
@@ -2922,6 +3030,7 @@
       "layer": "evidence",
       "function": "products",
       "level": "venture",
+      "data": "transactional",
       "schema": "packages/naive/src/records/bug.schema.json",
       "generator": "packages/naive/src/engine/generators/bug.ts",
       "paths": [
@@ -2942,6 +3051,7 @@
       "layer": "evidence",
       "function": null,
       "level": "venture",
+      "data": "transactional",
       "schema": "packages/naive/src/records/telemetry.schema.json",
       "form": "json-lines",
       "kind": "log",
@@ -3030,6 +3140,7 @@
       "layer": "knowledge",
       "function": null,
       "level": "venture",
+      "data": "transactional",
       "schema": "packages/naive/src/records/signal.schema.json",
       "generator": "packages/naive/src/engine/generators/signal.ts",
       "kind": "record",
@@ -3061,6 +3172,7 @@
       "layer": "knowledge",
       "function": null,
       "level": "venture",
+      "data": "transactional",
       "schema": "packages/naive/src/records/signal-log.schema.json",
       "generator": "packages/naive/src/engine/generators/signal-log.ts",
       "form": "json-lines",
@@ -3095,6 +3207,7 @@
       "layer": "purpose",
       "function": "strategy",
       "level": "venture",
+      "data": "master",
       "schema": "packages/naive/src/records/competitor.schema.json",
       "generator": "packages/naive/src/engine/generators/competitor.ts",
       "paths": [
@@ -3108,6 +3221,7 @@
       "layer": "purpose",
       "function": "strategy",
       "level": "venture",
+      "data": "derived",
       "schema": "packages/naive/src/records/competitor-signals.schema.json",
       "generator": "packages/naive/src/engine/generators/competitor-signals.ts",
       "kind": "record",
@@ -3175,6 +3289,7 @@
       "layer": "operations",
       "function": null,
       "level": "venture",
+      "data": "master",
       "schema": null,
       "generator": "packages/naive/src/engine/generators/research-program.ts",
       "form": "prose",
@@ -3189,6 +3304,7 @@
       "layer": "knowledge",
       "function": null,
       "level": "venture",
+      "data": "reference",
       "schema": "packages/naive/src/records/recipe.schema.json",
       "generator": "packages/naive/src/engine/generators/recipe.ts",
       "form": "typescript",
@@ -3212,6 +3328,7 @@
       "layer": "evidence",
       "function": null,
       "level": "venture",
+      "data": "reference",
       "schema": "packages/naive/src/records/eval-plan.schema.json",
       "generator": "packages/naive/src/engine/generators/eval-plan.ts",
       "kind": "record",
@@ -3233,6 +3350,7 @@
       "layer": "evidence",
       "function": null,
       "level": "venture",
+      "data": "transactional",
       "schema": "packages/naive/src/records/experiment.schema.json",
       "generator": "packages/naive/src/engine/generators/experiment.ts",
       "form": "json-lines",
@@ -3265,6 +3383,7 @@
       "layer": "knowledge",
       "function": null,
       "level": "venture",
+      "data": "derived",
       "schema": "packages/naive/src/records/reception.schema.json",
       "generator": "packages/naive/src/engine/generators/reception.ts",
       "kind": "record",

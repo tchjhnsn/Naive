@@ -105,6 +105,14 @@ export function pathKind(logicalPath: string, model: KindModel = readDataModel()
   return kinds[0] ?? null;
 }
 
+export type DataCategory = NonNullable<DataModel["records"][number]["data"]>;
+export const DATA_CATEGORIES: readonly DataCategory[] = Object.freeze(["master", "reference", "transactional", "derived"]);
+
+/** What a record type's records are to the business: master, reference, transactional or derived, or null when the type names none or is unknown. */
+export function dataOf(recordType: string, model: Pick<DataModel, "records"> = readDataModel()): DataCategory | null {
+  return model.records.find((r) => r.id === recordType)?.data ?? null;
+}
+
 /** The repository root this module sits in: packages/naive/src/records/ is two folders below it. */
 export const ROOT = fileURLToPath(new URL("../../../..", import.meta.url));
 
