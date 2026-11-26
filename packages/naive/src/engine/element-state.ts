@@ -1,8 +1,10 @@
 // The state, quality and effects of an element (EE-190, step 7 of docs/design/HOOKS_AND_LOOPS_2026-11-26.md). An
 // element is a node of the element graph (element-graph.ts, EE-188): a function or an APQC process group, process or
-// activity that a workflow reaches. Everything here is pure and total, with no I/O, so step 8 can state it in Lean 4
-// without Mathlib: the statechart (`transition`), the capability level from evidence (`levelOf`), and propagation over
-// the feeds edges (`propagate`, `whatIf`). element-effects.ts reads a venture's logs into these inputs.
+// activity that a workflow reaches. Everything here is pure and total, with no I/O: the statechart (`transition`), the
+// capability level from evidence (`levelOf`), and propagation over the feeds edges (`propagate`, `whatIf`).
+// element-effects.ts reads a venture's logs into these inputs. packages/naive/lean/Naive/Elements.lean models
+// `transition`, `levelOf` and `propagate` in Lean 4 without Mathlib and proves their properties (step 8), and
+// element-cases.ts ties the two with cases both must agree on.
 //
 // State. A tagged union with five tags. `degraded` keeps its causes, never empty, sorted by key, and the state it
 // left (started or operating), which it returns to once the last cause clears.
