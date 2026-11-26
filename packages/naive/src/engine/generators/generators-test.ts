@@ -17,6 +17,7 @@ import * as activityAssignments from "./activity-assignments.ts";
 import * as pcf from "./pcf.ts";
 import * as toolCatalog from "./tool-catalog.ts";
 import * as leadPlan from "./lead-plan.ts";
+import * as timeBox from "./time-box.ts";
 import * as rawDump from "./raw-dump.ts";
 import * as triage from "./triage.ts";
 import * as opportunity from "./opportunity.ts";
@@ -39,7 +40,7 @@ writeFileSync(join(v, "venture.json"), JSON.stringify({ id: "kettle" }));
 mkdirSync(join(v, "product/bugs"), { recursive: true });
 writeFileSync(join(v, "product/bugs/save-loses-draft.json"), "{}");
 
-for (const g of [bug, glossary, reference, traceSpan, detector, detectorTrial, connection, capabilityCluster, leadPlan, rawDump, triage, opportunity, supportPolicy, supportCase, validationPlan, gatePolicies, marketAnatomy, industryAnatomy, ventureAnatomy]) t(`${g.record}: describe asks at least one required field`, g.describe().ask.some((q) => q.required));
+for (const g of [bug, glossary, reference, traceSpan, detector, detectorTrial, connection, capabilityCluster, leadPlan, timeBox, rawDump, triage, opportunity, supportPolicy, supportCase, validationPlan, gatePolicies, marketAnatomy, industryAnatomy, ventureAnatomy]) t(`${g.record}: describe asks at least one required field`, g.describe().ask.some((q) => q.required));
 
 const b = bug.draft({ title: "Save loses draft", severity: "P1", found_in: "0.6.0", repro: "open, type, save" }, { venture: v });
 t("bug: draft passes the schema", b.ok);
@@ -113,6 +114,10 @@ t("connection: draft passes the schema with the thesis's defaults", conn.ok && c
 t("connection: a send and a payment with no approval get public-commitment and spend-money", conn.ok && conn.draft?.actions[0].approval === "public-commitment" && conn.draft?.actions[1].approval === "spend-money");
 t("connection: an approval a person gave is never changed, and other actions get none", conn.ok && conn.draft?.actions[2].approval === "spend-money" && conn.draft !== undefined && !("approval" in conn.draft.actions[3]));
 t("connection: no exit plan is refused before the schema", !connection.draft({ ...conn.draft, exit: undefined }).ok);
+const tb = timeBox.draft({ kind: "sprint", title: "Launch week", goal: "Ship the beta", starts: "2026-06-01T00:00:00.000Z", ends: "2026-06-08T00:00:00.000Z", functions: ["products"] });
+t("time-box: draft takes its id from the title, starts active and goes to operations/time-box/<id>", tb.ok && tb.route === "operations/time-box/launch-week" && tb.draft?.status === "active");
+t("time-box: one that ends before it starts, or covers nothing, is refused", !timeBox.draft({ kind: "sprint", title: "x", goal: "y", starts: "2026-06-08T00:00:00.000Z", ends: "2026-06-01T00:00:00.000Z", functions: ["products"] }).ok && !timeBox.draft({ kind: "campaign", title: "x", goal: "y", starts: "2026-06-01T00:00:00.000Z", ends: "2026-06-08T00:00:00.000Z" }).ok);
+t("time-box: a loop mode with no person who set it fails the schema", !timeBox.draft({ kind: "sprint", title: "x", goal: "y", starts: "2026-06-01T00:00:00.000Z", ends: "2026-06-08T00:00:00.000Z", functions: ["products"], loop_mode: "auto" }).ok);
 const lp = leadPlan.draft({ lead: "growth-lead", measures: ["paying-teams"] });
 t("lead-plan: draft takes the portfolio from the role template, no bets and a monthly review", lp.ok && lp.route === "operations/lead/growth-lead"
   && lp.draft.portfolio.join() === "marketing-and-sales,customer-service" && lp.draft.bets.length === 0 && lp.draft.review_cadence === "monthly");

@@ -5,8 +5,9 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { runSync } from "../core/effect/run.ts";
-import { after, due, dueFor, readRuns, recordRun, routeMatches } from "./due.ts";
-import type { DueWorkflow } from "./due.ts";
+import { after, covers, due, dueFor, isOpen, openBox, readRuns, recordRun, routeMatches, timeBoxSpan } from "./due.ts";
+import { plan } from "./loop.ts";
+import type { DueBox, DueWorkflow } from "./due.ts";
 
 let failed = 0;
 const expect = (name: string, ok: boolean, detail: unknown = "") => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${JSON.stringify(detail).slice(0, 600)}`}`); if (!ok) failed++; };
@@ -46,6 +47,38 @@ expect("only writes after its last finished run count", handled["f/triage"].stat
 expect("and none after it means not due", by(due(flows, [{ workflow: "f/triage", at: "2026-06-12T12:00:00.000Z", outcome: "done", by: "a" }], writes, now))["f/triage"].status === "not-due");
 expect("an entry says whether the phase lists its workflow as active", by(due(flows, [], [], now, new Set(["f/intake"])))["f/intake"].in_phase && !fresh["f/intake"].in_phase);
 
+// Time boxes (EE-186): a workflow `during` a sprint is due only while an open sprint covers it.
+const sprintFlows = [w("standup", { kind: "schedule", cadence: "daily", during: "sprint" }), w("launch", { kind: "event", route: "marketing/content", during: "campaign" }), w("intake", { kind: "intake" })];
+const box = (id: string, over: Partial<DueBox> = {}): DueBox => ({ id, kind: "sprint", starts: "2026-06-10T00:00:00.000Z", ends: "2026-06-24T00:00:00.000Z", status: "active", functions: ["f"], ...over });
+expect("a time box is open from its start until its end, while active", isOpen(box("s"), now) && !isOpen(box("s"), "2026-06-24T00:00:00.000Z") && !isOpen(box("s"), "2026-06-09T00:00:00.000Z") && !isOpen(box("s", { status: "closed" }), now) && !isOpen(box("s", { status: "cancelled" }), now));
+expect("a time box covers its functions' workflows and the workflows it names", covers(box("s"), "f/x") && !covers(box("s"), "g/x") && covers(box("s", { functions: undefined, workflows: ["g/x"] }), "g/x"));
+const noBox = by(due(sprintFlows, [], [], now));
+expect("with no open sprint, a workflow during a sprint is not due and says why", noBox["f/standup"].status === "not-due" && /only while a sprint/.test(noBox["f/standup"].why) && noBox["f/standup"].time_box === null, noBox["f/standup"]);
+const inBox = by(due(sprintFlows, [], [], now, new Set(), [box("s1", { loop_mode: "auto", set_by: { person: "Founder", at: "2026-06-09T00:00:00.000Z" } })]));
+expect("inside an open sprint it is due as its kind says, and names the sprint", inBox["f/standup"].status === "due" && /sprint s1 is open until 2026-06-24/.test(inBox["f/standup"].why) && inBox["f/standup"].time_box?.id === "s1" && inBox["f/standup"].time_box?.loop_mode === "auto" && inBox["f/standup"].time_box?.set_by === "Founder", inBox["f/standup"]);
+expect("a sprint does not open a workflow during a campaign", inBox["f/launch"].status === "not-due" && inBox["f/launch"].time_box === null);
+expect("a workflow with no during is not held by time boxes, and still names the box that covers it", inBox["f/intake"].status === "due" && inBox["f/intake"].time_box?.id === "s1");
+const campaignWrites = [{ route: "marketing/content", at: "2026-06-05T00:00:00.000Z" }];
+const camp = (from: string) => by(due(sprintFlows, [], campaignWrites, now, new Set(), [box("c1", { kind: "campaign", starts: from })]))["f/launch"].status;
+expect("during a campaign an event counts only from the campaign's start", camp("2026-06-01T00:00:00.000Z") === "due" && camp("2026-06-10T00:00:00.000Z") === "not-due");
+expect("of two open sprints, the later to start covers it", openBox([box("a"), box("b", { starts: "2026-06-12T00:00:00.000Z" })], "f/x", now)?.id === "b");
+const set = { person: "Founder", at: "2026-06-01T00:00:00.000Z" };
+const since = [{ route: "marketing/content", at: "2026-06-02T00:00:00.000Z" }];
+const both = by(due(sprintFlows, [], since, now, new Set(["f/launch"]), [
+  box("spring", { kind: "campaign", starts: "2026-06-01T00:00:00.000Z", loop_mode: "auto", set_by: set, workflows: ["f/launch"] }),
+  box("focus", { kind: "sprint", starts: "2026-06-12T00:00:00.000Z", loop_mode: "manual", set_by: set, functions: undefined, workflows: ["f/launch"] }),
+]));
+expect("a later sprint that names the workflow sets the mode over an earlier campaign", both["f/launch"].status === "due" && both["f/launch"].time_box?.id === "focus" && both["f/launch"].time_box?.loop_mode === "manual", both["f/launch"]);
+const held = plan([both["f/launch"]], { functions: { f: "auto" } }, new Map(), true)[0];
+expect("the loop follows that later mode and does not start it", held?.action === "leave" && held?.mode === "manual" && held?.from === "time-box", held);
+const focusAuto = by(due(sprintFlows, [], since, now, new Set(), [
+  box("spring", { kind: "campaign", starts: "2026-06-01T00:00:00.000Z", workflows: ["f/launch"] }),
+  box("focus", { kind: "sprint", starts: "2026-06-12T00:00:00.000Z", loop_mode: "auto", set_by: set, functions: undefined, workflows: ["f/launch"] }),
+]));
+const started = plan([focusAuto["f/launch"]], { functions: { f: "manual" } }, new Map(), true)[0];
+expect("a later sprint's mode applies when the earlier campaign sets none", focusAuto["f/launch"].status === "due" && focusAuto["f/launch"].time_box?.id === "focus" && started?.action === "start" && started?.mode === "auto", started);
+expect("a start that is not a time, or an end that is not after it, is refused", timeBoxSpan("tomorrow", "2026-06-02T00:00:00.000Z") !== null && timeBoxSpan("2026-06-02T00:00:00.000Z", "2026-06-01T00:00:00.000Z") !== null && timeBoxSpan("2026-06-01T00:00:00.000Z", "2026-06-01T00:00:00.000Z") !== null && timeBoxSpan("2026-06-01T00:00:00.000Z", "2026-06-02T00:00:00.000Z") === null);
+
 // One venture folder: two functions in Discovery, read from the shipped function modules.
 const dir = mkdtempSync(join(tmpdir(), "naive-due-"));
 try {
@@ -72,6 +105,10 @@ try {
   writeFileSync(join(dir, "provenance.jsonl"), line("write"));
   expect("a write in the provenance log makes the event workflow due", by(runSync(dueFor(dir, now)))["customer-service/case-triage"].status === "due");
 
+  mkdirSync(join(dir, "operations/time-boxes"), { recursive: true });
+  writeFileSync(join(dir, "operations/time-boxes/launch.json"), JSON.stringify({ id: "launch", kind: "sprint", title: "Launch", goal: "Ship it", starts: "2026-06-01T00:00:00.000Z", ends: "2026-06-30T00:00:00.000Z", status: "active", functions: ["strategy"] }));
+  const boxed = by(runSync(dueFor(dir, now)));
+  expect("an open sprint in the venture's folder names the workflows it covers", boxed["strategy/intake"].time_box?.id === "launch" && boxed["customer-service/intake"].time_box === null, boxed["strategy/intake"]);
   const cli = (...a: string[]) => spawnSync(process.execPath, ["packages/naive/src/engine/due.ts", dir, ...a], { encoding: "utf8" });
   const listed = cli("--at", now, "--json");
   const parsed = JSON.parse(listed.stdout) as { at: string; due: { workflow: string; status: string }[] };

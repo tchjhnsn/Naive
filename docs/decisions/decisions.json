@@ -2580,6 +2580,26 @@
       ]
     },
     {
+      "id": "EE-186",
+      "date": "2026-11-26",
+      "status": "in-force",
+      "decision": "A campaign or a sprint is a time box, a venture record type `time-box` at operations/time-boxes/<id>.json (route operations/time-box/[id]), in the operations layer with function null, data transactional and writer person. It names its kind (campaign or sprint), a goal, `starts`, `ends`, a status (active, closed or cancelled), the functions or workflows it covers and an optional `loop_mode`, which requires `set_by`. It is open while active, from `starts` until `ends`. A function workflow's trigger may say `during` a campaign or a sprint: then it is due only while such a time box covers it, and an event counts only from the time box's start (packages/naive/src/engine/due.ts). An open time box's loop mode applies to the workflows it covers, below a mode set for a workflow by name and above the function's and the venture's, and only with a person in `set_by` (packages/naive/src/engine/loop.ts). The shipped workflow marketing-and-sales/campaign-daily-review runs daily during a campaign. A time box's measures, a check that it names workflows the venture has, and a command to open or close one are not built.",
+      "why": "The founder asked on 2026-11-26 whether the hooks and loops plan handles campaigns and sprints, and wanted some work proactive and some patient. A campaign or sprint is bounded work with its own pace: work that only makes sense while it runs, and a mode a person picks for that stretch, which ends when it ends.",
+      "related": [
+        "EE-182",
+        "EE-183",
+        "EE-184"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/records/time-box.schema.json",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
       "id": "EE-154",
       "date": "2026-11-19",
       "status": "in-force",
