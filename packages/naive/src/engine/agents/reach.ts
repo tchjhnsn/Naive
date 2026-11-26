@@ -1,7 +1,7 @@
 // A function agent's write reach, derived from Naive's own data, and the router's rule over it. function-spec.ts
 // builds its spec's writes from functionWrites here, so the spec and the rule the router applies are one list.
 //
-//   functionWrites("finance")              // ["decisions/*", "finance/budget/*", ..., "money/*"]
+//   functionWrites("finance")              // ["decisions/*", "operations/handoff/*", "finance/budget/*", ..., "money/*"]
 //   functionOfAgent("finance-agent")       // "finance"; null for a lead, a researcher or any other role
 //   reachRefusal({ role, route, table })   // a refusal naming the agent, the route and its patterns, or null
 
@@ -25,7 +25,8 @@ export function functionOfAgent(role: string | undefined | null): string | null 
 }
 
 /**
- * The write globs of one function's agent: decisions/* (to raise a question) plus every concrete write route of a
+ * The write globs of one function's agent: decisions/* (to raise a question), operations/handoff/* (to hand work to
+ * another function, as its workflows do; the handoff claim rules then limit who edits it) plus every concrete write route of a
  * record type the data model gives this function, [id] as *, minus any route whose files include a team-plan file
  * (PLANS). The record type's function, not the folder its file sits in, decides. Derived once per process.
  */
@@ -37,7 +38,7 @@ export function functionWrites(fn: string): string[] {
   const all: { route: string; record?: string; actions?: string[]; files?: string[] }[] = routes();
   const owned = all.filter((r) => r.actions?.includes("write") && r.files?.length && r.record && mine.has(r.record)
     && !r.files.some((f) => PLANS.includes(f)));
-  const writes = ["decisions/*", ...[...new Set(owned.map((r) => r.route.replace("[id]", "*")))].sort()];
+  const writes = ["decisions/*", "operations/handoff/*", ...[...new Set(owned.map((r) => r.route.replace("[id]", "*")))].sort()];
   cache.set(fn, writes);
   return writes;
 }
@@ -54,5 +55,5 @@ export function reachRefusal({ role, route, table }: { role?: string | null; rou
   const pattern = table ? table.replace(/\[id\]/g, "*") : null;
   if (writes.some((g) => routeGlob(g).test(route) || g === pattern)) return null;
   return { then: "refuse", rule: "agent-reach", source: "function agent", matched: ["agent-reach"], writes,
-    why: `${role} may not write ${route}: a function agent writes only its reach (decisions plus the routes of the record types the data model gives ${fn}), which is ${writes.join(", ")}; hand the change to the function that owns ${route} through a handoff, or a person writes it` };
+    why: `${role} may not write ${route}: a function agent writes only its reach (decisions, handoffs and the routes of the record types the data model gives ${fn}), which is ${writes.join(", ")}; hand the change to the function that owns ${route} through a handoff, or a person writes it` };
 }
