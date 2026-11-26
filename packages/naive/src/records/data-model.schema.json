@@ -267,6 +267,15 @@
           "kind": {
             "$ref": "#/$defs/kind"
           },
+          "data": {
+            "enum": [
+              "master",
+              "reference",
+              "transactional",
+              "derived"
+            ],
+            "description": "What the records are to the business, in data management's terms (DAMA-DMBOK). master: a lasting fact about the business or a party or thing it deals with, kept as one current record that is edited, such as a customer, a product or the goals. reference: a list or setting other records are read against, such as the glossary or naive.config.json. transactional: one event or one piece of work at a time, which accumulates and is not rewritten into another, such as a support case, a handoff, an interview or a signal. derived: computed from other records and never a source of truth, such as a summary. packages/naive/src/checks/check-data-model.ts requires it on every workspace and venture record type Naive ships, and holds a log to transactional. An app's record types may leave it out. Nothing reads it yet but the check and dataOf in packages/naive/src/records/index.ts"
+          },
           "writer": {
             "enum": [
               "any",
