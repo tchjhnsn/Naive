@@ -246,6 +246,7 @@ const cheap: Step[] = [
   ["packages/naive/src/terms/ontology.md matches packages/naive/src/terms/ontology.json (regenerate with node packages/naive/src/checks/check-nouns.ts --md)", "node", ["packages/naive/src/checks/check-nouns.ts", "--md"], rendered("packages/naive/src/terms/ontology.md", "\n### System")],
   ["layer relationships in docs/design/LAYERS_AND_KITS_2026-10-27.md match the kits (regenerate with node packages/naive/src/checks/check-data-model.ts --md)", "node", ["packages/naive/src/checks/check-data-model.ts", "--md"], rendered("docs/design/LAYERS_AND_KITS_2026-10-27.md", "### Layer relationships")],
   ["docs/reference/ROUTES.md matches the kits (regenerate with node packages/naive/src/router/router.ts --md)", "node", ["packages/naive/src/router/router.ts", "--md"], rendered("docs/reference/ROUTES.md", "## Routes")],
+  ["packages/naive/lean/Naive/Generated/ElementCases.lean matches packages/naive/src/engine/element-state.ts (regenerate with node packages/naive/src/engine/element-cases.ts; lake build checks the Lean model against it, EE-190)", "node", ["packages/naive/src/engine/element-cases.ts", "--check"]],
   ["packages/naive/lean/Naive/Generated/Ontology.lean matches packages/naive/src/terms/ontology.json (regenerate with node packages/naive/src/terms/gen-concepts.ts)", "node", ["packages/naive/src/terms/gen-concepts.ts", "--check"]],
 ];
 

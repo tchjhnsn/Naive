@@ -62,7 +62,7 @@ One pull request each.
 5. Owners. Not built: one accountable owner per element, inherited from its parent, and a check that nothing is unowned.
 6. The element graph (EE-188). Built: `naive graph [--function <id>] [--element <id>] [--json] [--mermaid]`, described below.
 7. State and quality (EE-190). Built: `naive effects [<element>] [--at <iso>] [--json]`, described below.
-8. Proofs. Not built: Lean proofs of the transition function and of propagation, of the properties listed at the end of the next section.
+8. Proofs (EE-190, EE-188). Built: `packages/naive/lean/Naive/Elements.lean` proves the properties listed at the end of the next section, described under "Proofs" below.
 
 ## The loop and its modes
 
@@ -136,7 +136,7 @@ The graph answers `upstream(element)` and `downstream(element)`, the routes some
 
 ## State, quality and effects
 
-`packages/naive/src/engine/element-state.ts` holds the rules. Each is a pure, total function with no I/O, written so step 8 can state it in Lean 4 without Mathlib. `packages/naive/src/engine/element-effects.ts` reads a venture into them, and `naive effects` prints the result.
+`packages/naive/src/engine/element-state.ts` holds the rules. Each is a pure, total function with no I/O, and step 8 states it in Lean 4 without Mathlib (see "Proofs" below). `packages/naive/src/engine/element-effects.ts` reads a venture into them, and `naive effects` prints the result.
 
 ### The statechart
 
@@ -234,9 +234,41 @@ The Lean statements should take states, events and causes as inductive types, a 
 11. Least fixpoint: the result is the least fixpoint of one round above the own states; in particular, with no element down in its own state, no element is degraded.
 12. Determinism: the result is a function of the sets of elements and edges, not of their order.
 
+### Proofs
+
+`packages/naive/lean/Naive/Elements.lean` models `element-state.ts` in core Lean 4, with no Mathlib. States, events and causes are inductive types; ids are natural numbers numbered in string order; a cause key is a kind rank and an id, ordered as the TypeScript key strings are; elements are `Fin n`, and the feeds are a list of pairs. Each round of propagation reads only the round before, and a round's states depend on the previous round only through each element's down kind, level and roots, so the model iterates that summary and derives each effective state once from the settled summary.
+
+```mermaid
+flowchart LR
+  TS[element-state.ts] --> G[element-cases.ts]
+  G --> C[Generated/ElementCases.lean: TypeScript results]
+  M[Elements.lean: the model and the theorems] --> C
+  C --> B[lake build: decide checks each case]
+  G --> K[--check: the file matches the TypeScript]
+```
+
+What is proved, for every state, event and graph, with the theorem names:
+
+1. Totality and well-formed results: `transition` is total by construction, `transition_deterministic`, and `transition_wf` (a degraded result has a non-empty cause list sorted strictly by key, so keys are unique; `was` is started or operating by its type).
+2. `retired_absorbing` and `retire_retires`.
+3. `absent_stays`.
+4. `brings_degrades`.
+5. `upstream_inflationary`.
+6. `clear_last` and `clear_absent_key`.
+7. `settles`: after `height` rounds (`n * (1 + n)` plus the sum of own levels) a round changes nothing, which with levels 0 to 5 is within the TypeScript bound (`height_le_ts_bound`); `propagate_fixpoint`; and `ts_loop_agrees`, the first round that changes nothing, where the TypeScript stops, is the result.
+8. `propagate_monotone`, stated on each element's down kind, degraded or not, roots and level.
+9. `down_upstream_degrades` and `feeds_down_degrades`, with the cause `upstream:<element>`.
+10. `level_le_own`, `level_le_upstream` and `level_greatest`.
+11. `propagate_least` (every fixpoint of a round is at least as harmed as the result) and `healthy_stays_healthy`.
+12. `edge_order_irrelevant`: edge lists with the same members, in any order and with repeats, give the same result; elements are `Fin n`, the order the TypeScript sorts them into.
+
+Also `levelOf_le_cap`: no evidence gives a level above 3. `packages/naive/src/engine/element-cases.ts` runs 120 transition cases and 6 propagation cases through the TypeScript and writes them to `packages/naive/lean/Naive/Generated/ElementCases.lean`, where `decide` checks the model gives the same results, so a change on either side fails `lake build` or `--check`.
+
+Not proved: monotonicity on the full cause lists of the effective states (property 8 is proved on the summary); `whatIf`, `reachable` and `capped_by`, which are not modelled; feeds that name an unknown element, which `Fin n` cannot express and the TypeScript drops; and that the TypeScript is the model, which the cases check rather than prove.
+
 ## Not built
 
-- Everything in steps 4, 5 and 8.
+- Everything in steps 4 and 5.
 - In step 7: a record of retirement (no element is derived retired), optional reads (every feed counts as a need), element measures for capability levels 4 and 5, FMEA severity, occurrence and detection ratings, and an overdue event workflow (only schedules become overdue).
 - The element graph covers the shipped function modules only. It does not narrow to the functions a venture lists, read a venture's own workflows, or count reads and writes by people and record triggers that no workflow declares.
 - A mode per time box (step 4 adds the time box). Retries with backoff inside one tick. A durable watch on `workflow/DurableClock`. Starting more than one workflow at once. A hosted starter: with `NAIVE_RUNTIME=hosted` there is no `NAIVE_AGENT_CMD`, so a start is blocked.

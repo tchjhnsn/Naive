@@ -1,6 +1,8 @@
 import Naive.Concept
 import Naive.Detection
+import Naive.Elements
 import Naive.Founder
+import Naive.Generated.ElementCases
 import Naive.Generated.Ontology
 import Naive.Layer
 import Naive.Recipes
