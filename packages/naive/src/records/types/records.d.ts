@@ -6813,7 +6813,7 @@ export type Venture = {
   name: string;
   /** venture: building a venture, whose root and strategic foundation fail closed. product: a product without a venture, which fails open (EE-054). */
   kind?: "venture" | "product";
-  /** Whether agents are modeling this venture or a person is running it (EE-188). observed means agents are modeling it, and the people, roles and org links in it are subjects. run means a person is running it on Naive. Left out, the record was written before this field and is not read as run. This field is not the loop mode in naive.config.json (manual, ask or auto) and not the mode on people.json (solo or team). */
+  /** Whether the venture is observed or a person is running it (EE-193). observed means an outside-in model of a company built from public information, and the people, roles and org links in it are subjects. run means a person is running it on Naive. Left out, the record was written before this field and is not read as run. This field is not the loop mode in naive.config.json (manual, ask or auto) and not the mode on people.json (solo or team). */
   mode?: "observed" | "run";
   /** The venture type, an id from packages/naive/src/engine/venture-types.json: what kind of venture this is (a software startup, a VC fund), which decides its starting packages, first decisions, functions and roles (EE-082) */
   type?: string;

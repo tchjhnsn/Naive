@@ -1,8 +1,8 @@
 import Naive.Concept
 
 /-
-  Conduct (EE-188, docs/design/OBSERVED_VENTURES_2026-11-26.md). A venture is observed when agents are
-  modeling it, and run when a person is running it. The two are disjoint. These theorems hold for every
+  Conduct (EE-193, docs/design/OBSERVED_VENTURES_2026-11-26.md). A venture is observed when it is an
+  outside-in model of a company built from public information, and run when a person is running it. The two are disjoint. These theorems hold for every
   fact, not a sample. They are a hand copy of the properties in packages/naive/src/terms/terms.ts.
   A missing field is not a fact here. The check reads absence as unknown and does not read it as run.
 -/

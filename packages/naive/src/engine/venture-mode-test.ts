@@ -87,6 +87,8 @@ const explicit = create("explicit", ["--mode", "observed"]);
 expect("create-venture --mode observed writes observed", explicit.r.status === 0 && load(explicit.dir).mode === "observed", explicit.r.stderr);
 const clash = create("clash", ["--observed", "--mode", "run"]);
 expect("create-venture refuses --observed with --mode run", clash.r.status !== 0 && !existsSync(join(clash.dir, "venture.json")), clash.r.stderr);
+const leftover = create("leftover", ["--modeled"]);
+expect("create-venture --modeled is refused and writes nothing", leftover.r.status !== 0 && leftover.r.stderr.includes("unknown flag --modeled") && !existsSync(join(leftover.dir, "venture.json")), leftover.r.stderr);
 
 rmSync(base, { recursive: true, force: true });
 if (failed) process.exit(1);

@@ -429,7 +429,7 @@ export function authorshipCases(seed = 59): Authorship[] {
   });
 }
 
-/** Whether agents are modeling one venture or a person is running it (EE-188). A field the record does not
+/** Whether a venture is an outside-in model of a company or a person is running it (EE-193). A field the record does not
  *  hold is not a fact here. The judge reads a missing mode as unknown. */
 export type Conduct = Base & {
   observed: boolean;

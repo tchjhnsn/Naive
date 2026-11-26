@@ -70,6 +70,7 @@ const positional = argv.filter((a, i) => !a.startsWith("--") && !(i > 0 && value
 const bold = (s) => (process.stdout.isTTY ? `\x1b[1m${s}\x1b[22m` : s);
 const cyan = (s) => (process.stdout.isTTY ? `\x1b[36m${s}\x1b[39m` : s);
 const fail = (m) => { console.error(m); process.exit(1); };
+if (argv.includes("--modeled")) fail("unknown flag --modeled");
 const modeAt = argv.indexOf("--mode");
 const askedMode = modeAt < 0 ? undefined : argv[modeAt + 1];
 if (modeAt >= 0 && askedMode !== "observed" && askedMode !== "run") fail(`unknown mode ${askedMode ?? ""}: observed or run`);
