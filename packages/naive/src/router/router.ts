@@ -47,6 +47,8 @@ import { logWrite as prov, schemaFailure } from "./write-effects.ts";
 import type { Entry } from "../core/provenance.ts";
 import { address } from "../store/connectors/contract.ts";
 import { decisionFile, holding, locked, undecidedFor } from "../engine/decisions.ts";
+// Goal ledger hook (EE-210): a goal's lifecycle is a person's (packages/naive/src/engine/goals.ts).
+import { goalSettles, goalWriteRefusal } from "../engine/goals.ts";
 import { timeBoxSpan } from "../engine/time-box-span.ts";
 import { configOf, hold } from "../engine/gate.ts";
 import { blocked as betaBlocked } from "../engine/beta-gate.ts";
@@ -88,7 +90,7 @@ import { coreOf, statementsIn, withCore } from "../engine/venture-core.ts";
 import { telosView } from "../../../../frameworks/telos/adapter.ts";
 import { migrated, scale } from "../engine/canonical.ts";
 import { schemaNameOf } from "../records/index.ts";
-import type { DecisionRecord, TeamPlan, Venture } from "../records/types/records.d.ts";
+import type { DecisionRecord, Goal, TeamPlan, Venture } from "../records/types/records.d.ts";
 import type { RecordRoute, Route } from "../records/routes/routes.ts";
 import {
   PHASES, allowed, deepItem, defaultWorkspace, files, gateOf, glob, groups, kits, load, repo, resolve, routes, skillsOf, ventureDir, ventures,
@@ -512,6 +514,16 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
     // has claimed is the exception: the claim rule above already limits the claimant to progress and evidence.
     const outOfReach = claimed ? null : reachOfWrite({ r, route, projector, actor, acting: !!actingAgent(provenance.agent?.id), role: actor_id });
     if (outOfReach) return { ...outOfReach, ...deprecated };
+    // Goal ledger hook (packages/naive/src/engine/goals.ts, EE-210): a goal is a durable record. Nobody breaks its
+    // lifecycle (a mis-set status is corrected by reopening the goal to active), and an agent does not rewrite the
+    // wording a person adopted; it writes a new goal that supersedes the old one. Refused before the schema. The
+    // other half is below: a write that settles a goal is held as a draft whatever the gate says, as a write that
+    // settles a decision is, so only a person's acceptance puts it live.
+    const storedGoal = r.record === "goal" && !remote && inp && existsSync(ventureFile(dir, file)) ? load(ventureFile(dir, file)) as Goal : null;
+    if (r.record === "goal" && inp) {
+      const why = goalWriteRefusal({ stored: storedGoal, input: inp as Goal, person: actor === "person" && !actingAgent(provenance.agent?.id) });
+      if (why) return { ok: false, error: why, ...deprecated };
+    }
     if (prose) return { ...(await writeProse({ dir, r, route, requested, file, input, actor, actor_id, via, provenance, store, remote, src, params, projector })), ...deprecated };
     // A raw source is written with its text in one step (EE-192). Create-only, duplicate text and the allowed-source term are decided before either file is written.
     if (r.record === "raw-source") {
@@ -578,7 +590,11 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
     // Rewriting a decided record, to reopen it say, unsettles it, which is a person's act too (approve
     // would otherwise freeze its reasons afresh and clear their staleness).
     const unsettles = isDecision && !remote && existsSync(ventureFile(dir, file)) && (load(ventureFile(dir, file)) as DecisionRecord).status === "decided";
-    const settles = isDecision && (unsettles || rec.status === "decided" || rec.approved_by != null || (isObj(rec.provenance) && rec.provenance.approved_by != null));
+    // Only a person settles a goal either (EE-210): an agent's write that changes where a goal stands (its status,
+    // who set it, its result or the goal that replaced it) is a draft whatever the goal's class, so a person
+    // accepting the draft is the person's act. An agent proposing a goal is not settling one.
+    const settles = (isDecision && (unsettles || rec.status === "decided" || rec.approved_by != null || (isObj(rec.provenance) && rec.provenance.approved_by != null)))
+      || (r.record === "goal" && !remote && goalSettles(storedGoal, rec as Goal));
     // Known gap A: a decided decision names who decided it, whoever writes it; a person's write without one is refused.
     if (isDecision && actor === "person" && rec.status === "decided" && !(isObj(rec.provenance) && rec.provenance.approved_by)) return { ok: false, error: `a decided decision names who decided it (provenance.approved_by); approve it with mentura decide ${rec.id ?? "<id>"} --by <name>` };
     // The projector's write to a projection record is never a draft: no one but the projector could accept it.
