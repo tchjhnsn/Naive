@@ -1828,7 +1828,7 @@
     "packages/naive/src/interfaces/tests/freshness-test.ts"
    ],
    "page": "get-started/revalidating",
-   "note": "Profiles follow cacheLife (stale, revalidate, expire) and add per_phase and live. The defaults are feedback 30d/90d, research 90d/365d, assumption (per phase), foundation (per phase), live, max and none. A venture overrides them under freshness in naive.config.json, by record type or by route prefix, and an undefined profile or a bad duration is refused. mentura phase <phase> --as person records the phase change (it refuses agents and adds an empty core skeleton when leaving Discovery, as init does), so per-phase records go stale. A phase changed by hand in venture.json counts from the file's mtime, with a warning. 'Now' is an input: --now <iso|+100d> or NAIVE_NOW."
+   "note": "Profiles follow cacheLife (stale, revalidate, expire) and add per_phase and live. The defaults are feedback 30d/90d, research 90d/365d, assumption (per phase), foundation (per phase), live, max and none. A venture overrides them under freshness in naive.config.json, by record type or by route prefix, and an undefined profile or a bad duration is refused. mentura phase <phase> with MENTURA_ACTOR=person records the phase change (--as person alone does not make the process a person; it refuses an agent and an unset process, and adds an empty core skeleton when leaving Discovery, as init does), so per-phase records go stale. A phase changed by hand in venture.json counts from the file's mtime, with a warning. 'Now' is an input: --now <iso|+100d> or NAIVE_NOW."
   },
   {
    "id": "V-3",
