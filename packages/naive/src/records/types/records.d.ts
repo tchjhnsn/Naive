@@ -544,6 +544,10 @@ export type CompetitorSignals = {
   p_raise_90d?: number;
   /** Product launches, one per launch (fold append) */
   launches?: CompetitorSignalsEntry[];
+  /** Published prices, one per plan and amount (fold append) */
+  prices?: CompetitorSignalsEntry[];
+  /** Job postings, one per title (fold append) */
+  hiring?: CompetitorSignalsEntry[];
   [key: string]: unknown;
 };
 
@@ -555,7 +559,7 @@ export type CompetitorSignalsEntry = {
   [key: string]: unknown;
 };
 
-/** A person's master record for one competitor, at <venture>/competitors/<id>.json: a company serving the same customers with an offering that can replace the venture's (Porter 1980). A person owns it. The signal projector may create it once when it is missing, from a signal's organization part, and never writes it again (everything-ecosystem docs/design/SIGNAL_LIBRARY_2026-11-06.md). What signals say about the competitor sits beside it in competitors/<id>/signals.json, which only the projector writes. Nothing projects yet: that is a later build item. */
+/** A person's master record for one competitor or one alternative, at <venture>/competitors/<id>.json. A competitor is a company serving the same customers with an offering that can replace the venture's (Porter 1980). An alternative is what the customer does in its place, doing nothing included (kind alternative). A person owns it. Besides the name it may hold what the offering is, whom it is for, its published price, what it does and does not do next to the venture's product, the sources read with their dates, the basis of the claim, the stance and a prediction of its next move; all of these are optional. The signal projector may create it once when it is missing, from a signal's organization part, and never writes it again (everything-ecosystem docs/design/SIGNAL_LIBRARY_2026-11-06.md). What signals say about the competitor sits beside it in competitors/<id>/signals.json, which only the projector writes. */
 export type Competitor = {
   $schema?: string;
   /** The file name, and the subject of the signals about it */
@@ -563,8 +567,43 @@ export type Competitor = {
   name: string;
   /** The competitor's web domain */
   domain?: string;
+  /** competitor: a company whose offering can replace the venture's. alternative: what the customer does in its place, such as nothing, a spreadsheet or hiring someone. A record without it is a competitor */
+  kind?: "competitor" | "alternative";
+  /** What the claim that customers weigh this against the venture rests on: an interview record, a public source, or a guess no customer has confirmed */
+  basis?: "interview" | "public-source" | "guess";
+  /** What it is, in one or two plain sentences */
+  offering?: string;
+  /** Whom it is for, as its own pages say */
+  for?: string;
+  /** Its published price, as stated on the page read */
+  price?: {
+    /** The price in the page's own terms, or that none is published */
+    text: string;
+    url?: string;
+    /** The date the page was read */
+    read?: string;
+  };
+  /** What it does that bears on the venture's product */
+  does?: string[];
+  /** What its pages do not mention or its product does not do, next to the venture's product. Absence on a page is not proof of absence in the product */
+  does_not?: string[];
+  /** The public sources read for this record */
+  sources?: {
+    url: string;
+    /** The date it was read */
+    read: string;
+    /** Who read it: a person's id or an agent's role */
+    by?: string;
+  }[];
   /** How the venture stands toward it, in a person's words */
   stance?: string;
+  /** What the competitor is likely to do next, read from its goals, assumptions, strategy and capabilities (Porter 1980, the four corners) */
+  next_move?: {
+    prediction: string;
+    /** What would show the prediction wrong */
+    wrong_if?: string;
+    written?: string;
+  };
   notes?: string;
   /** The signal the projector created this record from, when a person did not write it first */
   created_from?: SignalAddress;

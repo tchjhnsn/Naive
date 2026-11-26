@@ -36,7 +36,7 @@
         }
       },
       "then": "project",
-      "note": "A well-rated report about a company starts its master record, once, when it is missing; a person then owns it. It hears the org part of every competitor-funding and product-launch signal. A venture that reads a whole-market library and wants only the competitors it names turns it off with listeners_off in naive.config.json."
+      "note": "A well-rated report about a company starts its master record, once, when it is missing; a person then owns it. It hears the org part of every competitor-funding, product-launch, price-change and job-posting signal. A venture that reads a whole-market library and wants only the competitors it names turns it off with listeners_off in naive.config.json."
     },
     {
       "id": "track-competitors",
@@ -91,6 +91,58 @@
       "note": "Records each launch once, with first_seen and last_seen."
     },
     {
+      "id": "track-prices",
+      "hears": "price-change@^1",
+      "consumer": {
+        "route": "competitors/[id]/signals"
+      },
+      "criterion": {
+        "rating": {
+          "reliability": "C",
+          "credibility": 3
+        },
+        "predicates": [
+          {
+            "id": "known-competitor",
+            "field": "subject",
+            "op": "in",
+            "value": {
+              "ids": "competitors"
+            },
+            "why": "Only companies a person or a signal already made a competitor"
+          }
+        ]
+      },
+      "then": "project",
+      "note": "Records each published price once per plan and amount, so a changed price is a new entry."
+    },
+    {
+      "id": "track-hiring",
+      "hears": "job-posting@^1",
+      "consumer": {
+        "route": "competitors/[id]/signals"
+      },
+      "criterion": {
+        "rating": {
+          "reliability": "C",
+          "credibility": 3
+        },
+        "predicates": [
+          {
+            "id": "known-competitor",
+            "field": "subject",
+            "op": "in",
+            "value": {
+              "ids": "competitors"
+            },
+            "why": "Only companies a person or a signal already made a competitor"
+          }
+        ]
+      },
+      "then": "project",
+      "note": "Records each job title once, with first_seen and last_seen."
+    },
+    {
       "id": "rival-raised",
       "hears": "competitor-funding@^1",
       "consumer": {
@@ -142,6 +194,32 @@
       },
       "then": "revalidate",
       "note": "A launch may change how the venture stands toward the competitor, so it marks the person's master record stale for them to review. The type's max_age (60 days) applies."
+    },
+    {
+      "id": "price-revalidates-stance",
+      "hears": "price-change@^1",
+      "consumer": {
+        "route": "competitors/[id]"
+      },
+      "criterion": {
+        "rating": {
+          "reliability": "C",
+          "credibility": 3
+        },
+        "predicates": [
+          {
+            "id": "known-competitor",
+            "field": "subject",
+            "op": "in",
+            "value": {
+              "ids": "competitors"
+            },
+            "why": "A price change by a company the venture competes with"
+          }
+        ]
+      },
+      "then": "revalidate",
+      "note": "A price change may change how the venture stands toward the competitor, so it marks the person's master record stale for them to review. The type's max_age (90 days) applies."
     }
   ],
   "use_model": [],
