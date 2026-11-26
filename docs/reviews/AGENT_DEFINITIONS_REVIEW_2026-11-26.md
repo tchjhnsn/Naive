@@ -183,3 +183,5 @@ node packages/naive/src/checks/check-delegation.ts
 node packages/naive/src/checks/check-docs-claims.ts
 node packages/naive/src/checks/check-types.ts
 ```
+
+One note for anyone verifying from a git worktree under `.claude/`: `packages/naive/src/checks/test.ts` reports `FAIL check-data-model passes on the repository` there, and it is an artifact of the path, not of this change. Its `copy` helper filters out any source path containing a `.claude` segment, so when the checkout itself sits under one the filter rejects the root and the copy is empty. Run it from a checkout whose path has no `.claude` segment and all 151 cases pass. This is unrelated to agent definitions and was left alone.
