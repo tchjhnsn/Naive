@@ -126,6 +126,8 @@ The tests and the example checks run on example workspaces this repository owns,
 
 The lifecycle and need-now read the phases (their names, questions and gates) from the phase modules through [`packages/naive/src/phases/phases.ts`](../phases/README.md) (EE-126); a lifecycle playbook names a gate only when it renames the phase module's. `packages/naive/src/engine/generators/phase-module.ts` drafts a phase module's `phase.json`.
 
+[`lifecycle.ts`](./lifecycle.ts) records a phase change and a met exit criterion as the process from [`authorFromProcess`](../terms/authorship.ts) (EE-187). An agent process is refused before any provenance line, and the phase stays put. A person process is recorded as that person: `MENTURA_ACTOR_ID` when it is set, otherwise `--by`.
+
 The engine's modules (decisions, freshness, generators, lifecycle, upgrades, user frameworks, workspace) validate a record in process with `validateFile` or `validateValue` from [`packages/naive/src/records/validate.ts`](../records/README.md). None of them starts Python.
 
 ## Decision scores

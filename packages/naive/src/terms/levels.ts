@@ -1,6 +1,6 @@
 // The levels terms are defined at, each with its facts and a seeded case generator. A term is cross-run only
 // against terms at its own level; a relation across levels needs a lift (a session part_of a relationship),
-// which is named, not guessed.
+// which is named, not guessed. The authorship level holds faithful author (EE-187): one write, with no names.
 
 import { rng, type Base } from "./engine.ts";
 import { namesBetween, type Target } from "./relations.ts";
@@ -380,6 +380,47 @@ export function evalPlanCases(seed = 47): EvalPlan[] {
       readCut: b(0.92) ? devStart - 1 : holdStart + 1,
       priorHoldoutEnd: b(0.5) ? null : b(0.9) ? Math.floor(r() * devStart) : holdStart + 200,
       holdoutChecks: b(0.95) ? 1 + Math.floor(r() * 3) : 0,
+    };
+  });
+}
+
+/** One write: the process kind, the kind written on the line, and whether the subject was copied in as the author.
+ *  Names stay out of the facts. */
+export type Authorship = Base & {
+  processPerson: boolean;
+  processAgent: boolean;
+  processUnverified: boolean;
+  writtenPerson: boolean;
+  writtenAgent: boolean;
+  writtenUnverified: boolean;
+  subjectCopied: boolean;
+};
+
+/** A quarter of the cases are faithful. The other three quarters break one property each, so each check fails
+ *  on its own and a faithful write still passes. */
+export function authorshipCases(seed = 59): Authorship[] {
+  const r = rng(seed);
+  const b = (p = 0.5) => r() < p;
+  const pick = (): number => Math.floor(r() * 3);
+  return Array.from({ length: N }, () => {
+    const process = [false, false, false];
+    process[pick()] = true;
+    const written = [...process];
+    const which = Math.floor(r() * 4);
+    let subjectCopied = false;
+    if (which === 1) {
+      if (b()) { process[0] = true; process[1] = true; }
+      else { process[0] = false; process[1] = false; process[2] = false; }
+    } else if (which === 2) {
+      const w = pick();
+      written[0] = w === 0; written[1] = w === 1; written[2] = w === 2;
+      if (written[0] === process[0] && written[1] === process[1] && written[2] === process[2]) written[0] = !written[0];
+    } else if (which === 3) subjectCopied = true;
+    return {
+      confirmed: b(0.9), label: ["author", "Faithful author", "agent", "subject", undefined][Math.floor(r() * 5)],
+      processPerson: process[0], processAgent: process[1], processUnverified: process[2],
+      writtenPerson: written[0], writtenAgent: written[1], writtenUnverified: written[2],
+      subjectCopied,
     };
   });
 }

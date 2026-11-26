@@ -2094,6 +2094,52 @@
         "Murphy and Winkler, A general framework for forecast verification (1987)",
         "everything-ecosystem docs/design/AUTORESEARCH_RECORDS_2026-11-06.md"
       ]
+    },
+    {
+      "id": "faithful-author",
+      "label": "Faithful author",
+      "form": "compound",
+      "level": "authorship",
+      "kind": "act",
+      "labels": {
+        "designation": "term",
+        "scope": "shared",
+        "grade": "standard",
+        "origin": {
+          "kind": "adopted",
+          "quote": "An agent is something that bears some form of responsibility for an activity taking place, for the existence of an entity, or for another agent's activity."
+        }
+      },
+      "meaning": "The process that wrote a record, one of person, agent or unverified, recorded as that same kind. The subject of the record is not copied in as the author.",
+      "status": "proposed",
+      "hash": "d61e460102073ead",
+      "properties": [
+        {
+          "id": "A1",
+          "says": "the process is exactly one kind"
+        },
+        {
+          "id": "A2",
+          "says": "the written kind matches"
+        },
+        {
+          "id": "A3",
+          "says": "subjectCopied is false"
+        }
+      ],
+      "rule": "every property, and P7 (confirmed facts)",
+      "valid": true,
+      "passes": 4611,
+      "relations": {},
+      "predictions": [],
+      "lean": [
+        "unconfirmed_not_author",
+        "subject_not_author"
+      ],
+      "sources": [
+        "W3C PROV-O (2013): prov:Agent",
+        "EE-187"
+      ]
     }
   ],
   "fixtures": [

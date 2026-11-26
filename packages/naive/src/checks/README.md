@@ -11,6 +11,7 @@ The checkers and lints. A checker reads a workspace, a venture or the repository
 | Path | Holds |
 |---|---|
 | [`check-assets.ts`](./check-assets.ts) | Checks each venture's public/ assets (packages/naive/src/engine/assets.ts). |
+| [`check-authorship.ts`](./check-authorship.ts) | Faithful author (EE-187). Judges one write through the term engine: the process is exactly one kind, the written kind matches, and the subject was not copied in. It reads no venture. |
 | [`check-boundary.ts`](./check-boundary.ts) | The boundary between Naive and the apps that use it (EE-041, EE-118). It skips `repos/`, the vendored reference source (AGENTS.md, Vendored repositories), and `dist/`, the compiled package (EE-159). |
 | [`check-brand.ts`](./check-brand.ts) | Checks each venture's brand (packages/naive/src/engine/brand.ts). |
 | [`check-config.ts`](./check-config.ts) | Checks a venture's naive.config.json (P-2) and explains its gate. Under `loops` (EE-183) every function and workflow must be one the venture has, and a mode of ask or auto needs `set_by`. |
