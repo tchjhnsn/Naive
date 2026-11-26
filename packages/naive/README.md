@@ -10,6 +10,9 @@ Naive, the venture development framework (EE-024, EE-118). Naive is to a venture
 
 | Path | Holds |
 |---|---|
+| [`evals/`](./evals/README.md) | Public eval files: a canary and items, with held-out items kept out of the exemplars (EE-198). |
+| [`exemplars/`](./exemplars/README.md) | Public synthetic exemplars made from public inputs (EE-198). Gold exemplars are not here. |
+| [`founder-templates/`](./founder-templates/README.md) | Public founder templates: placeholders, ranges and labelled examples (EE-198). |
 | [`lean/`](./lean/README.md) | The Lean proofs the term engine cites (EE-095). |
 | [`library/`](./library/README.md) | The venture packages a venture can adopt (EE-070, EE-071). |
 | [`src/`](./src/README.md) | The code, in units ordered by the dependency rules. |
