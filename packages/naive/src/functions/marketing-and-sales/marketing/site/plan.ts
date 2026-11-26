@@ -16,11 +16,12 @@
 //
 //   node plan.ts <venture> [--raising] [--hiring] [--contributors] [--write] [--json]
 
-import { existsSync, readdirSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { customerNeeds, factsOf, MATRIX, needs, typesOf, weights } from "./presence.ts";
 import type { JevAnswers } from "./presence.ts";
 import { ventureFile } from "../../../../core/venture-paths.ts";
+import { filesOf, icpProfiles } from "../../../../engine/foundation.ts";
 import type { IcpProfile, MarketingSitemap, Product, Venture } from "../../../../records/types/records.d.ts";
 
 /** A page of the planned sitemap. */
@@ -32,19 +33,27 @@ export const CONTENT = "operations/marketing/content";
 const LABELS = MATRIX.page_labels;
 const RANK = Object.fromEntries(Object.entries(MATRIX.prominence).map(([k, v]) => [k, v.rank]));
 
-// Which internal record an item draws on, as a venture-relative file where one exists.
-const RECORD_FILE: Record<string, string> = { venture: "venture.json", icp: "purpose/icp.json", "validation-problem": "purpose/validation/problem.json", "validation-solution": "purpose/validation/solution.json",
-  "validation-pricing": "purpose/validation/pricing.json", "validation-go-to-market": "purpose/validation/go-to-market.json", "validation-team": "purpose/validation/team.json",
-  telos: "purpose/telos.json", alignment: "purpose/alignment.json", "team-plan": "operations/team-plan.json", "business-models": "purpose/business-models.json", "publication-policy": "governance/publication-policy.json", evidence: "evidence/" };
+// A venture's business models are fields of its product cards, not a record of their own.
+const RECORD_TYPE: Record<string, string> = { "business-models": "product" };
+
+/** The internal record an item draws on: the first file of its record type in the venture, in any layout
+ *  and at the data model's newer or older paths; or, when there is none, where the first path would put it. */
+export function sourceOf(dir: string, record: string): { record: string; file: string | null; exists: boolean } {
+  const type = RECORD_TYPE[record] ?? record;
+  const files = type === "icp" ? [...new Set(icpProfiles(dir).map((p) => p.file))] : filesOf(dir, type);
+  const found = files.find((f) => existsSync(ventureFile(dir, f)));
+  if (found) return { record, file: found, exists: true };
+  const first = filesOf(dir, type)[0];
+  return { record, file: first ? first.split("*")[0] : null, exists: false };
+}
 
 /** The offerings: each product, what kind of offering it is, whom it is offered to and whom it serves through them. */
 export function offeringsOf(dir: string) {
-  const icp = (existsSync(join(ventureFile(dir, "purpose/icp.json"))) ? load(join(ventureFile(dir, "purpose/icp.json"))) : { profiles: [] }) as { profiles: IcpProfile[] };
+  const icp = { profiles: icpProfiles(dir) as IcpProfile[] };
   const profiles = new Map(icp.profiles.map((p) => [p.id, p]));
   const primary = icp.profiles.find((p) => p.primary) ?? icp.profiles[0];
-  const pdir = join(ventureFile(dir, "products"));
-  const products = existsSync(pdir) ? readdirSync(pdir).filter((f) => f.endsWith(".json")).map((f) => load(join(pdir, f)) as Product).filter((p) => !["retired", "archived", "idea"].includes(p.status ?? "")) : [];
-  return { profiles, products: products.map((p) => {
+  const products = filesOf(dir, "product").filter((f) => existsSync(ventureFile(dir, f))).map((f) => ({ ...(load(ventureFile(dir, f)) as Product), file: f })).filter((p) => !["retired", "archived", "idea"].includes(p.status ?? ""));
+  return { profiles, files: new Map(products.map((p) => [p.id, p.file])), products: products.map((p) => {
     // Who it is offered to: the product says so; otherwise the profiles others are reached through
     // (partners, in a B2B2C venture); otherwise the primary profile.
     const channel = icp.profiles.filter((x) => icp.profiles.some((y) => y.reached_through?.includes(x.id)));
@@ -57,7 +66,7 @@ export function offeringsOf(dir: string) {
 export function plan(dir: string, { flags = {}, answers = null }: { flags?: Record<string, unknown>; answers?: JevAnswers | null } = {}) {
   const venture = load(join(dir, "venture.json")) as Venture;
   const facts = factsOf(dir, flags);
-  const { profiles, products } = offeringsOf(dir);
+  const { profiles, files, products } = offeringsOf(dir);
   // The site's customers are the people the products are offered to. Their customer types come from
   // the profile when the founder set one, else from Jev's answers, else from the matrix's keywords.
   const toIds = [...new Set(products.flatMap((p) => p.offered_to))];
@@ -91,12 +100,12 @@ export function plan(dir: string, { flags = {}, answers = null }: { flags?: Reco
     const record = it.record;
     target.sections.push({ item: id, label: it.label, component: it.component, need: n.need, required: n.required, for: n.for.length ? n.for : [top.audience],
       why: n.evidence.filter((e, k) => k === 0 || e.need >= 0.2).map((e) => `${MATRIX.audiences[e.audience].label}: ${e.why}`),
-      source: { record, file: RECORD_FILE[record] ?? null, exists: RECORD_FILE[record] ? existsSync(join(dir, RECORD_FILE[record])) : false },
+      source: sourceOf(dir, record),
       variant: `${CONTENT}/${target.type}/${id}.mdx`, ...(when && !n.evidence.some((e) => e.audience !== top.audience && e.need >= MATRIX.prominence.linked.at_least) ? { when } : {}) });
   }
   // A product page for each product beyond the first, under /product, when there are several.
   if (products.length > 1) for (const p of products) pages.set(`/product/${p.id}`, { path: `/product/${p.id}`, parent: pages.has("/product") ? "/product" : "/", label: p.name, type: "product", level: "anywhere", sections: [
-    { item: "how", label: `How ${p.name} works`, component: "HowItWorks", need: need.how.need, required: "anywhere", for: ["customers"], why: [`${p.offering} offered to ${p.offered_to.join(", ")}`], source: { record: "product", file: `products/${p.id}.json`, exists: true }, variant: `${CONTENT}/product/${p.id}.mdx` }] });
+    { item: "how", label: `How ${p.name} works`, component: "HowItWorks", need: need.how.need, required: "anywhere", for: ["customers"], why: [`${p.offering} offered to ${p.offered_to.join(", ")}`], source: { record: "product", file: files.get(p.id) ?? null, exists: true }, variant: `${CONTENT}/product/${p.id}.mdx` }] });
   for (const pg of pages.values()) pg.sections.sort((a, b) => b.need - a.need);
   const list = [...pages.values()].sort((a, b) => RANK[b.level] - RANK[a.level] || b.sections.reduce((s, x) => s + x.need, 0) - a.sections.reduce((s, x) => s + x.need, 0));
   return { version: MATRIX.version, venture: venture.id, name: venture.name, phase: venture.phase, planned_at: new Date().toISOString().replace(/\.\d+Z$/, "Z"), planned_by: answers ? "jev" : "conventions", facts,
@@ -111,7 +120,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   if (!dir || !existsSync(join(dir, "venture.json"))) { console.error("usage: node plan.ts <venture> [--raising] [--hiring] [--contributors] [--write] [--json]"); process.exit(2); }
   const has = (n: string) => process.argv.includes(`--${n}`);
   const r = plan(dir, { flags: Object.fromEntries(["raising", "hiring", "contributors"].filter(has).map((k) => [k, true])) });
-  if (has("write")) { mkdirSync(join(dir, dirname(SITEMAP)), { recursive: true }); writeFileSync(ventureFile(dir, SITEMAP), JSON.stringify(r, null, 2) + "\n"); }
+  if (has("write")) { mkdirSync(dirname(ventureFile(dir, SITEMAP)), { recursive: true }); writeFileSync(ventureFile(dir, SITEMAP), JSON.stringify(r, null, 2) + "\n"); }
   if (has("json")) console.log(JSON.stringify(r, null, 2));
   else {
     console.log(`${r.name}: site planned for ${r.audience.offered_to.map((p) => p.id).join(", ") || "no ICP yet"} (${r.audience.types.map((t) => t.label).join(", ") || "customers in general"})${r.audience.partner_led ? "; partner-led" : ""}`);
