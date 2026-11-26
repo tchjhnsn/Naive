@@ -69,6 +69,10 @@
 //   naive owners [--function <id>] [--level <n>] [--json]
 //                                                   the accountable owner of each APQC element the venture runs, a
 //                                                   person or an agent, and where it came from (EE-187)
+//   naive graph [--function <id>] [--element <id>] [--json] [--mermaid]
+//                                                   the element graph: which APQC elements feed which through the
+//                                                   routes the function workflows write and read, and the routes
+//                                                   read that no workflow writes or written that none reads (EE-188)
 //   naive loop [plan] [--at <iso>] [--json]         what the loop would do with each due workflow under the venture's
 //                                                   loop modes; writes nothing (EE-183)
 //   naive loop tick [--max <n>] [--json]            ask, skip and start once: an ask files a decision, a start runs the
@@ -424,6 +428,10 @@ else if (cmd === "build" || cmd === "start") {
   // Which function workflows are due, and recording a run (packages/naive/src/engine/due.ts, EE-182).
   const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
   process.exit(run("packages/naive/src/engine/due.ts", [here(), ...args]));
+} else if (cmd === "graph") {
+  // The element graph over the shipped function modules (packages/naive/src/engine/element-graph.ts, EE-188), with
+  // --function <id>, --element <id>, --json and --mermaid passed through. It needs no venture.
+  process.exit(run("packages/naive/src/engine/element-graph.ts", rest));
 } else if (cmd === "loop") {
   // The loop that starts due workflows as far as the venture's mode allows (packages/naive/src/engine/loop.ts, EE-183).
   const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
