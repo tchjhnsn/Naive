@@ -273,9 +273,9 @@ for (const p of people.filter((x) => roleOf(x.role)?.founder)) {
 writeFileSync(vf(dir, "people/people.json"), JSON.stringify({ venture: id, mode, people: people.map(({ id: pid, name, role: r, hats, founder_file }) => ({ id: pid, name, role: r, ...(structured ? {} : { hats }), ...(founder_file ? { founder_file } : {}) })), updated: today }, null, 2) + "\n");
 record(dir, { entity: "people/people.json", route: "people", activity: "write", agent: asAuthor, note: `${mode}: ${people.map((p) => `${p.name} (${p.role})`).join(", ")}` });
 // A framework decision whose question the founder already answered here is decided now, as the founder's own answer
-// (approve in packages/naive/src/engine/decisions.ts), so no one is asked twice. The team question (EE-060) asks whether
-// the founder is founding alone or with cofounders, which "solo or team" above answered. Each entry names the decision
-// and the option the answer picks, by the option's first word.
+// (approve in packages/naive/src/engine/decisions.ts), so no one is asked twice. Only a person process approves.
+// An agent, or an unset process, does not record the named founder as the author.
+if (asAuthor.kind === "person") {
 const { approve, decisionFile } = await import(fwModule("packages/naive/src/engine/decisions.ts"));
 const answered = [{ id: "founding-team", option: mode === "solo" ? "Solo" : "Cofounders" }];
 for (const { id: decision, option } of answered) {
@@ -285,6 +285,7 @@ for (const { id: decision, option } of answered) {
   if (!answer) fail(`${file} offers no option for ${option}`);
   const r = approve(dir, decision, { by: people[0].id, answer, via: door, unverified: founderKind === "unverified", ...(account ? { account } : {}), note: `decided ${decision} from the founder's answer at create-venture: ${option.toLowerCase()}` });
   if (!r.ok) fail(`${decision}: ${r.error}`);
+}
 }
 if (answers.dump) {
   mkdirSync(vf(dir, "raw"), { recursive: true });
