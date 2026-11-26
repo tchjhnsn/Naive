@@ -31,7 +31,7 @@ import { tmpdir } from "node:os";
 import { dirname, isAbsolute, join, relative } from "node:path";
 import { FRAME, foundation, type StatementReport } from "./foundation.ts";
 import { actingAgent, agentFromEnv, record as prov } from "../core/provenance.ts";
-import { glob as routeFileGlob, routes, type RecordRoute } from "../records/routes/routes.ts";
+import { canonical, glob as routeFileGlob, routes, type RecordRoute } from "../records/routes/routes.ts";
 // Caching hook (F-12): the decision list is computed once per router action (packages/naive/src/engine/caching.ts).
 import { memo } from "./caching.ts";
 import { roles as ventureRoles } from "./venture-type.ts";
@@ -66,7 +66,7 @@ type Person = People["people"][number];
 /** What ownScore reads from a decision. */
 // status is optional and outcomes need only a total: a docket scenario (docket-eval.ts) ranks decisions that carry
 // no status and count outcomes without due dates, and ownScore reads nothing more.
-export type Scorable = Pick<ResolvedDecision, "id"> & Partial<Pick<ResolvedDecision, "status" | "render" | "boundary" | "due" | "stale_because" | "reasons_changed" | "unlocks" | "part_of" | "awaiting" | "reasons">>
+export type Scorable = Pick<ResolvedDecision, "id"> & Partial<Pick<ResolvedDecision, "status" | "render" | "boundary" | "due" | "stale_because" | "reasons_changed" | "unlocks" | "part_of" | "awaiting" | "reasons" | "one_way">>
   & { outcomes?: Pick<NonNullable<ResolvedDecision["outcomes"]>, "total"> };
 /** A boundary once inheritance is resolved. */
 export type Boundary = "fail-closed" | "fail-open";
@@ -107,6 +107,8 @@ export type ResolvedDecision = {
   stale_because?: "reasons";
   outcomes?: { total: number; pending: number; due: string[] };
   unlocks?: string[];
+  /** A one-way door: the record says door one-way, or its class is one of the delegation's one_way_doors. */
+  one_way?: true;
   action?: Action;
 };
 /** A why entry with the refs its reasons cite. */
@@ -167,6 +169,7 @@ function decisionsAt(dir: string, now = Date.parse(process.env.DECISIONS_NOW ?? 
   const statements = report.flatMap((q) => q.statements);
   const settled = statements.filter((s) => s.status !== "planned").every((s) => s.status === "confirmed");
   const errors: string[] = [];
+  const doors = oneWayDoors(dir);
 
   const list: Entry[] = [
     { id: "venture", question: `Build ${venture.name} as a venture`, source: "root", layer: "governance", parent: null, boundary: productOnly ? "fail-open" : "fail-closed", status: "decided", decided_at: null },
@@ -189,12 +192,15 @@ function decisionsAt(dir: string, now = Date.parse(process.env.DECISIONS_NOW ?? 
     if (pv?.approved_by && d.decided_by && pv.approved_by !== d.decided_by) errors.push(`${f}: decided_by ${d.decided_by} differs from provenance.approved_by ${pv.approved_by}`);
     if (pv?.phase && PHASES.indexOf(pv.phase) > phase) errors.push(`${f}: approved in ${pv.phase}, a phase the venture has not reached`);
     for (const o of d.outcomes ?? []) if (["met", "partly", "missed"].includes(o.result ?? "") && !o.actual) errors.push(`${f}: outcome ${o.id} is ${o.result} but records no actual outcome`);
+    if (d.duplicate_of !== undefined && d.status !== "withdrawn") errors.push(`${f}: duplicate_of ${d.duplicate_of}, but it is ${d.status}; a duplicate is withdrawn`);
+    if (d.duplicate_of === d.id) errors.push(`${f}: is a duplicate of itself`);
     const boundary: Entry["boundary"] = d.boundary && d.boundary !== "inherit" ? d.boundary : record === "product" ? "fail-open" : "inherit";
     // A decision that settles a foundation statement is part of the foundation, not under it. One
     // about a foundation record waits on that record's open statement, set below, not the whole foundation.
     const parent = d.parent ?? (d.statement ? "venture" : null);
     list.push({ ...d, file: f, source: "file", decides: { record, path }, layer, boundary, parent, ...(d.statement ? { part_of: "foundation" } : {}) });
   }
+  for (const d of list) if (d.duplicate_of && !list.some((x) => x.id === d.duplicate_of)) errors.push(`${d.file}: duplicate_of ${d.duplicate_of}, which is no decision here`);
   const covered = new Set(list.map((d) => d.statement).filter(Boolean));
   // The roll-up counts only the statements still open after decision records stand in for some.
   list[1].question = `Settle the strategic foundation (${statements.filter((s) => !["confirmed", "planned"].includes(s.status) && !s.derived_from && !list.some((d) => d.statement === s.id && d.status === "decided")).length} statements open)`;
@@ -277,6 +283,7 @@ function decisionsAt(dir: string, now = Date.parse(process.env.DECISIONS_NOW ?? 
       ...(d.outcomes?.length ? { outcomes: { total: d.outcomes.length, pending: d.outcomes.filter((o) => (o.result ?? "pending") === "pending").length,
         due: d.outcomes.filter((o) => (o.result ?? "pending") === "pending" && /^\d{4}-\d{2}-\d{2}/.test(o.by ?? "") && Date.parse(o.by ?? "") < now).map((o) => o.id) } } : {}),
       ...(d.unlocks?.length ? { unlocks: d.unlocks.map((u) => u.activity) } : {}),
+      ...(d.door === "one-way" || (d.class !== undefined && doors.has(d.class)) ? { one_way: true as const } : {}),
       ...(["open", "deferred"].includes(d.status) ? { action: actionFor(d, venture.id) } : {}) };
   });
   return { venture: venture.id, phase: venture.phase, kind: productOnly ? "product" : "venture", errors, decisions: rank(resolved, venture.phase, now) };
@@ -316,6 +323,9 @@ export function ownScore(d: Scorable, phase: string, now = Date.now()): { score:
   }
   // An open fail-closed decision stops the work behind it until a person decides it (naive#72).
   if (d.status === "open" && d.boundary === "fail-closed") { s += 15; why.push("fails closed: the work behind it waits"); }
+  // A one-way door is a person's alone and hard to undo, so it ranks above any placeholder the framework
+  // raises (a foundation statement that fails closed scores 35 in Discovery).
+  if (d.status === "open" && d.one_way) { s += 40; why.push("a one-way door: only you decide it, and it is hard to undo"); }
   // A why entry may carry cites (the refs a reason supplies); why stays a list of strings, and
   // why_cites pairs each cited entry with its refs (backward compatible).
   const cites: WhyCite[] = [];
@@ -367,7 +377,7 @@ export function locked(dir: string, route: string, actorId?: string | null): { i
   if (!existsSync(join(dir, "venture.json"))) return null;
   const files = decisionFiles(dir).map((f): DecisionRecord => load(ventureFile(dir, f)));
   const d = files.find((x) => x.status !== "decided" && x.status !== "withdrawn" && (x.unlocks ?? []).some((u) =>
-    (u.routes ?? []).some((g) => routeGlob(g).test(route)) && (!u.for?.length || !actorId || u.for.includes(actorId))));
+    (u.routes ?? []).some((g) => routeGlob(canonical(g)).test(canonical(route))) && (!u.for?.length || !actorId || u.for.includes(actorId))));
   return d ? { id: d.id, question: d.question } : null;
 }
 
@@ -515,6 +525,14 @@ export function merge(dir: string, id: string, { by, role, via = "cli", note, to
 
 /** The venture's delegation record (governance/delegation.json, the delegation suite), or null. */
 const delegationOf = (dir: string): Delegation | null => { const f = ventureFile(dir, "governance/delegation.json"); return existsSync(f) ? readDelegation(f) : null; };
+/** The classes a venture treats as one-way doors: the template delegation's one_way_doors and the venture's own,
+ *  which only add to them, as for merging. */
+export function oneWayDoors(dir: string): Set<string> {
+  let del: Delegation | null = null;
+  try { del = delegationOf(dir); } catch {} // ranking still runs on a delegation file that does not parse; approve reports it
+  const f = join(new URL("../../../..", import.meta.url).pathname, "packages/naive/template/governance/delegation.json");
+  return new Set([...((load(f) as Delegation).one_way_doors ?? []), ...(del?.one_way_doors ?? [])]);
+}
 // Classes that are one-way doors: every class the decision-rights register marks escalate (the
 // founder decides), plus production-ship. Built from the register so a class it escalates can never
 // be merged by a role, and a venture's one_way_doors only adds to them.
@@ -613,6 +631,12 @@ function agentRoleIds(): string[] {
   if (agentRoles) return agentRoles;
   const f = join(new URL("../../../..", import.meta.url).pathname, "packages/naive/template/governance/roles/agent-roles.json");
   try { agentRoles = ((load(f) as { roles?: { id: string }[] }).roles ?? []).map((r) => r.id).filter((id) => id && id !== "founder"); } catch { agentRoles = []; }
+  // The function agents and researchers (<function>-agent, <function>-researcher, one per department) and the role
+  // templates (the leads among them) are roles too, so none of them can approve or withdraw as a person.
+  const root = new URL("../../../..", import.meta.url).pathname;
+  try { agentRoles.push(...((load(join(root, "packages/naive/src/functions/departments.json")) as { departments?: { id: string }[] }).departments ?? []).flatMap((d) => [`${d.id}-agent`, `${d.id}-researcher`])); } catch {} // a missing departments file leaves the register's roles
+  const roles = join(root, "packages/naive/template/governance/roles");
+  try { agentRoles.push(...readdirSync(roles).filter((n) => n.endsWith(".json") && !["agent-roles.json", "venture-roles.json", "founder.json"].includes(n)).map((n) => n.replace(/\.json$/, ""))); } catch {} // no role templates, no extra roles
   return agentRoles;
 }
 
@@ -704,6 +728,34 @@ export function approve(dir: string, id: string, { by, answer, via = "cli", note
   writeFileSync(ventureFile(dir, file), JSON.stringify(out, null, 2) + "\n");
   const e = prov(dir, { entity: file, route: "governance/decisions", activity: "accept", agent: agentFromEnv(unverified ? "unverified" : "person", via, { id: by, account }), note: note ?? (unverified ? `approved decision ${id} through ${via} with no sign-in: ${by} is unverified` : `approved decision ${id} (${wording})`) } as Parameters<typeof prov>[1]);
   return { ok: true, result: { decided: id, wording: unverified ? null : wording, ...(unverified ? { signer: "unverified" } : {}), ...(account ? { signer: "verified" } : {}), phase, provenance: e.hash, unlocks: (out.unlocks ?? []).map((u) => u.activity), ...(frozen ? { reasons: frozen.length, cites: citesOf(frozen) } : {}) } };
+}
+
+/** A person withdraws an open or deferred decision, optionally as a duplicate of another, so the queue keeps one
+ *  question. Only a person withdraws (an agent proposes; it never removes a question), a decided decision changes by a
+ *  new version instead, and the decision it duplicates must exist, be another one, and not itself be withdrawn. */
+export function withdraw(dir: string, id: string, { by, duplicateOf, note, via = "cli" }: { by?: string; duplicateOf?: string; note?: string; via?: string } = {}): DoorResult<{ withdrawn: string; duplicate_of?: string; provenance: string }> {
+  const file = fileOf(dir, id);
+  if (!file) return { ok: false, error: `no decision ${id}` };
+  if (!by) return { ok: false, error: "withdrawing needs the person's name (--by)" };
+  let del: Delegation | null;
+  try { del = delegationOf(dir); } catch (e) { return { ok: false, error: `${(e as Error).message}: no one withdraws until it is fixed` }; }
+  const refused = notAPerson(dir, del, by, { rosterRequired: false });
+  if (refused) return { ok: false, error: `only a person withdraws a decision: ${refused}` };
+  const d: DecisionRecord = load(ventureFile(dir, file));
+  if (d.status === "decided") return { ok: false, error: `${id} is decided; change it with a new version, not a withdrawal` };
+  if (d.status === "withdrawn") return { ok: false, error: `${id} is already withdrawn` };
+  if (duplicateOf !== undefined) {
+    if (duplicateOf === id) return { ok: false, error: `${id} cannot be a duplicate of itself` };
+    const other = fileOf(dir, duplicateOf);
+    if (!other) return { ok: false, error: `no decision ${duplicateOf} to be a duplicate of` };
+    if ((load(ventureFile(dir, other)) as DecisionRecord).status === "withdrawn") return { ok: false, error: `${duplicateOf} is withdrawn itself; name the decision that still asks the question` };
+  }
+  const out: DecisionRecord = { ...d, status: "withdrawn", ...(duplicateOf ? { duplicate_of: duplicateOf } : {}), withdrawn_by: by, withdrawn_at: new Date().toISOString().replace(/\.\d+Z$/, "Z") };
+  const bad = validate(out);
+  if (bad) return { ok: false, error: bad };
+  writeFileSync(ventureFile(dir, file), JSON.stringify(out, null, 2) + "\n");
+  const e = prov(dir, { entity: file, route: "governance/decisions", activity: "write", agent: agentFromEnv("person", via, { id: by }), note: note ?? (duplicateOf ? `withdrew decision ${id} as a duplicate of ${duplicateOf}` : `withdrew decision ${id}`) } as Parameters<typeof prov>[1]);
+  return { ok: true, result: { withdrawn: id, ...(duplicateOf ? { duplicate_of: duplicateOf } : {}), provenance: e.hash } };
 }
 
 /** The matrix: for each layer, the decisions that render now, wait, or come later, by phase. */

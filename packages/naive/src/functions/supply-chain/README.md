@@ -17,3 +17,5 @@ The supply chain function (APQC 4.0, Manage Supply Chain for Physical Products).
 | [workflows/monthly-supply-review.json](./workflows/monthly-supply-review.json) | Workflow: review suppliers, orders and supply risk each month |
 | [skills/supplier-and-purchasing](./skills/supplier-and-purchasing) | Skill: keep the approved supplier list and purchase orders: supplier evaluation, Kraljic risk classes and single sources, Incoterms 2020, landed cost and reorder points |
 | [templates/research-program.md](./templates/research-program.md) | Template: the function's starter research program (autoresearch). Init and `naive upgrade` copy it to a venture's `programs/supply-chain.md` once, when the venture lists this function in venture.json departments and has no program; the copy is then the founder's, and only a person writes it |
+
+Each workflow's done criterion `records-valid` runs `node packages/naive/src/checks/check-records.ts "$NAIVE_VENTURE"`: it validates the business's records, the folder the handoff runner names in `NAIVE_VENTURE`, not Naive's own.

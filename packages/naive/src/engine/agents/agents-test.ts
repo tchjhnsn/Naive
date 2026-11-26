@@ -16,13 +16,13 @@ expect("one function agent per departments.json id, 13 in all", ids.length === 1
 for (const id of ids) {
   const s = functionAgent(id);
   expect(`${id}: role ${id}-agent with its module's agent.md, intake and decision matrix`, s.role === `${id}-agent` && !!s.instructions && !!s.intake && s.workflows.includes(s.intake ?? "") && !!s.decisions, s);
-  expect(`${id}: writes decisions and at least one record route of its own, never the team plan`, s.writes[0] === "decisions/*" && s.writes.length > 1 && !reachesTeamPlan(s.writes), s.writes);
+  expect(`${id}: writes decisions, handoffs and at least one record route of its own, never the team plan`, s.writes[0] === "decisions/*" && s.writes[1] === "operations/handoff/*" && s.writes.length > 2 && !reachesTeamPlan(s.writes), s.writes);
   const outside: string[] = [];
   for (const w of s.workflows) {
     const wf = JSON.parse(readFileSync(join(s.module, "workflows", `${w}.json`), "utf8")) as { steps: { writes?: string[] }[] };
     for (const r of wf.steps.flatMap((x) => x.writes ?? [])) {
       const concrete = r.replace(/\[id\]/g, "x");
-      if (!s.writes.some((g) => routeGlob(g).test(concrete)) && !/^operations\/handoff\//.test(r)) outside.push(`${w}: ${r}`);
+      if (!s.writes.some((g) => routeGlob(g).test(concrete))) outside.push(`${w}: ${r}`);
     }
   }
   expect(`${id}: every route its workflows write is in its write reach`, outside.length === 0, outside);

@@ -82,7 +82,7 @@ export function phaseWeight(neededIn: string | null | undefined, phase: string):
 const reqWeight = (r: IndexedRequirement | undefined) => Math.max(0, Math.min(1, typeof r?.weight === "number" ? r.weight : 0.5));
 
 /** The weight of one decision: phase weight, the requirement lift, and how heavy it is. */
-export function weigh(d: Pick<RankedDecision, "needed_in" | "part_of" | "source">, raw: Raw, phase: string, reqs: Map<string, IndexedRequirement>) {
+export function weigh(d: Pick<RankedDecision, "needed_in" | "part_of" | "source"> & Partial<Pick<RankedDecision, "one_way">>, raw: Raw, phase: string, reqs: Map<string, IndexedRequirement>) {
   const why: string[] = [];
   let pw = phaseWeight(d.needed_in, phase);
   const links = (raw.requirements ?? []).map((l) => ({ ...l, requirement: reqs.get(l.id) })).filter((l) => l.requirement);
@@ -91,7 +91,7 @@ export function weigh(d: Pick<RankedDecision, "needed_in" | "part_of" | "source"
   if (pw < 1 && pin) { pw = 1; lifted_by = pin.id; why.push(`requirement ${pin.id} pins it to this phase`); }
   else if (pw < 1) why.push(`needed in ${d.needed_in}: a draft at ${pw} weight`);
   let heavy = 1;
-  if (raw.door === "one-way") { heavy *= 1.5; why.push("a one-way door"); }
+  if (raw.door === "one-way" || d.one_way) { heavy *= 1.5; why.push("a one-way door"); }
   if (d.part_of === "foundation" || d.source === "foundation") { heavy *= 1.5; why.push("part of the foundation"); }
   if (links.length) heavy *= 1 + Math.max(...links.map((l) => reqWeight(l.requirement))) / 2;
   return { phase: pw, heavy: Math.round(heavy * 100) / 100, total: Math.round(pw * heavy * 100) / 100, lifted_by, why };

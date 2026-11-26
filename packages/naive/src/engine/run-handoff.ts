@@ -19,7 +19,7 @@
 
 import { execSync, spawnSync } from "node:child_process";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { join, relative } from "node:path";
+import { join, relative, resolve } from "node:path";
 import { ventureFile } from "../core/venture-paths.ts";
 import { HostedRefusal, git, hostHook, isHosted, missingHook } from "../core/runtime.ts";
 import type { Evidence, Handoff } from "../records/types/records.d.ts";
@@ -51,14 +51,18 @@ export const isBash = (c: Criterion) => c.kind !== "review" && c.runs !== "effec
 
 /**
  * Runs one conformance or self-proof criterion: a venture program on the venture runtime when it runs effect, else its
- * shell command through the sandbox hook, or bash from the repository root on a laptop.
+ * shell command through the sandbox hook, or bash from the repository root on a laptop, with NAIVE_VENTURE set to the
+ * business folder.
  */
 export async function runCriterion(dir: string, c: Criterion, sandbox = hostHook("sandbox")): Promise<CriterionResult> {
   if (c.runs === "effect") {
     const result = await runProgram(dir, c.check);
     return { criterion: c.id, kind: c.kind, passed: passes(result), command: c.check, output: trim(outputOf(result)) };
   }
-  const run = sandbox ? await sandbox(c.check, { cwd: root }) : spawnSync("/bin/bash", ["-c", c.check], { cwd: root, encoding: "utf8" });
+  // A criterion checks the business, not Naive: NAIVE_VENTURE names the business folder, as in
+  // `node packages/naive/src/checks/check-records.ts "$NAIVE_VENTURE"`.
+  const env = { NAIVE_VENTURE: resolve(dir) };
+  const run = sandbox ? await sandbox(c.check, { cwd: root, env }) : spawnSync("/bin/bash", ["-c", c.check], { cwd: root, encoding: "utf8", env: { ...process.env, ...env } });
   return { criterion: c.id, kind: c.kind, passed: run.status === 0, command: c.check, output: trim(`${run.stdout}${run.stderr}`) };
 }
 
