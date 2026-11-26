@@ -138,11 +138,41 @@ The engine's modules (decisions, freshness, generators, lifecycle, upgrades, use
 
 ## Decision scores
 
-`withdraw(dir, id, { by, duplicateOf })` in `decisions.ts` is a person's: it withdraws an open or deferred decision, as a duplicate of another when `duplicateOf` names one, and logs it in provenance (EE-185). Function agents (`<function>-agent`), researchers and the role templates are roles, so neither `approve` nor `withdraw` takes one as the person.
+`withdraw(dir, id, { by, duplicateOf, option })` in `decisions.ts` is a person's: it withdraws an open or deferred decision, as a duplicate of another when `duplicateOf` names one, or with `option` one of its candidates (EE-211), and logs it in provenance (EE-185). Function agents (`<function>-agent`), researchers and the role templates are roles, so neither `approve` nor `withdraw` takes one as the person.
 
 Every agent's draft held in `_drafts/` gets a decision in `decisions.ts` that accepts it. A lone draft of a foundation statement's record is accepted through that statement, whose question names the draft; when one foundation collection holds several drafts (two ICP profiles), the statement accepts the first and each other draft gets its own `draft-<path>` decision, part of the foundation and under the venture, never under the open statement it would settle. `node packages/naive/src/engine/decision-drafts-test.ts` tests it.
 
 A resolved decision in `decisions.ts` keeps its record's `options`, `statement`, `version`, `applies_to` and `decided_at`, so setup, the merge prompt and freshness read them from the matrix.
+
+## Candidates and fluid decisions (EE-211)
+
+An undecided record holds several ideas at once. A decision record carries `candidates`, each one idea for the record it decides: `body`, the whole proposed record, `patch`, the fields it proposes, or neither, in which case it is an option with provenance and its `label` merges the way an `options` string does. Every candidate has an id, a label, a `why`, who proposed it and what it rests on. Any number coexist while the decision is open, which is what Discovery and Validation need: before this, a record type with no `options` of its own, a goal or a requirement, could keep only one idea in play, because picking one lost the rest.
+
+[`decision-candidates.ts`](./decision-candidates.ts) holds the rules and is pure: `liveCandidates` (every one no person withdrew), `optionsOf` (the `options` strings, then each live candidate's id, so a letter from a draft variant and a candidate id read the same way), `candidateFor`, `withdrawnCandidate`, `writeOf` (what merging one writes, as a tagged union of body, patch and label), `proposesOf` and `brief`. The doors are in `decisions.ts`, beside `approve`, `merge` and `withdraw`:
+
+- `addCandidate(dir, id, input, { by | agentId })` puts one more idea on an open or deferred decision. An agent may add any number and never chooses one. A duplicate id is refused, and an idea whose record cannot be resolved (a candidate that would write a folder) is refused when it is added, not at merge, so a person is never offered an idea that cannot be merged. A person adding an id that was withdrawn puts that idea back, which is how a withdrawal stays recoverable; an agent may not, because a person took it off the table.
+- `withdraw(dir, id, { by, option })` is the one command for taking either off the table: the question, or with `option` one of its ideas, leaving the decision open. Nothing is removed. A withdrawn candidate keeps who withdrew it and why, stops being an option, and `approve` refuses it as an answer.
+- `merge` writes the chosen idea. When the answer names a live candidate, the merge writes that candidate's `body` whole or sets each field of its `patch`, checked against the record type's schema before anything is written, exactly as an `applies_to` merge is. The ideas not chosen stay on the decision for later. A candidate with neither merges its `label` at `applies_to`.
+- `reopen(dir, id, { by, why, override })` is a person's. In Discovery and Validation a decision is fluid: a person reopens it as a matter of course. Past Validation work has been built on it, so a reopen needs the person's explicit `override`; a one-way door needs the override in every phase and a founder. The decided version is kept in `versions`, `reopened` records the version, the answer, who, when, in which phase and why, and `mentura decide <id> --rollback <version>` restores the answer. An agent never reopens anything.
+- `undecidedFor(dir, file, venture)` is what a read answers with: the decisions still open over a record, each with every live idea whole, so an agent reads all the live options instead of guessing one. The router adds it to a single record's read as `undecided`, next to `pending_draft`, and it reads the decision files rather than the matrix, so a record read costs no more than it did. An absent record shows its ideas too, which is the common case for a goal nobody has written yet. The matrix carries the same ideas as briefs, without their bodies.
+
+This is not the same mechanism as `mentura accept <route> --pick <letter>`, and it does not replace it. Those are rival **drafts of one record** that the gate held side by side in `_drafts/` ([`gate-drafts.ts`](./gate-drafts.ts)): letter-named, transient, with no `why` and no evidence, and accepting one removes the others. Candidates are rival **ideas inside the decision**: named, reasoned, added when no write was ever held, kept after the choice, and available for a record type that has no options of its own. The two meet at `optionsOf`: a variants decision's `options` strings and a decision's live candidate ids come back in one list, so one call answers what can be chosen on any decision, whichever mechanism put the choices there.
+
+```mermaid
+flowchart TD
+  A["agent or person<br/>mentura option add"] --> C["decision record<br/>candidates[]"]
+  C -->|"each id is an option"| O["optionsOf<br/>options + live candidate ids"]
+  O --> R["record read<br/>undecided: every live idea"]
+  O --> M["decision matrix<br/>candidates as briefs"]
+  P["person<br/>mentura decide --answer &lt;id&gt;"] --> K["merge writes the chosen idea<br/>body whole, or patch by field"]
+  C -.->|"not chosen, kept"| C
+  W["person<br/>mentura withdraw --option &lt;id&gt;"] -.->|"kept, recoverable"| C
+  K --> Z["decided"]
+  Z --> RE["person<br/>mentura reopen"]
+  RE -->|"free in Discovery and Validation<br/>--override after, and for a one-way door"| C
+```
+
+`node packages/naive/src/interfaces/tests/decision-candidates-test.ts` tests it on a goal: two agents' ideas coexisting, a patch idea, the matrix and the route read, one command withdrawing an idea and a person putting it back, the chosen body written and the rest kept, a body that breaks the record's schema refused, and reopening in Discovery, past Validation and through a one-way door. Not built: a route action for adding an option (the CLI is the surface, and an MCP tool over `addCandidate` is a small follow-up), reopening through the router, and ranking a decision by how many ideas are on it.
 
 `locked()` in `decisions.ts` reads a decision's `unlocks` through the route aliases, so a lock written under a route's old name still holds. `init-venture.ts` writes the founding decisions with the current route names.
 
