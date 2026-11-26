@@ -2,6 +2,8 @@
   "id": "quarterly-team-review",
   "function": "human-capital",
   "title": "Review the team plan each quarter",
+  "goal": "Every role has been tested again against what agents can now do, every contractor against the classification test, and each proposed opening is decided or open with its cost.",
+  "measures": ["cost_or_time_saved", "compliance_met"],
   "trigger": {
     "kind": "schedule",
     "cadence": "quarterly"

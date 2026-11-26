@@ -2,6 +2,8 @@
   "id": "intake",
   "function": "customer-service",
   "title": "Learn how the venture supports its customers",
+  "goal": "The support policy is drafted for the founder with its channels, response targets and refund rule, and every customer contact open today is a case with a kind and a reason.",
+  "measures": ["usage_or_adoption"],
   "trigger": { "kind": "intake" },
   "reads": ["venture", "foundation/telos", "customers", "support/policy", "support/cases", "product/bugs", "it/connections"],
   "steps": [

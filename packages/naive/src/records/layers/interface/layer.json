@@ -25,6 +25,10 @@
     {
       "id": "research",
       "path": "packages/naive/src/interfaces/skills/research/SKILL.md"
+    },
+    {
+      "id": "lead",
+      "path": "packages/naive/src/interfaces/skills/lead/SKILL.md"
     }
   ],
   "records": [

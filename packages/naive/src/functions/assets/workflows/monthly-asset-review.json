@@ -2,6 +2,8 @@
   "id": "monthly-asset-review",
   "function": "assets",
   "title": "Review equipment custody and lease dates each month",
+  "goal": "Every asset has a custodian who is still here, every lease notice date inside 90 days is open as a decision, and every item past warranty or useful life has a proposal.",
+  "measures": ["compliance_met", "cost_or_time_saved"],
   "trigger": { "kind": "schedule", "cadence": "monthly" },
   "reads": ["assets/register", "assets/leases", "people", "finance/spend", "finance/budget"],
   "steps": [

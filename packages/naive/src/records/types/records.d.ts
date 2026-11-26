@@ -2248,18 +2248,22 @@ export type FunctionModule = {
   note?: string;
 };
 
-/** One recurring piece of a function's work, at packages/naive/src/functions/<id>/workflows/<workflow id>.json: what starts it, the steps the function's agent takes, the records each step writes through the router, the decision classes a step may raise, the activity a step performs, whether a step is required or one to consider, and the done criteria in the handoff's form (handoff.schema.json done_criteria), so a workflow run can be handed off and verified like any other work. Every route a step writes must be in the function's write reach, and every class it raises must have a row in the function's decisions.json and every activity a step names must be an APQC activity or a catalog activity under the function's APQC category, and every workflow has at least one required step (packages/naive/src/checks/check-functions.ts). */
+/** One recurring piece of a function's work, at packages/naive/src/functions/<id>/workflows/<workflow id>.json: what the run is for (goal) and which telos measure kinds it moves (measures), what starts it, the steps the function's agent takes, the records each step writes through the router, the decision classes a step may raise, the activity a step performs, whether a step is required or one to consider, and the done criteria in the handoff's form (handoff.schema.json done_criteria), so a workflow run can be handed off and verified like any other work. Every route a step writes must be in the function's write reach, and every class it raises must have a row in the function's decisions.json and every activity a step names must be an APQC activity or a catalog activity under the function's APQC category, every measure must be one of the function's in function.json, and every workflow has a goal, a done criterion and at least one required step (packages/naive/src/checks/check-functions.ts). */
 export type FunctionWorkflow = {
   /** The file's name without .json. */
   id: string;
   function: string;
   title: string;
+  /** What one run is for, in one plain sentence: the state the venture's records are in when the run is done. The title names the work; the goal names the outcome, so an agent can tell a finished run from a performed one. */
+  goal: string;
+  /** The telos measure kinds this workflow moves (foundation/telos measures[].kind), each one of its function's measures in function.json. This is how an agent says which of the venture's goals its work serves: a goal binds a measure, and a lead weighs the workflow by it. */
+  measures: string[];
   trigger: {
     /** intake: once, when the function joins a venture, and again when its records are missing. schedule: on a cadence. event: when a route is written. request: when a lead or person hands it off. */
     kind: "intake" | "schedule" | "event" | "request";
-    /** For schedule. */
+    /** For schedule, and only for schedule: without it a schedule is never due. */
     cadence?: "daily" | "weekly" | "monthly" | "quarterly";
-    /** For event: the route pattern whose write starts it. */
+    /** For event, and only for event: the route pattern whose write starts it. Without it an event trigger is never due. */
     route?: string;
     /** Only while a time box of this kind is open that lists the workflow or its function (operations/time-boxes/<id>.json, EE-186). Outside one the workflow is not due, whatever its kind says. */
     during?: "campaign" | "sprint";
