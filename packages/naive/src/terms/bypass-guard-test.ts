@@ -50,6 +50,7 @@ export const REGISTRY: Registry = {
   "packages/naive/src/engine/gate-calibration-test.ts": plain("tests gate calibration's counts, rules, validity windows, proposed decision, CLI and route on temp ventures"),
   "packages/naive/src/engine/check-artifacts.ts": plain("artifacts name records that exist, and a changed source hash marks one stale"),
   "packages/naive/src/checks/check-assets.ts": plain("each public asset has a source, a license, a credit and alt text"),
+  "packages/naive/src/checks/check-authorship.ts": symbolic,
   "packages/naive/src/checks/check-boundary.ts": plain("path text: no code names a module of an app that uses Naive, and registered connectors work offline"),
   "packages/naive/src/checks/check-brand.ts": plain("brand records: colors, licensed typefaces, marks and voice rules against fixed lists"),
   "packages/naive/src/checks/check-config.ts": plain("naive.config.json: shape, route patterns that match the route table, and pins"),

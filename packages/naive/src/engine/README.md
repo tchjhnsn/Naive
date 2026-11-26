@@ -132,6 +132,8 @@ The lifecycle and need-now read the phases (their names, questions and gates) fr
 
 Need-now's priors (`packages/naive/src/engine/need-now.json`) are the one source of when a record type starts. `startOf` in `packages/naive/src/engine/need-now.ts` gives the first phase whose base prior reaches the suggest line (what the route table's phase groups show) and the first phase in which one of its conditions can lift it there. `packages/naive/src/checks/check-tools.ts` holds a tool's phase to the second, and `packages/naive/src/checks/check-functions.ts` holds every required intake step to records that start in Discovery.
 
+[`lifecycle.ts`](./lifecycle.ts) records a phase change and a met exit criterion as the process from [`authorFromProcess`](../terms/authorship.ts) (EE-193). An agent process is refused before any provenance line, and the phase stays put. A person process is recorded as that person: `MENTURA_ACTOR_ID` when it is set, otherwise `--by`.
+
 The engine's modules (decisions, freshness, generators, lifecycle, upgrades, user frameworks, workspace) validate a record in process with `validateFile` or `validateValue` from [`packages/naive/src/records/validate.ts`](../records/README.md). None of them starts Python.
 
 ## Decision scores
