@@ -80,7 +80,7 @@ export function agentBrief(role: string, dir: string | null): AgentBrief | Error
       instructions: text(s.instructions), workflows, decisions: json(s.decisions, "decisions"),
       ...(assigned ? { assignments: assigned.activities } : {}),
       env: { MENTURA_ACTOR_ID: s.role }, team_plan_entry: teamPlanEntry(s, phase), ...staffing(s.role),
-      how: `Act as ${s.role}: follow instructions, run a workflow's steps in order, raise a question in decisions/* when the decision matrix says escalate, and write only the routes in spec.writes. Skill paths under /function/ are relative to spec.module.${assigned?.activities.length ? " Some of your activities have a rule, from the venture's own assignments or by default from the activity's kind: follow the rule of each entry in assignments, and of a step's assignment." : ""}`,
+      how: `Act as ${s.role}: follow instructions, run a workflow's steps in order (a step with consider is optional: run it only when its when condition holds or a person asks, and otherwise say you considered it and why you did not run it), raise a question in decisions/* when the decision matrix says escalate, and write only the routes in spec.writes. Skill paths under /function/ are relative to spec.module.${assigned?.activities.length ? " Some of your activities have a rule, from the venture's own assignments or by default from the activity's kind: follow the rule of each entry in assignments, and of a step's assignment." : ""}`,
     };
   }
   if ((leadIds() as string[]).includes(role)) {
