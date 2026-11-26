@@ -2889,6 +2889,43 @@
       ]
     },
     {
+      "id": "EE-211",
+      "date": "2026-11-26",
+      "status": "in-force",
+      "decision": "An undecided record holds several ideas at once. A decision record carries candidates, each one idea for the record it decides: an id, a label, a why, who proposed it, what it rests on, and either body, the whole proposed record, or patch, the fields it proposes. Any number coexist while the decision is open, so a goal or a requirement, a record type with no options of its own, keeps every idea in play. An agent or a person adds one with mentura option add; each live candidate's id is an option beside the strings in options, and only a person chooses one. Deciding with a candidate's id makes merge write that candidate, schema-checked first, and the ideas not chosen stay on the decision. Withdrawing is a person's and is one command for either: mentura withdraw <decision> takes the question off the table and --option <id> takes one idea, leaving the decision open. Nothing is ever removed, so both stay recoverable: a withdrawn candidate keeps who withdrew it and why, and a person adding its id again puts it back. Decisions are fluid: mentura reopen is a person's, free while the venture is in Discovery or Validation, and past Validation or for a one-way door only with an explicit override that the record keeps, a one-way door also only by a founder. A reopened decision keeps its decided version in versions, so a rollback restores the answer. A single record's route read carries undecided, every decision still open over it with every live idea, so an agent reads all the options instead of guessing one. This is not mentura accept --pick, which chooses between rival drafts of one record that the gate held and removes the others; candidates are named, reasoned ideas inside the decision that survive the choice, and optionsOf returns a variants decision's options strings and a decision's live candidate ids in one list, so one call answers what can be chosen on any decision.",
+      "why": "Torian decided this on 2026-11-26: options must stay open until the right time, especially in Discovery and Validation, and decisions must be easy to change or withdraw. A triage run of his message found that only decisions have options, so a goal or a requirement could hold one idea at a time, and that no route deletes anything, so taking an idea off the table had to be a withdrawal that keeps it rather than a delete. Only a person decides, so an agent adds ideas and never chooses, reopens or withdraws one.",
+      "related": [
+        "EE-054",
+        "EE-057",
+        "EE-058",
+        "EE-185"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/decision-candidates.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/interfaces/tests/decision-candidates-test.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "record",
+          "target": "decision-record.candidates",
+          "expect": "exists"
+        },
+        {
+          "kind": "record",
+          "target": "decision-record.reopened",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
       "id": "EE-154",
       "date": "2026-11-19",
       "status": "in-force",
