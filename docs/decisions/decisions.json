@@ -2650,6 +2650,33 @@
       ]
     },
     {
+      "id": "EE-189",
+      "date": "2026-11-26",
+      "status": "in-force",
+      "decision": "Naive ships a rubric for judging which programming language fits a system, as data in packages/naive/src/functions/it/language-rubric.json (record type language-rubric, schema packages/naive/src/records/language-rubric.schema.json). It has eight criteria: runtime fit, correctness, the concurrency and effect model, ecosystem, interop with Naive, team skill, operability and licence. Each has a question, why, described levels on a 0 to 4 scale, the ISO/IEC 25010:2023 characteristics it serves and its sources as reference ids in the operations layer's references, and a default weight that is an unvalidated prior; the weights sum to 1. Runtime fit and licence are gates: a 0 rules a candidate out. A system may set its own weights and must-haves. The pure scorer scoreLanguages in packages/naive/src/engine/language-rubric.ts rules out a candidate on a gate or a must-have whatever its other scores, ranks the rest by weighted total, reports totals within the tie band as tied, and says a person decides. Naive's own choices are worked examples: TypeScript on Effect for the framework (EE-087, EE-125, EE-159) and Lean 4 for proofs (EE-095); their scores are the agent's judgment from those decisions and a person may change any. packages/naive/src/checks/check-language-rubric.ts checks the rubric across files. The tool-selection skill says when to use it. No command and no route serve it.",
+      "why": "The founder asked that Naive be built on Effect in TypeScript and that there be a way to judge which language fits a system. docs/design/HOOKS_AND_LOOPS_2026-11-26.md listed the rubric as not written.",
+      "related": [
+        "EE-087",
+        "EE-095",
+        "EE-125",
+        "EE-159"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/functions/it/language-rubric.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/language-rubric.ts",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
       "id": "EE-190",
       "date": "2026-11-26",
       "status": "in-force",
@@ -2716,6 +2743,42 @@
         {
           "kind": "term",
           "target": "gold-record",
+          "expect": "defined"
+        }
+      ]
+    },
+    {
+      "id": "EE-192",
+      "date": "2026-11-26",
+      "status": "in-force",
+      "decision": "A raw source is written with its text in one write, create-only, and the router sets sha256 from the text. A second write to the same id is refused, and a write whose text hashes to a source already in the venture is refused, naming that source. The allowed-source term refuses a host on the closed deny list (linkedin.com, www.linkedin.com, g2.com, www.g2.com) and a fetch the input says used a login.",
+      "why": "Free public data only (Torian, 2026-11-26). No LinkedIn scraping (Torian). G2's terms ban scrapers. Raw is immutable (EE-070). A source without its text failed naive check.",
+      "related": [
+        "EE-070",
+        "EE-095"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/records/raw-source.schema.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/router/raw-source.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/lean/Naive/Sources.lean",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "term",
+          "target": "allowed-source",
           "expect": "defined"
         }
       ]

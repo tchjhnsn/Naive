@@ -59,6 +59,7 @@ import { asOfStore, cutFor, inEval, observedBy, refusal as asOfRefusal } from ".
 import { checkPlan, gateWrite, heldDraft, ledgerHook, ownerOfWrite, reachOfWrite } from "./gate-hooks.ts";
 // Appends (packages/naive/src/router/appends.ts): one hash-chained line added to a log route, such as the detection ledger.
 import { appendLine } from "./appends.ts";
+import { commitRawSource } from "./raw-source.ts";
 import { claimHandoff, handoffWriteRule } from "./handoff-claim.ts";
 import { LOCAL, attributeSources, connect, sourceFor } from "../store/connectors/index.ts";
 // Caching (packages/naive/src/engine/caching.ts): per-action memo, the record-level cache for command routes, and system/cache, system/judge, system/answer.
@@ -487,11 +488,20 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
     const outOfReach = claimed ? null : reachOfWrite({ r, route, projector, actor, acting: !!actingAgent(provenance.agent?.id), role: actor_id });
     if (outOfReach) return { ...outOfReach, ...deprecated };
     if (prose) return { ...(await writeProse({ dir, r, route, requested, file, input, actor, actor_id, via, provenance, store, remote, src, params, projector })), ...deprecated };
+    // A raw source is written with its text in one step (EE-192). Create-only, duplicate text and the allowed-source term are decided before either file is written.
+    if (r.record === "raw-source") {
+      if (!remote) {
+        const configured = gateWrite({ dir, r, route, requested, file, actor, actor_id, provenance, gate: gateOf(r, dir), projector });
+        if (configured?.then === "refuse") return { ok: false, error: configured.why, gate_rule: configured.rule, refused_by: configured.source, ...deprecated };
+      }
+      const agent = agentFromEnv(actor === "person" ? "person" : "agent", via, { ...(actor_id && actor !== "person" ? { id: actor_id } : {}), ...provenance.agent });
+      return { ...(await commitRawSource({ dir, id: String(params.id), route, input, store, sourceFile: file, agent, note: provenance.note, schemaName: schemaNameOf(String(r.schema)) })), ...deprecated };
+    }
     // Not prose, so the input is the record, an object (checked above).
     let rec: Obj = inp ?? {};
     // A migrated venture's telos is a view of its canonical records; a telos.json written now would be a second record the lifecycle never reads.
     if (r.record === "telos" && !remote && migrated(dir)) return { ok: false, error: `${venture} keeps its goals and exit criteria as canonical records, so a telos.json is not written: write foundation/goals/telos (measures), foundation/goals/owner-outcome and foundation/exit-criteria/<phase> instead` };
-    if (["idea-dump", "raw-source", "raw-text", "raw-dump", "triage"].includes(r.record) && existsSync(ventureFile(dir, file))) return { ok: false, error: `${route} is raw and immutable: add a new capture, do not edit this one` };
+    if (["idea-dump", "raw-text", "raw-dump", "triage"].includes(r.record) && existsSync(ventureFile(dir, file))) return { ok: false, error: `${route} is raw and immutable: add a new capture, do not edit this one` };
     // Agent drafts are refused here because accepting one moves the whole file into place, and this draft holds only a view of it.
     if (r.view_of && (actor !== "person" || actingAgent(provenance.agent?.id) || remote || attrs.length)) return { ok: false, error: `only a person writes ${route}, in the venture's own folder; it holds part of ${file}` };
     // A record that names its venture names the one it is written to (naive#71): a record carried over from another
