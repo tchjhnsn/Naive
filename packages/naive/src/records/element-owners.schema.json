@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Element owners",
+  "description": "The accountable owner a venture names for an element of APQC's Process Classification Framework (EE-187): a category, process group, process, activity or task in packages/naive/src/functions/pcf.json. An element with no entry takes its parent's owner, and a category with none is owned by its function's agent. The owner is accountable, the one who answers for the element; who performs an activity is in operations/activity-assignments.json. The file is operations/element-owners.json, and packages/naive/src/engine/element-owners.ts resolves it.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "owners"
+  ],
+  "properties": {
+    "owners": {
+      "type": "object",
+      "description": "Per element, by its APQC hierarchy id (3.0 for a category, 3.5 for a process group, 3.5.1.6 for an activity): the role or the person accountable for it",
+      "propertyNames": {
+        "pattern": "^\\d{1,2}\\.\\d{1,2}(\\.\\d{1,2}){0,3}$"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "oneOf": [
+          { "required": ["role"] },
+          { "required": ["person"] }
+        ],
+        "properties": {
+          "role": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+            "description": "A role id: a role template in packages/naive/template/governance/roles/ or the venture's governance/roles/, or a function agent, <function>-agent. A role whose template has default_tier person is a person; the rest are agents"
+          },
+          "person": {
+            "type": "string",
+            "minLength": 1,
+            "description": "A person by name, when the accountable owner is a named person rather than a role"
+          }
+        }
+      }
+    }
+  }
+}
