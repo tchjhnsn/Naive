@@ -28,7 +28,11 @@
       "skill": "working-procedure",
       "writes": [
         "capabilities/processes/[id]"
-      ]
+      ],
+      "consider": {
+        "why": "A process written down can be measured and improved once work repeats.",
+        "when": "The business is in Scale or later, or the same work has repeated often enough that the founder wants it written down."
+      }
     },
     {
       "id": "ask-postmortem-triggers",
@@ -37,7 +41,11 @@
       "ask": true,
       "writes": [
         "capabilities/postmortems/[id]"
-      ]
+      ],
+      "consider": {
+        "why": "A blameless review keeps a failure from repeating.",
+        "when": "The business is in Scale or later, or something failed in a way the founder wants never to repeat."
+      }
     },
     {
       "id": "summarize",

@@ -24,7 +24,11 @@
       "ask": true,
       "writes": [
         "investors/[id]"
-      ]
+      ],
+      "consider": {
+        "why": "Each holder of equity, a SAFE or a note needs a record.",
+        "when": "Anyone already holds equity, a SAFE or a note, or the founder has talked to someone about investing."
+      }
     },
     {
       "id": "ask-raise",
@@ -36,7 +40,11 @@
       ],
       "raises": [
         "strategy-or-constitution"
-      ]
+      ],
+      "consider": {
+        "why": "A raise needs its ask, milestone and stop date before anyone is asked.",
+        "when": "The business is in Scale or later, or the founder is raising or means to."
+      }
     },
     {
       "id": "ask-metrics",
@@ -52,7 +60,11 @@
       ],
       "raises": [
         "public-commitment"
-      ]
+      ],
+      "consider": {
+        "why": "People who hold equity or a SAFE expect regular updates.",
+        "when": "The business is in Scale or later, or anyone holds equity or a SAFE."
+      }
     },
     {
       "id": "summarize",

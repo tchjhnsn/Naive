@@ -2372,6 +2372,45 @@
       "sources": [
         "EE-191"
       ]
+    },
+    {
+      "id": "allowed-source",
+      "label": "Allowed source",
+      "form": "compound",
+      "level": "source",
+      "kind": "act",
+      "labels": {
+        "designation": "term",
+        "scope": "shared",
+        "origin": {
+          "kind": "operationally-coined"
+        },
+        "grade": "none"
+      },
+      "meaning": "A source we may keep. Its host is not on the closed deny list, and the fetch was logged off.",
+      "status": "proposed",
+      "hash": "1d9848f1a658cee5",
+      "properties": [
+        {
+          "id": "A1",
+          "says": "the host of the url or the archive is not denied"
+        },
+        {
+          "id": "A2",
+          "says": "the fetch was logged off"
+        }
+      ],
+      "rule": "every property, and P7 (confirmed facts)",
+      "valid": true,
+      "passes": 4498,
+      "relations": {},
+      "predictions": [],
+      "lean": [
+        "denied_host_never_allowed"
+      ],
+      "sources": [
+        "EE-192"
+      ]
     }
   ],
   "fixtures": [

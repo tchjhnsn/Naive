@@ -2748,6 +2748,42 @@
       ]
     },
     {
+      "id": "EE-192",
+      "date": "2026-11-26",
+      "status": "in-force",
+      "decision": "A raw source is written with its text in one write, create-only, and the router sets sha256 from the text. A second write to the same id is refused, and a write whose text hashes to a source already in the venture is refused, naming that source. The allowed-source term refuses a host on the closed deny list (linkedin.com, www.linkedin.com, g2.com, www.g2.com) and a fetch the input says used a login.",
+      "why": "Free public data only (Torian, 2026-11-26). No LinkedIn scraping (Torian). G2's terms ban scrapers. Raw is immutable (EE-070). A source without its text failed naive check.",
+      "related": [
+        "EE-070",
+        "EE-095"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/records/raw-source.schema.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/router/raw-source.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/lean/Naive/Sources.lean",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "term",
+          "target": "allowed-source",
+          "expect": "defined"
+        }
+      ]
+    },
+    {
       "id": "EE-150",
       "date": "2026-11-19",
       "status": "in-force",
