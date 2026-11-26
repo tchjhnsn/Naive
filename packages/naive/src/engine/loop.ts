@@ -8,8 +8,10 @@
 //   auto    the loop starts it as its function agent.
 //
 // The mode is set in naive.config.json under `loops`: for the venture (`mode`), per function (`functions`) and per
-// workflow (`workflows`). The most specific one wins: workflow, then function, then venture, then manual. A workflow
-// the venture's phase does not list as active is left alone unless a mode is set for that workflow by name.
+// workflow (`workflows`). An open campaign or sprint (operations/time-boxes/<id>.json, EE-186) that covers a workflow
+// and names a `loop_mode`, with the person who set it, sets the mode while it is open. The most specific one wins:
+// workflow, then time box, then function, then venture, then manual. A workflow the venture's phase does not list as
+// active is left alone unless a mode is set for that workflow by name or by a time box that covers it.
 //
 // No mode goes past the gate. Starting a workflow only starts its function agent (naive agent run, through
 // NAIVE_AGENT_CMD): every write that agent makes still meets the gate as that role, a write the gate holds still
@@ -38,7 +40,7 @@ import { ventureFile } from "../core/venture-paths.ts";
 import { main as agentMain } from "./agents/run.ts";
 import { decisionFile, propose } from "./decisions.ts";
 import { dueFor, recordRun, workflowsOf } from "./due.ts";
-import type { DueEntry } from "./due.ts";
+import type { CoveringBox, DueEntry } from "./due.ts";
 import { CONFIG, readConfig, writeConfig } from "./naive-config.ts";
 import { functionsOf } from "./research-programs.ts";
 
@@ -46,7 +48,7 @@ export const MODES = ["manual", "ask", "auto"] as const;
 export type LoopMode = typeof MODES[number];
 /** `loops` in naive.config.json. */
 export type LoopConfig = { mode?: LoopMode; functions?: Record<string, LoopMode>; workflows?: Record<string, LoopMode>; set_by?: { person: string; at: string } };
-export type ModeFrom = "workflow" | "function" | "venture" | "default";
+export type ModeFrom = "workflow" | "time-box" | "function" | "venture" | "default";
 /** What a person said to the loop's question about one occurrence: the decision's status and answer. */
 export type Asked = { status: string; answer: string | null };
 export type LoopAction = "start" | "ask" | "wait" | "skip" | "leave" | "blocked";
@@ -74,11 +76,12 @@ export const LOCK = ".naive/loop.lock";
 export const ASKER = "loop";
 export const isMode = (m: unknown): m is LoopMode => typeof m === "string" && (MODES as readonly string[]).includes(m);
 
-/** The mode for one workflow: workflow, then function, then venture, then manual. */
-export function modeFor(cfg: LoopConfig | undefined, workflow: string): { mode: LoopMode; from: ModeFrom } {
+/** The mode for one workflow: workflow, then the open time box that covers it, then function, then venture, then manual. A time box's mode counts only with the person who set it. */
+export function modeFor(cfg: LoopConfig | undefined, workflow: string, box: CoveringBox | null = null): { mode: LoopMode; from: ModeFrom } {
   const fn = workflow.split("/")[0];
   const w = cfg?.workflows?.[workflow], f = cfg?.functions?.[fn];
   if (isMode(w)) return { mode: w, from: "workflow" };
+  if (box && isMode(box.loop_mode) && box.set_by) return { mode: box.loop_mode, from: "time-box" };
   if (isMode(f)) return { mode: f, from: "function" };
   if (isMode(cfg?.mode)) return { mode: cfg.mode, from: "venture" };
   return { mode: "manual", from: "default" };
@@ -93,10 +96,10 @@ export function askId(e: Pick<DueEntry, "workflow" | "last_done" | "last_failed"
 /** What a tick would do with each due workflow, in the order given. `canStart` is whether a harness is named to start an agent with. */
 export function plan(entries: readonly DueEntry[], cfg: LoopConfig | undefined, asked: ReadonlyMap<string, Asked>, canStart: boolean): LoopStep[] {
   return entries.filter((e) => e.status === "due").map((e): LoopStep => {
-    const { mode, from } = modeFor(cfg, e.workflow);
+    const { mode, from } = modeFor(cfg, e.workflow, e.time_box);
     const base = { workflow: e.workflow, role: e.role, mode, from, due: e.why };
-    const where = from === "default" ? "no mode is set" : `set for the ${from}`;
-    if (!e.in_phase && from !== "workflow") return { ...base, action: "leave", decision: null, why: "The venture's phase does not list it as active, and no mode is set for this workflow by name." };
+    const where = from === "default" ? "no mode is set" : from === "time-box" && e.time_box ? `set by ${e.time_box.set_by ?? "a person"} for the ${e.time_box.kind} ${e.time_box.id}` : `set for the ${from}`;
+    if (!e.in_phase && from !== "workflow" && from !== "time-box") return { ...base, action: "leave", decision: null, why: "The venture's phase does not list it as active, and no mode is set for this workflow by name or by an open time box." };
     if (mode === "manual") return { ...base, action: "leave", decision: null, why: `Its mode is manual (${where}): a person starts it.` };
     const start = (decision: string | null, why: string): LoopStep => canStart
       ? { ...base, action: "start", decision, why }

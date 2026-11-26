@@ -2179,6 +2179,8 @@ export type FunctionWorkflow = {
     cadence?: "daily" | "weekly" | "monthly" | "quarterly";
     /** For event: the route pattern whose write starts it. */
     route?: string;
+    /** Only while a time box of this kind is open that lists the workflow or its function (operations/time-boxes/<id>.json, EE-186). Outside one the workflow is not due, whatever its kind says. */
+    during?: "campaign" | "sprint";
   };
   /** Route patterns the agent reads first. */
   reads?: string[];
@@ -5975,6 +5977,52 @@ export type Telos = {
     note?: string;
   };
 };
+
+/** One campaign or sprint (EE-186), at operations/time-boxes/<id>.json (route operations/time-box/[id]): a stretch of time a person sets for some of the business's work, with a goal, a start and an end. It is open from `starts` until `ends` unless a person closed or cancelled it first. While it is open, a function workflow whose trigger says `during` its kind is due when it lists the workflow or its function (packages/naive/src/engine/due.ts), and the loop takes `loop_mode` for the workflows it lists (packages/naive/src/engine/loop.ts). Only a person writes it (writer person), because it commits the business's time. */
+export type TimeBox = {
+  /** The file name without .json */
+  id: string;
+  /** campaign: a marketing or sales push toward an audience. sprint: a fixed stretch of building or operating work (Scrum Guide 2020) */
+  kind: "campaign" | "sprint";
+  title: string;
+  /** What the time box is for, in one sentence: the Sprint Goal, or the campaign's objective */
+  goal: string;
+  /**
+   * When it opens
+   * @format date-time
+   */
+  starts: string;
+  /**
+   * When it closes on its own. A write is refused unless this is after starts (packages/naive/src/engine/time-box-span.ts).
+   * @format date-time
+   */
+  ends: string;
+  /** active: open between starts and ends. closed: a person ended it, at its end or early. cancelled: a person called it off */
+  status: "active" | "closed" | "cancelled";
+  /** The functions whose workflows it covers, ids in packages/naive/src/functions/departments.json */
+  functions?: ("strategy" | "products" | "marketing-and-sales" | "supply-chain" | "service-delivery" | "customer-service" | "human-capital" | "it" | "finance" | "assets" | "risk-and-compliance" | "external-relationships" | "capabilities")[];
+  /** Workflows it covers by name, `<function>/<workflow>`, as a phase module names them */
+  workflows?: string[];
+  /** The loop mode for the workflows it covers while it is open. A mode set in naive.config.json for a workflow by name still wins */
+  loop_mode?: "manual" | "ask" | "auto";
+  /** The person who set loop_mode, and when */
+  set_by?: {
+    person: string;
+    /**
+     * @format date-time
+     */
+    at: string;
+  };
+  /** Who is accountable for the goal, a person or a role id */
+  owner?: string;
+  note?: string;
+} & ({
+  /** The functions whose workflows it covers, ids in packages/naive/src/functions/departments.json */
+  functions: ("strategy" | "products" | "marketing-and-sales" | "supply-chain" | "service-delivery" | "customer-service" | "human-capital" | "it" | "finance" | "assets" | "risk-and-compliance" | "external-relationships" | "capabilities")[];
+} | {
+  /** Workflows it covers by name, `<function>/<workflow>`, as a phase module names them */
+  workflows: string[];
+});
 
 /** The catalog of tools a business needs, at packages/naive/src/functions/tools.json (venture console spec, 2026-11-24, phase 3). It is a three-level taxonomy: function (APQC level 1, an id in packages/naive/src/functions/departments.json), process group (APQC level 2), tool. Each tool names the record types it reads and writes, so a console can build its navigation and each screen from Naive data instead of a hand-kept list. A tool whose function is null is universal: every business gets it. It names no vendor: every object allows only the properties listed. packages/naive/src/checks/check-tools.ts checks it across files. */
 export type ToolCatalog = {
