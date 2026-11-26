@@ -1,0 +1,16 @@
+{
+  "id": "campaign-daily-review",
+  "function": "marketing-and-sales",
+  "title": "Review an open campaign each day",
+  "trigger": { "kind": "schedule", "cadence": "daily", "during": "campaign" },
+  "reads": ["operations/time-box/[id]", "sales/opportunities", "foundation/icp", "governance/publication-policy"],
+  "steps": [
+    { "id": "count-responses", "do": "Count the leads and replies that came in since the campaign started, by channel, and compare them with the campaign's goal.", "skill": "pipeline-review" },
+    { "id": "answer-leads", "do": "For each new lead with no first response, write the opportunity and draft the reply for the founder to send.", "skill": "pipeline-review", "writes": ["sales/opportunities/[id]"], "raises": ["public-commitment"] },
+    { "id": "propose-change", "do": "When responses fall short of the goal's pace, propose to the growth lead one change to the message or the channel for tomorrow.", "raises": ["set-priorities"] }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "every-lead-answered", "kind": "review", "check": "Does every lead that came in during the campaign have an opportunity and a reply sent or drafted?", "reviewer": "growth-lead" }
+  ]
+}
