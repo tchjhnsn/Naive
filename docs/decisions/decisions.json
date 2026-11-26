@@ -3063,6 +3063,51 @@
       ]
     },
     {
+      "id": "EE-213",
+      "date": "2026-11-26",
+      "status": "in-force",
+      "decision": "Work a venture passed over is kept, and a function agent may spawn a temporary specialist of itself. Skipped work is derived, never a record: `naive skipped` reads the run log and the shipped workflows and lists each occurrence a person skipped and each step the latest finished run that reported its steps left out, in the order APQC's framework gives, with what the item's element feeds downstream when the element graph can tell. A run reports what it finished with `naive due record --steps`, and a run that reports none says nothing about its steps. Nothing judges a step's `when`: it stays a sentence a person or the function's agent reads, so a consider step is listed with its block and is not required. `naive skipped handback` files one open decision asking the owning function agent to recommend do-now, defer or drop, and a person decides; the loop only names how many items wait and never acts on one. A specialist is a record at `operations/specialists/<role>.json` that `naive agent spawn` writes and runs through NAIVE_AGENT_CMD, and its reach is the globs of its record intersected with its parent's own reach, read fresh on every write, so a finished, revoked or expired specialist, or one whose record was widened by hand, is refused before the schema. A spawn needs no person, because the agent is dividing work it may already do and every write still meets the gate as the specialist's own role. The default ttl is an unvalidated prior in `packages/naive/src/engine/specialists.json` that a venture overrides with `specialists.default_ttl` in `naive.config.json`.",
+      "why": "Torian decided this on 2026-11-26: work should be walked in hierarchical order with a loop back to what was skipped, and an agent should be able to spawn a temporary specialist for a task its own skills do not cover. Keeping the ledger derived means nothing has to be kept in step with the run log, and intersecting a specialist's globs with its parent's at every write makes a wider reach structurally impossible rather than a rule someone must enforce.",
+      "related": [
+        "EE-124",
+        "EE-181",
+        "EE-182",
+        "EE-183",
+        "EE-188"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/skipped.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/agents/specialist.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/records/specialist.schema.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/specialists.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "record",
+          "target": "specialist",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
       "id": "EE-223",
       "date": "2026-11-26",
       "status": "in-force",
