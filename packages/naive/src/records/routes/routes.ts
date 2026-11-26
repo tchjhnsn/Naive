@@ -363,6 +363,7 @@ export function allowed(dir: string | null | undefined, actorId: string | null |
 const PACKAGE_ROUTE: Readonly<Record<string, string>> = {
   "validation-problem": "foundation/problem", icp: "foundation/icp", telos: "foundation/telos", alignment: "foundation/alignment",
   goal: "foundation/goals", requirement: "foundation/requirements", "exit-criteria": "foundation/exit-criteria", constraints: "foundation/constraints", "venture-core": "foundation/core",
+  "pre-registration": "foundation/pre-registration",
   "validation-solution": "validation/solution", "validation-pricing": "validation/pricing", "validation-plan": "validation/plan", "validation-go-to-market": "validation/go-to-market",
   "validation-product-market-fit": "validation/product-market-fit", "validation-operations-readiness": "validation/operations-readiness",
   "validation-team": "people/team", "team-plan": "people/team-plan", "marketing-sitemap": "marketing/sitemap", "marketing-content": "marketing/content", "marketing-message": "marketing/message",

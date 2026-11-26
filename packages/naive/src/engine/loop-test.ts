@@ -45,13 +45,14 @@ expect("a sprint still asks before it restarts a failed workflow", one({ ...brok
 
 expect("a config check finds a mode outside the three, an unknown function or workflow, and a mode past manual with no person", loopProblems({ mode: "bypass" as "auto" }, [], []).length === 1 && loopProblems({ functions: { g: "manual" } }, ["f"], []).length === 1 && loopProblems({ workflows: { "f/x": "manual" } }, ["f"], ["f/w"]).length === 1 && loopProblems({ mode: "auto" }, [], []).length === 1 && loopProblems({ mode: "auto", set_by: { person: "Ada", at: "2026-06-01" } }, [], []).length === 0 && loopProblems({ mode: "manual" }, [], []).length === 0);
 
-// One venture folder: two functions in Discovery, read from the shipped function modules. Its strategy foundation and
+// One venture folder: two functions in Discovery, read from the shipped function modules. Its pre-registration (EE-220), strategy foundation and
 // its founding strategy meeting are there, so no workflow is blocked on its prerequisites (EE-217) and the modes alone
 // decide what starts; packages/naive/src/engine/prerequisites-test.ts tests the lock itself.
 const dir = mkdtempSync(join(tmpdir(), "naive-loop-"));
 try {
   writeFileSync(join(dir, "venture.json"), JSON.stringify({ id: "v", name: "V", phase: "discovery", departments: ["strategy", "customer-service"] }));
   const put = (rel: string, body: unknown) => { mkdirSync(join(dir, rel.split("/").slice(0, -1).join("/")), { recursive: true }); writeFileSync(join(dir, rel), JSON.stringify(body, null, 2) + "\n"); };
+  put("foundation/pre-registration/first-test.json", { id: "first-test", status: "draft", thesis: { statement: "Founders run what the loop starts." } });
   put("foundation/problem.json", { venture: "v", problem: "Nothing says what is blocked." });
   put("foundation/icp/primary.json", { venture: "v", id: "primary", name: "Solo founder" });
   put("foundation/goals/telos.json", { venture: "v", id: "telos", goal: "Know what is blocked." });

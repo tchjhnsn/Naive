@@ -87,6 +87,15 @@
 //                                                   counted, labelled primary, secondary and tertiary (EE-219)
 //   naive blocked [--json]                          every workflow of the venture's functions, in hierarchical order,
 //                                                   met or blocked, and what unblocks it first (EE-217)
+//   naive prereg [show [<id>]] [--json]             the venture's pre-registrations: the thesis, the measures with the
+//                                                   thresholds and dates they are judged by, what does not count as
+//                                                   evidence, and what it said it would do on a pass and a fail (EE-220)
+//   naive prereg register <id> --by <person>        a person fixes the plan: from then on its thesis, assumptions,
+//                                                   method, measures, thresholds, dates, exclusions and decision rules
+//                                                   never change, and a change is a deviation or a new version
+//   naive prereg result <id> --measure <m>=<value> [--evidence <ref>] [--by <person>]
+//                                                   what was observed for one measure, with its pass or fail against
+//                                                   the registered threshold; the verdict over the test is a person's
 //   naive owners [--function <id>] [--level <n>] [--json]
 //                                                   the accountable owner of each APQC element the venture runs, a
 //                                                   person or an agent, and where it came from (EE-187)
@@ -525,6 +534,11 @@ else if (cmd === "build" || cmd === "start") {
   // rank, and --json pass through. It reads only.
   const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
   process.exit(run("packages/naive/src/engine/problems.ts", [here(), ...args]));
+} else if (cmd === "prereg") {
+  // Pre-registrations: the plan for a test, fixed before it runs (EE-220,
+  // packages/naive/src/router/orchestration/pre-registration.ts). register is a person's.
+  const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
+  process.exit(run("packages/naive/src/router/orchestration/pre-registration.ts", [here(), ...(args.length ? args : ["show"])]));
 } else if (cmd === "owners") {
   // Who is accountable for each element of APQC's framework (packages/naive/src/engine/element-owners.ts, EE-187).
   const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
