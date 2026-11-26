@@ -2844,6 +2844,21 @@
       "note": "The rubric for judging which programming language fits a system (EE-189): criteria with a question, why, a 0 to 4 scale and a default weight that is an unvalidated prior, gates that rule a candidate out, and Naive's own choices as worked examples. packages/naive/src/engine/language-rubric.ts ranks candidates; a person decides"
     },
     {
+      "id": "visibility-rubric",
+      "layer": "operations",
+      "function": "it",
+      "level": "method",
+      "schema": "packages/naive/src/records/visibility-rubric.schema.json",
+      "generator": "packages/naive/src/engine/generators/visibility-rubric.ts",
+      "paths": [
+        "packages/naive/src/functions/it/visibility-rubric.json"
+      ],
+      "refs": [
+        { "field": "criteria[].sources", "to": "reference", "checked_by": "packages/naive/src/checks/check-visibility-rubric.ts" }
+      ],
+      "note": "The rubric for judging how far a tool gives the system visibility of an activity and how far the venture owns the record (EE-222): criteria with a question, why, a 0 to 4 scale and a default weight that is an unvalidated prior, a gate on consent and retention, a blind spot where nothing is recorded, the channels an activity is performed on and the tool kinds that capture each, named as kinds and never as vendors. packages/naive/src/engine/visibility-rubric.ts ranks candidates and packages/naive/src/engine/tool-recommendations.ts reads a goal; a person decides"
+    },
+    {
       "id": "function-module",
       "layer": "operations",
       "function": "capabilities",

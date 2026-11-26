@@ -5,6 +5,7 @@
 // every package pinned is installed at that version (U-4); every owner is a role in the team plan
 // when the venture has one; every question setting names a framework that asks System 1 questions; every rule under
 // activity_proposals is a proposal rule of the activity catalog, with lines on its scales and inside their ranges (EE-170);
+// every criterion under visibility is a criterion of the visibility rubric (EE-222);
 // every function and workflow under loops is one the venture has, and a mode of ask or auto names who set it (EE-183).
 //
 //   node packages/naive/src/checks/check-config.ts <venture dir> [--json]        check; exit 1 on a problem
@@ -23,6 +24,7 @@ import { join, resolve as resolvePath } from "node:path";
 import { CONFIG, configFor, installed, pinProblems, rawConfig } from "../engine/naive-config.ts";
 import { evaluate, patternRe, rulesFor } from "../engine/gate.ts";
 import { readCatalog, ventureLineProblems } from "../engine/activity-proposals.ts";
+import { readRubric, ventureOptionProblems } from "../engine/tool-recommendations.ts";
 import { loopProblems } from "../engine/loop.ts";
 import { workflowsOf } from "../engine/due.ts";
 import { functionsOf } from "../engine/research-programs.ts";
@@ -67,6 +69,9 @@ export function check(dir: string): { errors: string[], warnings: string[], note
   }
   if (v.status === 0 && config.activity_proposals?.rules) {
     try { errors.push(...ventureLineProblems(runSync(readCatalog()), config.activity_proposals.rules)); } catch (e) { errors.push(e instanceof Error ? e.message : String(e)); }
+  }
+  if (v.status === 0 && config.visibility) {
+    try { errors.push(...ventureOptionProblems(runSync(readRubric()), config.visibility)); } catch (e) { errors.push(e instanceof Error ? e.message : String(e)); }
   }
   if (v.status === 0 && config.loops) {
     try { errors.push(...loopProblems(config.loops, functionsOf(dir), runSync(workflowsOf(dir)).map((w) => `${w.function}/${w.id}`))); } catch (e) { errors.push(e instanceof Error ? e.message : String(e)); }

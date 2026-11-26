@@ -1,0 +1,384 @@
+{
+  "version": "0.1.0",
+  "note": "The rubric for judging how far a tool gives the system visibility of an activity, and how far the venture owns the record (EE-222). It scores visibility and ownership and nothing else: what a tool costs, what it costs to leave and whether anyone would rather work in it are the tool-selection skill's questions (packages/naive/src/functions/it/skills/tool-selection/SKILL.md, principles 3 and 6). Every weight is an unvalidated prior: nobody has measured that these weights pick better tools, and a venture sets its own under visibility in naive.config.json. A candidate scored 0 on activity-record leaves the activity unrecorded and is flagged as a blind spot; it is still ranked, because only a person rules a tool out. A tool kind is a kind of tool and never a vendor: Naive names no vendor in code, and a venture's connection record (it/connections/<id>.json) names its own system. Each tool kind's scores are a prior for the kind, not a measurement of any product, and a venture scores its own candidates. A score never decides: packages/naive/src/engine/visibility-rubric.ts ranks candidates and a person chooses. Checked by packages/naive/src/checks/check-visibility-rubric.ts.",
+  "tie_band": 0.05,
+  "criteria": [
+    {
+      "id": "activity-record",
+      "title": "A record of the activity itself",
+      "question": "Does the tool keep a record of each time the activity happens, and not only of what it produced?",
+      "why": "An activity nothing records is a blind spot: an agent reading the venture's records cannot tell whether it happened, who did it or what was said, so it cannot pick the work up, check it or learn from it. Naive sees an agent's work by construction, because every write goes through the router and appends to provenance.jsonl (EE-031). A person's work is visible only as far as a tool captures it, which is why this carries the most weight.",
+      "iso25010": ["functional-suitability", "security"],
+      "levels": [
+        { "score": 0, "means": "Nothing is kept. The activity leaves no trace the system can read, so it is a blind spot." },
+        { "score": 1, "means": "A person has to write it down afterwards, in their own words, when they remember." },
+        { "score": 2, "means": "The tool keeps that it happened, with who and when, but not what was said or done." },
+        { "score": 3, "means": "The tool keeps the content too, a recording, a transcript, a thread or a line in a log, and a person can find it." },
+        { "score": 4, "means": "Every occurrence is kept with who, when and the full content, and the record appears without anyone remembering to make it." }
+      ],
+      "weight": 0.3,
+      "blind_spot": true,
+      "sources": ["google-sre-book", "iso-iec-25010-2023"],
+      "decisions": ["EE-031", "EE-121"]
+    },
+    {
+      "id": "ownership",
+      "title": "Who holds the record",
+      "question": "Who holds the record, and could the venture keep working with it if the tool went away tomorrow?",
+      "why": "Owning the tooling is the default: the record of what the venture did is the venture's asset, and a tool that holds it in a closed store makes every later choice the vendor's. Naive keeps a venture's records as files in its own store, read and written through the router, for this reason. ISO/IEC 25010:2023 calls this flexibility, and the licence of a self-hostable tool decides whether the venture may run it (SPDX).",
+      "iso25010": ["flexibility", "compatibility"],
+      "levels": [
+        { "score": 0, "means": "The vendor holds it, in a format nobody else reads, and there is no copy anywhere else." },
+        { "score": 1, "means": "The vendor holds it, with an export in a format only that vendor writes." },
+        { "score": 2, "means": "The vendor holds it and the venture keeps its own copy in an open format." },
+        { "score": 3, "means": "The venture could run the tool itself, under a licence it may use, and the record is in an open format." },
+        { "score": 4, "means": "The venture runs it and holds the record in its own store, in an open format, with nobody else in the path." }
+      ],
+      "weight": 0.25,
+      "sources": ["iso-iec-25010-2023", "spdx-license-list"],
+      "decisions": ["EE-031", "EE-037"]
+    },
+    {
+      "id": "export-and-api",
+      "title": "Getting the record out",
+      "question": "Can the venture read that record out of the tool, in bulk and through a documented interface, into its own records?",
+      "why": "A record the venture cannot read out is the tool's record, not the venture's. Naive reaches a venture's records through connectors (EE-037), and the source map gives each record type one system of record (EE-042); a tool with no interface has to be retyped by a person, which is the same as not having it.",
+      "iso25010": ["compatibility", "flexibility"],
+      "levels": [
+        { "score": 0, "means": "No export and no interface: the record can only be looked at inside the tool." },
+        { "score": 1, "means": "A screen a person copies from, or a one-off export the vendor runs on request." },
+        { "score": 2, "means": "A self-serve export of the current state, in a format a program can read." },
+        { "score": 3, "means": "A documented read interface, and a bulk export of the history." },
+        { "score": 4, "means": "A documented read and write interface and a bulk export, both in an open format a connector reads with no bespoke parser." }
+      ],
+      "weight": 0.2,
+      "sources": ["iso-iec-25010-2023"],
+      "decisions": ["EE-037", "EE-042"]
+    },
+    {
+      "id": "events",
+      "title": "Telling the system as it happens",
+      "question": "Does the tool tell the system as the activity happens, so an agent acts on it without being asked?",
+      "why": "A venture's loops run on events: a workflow with an event trigger is due when a record on its route goes live (EE-182), and the loop starts it as far as the venture's mode allows (EE-183). A tool the system has to poll is behind by however long the poll takes, and one that tells nobody leaves every reaction to a person remembering.",
+      "iso25010": ["compatibility", "reliability"],
+      "levels": [
+        { "score": 0, "means": "Nothing is sent. Something has to go and look." },
+        { "score": 2, "means": "The system finds out by asking on a schedule, or whenever a person gets round to entering it, so it is behind by that long." },
+        { "score": 3, "means": "A notification as it happens, without the content, and no way to replay one that was missed." },
+        { "score": 4, "means": "An event as it happens, carrying or naming the record, and replayable after an outage." }
+      ],
+      "weight": 0.15,
+      "sources": ["google-sre-book"],
+      "decisions": ["EE-182", "EE-183"]
+    },
+    {
+      "id": "consent-and-retention",
+      "title": "Consent, retention and deletion",
+      "question": "Does recording the activity meet the notice, consent and retention rules it is under, and can the venture delete a record when it must?",
+      "why": "Recording people is lawful only on a basis they were told about, kept no longer than it is needed for, and deletable when they ask (GDPR articles 5, 6, 7, 13 and 17). A tool that records a conversation the other party never agreed to, or that the venture cannot delete from, is a liability whatever it sees, so a 0 here rules a candidate out instead of costing it points.",
+      "iso25010": ["security"],
+      "levels": [
+        { "score": 0, "means": "Recording would be unlawful here, nobody is told, or the venture cannot delete a record it must delete." },
+        { "score": 2, "means": "Notice and consent are a manual step someone has to remember, and deletion is a request to someone else." },
+        { "score": 3, "means": "The tool asks for consent and holds a retention period the venture sets, and the venture can delete." },
+        { "score": 4, "means": "Consent is kept with the record, retention runs on the venture's own period, and one deletion reaches every copy." }
+      ],
+      "weight": 0.1,
+      "gate": true,
+      "sources": ["gdpr-2016-679"]
+    }
+  ],
+  "channels": [
+    {
+      "id": "conversation",
+      "title": "A conversation",
+      "means": "The activity happens by talking with people: a meeting, an interview, a call, a negotiation, a briefing.",
+      "record": "A recording or a transcript of what was said, with who was there and when, and the decisions it reached.",
+      "when": [
+        { "verbs": ["interview", "negotiate", "meet", "consult", "brief", "present", "facilitate", "conduct", "coach", "counsel", "interact", "engage"] },
+        { "terms": ["meeting", "meetings", "interview", "interviews", "negotiation", "negotiations", "call", "calls", "conversation", "conversations"] }
+      ],
+      "tool_kinds": ["self-hosted-recorder", "hosted-recorder", "plain-meeting-tool", "notes-by-hand"]
+    },
+    {
+      "id": "message",
+      "title": "A message to someone outside",
+      "means": "The activity happens by writing to a person outside the venture: an email, a campaign, a reply, an announcement.",
+      "record": "The message as sent, with its recipient, time, body and the consent it went out on.",
+      "when": [
+        { "verbs": ["communicate", "notify", "respond", "send", "correspond", "announce", "inform", "distribute", "reply", "contact"] },
+        { "terms": ["email", "emails", "message", "messages", "inquiries", "inquiry", "correspondence", "notice", "announcement", "campaign", "campaigns"] }
+      ],
+      "tool_kinds": ["message-log-the-system-reads", "personal-mailbox", "notes-by-hand"]
+    },
+    {
+      "id": "decision",
+      "title": "A decision a person makes",
+      "means": "The activity is a person choosing: approving, selecting, prioritizing, hiring, adopting, rejecting. These are the activities a person performs whatever else is true (EE-179).",
+      "record": "The decision record: the question, every option that was open, the answer, who decided and when, kept so the choice can be changed or withdrawn.",
+      "when": [
+        { "verbs": ["approve", "authorize", "select", "prioritize", "appoint", "hire", "adopt", "decide", "choose", "award", "reject", "agree", "articulate"] }
+      ],
+      "tool_kinds": ["own-record-store", "notes-by-hand"]
+    },
+    {
+      "id": "document",
+      "title": "A document the activity produces",
+      "means": "The activity happens by writing something down: a plan, a policy, a strategy, a specification, a budget.",
+      "record": "The document itself and every change to it, with who changed what and when.",
+      "when": [
+        { "verbs": ["define", "develop", "document", "draft", "prepare", "write", "formulate", "establish", "design", "specify", "publish", "create"] },
+        { "terms": ["plan", "plans", "policy", "policies", "report", "reports", "statement", "document", "documents", "specification", "strategy", "budget", "forecast"] }
+      ],
+      "tool_kinds": ["own-record-store", "versioned-document-store", "hosted-document-tool"]
+    },
+    {
+      "id": "transaction",
+      "title": "A transaction",
+      "means": "The activity moves money or takes on an obligation: a payment, an invoice, a payroll run, a filing.",
+      "record": "The transaction with its amount, counterparty, time and who approved it.",
+      "when": [
+        { "verbs": ["pay", "invoice", "remit", "file", "reconcile", "collect", "disburse", "transfer", "bill", "charge"] },
+        { "terms": ["payment", "payments", "invoice", "invoices", "payroll", "tax", "taxes", "cash", "funds", "receipts", "reimbursements"] }
+      ],
+      "tool_kinds": ["ledger-with-events", "own-record-store", "notes-by-hand"]
+    },
+    {
+      "id": "observation",
+      "title": "An observation",
+      "means": "The activity is looking at how something is going: monitoring, measuring, evaluating, auditing, benchmarking.",
+      "record": "The reading taken, what it was taken against and when, so the next one can be compared with it.",
+      "when": [
+        { "verbs": ["monitor", "measure", "track", "evaluate", "assess", "audit", "inspect", "benchmark", "analyze", "survey"] },
+        { "terms": ["performance", "satisfaction", "metrics", "quality", "results", "compliance", "utilization"] }
+      ],
+      "tool_kinds": ["own-telemetry", "hosted-analytics", "notes-by-hand"]
+    },
+    {
+      "id": "work-in-a-tool",
+      "title": "Work inside a tool",
+      "means": "The activity happens inside whatever tool the venture uses for it, and its words say nothing about how. The default channel, so its recommendation is the weakest of the six.",
+      "record": "What the tool did, read out of it: an entry, a state change, an action with who took it and when.",
+      "default": true,
+      "tool_kinds": ["own-record-store", "tool-with-a-read-api", "notes-by-hand"]
+    }
+  ],
+  "tool_kinds": [
+    {
+      "id": "own-record-store",
+      "kind": "The venture's own record store, written through the router: records as files the venture holds, each write appended to its provenance log",
+      "captures": ["decision", "document", "transaction", "work-in-a-tool"],
+      "scores": { "activity-record": 4, "ownership": 4, "export-and-api": 4, "events": 4, "consent-and-retention": 3 },
+      "why": {
+        "activity-record": "Every write is a record and a provenance line naming who wrote it, when and why (EE-031), and the bytes go to the blob store so a past version can be read back.",
+        "ownership": "The records are files in the venture's own store, in JSON, with nobody else in the path.",
+        "export-and-api": "The router reads and writes them through the CLI, the MCP server and the HTTP API (EE-030), and the files are JSON validated by JSON Schema.",
+        "events": "A trigger runs after each write, once per event even across a crash (EE-161), and an event-triggered workflow becomes due when a record on its route goes live (EE-182).",
+        "consent-and-retention": "The venture sets its own freshness and retention and can delete any record, and check-private.ts keeps a private record away from a model; getting consent from whoever the record is about is still the venture's own step."
+      },
+      "rated": { "by": "agent", "on": "2026-11-26", "basis": "The cited decisions and the router, provenance and freshness code in this repository. A person may change any score." }
+    },
+    {
+      "id": "versioned-document-store",
+      "kind": "A version-controlled document store the venture holds, where every change is a commit",
+      "captures": ["document"],
+      "scores": { "activity-record": 3, "ownership": 3, "export-and-api": 4, "events": 3, "consent-and-retention": 2 },
+      "why": {
+        "activity-record": "Every change is a commit with an author, a time and a diff; what happened between two commits is not kept.",
+        "ownership": "The venture can run the server itself under a licence it may use, and the history is in an open format every clone holds.",
+        "export-and-api": "A clone is the whole history, and the hosting has a documented read and write interface.",
+        "events": "A hook or a feed fires on each push; whether a missed one can be replayed depends on the host.",
+        "consent-and-retention": "The history is append-only by design, so deleting a record means rewriting it everywhere, and retention is whatever the repository keeps."
+      },
+      "rated": { "by": "agent", "on": "2026-11-26", "basis": "How a version-controlled store works, as Naive itself uses one. A person may change any score." }
+    },
+    {
+      "id": "hosted-document-tool",
+      "kind": "A hosted document tool with revision history, an export and a change feed",
+      "captures": ["document"],
+      "scores": { "activity-record": 3, "ownership": 1, "export-and-api": 2, "events": 2, "consent-and-retention": 2 },
+      "why": {
+        "activity-record": "Revision history keeps the content with who changed it and when.",
+        "ownership": "The vendor holds the document, and the export is usually in a format only that vendor writes without loss.",
+        "export-and-api": "A self-serve export of the current document; the revision history rarely comes with it.",
+        "events": "A change feed the system asks on a schedule, so it finds out late.",
+        "consent-and-retention": "Retention and deletion are the vendor's settings, and a deletion may not reach every copy."
+      },
+      "rated": { "by": "agent", "on": "2026-11-26", "basis": "The kind, not any product: a hosted editor whose history is the vendor's. A person may change any score." }
+    },
+    {
+      "id": "self-hosted-recorder",
+      "kind": "Meeting software the venture runs itself that records and transcribes, leaving the file in the venture's own store",
+      "captures": ["conversation"],
+      "scores": { "activity-record": 4, "ownership": 4, "export-and-api": 4, "events": 3, "consent-and-retention": 3 },
+      "why": {
+        "activity-record": "Every meeting leaves a recording and a transcript with who was there and when, without anyone remembering to make notes.",
+        "ownership": "The venture runs it and the media and transcript land in its own store, in open formats.",
+        "export-and-api": "The files are already the venture's, and the transcript is text a connector reads with no parser.",
+        "events": "The venture's own job fires when a recording lands; a signed, replayable stream is something it would have to build.",
+        "consent-and-retention": "The venture sets the retention period and can delete every copy, because it holds them all; asking the other party's consent is still a step in the meeting."
+      },
+      "rated": { "by": "agent", "on": "2026-11-26", "basis": "The kind, not any product. A person may change any score." }
+    },
+    {
+      "id": "hosted-recorder",
+      "kind": "Hosted meeting software that records and transcribes, with a documented interface and an event per recording",
+      "captures": ["conversation"],
+      "scores": { "activity-record": 4, "ownership": 1, "export-and-api": 3, "events": 4, "consent-and-retention": 2 },
+      "why": {
+        "activity-record": "Every meeting is recorded and transcribed with who was there and when, with nothing for a person to remember.",
+        "ownership": "The vendor holds the media and the transcript, and the export is in its own shape.",
+        "export-and-api": "A documented read interface and a bulk export; the media often comes as a link that expires.",
+        "events": "An event per recording as it finishes, carrying its id, replayable after an outage.",
+        "consent-and-retention": "The consent prompt and the retention period are the vendor's settings, and deletion is a request to it."
+      },
+      "rated": { "by": "agent", "on": "2026-11-26", "basis": "The kind, not any product. A person may change any score." }
+    },
+    {
+      "id": "plain-meeting-tool",
+      "kind": "Meeting software that places the call and records nothing",
+      "captures": ["conversation"],
+      "scores": { "activity-record": 0, "ownership": 0, "export-and-api": 0, "events": 0, "consent-and-retention": 4 },
+      "why": {
+        "activity-record": "Nothing is kept. The meeting happened and no record says so, which is the blind spot this rubric exists to name.",
+        "ownership": "There is no record to hold.",
+        "export-and-api": "There is nothing to export.",
+        "events": "Nothing is sent, and nothing to send.",
+        "consent-and-retention": "Nothing is recorded, so there is nothing to consent to, keep or delete. A high score here buys back none of the rest."
+      },
+      "rated": { "by": "agent", "on": "2026-11-26", "basis": "The kind, not any product. It is in the rubric as the blind spot to compare against. A person may change any score." }
+    },
+    {
+      "id": "notes-by-hand",
+      "kind": "A person writes notes into the venture's own records after the fact",
+      "captures": ["conversation", "message", "decision", "transaction", "observation", "work-in-a-tool"],
+      "scores": { "activity-record": 1, "ownership": 4, "export-and-api": 4, "events": 2, "consent-and-retention": 3 },
+      "why": {
+        "activity-record": "What is kept is what the person chose to write, when they got to it. An activity nobody wrote up is invisible, and nothing says which ones those were.",
+        "ownership": "The note is a record in the venture's own store.",
+        "export-and-api": "It is read and written through the router like any record.",
+        "events": "The system finds out when the note is written, which is whenever the person gets round to it.",
+        "consent-and-retention": "The venture sets retention and can delete the note; what it holds about anyone is what the person wrote."
+      },
+      "rated": { "by": "agent", "on": "2026-11-26", "basis": "This is the fallback every venture already has, so it is the floor a tool must beat. A person may change any score." }
+    },
+    {
+      "id": "message-log-the-system-reads",
+      "kind": "A shared mailbox or channel the system reads through a documented interface, with an event per message and consent in the delivery path",
+      "captures": ["message"],
+      "scores": { "activity-record": 3, "ownership": 2, "export-and-api": 3, "events": 4, "consent-and-retention": 3 },
+      "why": {
+        "activity-record": "Every message is kept with its sender, recipient, time and body; what was said on a call about it is not there.",
+        "ownership": "The provider holds the mailbox, and the venture keeps its own copy of each message in an open format.",
+        "export-and-api": "A documented read interface and a bulk export of the history.",
+        "events": "An event per message as it arrives or goes out, replayable.",
+        "consent-and-retention": "Consent and unsubscribe sit in the delivery path, which is why the messaging-delivery capability cluster exists, and retention runs on the venture's period."
+      },
+      "rated": { "by": "agent", "on": "2026-11-26", "basis": "The kind, not any product, read against the messaging-delivery cluster in packages/naive/src/functions/it/capability-clusters.json. A person may change any score." }
+    },
+    {
+      "id": "personal-mailbox",
+      "kind": "One person's own mailbox, which nothing else reads",
+      "captures": ["message"],
+      "scores": { "activity-record": 3, "ownership": 1, "export-and-api": 0, "events": 0, "consent-and-retention": 2 },
+      "why": {
+        "activity-record": "The thread is kept with who, when and the body, in that one person's account.",
+        "ownership": "The provider holds it and no copy reaches the venture's store.",
+        "export-and-api": "Nothing else reads it, so the system learns of a message only when the person says so.",
+        "events": "Nothing is sent to the venture.",
+        "consent-and-retention": "Notice and consent are whatever the person wrote, and retention and deletion are theirs."
+      },
+      "rated": { "by": "agent", "on": "2026-11-26", "basis": "The kind, not any product. A person may change any score." }
+    },
+    {
+      "id": "ledger-with-events",
+      "kind": "A ledger or rail that keeps every transaction, emits an event for each and exports the whole history in an open format",
+      "captures": ["transaction"],
+      "scores": { "activity-record": 4, "ownership": 1, "export-and-api": 3, "events": 4, "consent-and-retention": 3 },
+      "why": {
+        "activity-record": "Every transaction is kept with its amount, counterparty, time and who approved it.",
+        "ownership": "The rail holds the authoritative ledger and the venture cannot be the rail, which is what the money-and-books capability cluster says.",
+        "export-and-api": "A documented read interface and a bulk export of the history.",
+        "events": "An event per transaction, replayable.",
+        "consent-and-retention": "Retention is set by law and the tool holds it; the venture can delete what it is allowed to delete."
+      },
+      "rated": { "by": "agent", "on": "2026-11-26", "basis": "The kind, not any product, read against the money-and-books cluster in packages/naive/src/functions/it/capability-clusters.json. A person may change any score." }
+    },
+    {
+      "id": "own-telemetry",
+      "kind": "Telemetry the venture collects and stores itself, in its own store, in an open format",
+      "captures": ["observation"],
+      "scores": { "activity-record": 4, "ownership": 4, "export-and-api": 4, "events": 4, "consent-and-retention": 3 },
+      "why": {
+        "activity-record": "Every reading is kept as it is taken, with what it was taken against and when.",
+        "ownership": "The venture runs the collection and holds the store, in an open format.",
+        "export-and-api": "It is the venture's own store, read like any record.",
+        "events": "The venture emits the events, so an agent sees each reading as it lands.",
+        "consent-and-retention": "The venture sets retention and can delete; whether it may collect a given reading about a person is still its own call."
+      },
+      "rated": { "by": "agent", "on": "2026-11-26", "basis": "The kind. It scores highest on every criterion and still costs the most to build and keep, which this rubric does not score: that is the tool-selection skill's question. A person may change any score." }
+    },
+    {
+      "id": "hosted-analytics",
+      "kind": "A hosted analytics tool with a query interface and a bulk export",
+      "captures": ["observation"],
+      "scores": { "activity-record": 3, "ownership": 1, "export-and-api": 3, "events": 2, "consent-and-retention": 2 },
+      "why": {
+        "activity-record": "Readings are kept with their time and dimensions, as far as the tool was told to collect them.",
+        "ownership": "The vendor holds the store, and the export is in its own shape.",
+        "export-and-api": "A documented query interface and a bulk export.",
+        "events": "The system asks on a schedule, so it finds out late.",
+        "consent-and-retention": "Retention is the vendor's setting and deletion a request to it."
+      },
+      "rated": { "by": "agent", "on": "2026-11-26", "basis": "The kind, not any product. A person may change any score." }
+    },
+    {
+      "id": "tool-with-a-read-api",
+      "kind": "Any tool whose actions the venture reads through a documented interface, keeping its own copy",
+      "captures": ["work-in-a-tool"],
+      "scores": { "activity-record": 3, "ownership": 2, "export-and-api": 3, "events": 2, "consent-and-retention": 2 },
+      "why": {
+        "activity-record": "What the tool did is readable: the entry, the state change, who made it and when.",
+        "ownership": "The vendor holds the store and the venture keeps its own copy in an open format.",
+        "export-and-api": "A documented read interface and an export of the history.",
+        "events": "Usually a poll, so the system is behind by the interval.",
+        "consent-and-retention": "Retention and deletion are the vendor's settings."
+      },
+      "rated": { "by": "agent", "on": "2026-11-26", "basis": "The weakest recommendation in the rubric, for an activity whose words say nothing about how it happens. A person may change any score." }
+    }
+  ],
+  "examples": [
+    {
+      "id": "goal-setting-meetings",
+      "activity": "Setting and changing the venture's goals: APQC 1.1.4.1 Define the strategic vision and 1.2.1.2 Formulate mission, both activities a person performs by their kind (EE-179), performed by talking.",
+      "channel": "conversation",
+      "must": { "activity-record": 3 },
+      "candidates": ["self-hosted-recorder", "hosted-recorder", "plain-meeting-tool", "notes-by-hand"],
+      "chosen": "self-hosted-recorder",
+      "decided_by": ["EE-222"],
+      "rated": { "by": "agent", "on": "2026-11-26", "basis": "Torian's instruction of 2026-11-26: every meeting must leave notes the system reads, and prefer owning the tooling. The must-have of 3 on activity-record is his, not the rubric's." },
+      "note": "The must-have rules out the two candidates that leave the meeting unrecorded, and plain-meeting-tool is flagged as a blind spot as well. A venture with no way to run its own recorder would drop the must to 2 and take hosted-recorder, which beats notes by hand on the record and loses the ownership."
+    },
+    {
+      "id": "customer-messages",
+      "activity": "Every message to a customer: APQC 3.5.2 and 6.2, performed by writing to someone outside the venture.",
+      "channel": "message",
+      "candidates": ["message-log-the-system-reads", "personal-mailbox", "notes-by-hand"],
+      "chosen": "message-log-the-system-reads",
+      "decided_by": ["EE-222"],
+      "rated": { "by": "agent", "on": "2026-11-26", "basis": "Torian's instruction of 2026-11-26, read against the messaging-delivery capability cluster: delivery, consent and unsubscribe need a rail the repository cannot be." },
+      "note": "Notes by hand ties the message log inside the band, because it is fully owned and the log is not. That tie is the reason a person decides: the log wins on seeing every message as it happens, and the only thing that would change the pick is a venture whose messages are so few that nothing is missed by hand."
+    },
+    {
+      "id": "strategy-documents",
+      "activity": "Writing the venture's plans and policies: APQC 1.2.1 and 1.3.1, performed by writing something down.",
+      "channel": "document",
+      "must": { "ownership": 2 },
+      "candidates": ["own-record-store", "versioned-document-store", "hosted-document-tool"],
+      "chosen": "own-record-store",
+      "decided_by": ["EE-222"],
+      "rated": { "by": "agent", "on": "2026-11-26", "basis": "Torian's instruction of 2026-11-26 and how Naive already works: a plan is a record, written through the router, so the gate and provenance apply to it." },
+      "note": "The must-have of 2 on ownership rules out the hosted tool. The venture's own store beats a version-controlled one because a write there is a record a route resolves, which a workflow can be triggered by; a document in a repository is a file nothing resolves."
+    }
+  ]
+}
