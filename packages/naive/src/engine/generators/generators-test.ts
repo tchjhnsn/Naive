@@ -18,6 +18,7 @@ import * as activityAssignments from "./activity-assignments.ts";
 import * as elementOwners from "./element-owners.ts";
 import * as pcf from "./pcf.ts";
 import * as toolCatalog from "./tool-catalog.ts";
+import * as languageRubric from "./language-rubric.ts";
 import * as leadPlan from "./lead-plan.ts";
 import * as timeBox from "./time-box.ts";
 import * as rawDump from "./raw-dump.ts";
@@ -42,7 +43,7 @@ writeFileSync(join(v, "venture.json"), JSON.stringify({ id: "kettle" }));
 mkdirSync(join(v, "product/bugs"), { recursive: true });
 writeFileSync(join(v, "product/bugs/save-loses-draft.json"), "{}");
 
-for (const g of [bug, glossary, reference, traceSpan, detector, detectorTrial, connection, capabilityCluster, leadPlan, timeBox, rawDump, triage, opportunity, supportPolicy, supportCase, validationPlan, gatePolicies, marketAnatomy, industryAnatomy, ventureAnatomy]) t(`${g.record}: describe asks at least one required field`, g.describe().ask.some((q) => q.required));
+for (const g of [bug, glossary, reference, traceSpan, detector, detectorTrial, connection, capabilityCluster, languageRubric, leadPlan, timeBox, rawDump, triage, opportunity, supportPolicy, supportCase, validationPlan, gatePolicies, marketAnatomy, industryAnatomy, ventureAnatomy]) t(`${g.record}: describe asks at least one required field`, g.describe().ask.some((q) => q.required));
 
 const b = bug.draft({ title: "Save loses draft", severity: "P1", found_in: "0.6.0", repro: "open, type, save" }, { venture: v });
 t("bug: draft passes the schema", b.ok);
@@ -138,6 +139,13 @@ const st = standard.draft({ name: "Unified Modeling Language", issuer: "Object M
 t("standard: a new standard is drafted as its own file and passes the schema", st.ok && st.file === "packages/naive/src/terms/standards/unified-modeling-language.json" && st.draft?.checked === "2026-11-19" && st.draft?.gaps.length === 0);
 t("standard: a standard already in the catalog is refused", !standard.draft({ id: "bfo", name: "BFO", issuer: "ISO", url: "https://basic-formal-ontology.org/", status: "adopted", copyright: "restricted", uses: "x", checked: "2026-11-19" }).ok);
 t("standard: an unconfirmed standard with no note is refused", !standard.draft({ name: "Some standard", issuer: "X", url: "https://example.org/", status: "considered", copyright: "open", uses: "x" }).ok);
+const lrCandidate = { id: "go", language: "Go", scores: { "runtime-fit": 4 }, why: { "runtime-fit": "a fixture" } };
+const lrRated = { by: "generators-test", on: "2026-11-26", basis: "a fixture" };
+const lr = languageRubric.draft({ system: "A webhook relay", target: "server", candidates: [lrCandidate], chosen: "go", decided_by: ["EE-189"], rated: lrRated });
+t("language-rubric: a new worked example is added and passes the schema", lr.ok && lr.added === "a-webhook-relay" && lr.draft?.examples.at(-1)?.chosen === "go");
+t("language-rubric: an example already in the rubric is refused", !languageRubric.draft({ id: "naive-framework", system: "x", target: "server", candidates: [lrCandidate], chosen: "go", decided_by: ["EE-189"], rated: lrRated }).ok);
+t("language-rubric: a score on a criterion the rubric lacks is refused", !languageRubric.draft({ system: "y", target: "server", candidates: [{ ...lrCandidate, scores: { speed: 4 } }], chosen: "go", decided_by: ["EE-189"], rated: lrRated }).ok);
+t("language-rubric: a score outside 0 to 4 fails the schema", !languageRubric.draft({ system: "z", target: "server", candidates: [{ ...lrCandidate, scores: { licence: 7 } }], chosen: "go", decided_by: ["EE-189"], rated: lrRated }).ok);
 const tc = toolCatalog.draft({ title: "Grants", function: "finance", kind: "workflow", phase: "validation", about: "Grants applied for and won", process_groups: ["9.7"], proposes: ["grant"] });
 t("tool-catalog: a new tool is added to the catalog and passes the schema", tc.ok && tc.added === "grants" && tc.draft?.tools.at(-1)?.function === "finance");
 t("tool-catalog: a tool already in the catalog is refused", !toolCatalog.draft({ title: "Books", kind: "view", phase: "validation", about: "x" }).ok);
