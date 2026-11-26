@@ -2600,6 +2600,34 @@
       ]
     },
     {
+      "id": "EE-187",
+      "date": "2026-11-26",
+      "status": "in-force",
+      "decision": "Each element of APQC's framework that a venture runs has one accountable owner, the A of RACI: a role or a person. packages/naive/src/engine/element-owners.ts resolves it by the first rule that applies: an owner the venture names in operations/element-owners.json (record type element-owners, per hierarchy id { role } or { person }); else, for an activity a person performs or approves by the venture's assignment (EE-172, EE-176) or by its kind (EE-179), the delegation root when the owner it would inherit is an agent; else the parent's owner; else, for a category the venture lists in venture.json departments, its function's agent. The owner is not the performer. A role is a role template, the venture's own or Naive's, or a function agent, and it answers only within its reach: a lead's portfolio, a role's one function, or anywhere for a role of function all. `naive owners` lists each element with its owner, kind and source, and packages/naive/src/checks/check-owners.ts fails on an element left unowned and on an owner that names no role or answers outside its reach.",
+      "why": "The founder asked on 2026-11-25 to assign each element to a person or an agent and to know who is accountable. Naive said who performs an activity and whether a person approves it, and nothing above an activity. An agent does not answer for work a person performs, so such an activity goes to the person who holds what is not delegated, the delegation root, unless the venture names its owner.",
+      "related": [
+        "EE-165",
+        "EE-172",
+        "EE-176",
+        "EE-179",
+        "EE-182"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/records/element-owners.schema.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/element-owners.ts",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
       "id": "EE-154",
       "date": "2026-11-19",
       "status": "in-force",

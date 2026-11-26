@@ -65,6 +65,8 @@ export const REGISTRY: Registry = {
   "packages/naive/src/checks/check-activities-test.ts": plain("proves the activities check breaks on each rule on copies"),
   "packages/naive/src/checks/check-records.ts": plain("one business's records against their JSON Schemas: which record type a file is by its logical path, then schema validation; no term is decided"),
   "packages/naive/src/checks/check-records-test.ts": plain("proves the records check passes a new business, fails a broken record and skips a draft"),
+  "packages/naive/src/checks/check-owners.ts": plain("they resolve each element's owner by a fixed precedence and compare role ids, so no term is decided"),
+  "packages/naive/src/checks/check-owners-test.ts": plain("proves the owners check breaks on each rule on copies"),
   "packages/naive/src/checks/check-pcf.ts": plain("APQC's PCF as data: schema shape, an attribution that names APQC, a source that is a reference id, unique hierarchy ids, levels that agree with an id's number of parts, parents that exist, sibling numbers 1 to n with no gap and 13 categories, and a drift report that compares the tool catalog's process group ids, names and element ids with the PCF's; it compares ids, strings and counts, it does not decide what a thing is"),
   "packages/naive/src/checks/check-pcf-test.ts": plain("proves the PCF check breaks on each rule on copies"),
   "packages/naive/src/checks/check-data-model.ts": plain("every JSON file maps to a declared record type by path; record types are schema types, not glossary terms"),
