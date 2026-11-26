@@ -19,3 +19,5 @@ The external relationships function (APQC 12.0, Manage External Relationships). 
 | [skills/fundraise](./skills/fundraise) | Skill: Run a fundraise as a bounded project in a raise record: the ask and milestone, start and stop dates, the securities exemption, materials, target investors and every meeting with its follow-up |
 | [skills/stakeholder-update](./skills/stakeholder-update) | Skill: Compose a stakeholder update tailored to audience + cadence. |
 | [templates/research-program.md](./templates/research-program.md) | Template: the function's starter research program (autoresearch). Init and `naive upgrade` copy it to a venture's `programs/external-relationships.md` once, when the venture lists this function in venture.json departments and has no program; the copy is then the founder's, and only a person writes it |
+
+Each workflow's done criterion `records-valid` runs `node packages/naive/src/checks/check-records.ts "$NAIVE_VENTURE"`: it validates the business's records, the folder the handoff runner names in `NAIVE_VENTURE`, not Naive's own.

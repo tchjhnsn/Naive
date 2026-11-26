@@ -25,3 +25,5 @@ The human capital (hr) function (APQC 7.0, Develop and Manage Human Capital). It
 | [skills/team-design](./skills/team-design) | Skill: Decide who the venture needs, agent or person, and when: which roles agents fill, what authority each gets, where a human stays in the loop, and which person roles to rec |
 | [templates/recruiting-brief.md](./templates/recruiting-brief.md) | Template: recruiting brief |
 | [templates/research-program.md](./templates/research-program.md) | Template: the function's starter research program (autoresearch). Init and `naive upgrade` copy it to a venture's `programs/human-capital.md` once, when the venture lists this function in venture.json departments and has no program; the copy is then the founder's, and only a person writes it |
+
+Each workflow's done criterion `records-valid` runs `node packages/naive/src/checks/check-records.ts "$NAIVE_VENTURE"`: it validates the business's records, the folder the handoff runner names in `NAIVE_VENTURE`, not Naive's own.

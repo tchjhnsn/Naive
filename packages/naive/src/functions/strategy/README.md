@@ -44,3 +44,5 @@ The strategy function (APQC 1.0, Develop Vision and Strategy). Its governance si
 | [strategic-foundation.json](./strategic-foundation.json) | A record |
 | [templates/research-program.md](./templates/research-program.md) | Template: the function's starter research program (autoresearch). Init and `naive upgrade` copy it to a venture's `programs/strategy.md` once, when the venture lists this function in venture.json departments and has no program; the copy is then the founder's, and only a person writes it |
 | [templates/telos-based-smart.md](./templates/telos-based-smart.md) | Template: telos, BASED then SMART |
+
+Each workflow's done criterion `records-valid` runs `node packages/naive/src/checks/check-records.ts "$NAIVE_VENTURE"`: it validates the business's records, the folder the handoff runner names in `NAIVE_VENTURE`, not Naive's own.

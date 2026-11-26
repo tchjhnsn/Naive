@@ -74,6 +74,20 @@
         "trial": { "type": "string", "minLength": 1, "description": "The trial line's id in governance/detectors/<detector>.trials.jsonl" }
       }
     },
+    "duplicate_of": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$",
+      "description": "The decision this one asks again. A person marks it with mentura withdraw <id> --duplicate-of <other>, which withdraws it, so the queue keeps one question; the other decision must exist and is not this one (packages/naive/src/engine/decisions.ts)."
+    },
+    "withdrawn_by": {
+      "type": "string",
+      "description": "The person who withdrew this decision"
+    },
+    "withdrawn_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When a person withdrew this decision"
+    },
     "class": {
       "type": "string",
       "description": "The decision class (governance/decision-rights.json) this decision belongs to. A delegation grant can let a role merge decisions of a class (may_merge); a one-way-door class is never delegated, and with no class only the founder merges"

@@ -3,7 +3,7 @@
   "function": "it",
   "title": "Learn the venture's systems and access",
   "trigger": { "kind": "intake" },
-  "reads": ["venture", "it/connections", "finance/spend", "knowledge/sources", "people/team-plan", "governance/delegation"],
+  "reads": ["venture", "it/connections", "finance/spend", "knowledge/knowledge-sources", "people/team-plan", "governance/delegation"],
   "steps": [
     { "id": "read-what-exists", "do": "Read the connections, spend register, source map and team plan, and list what is missing, most needed first." },
     { "id": "ask-systems", "do": "Ask the founder which outside systems the venture uses (email, domain, code host, hosting, payments, storage, any tool an agent acts in), and write one connection each with its capability cluster, what it is authoritative for and its access scopes.", "ask": true, "writes": ["it/connections/[id]"] },
@@ -12,8 +12,8 @@
     { "id": "summarize", "do": "Tell the founder in one message which systems the venture connects, which accounts lack MFA, which credentials are shared or wider than their role needs, and which connections have no exit plan, raising the order of fixes to the product lead.", "raises": ["set-priorities"] }
   ],
   "done_criteria": [
-    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/records/validate.ts" },
-    { "id": "connections-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-connections.ts" },
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "connections-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-connections.ts \"$NAIVE_VENTURE\"" },
     { "id": "access-named", "kind": "review", "check": "Does every connection name who and which agent role holds access, with what scope, and is every account that can move money, change DNS, push code or read customer data on MFA or open as a decision?", "reviewer": "product-lead" }
   ]
 }

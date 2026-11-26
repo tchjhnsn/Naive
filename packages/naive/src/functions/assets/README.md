@@ -18,3 +18,5 @@ The assets and facilities function (APQC 10.0, Acquire, Construct, and Manage As
 | [skills/asset-register](./skills/asset-register) | Skill: keep the asset register (`assets/register/[id]`): what to register, custody and disposal |
 | [skills/lease-review](./skills/lease-review) | Skill: abstract a lease into `assets/leases/[id]`, flag hard-to-exit terms and raise notice dates in time |
 | [templates/research-program.md](./templates/research-program.md) | Template: the function's starter research program (autoresearch). Init and `naive upgrade` copy it to a venture's `programs/assets.md` once, when the venture lists this function in venture.json departments and has no program; the copy is then the founder's, and only a person writes it |
+
+Each workflow's done criterion `records-valid` runs `node packages/naive/src/checks/check-records.ts "$NAIVE_VENTURE"`: it validates the business's records, the folder the handoff runner names in `NAIVE_VENTURE`, not Naive's own.
