@@ -27,6 +27,8 @@ Write each as an event with a cause and a consequence, not as a vague worry. "A 
 
 Give likelihood as a 90% range of the chance it happens in the next 12 months, and impact as a 90% range of what it would cost, in money. Do not use a 1 to 5 heat map: ordinal scores cannot be added or compared (Hubbard, The Failure of Risk Management; Cox, "What's Wrong with Risk Matrices?", 2008). When you do not know, say so with a wide range; a wide range is honest, a single number is not.
 
+Every impact range says where it came from, as the finance function's figures do (EE-212). When a record supports it, such as a spend line, a lease or an obligation's penalty, or a reference does, name it in `impact.source`. Otherwise mark the range an estimate in `impact.estimate`, with `basis` (the reasoning, comparable cases or calculation) and `by` (the person, or your role when the estimate is yours). Never write a guess into `source`: the schema refuses a source that starts with assumption. `expectedLoss` carries the same `source` or `estimate`, so a ranking built on a guess still reads as one.
+
 ## Treat (6.5)
 
 Ask first whether the venture can stop doing the thing (avoid), before adding a control (reduce), insurance or a contract clause (transfer), or living with it (accept). Accept needs a reason. Name the handoff or decision that carries the treatment in `treatment_plan`. Before any one-way-door decision a risk touches, offer a premortem: assume it failed in a year and list why (Klein, HBR 2007).
