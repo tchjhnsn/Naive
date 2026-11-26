@@ -414,3 +414,19 @@ export function dataCases(seed = 67): LabelFacts[] {
     hasSource: b(), hasMethod: b(), generated: b(), accepted: b(), ownVenture: b(), underVenture: b(),
   }));
 }
+
+/** One source write (EE-192). hostDenied is the closed deny list. loggedOff is false only when the input says a login was used. */
+export type SourceFacts = Base & {
+  hostDenied: boolean;
+  loggedOff: boolean;
+};
+
+/** Each flag is drawn on its own, so each property passes and fails. */
+export function sourceCases(seed = 71): SourceFacts[] {
+  const r = rng(seed);
+  const b = (p = 0.5) => r() < p;
+  return Array.from({ length: N }, () => ({
+    confirmed: b(0.9), label: ["allowed source", "source", "linkedin", undefined][Math.floor(r() * 4)],
+    hostDenied: b(), loggedOff: b(),
+  }));
+}

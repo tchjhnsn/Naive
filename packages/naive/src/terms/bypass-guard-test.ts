@@ -121,6 +121,7 @@ export const REGISTRY: Registry = {
   "packages/naive/src/engine/gate-service.ts": plain("the write gate as an Effect service: its default runs gate.ts's route rules, pins and role access, not a term"),
   "packages/naive/src/terms/ontology-gate-test.ts": plain("tests the membership gate, which is registered as symbolic"),
   "packages/naive/src/terms/ontology-gate.ts": symbolic,
+  "packages/naive/src/router/raw-source.ts": plain("a second write is whether source.json or text.md already exists, and a duplicate text is an equal sha256. Neither decides what a source is. A denied host or a logged-in fetch is refused by the allowed-source term through judgeSource"),
 };
 
 const ENGINE = "packages/naive/src/terms/engine.ts";

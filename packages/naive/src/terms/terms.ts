@@ -2,7 +2,7 @@
 // Definitions: founder suite doc and mentor/coach and unearned-candour docs (2026-10-31); status proposed until Torian decides.
 
 import type { Term } from "./engine.ts";
-import type { Arrangement, Detector, Encounter, EvalPlan, Experiment, Hierarchy, LabelFacts, LinkGraph, Membership, Reception, Relationship, Settlement, Trial } from "./levels.ts";
+import type { Arrangement, Detector, Encounter, EvalPlan, Experiment, Hierarchy, LabelFacts, LinkGraph, Membership, Reception, Relationship, Settlement, SourceFacts, Trial } from "./levels.ts";
 import { known, mayBeNew, RELATIONS, relationTable, type RelationName } from "./relations.ts";
 
 // The four labels every term carries (N-051 to N-055, docs/design/TERM_LABELS_2026-11-02.md). They sit on the term,
@@ -621,4 +621,30 @@ export const goldRecord: Term<LabelFacts> = {
   predicts: { "sourced-record": "disjoint", "estimated-record": "disjoint", "synthetic-record": "disjoint" },
 };
 
-export const TERMS = [founder, coFounder, earlyEmployee, mentor, coach, friend, unearnedCandour, thresholdGuardian, phaseGate, layer, area, topCategory, typedLink, detector, trial, hit, miss, falseAlarm, correctRejection, signal, listener, reception, salientReception, noise, experiment, keptExperiment, discardedExperiment, evalPlan, settledRecord, sourcedRecord, estimatedRecord, syntheticRecord, goldRecord];
+// Allowed source (EE-192). The closed deny list is hostDenied, below. No check reads a label.
+
+const DENIED_HOSTS = ["linkedin.com", "www.linkedin.com", "g2.com", "www.g2.com"];
+
+/** True when the host of url or archive_of is on the closed deny list. A value that is not a URL has no host. */
+export function hostDenied(url: string | null, archiveOf: string | null): boolean {
+  return [url, archiveOf].some((value) => {
+    if (value === null || value === "") return false;
+    const raw = /^[a-z][a-z0-9+.-]*:/i.test(value) ? value : `https://${value}`;
+    try { return DENIED_HOSTS.includes(new URL(raw).hostname.toLowerCase().replace(/\.$/, "")); }
+    catch { return false; }
+  });
+}
+
+export const allowedSource: Term<SourceFacts> = {
+  id: "allowed-source", form: "compound", label: "Allowed source", level: "source", kind: "act",
+  labels: sharedTerm("operationally-coined", "none"),
+  meaning: "A source we may keep. Its host is not on the closed deny list, and the fetch was logged off.",
+  props: [
+    { id: "A1", says: "the host of the url or the archive is not denied", check: (f) => !f.hostDenied, uses: [hostDenied] },
+    { id: "A2", says: "the fetch was logged off", check: (f) => f.loggedOff },
+  ],
+  sources: ["EE-192"],
+  lean: ["denied_host_never_allowed"],
+};
+
+export const TERMS = [founder, coFounder, earlyEmployee, mentor, coach, friend, unearnedCandour, thresholdGuardian, phaseGate, layer, area, topCategory, typedLink, detector, trial, hit, miss, falseAlarm, correctRejection, signal, listener, reception, salientReception, noise, experiment, keptExperiment, discardedExperiment, evalPlan, settledRecord, sourcedRecord, estimatedRecord, syntheticRecord, goldRecord, allowedSource];
