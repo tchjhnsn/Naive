@@ -49,7 +49,7 @@ await t("an answer the model relays is open, with the founder's words as its wor
   const d = need("product-exists");
   ok(d.status === "open" && d.answer === "A prototype that three clinics use" && d.provenance.drafted_by.kind === "agent", JSON.stringify(d));
   const s: State = (await tool("mentura_setup", { venture: "acme" })).result.state;
-  ok(s.waiting.some((w) => w.id === "product-exists") && s.counts.settled === 0, JSON.stringify(s.waiting));
+  ok(s.waiting.some((w) => w.id === "product-exists") && !s.waiting.some((w) => w.id === "founding-team") && s.counts.settled === 1, JSON.stringify({ waiting: s.waiting, settled: s.counts.settled }));
 });
 
 await t("a foundation answer becomes the statement's proposal, and the goal is proposed too", async () => {

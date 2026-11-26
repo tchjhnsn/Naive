@@ -1,0 +1,21 @@
+{
+  "phase": "discovery",
+  "industry": "cross-industry",
+  "archetype": "subscription",
+  "note": "Placeholders, ranges and a labelled example. No real company's values.",
+  "placeholders": {
+    "customer": "<who pays the recurring fee>",
+    "problem": "<the problem they pay to remove>"
+  },
+  "ranges": {
+    "monthly_price": { "min": null, "max": null, "unit": "USD" }
+  },
+  "examples": [
+    {
+      "label": "example",
+      "customer": "a team that pays a monthly fee for a tool",
+      "problem": "the work takes longer than the fee is worth",
+      "monthly_price": null
+    }
+  ]
+}

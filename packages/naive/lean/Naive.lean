@@ -2,6 +2,7 @@ import Naive.Citations
 import Naive.Concept
 import Naive.Detection
 import Naive.Elements
+import Naive.Evals
 import Naive.Founder
 import Naive.Generated.ElementCases
 import Naive.Generated.Ontology
