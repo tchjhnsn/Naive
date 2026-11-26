@@ -42,6 +42,8 @@
 //   mentura confirm <statement> --venture <id> [--confirm <statement>]
 //                                                   a person confirms one foundation statement as theirs (EE-051)
 //   mentura <route> <action> --venture <id|path> [--input <file>|-] [--as person] [--value <n>] [--json]
+//          --input is parsed once here. When the file is not JSON, the command exits 2 with one
+//          line naming the file and the parse error, before the route runs. Nothing is written.
 //          actions: read, write, check, template, layout, view (a page), run (commands)
 //          a collection item is <route>/<id> (purpose/product/kettle); a nested venture is its
 //          folder path (--venture studio/print); system/overview view shows the venture at a glance
@@ -474,9 +476,19 @@ if (["navigate", "head"].includes(action) || cmd === "batch") { const { cli } = 
 if (!action) usage();
 const venture = opt("venture");
 if (!venture && !["template", "layout"].includes(action)) usage();
+const readJsonInput = (src: string): unknown => {
+  const text = src === "-" ? readFileSync(0, "utf8") : readFileSync(src, "utf8");
+  try {
+    return JSON.parse(text);
+  } catch (e) {
+    const message = (e instanceof Error ? e.message : String(e)).replaceAll("\n", " ");
+    console.error(`${src}: ${message}`);
+    process.exit(2);
+  }
+};
 let input: Record<string, unknown> | undefined;
 const src = opt("input");
-if (src) input = JSON.parse(src === "-" ? readFileSync(0, "utf8") : readFileSync(src, "utf8"));
+if (src) input = readJsonInput(src) as Record<string, unknown>;
 const value = opt("value");
 if (value) input = { ...(input ?? {}), value: Number.isNaN(Number(value)) ? value : Number(value) };
 if (flag("as-is")) input = { ...(input ?? {}), as_is: true };

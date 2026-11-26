@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "raw-source.schema.json",
   "title": "Raw source",
-  "description": "Where a founder-supplied source came from, at raw/sources/<id>/source.json (EE-070). text.md is the text. original.* stays out of git. Raw is immutable.",
+  "description": "Where a founder-supplied source came from, at raw/sources/<id>/source.json (EE-070, EE-192). text.md is the text, written with this record. original.* stays out of git. Raw is immutable. fetched_at, url, archive_of, http_status and self_reported are null when not known. sha256 is the text, written by the router on a new write. A record from before EE-192 may omit the new fields.",
   "type": "object",
   "required": ["id", "origin"],
   "additionalProperties": false,
@@ -10,6 +10,12 @@
     "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
     "origin": { "type": "string", "description": "Where this source came from: a url, a person, or a note such as founder-supplied" },
     "title": { "type": "string" },
-    "fetched": { "type": "string", "format": "date" }
+    "fetched": { "type": "string", "format": "date" },
+    "fetched_at": { "type": ["string", "null"], "format": "date-time", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?(Z|[+-][0-9]{2}:[0-9]{2})$", "description": "When it was fetched, with a timezone offset, or null when not known" },
+    "url": { "type": ["string", "null"], "description": "The live URL, or null when the source names none" },
+    "archive_of": { "type": ["string", "null"], "description": "The live URL this capture archives, or null when it is not an archive" },
+    "http_status": { "type": ["integer", "null"], "description": "The HTTP status of the fetch, or null when there was none" },
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$", "description": "sha256 of text.md as written, set by the router" },
+    "self_reported": { "type": ["boolean", "null"], "description": "Whether the source is the subject's own account, or null when that is not judged" }
   }
 }
