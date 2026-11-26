@@ -1,0 +1,216 @@
+{
+  "version": "0.1.0",
+  "note": "The rubric for judging which programming language fits a system (EE-189). Each criterion's weight is an unvalidated prior: nobody has measured that these weights pick better languages, and a person may set others for a system. A gate criterion rules out a candidate scored 0 on it. A score never decides: packages/naive/src/engine/language-rubric.ts ranks the candidates and a person chooses. The worked examples record Naive's own choices; their scores are a rater's judgment from the cited decisions and files, and the choices are the decisions'.",
+  "tie_band": 0.05,
+  "criteria": [
+    {
+      "id": "runtime-fit",
+      "title": "Fit to the runtime target",
+      "question": "Does the language run where the system must run: a browser, an edge worker, a server, a device or a build in CI?",
+      "why": "A language that cannot run on the target needs a second system to host it, and that is a different choice. Browsers run JavaScript and WebAssembly, and Node.js runs TypeScript only by stripping erasable syntax and refuses TypeScript files under node_modules, so even one language can fit one target and not another.",
+      "iso25010": ["flexibility", "compatibility"],
+      "levels": [
+        { "score": 0, "means": "It cannot run on the target." },
+        { "score": 2, "means": "It runs there through a compile step, WebAssembly or a bridge, with gaps the system must work around." },
+        { "score": 3, "means": "It runs there after a build step with no gaps." },
+        { "score": 4, "means": "It runs there as written, as the target's documented language." }
+      ],
+      "weight": 0.15,
+      "gate": true,
+      "sources": ["webassembly-org", "nodejs-typescript-docs"],
+      "decisions": ["EE-159"]
+    },
+    {
+      "id": "correctness",
+      "title": "Correctness needs",
+      "question": "How well does the language catch the errors this system cannot afford: by tests only, by static types, or by machine-checked proof?",
+      "why": "Some systems only need tests, some need types that rule out whole classes of error, and some must prove a property. TypeScript does not aim for a sound type system by design; Lean checks proofs in dependent type theory, which is where Naive proves its definitions.",
+      "iso25010": ["functional-suitability", "reliability"],
+      "levels": [
+        { "score": 0, "means": "No static checking of what the system needs; errors show up only when the code runs." },
+        { "score": 1, "means": "Optional static checks bolted on (comments or annotations a checker reads)." },
+        { "score": 2, "means": "Static types that catch shape errors, unsound by design." },
+        { "score": 3, "means": "A sound static type system for the properties the system needs." },
+        { "score": 4, "means": "Machine-checked proofs of the properties the system needs." }
+      ],
+      "weight": 0.15,
+      "sources": ["typescript-design-goals", "lean-theorem-proving"],
+      "decisions": ["EE-087", "EE-095"]
+    },
+    {
+      "id": "effects-and-concurrency",
+      "title": "Concurrency and effect model",
+      "question": "Can code in the language say what may fail, what touches files or services and what runs at the same time, so a test can replace it?",
+      "why": "Naive's code that reads or writes files, can fail or runs work at once is written as Effects: failures are typed, files are reached through a service a test swaps for an in-memory one. A language without such a model leaves those facts to convention.",
+      "iso25010": ["reliability", "maintainability"],
+      "levels": [
+        { "score": 0, "means": "No way to run work concurrently, or to tell a failure from a result." },
+        { "score": 1, "means": "Exceptions and callbacks or promises; failures are not in any signature." },
+        { "score": 2, "means": "Structured concurrency or typed errors, but not both, or only by convention." },
+        { "score": 4, "means": "Failures, dependencies and concurrency are in the types, and a test can provide a replacement service." }
+      ],
+      "weight": 0.1,
+      "sources": ["effect-docs"],
+      "decisions": ["EE-125"]
+    },
+    {
+      "id": "ecosystem",
+      "title": "Ecosystem and libraries for the domain",
+      "question": "Does the system's domain have maintained, documented libraries in this language for what the system must do?",
+      "why": "A missing library is code the venture writes and keeps. Count only libraries a person can name and read; do not score from popularity surveys or download counts.",
+      "iso25010": ["functional-suitability"],
+      "levels": [
+        { "score": 0, "means": "Nothing for the domain; the system would write it all." },
+        { "score": 2, "means": "Libraries exist for part of the domain, or are thinly maintained." },
+        { "score": 4, "means": "Maintained, documented libraries cover what the system must do." }
+      ],
+      "weight": 0.1,
+      "sources": ["iso-iec-25010-2023"]
+    },
+    {
+      "id": "naive-interop",
+      "title": "Interop with Naive",
+      "question": "How directly can the system read and write Naive's records, which are JSON validated by JSON Schema, and call the router, which is TypeScript?",
+      "why": "Every write in a venture meets the gate and provenance through the router. A system that reaches records only through a hand-written bridge can drift from the schemas the router checks.",
+      "iso25010": ["compatibility"],
+      "levels": [
+        { "score": 0, "means": "Neither JSON records nor the router are reachable without a hand-written bridge." },
+        { "score": 2, "means": "It reads and validates JSON records against their schemas, and reaches the router only through the CLI, the MCP server or the HTTP API." },
+        { "score": 3, "means": "It imports the router in process, without types for the records." },
+        { "score": 4, "means": "It imports the router and the record types generated from the schemas in process." }
+      ],
+      "weight": 0.15,
+      "sources": ["json-schema-2020-12"],
+      "decisions": ["EE-087", "EE-159"]
+    },
+    {
+      "id": "team-skill",
+      "title": "Team skill",
+      "question": "Can the people and agents who will keep the system read and change code in this language today?",
+      "why": "Code nobody on the team can change is a system the team cannot keep. EE-087 chose TypeScript for Naive's own development and left founders the choice for their ventures, because many have never coded.",
+      "iso25010": ["maintainability"],
+      "levels": [
+        { "score": 0, "means": "Nobody who will keep the system reads the language." },
+        { "score": 2, "means": "Someone reads it, but changes need outside help or long review." },
+        { "score": 4, "means": "The people and agents who keep the system already write it." }
+      ],
+      "weight": 0.15,
+      "sources": ["iso-iec-25010-2023"],
+      "decisions": ["EE-087"]
+    },
+    {
+      "id": "operability",
+      "title": "Operability",
+      "question": "How much does it take to build, install, deploy, observe and debug the system on its target in this language?",
+      "why": "A build step, a toolchain to install or a package format the target refuses is work on every release. Naive compiles on publish because Node.js will not strip types under node_modules.",
+      "iso25010": ["maintainability", "flexibility"],
+      "levels": [
+        { "score": 0, "means": "No supported way to build or run it on the target." },
+        { "score": 2, "means": "A toolchain to install and a build with its own failure modes on every release." },
+        { "score": 3, "means": "One build step the repository runs for you." },
+        { "score": 4, "means": "It runs as written, with nothing to build or install beyond the runtime." }
+      ],
+      "weight": 0.1,
+      "sources": ["google-sre-book", "nodejs-typescript-docs"],
+      "decisions": ["EE-158", "EE-159"]
+    },
+    {
+      "id": "licence",
+      "title": "Licence",
+      "question": "Do the language's toolchain and the libraries the system needs carry licences the venture may use and ship under?",
+      "why": "A licence that forbids the use rules a language out whatever it scores elsewhere; a copyleft licence on shipped code is an obligation to track. ISO/IEC 25010 does not cover licences, so the SPDX License List is the reference for which licence is which.",
+      "levels": [
+        { "score": 0, "means": "A licence forbids the use the venture needs." },
+        { "score": 2, "means": "Permitted, with obligations to track (copyleft on shipped code, attribution beyond a notice)." },
+        { "score": 4, "means": "Permissive OSI-approved licences, such as MIT or Apache-2.0." }
+      ],
+      "weight": 0.1,
+      "gate": true,
+      "sources": ["spdx-license-list"]
+    }
+  ],
+  "examples": [
+    {
+      "id": "naive-framework",
+      "system": "Naive's framework code: the records resolver, the router, the engine, the checks and the CLIs, installed into a venture as the naive-framework package.",
+      "target": "server: Node.js 22.19 or later, in the repository and from node_modules",
+      "candidates": [
+        {
+          "id": "typescript-effect",
+          "language": "TypeScript on Effect",
+          "scores": { "runtime-fit": 3, "correctness": 2, "effects-and-concurrency": 4, "ecosystem": 4, "naive-interop": 4, "team-skill": 4, "operability": 3, "licence": 4 },
+          "why": {
+            "runtime-fit": "Node.js runs the source by type stripping in the repository, but refuses TypeScript under node_modules, so the package ships compiled .mjs in dist/ (EE-159, nodejs-typescript-docs).",
+            "correctness": "Static types, with every record type generated from its JSON Schema (EE-087); TypeScript is not sound by design (typescript-design-goals).",
+            "effects-and-concurrency": "Effect puts failures in the signature as tagged errors and reaches files through VentureFs, which a test replaces with MemoryFs (EE-125, effect-docs).",
+            "ecosystem": "The npm registry; Naive's own dependencies, effect and typescript, are npm packages.",
+            "naive-interop": "The router is TypeScript and the record types are generated into packages/naive/src/records/types/records.d.ts, imported in process (EE-087).",
+            "team-skill": "The founder chose TypeScript for Naive's own development (EE-087), and every new file in the repository is .ts.",
+            "operability": "One build step, scripts/build.ts, run by npm as prepare (EE-159), and a Node.js floor of 22.19 (EE-158).",
+            "licence": "TypeScript is Apache-2.0 and Effect is MIT (spdx-license-list)."
+          }
+        },
+        {
+          "id": "javascript",
+          "language": "JavaScript (ES modules)",
+          "scores": { "runtime-fit": 4, "correctness": 1, "effects-and-concurrency": 1, "ecosystem": 4, "naive-interop": 3, "team-skill": 4, "operability": 4, "licence": 4 },
+          "why": {
+            "runtime-fit": "Node.js runs .mjs as written, from the repository and from node_modules.",
+            "correctness": "Only what tsc reads with allowJs and checkJs, EE-087's first phase.",
+            "effects-and-concurrency": "Promises and exceptions; failures are in no signature.",
+            "ecosystem": "The same npm registry.",
+            "naive-interop": "It imports the router in process, without the generated record types.",
+            "team-skill": "Naive was written in JavaScript before EE-087, so the code and the agents already read it.",
+            "operability": "Nothing to build.",
+            "licence": "Node.js and the npm packages Naive uses carry permissive licences; no extra toolchain."
+          }
+        }
+      ],
+      "chosen": "typescript-effect",
+      "decided_by": ["EE-087", "EE-125", "EE-159"],
+      "rated": { "by": "agent", "on": "2026-11-26", "basis": "The cited decisions and the repository's AGENTS.md; a person may change any score." },
+      "note": "EE-087 also keeps Rust for later hot paths, called from TypeScript. No hot path has been named, so Rust is not scored here."
+    },
+    {
+      "id": "naive-proofs",
+      "system": "The proofs that settle Naive's definitions (packages/naive/lean/Naive), whose theorem names the term engine checks (EE-095).",
+      "target": "a build in CI (lake build in the lean workflow)",
+      "weights": { "effects-and-concurrency": 0 },
+      "must": { "correctness": 4 },
+      "candidates": [
+        {
+          "id": "lean-4",
+          "language": "Lean 4",
+          "scores": { "runtime-fit": 4, "correctness": 4, "ecosystem": 3, "naive-interop": 2, "team-skill": 3, "operability": 3, "licence": 4 },
+          "why": {
+            "runtime-fit": "The proofs only need to build, and CI builds them with lake (packages/naive/lean/README.md).",
+            "correctness": "Lean checks proofs in a dependent type theory powerful enough for almost any conventional mathematical theorem (lean-theorem-proving).",
+            "ecosystem": "Core Lean for most files; Mathlib for the real square roots and logarithms in StandingRules.lean (packages/naive/lean/README.md).",
+            "naive-interop": "No in-process calls: lean-agreement-test.ts reads the .lean files and ties the term engine's theorem names to them.",
+            "team-skill": "Naive already keeps its proofs in Lean, and its conventions follow spct-lean (packages/naive/lean/README.md).",
+            "operability": "A pinned toolchain installed with elan, and a Mathlib cache to download before lake build.",
+            "licence": "Lean 4 is Apache-2.0 (spdx-license-list)."
+          }
+        },
+        {
+          "id": "typescript",
+          "language": "TypeScript",
+          "scores": { "runtime-fit": 4, "correctness": 2, "ecosystem": 1, "naive-interop": 4, "team-skill": 4, "operability": 3, "licence": 4 },
+          "why": {
+            "runtime-fit": "It builds and runs in CI like the rest of Naive.",
+            "correctness": "Not sound by design (typescript-design-goals), so its types prove nothing; below the system's must of 4.",
+            "ecosystem": "Naive's term engine checks properties on facts in TypeScript as tests (EE-095); it asks Lean for the proofs.",
+            "naive-interop": "The term engine and the router are TypeScript.",
+            "team-skill": "Every new file in the repository is .ts.",
+            "operability": "The same build step as the framework.",
+            "licence": "Apache-2.0 (spdx-license-list)."
+          }
+        }
+      ],
+      "chosen": "lean-4",
+      "decided_by": ["EE-095"],
+      "rated": { "by": "agent", "on": "2026-11-26", "basis": "EE-095, packages/naive/lean/README.md and the cited references; a person may change any score." },
+      "note": "The effect model does not apply to proofs, so its weight is 0 for this system and it is not scored."
+    }
+  ]
+}
