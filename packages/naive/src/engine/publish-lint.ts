@@ -129,8 +129,8 @@ export async function check(paths: string[], { venture }: { venture?: string } =
 
   // 1. copy distance
   if (on("copy-distance") && venture) {
-    const { check: pub, CONTENT } = await import("./check-public.ts");
-    if (existsSync(join(venture, CONTENT))) {
+    const { check: pub, CONTENT_ROOTS } = await import("./check-public.ts");
+    if (CONTENT_ROOTS.some((root) => existsSync(join(venture, root)))) {
       stages.push("copy-distance");
       const given = new Set(files.map((f) => resolve(f)));
       for (const r of pub(venture).errors.filter((r: { file: string }) => given.has(resolve(venture, r.file)))) for (const e of r.errors.filter((e: string) => e.startsWith("copies")))
