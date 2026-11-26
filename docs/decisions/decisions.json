@@ -2887,6 +2887,32 @@
           "expect": "exists"
         }
       ]
+    },
+    {
+      "id": "EE-212",
+      "date": "2026-11-26",
+      "status": "in-force",
+      "decision": "A risk's impact range cites a source or is marked an estimate, and expected loss carries the same label. packages/naive/src/records/risk.schema.json gives the impact exactly one of `source` (what the range rests on: a record route or a reference id, as the finance function's figures name theirs, and never text that starts with assumption) or `estimate` (`basis`, how the range was reached, and `by`, the person or agent role that estimated it), and refuses neither or both. `expectedLoss` in packages/naive/src/engine/generators/risk.ts returns the impact's `source` or `estimate` beside the range. The legal package moves to 0.4.0, and its migration `risk-impact-label` escalates each existing risk whose impact has neither, by file, and writes nothing. No check resolves a source to a record or reference that exists.",
+      "why": "Torian decided on 2026-11-26 that the finance function's rule holds for risks too: the finance agent cites a record for every figure it writes, and a number with no source is a guess that says so (packages/naive/src/functions/finance/agent.md). The risk register required a money range with no field saying where it came from, and expected loss computed from it read as a fact. A structured estimate names who made it because an agent or a person may write a risk.",
+      "related": [
+        "EE-076",
+        "EE-099",
+        "EE-191"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/records/risk.schema.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/migrations/risk-impact-label.ts",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
     }
   ]
 }

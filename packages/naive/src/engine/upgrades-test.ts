@@ -88,6 +88,23 @@ const pinned = json(join(a, "naive.config.json")).packages.validation.version;
 expect("a package migration runs when the venture's pin is older than the package", pkgUp.status === 0 && json(join(a, "validation/solution.json")).segment === "solo clinics" && pinned === "0.4.0", pkgUp.stdout + pkgUp.stderr);
 const pkgAgain = naive(["upgrade", a], { NAIVE_UPGRADES: join(ws, "registry.json") });
 expect("it runs once: the pin moved past it", /nothing to upgrade/.test(pkgAgain.stdout), pkgAgain.stdout);
+
+// The legal package's risk-impact-label migration (EE-212): a risk whose impact neither cites a source nor is marked an
+// estimate is escalated by name, never guessed, and every risk file is left as it was.
+const rk = make("risky");
+const rkCfg = existsSync(join(rk, "naive.config.json")) ? json(join(rk, "naive.config.json")) : {};
+writeFileSync(join(rk, "naive.config.json"), JSON.stringify({ ...rkCfg, packages: { ...(rkCfg.packages ?? {}), legal: { version: "0.3.0", channel: "experimental" } } }, null, 2));
+mkdirSync(join(rk, "legal/risks"), { recursive: true });
+const riskOf = (impact: Record<string, unknown>) => JSON.stringify({ id: "x", title: "t", cause: "c", consequence: "q", category: "legal", owner: "ana", likelihood: { low: 0.1, high: 0.2 }, impact: { low: 1, high: 2, currency: "USD", ...impact }, treatment: "accept", status: "open", review_date: "2027-01-01" }, null, 2);
+writeFileSync(join(rk, "legal/risks/sourced.json"), riskOf({ source: "finance/spend/counsel" }));
+writeFileSync(join(rk, "legal/risks/estimated.json"), riskOf({ estimate: { basis: "counsel's day rate times ten", by: "ana" } }));
+writeFileSync(join(rk, "legal/risks/bare.json"), riskOf({}));
+const rkBefore = ["sourced", "estimated", "bare"].map((f) => readFileSync(join(rk, `legal/risks/${f}.json`), "utf8"));
+const rkUp = naive(["upgrade", rk]);
+const rkEsc = rkUp.stdout.split("\n").filter((l) => /^escalate .*legal\/risks/.test(l));
+expect("risk-impact-label escalates only the risk whose impact has neither a source nor an estimate", rkUp.status === 0 && rkEsc.length === 1 && /legal\/risks\/bare\.json/.test(rkEsc[0]), rkUp.stdout + rkUp.stderr);
+expect("risk-impact-label writes no risk and moves the legal pin to the installed package", ["sourced", "estimated", "bare"].every((f, i) => readFileSync(join(rk, `legal/risks/${f}.json`), "utf8") === rkBefore[i]) && json(join(rk, "naive.config.json")).packages.legal.version === reg.packages.legal.version);
+
 const c = make("conflict");
 mkdirSync(join(c, "foundation"), { recursive: true });
 writeFileSync(join(c, "foundation/problem.json"), "{}\n");
