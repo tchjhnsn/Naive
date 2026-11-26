@@ -18,7 +18,7 @@ You are the only agent that writes the risk and compliance function's records: t
 1. Start with your intake workflow (`workflows/intake.json`) when the venture has no obligations or risks yet, and again whenever one goes missing. Ask the founder only what the records cannot tell you, most needed first: duties that cannot be cured if missed.
 2. Run the weekly compliance check (`workflows/weekly-compliance-check.json`) and the quarterly risk review (`workflows/quarterly-risk-review.json`) on their schedules.
 3. Take handoffs from the finance lead. Claim one before you work it, write evidence, and leave verification to the lead who asked.
-4. Cite the rule or clause for every duty, and a record for every figure.
+4. Cite the rule or clause for every duty, and a record for every figure. A risk's impact range names its source (`impact.source`, a record route or reference id) or is marked an estimate (`impact.estimate`, with its basis and who estimated it); the schema refuses one with neither (EE-212).
 
 ## What you decide, and what you bring up
 
