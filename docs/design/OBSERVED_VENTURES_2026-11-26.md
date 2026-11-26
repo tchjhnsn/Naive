@@ -1,9 +1,10 @@
 # Observed ventures in Naive: claims, relations, sources, cards, refresh and evals
 
-Design only. Nothing in this document is built, pushed or opened as a pull request. Every part marked **proposal** is a proposal for Torian. Written 2026-11-26, about 6:40 AM CST, by Grok Bot (executor), from the Partners agent's research and the usenaive dry run.
+Design only; nothing here is built. Open as draft PR tchjhnsn/Naive#161. Torian delegated the open questions on Nov 26 ("Research or just consider the best approaches to these questions and let's go with your recommendations") and decided Q8 himself; section 11 records the answers, and the features and PR plan below already follow them. First written 2026-11-26, about 6:40 AM CST, revised about 7:05 AM CST, by Grok Bot (executor), from the Partners agent's research and the usenaive dry run.
 
 **Repos read**
-- **tchjhnsn/Naive:** `main` at `08a54666e4f3af15cfabb08a635bd90c3d1c36d1` (Nov 26, 6:11 AM CST). The open stack: #152 `31ee887`, #153 `34e4a71`, #155 `6a761ec`, #156 `29af715`. They're linear on base `e8568e15`, four commits behind main. #154 doesn't exist. The stack now cites **EE-189** (renumbered off EE-188).
+- **tchjhnsn/Naive** (public, checked through the GitHub API): `main` at `08a54666e4f3af15cfabb08a635bd90c3d1c36d1` (Nov 26, 6:11 AM CST). Its decision log already holds EE-190, and EE-189 belongs to the open stack, so this design's decisions start at **EE-191**. The stack, re-read at about 6:55 AM CST: #152 `a2713fa2`, #153 `df9eab71`, #155 `c794efe1`, #156 `75d17dad` (branch `cursor/modeled-org-makers-e769`). It now says `observed` (mode `observed`, flag `--observed`) and refuses unknown flags on `naive new`. #154 doesn't exist.
+- **tchjhnsn/Dogfood** (private, checked through the GitHub API): `main` holds `README.md` and `docs/decisions/STORAGE_AND_EVALS_2026-11-26.md` (Dogfood #7, merged Nov 26, 6:31 AM CST).
 - **tchjhnsn/Mentura3:** `main` at `216a9ca85cf863db0bf93dca9ba3c57d59d8cb3a` (Nov 26, 6:12 AM CST). I read only README.md, AGENTS.md, `packages/platform/README.md` and `naive.data-model.json`.
 
 ## 1. Summary
@@ -17,12 +18,14 @@ So this design builds the claim first, and the other features shrink onto it:
 - **Feature 2, venture relations:** a workspace-level edge between two ventures. Its type is checked by an EE-095 term with a Lean theorem, on the existing `typed-link` pattern in `relations.ts`. Person and investor "edges" go back into claims and records.
 - **Feature 5, the model card:** generated, not hand-written. A command derives coverage, label counts, freshness and provenance from the records into `MODEL-CARD.md`. The only new record is a small per-venture `coverage.json` that holds the empty-with-reason entries.
 - **Feature 6, the dossier record type:** deferred, as Torian decided. I name the condition that would justify it.
-- **Feature 7, refresh:** no scheduler by default. Naive's existing `naive due` (EE-182) already reports `schedule` and `event` workflows as due without running anything. A token-free hash pass narrows a refresh to the sources that changed.
+- **Feature 7, refresh:** no scheduler (Q2). Naive's existing `naive due` (EE-182) already reports `schedule` and `event` workflows as due without running anything. A token-free hash pass narrows a refresh to the sources that changed.
 - **Feature 8, templates and evals:** the Partners P3 label term does the separating. One added check gives held-out items and a canary string.
 - **Feature 9, APQC:** almost done already. Naive carries PCF 8.0 (`packages/naive/src/functions/pcf.json`, EE-165, EE-166). What remains is Partners P6, a data fix.
 - **Feature 1, observed mode:** most of it is in the #152–#156 stack. Five leftovers remain: phase, scaffold code, scaffolded framework decisions, the people gate's owner, and the router's `next` hint.
 
 Mentura gets nothing now under Torian's GUI rule. Two later candidates are named in section 8.
+
+Where things live (Q5, Q8): observed ventures, dossiers, edges and observed-company evals go in **Dogfood `library/`**, and gold exemplars go in **Dogfood `exemplars/gold/`**. Dogfood is private. Founder templates and synthetic exemplars made only from public inputs go in **Naive** (public): `packages/naive/founder-templates/` and `packages/naive/exemplars/synthetic/`.
 
 ## 2. Approved decisions (fixed requirements)
 
@@ -98,17 +101,17 @@ flowchart TB
     CHECK["naive check"]
   end
 
-  subgraph Library["Reference library repo (Dogfood today): data, git is truth"]
-    OV["library/&lt;id&gt;/ observed venture<br/>mode observed, owner other"]
+  subgraph Library["Dogfood (private) library/: the reference library, git is truth"]
+    OV["library/&lt;id&gt;/ observed venture<br/>mode observed, owner null"]
     EDGES["library/graph/edges/"]
     DOSS["library/dossiers/&lt;id&gt;/<br/>DOSSIER.md (document, A4)<br/>MODEL-CARD.md (generated)"]
     EVO["evals/observed-companies.jsonl<br/>held-out, canary"]
   end
 
-  subgraph Ex["Exemplar store (in Naive or its own repo)"]
-    GOLD["exemplars/gold/<br/>from our run ventures only (A5)"]
-    SYN["exemplars/synthetic/<br/>never under a venture"]
-    TPL["templates/&lt;phase&gt;/&lt;industry&gt;/&lt;archetype&gt;"]
+  subgraph Ex["Exemplars and templates"]
+    GOLD["Dogfood exemplars/gold/ (private)<br/>from our run ventures only (A5)"]
+    SYN["Naive packages/naive/exemplars/synthetic/<br/>public inputs only, never under a venture"]
+    TPL["Naive packages/naive/founder-templates/<br/>&lt;phase&gt;/&lt;industry&gt;/&lt;archetype&gt;"]
   end
 
   subgraph Ours["Our run ventures (by id)"]
@@ -116,10 +119,10 @@ flowchart TB
   end
 
   subgraph M3["tchjhnsn/Mentura3 (product): nothing now"]
-    LATER["Later, only if Torian turns on<br/>hosted refresh: review queue GUI"]
+    LATER["Later, only if a hosted agent<br/>step is ever turned on: review queue GUI"]
   end
 
-  PERSON(["A person accepts"])
+  PERSON(["reference-library-reviewer<br/>(Torian today) accepts"])
   AGENT(["Agent proposes"])
 
   Web --> AGENT
@@ -185,11 +188,11 @@ That closes FLAWS 2, N1, N3, N5 and N8, and the stack's tests cover it.
 | Flaw | Change | Null rule |
 |---|---|---|
 | N7: phase `discovery` written on an observed venture | `init-venture.ts` line 45 defaults `phase` to `discovery`. For an observed venture, write `phase: null` and let `venture.schema.json` `phase` accept null **only when `mode` is `observed`**. A phase is our framework's judgment, and nobody made it. | null = not judged |
-| N2: owner | Write `owner: "other"`, not null. "Not ours" is known by construction: we chose to observe it. **Open question Q1**, because the stack chose null. | n/a |
+| N2: owner | **Keep `owner: null`** (Q1). `mode: observed` already says the venture isn't ours, so `other` would be a second field that has to agree with mode. Who actually owns the company is a fact about the company: a sourced claim, if a source states it. | null = no source named an owner |
 | N9: app scaffold code | `naive new --observed` writes no `src/`, `package.json` or `.vscode` and prints no `npm run dev` hint. An observed venture is records only. | n/a |
 | 9 and 11: framework decisions owed; product locked by `product-exists` | An observed venture scaffolds **no** framework decisions, and the `product-exists` lock doesn't apply to it. Product facts about an outside company are claims (F3), not our product cards. This is reversible (`low` tier), and the lock stays for run ventures. | n/a |
-| N4: people gate says "escalate, owner founder" | Drafts in an observed venture route to the reference library's reviewer role (Q4), never to a person who doesn't exist. Until Q4 is answered, the route is "a person". | reviewer null = any person |
-| 17 and N10: `next` points at the non-existent `knowledge/venture-profile` write and prints `mentura` | **Subtract first:** delete the suggestion. Print `naive`. Fail on non-JSON input with a parse error at the boundary, not a raw `SyntaxError`. This doesn't depend on the stack. | n/a |
+| N4: people gate says "escalate, owner founder" | Drafts in an observed venture route to the role `reference-library-reviewer` (Q4), never to a person who doesn't exist. | n/a |
+| 17 and N10: `next` points at the non-existent `knowledge/venture-profile` write | **Subtract first:** never suggest a route that lacks the suggested action, and fail on non-JSON input with a parse error at the boundary, not a raw `SyntaxError`. The `mentura` prefix in the hint isn't a bug: the root `package.json` ships both `naive` and `mentura` bins, so FLAWS N10 overstated that part. This doesn't depend on the stack. | n/a |
 | N6: no title on a person | Titles are claims (F3 `title` measure), not a new people field. `people.schema.json` stays as it is. | n/a |
 | N12: no former name | Former names and aliases are claims (F3 `alias` measure). | n/a |
 
@@ -201,7 +204,7 @@ That closes FLAWS 2, N1, N3, N5 and N8, and the stack's tests cover it.
 
 **Owner:**
 - Naive, `packages/naive`: the term, the table, Lean and the route.
-- Reference library repo: the edge data.
+- Dogfood `library/graph/edges/`: the edge data.
 
 **Question (step 1):** the dry run wrote 18 edges: 2 founded-by, 15 invested-in and 1 overlaps-with. Only overlaps-with is venture to venture.
 - founded-by is the people roster plus a title claim.
@@ -225,7 +228,7 @@ type VentureEdge = {                                      // library/graph/edges
   type: VentureRelationName;
   status: "proposed" | "accepted" | "retracted";
   asserted_by: Author;                                     // the proposing process
-  accepted_by: PersonId | null;                            // null until a person accepts
+  accepted_by: PersonId | null;                            // a person holding reference-library-reviewer; null until accepted
   basis: ClaimId[];                                        // claims that support it; may be empty only while proposed
   note: string | null;
   confidence: null;                                        // no invented numbers; a field only if a source gives one
@@ -248,7 +251,7 @@ These follow `idea_inverse_involutive` in `Terms.lean`. This closes FLAWS 8 and 
 
 **Verbs and tiers:**
 - create (proposed, `low`);
-- amend kind accept, by a person only (`low`);
+- amend kind accept, only by a person who holds `reference-library-reviewer` (`low`);
 - amend kind retract (`low`);
 - no delete. History is append-only.
 
@@ -263,7 +266,7 @@ These follow `idea_inverse_involutive` in `Terms.lean`. This closes FLAWS 8 and 
 
 **Owner:**
 - Naive, `packages/naive`: the record type, schema, route and terms.
-- The reference library repo: the data.
+- Dogfood `library/<id>/claims/`: the data.
 
 **Question:** do funding, traction and headcount each need a record? No.
 - In the dry run, all three were quotes with a date and a source (`c-tc-total`, `c-tc-arr`, `c-tc-headcount` against `c-yc-team-size`).
@@ -286,7 +289,7 @@ type Measure =
 
 type Origin = "self_reported" | "third_party" | "official_record" | "derived"; // no "licensed" while A2 holds
 
-type ObservedClaim = {                                      // <observed venture>/claims/<id>.json
+type ObservedClaim = {                                      // <observed venture>/claims/<measure kind>/<id>.json
   id: ClaimId;
   function: FunctionId;                                      // which of the 13 it informs
   value: Measure;
@@ -300,7 +303,7 @@ type ObservedClaim = {                                      // <observed venture
   supersedes: ClaimId | null;                                // a refresh links the claim it replaces
   status: "proposed" | "accepted" | "retracted";
   asserted_by: Author;
-  accepted_by: PersonId | null;
+  accepted_by: PersonId | null;                             // holds reference-library-reviewer (Q4)
   review_by: IsoDate | null;                                 // set for title claims and any person-level fact: observed_on + 12 months (A3)
 };
 ```
@@ -314,7 +317,7 @@ type ObservedClaim = {                                      // <observed venture
 
 **Verbs and tiers:**
 - create (proposed, `low`);
-- amend kinds accept (person), retract, and supersede (a new claim with `supersedes`), all `low`;
+- amend kinds accept (a holder of `reference-library-reviewer`), retract, and supersede (a new claim with `supersedes`), all `low`;
 - no edit in place. A refresh never rewrites a claim.
 
 **Null rules:**
@@ -325,7 +328,17 @@ type ObservedClaim = {                                      // <observed venture
 **Person data (A3):**
 - `title` and any claim naming a person must cite a public source, set `review_by`, and use `origin` other than `derived`.
 - No contact details are allowed, and the schema has no field for them.
-- The router refuses a source whose origin host is linkedin.com. That's a plain host check, on the `public-assets` host-list precedent.
+- **Allowed source** is an EE-095 term (proposal), level `source`. Its facts are the source's host, whether it was fetched logged off, and whether the host is on a closed deny list (linkedin.com, g2.com). Lean `Sources.lean`: `denied_host_never_allowed`. A host deny list is id membership, so under Torian's rule it can't be a plain check.
+
+**Freshness (Q3):** claims live under `claims/<measure kind>/`, so the existing freshness profiles (`freshness-profiles.schema.json`, matched by route prefix) set the windows with no schema change.
+
+| Measure kind | Window | Why |
+|---|---|---|
+| `traction`, `headcount`, `funding-total`, `text` about prices or plans | `revalidate: 90d` | These describe a current state that changes. 90 days is one quarterly sweep, the cadence the research proposes for the inactive watchlist (FINDINGS §6.4). No source gives a better number, so 90 is a working value, not a measured one. |
+| `funding-round`, `alias` | none | A dated event or a former name doesn't change. A new round is a new claim. |
+| `title`, and any claim that names a person | `review_by` at 12 months | A3 sets this. |
+
+**Who accepts (Q4):** a new person role, `reference-library-reviewer`, goes in `packages/naive/template/governance/roles/venture-roles.json`. Torian holds it today. Dogfood's `library/governance/delegation.json` grants the decision class `observed-accept`, scoped to `library/`, from the founder root to that role, using the existing `delegation.schema.json` grant (`from`, `to`, `classes`, `scope`, `may_redelegate`, `expires`). Handing review to someone later is a new grant or a new holder, with no schema change.
 
 ### F4. Write route for a source's text.md
 
@@ -349,7 +362,7 @@ type SourceWrite = { source: Omit<RawSource, "sha256">; text: string };  // rout
 **Create-only:** raw is immutable (EE-070).
 - A second write to an existing id is refused. A refresh writes a new source id.
 - A write whose `sha256` equals an existing source in the same venture is refused, naming that source. That closes the duplicate in FLAWS 4.
-- Both are plain checks.
+- Both are plain hash and path checks. The host policy is the F3 `allowed-source` term.
 
 **EE-095 and Lean:** none. These are hashes and paths.
 
@@ -363,7 +376,7 @@ type SourceWrite = { source: Omit<RawSource, "sha256">; text: string };  // rout
 
 **Owner:**
 - Naive, `packages/naive`: `naive card`, the coverage schema and the empty-reason term.
-- The reference library repo: the generated `MODEL-CARD.md` and `coverage.json`.
+- Dogfood `library/`: the generated `MODEL-CARD.md` and `coverage.json`.
 
 **Question:** the usenaive MODEL-CARD.md has 14 parts.
 - Parts 1, 7, 9, 10, 11 and 13 are counts and dates that the records already hold.
@@ -409,7 +422,7 @@ The model card for a **template** uses a second fixed file. Its derived part lis
 
 ### F6. Dossier: a document now, a record type only on evidence
 
-**Owner:** the reference library repo (`library/dossiers/<id>/DOSSIER.md`). No Naive change now (A4).
+**Owner:** Dogfood `library/dossiers/<id>/DOSSIER.md`. No Naive change now (A4).
 
 The dossier keeps its 15 sections and its labels: coverage, confidence `known | estimated | unknown`, origin, and empty-with-reason (Partners DOSSIER.md).
 
@@ -423,8 +436,8 @@ Once F3 lands, the dossier's labelled facts **cite claim ids** instead of carryi
 
 **Owner:**
 - Naive, `packages/naive`: one function workflow, the `naive observe hash` command, and the diff renderer.
-- The reference library repo: the workflow-runs log.
-- Mentura: nothing, unless Q2 picks the hosted option.
+- Dogfood `library/<id>/.naive/workflow-runs.jsonl`: the run log.
+- Mentura: nothing (Q2 picked R0).
 
 **Question:** Torian dislikes crons that burn tokens. What's actually needed is to know which observed ventures are stale, and to read only what changed.
 
@@ -448,7 +461,7 @@ Naive already has both halves:
 
    All of these land as drafts. A person accepts them.
 4. **The diff** renders old and new claims side by side, from the drafts. It's a view, not a record.
-5. **Staleness:** a claim past its freshness profile (proposal: 90 days for traction and pricing, as the usenaive card used, set by Q3) shows "stale since <date>" in the card and the dossier.
+5. **Staleness:** a claim past its freshness window (F3 table, Q3) shows "stale since <date>" in the card and the dossier.
 
 **Cost (estimates, not measured on a refresh):**
 - **Text size:** the usenaive run's 12 extracted texts total **59,004 bytes** (measured: `wc -c` on `work-usenaive-dry-20261126-4/sources/*/*.txt`). At about 4 bytes per token, that's ~15k tokens (estimate).
@@ -457,18 +470,18 @@ Naive already has both halves:
 | Option | Runs | Tokens per venture per year | Default? |
 |---|---|---|---|
 | **R0 On demand.** A person or an already-running session asks `naive due` over the library, then runs the hash pass and the agent step for the due ventures. | When asked | 0 until asked. Then ~3–10k per refresh (guess: 1–3 changed sources) | **Yes** |
-| R1 Scheduled hash pass only (a GitHub Actions schedule or the laptop), writing changed sources. The agent step stays on demand. | Monthly | 0 tokens. Free Actions minutes, about a minute per venture (guess). | Q2 |
-| R2 Scheduled hash pass plus a scheduled agent step on changed sources | Monthly | ~36–120k (guess: 3–10k × 12) | Q2 |
+| R1 Scheduled hash pass only (a GitHub Actions schedule or the laptop), writing changed sources. The agent step stays on demand. | Monthly | 0 tokens. Free Actions minutes, about a minute per venture (guess). | Off. Ready to switch on, because the command ships. |
+| R2 Scheduled hash pass plus a scheduled agent step on changed sources | Monthly | ~36–120k (guess: 3–10k × 12) | No |
 | R3 Scheduled full re-read, no hashing | Monthly | ~300–420k (25–35k × 12) | No |
 
-For ten observed ventures, R3 costs about 3–4M tokens a year (guess), and R0 or R1 cost nothing until someone asks. **The default is R0.**
+For ten observed ventures, R3 costs about 3–4M tokens a year (guess), and R0 or R1 cost nothing until someone asks. **The default is R0 (Q2).** `naive observe hash` ships, so R1 is a later switch that adds a schedule and no code.
 
 **EE-095 and Lean:** none new. Due-ness is time and route arithmetic (EE-182, registered plain). The claim labels in the drafts go through F3's terms.
 
 **Verbs and tiers:**
 - the hash pass creates sources (`low`);
 - the agent creates draft claims (`low`);
-- a person accepts them (`low`).
+- a holder of `reference-library-reviewer` accepts them (`low`).
 
 **Null rules:** a source that now answers an error (usenaive's 402) writes a new source with `http_status: 402` and empty text. It retracts nothing by itself.
 
@@ -476,18 +489,18 @@ For ten observed ventures, R3 costs about 3–4M tokens a year (guess), and R0 o
 
 **Owner:**
 - Naive, `packages/naive`: the label terms (Partners P3) and the eval check.
-- An exemplar store for `exemplars/` and `templates/`: Naive itself or its own repo (Q5).
-- The reference library repo: `evals/observed-companies.jsonl`.
+- Naive (public): `packages/naive/founder-templates/` and `packages/naive/exemplars/synthetic/` (Q5).
+- Dogfood (private): `exemplars/gold/` (Q5), `evals/observed-companies.jsonl`, and the existing evals of our own ventures.
 
 The P3 terms do the separating:
 - `synthetic_not_under_venture` proves that a synthetic record can't sit in an observed or run venture.
 - `gold_needs_accepted_own` proves that gold needs a person and one of our own ventures (A5).
 - The existing `golden-ruling` stays as Torian's rulings on idea fields. A gold exemplar is a different thing: an accepted record copied, with its provenance, from a run venture. The two keep separate names.
 
-**Layout (proposal):**
-- `exemplars/gold/<venture>/<record path>.json`
-- `exemplars/synthetic/<template id>/...`
-- `templates/<phase>/<industry>/<archetype>/`
+**Layout (Q5):**
+- Dogfood `exemplars/gold/<venture>/<record path>.json`. Gold comes from our own ventures and can hold private data, and Naive is public. Dogfood is private, and its storage note already keeps our ventures' records there.
+- Naive `packages/naive/exemplars/synthetic/<template id>/...`. Only synthetic records generated from public inputs (templates, archetypes, public patterns) may live here. NIST says synthetic data keeps the statistical traits of its seed (FINDINGS S40, S41), so anything seeded from gold or a run venture is private and goes beside gold in Dogfood.
+- Naive `packages/naive/founder-templates/<phase>/<industry>/<archetype>/`. The name avoids `packages/naive/template/`, which is the venture scaffold.
   - The phase values are `venture.schema.json`'s.
   - The industry values are APQC industry PCFs.
   - The archetype values are business-model patterns. Their vocabulary is admitted as a term only when a check reads it.
@@ -503,12 +516,11 @@ type EvalItem = {                                           // one line of an ev
 type EvalFile = { canary: string; items: EvalItem[] };      // canary: one fixed GUID per eval file, BIG-bench style
 ```
 
-**Plain checks (proposal), registered in `bypass-guard-test.ts`:**
-- every eval file carries its canary;
-- no held-out item's record id appears in any exemplar file or prompt fixture;
-- `label` is null unless `labelled_by` names a person (EE-189 faithful author).
-
-These are string, set and authorship checks. They decide no term.
+**Checks (proposal):**
+- **Held-out item** is an EE-095 term, level `data`: an item whose split is `held-out` and whose record id is in no exemplar file and no prompt fixture. Lean `Evals.lean`: `held_out_disjoint_exemplar`. This is id membership, so it goes through the engine.
+- `label` is non-null only when `labelled_by` passes the EE-189 faithful-author term as a person.
+- Each eval file carries its canary. That's equality with one fixed string, a plain check registered in `bypass-guard-test.ts` with that reason.
+- A synthetic exemplar in Naive cites only public inputs in its `derived_from`. That's the `allowed-source` term again (F3).
 
 **Verbs and tiers:**
 - create eval items (`low`);
@@ -532,9 +544,9 @@ These are string, set and authorship checks. They decide no term.
   - `ontology.json` cites "PCF 7.4" 6 times.
   - `pcf.json` 3.2.2 is "Develop and manage brands" (element 11445), and pricing is 3.2.3 "Define pricing strategy" (10123), with 3.2.3.4 "Approve pricing strategies/policies and targets" (10125).
 
-These match Partners P6. The remaining work is P6's data fix, plus a check that `departments.json` and ontology citations match `pcf.json` by element id.
+These match Partners P6. The remaining work is P6's data fix, plus a citation check (Q6).
 
-Partners P6 says that check belongs in the term engine. The repo's precedent registers the same kind of id-and-name comparison as plain (`check-pcf.ts` and `check-tools.ts`, EE-165 and EE-166). **Q6.**
+**PCF citation** is an EE-095 term (proposal), level `citation`. Its facts are whether the cited element id is in `pcf.json`, whether the cited name matches that element, and whether the cited version is the file's version. Lean `Citations.lean`: `citation_needs_element`. It judges every `departments.json` `apqc` entry and every ontology `standard` citation. `check-pcf.ts` and `check-tools.ts` already compare ids against `pcf.json` as plain checks (EE-165, EE-166). Under Torian's rule that's debt. The PR records it in the decision, and moving those two checks onto the same term is a later PR.
 
 ## 6. Flows
 
@@ -621,7 +633,7 @@ flowchart TD
 | F4 text.md write route | Partners (FLAWS 4); EE-070 already requires text.md | Keep. It's the smallest unblocker. |
 | F5 Model-card record | Partners (P4); research (Mitchell 2019) | Keep the card, drop the record. Generate the card. Add coverage.json. |
 | F6 Dossier record type later | Torian (A4) | Defer, with an explicit trigger condition. |
-| F7 Refresh with crons | Partners (research §6.4) | Keep the need, reject the cron default. Torian owns any schedule (Q2). |
+| F7 Refresh with crons | Partners (research §6.4) | Keep the need, reject the cron default. R0 on demand (Q2). |
 | F8 Templates and evals kept apart | Torian (A1, A5, A6) | Keep. The P3 terms do most of it. |
 | F9 Map the 13 functions to APQC 8.0 | Torian | Already done in EE-165 and EE-166. What's left is a data fix (P6). |
 | Licence tags for vendor data | Research §3.2 | Drop for now. A2 means no licensed data, so no `licensed` origin. It comes back only with a decision to buy data. |
@@ -657,7 +669,7 @@ flowchart TD
 Only after steps 1–4:
 - the derived card, with drift caught by `naive check`;
 - label, relation and coverage terms judged at write time;
-- the token-free hash pass, scheduled only if Torian picks R1 (Q2);
+- the token-free hash pass, which ships now and gets a schedule only if R1 is switched on later (Q2);
 - the agent step stays on demand.
 
 No automation accepts anything. A person accepts.
@@ -668,8 +680,8 @@ Torian's rule: build a GUI only for agents running while the laptop is closed, s
 
 | Candidate | Rule it meets | Verdict |
 |---|---|---|
-| A review queue for refresh drafts | Agents running while the laptop is closed, **only if** Q2 picks a hosted agent step (R2 hosted) | **Not now.** R0 runs where Torian is. Build only if R2 runs hosted. |
-| A share page for one dossier or model card | Outsiders | **Not now.** Company sections only, never person sections. It's publication, so it needs Torian's word and the Q7 answer. |
+| A review queue for refresh drafts | Agents running while the laptop is closed, **only if** a hosted agent step is ever turned on | **Not now.** R0 (Q2) runs where Torian is. |
+| A share page for one dossier or model card | Outsiders | **Not now.** Company sections only, never person sections (Q7). It's publication, so it needs Torian's word. |
 | The reference library as cross-founder benchmark data | Cross-founder network data | **Later.** That's when founders other than Torian use Mentura. It's also the point where the data-broker risk (section 10) starts to matter. |
 | Observed ventures in the business console | none (it's Torian's own working view) | No. The CLI and MCP serve it. |
 
@@ -681,23 +693,25 @@ That's a design boundary, with nothing to build now.
 
 Numbering note: Mentura3's decision log also uses `EE-NNN` (Mentura3 AGENTS.md). The decisions below are Naive's.
 
-## 9. Sequenced pull requests (proposal)
+## 9. Sequenced pull requests
 
-Each PR ends in a state a reviewer can rerun. The Naive decision numbers are placeholders. Main's last decision is EE-188, and EE-189 is taken by the stack, so these start at EE-190 if nothing lands first.
+Each PR ends in a state a reviewer can rerun. The Naive decision ids are fixed here: main holds up to EE-190 and the stack holds EE-189, so these take EE-191 to EE-199. If another PR takes one first, the builder takes the next free id and says so. The build prompt for each PR is in `build-prompts/NN-<slug>.md`.
 
-| # | Repo and package | PR | Ends verifiable by | Depends on |
-|---|---|---|---|---|
-| 0 | Naive `packages/naive/src/router` | **Subtract:** delete the `knowledge/venture-profile` `next` hint, print `naive`, and turn a non-JSON write into a boundary parse error (FLAWS 17, N10) | A router test: no `next` names a route without that action; bad JSON exits 2 with a message | none (main) |
-| 1 | Naive `src/terms`, `lean/Naive` | **Labels term (Partners P3), EE-190:** `Labels.lean` from the sketch, level `data` in `levels.ts`, 4 terms in `TERMS` | `lake build`; `admit.ts` admits 4 terms; `lean-agreement-test.ts` and `bypass-guard-test.ts` pass | none (main) |
-| 2 | Naive `src/router`, `src/records` | **Source write route, EE-191:** `raw/sources/[id] write {source, text}`, create-only, sha256, duplicate refusal, host policy | Writing then running `naive check` on a fresh venture passes (the FLAWS 4 probe flips from FAIL to PASS); a second write is refused | none (main) |
-| 3 | Naive `src/engine`, `create-venture` | **Observed leftovers:** phase null when observed, no app scaffold, no scaffolded decisions, no product-exists lock, people drafts to a person; plus `owner` per Q1 | `venture-mode-test.ts` extended; the usenaive assertions for N7 and N9 pass | **#152, #153, #155, #156 merged with the observed rename** |
-| 4 | Naive `src/records`, `src/router`, `src/terms` | **Observed claim, EE-192:** schema, `claims/[id]` route, quote-found plain check, label judged by the PR 1 terms, accept, retract and supersede | Claim tests: a quote not in text.md is refused; `label: sourced` with a method is refused; a synthetic claim under a venture fails | 1, 2, 3 |
-| 5 | Naive `src/terms`, `lean/Naive`, `src/router` | **Venture relation, EE-193:** table, `venture-relation` term, `Relations.lean`, `graph/edges/[id]` route | `lake build`; admit; tests for a self edge, an unknown type, and an accepted edge without basis | 4 (basis claims) |
-| 6 | Naive `src/terms`, `lean/Naive`, `src/interfaces/cli` | **Coverage and card, EE-194:** `coverage.json`, the `empty-with-reason` term with `Coverage.lean`, `naive card`, and a drift check in `naive check` | Rendering twice gives identical bytes; editing the card by hand fails `naive check` | 4, 5 |
-| 7 | Naive `src/functions/strategy`, `src/interfaces/cli` | **Refresh, EE-195:** the `observe-refresh` workflow (schedule plus event) and `naive observe hash`. No scheduler. | `due-test.ts` case: due after the cadence; the hash pass on an unchanged fixture writes nothing, and on a changed one writes one new source | 2, 4 |
-| 8 | Naive `src/checks` (+ exemplar store per Q5) | **Evals:** canary, held-out split and person-only labels, as plain checks; the exemplar and template layout | Check tests: a missing canary fails; a held-out id in an exemplar fails | 1 |
-| 9 | Naive `src/functions`, `src/terms` | **APQC data fix (Partners P6):** the 7.0 name, six re-citations with element ids, pricing 3.2.3 (10123, 10125), and the citation check (plain or term per Q6) | `check-pcf.ts` reports 0 department and citation mismatches | none (main) |
-| 10 | Reference library repo (Dogfood today) | **Rerun usenaive at the merged Naive SHA:** sources and claims in the venture, 1 venture edge, coverage, generated card, dossier citing claim ids | `run-usenaive.sh <merged SHA>`: `naive check` passes, all 11 assertions pass, and the FLAWS table is re-scored | 0–9; Torian's review of the patch |
+**Start now** means the PR needs nothing from #152–#156. It branches off `main`. Where it edits the same files as the stack (`terms.ts` `TERMS`, `levels.ts`, `admitted.json`, `lean/Naive.lean`), whichever lands second rebases and regenerates `admitted.json` with `admit.ts`. **Blocked** means it needs the stack's observed mode or an earlier PR merged.
+
+| # | Repo and package | PR | Decision | Ends verifiable by | Depends on | Start |
+|---|---|---|---|---|---|---|
+| 0 | Naive `src/router` | **Subtract:** never suggest a `next` route that lacks the action (FLAWS 17), and turn non-JSON write input into a boundary parse error (N10) | none (bug fix) | A router test: no `next` names a route without that action; bad JSON exits 2 with a message | none | **Now**, off main |
+| 1 | Naive `src/terms`, `lean/Naive` | **Labels term (Partners P3):** `Labels.lean` from the sketch, level `data`, 4 terms in `TERMS` | EE-191 (A6) | `lake build`; `admit.ts` admits 4 terms; `lean-agreement-test.ts` and `bypass-guard-test.ts` pass | none | **Now**, off main |
+| 2 | Naive `src/router`, `src/records`, `src/terms`, `lean/Naive` | **Source write route:** `raw/sources/[id] write {source, text}`, create-only, sha256, duplicate refusal, and the `allowed-source` term with `Sources.lean` | EE-192 (A2, A3) | Writing then running `naive check` passes (the FLAWS 4 probe flips from FAIL to PASS); a second write and a linkedin.com source are refused | none | **Now**, off main |
+| 3 | Naive `src/engine`, `create-venture`, `template/governance/roles` | **Observed leftovers:** phase null when observed, no app scaffold, no scaffolded decisions, no product-exists lock, owner stays null, the `reference-library-reviewer` role, and people drafts routed to it | EE-193 (Q1, Q4 role) | `venture-mode-test.ts` extended; the usenaive assertions for N7 and N9 pass | **#152, #153, #155, #156 merged** | Blocked |
+| 4 | Naive `src/records`, `src/router`, `src/terms` | **Observed claim:** schema, `claims/<kind>/[id]` route, quote-found plain check, label judged by the EE-191 terms, accept by the reviewer role, retract and supersede, freshness windows | EE-194 (Q3, Q4 grant, Q7) | Claim tests: a quote not in text.md is refused; `sourced` with a method is refused; accept by a non-holder is refused; a 91-day-old traction claim reads stale | 1, 2, 3 | Blocked |
+| 5 | Naive `src/terms`, `lean/Naive`, `src/router` | **Venture relation:** table, `venture-relation` term, `Relations.lean`, `graph/edges/[id]` route | EE-195 | `lake build`; admit; tests for a self edge, an unknown type and an accepted edge without basis | 4 | Blocked |
+| 6 | Naive `src/terms`, `lean/Naive`, `src/interfaces/cli` | **Coverage and card:** `coverage.json`, the `empty-with-reason` term with `Coverage.lean`, `naive card`, and a drift check in `naive check` | EE-196 | Rendering twice gives identical bytes; editing the card by hand fails `naive check` | 4, 5 | Blocked |
+| 7 | Naive `src/functions/strategy`, `src/interfaces/cli` | **Refresh:** the `observe-refresh` workflow (schedule plus event) and `naive observe hash`, with no scheduler | EE-197 (Q2) | `due-test.ts` case: due after the cadence; the hash pass on an unchanged fixture writes nothing, and on a changed one writes one new source | 2, 4 | Blocked |
+| 8 | Naive `src/terms`, `src/checks`, `lean/Naive`, `founder-templates/`, `exemplars/synthetic/` | **Evals and exemplars:** the `held-out-item` term with `Evals.lean`, the canary check, person-only labels, and the public template and synthetic layout | EE-198 (Q5) | `lake build`; a held-out id in an exemplar fails; a missing canary fails; a synthetic exemplar citing a non-public input fails | 1, 2 | After 1 and 2 (off main once they merge, or stacked on 2) |
+| 9 | Naive `src/functions`, `src/terms`, `lean/Naive` | **APQC data fix (Partners P6)** and the `pcf-citation` term with `Citations.lean`; EE-165 and EE-166 plain checks recorded as debt | EE-199 (Q6) | `lake build`; admit; 0 citation failures over `departments.json` and `ontology.json`; a wrong element id fails | none | **Now**, off main |
+| 10 | Dogfood (private) | **Layout and rerun:** amend `docs/decisions/STORAGE_AND_EVALS_2026-11-26.md` with `library/` and `exemplars/gold/`; add `library/governance/delegation.json`; rerun usenaive at the merged Naive SHA | Dogfood note (Q5, Q8) | `run-usenaive.sh <merged SHA>`: `naive check` passes, all 11 assertions pass, FLAWS re-scored | 0–9 | Blocked |
 
 Mentura3 has no PR in this plan.
 
@@ -706,22 +720,28 @@ Mentura3 has no PR in this plan.
 - **Data-broker registration (verified Nov 26, 2026):**
   - **California:** the annual data broker registration fee for 2026 is **$6,000**, plus up to 2.99% card processing (11 CCR §7600, CalPrivacy). Brokers must process DROP deletion requests from Aug 1, 2026.
   - **Texas:** Bus. & Com. Code §510.005 sets a **$300** registration fee, with $300 renewal each year. Chapter 510 applies only to a broker that, in 12 months, gets more than 50% of its revenue from personal data it didn't collect directly, **or** gets revenue from processing or transferring such data on more than 50,000 people (§510.003).
-  - **The design keeps Naive clear:** people data is public-role facts only. No contact fields exist, every person claim has a 12-month review, and nothing is sold or shared. Selling or sharing person-level dossiers is a **one-way door** (Q7) and needs a lawyer first.
+  - **The design keeps Naive clear:** people data is public-role facts only. No contact fields exist, every person claim has a 12-month review, and nothing is sold or shared. Selling or sharing person-level dossiers outside is **never allowed for now** (Q7). Changing that would take a new decision after a lawyer's review.
   - This is not legal advice.
 - **Licensed vendor data:** none is allowed under A2, so the `licensed` origin is absent. If Torian ever buys data, adding `licensed` is a `costly` amend. It must come with an export guard: licensed claims never leave internal use, and never go into the card, the dossier share page, exemplars or Mentura.
 - **Logged-in or ToS-barred collection:** no LinkedIn (A3), and no G2 scraping (its terms bar it). EDGAR only with a declared User-Agent. The hash pass fetches logged off and respects robots.
 - **Self-report bias:** 54% of usenaive claims are self-reported (Partners MODEL-CARD.md). `origin` makes that visible in the card, and nothing turns self-report into `known`.
 
-## 11. Open questions only Torian can answer
+## 11. Decisions (delegated by Torian, Nov 26)
 
-- **Q1.** Observed venture `owner`: `other` (we know it isn't ours) or null (the stack's current choice)?
-- **Q2.** Refresh default: R0 on demand only, R1 a scheduled token-free hash pass on GitHub Actions, or R2 hash pass plus scheduled agent drafting?
-- **Q3.** The staleness window for traction and pricing claims: 90 days, or another number?
-- **Q4.** Who accepts claims and edges in the reference library: you only, or a named reviewer role?
-- **Q5.** Exemplars and templates: inside Naive (`packages/naive/exemplars`, `templates`) or in their own repo?
-- **Q6.** The APQC citation check: a plain check (the EE-165 and EE-166 precedent) or an EE-095 term (Partners P6)?
-- **Q7.** Selling or sharing person-level dossiers outside: never, or only after a lawyer's review?
-- **Q8.** The Dogfood repo: rename it to "reference library", or keep the repo name and use the term for its `library/` folder?
+Torian, Nov 26: "Research or just consider the best approaches to these questions and let's go with your recommendations." He decided Q8 himself.
+
+| # | Decision | Reason | Recorded in |
+|---|---|---|---|
+| Q1 | An observed venture's `owner` stays **null**. | `mode: observed` already says it isn't ours. `other` would be a second field that has to agree with mode (the stack's `init-venture.ts` writes `owner: observed ? null : "self"` at `75d17dad`). Who really owns the company is a sourced claim. | EE-193 |
+| Q2 | Refresh is **R0, on demand**. `naive observe hash` ships, so R1 is a later switch. | Torian stopped crons because they burn tokens. R0 costs nothing until asked, and the hash pass uses no tokens when it does run. | EE-197 |
+| Q3 | **90 days** (`revalidate: 90d`) for state claims: traction, headcount, funding totals and prices. **No window** for dated events and former names. **12 months** for person-level claims (A3). | No source gives a better number. 90 days is one quarterly sweep, the research's cadence. An event or a former name doesn't change. Claims sit under `claims/<kind>/`, so the existing freshness profiles apply by route prefix. | EE-194 |
+| Q4 | A person role, **`reference-library-reviewer`**, held by Torian today, granted the class `observed-accept` through the existing delegation record. | Delegating later is a new grant or a new holder, with no schema change. `delegation.schema.json` already has role grants with scope and expiry. | EE-193 (role), EE-194 (grant) |
+| Q5 | Founder templates and synthetic exemplars from public inputs go in **Naive** (`packages/naive/founder-templates/`, `packages/naive/exemplars/synthetic/`). **Gold** and anything seeded from it go in **Dogfood `exemplars/gold/`**. | The GitHub API reports Naive as public and Dogfood as private. Gold comes from our own ventures and can hold private data. Synthetic data keeps its seed's traits, so synthetic data seeded from gold stays private too. | EE-198; Dogfood note |
+| Q6 | The APQC citation check is an **EE-095 term with a Lean theorem** (`pcf-citation`, `Citations.lean`). The EE-165 and EE-166 plain checks are recorded as debt. | Torian's standing rule: every id or label membership check goes through EE-095 and Lean. Following the same rule, the host deny list and the held-out split are terms too (F3, F8). | EE-199 |
+| Q7 | **Never**, for now. Person-level dossiers aren't sold or shared outside. | It keeps Naive and Mentura out of California's broker registration ($6,000 for 2026) and out of Texas ch. 510 ($300). Changing it would take a new decision after a lawyer's review. | EE-194 |
+| Q8 | **Torian:** observed ventures stay in **Dogfood under `library/`**. "Reference library" names that folder. No new repo and no rename. | The "not Dogfood" point was only about naming. | Dogfood note (PR 10) |
+
+**One-way doors left for Torian:** none in this plan. A future change to Q7, or buying licensed data (A2), would be one.
 
 ## 12. Sources
 
@@ -735,6 +755,10 @@ Mentura3 has no PR in this plan.
 - `packages/naive/src/functions/`: `departments.json`, `pcf.json`
 - `docs/reference/ROUTES.md`; `docs/decisions/decisions.json` (EE-165, EE-166; EE-189 on the stack; no EE-107)
 - `docs/design/`: `MODELED_VENTURES_2026-11-26.md` (stack), `HOOKS_AND_LOOPS_2026-11-26.md`, `ACTIVITY_CATALOG_2026-11-25.md`
+
+**Dogfood** (private, read through cursor-github at about 6:55 AM CST): `README.md`, `docs/decisions/STORAGE_AND_EVALS_2026-11-26.md`, and the repository visibility for Dogfood and Naive.
+
+**Naive, also read for the decisions:** `packages/naive/src/records/delegation.schema.json`, `workspace.schema.json`, `packages/naive/template/governance/roles/venture-roles.json`, root `package.json` (`bin`: `naive`, `mentura`), `src/router/writes.ts` line 80, `src/engine/init-venture.ts` line 76 at `75d17dad`.
 
 **Mentura3** (main `216a9ca85cf863db0bf93dca9ba3c57d59d8cb3a`, read through cursor-github): `README.md`, `AGENTS.md`, `packages/platform/README.md`, `naive.data-model.json`.
 
