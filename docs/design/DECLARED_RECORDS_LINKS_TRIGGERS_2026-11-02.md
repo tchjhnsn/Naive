@@ -163,7 +163,7 @@ Replay gives you the same answer for the same input. That is reproducibility, no
   - funding (`funding`);
   - known competitors (optional).
 
-  `market`, `job`, `technology`, `ambition`, `legal form` and `funding` are nouns in `packages/naive/src/terms/ontology.json`. The founder is a term in `packages/naive/src/terms/admitted.json`, not a noun. The idea statement is not a noun. The seed and the optional competitors were proposed on Nov 2 and are not in the repo as of 08a5466.
+  `market`, `job`, `technology`, `ambition`, `legal form` and `funding` are nouns in `packages/naive/src/terms/ontology.json`. The founder is a term in `packages/naive/src/terms/admitted.json`, not a noun. The idea statement is not a noun. There is no `venture-seed` noun as of 08a5466. A `competitor` noun exists, status proposed, and `packages/naive/src/records/data-model.json` has a `competitor` record.
 - **Completeness first.**
   - The seed is checked against its shape before anything runs. An incomplete seed fails closed with `missing_kind` listing what is absent. No partial fan-out.
   - That is the "one complete input with the correct type of information and its kinds".

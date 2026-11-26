@@ -46,7 +46,7 @@ I read these remotely from `main` on Nov 2, 2026, without cloning [1].
 - `packages/naive/src/functions/departments.json` lists 13 functions taken from APQC's Level 1 categories.
 - Product development sits in `products` (APQC 2.0) and internal tooling in `it` (APQC 8.0).
 - There is no engineering function.
-- `packages/engineering/package.json` (as of 2026-11-02; since moved/removed) is a package of `kind: "handoff"`, sent `from` product and marketing.
+- `packages/naive/library/packages/engineering/package.json` is a package of `kind: "handoff"`, sent `from` product and marketing.
 - `NAIVE_SYSTEMS_2026-11-01.md` calls a handoff "a view, not a what".
 - The roles file (`packages/naive/template/governance/roles/agent-roles.json`) has an `architect` who decides "ADRs inside decided strategy" and a `builder` who decides "how to implement within the handoff".
 
@@ -373,7 +373,7 @@ The Lead routes every record. No agent messages another directly. A mesh among 5
 
 ## Sources
 
-1. tchjhnsn/everything-ecosystem at `main`, read Nov 2, 2026 via the GitHub API (private repo): `packages/naive/src/functions/departments.json`; `packages/engineering/package.json` (as of 2026-11-02; since moved/removed); `docs/design/NAIVE_SYSTEMS_2026-11-01.md`; `packages/naive/template/governance/roles/agent-roles.json`; `docs/design/HANDOFF_GROK_VENTURE_RECORDS_AND_RELATIONSHIPS_2026-11-01.md` (as of 2026-11-02; since moved/removed); `packages/naive/src/records/naive-config.schema.json`; `.github/workflows/test.yml`, `docs-required.yml`, `pr-review.yml`. https://github.com/tchjhnsn/everything-ecosystem
+1. tchjhnsn/everything-ecosystem at `main`, read Nov 2, 2026 via the GitHub API (private repo): `packages/naive/src/functions/departments.json`; `packages/naive/library/packages/engineering/package.json`; `docs/design/NAIVE_SYSTEMS_2026-11-01.md`; `packages/naive/template/governance/roles/agent-roles.json`; `docs/design/HANDOFF_GROK_VENTURE_RECORDS_AND_RELATIONSHIPS_2026-11-01.md` (as of 2026-11-02; since moved/removed); `packages/naive/src/records/naive-config.schema.json`; `.github/workflows/test.yml`, `docs-required.yml`, `pr-review.yml`. https://github.com/tchjhnsn/everything-ecosystem
 2. PR #154, "Cut pull request CI cost: cancel replaced runs and skip slow groups" (open; created Nov 2, 2026, 12:30 AM CST). https://github.com/tchjhnsn/everything-ecosystem/pull/154
 3. Task 3 report, the companion Mentura3 research note `docs/mentura/research/ACTIONS_USAGE_2026-11-01.md` (as of 2026-11-02; since moved/removed) (GitHub Actions usage, Oct 27 to Nov 1, 2026; rates from GitHub Docs, "Actions runner pricing").
 4. Task 4 report, `docs/design/AGENT_SPAWN_COALITION_RESEARCH_2026-11-02.md` (Rules A to D; single-owner recommendation; channel counts; Wilson bounds).

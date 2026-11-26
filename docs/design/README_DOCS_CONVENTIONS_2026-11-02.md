@@ -8,7 +8,7 @@ Prepared Nov 2, 2026 (CST). Read only. Repo snapshot: `tchjhnsn/everything-ecosy
 
 ## 1. Summary
 
-- The repo already has the right parts for checked docs: a README template (`docs/readme-template.md`), a claims linter (`packages/naive/src/checks/check-docs-claims.ts`), a CI gate (`.github/workflows/docs-required.yml`) and three generated docs checked against a fresh render (`test.mjs:162-174`). The problem is coverage and ownership, not tooling.
+- The repo already has the right parts for checked docs: a README template (`docs/readme-template.md`), a claims linter (`packages/naive/src/checks/check-docs-claims.ts`), a CI gate (`.github/workflows/docs-required.yml`) and three generated docs checked against a fresh render (`test.mjs:162-174` as of 2026-11-02; the suite is now `node test.ts`). The problem is coverage and ownership, not tooling.
 - Coverage: 74 of the 110 folders that hold code have no README, although the template says every such folder gets one (`docs/readme-template.md:3`). Of 15 READMEs read in full, none has the template's `Up:` line and none has all five template sections.
 - The gate has holes: 232 code files sit outside its scope, 86 in scope have no README to owe, and 396 files all owe the same `schema/README.md` (as of 2026-11-02; since moved/removed).
 - The root README is not yet a title page or a table of contents. It has zero Markdown links and does not mention 11 of the 21 top-level folders.
@@ -63,12 +63,12 @@ Knuth: "Instead of imagining that our main task is to instruct a computer what t
 - **Drift.** In a study of 878 documentation issues, Aghajani et al. found 190 up-to-dateness issues: docs that were correct until a change made them stale. That is about 39% of the content issues (completeness was 268 issues, or 55%). Correctness issues hit code examples most [23]. Naive's audit shows the same pattern (section 5).
 - **Duplication.** "Every piece of knowledge must have a single, unambiguous, authoritative representation within a system" (the DRY principle) [22], and Google says the same [3].
 - **Fixes in use elsewhere:**
-  - Generated sections: Cog runs small bits of code inside a file to generate its content [25]. Naive already does this for `packages/naive/src/terms/ontology.md`, `docs/reference/ROUTES.md` and a section of `LAYERS_AND_KITS` (`test.mjs:172-174`).
+  - Generated sections: Cog runs small bits of code inside a file to generate its content [25]. Naive already does this for `packages/naive/src/terms/ontology.md`, `docs/reference/ROUTES.md` and a section of `LAYERS_AND_KITS` (`test.mjs:172-174` as of 2026-11-02; the suite is now `node test.ts`).
   - Link checks: lychee checks links in Markdown and HTML [24]. Naive's `packages/naive/src/checks/check-docs-claims.ts` already resolves relative links and backticked paths.
   - Freshness markers: the Rust compiler guide asks writers to date time-sensitive text with `<!-- date-check -->`. A monthly CI job opens an issue listing dates older than six months [10][11].
   - Reachability: Sphinx warns about any document that no toctree includes, "because that means that this file will not be reachable through standard navigation", and requires an explicit `orphan` mark to silence the warning [20].
   - Ownership metadata per folder: Kubernetes OWNERS files sit in a folder and apply to its children [16]. GitHub CODEOWNERS does the same per path pattern [26].
-- **Correction to the brief:** `packages/naive/src/checks/check-nouns.ts` has `--md` and `--package`, but no `--graph` flag (`packages/naive/src/checks/check-nouns.ts:5-10`). The staleness test for its Markdown is `test.mjs:172`.
+- **Correction to the brief:** `packages/naive/src/checks/check-nouns.ts` has `--md` and `--package`, but no `--graph` flag (`packages/naive/src/checks/check-nouns.ts:5-10`). The staleness test for its Markdown was `test.mjs:172` as of 2026-11-02. The suite is now `node test.ts`.
 
 ## 3. The book: exemplars and the structure they suggest
 
@@ -109,11 +109,11 @@ Knuth: "Instead of imagining that our main task is to instruct a computer what t
 | Fact | Owner (hand-edited) | Views (generated, never hand-edited) |
 |---|---|---|
 | A layer's purpose, skills, records, reads, writes, checks, gaps | `<layer>/layer.json` | Layer README blocks, root contents, AGENTS.md links |
-| A package's purpose and contents | `packages/<name>/package.json`, `packages/naive/library/packages/catalog.json` | `packages/README.md` catalog, package README header |
+| A package's purpose and contents | `packages/naive/library/packages/<name>/package.json`, `packages/naive/library/packages/catalog.json` | `packages/README.md` catalog, package README header |
 | A kit or framework | `kit.json`, `framework.json` | Its README header |
-| Noun meanings | `packages/naive/src/terms/ontology.json` | `packages/naive/src/terms/ontology.md` (already checked, `test.mjs:172`) |
+| Noun meanings | `packages/naive/src/terms/ontology.json` | `packages/naive/src/terms/ontology.md` (already checked; as of 2026-11-02 that check was `test.mjs:172`, and the suite is now `node test.ts`) |
 | Decisions | `docs/decisions/decisions.json` | "Decisions" block in each README that a decision cites |
-| Routes | `packages/naive/src/router/router.ts` | `docs/reference/ROUTES.md` (already checked, `test.mjs:174`) |
+| Routes | `packages/naive/src/router/router.ts` | `docs/reference/ROUTES.md` (already checked; as of 2026-11-02 that check was `test.mjs:174`, and the suite is now `node test.ts`) |
 | Reading order | `docs/book.json` (as of 2026-11-02; since moved/removed) (new) | Root contents, `docs/SUMMARY.md` (as of 2026-11-02; since moved/removed), Up/Previous/Next lines |
 | What a function or file does, its contract | A comment at the declaration or top of file (Go style [13]) | None |
 | Why a folder is shaped as it is | Its README, "What this is" (hand) | None |
@@ -209,7 +209,7 @@ At file level, `platform/README.md:33-47` (as of 2026-11-02; since moved/removed
 7. **Near-duplicate names:**
    - `packages/naive/library/packages/investor/` and `packages/naive/library/packages/investors/`;
    - `packages/naive/library/packages/marketing/` has both `skill/` and `skills/`.
-8. **`docs/design/` is an unindexed archive.** It holds 25 dated files: designs, 4 `HANDOFF_*` notes, a `PR_CATCHUP_PLAN`, and both `EVERYTHING_ECOSYSTEM_DOMAIN_DESIGN_2026-10-10.md` and a `_PUBLIC` copy. It has no README and no status per file, though `test.mjs:173` treats one of them (`LAYERS_AND_KITS_2026-10-27.md`) as live, generated reference. Google's rule is that built designs become archives [3].
+8. **`docs/design/` is an unindexed archive.** It holds 25 dated files: designs, 4 `HANDOFF_*` notes, a `PR_CATCHUP_PLAN`, and both `EVERYTHING_ECOSYSTEM_DOMAIN_DESIGN_2026-10-10.md` and a `_PUBLIC` copy. It has no README and no status per file, though as of 2026-11-02 `test.mjs:173` treated one of them (`LAYERS_AND_KITS_2026-10-27.md`) as live, generated reference. Google's rule is that built designs become archives [3].
 
 ### 5.5 The docs gate, measured
 - **Scope of the scan.** `check-docs-claims.mjs:34` scans only:
@@ -228,7 +228,7 @@ At file level, `platform/README.md:33-47` (as of 2026-11-02; since moved/removed
 - **Code that owes no README.** `nearestReadme` (lines 43-46) stops at the top-level folder and returns `null` when it finds nothing. Of 548 in-scope files, 86 owe nothing: all 47 in `interface/` (as of 2026-11-02; since moved/removed), all 31 in `packages/`, and 8 in `purpose/` (as of 2026-11-02; since moved/removed).
 - **Concentration on one README.** 396 of the in-scope files resolve to `schema/README.md` (as of 2026-11-02; since moved/removed), so one 74-line index absorbs every schema change.
 - **The gate condition.** `docs-required.yml` passes when there is no code, or when the scanned docs that are owed were updated. A pull request that edits `packages/naive/src/router/router.ts` owes `packages/naive/src/router/README.md`. An unrelated README or SKILL.md leaves that README owed, so the check does not pass.
-- **What already works.** Three generated docs are compared to a fresh render (`test.mjs:162-174`). The helper `rendered(path, marker)` compares from a marker to the end of the file. So a generated block must be the last thing in its file. Begin and end markers would remove that limit.
+- **What already works.** Three generated docs are compared to a fresh render (`test.mjs:162-174` as of 2026-11-02; the suite is now `node test.ts`). The helper `rendered(path, marker)` compares from a marker to the end of the file. So a generated block must be the last thing in its file. Begin and end markers would remove that limit.
 
 ### 5.6 interface/ top level
 - 22 direct files, about 349 KB.

@@ -105,11 +105,11 @@ So any pair stays temporary. Strategy alone needs no Rule C test, because it is 
 
 ## 5. Objects it fetches (inputs)
 
-"Existing" means an exact `noun` value in `packages/naive/src/terms/ontology.json` on `framework`. Ontology nouns have no separate id field yet, so the noun string is the identifier until EE-107 decision 7 adds stable ids.
+"Existing" means an exact `noun` value in `packages/naive/src/terms/ontology.json`. Ontology nouns still have no separate `id` field as of 08a5466. EE-107 is not a logged decision.
 
 | # | Input | Example from Macro | Noun in ontology.json | Record type | Status |
 | --- | --- | --- | --- | --- | --- |
-| F1 | Public web page read as a source (home, product, docs, FAQ) | docs.macro.com/faq | none. `reference` (L377) is "A source behind a default", a different meaning | `research-source` (`packages/naive/src/records/data-model.json` L2060) | **New noun** `research source` |
+| F1 | Public web page read as a source (home, product, docs, FAQ) | docs.macro.com/faq | none. `reference` (L377) is "A source behind a default", a different meaning | `research-source` was proposed on Nov 2 and is not in the data model. Line 2060 of `packages/naive/src/records/data-model.json` is the `upgrade-registry` schema path | **New noun** `research source` |
 | F2 | Pricing page (plan names, per-seat prices) | macro.com/pricing: Free, Pro $40, Max $200 per seat a month | none for a price tier. `business model` (L317) covers the earning pattern | `research-source`, then claims | **New noun** `price tier` (produce side) |
 | F3 | License file and license history | LICENSE.txt (AGPLv3); BSL to AGPLv3 on May 31, 2026; apps/web/LICENSE "All rights reserved" | none | `research-source` | **New noun** `software license` |
 | F4 | Contributor license agreement | services/cla-worker/CLA.md | none | `research-source` | **New noun** `contributor license agreement` |

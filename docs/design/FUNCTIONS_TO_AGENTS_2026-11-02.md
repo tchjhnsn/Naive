@@ -11,7 +11,7 @@ Prepared Nov 2, 2026, about 1:45 AM CST, for Torian. Research only. Nothing in t
 **Where the 13 functions come from.**
 - The catalog is `packages/naive/src/functions/departments.json`: 13 entries, one per APQC Level 1 category [1].
 - It is still named "departments", although EE-090 says these are functions [3].
-- Each function's "packages" (column 3) are the core packages under `packages/<name>/package.json` whose `department` field names it [2].
+- Each function's "packages" (column 3) are the core packages under `packages/naive/library/packages/<name>/package.json` whose `department` field names it [2].
 - The discovery prior is the catalog's need-now weight for the discovery phase, which is the venture's current phase [1][4]. The priors are labeled "version 0.x, ours and unevaluated" [1].
 
 **Where the agent assignments come from.**
@@ -122,7 +122,7 @@ Prepared Nov 2, 2026, about 1:45 AM CST, for Torian. Research only. Nothing in t
 ## Sources
 
 1. tchjhnsn/everything-ecosystem, `packages/naive/src/functions/departments.json` (13 entries, APQC ids and names, discovery-to-platform priors), read Nov 2, 2026. https://github.com/tchjhnsn/everything-ecosystem/blob/main/packages/naive/src/functions/departments.json
-2. Same repo, `packages/{foundation,validation,product,marketing,finance,fund,people,operations,legal,relationships}/package.json` (`department` field), and `packages/engineering/package.json` (as of 2026-11-02; since moved/removed) (`kind: handoff`, `from: product, marketing`).
+2. Same repo, `packages/naive/library/packages/{foundation,validation,product,marketing,finance,fund,people,operations,legal,relationships}/package.json` (`department` field), and `packages/naive/library/packages/engineering/package.json` (`kind: handoff`, `from: product, marketing`).
 3. Same repo, `docs/design/NAIVE_SYSTEMS_2026-11-01.md` section 2 (functions, the four tests, EE-090, "ten core packages cover eight functions", "five functions have no package", function modules not built, no phase adds or removes a function).
 4. Same repo, `instance/ventures/everything-ecosystem/venture.json` (as of 2026-11-02; since moved/removed) (`phase: discovery`, `departments: [marketing-and-sales]`, members architect and builder).
 5. Same repo, `instance/ventures/everything-ecosystem/provenance.jsonl` (as of 2026-11-02; since moved/removed) (127 lines, 2026-10-27T21:01Z to 2026-10-30T01:12Z).

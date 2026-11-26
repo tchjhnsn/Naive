@@ -289,7 +289,7 @@ Secondary and other sources:
 - TypeScript handbook, extending types: https://www.typescriptlang.org/docs/handbook/2/objects.html#extending-types
 
 Naive repo, read only:
-- `tchjhnsn/everything-ecosystem` `framework`: `packages/naive/src/terms/ontology.json` (112 nouns, 99 live, 11 "ours", 2 scoped), `packages/naive/src/terms/ontology.md` L18, `packages/naive/src/records/layers/purpose/references/references.json` (`stance.is`). The Nov 2 path `purpose/references/references.json` (as of 2026-11-02; since moved/removed) is this file, `packages/naive/src/terms/operating-rules.json` `design.diff`.
+- `tchjhnsn/everything-ecosystem` `framework`: `packages/naive/src/terms/ontology.json` (as of 2026-11-02: 112 nouns, 99 live, 11 "ours", 2 scoped), `packages/naive/src/terms/ontology.md` L18, and `packages/naive/src/records/layers/purpose/references/references.json` (`stance.is`). The Nov 2 path `purpose/references/references.json` is that references file (as of 2026-11-02; since moved). `packages/naive/src/terms/operating-rules.json` `design.diff` is a different file.
 - PR #164 head `7da7909` does not resolve in this repository. `schema/vocabulary.json` (as of 2026-11-02; since moved/removed). The verb rows match `design.diff.verbs` in `packages/naive/src/terms/operating-rules.json`. EE-113 still names preserved PRs 164 and 163.
 
 Not reachable: the ISO 1087 and ISO 704 full texts are paywalled, and the ANSI ISO 704:2022 preview did not download as a PDF. The ISO 1087-1:2000 neologism wording is therefore quoted from Valeontis and Mantzari, not from ISO directly.

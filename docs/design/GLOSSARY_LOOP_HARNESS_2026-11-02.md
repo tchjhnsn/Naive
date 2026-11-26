@@ -122,7 +122,7 @@ These are worse than missing terms, because code and the ontology already disagr
 | `gate` | the test for leaving a phase | the write gate that refuses or drafts a write; a provenance activity | `packages/naive/src/engine/gate.ts` L125-132; `interface/provenance.mjs` (as of 2026-11-02; since moved/removed) L134 (`activity: "gate"`); admitted engine term `phase-gate` (`packages/naive/src/terms/admitted.json`) |
 | `channel` | a place the venture publishes to (`packages/naive/src/terms/ontology.json` L811) | revision 3's graph entry point | resolved by revision 4: channels became scopes |
 | `customer` (record type) | only scoped nouns exist: `customer@marketing-and-sales`, `customer@finance`, and no bare name may sit beside them (`packages/naive/src/terms/ontology.md` L18) | record type `customer` "A customer master record" | `packages/naive/src/records/data-model.json` L1626 |
-| `theorem` | not a noun | term list `theorem` collides with `theorem@torian`; revision 3 needs `question theorem` | `TERM_LIST_2026-11-01.json` |
+| `theorem` | not a noun | as of 2026-11-02 the term list said `theorem` collides with `theorem@torian`. Main has no `theorem@torian` as of 08a5466. Revision 3 needs `question theorem` | `docs/design/term-harvest/TERM_LIST_2026-11-01.json` (as of 2026-11-02; since moved/removed) |
 | `premise` | not a noun | `frame` "premises and the attacks on them"; `premise-lint` aspects; revision 4's `premise` (decision input plus threshold) | `packages/naive/src/records/data-model.json` `frame`; `AGENTS.md` L44 |
 
 ### 2.3 Ranked starter list (first 25)
@@ -144,7 +144,7 @@ Rank uses section 4.3's formula: dependents first, then collision risk, then act
 | 11 | bet | premises and pair lenses depend on it; 0 uses in repo docs | new noun and record type |
 | 12 | premise | three uses that must be one meaning | new noun, reconciled with `frame` and premise-lint |
 | 13 | question | revision 3, section 3 | new noun |
-| 14 | question theorem | revision 3; collides with `theorem@torian` | new noun, label fixes the sense |
+| 14 | question theorem | revision 3; the Nov 2 term list said it collides with `theorem@torian`, which is not in the ontology as of 08a5466 | new noun, label fixes the sense |
 | 15 | competitor | strategy research owner; engine already ran it | new noun, broader: account |
 | 16 | price tier | shared by Strategy and Growth | new noun, broader: offering |
 | 17 | visibility level | `LEVELS` in `packages/naive/src/engine/visibility.ts` L21, no noun | new noun with enum shape |
@@ -249,10 +249,9 @@ The Nov 2 count below was read from `packages/naive/src/terms/ontology.json` and
 - **As of 2026-11-02, 26 reference records,** by kind: 13 book, 6 article, 4 standard, 1 paper, 1 law, 1 conversation. As of 08a5466 there are 46: book 16, article 11, standard 7, paper 5, law 4, dataset 2, conversation 1.
   - Stance as of 2026-11-02: 19 adopted, 5 adapted, 2 alternative. As of 08a5466: adopted 30, adapted 11, alternative 5.
 - **As of 2026-11-02, 83 distinct `standard` strings** on 112 nouns. As of 08a5466 there are 115 distinct `standard` strings on 149 nouns. These are free text, and code cannot resolve them.
-- **As of 2026-11-02, only 13 of 99 live nouns resolved to a reference record** through `references`. As of 08a5466, 15 live nouns have `references` and 9 live nouns have `standard` `ours`:
-  - phase, gate, ambition, industry, core product, market, job, technology, business model, wedge, agent harness, AI harness, evidence grade.
-- 55 name a source in text with no record.
-- 20 say a generic "common ... usage".
+- **As of 2026-11-02, only 13 of 99 live nouns resolved to a reference record** through `references`. The 13 names below are that Nov 2 list: phase, gate, ambition, industry, core product, market, job, technology, business model, wedge, agent harness, AI harness, evidence grade. As of 08a5466, 15 live nouns have `references`: those 13 plus AI feature and validation score. The 9 live nouns with `standard` `ours` are a different set: Everything Ecosystem, layer, venture profile, pillar, venture template, Product Anatomy, Succession Matrix, capability register, and founder appointment.
+- As of 2026-11-02, 55 named a source in text with no record. That is not the current partition of the 136 live nouns.
+- As of 2026-11-02, 20 said a generic "common ... usage". That is not the current partition.
 - As of 2026-11-02, 11 were `ours`. As of 08a5466, 9 live nouns have `standard` `ours`.
 - **APQC is cited in 6 nouns' `standard` text, but no noun lists the reference `apqc-pcf-cross-industry`** (as of 2026-11-02; the file is now `packages/naive/src/records/layers/operations/references/references.json`).
 
@@ -340,7 +339,7 @@ Every noun gets one `grade`.
 
 **`origin`.** Code computes it from the SKOS mapping and quote, never by hand. A stored value that disagrees fails.
 
-| `origin` | Means | Computed from | Standard source | EE-107 line at creation |
+| `origin` | Means | Computed from | Standard source | Change line at creation. The verbs are `design.diff.verbs` in `packages/naive/src/terms/operating-rules.json`. EE-107 is not a logged decision as of 08a5466. |
 | --- | --- | --- | --- | --- |
 | adopted | their concept and definition, quoted | `exactMatch` plus a quote of their definition | SBVR adopted definition; OMG Commons `directSource`; PROV `wasQuotedFrom` | create/derive, `source` = reference |
 | adapted | same concept in substance, reworded | `closeMatch`, or `exactMatch` without a quote | OMG Commons `adaptedFrom` ("compatible with but not quoted"); SBVR "based on" | create/derive |
@@ -349,7 +348,7 @@ Every noun gets one `grade`.
 | borrowed | their label, our different concept | `relatedMatch` or `deliberateDifference` with a reason | ISO 704 terminologization and transdisciplinary borrowing; SBVR dictionary basis | create/derive, `source` = where the label came from |
 | `operationally-coined` (operationally coined) | ours, named for how Naive operates; no source | `standard_ref: "none"` plus `none_fits` | ISO 1087-1:2000 neologism ("new terms coined for a given concept") | create/originate |
 
-- `origin` adds no verbs or kinds. Later changes use the existing EE-107 kinds. Revise recomputes `origin`. A rename (id kept) moves an operationally coined noun to a standard label, or follows an upstream relabel. Deprecate and merge are status, not origin.
+- `origin` adds no verbs or kinds. Later changes use the verbs in `design.diff.verbs` in `packages/naive/src/terms/operating-rules.json`. EE-107 is not a logged decision as of 08a5466. Revise recomputes `origin`. A rename (id kept) moves an operationally coined noun to a standard label, or follows an upstream relabel. Deprecate and merge are status, not origin.
 - The `name@function` suffix stays the scoped-noun naming rule (`packages/naive/src/terms/ontology.md` L18). It records the subject field (the terminology-work term; TBX `subjectField`), separate from both `grade` and `origin`.
 
 **`designation`, the fourth label (rev 4, for your Nov 2 "Proper Names" note).** This label records what kind of thing a word names, which is separate from scope, origin and grade. It uses the ISO 1087:2019 designation types:
@@ -366,13 +365,13 @@ Rules for a proper-name noun:
 
 "proper name" is itself a glossary noun: designation `term`, scope shared, origin adopted (definition quoted from ISO 1087:2019 3.4.4), grade standard, with a new ISO 1087:2019 reference record.
 
-Proper names among today's 99 live nouns (`packages/naive/src/terms/ontology.json` on `framework`):
+Proper names among the 99 live nouns as of 2026-11-02 (`packages/naive/src/terms/ontology.json` on `framework`). As of 08a5466 there are 136 live nouns:
 - Everything Ecosystem, `instance_of` venture development framework;
 - Product Anatomy and Succession Matrix, as one unique method and its part, each under the one-referent check (decided Nov 2, G24).
 
 "The system" is better as an `altLabel` of Everything Ecosystem. No venture or product name is a noun yet. Evidence: `docs/design/TERM_GRADE_NAMES_PREMISE_2026-11-02.md` section 7.
 
-**First pass over today's 99 live nouns.** This is by string match on `standard`; the real grade comes from the backfill (section 12, population P8).
+**First pass over the 99 live nouns as of 2026-11-02.** As of 08a5466 there are 136 live nouns. This is by string match on `standard`; the real grade comes from the backfill (section 12, population P8).
 
 | Grade | Count |
 | --- | --- |
@@ -485,7 +484,7 @@ The section 4.3 score gains `+ 3 * standard_sourced`, for candidates that came f
 
 ## 10. Acceptance, by tier
 
-All are change lines (EE-107 verbs) in a framework PR. PR #164's note says the vocabulary is the highest-risk change.
+All are change lines, using the verbs in `design.diff.verbs` in `packages/naive/src/terms/operating-rules.json`, in a framework PR. EE-107 is not a logged decision as of 08a5466. PR #164's note says the vocabulary is the highest-risk change.
 
 | Change | Line | Tier | Who accepts |
 | --- | --- | --- | --- |
@@ -624,12 +623,12 @@ Order by dependents times risk:
 | P3 | Instance records of those types | 42 records | 42 | no |
 | P4 | The 6 record types the competitor research needs: research-cell, research-source, research-claim, research-citation, judgment, artifact | 6 | 6 | yes, ranks 4 to 9 |
 | P5 | Code enum families with no noun: decision status, boundary, render state; decision-right level; visibility level; answer kind; step outcome; trigger run status; cache status; gate action; write mode | about 12 sets | 0 (literal ratchet) | about 4 new nouns; the rest are values in existing nouns' shapes |
-| P6 | Modules, one PR per folder: schema 131, interface 30, platform 23, knowledge 7, purpose 6, operations 4, evidence 3, frameworks 2, governance 1 | 207 | 207 | mostly no; a check module's parent is the noun it checks (`check-telos.mjs` gets `noun:telos`) |
+| P6 | Modules, one PR per folder: schema 131, interface 30, platform 23, knowledge 7, purpose 6, operations 4, evidence 3, frameworks 2, governance 1 | 207 | 207 | mostly no; a check module's parent is the noun it checks (`packages/naive/src/checks/check-telos.ts` gets `noun:telos`; as of 2026-11-02 the file was `check-telos.mjs`) |
 | P7 | Remaining record types and their records, as the loop accepts nouns | 92 record types, 13 records | 105 | yes |
 
 Totals: 29 + 42 + 6 + 207 + 105 = 389.
 
-P8 runs beside these and is outside the 389: **`standard_ref` and SKOS mapping for the 86 live nouns in `standard-baseline.json`.** It runs one PR per source, in this order:
+P8 runs beside these and is outside the 389. As of 2026-11-02 this was `standard_ref` and SKOS mapping for 86 of 99 live nouns, with 11 nouns graded none. As of 08a5466 there are 136 live nouns, 15 with `references`, and 9 live nouns with `standard` `ours`. It runs one PR per source, in this order:
 1. APQC, for the 6 function and capability nouns, through the existing `apqc-pcf-cross-industry` record;
 2. W3C PROV, Schema.org, FIBO and JSON Schema (new records);
 3. regulatory and codified sources;
@@ -739,12 +738,12 @@ These run as `naive glossary <command>`, with the same entry also wired to `node
 
 Each PR:
 - is based on `framework` after PR #164 merges;
-- runs `node test.mjs` green;
+- runs `node test.ts` green (as of 2026-11-02 the plan said `node test.mjs`, which is not in the tree);
 - adds its own tests;
 - changes nothing outside its listed files.
 
 **G1. Decision record and ontology fields.**
-- Files: `docs/decisions/decisions.json` (the next free id, EE-101 or later: the glossary loop, answers to section 15); `packages/naive/src/terms/ontology.json` gains optional `id`, `broader`, `related`, `alt_labels`, `scope_note`, `hash`; `packages/naive/src/terms/ontology-gate.ts` validates them; `packages/naive/src/checks/check-nouns.ts --md` prints them.
+- Files: `docs/decisions/decisions.json` (as of 08a5466 the log's last id is EE-190 and there is no EE-101; the Nov 2 plan said the next free id was EE-101 or later); `packages/naive/src/terms/ontology.json` gains optional `id`, `broader`, `related`, `alt_labels`, `scope_note`, `hash`; `packages/naive/src/terms/ontology-gate.ts` validates them; `packages/naive/src/checks/check-nouns.ts --md` prints them.
 - Accept when:
   - every existing noun still passes;
   - `id` equals `nounId(noun)` when present;
