@@ -13,7 +13,7 @@ The external relationships function (APQC 12.0, Manage External Relationships). 
 | [function.json](./function.json) | The manifest: purpose, intake, measures, capability clusters |
 | [agent.md](./agent.md) | The external relationships agent's instructions |
 | [decisions.json](./decisions.json) | The decision matrix |
-| [workflows/intake.json](./workflows/intake.json) | Workflow: learn the venture's investors and raise |
+| [workflows/intake.json](./workflows/intake.json) | Workflow: learn the venture's investors and raise. Its steps for records need-now suggests only after Discovery, or never, are steps to consider that name the phase they start in (check-functions.ts). |
 | [workflows/monthly-investor-update.json](./workflows/monthly-investor-update.json) | Workflow: draft the monthly investor update |
 | [workflows/weekly-raise-review.json](./workflows/weekly-raise-review.json) | Workflow: review an open raise each week |
 | [skills/fundraise](./skills/fundraise) | Skill: Run a fundraise as a bounded project in a raise record: the ask and milestone, start and stop dates, the securities exemption, materials, target investors and every meeting with its follow-up |

@@ -8,7 +8,7 @@
     { "id": "read-what-exists", "do": "Read the product cards, bugs, interviews and validation records, and list what is missing, most needed first." },
     { "id": "ask-products", "do": "Ask the founder what each product is, who it is for, the job it does and its status, and write or correct one product card per product.", "ask": true, "writes": ["product/[id]"] },
     { "id": "ask-risks", "do": "For the product being built now, ask what evidence exists for each of the four risks (value, usability, feasibility, viability) and note each one with no evidence on its product card.", "skill": "four-risks-review", "ask": true, "writes": ["product/[id]"] },
-    { "id": "ask-bugs", "do": "Ask which known defects users hit today, and write one bug record per defect with its priority.", "ask": true, "writes": ["product/bugs/[id]"] },
+    { "id": "ask-bugs", "do": "Ask which known defects users hit today, and write one bug record per defect with its priority.", "ask": true, "writes": ["product/bugs/[id]"], "consider": { "why": "Known defects shape what to fix first once people use the product.", "when": "The business is in Validation or later, or users already use a product." } },
     { "id": "summarize", "do": "Tell the founder in one message which products exist, which risks lack evidence, the open P0 and P1 bugs, and what to build or test next, raising the order of work to the product lead.", "raises": ["set-priorities"] }
   ],
   "done_criteria": [

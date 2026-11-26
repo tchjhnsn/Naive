@@ -13,7 +13,12 @@
 //   - a tool reads or writes a record type the data model does not have, or proposes one it does have (a type that
 //     exists is read or written, not proposed); a tool reads, writes, keeps and proposes nothing;
 //   - a tool names a capability cluster that is not in packages/naive/src/functions/it/capability-clusters.json;
-//   - a function has no tool, or a process group has no tool.
+//   - a function has no tool, or a process group has no tool;
+//   - a tool shows in a phase before any record type it writes can be suggested. Need-now's priors
+//     (packages/naive/src/engine/need-now.json) are the one source of when a record type starts: the route table's phase
+//     groups come from them, and a tool's phase may not be earlier than the earliest phase in which a prior or one of
+//     its conditions reaches the suggest line for some record type the tool writes (startOf in need-now.ts). A tool
+//     whose writes are never suggested (master data, records only a person asks for) may show in any phase.
 // --json prints the catalog's coverage per function, with each tool's derived status: ready when it proposes nothing (Naive has every record type it needs),
 // proposed when it proposes and touches nothing else, partial otherwise.
 //
@@ -27,6 +32,8 @@ import { readJson } from "../core/effect/fs.ts";
 import { describe, runMain } from "../core/effect/run.ts";
 import { DATA_MODEL as MODEL_FILE, FOLDER } from "../records/index.ts";
 import { validateValue } from "../records/validate.ts";
+import { PHASES } from "../records/routes/routes.ts";
+import { startOf, type Prior } from "../engine/need-now.ts";
 import type { ToolCatalog } from "../records/types/records.d.ts";
 
 // EE_ROOT points the check at another copy of the repository (used by check-tools-test.ts).
@@ -35,11 +42,15 @@ export const CATALOG = "packages/naive/src/functions/tools.json";
 const DEPARTMENTS = "packages/naive/src/functions/departments.json";
 const DATA_MODEL = `${FOLDER}/${MODEL_FILE}`;
 const CLUSTERS = "packages/naive/src/functions/it/capability-clusters.json";
+const NEED_NOW = "packages/naive/src/engine/need-now.json";
 
 type Tool = ToolCatalog["tools"][number];
 export type Status = "ready" | "partial" | "proposed";
-/** What the catalog is checked against: each function's APQC major number, the data model's record types, the cluster ids. */
-export type Known = { functions: Map<string, string>; records: Set<string>; clusters: Set<string> };
+/**
+ * What the catalog is checked against: each function's APQC major number, the data model's record types, the cluster
+ * ids, the phases in order, and for each record type need-now lists, the earliest phase it can be suggested in.
+ */
+export type Known = { functions: Map<string, string>; records: Set<string>; clusters: Set<string>; phases: string[]; starts: Map<string, string | null> };
 
 const isObject = (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null && !Array.isArray(v);
 const list = (v: unknown, key: string): Record<string, unknown>[] => (isObject(v) && Array.isArray(v[key]) ? v[key].filter(isObject) : []);
@@ -92,6 +103,12 @@ export function catalogErrors(cat: ToolCatalog, known: Known): string[] {
     for (const r of t.proposes ?? []) if (known.records.has(r)) out.push(`${at} proposes ${r}, which the data model already has: read or write it instead`);
     if (!t.reads.length && !t.writes.length && !t.paths?.length && !t.proposes?.length) out.push(`${at} reads, writes, keeps and proposes nothing`);
     if (t.cluster !== undefined && !known.clusters.has(t.cluster)) out.push(`${at} names cluster ${t.cluster}, which is not in ${CLUSTERS}`);
+    const starts = t.writes.flatMap((r) => { const s = known.starts.get(r); return s ? [[r, s] as const] : []; });
+    if (starts.length) {
+      const first = Math.min(...starts.map(([, s]) => known.phases.indexOf(s)));
+      if (known.phases.indexOf(t.phase) < first)
+        out.push(`${at} shows in ${t.phase}, but no record type it writes can be suggested before ${known.phases[first]} (${starts.map(([r, s]) => `${r} from ${s}`).join(", ")}, ${NEED_NOW})`);
+    }
   }
   for (const f of known.functions.keys()) if (!served.has(f)) out.push(`function ${f} has no tool`);
   for (const g of cat.process_groups) if (!covered.has(g.id)) out.push(`process group ${g.id} (${g.function}) has no tool`);
@@ -120,10 +137,15 @@ export const checkTools = Effect.gen(function* () {
   }
   const records = new Set(list(yield* read(DATA_MODEL), "records").flatMap((r) => (typeof r.id === "string" ? [r.id] : [])));
   const clusters = new Set(list(yield* read(CLUSTERS), "clusters").flatMap((c) => (typeof c.id === "string" ? [c.id] : [])));
+  const need = yield* read(NEED_NOW);
+  const priors = isObject(need) && isObject(need.records) ? need.records : {};
+  const suggest = isObject(need) && typeof need.suggest === "number" ? need.suggest : 0.5;
+  const phases = PHASES.map((p) => p.id);
+  const starts = new Map(Object.entries(priors).map(([id, spec]) => [id, startOf(spec as Prior, phases, suggest).earliest] as const));
   const bad = schemaErrors(raw);
   if (bad.length) return { errors: bad.map((e) => `${CATALOG}: ${e}`), catalog: null };
   const catalog = raw as ToolCatalog;
-  return { errors: catalogErrors(catalog, { functions, records, clusters }).map((e) => `${CATALOG}: ${e}`), catalog };
+  return { errors: catalogErrors(catalog, { functions, records, clusters, phases, starts }).map((e) => `${CATALOG}: ${e}`), catalog };
 });
 
 if (import.meta.url === `file://${process.argv[1]}`) {
