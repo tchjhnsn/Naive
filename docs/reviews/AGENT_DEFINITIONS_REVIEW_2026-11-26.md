@@ -19,7 +19,7 @@ An agent definition was judged against what an agent needs before it can be trus
 9. every skill it is given referenced with a cue for when to load it, and every skill it is told to load existing;
 10. a purpose, a trigger and a done criterion per workflow, with the steps in a sensible order.
 
-Points 6, 7 and 10 were already met: every step names what it does, the routes it writes and the classes it raises; every workflow has a trigger and done criteria, one conformance check and one review; every workflow's steps read before they write and summarize last. The failures were in 1, 2, 3, 4, 8 and 9.
+Points 6, 7 and 10 were already met: every step names what it does, the routes it writes and the classes it raises; every workflow has a trigger and done criteria, one conformance check and one review; every workflow's steps read before they write and summarize last. The failures were in 1, 2, 3, 4, 5, 8 and 9.
 
 ## What the three sources are, and what now binds them
 
@@ -110,7 +110,17 @@ Fix: both Skills sections name every skill in their module with one clause on wh
 
 Files: `packages/naive/src/functions/strategy/agent.md`, `packages/naive/src/functions/capabilities/agent.md`, `packages/naive/src/checks/check-functions.ts`.
 
-### 8. A trigger could be written in a shape that never fires. Fixed.
+### 8. No agent.md named a single tool call. Fixed, and unchecked.
+
+Not one of the thirteen said how a record is read or written. The brief supplies the environment and the route table, so an agent with `mentura_agent_brief` is not helpless, but every agent was left to infer the call from the route names, and a function agent that infers "edit the file" is refused by the router and does not know why.
+
+Fix: a uniform paragraph in each `What you own` section, after the sentence about the router, naming the two calls on the CLI (`mentura <route> read --venture <id>`, `mentura <route> write --venture <id> --input <file.json>`), their MCP equivalents (`mentura_read`, `mentura_write`), the call that gives a route its schema, template and gate before a write (`mentura_layout`), and the three that answer "what now": `mentura_agent_brief`, `naive due --function <id>` and `node packages/naive/src/engine/need-now.ts <venture dir>`.
+
+No check was added. The paragraph is uniform prose with no machine-readable counterpart, unlike the `Writes:` line, whose referent is a derived list. A check that grepped for tool names would pin the wording without pinning the meaning, and `check-docs-claims.ts` already fails on a command, flag, path or route the text names and the code does not have, which is the part that can rot.
+
+Files: all thirteen `packages/naive/src/functions/*/agent.md`.
+
+### 9. A trigger could be written in a shape that never fires. Fixed.
 
 `function-workflow.schema.json` made `cadence` and `route` optional for every trigger kind. A `schedule` with no cadence and an `event` with no route are never due (`packages/naive/src/engine/due.ts` reads both), and a `cadence` on an `intake` trigger is ignored. No shipped workflow is wrong today.
 
@@ -118,7 +128,7 @@ Fix: the schema requires `cadence` for `schedule` and refuses it elsewhere, and 
 
 Files: `packages/naive/src/records/function-workflow.schema.json`, `packages/naive/src/checks/check-functions.ts`.
 
-### 9. Three agreements between the definitions were unchecked. Fixed, with no change to the data.
+### 10. Three agreements between the definitions were unchecked. Fixed, with no change to the data.
 
 All three hold on `main`, so these are guards against drift, not corrections:
 
@@ -128,13 +138,13 @@ All three hold on `main`, so these are guards against drift, not corrections:
 
 Files: `packages/naive/src/checks/check-functions.ts`, and 15 new cases in `packages/naive/src/checks/check-functions-test.ts`.
 
-### 10. A derived write reach could list one route twice. Fixed.
+### 11. A derived write reach could list one route twice. Fixed.
 
 `functionWrites` adds `operations/handoff/*` to every function and again for a function that owns the handoff record type, so `service-delivery`'s reach listed it twice, in its spec, its team-plan entry and the router's refusal message. Cosmetic.
 
 Files: `packages/naive/src/engine/agents/reach.ts`.
 
-### 11. The research skill did not say when one pass is done. Fixed.
+### 12. The research skill did not say when one pass is done. Fixed.
 
 The loop, the rules and the tools are stated well, and a missing pattern is already handled ("say so and stop"). What was missing was the definition of done, which for a research loop is the one thing that keeps a pass from becoming a session.
 
