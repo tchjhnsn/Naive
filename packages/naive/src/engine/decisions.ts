@@ -192,12 +192,15 @@ function decisionsAt(dir: string, now = Date.parse(process.env.DECISIONS_NOW ?? 
     if (pv?.approved_by && d.decided_by && pv.approved_by !== d.decided_by) errors.push(`${f}: decided_by ${d.decided_by} differs from provenance.approved_by ${pv.approved_by}`);
     if (pv?.phase && PHASES.indexOf(pv.phase) > phase) errors.push(`${f}: approved in ${pv.phase}, a phase the venture has not reached`);
     for (const o of d.outcomes ?? []) if (["met", "partly", "missed"].includes(o.result ?? "") && !o.actual) errors.push(`${f}: outcome ${o.id} is ${o.result} but records no actual outcome`);
+    if (d.duplicate_of !== undefined && d.status !== "withdrawn") errors.push(`${f}: duplicate_of ${d.duplicate_of}, but it is ${d.status}; a duplicate is withdrawn`);
+    if (d.duplicate_of === d.id) errors.push(`${f}: is a duplicate of itself`);
     const boundary: Entry["boundary"] = d.boundary && d.boundary !== "inherit" ? d.boundary : record === "product" ? "fail-open" : "inherit";
     // A decision that settles a foundation statement is part of the foundation, not under it. One
     // about a foundation record waits on that record's open statement, set below, not the whole foundation.
     const parent = d.parent ?? (d.statement ? "venture" : null);
     list.push({ ...d, file: f, source: "file", decides: { record, path }, layer, boundary, parent, ...(d.statement ? { part_of: "foundation" } : {}) });
   }
+  for (const d of list) if (d.duplicate_of && !list.some((x) => x.id === d.duplicate_of)) errors.push(`${d.file}: duplicate_of ${d.duplicate_of}, which is no decision here`);
   const covered = new Set(list.map((d) => d.statement).filter(Boolean));
   // The roll-up counts only the statements still open after decision records stand in for some.
   list[1].question = `Settle the strategic foundation (${statements.filter((s) => !["confirmed", "planned"].includes(s.status) && !s.derived_from && !list.some((d) => d.statement === s.id && d.status === "decided")).length} statements open)`;
@@ -628,6 +631,12 @@ function agentRoleIds(): string[] {
   if (agentRoles) return agentRoles;
   const f = join(new URL("../../../..", import.meta.url).pathname, "packages/naive/template/governance/roles/agent-roles.json");
   try { agentRoles = ((load(f) as { roles?: { id: string }[] }).roles ?? []).map((r) => r.id).filter((id) => id && id !== "founder"); } catch { agentRoles = []; }
+  // The function agents and researchers (<function>-agent, <function>-researcher, one per department) and the role
+  // templates (the leads among them) are roles too, so none of them can approve or withdraw as a person.
+  const root = new URL("../../../..", import.meta.url).pathname;
+  try { agentRoles.push(...((load(join(root, "packages/naive/src/functions/departments.json")) as { departments?: { id: string }[] }).departments ?? []).flatMap((d) => [`${d.id}-agent`, `${d.id}-researcher`])); } catch {} // a missing departments file leaves the register's roles
+  const roles = join(root, "packages/naive/template/governance/roles");
+  try { agentRoles.push(...readdirSync(roles).filter((n) => n.endsWith(".json") && !["agent-roles.json", "venture-roles.json", "founder.json"].includes(n)).map((n) => n.replace(/\.json$/, ""))); } catch {} // no role templates, no extra roles
   return agentRoles;
 }
 
@@ -719,6 +728,34 @@ export function approve(dir: string, id: string, { by, answer, via = "cli", note
   writeFileSync(ventureFile(dir, file), JSON.stringify(out, null, 2) + "\n");
   const e = prov(dir, { entity: file, route: "governance/decisions", activity: "accept", agent: agentFromEnv(unverified ? "unverified" : "person", via, { id: by, account }), note: note ?? (unverified ? `approved decision ${id} through ${via} with no sign-in: ${by} is unverified` : `approved decision ${id} (${wording})`) } as Parameters<typeof prov>[1]);
   return { ok: true, result: { decided: id, wording: unverified ? null : wording, ...(unverified ? { signer: "unverified" } : {}), ...(account ? { signer: "verified" } : {}), phase, provenance: e.hash, unlocks: (out.unlocks ?? []).map((u) => u.activity), ...(frozen ? { reasons: frozen.length, cites: citesOf(frozen) } : {}) } };
+}
+
+/** A person withdraws an open or deferred decision, optionally as a duplicate of another, so the queue keeps one
+ *  question. Only a person withdraws (an agent proposes; it never removes a question), a decided decision changes by a
+ *  new version instead, and the decision it duplicates must exist, be another one, and not itself be withdrawn. */
+export function withdraw(dir: string, id: string, { by, duplicateOf, note, via = "cli" }: { by?: string; duplicateOf?: string; note?: string; via?: string } = {}): DoorResult<{ withdrawn: string; duplicate_of?: string; provenance: string }> {
+  const file = fileOf(dir, id);
+  if (!file) return { ok: false, error: `no decision ${id}` };
+  if (!by) return { ok: false, error: "withdrawing needs the person's name (--by)" };
+  let del: Delegation | null;
+  try { del = delegationOf(dir); } catch (e) { return { ok: false, error: `${(e as Error).message}: no one withdraws until it is fixed` }; }
+  const refused = notAPerson(dir, del, by, { rosterRequired: false });
+  if (refused) return { ok: false, error: `only a person withdraws a decision: ${refused}` };
+  const d: DecisionRecord = load(ventureFile(dir, file));
+  if (d.status === "decided") return { ok: false, error: `${id} is decided; change it with a new version, not a withdrawal` };
+  if (d.status === "withdrawn") return { ok: false, error: `${id} is already withdrawn` };
+  if (duplicateOf !== undefined) {
+    if (duplicateOf === id) return { ok: false, error: `${id} cannot be a duplicate of itself` };
+    const other = fileOf(dir, duplicateOf);
+    if (!other) return { ok: false, error: `no decision ${duplicateOf} to be a duplicate of` };
+    if ((load(ventureFile(dir, other)) as DecisionRecord).status === "withdrawn") return { ok: false, error: `${duplicateOf} is withdrawn itself; name the decision that still asks the question` };
+  }
+  const out: DecisionRecord = { ...d, status: "withdrawn", ...(duplicateOf ? { duplicate_of: duplicateOf } : {}), withdrawn_by: by, withdrawn_at: new Date().toISOString().replace(/\.\d+Z$/, "Z") };
+  const bad = validate(out);
+  if (bad) return { ok: false, error: bad };
+  writeFileSync(ventureFile(dir, file), JSON.stringify(out, null, 2) + "\n");
+  const e = prov(dir, { entity: file, route: "governance/decisions", activity: "write", agent: agentFromEnv("person", via, { id: by }), note: note ?? (duplicateOf ? `withdrew decision ${id} as a duplicate of ${duplicateOf}` : `withdrew decision ${id}`) } as Parameters<typeof prov>[1]);
+  return { ok: true, result: { withdrawn: id, ...(duplicateOf ? { duplicate_of: duplicateOf } : {}), provenance: e.hash } };
 }
 
 /** The matrix: for each layer, the decisions that render now, wait, or come later, by phase. */
