@@ -1,4 +1,4 @@
-# Observed ventures (EE-189)
+# Observed ventures (EE-193)
 
 A venture record says whether it is observed or a person is running it. An observed venture is an outside-in model of a company built from public information. The collection of those companies is the reference library. The actor who writes a record is the process that wrote it. The people and roles inside the venture are subjects. A decision names the in-venture decision-maker when that is known, and leaves it null when it is not.
 
