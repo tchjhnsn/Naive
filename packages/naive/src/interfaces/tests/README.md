@@ -35,6 +35,7 @@ Tests that run a module in `packages/naive/src/engine/` through the router: its 
 | [`model-steps-test.ts`](./model-steps-test.ts) | Model steps, judgments, kit boundaries, uncertain routing. |
 | [`setup-test.ts`](./setup-test.ts) | Setup in the model's harness over MCP, including that the docket carries each decision's statement and options. |
 | [`brand-test.ts`](./brand-test.ts) | Brand tokens, voice, glossary, sitemap and assets. A remote image is recorded through `addAsset` and `addRemote` in [`packages/naive/src/router/brand.ts`](../../router/brand.ts), the calls an app's fetcher makes; fetching is not Naive's. |
+| [`raw-source-write-test.ts`](./raw-source-write-test.ts) | A raw source write (EE-192) through `naive new` and `naive check`. The write lands `source.json` and `text.md` together and check passes. A second write, a duplicate text, a linkedin.com url and a logged-in fetch are refused, and nothing new is written. |
 | `lint-*-test.mjs` | The function lint suites (customers, finance, foundation, investors, legal, product, validation) run through their routes. The clean ventures they expect silence from are the examples in `packages/naive/src/records/examples/workspace` and `packages/naive/src/records/examples/software`. |
 | `decision-index-test.ts`, `decision-reasons-test.ts` | The live decision index and frozen decision reasons. |
 | `decision-withdraw-test.ts` | A person withdraws a decision as a duplicate of another; an agent, a role, itself, a missing or withdrawn target are refused (EE-185). |

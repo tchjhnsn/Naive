@@ -14,7 +14,7 @@ import { statusOf } from "./check-tools.ts";
 const repo = new URL("../../../../", import.meta.url).pathname;
 const CHECK = join(repo, "packages/naive/src/checks/check-tools.ts");
 const CATALOG = "packages/naive/src/functions/tools.json";
-const COPIED = [CATALOG, "packages/naive/src/functions/departments.json", `${FOLDER}/${DATA_MODEL}`, "packages/naive/src/functions/it/capability-clusters.json"];
+const COPIED = [CATALOG, "packages/naive/src/engine/need-now.json", "packages/naive/src/functions/departments.json", `${FOLDER}/${DATA_MODEL}`, "packages/naive/src/functions/it/capability-clusters.json"];
 let failed = 0;
 const t = (name: string, ok: boolean, detail: unknown = ""): void => { console.log(`${ok ? "ok  " : "FAIL"}  ${name}${ok ? "" : `  ${JSON.stringify(detail).slice(0, 600)}`}`); if (!ok) failed++; };
 const tmp = mkdtempSync(join(tmpdir(), "check-tools-test-"));
@@ -61,6 +61,10 @@ fails("a tool that writes a record type the data model lacks", (c) => { tool(c, 
 fails("a tool that proposes a record type the data model has", (c) => { tool(c, "invoices").proposes = ["customer"]; }, /tool invoices proposes customer, which the data model already has/);
 fails("a tool that touches nothing", (c) => { Object.assign(tool(c, "deployments"), { reads: [], writes: [] }); }, /tool deployments reads, writes, keeps and proposes nothing/);
 fails("a tool that names an unknown cluster", (c) => { tool(c, "books").cluster = "crystal-balls"; }, /names cluster crystal-balls/);
+fails("a tool that shows before any record type it writes can be suggested", (c) => { tool(c, "spend").phase = "discovery"; }, /tool spend shows in discovery, but no record type it writes can be suggested before beachhead \(spend-register from beachhead/);
+fails("a tool whose record types a condition lifts earlier may show then, but not before", (c) => { tool(c, "cap-table").phase = "discovery"; tool(c, "asset-register").phase = "validation"; }, /tool asset-register shows in validation, but no record type it writes can be suggested before scale/);
+t("a tool whose writes need-now lifts by a condition may show in that phase", broken((c) => { tool(c, "cap-table").phase = "discovery"; }).status === 0);
+t("a tool that writes only master data need-now never suggests may show in any phase", broken((c) => { tool(c, "investors").phase = "discovery"; }).status === 0);
 fails("a function with no tool", (c) => { c.tools = c.tools.filter((x) => x.function !== "assets"); }, /function assets has no tool/);
 fails("a process group with no tool", (c) => { c.tools = c.tools.filter((x) => x.id !== "payroll"); }, /process group 9\.5 \(finance\) has no tool/);
 

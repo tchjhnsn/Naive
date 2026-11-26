@@ -2489,7 +2489,7 @@
         "instance/**/raw/sources/*/source.json",
         "packages/naive/src/records/examples/**/raw/sources/*/source.json"
       ],
-      "note": "Where a founder-supplied source came from. Raw is immutable (EE-070)."
+      "note": "A raw source and its text, written together by raw/sources/[id] write as { source, text }, create-only, with sha256 set by the router (EE-192). Raw is immutable (EE-070)."
     },
     {
       "id": "artifact",
@@ -2796,6 +2796,21 @@
         }
       ],
       "note": "The capability clusters of the whole-venture monorepo thesis: one outside tool per cluster, not one per function. Each names the functions that depend on it and the gap kinds that justify an outside tool (regulated authority, a network or money rail, a runtime, a UI preference). It names no vendor (lead agents design, build plan item 7)"
+    },
+    {
+      "id": "language-rubric",
+      "layer": "operations",
+      "function": "it",
+      "level": "method",
+      "schema": "packages/naive/src/records/language-rubric.schema.json",
+      "generator": "packages/naive/src/engine/generators/language-rubric.ts",
+      "paths": [
+        "packages/naive/src/functions/it/language-rubric.json"
+      ],
+      "refs": [
+        { "field": "criteria[].sources", "to": "reference", "checked_by": "packages/naive/src/checks/check-language-rubric.ts" }
+      ],
+      "note": "The rubric for judging which programming language fits a system (EE-189): criteria with a question, why, a 0 to 4 scale and a default weight that is an unvalidated prior, gates that rule a candidate out, and Naive's own choices as worked examples. packages/naive/src/engine/language-rubric.ts ranks candidates; a person decides"
     },
     {
       "id": "function-module",

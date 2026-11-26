@@ -77,7 +77,13 @@ export async function changed(before: Snapshot | null, after: Snapshot | null, {
   };
 }
 
-const commandFor = (route: string | null, venture: string | undefined) => route?.endsWith("[id]") ? `mentura ${route.replace("[id]", "<id>")} write --venture ${venture} --input <file>` : `mentura ${route} write --venture ${venture} --input <file>`;
+const commandFor = (route: string, venture: string | undefined) => route.endsWith("[id]") ? `mentura ${route.replace("[id]", "<id>")} write --venture ${venture} --input <file>` : `mentura ${route} write --venture ${venture} --input <file>`;
+
+const writeOf = async (record: string, venture: string | undefined, why: string) => {
+  const rt = await routeOfType(record);
+  if (!rt || !routes().some((r) => r.route === rt && r.actions.includes("write"))) return null;
+  return { route: rt, action: "write", command: commandFor(rt, venture), why };
+};
 
 /** The next route to act on after a write (M-17). */
 export async function next(after: Snapshot | null, { record, route, draft, venture, change }: {
@@ -87,16 +93,26 @@ export async function next(after: Snapshot | null, { record, route, draft, ventu
   const home = packageOfRecord(record);
   const p = (after?.packages?.core ?? []).find((x) => x.id === home);
   const missing = (p?.records ?? []).filter((x) => x.role !== "reads" && x.record !== record && x.moves === "now" && x.status === "missing");
-  const required = missing.find((x) => x.role === "required");
-  if (required) { const rt = await routeOfType(required.record); return { route: rt, action: "write", command: commandFor(rt, venture), why: `the next required record in ${p?.title} that moves now` }; }
+  for (const required of missing) {
+    if (required.role !== "required") continue;
+    const offered = await writeOf(required.record, venture, `the next required record in ${p?.title} that moves now`);
+    if (offered) return offered;
+  }
   // An agent's write waits for a person before what reads it can move.
   const review = (p?.records ?? []).filter((x) => x.role !== "reads" && x.status === "agent");
   if (review.length) { const rt = await routeOfType(review[0].record); return { route: rt, action: "review", who: "a person", command: `mentura ${rt} read --venture ${venture}`, why: `${review[0].title} was written by an agent: a person confirms it by writing it with --as person, and what reads it moves then` }; }
-  const freed = change?.moves_now?.[0];
-  if (freed) return { route: freed.route, action: "write", command: commandFor(freed.route, venture), why: `this write let ${freed.record} move` };
-  if (missing.length) { const rt = await routeOfType(missing[0].record); return { route: rt, action: "write", command: commandFor(rt, venture), why: `the next ${missing[0].role} record in ${p?.title} that moves now` }; }
-  const suggest = (after?.need?.rows ?? []).filter((x) => x.status === "suggest now" && x.type !== record).sort((a, b) => b.now - a.now)[0];
-  if (suggest) { const rt = await routeOfType(suggest.type); if (rt) return { route: rt, action: "write", command: commandFor(rt, venture), why: `need-now suggests it now: ${suggest.why}` }; }
+  const freed = change?.moves_now?.find((m) => m.route && routes().some((r) => r.route === m.route && r.actions.includes("write")));
+  if (freed?.route) return { route: freed.route, action: "write", command: commandFor(freed.route, venture), why: `this write let ${freed.record} move` };
+  for (const x of missing) {
+    if (x.role === "required") continue;
+    const offered = await writeOf(x.record, venture, `the next ${x.role} record in ${p?.title} that moves now`);
+    if (offered) return offered;
+  }
+  const ranked = (after?.need?.rows ?? []).filter((x) => x.status === "suggest now" && x.type !== record).sort((a, b) => b.now - a.now);
+  for (const suggest of ranked) {
+    const offered = await writeOf(suggest.type, venture, `need-now suggests it now: ${suggest.why}`);
+    if (offered) return offered;
+  }
   const { rank } = await import("../engine/decisions.ts");
   const ds = after?.decisions ? rank(after.decisions.decisions, after.decisions.phase).filter((d: Dec) => d.rank != null && d.source === "file") : [];
   if (ds.length) return { route: "governance/decisions", action: "decide", who: "a person", command: `mentura decide ${ds[0].id} --venture ${venture} --by <your name>`, why: ds[0].question };

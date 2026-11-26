@@ -328,6 +328,23 @@ Also `levelOf_le_cap`: no evidence gives a level above 3. `packages/naive/src/en
 
 Not proved: monotonicity on the full cause lists of the effective states (property 8 is proved on the summary); `whatIf`, `reachable` and `capped_by`, which are not modelled; feeds that name an unknown element, which `Fin n` cannot express and the TypeScript drops; and that the TypeScript is the model, which the cases check rather than prove.
 
+## Language choice
+
+Naive is TypeScript on Effect for the framework and Lean 4 for proofs (EE-087, EE-125, EE-159, EE-095). The language rubric (`packages/naive/src/functions/it/language-rubric.json`, EE-189) is how a person judges which language fits another system. It holds eight criteria, each with a question, why, described levels on a 0 to 4 scale and a default weight that is an unvalidated prior, and Naive's own two choices as worked examples. `scoreLanguages` in `packages/naive/src/engine/language-rubric.ts` ranks candidates and never decides.
+
+```mermaid
+flowchart LR
+  sys[system and its target] --> opts[person sets must-haves and weights]
+  cands[candidates scored 0 to 4 with a reason each] --> score[scoreLanguages]
+  opts --> score
+  rubric[language-rubric.json criteria and default weights] --> score
+  score --> gate{0 on a gate or below a must-have?}
+  gate -- yes --> out[ruled out, whatever the rest]
+  gate -- no --> rank[ranked by weighted total, ties inside the band]
+  rank --> person[a person decides]
+  out --> person
+```
+
 ## Not built
 
 - In step 7: a record of retirement (no element is derived retired), optional reads (every feed counts as a need), element measures for capability levels 4 and 5, FMEA severity, occurrence and detection ratings, and an overdue event workflow (only schedules become overdue).
@@ -335,4 +352,4 @@ Not proved: monotonicity on the full cause lists of the effective states (proper
 - Retries with backoff inside one tick. A durable watch on `workflow/DurableClock`. Starting more than one workflow at once. A hosted starter: with `NAIVE_RUNTIME=hosted` there is no `NAIVE_AGENT_CMD`, so a start is blocked.
 - The run log is not synced (`naive sync` skips `.naive/`), no route serves it, and it has no hash chain.
 - A workflow step's `when` (EE-181) is still a sentence an agent reads.
-- Language choice: Naive is TypeScript on Effect, with Lean for proofs. A rubric for choosing another language for a system is not written.
+- Language choice: Naive is TypeScript on Effect, with Lean for proofs. The rubric for choosing a language for a system is built (EE-189, see Language choice above); a command or route that serves it, and worked examples beyond Naive's own two, are not built.

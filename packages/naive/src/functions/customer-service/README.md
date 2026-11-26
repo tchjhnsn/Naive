@@ -13,7 +13,7 @@ The customer service function (APQC 6.0, Manage Customer Service). Its governanc
 | [function.json](./function.json) | The manifest: purpose, intake, measures, capability clusters |
 | [agent.md](./agent.md) | The customer service agent's instructions |
 | [decisions.json](./decisions.json) | The decision matrix |
-| [workflows/intake.json](./workflows/intake.json) | Workflow: learn how the venture supports its customers |
+| [workflows/intake.json](./workflows/intake.json) | Workflow: learn how the venture supports its customers. Its steps for records need-now suggests only after Discovery, or never, are steps to consider that name the phase they start in (check-functions.ts). |
 | [workflows/case-triage.json](./workflows/case-triage.json) | Workflow: triage each new support case |
 | [workflows/weekly-contact-review.json](./workflows/weekly-contact-review.json) | Workflow: review contact reasons and response times each week |
 | [skills/support-triage](./skills/support-triage) | Skill: classify a contact (ISO 10002 for complaints), escalate what a person must decide, draft the reply, and count contact reasons so causes are removed |
