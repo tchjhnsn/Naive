@@ -38,6 +38,7 @@
   "workflows": [
     "products/weekly-product-review",
     "marketing-and-sales/weekly-pipeline-review",
+    "marketing-and-sales/campaign-daily-review",
     "customer-service/intake",
     "customer-service/weekly-contact-review",
     "finance/intake",
