@@ -2677,6 +2677,50 @@
       ]
     },
     {
+      "id": "EE-191",
+      "date": "2026-11-26",
+      "status": "in-force",
+      "decision": "The four data labels sourced, estimated, synthetic and gold are EE-095 terms over a record's facts, with the theorems in packages/naive/lean/Naive/Labels.lean. Gold needs a person's acceptance and one of our own ventures. A synthetic record is never under any venture. No check reads the label a record declares.",
+      "why": "Torian approved this vocabulary on 2026-11-26, and gold comes only from our own ventures. A later check can judge a record's declared label from these facts.",
+      "related": [
+        "EE-095"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/lean/Naive/Labels.lean",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/terms/labels.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "term",
+          "target": "sourced-record",
+          "expect": "defined"
+        },
+        {
+          "kind": "term",
+          "target": "estimated-record",
+          "expect": "defined"
+        },
+        {
+          "kind": "term",
+          "target": "synthetic-record",
+          "expect": "defined"
+        },
+        {
+          "kind": "term",
+          "target": "gold-record",
+          "expect": "defined"
+        }
+      ]
+    },
+    {
       "id": "EE-154",
       "date": "2026-11-19",
       "status": "in-force",
