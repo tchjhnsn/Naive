@@ -92,6 +92,7 @@ const selfNamer: Term<Relationship> = { ...friend, id: "self-namer", label: "sel
 expect("a test that reads its own label in rare cases is caught", validTest(selfNamer, cases).some((p) => /label changes a verdict/.test(p)));
 { const r = rng(11); const seen = new Set<number>(); for (let i = 0; i < 1_000_000; i++) seen.add(r());
   expect("the generator does not cycle within a million draws", seen.size > 999_000, `${seen.size} distinct`); }
+// dataCases is six booleans, so its draws repeat. Admission checks that each data property fails on its own.
 for (const [name, gen] of [["membership", membershipCases], ["relationship", relationshipCases], ["encounter", encounterCases], ["arrangement", arrangementCases], ["detector", detectorCases], ["trial", trialCases], ["reception", receptionCases], ["experiment", experimentCases], ["plan", evalPlanCases], ["settlement", settlementCases]] as const) {
   const c = gen(); const distinct = new Set(c.map((x) => JSON.stringify(x))).size;
   expect(`${name} cases are mostly distinct (not repeats of a short cycle)`, distinct > c.length / 2, `${distinct} of ${c.length}`);
@@ -125,8 +126,17 @@ expect("one proper name on two terms with the same referent passes", labelProble
 expect("symbol is reserved", labelProblems([term("s", { ...plain("adapted"), designation: "symbol" })], new Set()).some((p) => /symbol is reserved/.test(p)));
 const scoped: Labels = { designation: "term", scope: "naive@finance", origin: { kind: "adapted" }, grade: "standard" };
 expect("a scope must be in the catalog", labelProblems([term("f", scoped)], new Set()).some((p) => /naive@finance is not shared and not in/.test(p)) && labelProblems([term("f", scoped)], new Set(["naive@finance"])).length === 0);
-const { problems } = admitAll();
+const { record, problems } = admitAll();
 expect("every admitted term passes admission", problems.length === 0, problems.join("; "));
+{
+  const terms = (record as { terms: { id: string; predictions: { other: string; expected: string; found: string; confirmed: boolean }[] }[] }).terms;
+  const ids = ["sourced-record", "estimated-record", "synthetic-record", "gold-record"];
+  for (const id of ids) {
+    const rows = terms.find((t) => t.id === id)?.predictions.filter((p) => ids.includes(p.other)) ?? [];
+    const ok = rows.length === 3 && rows.every((p) => p.expected === "disjoint" && p.confirmed);
+    expect(`${id} is disjoint from the other three labels`, ok, rows.map((p) => `${p.other} expected ${p.expected} found ${p.found}`).join("; "));
+  }
+}
 
 console.log(failed ? `${failed} failed` : "term engine: all pass");
 process.exit(failed ? 1 : 0);

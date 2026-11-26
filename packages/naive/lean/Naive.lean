@@ -4,6 +4,7 @@ import Naive.Elements
 import Naive.Founder
 import Naive.Generated.ElementCases
 import Naive.Generated.Ontology
+import Naive.Labels
 import Naive.Layer
 import Naive.Recipes
 import Naive.Signals

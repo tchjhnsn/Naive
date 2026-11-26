@@ -2,7 +2,7 @@
 // Definitions: founder suite doc and mentor/coach and unearned-candour docs (2026-10-31); status proposed until Torian decides.
 
 import type { Term } from "./engine.ts";
-import type { Arrangement, Detector, Encounter, EvalPlan, Experiment, Hierarchy, LinkGraph, Membership, Reception, Relationship, Settlement, Trial } from "./levels.ts";
+import type { Arrangement, Detector, Encounter, EvalPlan, Experiment, Hierarchy, LabelFacts, LinkGraph, Membership, Reception, Relationship, Settlement, Trial } from "./levels.ts";
 import { known, mayBeNew, RELATIONS, relationTable, type RelationName } from "./relations.ts";
 
 // The four labels every term carries (N-051 to N-055, docs/design/TERM_LABELS_2026-11-02.md). They sit on the term,
@@ -558,4 +558,67 @@ export const settledRecord: Term<Settlement> = {
   lean: ["agent_never_resolves", "agent_alone_settles_nothing"],
 };
 
-export const TERMS = [founder, coFounder, earlyEmployee, mentor, coach, friend, unearnedCandour, thresholdGuardian, phaseGate, layer, area, topCategory, typedLink, detector, trial, hit, miss, falseAlarm, correctRejection, signal, listener, reception, salientReception, noise, experiment, keptExperiment, discardedExperiment, evalPlan, settledRecord];
+// Data labels (EE-191, packages/naive/lean/Naive/Labels.lean). Each check reads the facts and never the declared label.
+// Gold is an accepted record from one of our own ventures. Sourced and estimated are not that pair.
+// Synthetic is generated and sits under no venture.
+
+const notGold = (f: LabelFacts): boolean => !(f.accepted && f.ownVenture);
+
+export const sourcedRecord: Term<LabelFacts> = {
+  id: "sourced-record", form: "compound", label: "Sourced record", level: "data", kind: "act",
+  labels: sharedTerm("adapted", "none"),
+  meaning: "A record taken from a source, with no method of its own, not generated, and not an accepted record from one of our own ventures.",
+  props: [
+    { id: "S1", says: "it names a source", check: (f) => f.hasSource },
+    { id: "S2", says: "it names no method", check: (f) => !f.hasMethod },
+    { id: "S3", says: "it was not generated", check: (f) => !f.generated },
+    { id: "S4", says: "it is not an accepted record from one of our own ventures", check: notGold, uses: [notGold] },
+  ],
+  sources: ["EE-191"],
+  lean: ["sourced_disjoint_estimated", "sourced_disjoint_synthetic", "sourced_disjoint_gold"],
+  predicts: { "estimated-record": "disjoint", "synthetic-record": "disjoint", "gold-record": "disjoint" },
+};
+
+export const estimatedRecord: Term<LabelFacts> = {
+  id: "estimated-record", form: "compound", label: "Estimated record", level: "data", kind: "act",
+  labels: sharedTerm("adapted", "none"),
+  meaning: "A record taken from a source by a named method, not generated, and not an accepted record from one of our own ventures.",
+  props: [
+    { id: "E1", says: "it names a source", check: (f) => f.hasSource },
+    { id: "E2", says: "it names a method", check: (f) => f.hasMethod },
+    { id: "E3", says: "it was not generated", check: (f) => !f.generated },
+    { id: "E4", says: "it is not an accepted record from one of our own ventures", check: notGold, uses: [notGold] },
+  ],
+  sources: ["EE-191"],
+  lean: ["sourced_disjoint_estimated", "estimated_disjoint_synthetic", "estimated_disjoint_gold"],
+  predicts: { "sourced-record": "disjoint", "synthetic-record": "disjoint", "gold-record": "disjoint" },
+};
+
+export const syntheticRecord: Term<LabelFacts> = {
+  id: "synthetic-record", form: "compound", label: "Synthetic record", level: "data", kind: "act",
+  labels: sharedTerm("adapted", "none"),
+  meaning: "A generated record that sits under no venture.",
+  props: [
+    { id: "N1", says: "it was generated", check: (f) => f.generated },
+    { id: "N2", says: "it sits under no venture", check: (f) => !f.underVenture },
+  ],
+  sources: ["EE-191"],
+  lean: ["synthetic_not_under_venture", "sourced_disjoint_synthetic", "estimated_disjoint_synthetic", "synthetic_disjoint_gold"],
+  predicts: { "sourced-record": "disjoint", "estimated-record": "disjoint", "gold-record": "disjoint" },
+};
+
+export const goldRecord: Term<LabelFacts> = {
+  id: "gold-record", form: "compound", label: "Gold record", level: "data", kind: "act",
+  labels: sharedTerm("adapted", "none"),
+  meaning: "A record a person accepted from one of our own ventures, and that was not generated.",
+  props: [
+    { id: "G1", says: "a person accepted it", check: (f) => f.accepted },
+    { id: "G2", says: "it comes from one of our own ventures", check: (f) => f.ownVenture },
+    { id: "G3", says: "it was not generated", check: (f) => !f.generated },
+  ],
+  sources: ["EE-191"],
+  lean: ["gold_needs_accepted_own", "sourced_disjoint_gold", "estimated_disjoint_gold", "synthetic_disjoint_gold"],
+  predicts: { "sourced-record": "disjoint", "estimated-record": "disjoint", "synthetic-record": "disjoint" },
+};
+
+export const TERMS = [founder, coFounder, earlyEmployee, mentor, coach, friend, unearnedCandour, thresholdGuardian, phaseGate, layer, area, topCategory, typedLink, detector, trial, hit, miss, falseAlarm, correctRejection, signal, listener, reception, salientReception, noise, experiment, keptExperiment, discardedExperiment, evalPlan, settledRecord, sourcedRecord, estimatedRecord, syntheticRecord, goldRecord];
