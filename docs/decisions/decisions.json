@@ -2926,6 +2926,48 @@
       ]
     },
     {
+      "id": "EE-210",
+      "date": "2026-11-26",
+      "status": "in-force",
+      "decision": "A goal is a durable record, like the decision ledger. goal.schema.json carries a status (proposed, active, met, missed, dropped, superseded; a record with no status is proposed, so every goal written before this stays valid), who set it and when, the goal it serves (parent), the goals it replaces (supersedes, superseded_by), a due date, where it came from (sources) and the result it was settled on. The lifecycle is a state machine in packages/naive/src/engine/goals.ts: proposed to active, dropped or superseded; active to met, missed, dropped or superseded; a settled goal reopens only to active, so a mis-set status is corrected and never overwritten, and a goal nobody adopted is never met or missed. Only a person settles a goal: naive goals status refuses anyone who is not a person of the venture and an agent acting as one, and the router holds an agent's write of a lifecycle field as a draft whatever the gate says, the same rule EE-058 gives a write that settles a decision, so a person's acceptance is what puts it live. An agent that rewords a goal a person adopted is refused and told to write a new goal that supersedes it. History needs no new log: every version is already in provenance.jsonl with its bytes in the blob store, so naive goals history and naive goals show --at read them back. naive goals list shows the goals waiting as held drafts, marked as drafts. packages/naive/src/checks/check-goals.ts checks what crosses records: parents, successors, results, active goals, and requirements that derive from a goal that is no longer live.",
+      "why": "Torian decided on 2026-11-26 that his ventures are validated through a structured workflow in which goals are set first and then kept, so goals must be durable objects like the decision ledger, with a lifecycle and a history, and decisions must stay easy to change or withdraw. Only a person decides, so an agent proposes a goal and its status change waits as a draft.",
+      "related": [
+        "EE-023",
+        "EE-054",
+        "EE-058",
+        "EE-185"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/goals.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/checks/check-goals.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "record",
+          "target": "goal.status",
+          "expect": "exists"
+        },
+        {
+          "kind": "record",
+          "target": "goal.parent",
+          "expect": "exists"
+        },
+        {
+          "kind": "record",
+          "target": "goal.superseded_by",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
       "id": "EE-212",
       "date": "2026-11-26",
       "status": "in-force",
@@ -2946,6 +2988,27 @@
         {
           "kind": "path",
           "target": "packages/naive/src/engine/migrations/risk-impact-label.ts",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
+      "id": "EE-223",
+      "date": "2026-11-26",
+      "status": "in-force",
+      "decision": "Naive is tested by simulating businesses end to end. A simulator in packages/simulate/, outside the package's files so it never ships, drives Naive's real router, gate, loop and function agents against a seeded world of synthetic customers, competitors, money and simulated tools, with simulated people answering every decision. Three invented seed businesses together reach all 13 functions and all five phases: a solo founder in Discovery, an existing service business onboarded at Beachhead, and a seven-year physical-product run to Platform. Every simulated record carries the synthetic-record label (EE-198), and only a simulation flag, refused outside a simulation folder, lets a gate grade synthetic evidence. Lean proves the lifecycle rules in packages/naive/lean/Naive/Lifecycle.lean, and each run's trace is exported as cases lake build checks. Design: docs/design/SIMULATION_2026-11-26.md. Nothing is built yet.",
+      "why": "Torian on 2026-11-26 attacked the premise of starting with solo founders: testing only there leaves ten of the 13 functions and four of the five phases unrun, and existing businesses are where onboarding and the source-of-truth matrix meet real data. He asked to simulate long-running businesses on the platform, verify formally that the process holds across functions, phases and tools, and later demo the runs. Open simulators (YC-Bench, CEO-Bench) cover parts of one company and are Python, so their designs are rewritten in TypeScript on Effect.",
+      "related": [
+        "EE-125",
+        "EE-183",
+        "EE-190",
+        "EE-198"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "docs/design/SIMULATION_2026-11-26.md",
           "root": "repo",
           "expect": "exists"
         }
