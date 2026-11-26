@@ -1,8 +1,8 @@
-<!-- Placement: proposed for tchjhnsn/Naive docs/design/RESEARCH_PRIORITIES_2026-11-24.md. Prepared 24 November 2026. A 26 November 2026 note: tchjhnsn/reflect in the handoff section is now tchjhnsn/Mentura3; tchjhnsn/everything-ecosystem redirects to the archived tchjhnsn/Mentura. No secrets were added or removed. -->
+<!-- Placement: proposed for tchjhnsn/Naive docs/design/RESEARCH_PRIORITIES_2026-11-24.md. Prepared 24 November 2026. A 26 November 2026 note: the harness repository is tchjhnsn/Mentura3. tchjhnsn/everything-ecosystem redirects to the archived tchjhnsn/Mentura. No secrets were added or removed. -->
 
 # What research Naive needs, ranked
 
-Prepared November 24, 2026 (America/Chicago). It's based on a read-only pass over **tchjhnsn/Naive** at HEAD, the repository Naive actually lives in. tchjhnsn/everything-ecosystem now redirects to **tchjhnsn/Mentura**, and its README says that as of 2026-11-24 it is **archived**, with the work moved to tchjhnsn/reflect. Every path below is in tchjhnsn/Naive unless it says otherwise. Every citation was checked against arXiv, Crossref, or the live page.
+Prepared November 24, 2026 (America/Chicago). It's based on a read-only pass over **tchjhnsn/Naive** at HEAD, the repository Naive actually lives in. tchjhnsn/everything-ecosystem now redirects to **tchjhnsn/Mentura**, and its README says that as of 2026-11-24 it is **archived**, with the work moved to tchjhnsn/Mentura3. Every path below is in tchjhnsn/Naive unless it says otherwise. Every citation was checked against arXiv, Crossref, or the live page.
 
 ## Where Naive already is
 
@@ -11,14 +11,14 @@ Naive already has most of a verified shared-memory layer, under different names:
 - **Knowledge is the memory layer.** The `README.md` layer table describes it as "Memory: where every record is stored" (EE-036).
 - **The provenance log is a hash-chained, append-only W3C PROV log.** It lives in `packages/naive/src/core/provenance.ts` (EE-031).
 - **As-of reads use transaction time.** They live in `packages/naive/src/store/as-of.ts`, and Lean proves `as_of_no_lookahead` in `packages/naive/lean/Naive/Recipes.lean`.
-- **The rule "an agent never settles a claim" is proved in Lean.** The theorems are `agent_never_resolves` and `agent_alone_settles_nothing` in `Recipes.lean`.
+- **An agent statement leaves `settled` unchanged.** `agent_never_resolves` proves that adding agent statements does not change `settled`, and `agent_alone_settles_nothing` proves that agent statements alone leave `settled` false. Both are in `packages/naive/lean/Naive/Recipes.lean`.
 - **Signal withdrawal and reconcile are proved monotone and idempotent.** The theorems are `withdraw_monotone`, `reconcile_idempotent` and `commit_idempotent` in `packages/naive/lean/Naive/Signals.lean`.
 - **Context assembly per agent exists.** `packages/naive/src/router/context.ts` sends a layout, a template, prefetch, and token budgets.
-- **Earning and losing standing rules from feedback is proved.** It uses a Wilson lower bound and an SPRT, in `packages/naive/lean/Naive/StandingRules.lean`.
+- **Earning and losing a standing rule is proved.** `packages/naive/lean/Naive/StandingRules.lean` proves the Wilson-bound earn bars (`unanimous_reaches_low_iff` at 0.8, `unanimous_reaches_costly_iff` at 0.9) and the floored-SPRT loss bars (`sprtCusum_nonneg` keeps the statistic at least 0, and `pure_failures_reach_iff` says when failures reach the suspend line). Wald's type I and type II error rates are not theorems in that file.
 - **The single-writer write path is model-checked.** The model is `packages/naive/test/verification/write-chain/WriteChain.tla`.
 - **Everything symbolic goes through the EE-095 term engine and the Lean agreement test.** The files are `packages/naive/src/terms/engine.ts`, `bypass-guard-test.ts` and `lean-agreement-test.ts`.
 
-So you don't need to adopt a memory product. You need research on the problems Naive has **not** solved yet. The repo states the biggest one outright:
+So you don't need to adopt a memory product. You need research on the problems Naive has **not** solved yet. The lead-agents design still states one open question this way:
 
 > "Runs still take the venture lock one at a time (… shared appends as not built). A lead with four handoffs out runs them in sequence."
 > (`docs/design/LEAD_AGENTS_2026-11-08.md`, "What it does not do" and open question 12)
@@ -29,8 +29,8 @@ So you don't need to adopt a memory product. You need research on the problems N
 
 **Why it matters for Naive:**
 - The lead-agents design has four leads (growth, product, finance and strategy) and 13 function agents.
-- All of them write one venture through a single venture lock. `handoff-claim.ts` resolves a race between two claims with a version check, so one wins and the other is refused.
-- Shared appends are not built, which forces runs to happen one at a time.
+- There is no single lock around the venture. `packages/naive/src/store/connectors/filesystem.ts` holds a per-file lock, `.<name>.lock` beside the file, for a write that passes `base` or `append`. `packages/naive/src/core/provenance.ts` holds a separate lock on `provenance.jsonl` while it extends the hash chain. `packages/naive/src/engine/loop.ts` holds `.naive/loop.lock` so one loop tick runs at a time. `packages/naive/src/router/handoff-claim.ts` sends the version it read as the write's `base`, and the connector's version check lets one claim win and refuses the other.
+- Shared appends are still listed as not built in `docs/design/LEAD_AGENTS_2026-11-08.md` (open question 12). The running code does not take one venture lock that runs every agent in sequence.
 - `WriteChain.tla` models only **one** actor's write chain (steps 1 to 13). Nothing model-checks two agents writing at once.
 
 **Sources:**
@@ -47,13 +47,13 @@ So you don't need to adopt a memory product. You need research on the problems N
 ### 2. Truth maintenance and belief revision over claims and sources
 
 **Why it matters for Naive:**
-- Naive keeps sources of truth in `sources.json` and the source-of-truth matrix (`packages/naive/src/store/`, EE-037). `check-sources.ts` refuses a tie on a field.
+- A venture lists its sources in `knowledge/sources.json` (EE-037). This repository has that file at `packages/naive/template/knowledge/sources.json`, `packages/naive/src/records/examples/signals/knowledge/sources.json`, `packages/naive/src/records/examples/workspace/ventures/acme-labs/knowledge/sources.json` and `packages/naive/src/records/examples/workspace/ventures/tandem/knowledge/sources.json`. The source-of-truth matrix is in `packages/naive/src/store/` (EE-042). `packages/naive/src/checks/check-sources.ts` refuses two rules that can both hold and tie.
 - Typed relations such as `derives-from` and `builds-on` are in `packages/naive/src/terms/relations.ts`. `check-where-used.ts` finds a child record that drifted from its parent.
 - Seam detectors compare records across functions (`LEAD_AGENTS…`, build item 6).
 - What's missing is a principled rule for what happens **downstream** when a source record or signal changes or is withdrawn. Today drift is detected, but the standing of derived records isn't revised.
 
 **Sources:**
-- Andrew Cook, *Toward a Compositional Knowledge Architecture for a Shared Organizational Cortex*, arXiv:2611.05753, https://arxiv.org/abs/2611.05753. This is the closest match to Naive in the literature. Its layers are Signals, Domains, Claims and Dimensions, and a **truth-maintenance network** revises a claim's standing as evidence changes. It's in your X results (@letandrewcook 2118726674690789501).
+- Andrew Miracle, Phyl Georgiou, Christine Okoth and Ese Monday, *Toward a Compositional Knowledge Architecture for a Shared Organizational Cortex*, arXiv:2611.05753, https://arxiv.org/abs/2611.05753. This is the closest match to Naive in the literature. Its layers are Signals, Domains, Claims and Dimensions, and a **truth-maintenance network** revises a claim's standing as evidence changes. The X post that pointed here is 2118726674690789501.
 - Doyle, *A Truth Maintenance System*, Artificial Intelligence 12(3), 1979, https://doi.org/10.1016/0004-3702(79)90008-0. Also de Kleer, *An Assumption-based TMS*, Artificial Intelligence 28(2), 1986, https://doi.org/10.1016/0004-3702(86)90080-9.
 - Alchourrón, Gärdenfors and Makinson (the "AGM" postulates), *On the Logic of Theory Change*, Journal of Symbolic Logic 1985, https://doi.org/10.2307/2274239.
 
@@ -61,13 +61,13 @@ So you don't need to adopt a memory product. You need research on the problems N
 - **Build a justification graph over Naive's existing relations.** Each derived record records which records and signals support it. When one is withdrawn, propagate a new standing to everything that depends on it. This would be a router action that calls no model.
 - **Prove the propagation in Lean.** State it as theorems: it terminates on the acyclic `derives-from` graph (reuse the no-cycle results in `Layer.lean` and `Upper.lean`), it's sound, and it's minimal in the AGM sense.
 - **Admit new terms through EE-095.** Candidates are `justification`, `standing`, and `in` and `out`.
-- **Keep the existing guarantee.** `agent_never_resolves` already guarantees that an agent's statement can't flip a claim's standing. The TMS must keep that theorem true.
+- **Keep the settled guarantee.** `agent_never_resolves` proves that adding agent statements leaves `settled` unchanged, and `agent_alone_settles_nothing` proves that agent statements alone leave `settled` false. A truth-maintenance step has to keep both true. Standing-rule earning is a separate proof, the Wilson bars in `packages/naive/lean/Naive/StandingRules.lean`.
 
 ### 3. Temporal (bitemporal) memory and provenance
 
 **Why it matters for Naive:**
 - As-of reads are by **transaction time** only (`packages/naive/src/store/as-of.ts`).
-- `packages/naive/src/engine/venture-anatomy.ts` alone takes `--valid-at`.
+- `packages/naive/src/engine/venture-anatomy.ts` and `packages/naive/src/engine/gate-calibration.ts` both take `--valid-at`. `statusAt` in venture-anatomy and `cellAt` in gate-calibration apply that date through `valid_from` and `valid_to`.
 - `packages/naive/src/store/README.md` says that reading a log as of a time by its lines' own times is "not built", and that lines from before the blob store read back as null.
 - Facts about a venture (runway, a founder's status, a price) have a time when they were true that differs from the time they were written.
 
@@ -102,9 +102,9 @@ So you don't need to adopt a memory product. You need research on the problems N
 ### 5. Procedural memory: learning from feedback without poisoning
 
 **Why it matters for Naive:**
-- Standing rules are already earned and lost by statistics proved in Lean (`StandingRules.lean`).
+- Standing-rule earning and loss are proved in `packages/naive/lean/Naive/StandingRules.lean`. The Wilson lower bound earns a rule at the 0.8 and 0.9 bars (`unanimous_reaches_low_iff`, `unanimous_reaches_costly_iff`). The floored SPRT loses one (`sprtCusum_nonneg`, `pure_failures_reach_iff`).
 - Feedback is routed by `packages/naive/src/engine/feedback-route.ts`.
-- Lauren Tan's "Automate Anything" says bots should improve from feedback signals (`/workspace/poteto/automate-anything.txt`).
+- Lauren Tan's "Automate Anything" says bots should improve from feedback signals. That essay is not a file in this repository.
 - The open question is how lessons from each bot's runs become reusable rules, and stay specific to that bot.
 
 **Sources:**
@@ -114,8 +114,8 @@ So you don't need to adopt a memory product. You need research on the problems N
 
 **What to apply:**
 - **Store lessons per role, not globally.** Keep them by function agent and lead.
-- **Promote lessons only through the standing-rule gate.** A lesson becomes a rule only by passing the Wilson bar, and it's demoted by the SPRT. Both are already proved.
-- **Never let an agent's write alone promote a rule.** This is the same invariant as `agent_alone_settles_nothing`, and it's your defense against poisoning.
+- **Promote lessons only through the standing-rule gate.** A lesson becomes a rule only by passing a Wilson earn bar, and the floored SPRT demotes it. Those bars are proved in `packages/naive/lean/Naive/StandingRules.lean`.
+- **Never let an agent's write alone promote a rule.** That gate is separate from `agent_alone_settles_nothing`, which proves that agent statements alone leave `settled` false.
 
 ## (b) Skip or deprioritize
 
@@ -129,7 +129,7 @@ So you don't need to adopt a memory product. You need research on the problems N
 
 ```mermaid
 flowchart TB
-  subgraph Bots["Bot team (Mentura harness, now tchjhnsn/reflect)"]
+  subgraph Bots["Bot team (Mentura harness, now tchjhnsn/Mentura3)"]
     L["Leads: growth · product · finance · strategy"]
     F["13 function agents (sole writers of their function's records)"]
     CoS["chief-of-staff"]
@@ -176,7 +176,7 @@ flowchart TB
 1. **arXiv:2603.10062, multi-agent memory as computer architecture.** It frames area 1 and tells you which questions to ask.
 2. **Kleppmann et al., arXiv:1707.01747.** It shows how to prove a merge converges, the template for your Lean proofs. Then skim Shapiro 2011 for the CRDT catalog.
 3. **Your own bookmarks.** Read poteto's model-checking overview (2118416074601545968) and Shaw's TLA+ → Quint post (2118852400379273373). Then the Veil 2.0 posts (2118797820698521933 and 2118894026858566070) to choose your tool for the multi-agent `WriteChain`.
-4. **Cook, arXiv:2611.05753.** Then Doyle 1979, and AGM 1985 only for the postulates. This is area 2.
+4. **Miracle, Georgiou, Okoth and Monday, arXiv:2611.05753.** Then Doyle 1979, and AGM 1985 only for the postulates. This is area 2.
 5. **Zep, arXiv:2501.13956,** for its bitemporal model, read against `packages/naive/src/store/as-of.ts`. This is area 3.
 6. **The Anthropic context engineering post, then MemGPT, arXiv:2310.08560.** Read `packages/naive/src/router/context.ts` alongside. Then Naive RAG, arXiv:2610.30755, before building any new memory machinery. This is area 4.
 7. **Routed Continual Learning (arXiv:2610.38796), Reflexion and AgentPoison,** read against `StandingRules.lean`. This is area 5.
@@ -188,9 +188,9 @@ The boundary between MAD and Naive is your call. This report stays inside Naive 
 
 ## Handoff notes for Claude Code (added Nov 24, 2026)
 
-1. **Use the right repo.** Naive's code is in `tchjhnsn/Naive`. `tchjhnsn/everything-ecosystem` now redirects to `tchjhnsn/Mentura`, which was archived on Nov 24, 2026; the agent work moved to `tchjhnsn/reflect`. Read `tchjhnsn/reflect` and PR #60 ("Design the person graph: Reflect as the shared identity layer", https://github.com/tchjhnsn/Naive/pull/60) first. This report did not cover either, and both could change how shared appends get designed.
+1. **Use the right repo.** Naive's code is in `tchjhnsn/Naive`. `tchjhnsn/everything-ecosystem` now redirects to `tchjhnsn/Mentura`, which was archived on Nov 24, 2026; the agent work moved to `tchjhnsn/Mentura3`. Read `tchjhnsn/Mentura3` and PR #60 ("Design the person graph: Reflect as the shared identity layer", https://github.com/tchjhnsn/Naive/pull/60) first. This report did not cover either, and both could change how shared appends get designed.
 2. **Nothing bypasses the gate.** Every new piece (the merge, truth maintenance, valid time) goes through the EE-095 term engine and comes with a Lean proof in `packages/naive/lean/Naive` that passes Lean CI (`.github/workflows/lean.yml`). Don't use a third-party memory store (Mem0, Letta, Zep, supermemory), and don't treat vector memory as a source of truth.
 3. **Model before building.** Area 1 starts by extending `WriteChain.tla` from one writer to N and model-checking it with TLC or Quint. Then write the Lean proof, and only then the code. Shared appends are still an open design question (#12 in `docs/design/LEAD_AGENTS_2026-11-08.md`), so propose the design for Torian's sign-off instead of shipping it.
-4. **Verify these claims before relying on them.** This report saw only the Lean theorem names, not the proof bodies, and did not read the EE-095 entry in `docs/decisions/decisions.json` directly. Confirm both. Open PRs #60–#66 and #121 and issues #67 and #69 also went unread.
+4. **The standing-rule bars and `agent_never_resolves` are in the Lean files.** `packages/naive/lean/Naive/StandingRules.lean` proves the Wilson earn bars and the floored SPRT. Wald's type I and type II error rates are not theorems there. `agent_never_resolves` leaves `settled` unchanged when the added statements are from agents. EE-095 is an entry in `docs/decisions/decisions.json`. Open PRs #60–#66 and #121 and issues #67 and #69 went unread when this note was first written.
 5. **Beat the baseline first.** For context engineering (area 4), measure plain retrieval (the Naive-RAG result, arXiv:2610.30755) against the current per-role budgets in `packages/naive/src/router/context.ts` before adding anything more complex.
 6. **The MAD/Naive boundary belongs to Torian.** Don't decide where MAD (Method-Anchored Development) ends and Naive begins. Include a Mermaid diagram with every design.
