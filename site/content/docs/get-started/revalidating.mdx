@@ -153,10 +153,10 @@ node packages/naive/src/interfaces/cli/mentura.ts verify path:validation --ventu
 
 ## Revalidate each phase
 
-Next.js has no need for this. A record with a `per_phase` profile is stale once the venture changes phase after it was last checked. A phase change is a person's, so `mentura phase` needs `--as person`:
+Next.js has no need for this. A record with a `per_phase` profile is stale once the venture changes phase after it was last checked. A phase change is a person's decision, so the process is `MENTURA_ACTOR=person`. `--as person` alone does not make the process a person:
 
 ```sh
-node packages/naive/src/interfaces/cli/mentura.ts phase validation --venture revalidating --as person --override "this example has no exit criteria"
+MENTURA_ACTOR=person node packages/naive/src/interfaces/cli/mentura.ts phase validation --venture revalidating --as person --override "this example has no exit criteria"
 node packages/naive/src/interfaces/cli/mentura.ts freshness --venture revalidating
 node packages/naive/src/interfaces/cli/mentura.ts verify validation/solution --venture revalidating --as person
 ```
