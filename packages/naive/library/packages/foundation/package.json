@@ -52,6 +52,7 @@
   ],
   "checks": [
     "packages/naive/src/checks/check-telos.ts",
+    "packages/naive/src/checks/check-goals.ts",
     "packages/naive/src/records/validate.ts",
     "packages/naive/src/checks/check-validation.ts",
     "packages/naive/src/engine/foundation.ts",

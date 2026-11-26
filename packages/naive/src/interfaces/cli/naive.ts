@@ -62,6 +62,13 @@
 //                                                   what each function's APQC process groups need from a person: the
 //                                                   activities a person performs or approves, and how many are the
 //                                                   agent's (EE-180)
+//   naive goals [list] [--json]                     the goal tree: each goal under the goal it serves, its status,
+//                                                   measures and owner, with the goals waiting as drafts (EE-210)
+//   naive goals show <id> [--at <iso>] [--json]     one goal, as it is now or as it stood at a transaction time
+//   naive goals history <id> [--json]               every version of it, from the provenance log and the blob store
+//   naive goals status <id> <status> --by <person> [--note <text>] [--measure <id>=<value>] [--superseded-by <id>]
+//                                                   a person moves a goal on: proposed, active, met, missed, dropped
+//                                                   or superseded. Only a person settles a goal
 //   naive due [--at <iso>] [--function <id>] [--json]  which function workflows are due now and why, from each workflow's
 //                                                   trigger, the run log and the provenance log (EE-182)
 //   naive due record <function>/<workflow> [--outcome done|failed|skipped] [--by <who>]
@@ -222,7 +229,7 @@ async function dev(dir: string): Promise<void> {
 }
 
 // The checks that read a workspace, run on this venture: it and the ventures nested in it, not its neighbours.
-const CHECKS = ["check-ventures", "check-people", "check-provenance", "check-sources", "check-data-packages", "check-governance", "check-telos", "check-publication", "check-private", "check-where-used", "check-citations", "lint-investors", "lint-product", "lint-money", "lint-customers", "lint-validation", "lint-finance", "lint-legal", "lint-people", "lint-foundation"];
+const CHECKS = ["check-ventures", "check-people", "check-provenance", "check-sources", "check-data-packages", "check-governance", "check-telos", "check-goals", "check-publication", "check-private", "check-where-used", "check-citations", "lint-investors", "lint-product", "lint-money", "lint-customers", "lint-validation", "lint-finance", "lint-legal", "lint-people", "lint-foundation"];
 function check(dir: string): number {
   let failed = 0;
   for (const c of CHECKS) {
@@ -428,6 +435,13 @@ else if (cmd === "build" || cmd === "start") {
   // Traces in the venture's files (packages/naive/src/engine/trace-cli.ts, EE-121).
   const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
   process.exit(run("packages/naive/src/engine/trace-cli.ts", [here(), ...(args.length ? args : ["show"])]));
+} else if (cmd === "goals") {
+  // The goal ledger (packages/naive/src/engine/goals.ts, EE-210): the tree, one goal, its history, and a person
+  // settling it. Not `naive goal`, and not the discovery goal of the setup page, which is a decision.
+  const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
+  const [what = "list"] = args.filter((a) => !a.startsWith("--"));
+  if (!["list", "show", "history", "status"].includes(what)) { console.error("usage: naive goals [list] | show <id> [--at <iso>] | history <id> | status <id> <status> --by <person> [--note <text>] [--measure <id>=<value>] [--superseded-by <id>] [--venture <dir>] [--json]"); process.exit(2); }
+  process.exit(run("packages/naive/src/engine/goals.ts", [here(), ...args]));
 } else if (cmd === "due") {
   // Which function workflows are due, and recording a run (packages/naive/src/engine/due.ts, EE-182).
   const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");

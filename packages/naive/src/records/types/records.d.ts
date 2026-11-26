@@ -2449,7 +2449,7 @@ export type Glossary = {
   }[];
 };
 
-/** A canonical goal, at <venture>/foundation/goals/<id>.json: what the venture means to reach, by when, how anyone would know (measures with targets) and who owns it. Framework-neutral: the telos, ambition tiers, OKRs and other frameworks for thinking write goals through their maps_to and never change this shape (Torian, 2026-10-30: opinionated schema, swappable frameworks). Requirements derive from goals and measures; exit criteria serve measures. */
+/** A canonical goal, at <venture>/foundation/goals/<id>.json: what the venture means to reach, by when, how anyone would know (measures with targets) and who owns it. Framework-neutral: the telos, ambition tiers, OKRs and other frameworks for thinking write goals through their maps_to and never change this shape (Torian, 2026-10-30: opinionated schema, swappable frameworks). Requirements derive from goals and measures; exit criteria serve measures. A goal is a durable record, like the decision ledger (EE-210): it carries a status only a person settles, the goal it serves, the goals it replaces, and every version of it stays readable from the provenance log and the blob store (naive goals history, packages/naive/src/store/as-of.ts). */
 export type Goal = {
   id: string;
   venture?: string;
@@ -2457,6 +2457,26 @@ export type Goal = {
   statement: string;
   /** venture: the end the venture exists for. owner: what the owners intend once it is reached (hold, sell, list, wind down). scale: how far through the phases the venture means to go. product, function: a goal of one product or function. learning: what the venture must find out */
   kind: "venture" | "owner" | "scale" | "product" | "function" | "learning";
+  /** Where the goal stands (EE-210). A record with no status is proposed, so goals written before the ledger stay valid. Only a person moves a goal on (naive goals status <id> <status> --by <person>); an agent proposes one, and its write of a lifecycle field is held as a draft whatever the gate says, as a write that settles a decision is (EE-058). The transitions, in packages/naive/src/engine/goals.ts LIFECYCLE: proposed to active, dropped or superseded; active to met, missed, dropped or superseded; a settled goal reopens only to active. A goal nobody adopted is never met or missed. */
+  status?: "proposed" | "active" | "met" | "missed" | "dropped" | "superseded";
+  /** The person who set the current status. Never an agent */
+  status_by?: string;
+  /**
+   * When the current status was set
+   * @format date-time
+   */
+  status_at?: string;
+  /**
+   * The date by which the goal should be met or missed, when it has one. horizon is the ambition (a year, a phase or open); due is the date the ledger measures against
+   * @format date
+   */
+  due?: string;
+  /** The goal this one serves, by id: a function or product goal serves a venture goal. A goal with no parent is a root, and no parent chain may cycle (packages/naive/src/checks/check-goals.ts) */
+  parent?: string;
+  /** The goals this one replaces, by id. A person records the replacement on both sides: the old goal's status becomes superseded and its superseded_by names this one */
+  supersedes?: string[];
+  /** The goal that replaced this one, by id. Set exactly when the status is superseded */
+  superseded_by?: string;
   /** The year it should be reached by, a date, a phase id, or 'open' */
   horizon?: number | string;
   /** What is true in the world when it is reached */
@@ -2473,8 +2493,30 @@ export type Goal = {
     /** A framework's own classification of the measure, kept as written */
     kind?: string;
   }[];
+  /** What happened, written when a person settles the goal as met or missed. It carries a note, or each measure as it stood, or both; check-goals.ts fails a met or missed goal with neither */
+  result?: {
+    /** What happened, in the person's words */
+    note?: string;
+    /** Each measure of this goal as it stood when the goal was settled */
+    measures?: {
+      /** A measure id of this goal */
+      id: string;
+      /** What the measure reached */
+      value: string | number;
+      /** Evidence ids or venture-relative paths behind the value */
+      evidence?: string[];
+    }[];
+    /** The person who recorded it */
+    by?: string;
+    /**
+     * @format date-time
+     */
+    at?: string;
+  };
   /** The person or role who owns the goal */
   owner?: string;
+  /** Where the goal came from, so a reader of the goal alone can trace it: a venture-relative path (raw/sources/<id>.json, raw/dump.mdx), a raw source id, or a record ref such as decisions/<id>. Not checked against the files */
+  sources?: string[];
   /** The framework for thinking the goal was written through (frameworks/<id>), if any */
   framework?: string;
   updated?: string;
