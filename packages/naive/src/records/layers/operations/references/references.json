@@ -126,6 +126,184 @@
         "is": "adopted",
         "why": "The verification scale is the index's verification method dimension, on its 1 to 10 range: how an activity's result can be checked bears on what evidence a handoff can ask for."
       }
+    },
+    {
+      "id": "iso-iec-25010-2023",
+      "title": "ISO/IEC 25010:2023 Systems and software engineering, Systems and software Quality Requirements and Evaluation (SQuaRE), Product quality model",
+      "authors": [
+        "ISO/IEC JTC 1/SC 7"
+      ],
+      "year": 2023,
+      "kind": "standard",
+      "summary": "The product quality model: nine characteristics a system's quality is judged by (functional suitability, performance efficiency, compatibility, interaction capability, reliability, security, maintainability, flexibility and safety), each with subcharacteristics.",
+      "url": "https://www.iso.org/standard/78176.html",
+      "informs": [
+        "field:language-rubric.criteria",
+        "field:language-rubric.criteria.iso25010"
+      ],
+      "stance": {
+        "is": "adopted",
+        "why": "Each language rubric criterion names the quality characteristics it serves, so the rubric judges a language by what it does to the system's quality. The licence criterion names none, because the standard does not cover licences."
+      }
+    },
+    {
+      "id": "typescript-design-goals",
+      "title": "TypeScript Design Goals",
+      "authors": [
+        "Microsoft TypeScript team"
+      ],
+      "year": 2014,
+      "kind": "article",
+      "summary": "The TypeScript project's goals and non-goals. Non-goal 3: \"Apply a sound or 'provably correct' type system. Instead, strike a balance between correctness and productivity.\"",
+      "url": "https://github.com/microsoft/TypeScript/wiki/TypeScript-Design-Goals",
+      "checked": "2026-11-26",
+      "informs": [
+        "rule:language-rubric-correctness"
+      ],
+      "stance": {
+        "is": "adopted",
+        "why": "The correctness criterion scores TypeScript's types as static but unsound by design, from the project's own non-goal."
+      }
+    },
+    {
+      "id": "lean-theorem-proving",
+      "title": "Theorem Proving in Lean 4",
+      "authors": [
+        "Jeremy Avigad",
+        "Leonardo de Moura",
+        "Soonho Kong",
+        "Sebastian Ullrich"
+      ],
+      "year": 2024,
+      "kind": "book",
+      "summary": "The introduction to Lean 4 as a theorem prover and a programming language, based on a version of dependent type theory powerful enough to prove almost any conventional mathematical theorem.",
+      "url": "https://lean-lang.org/theorem_proving_in_lean4/introduction.html",
+      "checked": "2026-11-26",
+      "informs": [
+        "rule:language-rubric-correctness"
+      ],
+      "stance": {
+        "is": "adopted",
+        "why": "The correctness criterion's top level is a machine-checked proof, which is what Lean gives and where Naive proves its definitions (EE-095)."
+      }
+    },
+    {
+      "id": "effect-docs",
+      "title": "Effect documentation",
+      "authors": [
+        "Effectful Technologies"
+      ],
+      "year": 2026,
+      "kind": "article",
+      "summary": "Effect, a TypeScript library for building production-grade software: failures are typed values in the signature, services are wired through the type system and swapped in tests, and effects run with bounded, structured concurrency. Naive pins it exactly (EE-125).",
+      "url": "https://effect.website/docs/",
+      "checked": "2026-11-26",
+      "informs": [
+        "rule:language-rubric-effects-and-concurrency"
+      ],
+      "stance": {
+        "is": "adopted",
+        "why": "The effects and concurrency criterion's top level describes what Effect gives Naive: failures, dependencies and concurrency in the types, and a service a test replaces."
+      }
+    },
+    {
+      "id": "nodejs-typescript-docs",
+      "title": "Node.js documentation: Modules: TypeScript",
+      "authors": [
+        "Node.js project"
+      ],
+      "year": 2026,
+      "kind": "article",
+      "summary": "Node.js runs TypeScript files that contain only erasable syntax by replacing the types with whitespace, with no type checking; enums, namespaces with runtime code, parameter properties and import aliases are not supported. To discourage publishing packages written in TypeScript, Node.js refuses to handle TypeScript files under a node_modules path.",
+      "url": "https://nodejs.org/api/typescript.html",
+      "checked": "2026-11-26",
+      "informs": [
+        "rule:language-rubric-runtime-fit",
+        "rule:language-rubric-operability"
+      ],
+      "stance": {
+        "is": "adopted",
+        "why": "The runtime fit and operability criteria use it to show one language can fit a target in one place and not another, which is why Naive compiles on publish (EE-159)."
+      }
+    },
+    {
+      "id": "webassembly-org",
+      "title": "WebAssembly",
+      "authors": [
+        "W3C WebAssembly Community Group"
+      ],
+      "year": 2026,
+      "kind": "standard",
+      "summary": "WebAssembly (Wasm) is a binary instruction format for a stack-based virtual machine, designed as a portable compilation target for programming languages. Embedded in the web it keeps the browser's same-origin and permissions policies, and it also supports non-web embeddings.",
+      "url": "https://webassembly.org/",
+      "checked": "2026-11-26",
+      "informs": [
+        "rule:language-rubric-runtime-fit"
+      ],
+      "stance": {
+        "is": "adopted",
+        "why": "The runtime fit criterion counts a language that reaches a browser or another host only by compiling to WebAssembly as fitting through a compile step, not as written."
+      }
+    },
+    {
+      "id": "json-schema-2020-12",
+      "title": "JSON Schema specification, draft 2020-12",
+      "authors": [
+        "JSON Schema organization"
+      ],
+      "year": 2020,
+      "kind": "standard",
+      "summary": "The JSON Schema core and validation vocabularies, current version 2020-12. Every Naive record type has a schema in this draft.",
+      "url": "https://json-schema.org/specification",
+      "checked": "2026-11-26",
+      "informs": [
+        "rule:language-rubric-naive-interop"
+      ],
+      "stance": {
+        "is": "adopted",
+        "why": "The interop criterion asks whether a language can validate Naive's records against these schemas, since every record is JSON checked by one."
+      }
+    },
+    {
+      "id": "google-sre-book",
+      "title": "Site Reliability Engineering: How Google Runs Production Systems",
+      "authors": [
+        "Betsy Beyer",
+        "Chris Jones",
+        "Jennifer Petoff",
+        "Niall Richard Murphy"
+      ],
+      "year": 2016,
+      "kind": "book",
+      "summary": "How Google builds, releases, monitors and runs production systems, including release engineering and the cost of toil.",
+      "url": "https://sre.google/sre-book/table-of-contents/",
+      "checked": "2026-11-26",
+      "informs": [
+        "rule:language-rubric-operability"
+      ],
+      "stance": {
+        "is": "adopted",
+        "why": "The operability criterion counts build, release and debugging work on every release as a cost of the language, as the book counts release engineering and toil."
+      }
+    },
+    {
+      "id": "spdx-license-list",
+      "title": "SPDX License List",
+      "authors": [
+        "SPDX workgroup, The Linux Foundation"
+      ],
+      "year": 2026,
+      "kind": "dataset",
+      "summary": "Commonly used open source licences and exceptions, each with a standard identifier, full name and FSF and OSI status. MIT and Apache-2.0 are listed as OSI approved.",
+      "url": "https://spdx.org/licenses/",
+      "checked": "2026-11-26",
+      "informs": [
+        "rule:language-rubric-licence"
+      ],
+      "stance": {
+        "is": "adopted",
+        "why": "The licence criterion names licences by SPDX identifier, and its top level is a permissive OSI-approved licence."
+      }
     }
   ]
 }

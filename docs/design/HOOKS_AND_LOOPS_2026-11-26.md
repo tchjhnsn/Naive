@@ -114,10 +114,27 @@ Rules that hold in every mode:
 
 `naive loop watch` ticks on `Schedule.spaced` from Effect in one process. It does not survive a restart on its own: a host's scheduler or a person runs it again, and a tick is safe to rerun because the run log and the decisions hold its state.
 
+## Language choice
+
+Naive is TypeScript on Effect for the framework and Lean 4 for proofs (EE-087, EE-125, EE-159, EE-095). The language rubric (`packages/naive/src/functions/it/language-rubric.json`, EE-189) is how a person judges which language fits another system. It holds eight criteria, each with a question, why, described levels on a 0 to 4 scale and a default weight that is an unvalidated prior, and Naive's own two choices as worked examples. `scoreLanguages` in `packages/naive/src/engine/language-rubric.ts` ranks candidates and never decides.
+
+```mermaid
+flowchart LR
+  sys[system and its target] --> opts[person sets must-haves and weights]
+  cands[candidates scored 0 to 4 with a reason each] --> score[scoreLanguages]
+  opts --> score
+  rubric[language-rubric.json criteria and default weights] --> score
+  score --> gate{0 on a gate or below a must-have?}
+  gate -- yes --> out[ruled out, whatever the rest]
+  gate -- no --> rank[ranked by weighted total, ties inside the band]
+  rank --> person[a person decides]
+  out --> person
+```
+
 ## Not built
 
 - Everything in steps 4 to 8.
 - A mode per time box (step 4 adds the time box). Retries with backoff inside one tick. A durable watch on `workflow/DurableClock`. Starting more than one workflow at once. A hosted starter: with `NAIVE_RUNTIME=hosted` there is no `NAIVE_AGENT_CMD`, so a start is blocked.
 - The run log is not synced (`naive sync` skips `.naive/`), no route serves it, and it has no hash chain.
 - A workflow step's `when` (EE-181) is still a sentence an agent reads.
-- Language choice: Naive is TypeScript on Effect, with Lean for proofs. A rubric for choosing another language for a system is not written.
+- Language choice: Naive is TypeScript on Effect, with Lean for proofs. The rubric for choosing a language for a system is built (EE-189, see Language choice above); a command or route that serves it, and worked examples beyond Naive's own two, are not built.

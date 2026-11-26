@@ -41,6 +41,16 @@ Recommended: **Jev plus a reasoning model**, each doing what it is good at.
 
 This follows MAD's scoring contract (MAD requirements 13 and 14: typed judgments, weights kept separate, must-holds checked apart from weighted sums).
 
+## Choosing a language for a system
+
+A programming language is a tool choice like any other, and a hard one to reverse. Use the language rubric (`packages/naive/src/functions/it/language-rubric.json`, EE-189) when someone asks which language a new system should be written in, or proposes writing part of the venture in a language other than the one it already uses. Do not use it for a system that already runs in the venture's language with no reason to move: Naive is TypeScript on Effect, with Lean 4 for proofs, and its worked examples say why.
+
+1. Name the system and its target first: browser, edge, server, device or a build in CI. The target often rules a language out before anything is scored.
+2. Ask the person for the must-haves (a criterion and the lowest score it needs, such as machine-checked proof for a system that must prove a property) and for any weight that differs from the rubric's defaults. The default weights are unvalidated priors; a weight of 0 leaves a criterion out.
+3. Score each serious candidate on each criterion against the criterion's described levels, with a reason that cites a decision, a reference or a file for every score. Do not invent statistics or score from popularity.
+4. Rank with `scoreLanguages(rubric, candidates, { weights, must })` in `packages/naive/src/engine/language-rubric.ts`. A 0 on a gate criterion (runtime fit, licence) or a score below a must-have rules a candidate out whatever its other scores. Totals within the rubric's tie band are a tie.
+5. Give the person the ranking, the runner-up and what would change it. A score never decides: a person decides, and the output says so. To keep the choice as a worked example, add it with the generator (`node packages/naive/src/engine/generators/language-rubric.ts`) and check it with `node packages/naive/src/checks/check-language-rubric.ts`.
+
 ## Recording the result
 
 Update `<layer>/tooling/integrations.json`: chosen tools `in-use` with a `reason`, serious alternatives `candidate`, and ruled-out tools `rejected` with the must-have they failed. Credentials are named by environment variable only.
