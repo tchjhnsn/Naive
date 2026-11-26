@@ -68,3 +68,5 @@ It registers `engine/gate-service.ts` as plain too: the gate as an Effect servic
 `bypass-guard-test.ts` registers `packages/naive/src/engine/phase-gate.ts` (gate strength, EE-156) and its test as plain checks: they grade evidence by GRADE arithmetic, count interviews and compare levels with a policy's minimums, so no term is decided. It registers `packages/naive/src/engine/gate-calibration.ts` (EE-157) and its test as plain checks for the same reason: they compare anatomy cell values with listed values and numeric thresholds and raise levels by rule.
 
 `bypass-guard-test.ts` registers `packages/naive/src/checks/check-owners.ts` and its test as plain checks: they resolve each element's owner by a fixed precedence and compare role ids, so no term is decided.
+
+`bypass-guard-test.ts` registers `packages/naive/src/checks/check-language-rubric.ts` and its test as plain checks: they check the rubric's shape, that weights sum to 1 and that every source is a reference id, so no term is decided.

@@ -2946,6 +2946,79 @@ export type KnowledgeSources = {
     } };
 };
 
+/** The rubric for judging which programming language fits a system (EE-189), Naive ships at packages/naive/src/functions/it/language-rubric.json. Each criterion asks one question about the system, says why it matters, describes the levels of a 0 to 4 scale and carries a default weight that is an unvalidated prior. A gate criterion rules out a candidate scored 0 on it, and a weighted sum never buys a gate back. Worked examples record a system, the candidates scored on each criterion with the reason for each score, and the choice a person made. A score never decides: packages/naive/src/engine/language-rubric.ts ranks candidates and a person chooses. packages/naive/src/checks/check-language-rubric.ts checks what this schema cannot: weights that sum to 1, sources that are reference ids, decisions that are EE ids and examples that name only the rubric's criteria. */
+export type LanguageRubric = {
+  version: string;
+  note?: string;
+  /** Two candidates whose totals (0 to 1) differ by no more than this are reported as tied, not ordered. */
+  tie_band: number;
+  criteria: {
+    id: string;
+    title: string;
+    /** The one question to ask about the system and a candidate language. */
+    question: string;
+    /** Why the answer can change the choice. */
+    why: string;
+    /** The ISO/IEC 25010:2023 product quality characteristics the criterion serves. A criterion the standard does not cover (a licence) names none. */
+    iso25010?: ("functional-suitability" | "performance-efficiency" | "compatibility" | "interaction-capability" | "reliability" | "security" | "maintainability" | "flexibility" | "safety")[];
+    /** What a score means on this criterion. Scores 0 and 4 must be described; packages/naive/src/checks/check-language-rubric.ts checks it. */
+    levels: {
+      score: number;
+      means: string;
+    }[];
+    /** The default weight, an unvalidated prior. The criteria's weights sum to 1; a person may set others for a system. */
+    weight: number;
+    /** True when a score of 0 rules a candidate out, whatever its other scores. */
+    gate?: boolean;
+    /** Reference ids in packages/naive/src/records/layers/operations/references/references.json. */
+    sources: string[];
+    /** EE decisions the criterion draws on. */
+    decisions?: string[];
+  }[];
+  /** Worked examples: a system, its candidates scored with reasons and the person's choice. */
+  examples: {
+    id: string;
+    /** What the system is and what it must do. */
+    system: string;
+    /** Where the system runs: browser, edge, server, device, a build in CI. */
+    target: string;
+    /** Weights for this system that replace the rubric's defaults, by criterion id. A weight of 0 leaves the criterion out, unscored. */
+    weights?: {
+      [key: string]: number;
+    };
+    /** Must-haves for this system: the lowest score a candidate needs on a criterion, by criterion id. A candidate below it is ruled out. */
+    must?: {
+      [key: string]: number;
+    };
+    candidates: {
+      id: string;
+      /** The language, with the runtime or library that shapes it (TypeScript on Effect). */
+      language: string;
+      scores: {
+        [key: string]: number;
+      };
+      /** The reason for each score, citing a decision, a reference or a file. */
+      why: {
+        [key: string]: string;
+      };
+    }[];
+    /** The candidate a person chose. It may differ from the top score. */
+    chosen: string;
+    /** The EE decisions that record the choice. */
+    decided_by: string[];
+    /** Who gave the scores, when and from what. The choice is the decisions'; the scores are a rater's judgment. */
+    rated: {
+      by: string;
+      /**
+       * @format date
+       */
+      on: string;
+      basis: string;
+    };
+    note?: string;
+  }[];
+};
+
 /** What one layer of the framework repository holds, at <layer>/layer.json and packages/naive/src/records/layer.json for the system layer (EE-018, EE-071). A layer organizes the framework repo. It is not a venture package. Venture packages live at packages/naive/library/packages/<name>/package.json. A kit is Mentura's word, at platform/kits/. packages/naive/src/checks/check-data-model.ts checks this file. */
 export type Layer = {
   layer: "system" | "purpose" | "knowledge" | "operations" | "evidence" | "governance" | "interface";
