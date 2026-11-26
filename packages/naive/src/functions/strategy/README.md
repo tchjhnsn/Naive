@@ -13,6 +13,7 @@ The strategy function (APQC 1.0, Develop Vision and Strategy). Its governance si
 | [function.json](./function.json) | The manifest: purpose, intake, measures, capability clusters |
 | [agent.md](./agent.md) | The strategy agent's instructions |
 | [decisions.json](./decisions.json) | The decision matrix |
+| [workflows/competitor-review.json](./workflows/competitor-review.json) | Workflow: review competitors and the customer's alternatives. Its steps name APQC activities 1.1.1.1, 1.1.1.2 and 1.1.1.3, and four are steps to consider (EE-181) |
 | [workflows/intake.json](./workflows/intake.json) | Workflow: learn the venture's strategy |
 | [workflows/strategy-review.json](./workflows/strategy-review.json) | Workflow: review the strategy against the evidence |
 | [features/decisions.feature](./features/decisions.feature) | Gherkin behaviors (EE-050) |
@@ -33,6 +34,7 @@ The strategy function (APQC 1.0, Develop Vision and Strategy). Its governance si
 | [skills/business-pillar](./skills/business-pillar) | Skill: Provide Business pillar context: teams, roles, Tier 1 deliverables (business model, pricing, ops runbooks, metrics framework, sales collateral, contracts, legal posture) |
 | [skills/chief-of-staff](./skills/chief-of-staff) | Skill: Run the founder's single session as Chief of Staff. |
 | [skills/cross-pillar-tradeoff](./skills/cross-pillar-tradeoff) | Skill: Surface and frame a cross-pillar tradeoff as a CEO-level (or Chief-of-Staff- surfaced) decision. |
+| [skills/competitor-research](./skills/competitor-research) | Skill: research competitors and the customer's alternatives: the questions to ask in order, public sources only, and what is never done (misrepresentation, contact, talk of prices with a competitor). |
 | [skills/metrics-review](./skills/metrics-review) | Skill: Run a metrics review against current project / product state: read the metrics framework, evaluate against targets, surface trends, identify outliers, recommend actions. |
 | [skills/office-hours-mode](./skills/office-hours-mode) | Skill: Switch AI thought-partnership posture to "office hours mode": sharp critique, evidence-demanding, weakest-claim-first. |
 | [skills/strategy-review](./skills/strategy-review) | Skill: Run the fixed-cadence strategy review: test the strategy as diagnosis, guiding policy and coherent actions, check kill criteria and default alive, compare intended with realized strategy, and bring every strategic choice to the founder as a decision |
