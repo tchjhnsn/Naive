@@ -307,7 +307,24 @@
         "instance/**/foundation/goals/*.json",
         "packages/naive/src/records/examples/**/foundation/goals/*.json"
       ],
-      "note": "A canonical goal: statement, kind, horizon, measures with targets, owner. Framework-neutral: the telos, ambition tiers and other frameworks for thinking write goals through their maps_to (Torian, 2026-10-30)",
+      "refs": [
+        {
+          "field": "parent",
+          "to": "goal",
+          "checked_by": "packages/naive/src/checks/check-goals.ts"
+        },
+        {
+          "field": "superseded_by",
+          "to": "goal",
+          "checked_by": "packages/naive/src/checks/check-goals.ts"
+        },
+        {
+          "field": "supersedes",
+          "to": "goal",
+          "checked_by": "packages/naive/src/checks/check-goals.ts"
+        }
+      ],
+      "note": "A canonical goal: statement, kind, horizon, measures with targets, owner. Framework-neutral: the telos, ambition tiers and other frameworks for thinking write goals through their maps_to (Torian, 2026-10-30). A durable record since EE-210: a status only a person settles (proposed, active, met, missed, dropped, superseded), the goal it serves (parent), the goals it replaces, a due date, where it came from (sources) and the result it was settled on. Every version stays readable from the provenance log and the blob store (naive goals history); packages/naive/src/engine/goals.ts holds the lifecycle and packages/naive/src/checks/check-goals.ts the links between goals and requirements",
       "decision_class": "strategy-or-constitution"
     },
     {

@@ -2924,6 +2924,48 @@
           "expect": "exists"
         }
       ]
+    },
+    {
+      "id": "EE-210",
+      "date": "2026-11-26",
+      "status": "in-force",
+      "decision": "A goal is a durable record, like the decision ledger. goal.schema.json carries a status (proposed, active, met, missed, dropped, superseded; a record with no status is proposed, so every goal written before this stays valid), who set it and when, the goal it serves (parent), the goals it replaces (supersedes, superseded_by), a due date, where it came from (sources) and the result it was settled on. The lifecycle is a state machine in packages/naive/src/engine/goals.ts: proposed to active, dropped or superseded; active to met, missed, dropped or superseded; a settled goal reopens only to active, so a mis-set status is corrected and never overwritten, and a goal nobody adopted is never met or missed. Only a person settles a goal: naive goals status refuses anyone who is not a person of the venture and an agent acting as one, and the router holds an agent's write of a lifecycle field as a draft whatever the gate says, the same rule EE-058 gives a write that settles a decision, so a person's acceptance is what puts it live. An agent that rewords a goal a person adopted is refused and told to write a new goal that supersedes it. History needs no new log: every version is already in provenance.jsonl with its bytes in the blob store, so naive goals history and naive goals show --at read them back. naive goals list shows the goals waiting as held drafts, marked as drafts. packages/naive/src/checks/check-goals.ts checks what crosses records: parents, successors, results, active goals, and requirements that derive from a goal that is no longer live.",
+      "why": "Torian decided on 2026-11-26 that his ventures are validated through a structured workflow in which goals are set first and then kept, so goals must be durable objects like the decision ledger, with a lifecycle and a history, and decisions must stay easy to change or withdraw. Only a person decides, so an agent proposes a goal and its status change waits as a draft.",
+      "related": [
+        "EE-023",
+        "EE-054",
+        "EE-058",
+        "EE-185"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/goals.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/checks/check-goals.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "record",
+          "target": "goal.status",
+          "expect": "exists"
+        },
+        {
+          "kind": "record",
+          "target": "goal.parent",
+          "expect": "exists"
+        },
+        {
+          "kind": "record",
+          "target": "goal.superseded_by",
+          "expect": "exists"
+        }
+      ]
     }
   ]
 }
