@@ -69,11 +69,12 @@ One pull request each.
 
 1. What is due. Built: `naive due [--at <iso>] [--function <id>] [--json]` and `naive due record <function>/<workflow> [--outcome done|failed|skipped] [--by <who>]`.
 2. The loop with modes (EE-183). Built: `naive loop plan`, `naive loop tick`, `naive loop watch` and `naive loop mode`, described below.
-3. Record kinds and time boxes. Not built: `kind` master or transactional on each record type, a time box record for a campaign or a sprint, and a trigger "while a time box is open".
-4. Owners. Not built: one accountable owner per element, inherited from its parent, and a check that nothing is unowned.
-5. The element graph. Not built: edges from workflow reads and writes.
-6. State and quality. Not built: the statechart above, a capability level per element from evidence, and the effect of an absent or weak element on the elements it feeds.
-7. Proofs. Not built: Lean proofs of the transition function and of propagation.
+3. Record data categories (EE-184). Built: every workspace and venture record type in the data model names `data`, master, reference, transactional or derived, and `check-data-model.ts` requires it. Nothing reads it yet: steps 6 and 7 do.
+4. Time boxes. Not built: a time box record for a campaign or a sprint, and a trigger "while a time box is open".
+5. Owners. Not built: one accountable owner per element, inherited from its parent, and a check that nothing is unowned.
+6. The element graph. Not built: edges from workflow reads and writes.
+7. State and quality. Not built: the statechart above, a capability level per element from evidence, and the effect of an absent or weak element on the elements it feeds.
+8. Proofs. Not built: Lean proofs of the transition function and of propagation.
 
 ## The loop and its modes
 
@@ -115,8 +116,8 @@ Rules that hold in every mode:
 
 ## Not built
 
-- Everything in steps 3 to 7.
-- A mode per time box (step 3 adds the time box). Retries with backoff inside one tick. A durable watch on `workflow/DurableClock`. Starting more than one workflow at once. A hosted starter: with `NAIVE_RUNTIME=hosted` there is no `NAIVE_AGENT_CMD`, so a start is blocked.
+- Everything in steps 4 to 8.
+- A mode per time box (step 4 adds the time box). Retries with backoff inside one tick. A durable watch on `workflow/DurableClock`. Starting more than one workflow at once. A hosted starter: with `NAIVE_RUNTIME=hosted` there is no `NAIVE_AGENT_CMD`, so a start is blocked.
 - The run log is not synced (`naive sync` skips `.naive/`), no route serves it, and it has no hash chain.
 - A workflow step's `when` (EE-181) is still a sentence an agent reads.
 - Language choice: Naive is TypeScript on Effect, with Lean for proofs. A rubric for choosing another language for a system is not written.
