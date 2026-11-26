@@ -131,6 +131,8 @@ The engine's modules (decisions, freshness, generators, lifecycle, upgrades, use
 
 A resolved decision in `decisions.ts` keeps its record's `options`, `statement`, `version`, `applies_to` and `decided_at`, so setup, the merge prompt and freshness read them from the matrix.
 
+`locked()` in `decisions.ts` reads a decision's `unlocks` through the route aliases, so a lock written under a route's old name still holds. `init-venture.ts` writes the founding decisions with the current route names.
+
 `ownScore` in `decisions.ts` scores an open decision for the docket and the decision index. A due date within three days dominates; one from three to fourteen days out still counts, less the further it is (24 at five days, 9 at fourteen). An open fail-closed decision adds 15, because the work behind it waits until a person decides it. An open one-way door adds 40, so it ranks above every placeholder the framework raises (a foundation statement that fails closed scores 35 in Discovery): a resolved decision carries `one_way` when its record says `door: "one-way"` or its class is one of the delegation's `one_way_doors` (`oneWayDoors`: the template's, plus the venture's own), and the decision index weighs it 1.5 times as well.
 
 ## The decision queue
