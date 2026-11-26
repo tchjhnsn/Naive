@@ -4,7 +4,7 @@ Up: [library](../../README.md)
 
 ## What this is
 
-The competitors package, a data package (signal library build item 6). It keeps master data for competitors: `competitors/<id>.json`, the person's own record, and `competitors/<id>/signals.json` beside it, what signals say about that competitor, which only the signal projector writes. Torian decided on 2026-11-07 that it is its own package and works without a paid library: its signal types and listeners are open and ship here, and a library such as Mentura's only feeds it more signals of the same types.
+The competitors package, a data package (signal library build item 6). It keeps master data for competitors: `competitors/<id>.json`, the person's own record for a competitor or for an alternative the customer uses in its place (what it is, whom it is for, its published price, what it does and does not do, the sources read with their dates, the basis, the stance and a predicted next move, all optional), and `competitors/<id>/signals.json` beside it, what signals say about that competitor, which only the signal projector writes. Torian decided on 2026-11-07 that it is its own package and works without a paid library: its signal types and listeners are open and ship here, and a library such as Mentura's only feeds it more signals of the same types.
 
 The package owns the `competitor` and `competitor-signals` record types. They moved here from the purpose layer's manifest, which the data model allows because the package's `layer` is purpose, and `check-data-model.ts` holds each type to one owner.
 
@@ -17,6 +17,8 @@ The package owns the `competitor` and `competitor-signals` record types. They mo
 | [`signals/types/funding-event/1.0.0.signal.json`](./signals/types/funding-event/1.0.0.signal.json) | `funding-event@1`: a round's series, amount and currency. It projects nothing alone and is a part of `competitor-funding`. Fresh for 30 days. |
 | [`signals/types/competitor-funding/1.0.0.signal.json`](./signals/types/competitor-funding/1.0.0.signal.json) | `competitor-funding@1`: composes `organization@^1` at `org` and `funding-event@^1` at `round`. Appends one `funding` entry per series and folds `first_seen` (min of time) and `last_seen` (max of time). Fresh for 90 days. |
 | [`signals/types/product-launch/1.0.0.signal.json`](./signals/types/product-launch/1.0.0.signal.json) | `product-launch@1`: composes `organization@^1` at `org` and holds a product's name, market and url. Appends one `launches` entry per product name and folds `first_seen` and `last_seen`. Fresh for 60 days. |
+| [`signals/types/price-change/1.0.0.signal.json`](./signals/types/price-change/1.0.0.signal.json) | `price-change@1`: composes `organization@^1` at `org` and holds a plan's name, amount, currency and period. Appends one `prices` entry per plan and amount, so a changed price is a new entry beside the old one. Fresh for 90 days. |
+| [`signals/types/job-posting/1.0.0.signal.json`](./signals/types/job-posting/1.0.0.signal.json) | `job-posting@1`: composes `organization@^1` at `org` and holds a role's title, function and url. Appends one `hiring` entry per title. Fresh for 60 days. |
 
 Each projection names its `subject_field`: `id` in the master record and `competitor` in the signals record. Each type carries worked `cases`: given signals and the record each projection should hold afterwards, subject included, by the design's fold semantics (append keeps one entry per `unique_by` key in time order, with its value from the earliest standing signal and a `support` of supported or withdrawn; min and max read standing signals only).
 
@@ -27,8 +29,11 @@ The default listeners:
 | `name-competitors` | `organization@^1`, rated B2 or better | projects into `competitors/[id]`, creating a master record once |
 | `track-competitors` | `competitor-funding@^1` about a known competitor | projects into `competitors/[id]/signals` |
 | `track-launches` | `product-launch@^1` about a known competitor | projects into `competitors/[id]/signals` |
+| `track-prices` | `price-change@^1` about a known competitor | projects into `competitors/[id]/signals` |
+| `track-hiring` | `job-posting@^1` about a known competitor | projects into `competitors/[id]/signals` |
 | `rival-raised` | `competitor-funding@^1`, rated B2 or better, about a known competitor | proposes the decision `rival-raised`, for 14 days |
 | `launch-revalidates-stance` | `product-launch@^1` about a known competitor | revalidates the person's `competitors/[id]` |
+| `price-revalidates-stance` | `price-change@^1` about a known competitor | revalidates the person's `competitors/[id]` |
 
 A known competitor is a subject in the `competitors` collection. A venture turns a listener off by id with `listeners_off` in `naive.config.json`.
 
