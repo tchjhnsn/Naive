@@ -2509,6 +2509,50 @@
       "sources": [
         "EE-198"
       ]
+    },
+    {
+      "id": "pcf-citation",
+      "label": "PCF citation",
+      "form": "compound",
+      "level": "citation",
+      "kind": "act",
+      "labels": {
+        "designation": "term",
+        "scope": "shared",
+        "origin": {
+          "kind": "adapted"
+        },
+        "grade": "standard"
+      },
+      "meaning": "A citation of one element of APQC's Process Classification Framework: the element id is in the PCF, the cited name is that element's name, and the cited version is the PCF's version.",
+      "status": "proposed",
+      "hash": "1698fa4d5f315213",
+      "properties": [
+        {
+          "id": "C1",
+          "says": "the element id is in the PCF"
+        },
+        {
+          "id": "C2",
+          "says": "the cited name is that element's name"
+        },
+        {
+          "id": "C3",
+          "says": "the cited version is the PCF's version"
+        }
+      ],
+      "rule": "every property, and P7 (confirmed facts)",
+      "valid": true,
+      "passes": 2260,
+      "relations": {},
+      "predictions": [],
+      "lean": [
+        "citation_needs_element"
+      ],
+      "sources": [
+        "EE-199",
+        "APQC Process Classification Framework, cross-industry 8.0"
+      ]
     }
   ],
   "fixtures": [
