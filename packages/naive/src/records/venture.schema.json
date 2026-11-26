@@ -29,6 +29,13 @@
       "default": "venture",
       "description": "venture: building a venture, whose root and strategic foundation fail closed. product: a product without a venture, which fails open (EE-054)."
     },
+    "mode": {
+      "enum": [
+        "modeled",
+        "run"
+      ],
+      "description": "Whether agents are modeling this venture or a person is running it (EE-187). modeled means agents are modeling it, and the people, roles and org links in it are subjects. run means a person is running it on Naive. Left out, the record was written before this field and is not read as run. This field is not the loop mode in naive.config.json (manual, ask or auto) and not the mode on people.json (solo or team)."
+    },
     "type": {
       "type": "string",
       "pattern": "^[a-z0-9-]+$",

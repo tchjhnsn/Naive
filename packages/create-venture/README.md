@@ -4,7 +4,7 @@ Up: [packages](../README.md)
 
 ## What this is
 
-The generator for Naive (EE-118 step 2): `npx create-venture my-venture` makes a workspace and a first venture on it, as `create-next-app` does for Next.js. It runs Naive's `init-venture.ts`, so a venture it makes passes the same checks.
+The generator for Naive (EE-118 step 2): `npx create-venture my-venture` makes a workspace and a first venture on it, as `create-next-app` does for Next.js. It runs Naive's `init-venture.ts`, so a venture it makes passes the same checks. It writes `venture.json` `mode` `run` (EE-187). `--modeled` writes `modeled`. `--mode modeled` or `--mode run` is the explicit form and is passed through to `init-venture.ts`. `naive new` runs this generator. The field is not `people.json` mode (solo or team) and not the loop mode.
 
 Run from a clone of Naive, the venture's `package.json` pins `naive-framework` to the clone's repository at its commit (`git+https://github.com/tchjhnsn/naive.git#<sha>`), as everything-ecosystem pins it (EE-119), and installs from the clone; a clone with no commit keeps a `file:` path. `naive upgrade --framework` moves a git pin to the commit of the Naive running it. The venture's `package.json` also carries the framework's Node floor in `engines.node` (Node 22.19 or later, EE-158), and `effect` in `dependencies` at the framework's exact peer version, so the venture and Naive share one copy of Effect (EE-161). It also writes `src/naive/hello.ts`, an example program `naive run src/naive/hello.ts` runs on the venture runtime, and `src/naive/done/venture-named.ts`, an example done-criterion a handoff names with `runs: "effect"`. Without `--name` the founder is "Founder" until named: a git identity is not a person's name.
 

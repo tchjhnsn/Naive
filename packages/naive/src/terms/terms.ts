@@ -2,7 +2,7 @@
 // Definitions: founder suite doc and mentor/coach and unearned-candour docs (2026-10-31); status proposed until Torian decides.
 
 import type { Term } from "./engine.ts";
-import type { Arrangement, Detector, Encounter, EvalPlan, Experiment, Hierarchy, LinkGraph, Membership, Reception, Relationship, Settlement, Trial } from "./levels.ts";
+import type { Arrangement, Conduct, Detector, Encounter, EvalPlan, Experiment, Hierarchy, LinkGraph, Membership, Reception, Relationship, Settlement, Trial } from "./levels.ts";
 import { known, mayBeNew, RELATIONS, relationTable, type RelationName } from "./relations.ts";
 
 // The four labels every term carries (N-051 to N-055, docs/design/TERM_LABELS_2026-11-02.md). They sit on the term,
@@ -558,4 +558,30 @@ export const settledRecord: Term<Settlement> = {
   lean: ["agent_never_resolves", "agent_alone_settles_nothing"],
 };
 
-export const TERMS = [founder, coFounder, earlyEmployee, mentor, coach, friend, unearnedCandour, thresholdGuardian, phaseGate, layer, area, topCategory, typedLink, detector, trial, hit, miss, falseAlarm, correctRejection, signal, listener, reception, salientReception, noise, experiment, keptExperiment, discardedExperiment, evalPlan, settledRecord];
+export const modeledVenture: Term<Conduct> = {
+  id: "modeled-venture", form: "compound", label: "Modeled venture", level: "conduct", kind: "role",
+  labels: sharedTerm("narrowed", "none"),
+  meaning: "A venture agents are modeling. It is modeled, and it is not being run.",
+  props: [
+    { id: "C1", says: "modeled", check: (f) => f.modeled },
+    { id: "C2", says: "not run", check: (f) => !f.run },
+  ],
+  sources: ["EE-187"],
+  lean: ["modeled_not_run"],
+  predicts: { "run-venture": "disjoint" },
+};
+
+export const runVenture: Term<Conduct> = {
+  id: "run-venture", form: "compound", label: "Run venture", level: "conduct", kind: "role",
+  labels: sharedTerm("narrowed", "none"),
+  meaning: "A venture a person is running on Naive. It is run, and it is not being modeled.",
+  props: [
+    { id: "D1", says: "run", check: (f) => f.run },
+    { id: "D2", says: "not modeled", check: (f) => !f.modeled },
+  ],
+  sources: ["EE-187"],
+  lean: ["run_not_modeled", "modeled_disjoint_run"],
+  predicts: { "modeled-venture": "disjoint" },
+};
+
+export const TERMS = [founder, coFounder, earlyEmployee, mentor, coach, friend, unearnedCandour, thresholdGuardian, phaseGate, layer, area, topCategory, typedLink, detector, trial, hit, miss, falseAlarm, correctRejection, signal, listener, reception, salientReception, noise, experiment, keptExperiment, discardedExperiment, evalPlan, settledRecord, modeledVenture, runVenture];
