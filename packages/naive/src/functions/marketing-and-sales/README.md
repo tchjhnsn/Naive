@@ -18,7 +18,7 @@ The marketing and sales function (APQC 3.0, Market and Sell Products and Service
 | [workflows/weekly-pipeline-review.json](./workflows/weekly-pipeline-review.json) | Workflow: review the sales pipeline each week. Its stage check names APQC activity 3.5.1.6 Manage opportunity pipeline (EE-168). Its `competitive-pricing` step is one to consider (EE-181): compare the price with each competitor's published price, APQC activity 3.3.3.11 Conduct competitive pricing review, when the venture has a price and a competitor publishes one |
 | [marketing/canaries-test.mjs](./marketing/canaries-test.ts) | Its test |
 | [marketing/fixtures](./marketing/fixtures) | A folder |
-| [marketing/leaks-test.mjs](./marketing/leaks-test.ts) | Its test |
+| [marketing/leaks-test.mjs](./marketing/leaks-test.ts) | The publishing gate test: field visibility, leak canaries and internal terms. Its public variant sits in `marketing/content/` and names its audience, as `packages/naive/src/engine/check-public.ts` requires of every content file |
 | [marketing/publish-build-test.mjs](./marketing/publish-build-test.ts) | Its test |
 | [marketing/publish-build.mjs](./marketing/publish-build.ts) | The publish build: gate, compile, build, leak check and sha256 of each output |
 | [marketing/site](./marketing/site) | Site presence: read a venture's website, judge which pages say what with Jev, and score how present its public records are, weighed by who the site must speak to now and  |

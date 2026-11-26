@@ -21,6 +21,7 @@ import * as toolCatalog from "./tool-catalog.ts";
 import * as languageRubric from "./language-rubric.ts";
 import * as leadPlan from "./lead-plan.ts";
 import * as timeBox from "./time-box.ts";
+import * as meeting from "./meeting.ts";
 import * as rawDump from "./raw-dump.ts";
 import * as triage from "./triage.ts";
 import * as opportunity from "./opportunity.ts";
@@ -43,7 +44,7 @@ writeFileSync(join(v, "venture.json"), JSON.stringify({ id: "kettle" }));
 mkdirSync(join(v, "product/bugs"), { recursive: true });
 writeFileSync(join(v, "product/bugs/save-loses-draft.json"), "{}");
 
-for (const g of [bug, glossary, reference, traceSpan, detector, detectorTrial, connection, capabilityCluster, languageRubric, leadPlan, timeBox, rawDump, triage, opportunity, supportPolicy, supportCase, validationPlan, gatePolicies, marketAnatomy, industryAnatomy, ventureAnatomy]) t(`${g.record}: describe asks at least one required field`, g.describe().ask.some((q) => q.required));
+for (const g of [bug, glossary, reference, traceSpan, detector, detectorTrial, connection, capabilityCluster, languageRubric, leadPlan, timeBox, meeting, rawDump, triage, opportunity, supportPolicy, supportCase, validationPlan, gatePolicies, marketAnatomy, industryAnatomy, ventureAnatomy]) t(`${g.record}: describe asks at least one required field`, g.describe().ask.some((q) => q.required));
 
 const b = bug.draft({ title: "Save loses draft", severity: "P1", found_in: "0.6.0", repro: "open, type, save" }, { venture: v });
 t("bug: draft passes the schema", b.ok);
@@ -121,6 +122,17 @@ const tb = timeBox.draft({ kind: "sprint", title: "Launch week", goal: "Ship the
 t("time-box: draft takes its id from the title, starts active and goes to operations/time-box/<id>", tb.ok && tb.route === "operations/time-box/launch-week" && tb.draft?.status === "active");
 t("time-box: one that ends before it starts, or covers nothing, is refused", !timeBox.draft({ kind: "sprint", title: "x", goal: "y", starts: "2026-06-08T00:00:00.000Z", ends: "2026-06-01T00:00:00.000Z", functions: ["products"] }).ok && !timeBox.draft({ kind: "campaign", title: "x", goal: "y", starts: "2026-06-01T00:00:00.000Z", ends: "2026-06-08T00:00:00.000Z" }).ok);
 t("time-box: a loop mode with no person who set it fails the schema", !timeBox.draft({ kind: "sprint", title: "x", goal: "y", starts: "2026-06-01T00:00:00.000Z", ends: "2026-06-08T00:00:00.000Z", functions: ["products"], loop_mode: "auto" }).ok);
+const mt = meeting.draft({ title: "Strategy intake", goal: "Draft the telos and the problem", outcome_expected: ["a draft telos", "a draft problem"], called_by: "torian",
+  attendees: [{ id: "torian", kind: "person" }, { id: "strategy-agent", kind: "agent" }], workflow: "strategy/intake", agenda: [{ title: "Ask telos", step: "ask-telos", ask: true }] });
+t("meeting: draft takes its id from the title, starts planned with each item pending, and goes to operations/meeting/<id>", mt.ok && mt.route === "operations/meeting/strategy-intake"
+  && mt.draft?.status === "planned" && mt.draft?.agenda[0].id === "ask-telos" && mt.draft?.agenda[0].status === "pending");
+t("meeting: one with no goal, no expected outcome or neither agenda nor workflow is refused", !meeting.draft({ ...mt.draft, goal: undefined }).ok
+  && !meeting.draft({ ...mt.draft, outcome_expected: [] }).ok && !meeting.draft({ ...mt.draft, agenda: [], workflow: undefined }).ok);
+const closedBad = { ...mt.draft, status: "closed", opened_at: "2026-11-26T19:00:00.000Z", closed_at: "2026-11-26T20:00:00.000Z", outcome: { reached: "yes", summary: "Done" } };
+t("meeting: the schema refuses a closed meeting with a pending item, or with no outcome", !validate("meeting", closedBad).ok
+  && !validate("meeting", { ...closedBad, agenda: [{ ...mt.draft?.agenda[0], status: "done" }], outcome: undefined }).ok
+  && validate("meeting", { ...closedBad, agenda: [{ ...mt.draft?.agenda[0], status: "done" }] }).ok);
+t("meeting: the schema refuses an open meeting with no opened_at", !validate("meeting", { ...mt.draft, status: "open" }).ok);
 const lp = leadPlan.draft({ lead: "growth-lead", measures: ["paying-teams"] });
 t("lead-plan: draft takes the portfolio from the role template, no bets and a monthly review", lp.ok && lp.route === "operations/lead/growth-lead"
   && lp.draft.portfolio.join() === "marketing-and-sales,customer-service" && lp.draft.bets.length === 0 && lp.draft.review_cadence === "monthly");

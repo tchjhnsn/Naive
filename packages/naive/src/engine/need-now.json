@@ -240,6 +240,17 @@
       ],
       "why": "A lead plans cross-function work once more than one function runs at once; until then the founder holds every seam"
     },
+    "meeting": {
+      "base": {
+        "discovery": 0.6,
+        "validation": 0.6,
+        "beachhead": 0.6,
+        "scale": 0.6,
+        "platform": 0.6
+      },
+      "when": [],
+      "why": "A meeting with a goal and a recorded outcome is how a founder works through a workflow with agents and how agents remember what was decided, from the first week"
+    },
     "time-box": {
       "base": {
         "discovery": 0.05,

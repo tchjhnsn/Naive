@@ -1351,6 +1351,20 @@
       "note": "One campaign or sprint (EE-186): a stretch of time a person sets for some of the business's work, with a goal, a start, an end and the functions or workflows it covers. While it is open, a workflow whose trigger says during its kind is due (packages/naive/src/engine/due.ts) and the loop takes its loop_mode (packages/naive/src/engine/loop.ts). A time box spans functions, so the type names none (function null). Only a person writes it (writer person). Route operations/time-box/[id]"
     },
     {
+      "id": "meeting",
+      "layer": "operations",
+      "function": null,
+      "level": "venture",
+      "data": "transactional",
+      "schema": "packages/naive/src/records/meeting.schema.json",
+      "generator": "packages/naive/src/engine/generators/meeting.ts",
+      "paths": [
+        "instance/**/operations/meetings/*.json",
+        "packages/naive/src/records/examples/**/operations/meetings/*.json"
+      ],
+      "note": "One meeting (EE-200): a goal and the outcome that shows it was reached, stated before it opens; people and agents attending; an agenda worked in order, which may walk a function workflow step by step; minutes; the outcome; and what each attendee takes away. Closed meetings are an app's shared memory for its agents. A meeting spans functions, so the type names none (function null); the gate and the team plan decide who writes it. Route operations/meeting/[id]"
+    },
+    {
       "id": "activity",
       "layer": "operations",
       "function": "service-delivery",
