@@ -1,0 +1,15 @@
+{
+  "source": {
+    "id": "usenaive-tc",
+    "origin": "web",
+    "title": "TechCrunch, Naive raises $28.5M (2026-08-06)",
+    "fetched": "2026-11-26",
+    "url": "https://techcrunch.com/2026/08/06/naive-raises-28-5m-to-automate-the-grunt-work-of-setting-up-and-running-a-company/",
+    "self_reported": false,
+    "fetched_at": "2026-11-26T10:50:09-06:00",
+    "http_status": 200,
+    "sha256": "c1d091e10fcabc015ab1ac7a8aa5cbd843e38402bf8eefe798db81bbd6ec866a",
+    "text_omitted": "Fetched page text not republished (third-party content); see url and sha256"
+  },
+  "text": null
+}

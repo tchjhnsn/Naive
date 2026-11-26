@@ -1,0 +1,15 @@
+{
+  "source": {
+    "id": "mentura-sign-in",
+    "origin": "web",
+    "title": "Mentura sign-in and account creation page",
+    "fetched": "2026-11-26",
+    "url": "https://mentura.xyz/sign-in",
+    "self_reported": true,
+    "fetched_at": "2026-11-26T10:50:06-06:00",
+    "http_status": 200,
+    "sha256": "e2f423d5aedc861605d1b983e337ed43024f30b896dc9b7096e7951eb68913b6",
+    "text_omitted": "Fetched page text not republished (third-party content); see url and sha256"
+  },
+  "text": null
+}

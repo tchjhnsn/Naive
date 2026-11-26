@@ -1,0 +1,20 @@
+{
+  "id": "polsia",
+  "name": "Polsia",
+  "domain": "polsia.com",
+  "kind": "competitor",
+  "basis": "public-source",
+  "offering": "An AI that plans, codes, runs ads, replies to customers and closes deals for a solo founder",
+  "for": "Solo founders",
+  "does": [
+    "Markets 'AI That Runs Your Company While You Sleep' and 'NEVER HIRE AGAIN'"
+  ],
+  "does_not": [],
+  "sources": [
+    {
+      "url": "https://polsia.com/",
+      "read": "2026-11-26"
+    }
+  ],
+  "stance": "Autonomy pitch; no public pricing read this run."
+}

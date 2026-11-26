@@ -1,0 +1,60 @@
+{
+  "id": "naive",
+  "name": "naive",
+  "type": "software-startup",
+  "parent": null,
+  "phase": "discovery",
+  "owner": "self",
+  "status": "active",
+  "profile": "README.md",
+  "layers": {
+    "purpose": {
+      "location": "k-base/"
+    },
+    "knowledge": {
+      "location": "k-base/"
+    },
+    "operations": {
+      "location": "k-base/"
+    },
+    "evidence": {
+      "location": "k-base/"
+    },
+    "governance": {
+      "location": "k-base/"
+    },
+    "interface": {
+      "location": "k-base/"
+    }
+  },
+  "layout": "structured",
+  "functions": {
+    "foundation": {
+      "owner": "founder"
+    },
+    "validation": {
+      "owner": "founder"
+    },
+    "product": {
+      "owner": "founder"
+    },
+    "marketing": {
+      "owner": "founder"
+    },
+    "finance": {
+      "owner": "founder"
+    },
+    "people": {
+      "owner": "founder"
+    },
+    "customers": {
+      "owner": "founder"
+    },
+    "investors": {
+      "owner": "founder"
+    },
+    "money": {
+      "owner": "founder"
+    }
+  }
+}

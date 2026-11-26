@@ -1,0 +1,121 @@
+{
+  "account": "datafeel",
+  "url": "https://www.datafeel.com/",
+  "updated": "2026-11-26",
+  "_interim": {
+    "why": "account.schema.json has no fields for what an account does, its customers, stage, HQ or size, and allows no extra properties (GAPS.md G-22)",
+    "status": "proposed",
+    "written_by": {
+      "kind": "agent",
+      "id": "chief-of-staff"
+    }
+  },
+  "what": {
+    "value": "Patented multi-energy haptics (vibration, heat, cold, light) via the DataFeel Dot, composer software and API; Dev Kits, licensing and co-development",
+    "sources": [
+      "raw/sources/datafeel-home",
+      "raw/sources/datafeel-about",
+      "raw/sources/datafeel-partner"
+    ]
+  },
+  "own_products_in_development": {
+    "value": [
+      "wrist-worn wellness wearable",
+      "child-wellness companion"
+    ],
+    "sources": [
+      "raw/sources/datafeel-integration"
+    ]
+  },
+  "customers": {
+    "value": null,
+    "why": "Partner wordmarks on the home page are labelled placeholder pending approval",
+    "sources": [
+      "raw/sources/datafeel-home"
+    ]
+  },
+  "revenue": {
+    "value": "$1,000,000+ IP licensing revenue to date",
+    "label": "self-reported",
+    "sources": [
+      "raw/sources/datafeel-home"
+    ]
+  },
+  "stage": {
+    "value": "Seed-funded; Gen 11 Dev Kit preorder expected Q1 2027, expected $750",
+    "sources": [
+      "raw/sources/datafeel-shop",
+      "raw/sources/dealroom-datafeel"
+    ]
+  },
+  "funding": {
+    "rounds": [
+      {
+        "date": "2020-11",
+        "usd": 275000
+      },
+      {
+        "date": "2021-10",
+        "usd": 570000
+      },
+      {
+        "date": "2023-11",
+        "usd": 170000
+      },
+      {
+        "date": "2024-09",
+        "usd": null
+      }
+    ],
+    "label": "third-party",
+    "sources": [
+      "raw/sources/dealroom-datafeel"
+    ]
+  },
+  "hq": {
+    "value": "Omaha, Nebraska, US",
+    "label": "third-party; company says 'North America based'",
+    "sources": [
+      "raw/sources/dealroom-datafeel",
+      "raw/sources/datafeel-about"
+    ]
+  },
+  "size": {
+    "value": "2-10 people",
+    "label": "third-party",
+    "sources": [
+      "raw/sources/dealroom-datafeel"
+    ]
+  },
+  "founded": {
+    "value": null,
+    "why": "Sources disagree: Dealroom lists launch Oct 2017 and founding 2018"
+  },
+  "leadership": {
+    "value": [
+      {
+        "name": "Matthew Leaper",
+        "title": "Co-Founder/CEO"
+      }
+    ],
+    "sources": [
+      "raw/sources/datafeel-about"
+    ]
+  },
+  "other_matches": [
+    {
+      "name": "Datafeel.io",
+      "evidence": "Hanser 2021 book quotes 'Robert Schultz, CEO and Founder Datafeel, Boston' about Datafeel.io; datafeel.io now redirects to datafeel.com. Same company or not: unknown",
+      "sources": [
+        "raw/sources/hanser-bmn-datafeel-io",
+        "raw/sources/datafeel-home"
+      ]
+    }
+  ],
+  "relationship": {
+    "value": "customer",
+    "status": "prospect",
+    "label": "Torian's stated choice (t27u), relayed; recorded as agent-proposed in decisions/datafeel-role",
+    "note": "Mirror of accounts/datafeel relationship"
+  }
+}

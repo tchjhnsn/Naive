@@ -1,0 +1,15 @@
+{
+  "source": {
+    "id": "datafield-co",
+    "origin": "web",
+    "title": "Datafield (datafield.co) home page",
+    "fetched": "2026-11-26",
+    "url": "https://datafield.co/",
+    "self_reported": true,
+    "fetched_at": "2026-11-26T10:50:04-06:00",
+    "http_status": 200,
+    "sha256": "be16b5e7668ee783bed111f8273bb65927091fdff5b7acd205bc30588d410c45",
+    "text_omitted": "Fetched page text not republished (third-party content); see url and sha256"
+  },
+  "text": null
+}

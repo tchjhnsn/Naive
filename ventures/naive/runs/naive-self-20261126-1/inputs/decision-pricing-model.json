@@ -1,0 +1,76 @@
+{
+  "id": "pricing-model",
+  "question": "How do people pay for Naive, and who pays for model use?",
+  "status": "open",
+  "needed_in": "discovery",
+  "options": [
+    "Free framework; founders bring their own AI subscription (today)",
+    "Hybrid: free framework plus a Mentura plan that includes model credits at cost plus a stated margin, with bring-your-own-key at no markup",
+    "Credits only",
+    "Per seat"
+  ],
+  "answer": null,
+  "decided_by": null,
+  "decided_at": null,
+  "proposed": {
+    "answer": "Hybrid: keep the framework free; sell Mentura as a monthly plan per business that includes model credits and allows bring-your-own-key with no token markup. Price points TBD after the h-hybrid-credits test.",
+    "options": [
+      "Free framework; founders bring their own AI subscription (today)",
+      "Hybrid: free framework plus a Mentura plan that includes model credits at cost plus a stated margin, with bring-your-own-key at no markup",
+      "Credits only",
+      "Per seat"
+    ],
+    "drafted_by": {
+      "kind": "agent",
+      "id": "chief-of-staff"
+    },
+    "proposed_at": "2026-11-26T12:00:00-06:00"
+  },
+  "reasons": [
+    {
+      "claim": "Agents run today on the founder's own subscription through the plugin and MCP; Mentura does not run agents yet.",
+      "kind": "context",
+      "citations": [
+        {
+          "ref": "https://github.com/tchjhnsn/reflect (web/README.md)"
+        }
+      ]
+    },
+    {
+      "claim": "The repo's own runtime design recommends pass-through metered cost per organization first, BYOK later.",
+      "kind": "for",
+      "citations": [
+        {
+          "ref": "https://github.com/tchjhnsn/Naive/blob/134d2d35063b8b232389b0fb254d152ae40639a1/docs/design/AGENT_RUNTIME_2026-11-02.md section 5 question 10"
+        }
+      ]
+    },
+    {
+      "claim": "Hybrid pricing is the fastest-growing model among AI apps (1% to 20% of 71 apps, Oct 2024 to Oct 2026).",
+      "kind": "for",
+      "citations": [
+        {
+          "ref": "https://host0.ai/blog/ai-pricing-2026"
+        }
+      ]
+    },
+    {
+      "claim": "The closest competitor priced $20/$200 per company per month with the price returned as credits.",
+      "kind": "context",
+      "citations": [
+        {
+          "ref": "https://web.archive.org/web/20261110181531/https://usenaive.ai/pricing"
+        }
+      ]
+    },
+    {
+      "claim": "Token cost dominates infrastructure cost; a runaway loop spends real money, so budgets per organization are needed.",
+      "kind": "against",
+      "citations": [
+        {
+          "ref": "https://github.com/tchjhnsn/Naive/blob/134d2d35063b8b232389b0fb254d152ae40639a1/docs/design/AGENT_RUNTIME_2026-11-02.md section 4"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "venture": "naive",
+  "updated": "2026-11-26",
+  "id": "small-business-data-owner",
+  "who": "Small businesses whose operating data has value",
+  "short": "Data-owning small business",
+  "primary": false,
+  "customer": "b2b",
+  "phases": [
+    "discovery"
+  ],
+  "traits": [
+    "has years of operating records"
+  ],
+  "jobs": [
+    "know what their records are worth",
+    "keep control of who uses them"
+  ],
+  "where_to_find": [
+    "TBD by Torian"
+  ],
+  "not": [],
+  "customer_type": "Speculative; tied to h-data-benchmarks and h-data-broker. No longer linked to an early account: Torian corrected DataField to Datafeel (t26u)."
+}

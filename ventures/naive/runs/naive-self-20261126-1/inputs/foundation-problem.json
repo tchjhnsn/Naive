@@ -1,0 +1,65 @@
+{
+  "venture": "naive",
+  "updated": "2026-11-26",
+  "statement": "Starting a venture is easy now; choosing what to do next is where ideas stall, and a solo founder's knowledge is scattered across tools that agents cannot read as one picture.",
+  "segment": "Solo founders and small founding teams, including people who do not yet call themselves founders",
+  "why_now": "AI tools let one person run work that used to need a team, and solo business formation in AI-exposed industries is rising (desk research; not yet confirmed by Naive's own interviews).",
+  "forms": [
+    {
+      "id": "what-next",
+      "statement": "The founder does not know which decision matters most today.",
+      "status": "open"
+    },
+    {
+      "id": "scattered-context",
+      "statement": "The venture's facts sit in separate tools, so agents work without the whole picture.",
+      "status": "open"
+    },
+    {
+      "id": "no-record-of-why",
+      "statement": "Decisions are made but the reasons and evidence are not kept.",
+      "status": "open"
+    }
+  ],
+  "evidence": [
+    {
+      "id": "solo-formation-rise",
+      "kind": "desk-research",
+      "summary": "In AI-exposed industries, business applications without early hiring signs rose 26.8% from Q1 2024 to Q1 2026 (about 222,000 to 281,000 a quarter); the researcher says this is descriptive and does not show AI caused it.",
+      "source": {
+        "url": "https://www.cnbc.com/2026/11/07/americas-new-no-employee-small-business-owners-start-hot-in-ai-era.html",
+        "checked": "2026-11-26"
+      },
+      "audience": "adjacent",
+      "specificity": "specific",
+      "collected": "2026-11-26",
+      "assumption": "why-now"
+    },
+    {
+      "id": "smb-count",
+      "kind": "desk-research",
+      "summary": "36,207,130 US small businesses; 99.9% of businesses are small (SBA Advocacy, Feb 2026).",
+      "source": {
+        "url": "https://advocacy.sba.gov/2026/02/03/advocacy-releases-frequently-asked-questions-about-small-businesses-2026/",
+        "checked": "2026-11-26"
+      },
+      "audience": "adjacent",
+      "specificity": "specific",
+      "collected": "2026-11-26",
+      "assumption": "exists"
+    },
+    {
+      "id": "framework-premise",
+      "kind": "opinion",
+      "summary": "Naive's README states the premise: central data beats separate tools for one founder or a few, and agents reason better with the whole picture. This is the builder's own claim, not customer evidence.",
+      "source": {
+        "url": "https://github.com/tchjhnsn/Naive/blob/134d2d35063b8b232389b0fb254d152ae40639a1/README.md",
+        "checked": "2026-11-26"
+      },
+      "audience": "wrong",
+      "specificity": "general",
+      "collected": "2026-11-26",
+      "assumption": "hurts"
+    }
+  ]
+}

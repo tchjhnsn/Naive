@@ -1,0 +1,15 @@
+{
+  "source": {
+    "id": "npm-usenaive-cli",
+    "origin": "web",
+    "title": "npm registry: @usenaive-sdk/cli",
+    "fetched": "2026-11-26",
+    "url": "https://registry.npmjs.org/@usenaive-sdk/cli",
+    "self_reported": false,
+    "fetched_at": "2026-11-26T10:50:08-06:00",
+    "http_status": 200,
+    "sha256": "a66e97ad0ac89503400b6fe91b25c59185fa6703e554dba9fb8722a5a6550fca",
+    "text_omitted": "Fetched page text not republished (third-party content); see url and sha256"
+  },
+  "text": null
+}

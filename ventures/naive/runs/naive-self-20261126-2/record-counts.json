@@ -1,0 +1,225 @@
+{
+  "strategy": {
+    "records": 24,
+    "written": 11,
+    "draft": 11,
+    "interim": 2,
+    "null_fields": 19,
+    "files": [
+      "interim/foundation/core.json",
+      "interim/foundation/telos.json",
+      "k-base/_drafts/foundation__constraints.json.draft",
+      "k-base/_drafts/foundation__exit-criteria__discovery.json.draft",
+      "k-base/_drafts/foundation__goals__dogfood-naive.json.draft",
+      "k-base/_drafts/foundation__goals__first-accounts.json.draft",
+      "k-base/_drafts/foundation__goals__public-signup.json.draft",
+      "k-base/_drafts/foundation__goals__settle-bets.json.draft",
+      "k-base/_drafts/foundation__icp__ai-native-solo-founder.json.draft",
+      "k-base/_drafts/foundation__icp__main-street-operator.json.draft",
+      "k-base/_drafts/foundation__icp__small-business-data-owner.json.draft",
+      "k-base/_drafts/foundation__icp__venture-studio.json.draft",
+      "k-base/_drafts/foundation__problem.json.draft",
+      "k-base/competitors/polsia.json",
+      "k-base/competitors/usenaive.json",
+      "k-base/decisions/owner-outcome.decision.json",
+      "k-base/decisions/scale-ambition.decision.json",
+      "k-base/decisions/term-engine-position.decision.json",
+      "k-base/industries/primary.json",
+      "k-base/industries/software-publishers.json",
+      "k-base/markets/main-street.json",
+      "k-base/markets/primary.json",
+      "k-base/markets/solo-ai-founders.json",
+      "k-base/validation/plan.json"
+    ]
+  },
+  "products": {
+    "records": 8,
+    "written": 4,
+    "draft": 0,
+    "interim": 4,
+    "null_fields": 0,
+    "files": [
+      "interim/capabilities.json",
+      "interim/product/mentura.json",
+      "interim/product/naive-framework.json",
+      "interim/product/naive-plugin.json",
+      "k-base/product/decisions/product.core-product.decision.json",
+      "k-base/product/decisions/product.exists.decision.json",
+      "k-base/product/decisions/product.flagship.decision.json",
+      "k-base/validation/solution.json"
+    ]
+  },
+  "marketing-and-sales": {
+    "records": 11,
+    "written": 9,
+    "draft": 1,
+    "interim": 1,
+    "null_fields": 10,
+    "files": [
+      "interim/accounts/datafeel/profile.json",
+      "k-base/_drafts/marketing__design-system.json.draft",
+      "k-base/accounts/datafeel/account.json",
+      "k-base/accounts/datafield/account.json",
+      "k-base/accounts/fitness-coaching-placeholder/account.json",
+      "k-base/accounts/network-placeholder/account.json",
+      "k-base/decisions/pricing-model.decision.json",
+      "k-base/decisions/signup-door.decision.json",
+      "k-base/marketing/sitemap.json",
+      "k-base/validation/go-to-market.json",
+      "k-base/validation/pricing.json"
+    ]
+  },
+  "supply-chain": {
+    "records": 0,
+    "written": 0,
+    "draft": 0,
+    "interim": 0,
+    "null_fields": 0,
+    "files": []
+  },
+  "service-delivery": {
+    "records": 1,
+    "written": 1,
+    "draft": 0,
+    "interim": 0,
+    "null_fields": 1,
+    "files": [
+      "k-base/service-delivery/offers/venture-setup.json"
+    ]
+  },
+  "customer-service": {
+    "records": 0,
+    "written": 0,
+    "draft": 0,
+    "interim": 0,
+    "null_fields": 0,
+    "files": []
+  },
+  "human-capital": {
+    "records": 5,
+    "written": 5,
+    "draft": 0,
+    "interim": 0,
+    "null_fields": 3,
+    "files": [
+      "k-base/decisions/first-hires.decision.json",
+      "k-base/decisions/venture.team.decision.json",
+      "k-base/people/founders/founder.json",
+      "k-base/people/people.json",
+      "k-base/people/team-plan.json"
+    ]
+  },
+  "it": {
+    "records": 0,
+    "written": 0,
+    "draft": 0,
+    "interim": 0,
+    "null_fields": 0,
+    "files": []
+  },
+  "finance": {
+    "records": 1,
+    "written": 0,
+    "draft": 0,
+    "interim": 1,
+    "null_fields": 0,
+    "files": [
+      "interim/cost-model.json"
+    ]
+  },
+  "assets": {
+    "records": 0,
+    "written": 0,
+    "draft": 0,
+    "interim": 0,
+    "null_fields": 0,
+    "files": []
+  },
+  "risk-and-compliance": {
+    "records": 7,
+    "written": 1,
+    "draft": 0,
+    "interim": 6,
+    "null_fields": 15,
+    "files": [
+      "interim/legal/risks/data-broker.json",
+      "interim/legal/risks/inference-cost.json",
+      "interim/legal/risks/name-clash-naive-dev.json",
+      "interim/legal/risks/name-clash-usenaive.json",
+      "interim/legal/risks/subscription-dependence.json",
+      "interim/legal/risks/visibility-mismatch.json",
+      "k-base/decisions/data-terms.decision.json"
+    ]
+  },
+  "external-relationships": {
+    "records": 0,
+    "written": 0,
+    "draft": 0,
+    "interim": 0,
+    "null_fields": 0,
+    "files": []
+  },
+  "capabilities": {
+    "records": 0,
+    "written": 0,
+    "draft": 0,
+    "interim": 0,
+    "null_fields": 0,
+    "files": []
+  },
+  "knowledge (cross-function)": {
+    "records": 38,
+    "written": 38,
+    "draft": 0,
+    "interim": 0,
+    "null_fields": 39,
+    "files": [
+      "k-base/raw/sources/a16z-context/source.json",
+      "k-base/raw/sources/blank-custdev/source.json",
+      "k-base/raw/sources/census-bfs/source.json",
+      "k-base/raw/sources/claude-code-plans/source.json",
+      "k-base/raw/sources/claude-pricing/source.json",
+      "k-base/raw/sources/cnbc-solo-2026/source.json",
+      "k-base/raw/sources/credyt-hybrid/source.json",
+      "k-base/raw/sources/datafeel-about/source.json",
+      "k-base/raw/sources/datafeel-home/source.json",
+      "k-base/raw/sources/datafeel-integration/source.json",
+      "k-base/raw/sources/datafeel-partner/source.json",
+      "k-base/raw/sources/datafeel-patents/source.json",
+      "k-base/raw/sources/datafeel-shop/source.json",
+      "k-base/raw/sources/datafield-co/source.json",
+      "k-base/raw/sources/datafield-intel/source.json",
+      "k-base/raw/sources/datafield-usa/source.json",
+      "k-base/raw/sources/dealroom-datafeel/source.json",
+      "k-base/raw/sources/epoch-price-of-thought/source.json",
+      "k-base/raw/sources/epoch-price-trends/source.json",
+      "k-base/raw/sources/fc-services-as-software/source.json",
+      "k-base/raw/sources/finray-agent-payments/source.json",
+      "k-base/raw/sources/hanser-bmn-datafeel-io/source.json",
+      "k-base/raw/sources/host0-pricing-2026/source.json",
+      "k-base/raw/sources/mentura-sign-in/source.json",
+      "k-base/raw/sources/naive-dev/source.json",
+      "k-base/raw/sources/naive-repo/source.json",
+      "k-base/raw/sources/nngroup-homepage/source.json",
+      "k-base/raw/sources/nngroup-show-price/source.json",
+      "k-base/raw/sources/npm-naive-framework/source.json",
+      "k-base/raw/sources/npm-usenaive-cli/source.json",
+      "k-base/raw/sources/polsia/source.json",
+      "k-base/raw/sources/sba-faq-2026/source.json",
+      "k-base/raw/sources/spacex-careers/source.json",
+      "k-base/raw/sources/strategyzer-test-card/source.json",
+      "k-base/raw/sources/strategyzer-validated/source.json",
+      "k-base/raw/sources/usenaive-pricing-archive/source.json",
+      "k-base/raw/sources/usenaive-tc/source.json",
+      "k-base/raw/sources/usenaive-yc/source.json"
+    ]
+  },
+  "unmapped": {
+    "records": 0,
+    "written": 0,
+    "draft": 0,
+    "interim": 0,
+    "null_fields": 0,
+    "files": []
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "id": "spacex-careers",
+  "origin": "web",
+  "title": "SpaceX careers",
+  "fetched": "2026-11-26",
+  "fetched_at": "2026-11-26T10:50:08-06:00",
+  "url": "https://www.spacex.com/Careers",
+  "archive_of": null,
+  "http_status": 200,
+  "sha256": "afd623b148154a550bb1f644012892cc725dcb383cd68fdf05f1665b09e355bc",
+  "self_reported": true
+}

@@ -1,0 +1,36 @@
+{
+  "statement": "PROPOSED (Torian, t23u, paraphrased): become the default platform on which small businesses choose to operate and scale.",
+  "end_state": "PROPOSED: a founder with an idea can sign up, run the venture's records, decisions and agents in one place, and keep running it there as it grows. Earlier recorded end: 'more people realize that they are founders' (preserve/merged-ledger.public.md N-197, box copy).",
+  "horizon": null,
+  "measures": [
+    {
+      "id": "ventures-run",
+      "statement": "Ventures run on Naive (mode run) that had a person decide at least one decision in the last 30 days",
+      "kind": "usage_or_adoption",
+      "primary": true
+    },
+    {
+      "id": "dogfood",
+      "statement": "venture:naive itself is run on Naive, and its public site is generated from its records",
+      "kind": "learning"
+    },
+    {
+      "id": "main-street",
+      "statement": "Small businesses (not only software startups) running on Naive",
+      "kind": "impact"
+    }
+  ],
+  "owner_outcome": {
+    "path": null,
+    "why": "TBD by Torian. No source states an intended owner outcome."
+  },
+  "_interim": {
+    "why": "Naive refused this write; see GAPS.md",
+    "schema_route": "foundation/telos",
+    "written_by": {
+      "kind": "agent",
+      "id": "chief-of-staff"
+    },
+    "status": "proposed"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "source": {
+    "id": "hanser-bmn-datafeel-io",
+    "origin": "web",
+    "title": "Gassmann et al., Geschaeftsmodelle entwickeln, 3rd ed. (Hanser 2021), front-matter quote naming Datafeel.io",
+    "fetched": "2026-11-26",
+    "url": "https://content.e-bookshelf.de/media/reading/L-15316270-014672b416.pdf",
+    "self_reported": false,
+    "fetched_at": "2026-11-26T10:58:15-06:00",
+    "http_status": 200,
+    "sha256": "cca3688a8749e3b7f0dbdc9762d02c9c13813f4d85c61c71f4d4ae7705ed6789",
+    "note": "PDF; text extracted with pdftotext",
+    "text_omitted": "Fetched page text not republished (third-party content); see url and sha256"
+  },
+  "text": null
+}

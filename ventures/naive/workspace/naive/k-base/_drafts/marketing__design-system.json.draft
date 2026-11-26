@@ -1,0 +1,35 @@
+{
+  "venture": "naive",
+  "updated": "2026-11-26",
+  "ethos": {
+    "statement": "If you have an idea, you are a founder.",
+    "traits": [
+      "plain",
+      "confident",
+      "on the founder's side"
+    ],
+    "avoid": [
+      "autonomous",
+      "never hire again",
+      "AI fluff"
+    ],
+    "from": [
+      "foundation/core",
+      "site/content/marketing/about.mdx (Torian's words)"
+    ]
+  },
+  "audiences": [
+    "ai-native-solo-founder",
+    "main-street-operator"
+  ],
+  "choices": [
+    {
+      "area": "voice",
+      "choice": "Short, plain sentences. Name the decision, the record and the person. Say what is built and what is not.",
+      "why": "The docs' 'What's built' habit and the ethos: founders are trusted with the truth.",
+      "from": [
+        "site/content/docs/get-started/whats-built.mdx"
+      ]
+    }
+  ]
+}

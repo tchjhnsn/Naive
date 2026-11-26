@@ -1,0 +1,6 @@
+{
+  "venture": "naive",
+  "files": 0,
+  "errors": [],
+  "results": []
+}

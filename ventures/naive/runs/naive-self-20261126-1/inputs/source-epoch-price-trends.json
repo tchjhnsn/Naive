@@ -1,0 +1,15 @@
+{
+  "source": {
+    "id": "epoch-price-trends",
+    "origin": "web",
+    "title": "Epoch AI, LLM inference prices have fallen rapidly but unequally",
+    "fetched": "2026-11-26",
+    "url": "https://epoch.ai/data-insights/llm-inference-price-trends",
+    "self_reported": false,
+    "fetched_at": "2026-11-26T10:50:05-06:00",
+    "http_status": 200,
+    "sha256": "3ebc227e7d0ec98bcf16b5e7b3f9323663d518b7732fc2f46feff08025149fa0",
+    "text_omitted": "Fetched page text not republished (third-party content); see url and sha256"
+  },
+  "text": null
+}

@@ -1,0 +1,15 @@
+{
+  "source": {
+    "id": "datafeel-patents",
+    "origin": "web",
+    "title": "DataFeel Family of Patents",
+    "fetched": "2026-11-26",
+    "url": "https://www.datafeel.com/patents",
+    "self_reported": true,
+    "fetched_at": "2026-11-26T10:58:13-06:00",
+    "http_status": 200,
+    "sha256": "cc4b0dfb730198dabe5d92dcb05c8f4ec24c48eaeb3b6aeb50cdb9992391275e",
+    "text_omitted": "Fetched page text not republished (third-party content); see url and sha256"
+  },
+  "text": null
+}

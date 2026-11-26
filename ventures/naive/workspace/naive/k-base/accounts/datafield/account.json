@@ -1,0 +1,8 @@
+{
+  "id": "datafield",
+  "name": "DataField (which company: TBD by Torian)",
+  "relationship": "other",
+  "status": "closed",
+  "note": "Superseded: Torian corrected the early account to Datafeel (t26u); see accounts/datafeel. Naive's CLI has no delete verb, so this record is closed rather than removed (GAPS.md G-23). Earlier candidate notes: Candidates from public sources, 2026-11-26: (1) Datafield, datafield.co: licenses small businesses' de-identified operating data to AI labs (self-reported); (2) DataField Technology Services, datafieldusa.com: telecom engineering and staffing, Worthington, Ohio; (3) Datafield Intelligence, datafieldintelligence.com: veteran-owned AI and SIGINT for defense. Relationship (customer, partner) TBD by Torian.",
+  "closed": "2026-11-26"
+}

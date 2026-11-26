@@ -1,0 +1,15 @@
+{
+  "source": {
+    "id": "datafield-usa",
+    "origin": "web",
+    "title": "DataField Technology Services home page",
+    "fetched": "2026-11-26",
+    "url": "https://datafieldusa.com/",
+    "self_reported": true,
+    "fetched_at": "2026-11-26T10:50:05-06:00",
+    "http_status": 200,
+    "sha256": "e8ca6f9c2bb9b4c164131c18105c93f5dd2bcdf3e14db445cdd6bf48f689a8e4",
+    "text_omitted": "Fetched page text not republished (third-party content); see url and sha256"
+  },
+  "text": null
+}

@@ -1,0 +1,61 @@
+{
+  "id": "naive-framework",
+  "name": "Naive framework",
+  "description": "The venture development framework: record schemas, routes, checks, the CLI and MCP server, term engine and Lean proofs. Works offline with no account.",
+  "job": "Keep a venture as checkable records and show the decision that needs a person",
+  "ai": "agent-harness",
+  "offering": "product",
+  "status": "live",
+  "software": true,
+  "repo": "https://github.com/tchjhnsn/Naive",
+  "offered_to": [
+    "ai-native-solo-founder"
+  ],
+  "features": [
+    {
+      "id": "create-venture",
+      "name": "Create a venture",
+      "job": "npx create-venture or naive new scaffolds a venture"
+    },
+    {
+      "id": "docket",
+      "name": "Decision docket",
+      "job": "Rank the decisions that need a person"
+    },
+    {
+      "id": "gate",
+      "name": "The gate",
+      "job": "Hold agent writes of escalated classes as drafts"
+    },
+    {
+      "id": "provenance",
+      "name": "Provenance",
+      "job": "Record who wrote each record, from what"
+    },
+    {
+      "id": "phases",
+      "name": "Phases and gates",
+      "job": "Five phases, each with a gate and exit evidence"
+    },
+    {
+      "id": "mcp",
+      "name": "MCP server",
+      "job": "Any MCP client reads and writes the venture"
+    },
+    {
+      "id": "term-engine",
+      "name": "Term engine and Lean",
+      "job": "Admit terms as checked properties with Lean theorems"
+    },
+    {
+      "id": "publish-lint",
+      "name": "Publish lint",
+      "job": "Check public text for leaks, marks and claims"
+    },
+    {
+      "id": "offline-sync",
+      "name": "Offline sync",
+      "job": "Sync a working copy with a hosted store"
+    }
+  ]
+}

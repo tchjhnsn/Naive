@@ -1,0 +1,32 @@
+{
+  "venture": "naive",
+  "updated": "2026-11-26",
+  "label": "estimated",
+  "_interim": {
+    "why": "no route holds unit economics in discovery; finance/budget is beachhead+ (GAPS.md G-12)"
+  },
+  "per_decision_usd": {
+    "low": 0.012,
+    "high": 0.18,
+    "basis": "input tokens only at Sonnet 5.5 input rates; low = single chat, high = swarm decision",
+    "source": "https://github.com/tchjhnsn/reflect (docs BLACKBOARD_STORAGE_COST)"
+  },
+  "assumed_decisions_per_active_venture_month": {
+    "value": 300,
+    "label": "assumption, no source"
+  },
+  "per_active_venture_month_usd": {
+    "low": 3.6,
+    "high": 54,
+    "excludes": "output tokens, containers, storage"
+  },
+  "trend": {
+    "claim": "inference prices for the same capability fall about 13x a year",
+    "source": "https://epoch.ai/data-insights/llm-inference-price-trends"
+  },
+  "who_pays": {
+    "framework_and_plugin": "the founder, through their own AI subscription (today)",
+    "mentura_recommended": "the business, through plan-included credits passed through AI Gateway with per-org key budgets; BYOK at no markup",
+    "status": "proposed, see decisions/pricing-model"
+  }
+}

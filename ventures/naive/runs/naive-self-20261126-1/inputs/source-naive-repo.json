@@ -1,0 +1,15 @@
+{
+  "source": {
+    "id": "naive-repo",
+    "origin": "web",
+    "title": "tchjhnsn/Naive at main HEAD",
+    "fetched": "2026-11-26",
+    "url": "https://github.com/tchjhnsn/Naive/tree/134d2d35063b8b232389b0fb254d152ae40639a1",
+    "self_reported": true,
+    "fetched_at": "2026-11-26T10:50:07-06:00",
+    "http_status": 200,
+    "sha256": "28bf8661bacb04dddca9575c77137079e24473173e4d0793225a705a7d08f488",
+    "text_omitted": "Fetched page text not republished (third-party content); see url and sha256"
+  },
+  "text": null
+}

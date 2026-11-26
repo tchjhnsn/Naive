@@ -1,0 +1,12 @@
+{
+  "id": "cnbc-solo-2026",
+  "origin": "web",
+  "title": "CNBC, America's newest small business owners with no employees (2026-11-07)",
+  "fetched": "2026-11-26",
+  "fetched_at": "2026-11-26T10:50:03-06:00",
+  "url": "https://www.cnbc.com/2026/11/07/americas-new-no-employee-small-business-owners-start-hot-in-ai-era.html",
+  "archive_of": null,
+  "http_status": 200,
+  "sha256": "080833f7cb72a4db0a84f456d63f9930ee53fe88bf90fdb95236155fb27b9d3b",
+  "self_reported": false
+}

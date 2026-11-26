@@ -1,0 +1,74 @@
+raw/sources/[id]	inputs/source-sba-faq-2026.json	research source cited by this run's records
+raw/sources/[id]	inputs/source-cnbc-solo-2026.json	research source cited by this run's records
+raw/sources/[id]	inputs/source-census-bfs.json	research source cited by this run's records
+raw/sources/[id]	inputs/source-host0-pricing-2026.json	research source cited by this run's records
+raw/sources/[id]	inputs/source-credyt-hybrid.json	research source cited by this run's records
+raw/sources/[id]	inputs/source-claude-pricing.json	research source cited by this run's records
+raw/sources/[id]	inputs/source-claude-code-plans.json	research source cited by this run's records
+raw/sources/[id]	inputs/source-epoch-price-of-thought.json	research source cited by this run's records
+raw/sources/[id]	inputs/source-epoch-price-trends.json	research source cited by this run's records
+raw/sources/[id]	inputs/source-strategyzer-test-card.json	research source cited by this run's records
+raw/sources/[id]	inputs/source-strategyzer-validated.json	research source cited by this run's records
+raw/sources/[id]	inputs/source-blank-custdev.json	research source cited by this run's records
+raw/sources/[id]	inputs/source-nngroup-homepage.json	research source cited by this run's records
+raw/sources/[id]	inputs/source-nngroup-show-price.json	research source cited by this run's records
+raw/sources/[id]	inputs/source-a16z-context.json	research source cited by this run's records
+raw/sources/[id]	inputs/source-fc-services-as-software.json	research source cited by this run's records
+raw/sources/[id]	inputs/source-finray-agent-payments.json	research source cited by this run's records
+raw/sources/[id]	inputs/source-usenaive-tc.json	research source cited by this run's records
+raw/sources/[id]	inputs/source-usenaive-pricing-archive.json	research source cited by this run's records
+raw/sources/[id]	inputs/source-usenaive-yc.json	research source cited by this run's records
+raw/sources/[id]	inputs/source-npm-usenaive-cli.json	research source cited by this run's records
+raw/sources/[id]	inputs/source-npm-naive-framework.json	research source cited by this run's records
+raw/sources/[id]	inputs/source-naive-dev.json	research source cited by this run's records
+raw/sources/[id]	inputs/source-polsia.json	research source cited by this run's records
+raw/sources/[id]	inputs/source-spacex-careers.json	research source cited by this run's records
+raw/sources/[id]	inputs/source-mentura-sign-in.json	research source cited by this run's records
+raw/sources/[id]	inputs/source-datafield-co.json	research source cited by this run's records
+raw/sources/[id]	inputs/source-datafield-usa.json	research source cited by this run's records
+raw/sources/[id]	inputs/source-datafield-intel.json	research source cited by this run's records
+raw/sources/[id]	inputs/source-naive-repo.json	research source cited by this run's records
+foundation/core	inputs/foundation-core.json	ethos and mission: Torian's words per site/content/marketing/about.mdx (comment: 'The ethos and the mission are Torian's words'); competence restates site/content/marketing/index.mdx features (agent draft)
+foundation/problem	inputs/foundation-problem.json	problem statement; evidence is desk research and the builder's own premise only, so it should grade low
+foundation/telos	inputs/foundation-telos.json	vision; owner_outcome.path has no unknown value, so this may be refused (see GAPS)
+foundation/constraints	inputs/foundation-constraints.json	constraints; the last one is a proposal
+foundation/goals/[id]	inputs/goal-dogfood-naive.json	goal
+foundation/goals/[id]	inputs/goal-public-signup.json	goal
+foundation/goals/[id]	inputs/goal-first-accounts.json	goal
+foundation/goals/[id]	inputs/goal-settle-bets.json	goal
+foundation/icp/[id]	inputs/icp-ai-native-solo-founder.json	ideal customer profile (proposed segment; no interviews yet)
+foundation/icp/[id]	inputs/icp-main-street-operator.json	ideal customer profile (proposed segment; no interviews yet)
+foundation/icp/[id]	inputs/icp-venture-studio.json	ideal customer profile (proposed segment; no interviews yet)
+foundation/icp/[id]	inputs/icp-small-business-data-owner.json	ideal customer profile (proposed segment; no interviews yet)
+foundation/exit-criteria/[id]	inputs/exit-discovery.json	discovery exit criteria; none met
+product/[id]	inputs/product-naive-framework.json	product card; status live is from the public repo and npm (naive-framework 0.6.0)
+product/[id]	inputs/product-naive-plugin.json	product card (README.md 'The Claude Code plugin', EE-084)
+product/[id]	inputs/product-mentura.json	product card (tchjhnsn/reflect README and web/README.md: 'Not built in B1: agent runs ... none of them runs in Mentura yet')
+validation/solution	inputs/validation-solution.json	solution and alternatives
+validation/pricing	inputs/validation-pricing.json	current price point is a fact (free/MIT); proposed paid tiers live in decision pricing-model
+validation/go-to-market	inputs/validation-go-to-market.json	go-to-market; motion product-led is a proposal
+validation/plan	inputs/validation-plan.json	hypotheses register; every 'by' date is a placeholder (the schema requires one) for Torian to set
+decisions/[id]	inputs/decision-pricing-model.json	decision proposed for Torian; open
+decisions/[id]	inputs/decision-term-engine-position.json	decision proposed for Torian; open
+decisions/[id]	inputs/decision-signup-door.json	decision proposed for Torian; open
+decisions/[id]	inputs/decision-first-hires.json	decision proposed for Torian; open
+decisions/[id]	inputs/decision-owner-outcome.json	decision proposed for Torian; open
+decisions/[id]	inputs/decision-scale-ambition.json	decision proposed for Torian; open
+decisions/[id]	inputs/decision-data-terms.json	decision proposed for Torian; open
+purpose/competitor/[id]	inputs/competitor-usenaive.json	competitor
+purpose/competitor/[id]	inputs/competitor-polsia.json	competitor
+purpose/account/[id]	inputs/account-datafield.json	early account; identity ambiguous
+purpose/account/[id]	inputs/account-network-placeholder.json	early account placeholder
+purpose/account/[id]	inputs/account-fitness-coaching-placeholder.json	early account placeholder
+people/team-plan	inputs/team-plan.json	hiring plan (proposal)
+service-delivery/offers/[id]	inputs/offer-venture-setup.json	service offer draft
+legal/risks/[id]	inputs/risk-name-clash-usenaive.json	risk
+legal/risks/[id]	inputs/risk-name-clash-naive-dev.json	risk
+legal/risks/[id]	inputs/risk-data-broker.json	risk
+legal/risks/[id]	inputs/risk-inference-cost.json	risk
+legal/risks/[id]	inputs/risk-subscription-dependence.json	risk
+legal/risks/[id]	inputs/risk-visibility-mismatch.json	risk
+industries/[id]	inputs/industry-software.json	industry (NAICS 2022 513210 Software Publishers; mapping is ours)
+markets/[id]	inputs/market-solo-founders.json	market
+markets/[id]	inputs/market-main-street.json	market
+marketing/design-system	inputs/design-system.json	design system: voice only; visual choices are left to the existing site/brand/tokens.json

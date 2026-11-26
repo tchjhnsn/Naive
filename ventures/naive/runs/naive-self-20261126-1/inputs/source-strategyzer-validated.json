@@ -1,0 +1,15 @@
+{
+  "source": {
+    "id": "strategyzer-validated",
+    "origin": "web",
+    "title": "Strategyzer, Is your hypothesis really validated?",
+    "fetched": "2026-11-26",
+    "url": "https://www.strategyzer.com/library/business-testing-is-your-hypothesis-really-validated",
+    "self_reported": false,
+    "fetched_at": "2026-11-26T10:50:09-06:00",
+    "http_status": 200,
+    "sha256": "4526c9a19658ea42d1c7a27692e6ba80752b7c2048c1540a8054bd03937da7b3",
+    "text_omitted": "Fetched page text not republished (third-party content); see url and sha256"
+  },
+  "text": null
+}

@@ -1,0 +1,15 @@
+{
+  "source": {
+    "id": "usenaive-yc",
+    "origin": "web",
+    "title": "Y Combinator company page: Naive (usenaive.ai)",
+    "fetched": "2026-11-26",
+    "url": "https://www.ycombinator.com/companies/naive",
+    "self_reported": true,
+    "fetched_at": "2026-11-26T10:50:09-06:00",
+    "http_status": 200,
+    "sha256": "84e7ca87422acd72ef9e2ae194795357a70c2f8ebec60ac1069546260f7438ac",
+    "text_omitted": "Fetched page text not republished (third-party content); see url and sha256"
+  },
+  "text": null
+}

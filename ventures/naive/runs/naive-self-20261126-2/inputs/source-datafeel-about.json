@@ -1,0 +1,15 @@
+{
+  "source": {
+    "id": "datafeel-about",
+    "origin": "web",
+    "title": "DataFeel About Us",
+    "fetched": "2026-11-26",
+    "url": "https://www.datafeel.com/about-us",
+    "self_reported": true,
+    "fetched_at": "2026-11-26T10:58:12-06:00",
+    "http_status": 200,
+    "sha256": "1a5531c949284784b9c2d643f95ab7d91b3609288c9e7faa5b8dd7bac5a6b4cc",
+    "text_omitted": "Fetched page text not republished (third-party content); see url and sha256"
+  },
+  "text": null
+}

@@ -1,0 +1,49 @@
+{
+  "id": "datafeel-role",
+  "question": "What is Datafeel's relationship to Naive?",
+  "status": "open",
+  "needed_in": "discovery",
+  "options": [
+    "customer",
+    "user",
+    "partner",
+    "other"
+  ],
+  "answer": null,
+  "decided_by": null,
+  "decided_at": null,
+  "proposed": {
+    "answer": "customer: a target customer, still a prospect since nothing has been sold (Torian's stated choice, t27u, relayed by the parent agent)",
+    "options": [
+      "customer",
+      "user",
+      "partner",
+      "other"
+    ],
+    "drafted_by": {
+      "kind": "agent",
+      "id": "chief-of-staff"
+    },
+    "proposed_at": "2026-11-26T11:04:00-06:00"
+  },
+  "conversation": [
+    {
+      "source": "relay (not a raw/sources conversation capture)",
+      "file": "runs/naive-self-20261126-3/prompt.md",
+      "timestamp": "2026-11-26T11:04:00-06:00",
+      "sha256": "24a83f5a6868b9302f8240e18b8ad4267fcd31a6ae9979761d3ee94c9c192fad"
+    }
+  ],
+  "note": "Torian decided this in chat (t27u). It is recorded as agent-proposed because an agent may not record a person's decision and no --as person was used; Torian confirms it to mark it decided (GAPS.md G-25).",
+  "reasons": [
+    {
+      "claim": "Torian stated the role is customer, as a target customer, not yet sold.",
+      "kind": "context",
+      "citations": [
+        {
+          "ref": "t27u (relayed; runs/naive-self-20261126-3/prompt.md)"
+        }
+      ]
+    }
+  ]
+}

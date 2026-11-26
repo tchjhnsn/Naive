@@ -1,0 +1,16 @@
+{
+  "source": {
+    "id": "dealroom-datafeel",
+    "origin": "web",
+    "title": "Dealroom: DataFeel company profile (third-party)",
+    "fetched": "2026-11-26",
+    "url": "https://app.dealroom.co/companies/datafeel",
+    "self_reported": false,
+    "fetched_at": "2026-11-26T10:58:13-06:00",
+    "http_status": 403,
+    "sha256": "5b3c490e2e3555351c0b888a75bc31a3764d8b43794ea1b397a1feaa907bc0b0",
+    "note": "Direct fetch returned HTTP 403 (curl) and timed out (WebFetch). Text below is the page excerpt returned by the web search index on 2026-11-26, not a direct capture; sha256 is of the 403 body.",
+    "text_omitted": "Fetched page text not republished (third-party content); see url and sha256"
+  },
+  "text": null
+}

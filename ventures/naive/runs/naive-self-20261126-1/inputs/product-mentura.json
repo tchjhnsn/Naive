@@ -1,0 +1,16 @@
+{
+  "id": "mentura",
+  "name": "Mentura (hosted Naive)",
+  "description": "Naive hosted for people without a filesystem: sign in, open a business, work it in the business console. Agent runs do not run in Mentura yet.",
+  "job": "Run a venture on Naive from a browser",
+  "ai": "feature",
+  "offering": "platform",
+  "status": "building",
+  "software": true,
+  "repo": "https://github.com/tchjhnsn/reflect",
+  "offered_to": [
+    "main-street-operator",
+    "venture-studio",
+    "ai-native-solo-founder"
+  ]
+}

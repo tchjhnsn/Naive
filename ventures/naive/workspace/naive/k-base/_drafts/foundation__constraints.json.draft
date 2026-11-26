@@ -1,0 +1,36 @@
+{
+  "venture": "naive",
+  "updated": "2026-11-26",
+  "must_not": [
+    {
+      "id": "no-own-models-now",
+      "statement": "Do not train or host our own models in the current phase.",
+      "why": "Focus on what Naive is today; compute and model questions come later.",
+      "source": "Torian, t22u (parent conversation)"
+    },
+    {
+      "id": "no-symbolic-side-checks",
+      "statement": "Do not add a symbolic check that bypasses the EE-095 term engine and the Lean proofs.",
+      "why": "Torian's standing technical strategy.",
+      "source": "https://github.com/tchjhnsn/Naive/blob/134d2d35063b8b232389b0fb254d152ae40639a1/docs/decisions/decisions.json (EE-095)"
+    },
+    {
+      "id": "agents-do-not-decide",
+      "statement": "Agents do not settle decisions of escalated classes; they propose drafts for a person.",
+      "why": "People decide by default.",
+      "source": "https://github.com/tchjhnsn/Naive/blob/134d2d35063b8b232389b0fb254d152ae40639a1/docs/decisions/decisions.json (EE-030, EE-179)"
+    },
+    {
+      "id": "no-paid-data-no-scraping",
+      "statement": "Do not use paid data or scrape LinkedIn for research; person data is public-role facts only.",
+      "why": "Reference-library rules Torian approved on 2026-11-26.",
+      "source": "/workspace/dogfood-modeled/usenaive/DOSSIER.md (Policy row), box"
+    },
+    {
+      "id": "no-second-line-on-customer-data",
+      "statement": "PROPOSED: do not use identifiable run-venture records for a second business line.",
+      "why": "The January 2024 Carta and Linear case.",
+      "source": "/workspace/reference-library/RESEARCH-DATA-RIGHTS.md section 5, box"
+    }
+  ]
+}

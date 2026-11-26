@@ -1,0 +1,12 @@
+{
+  "id": "datafield-intel",
+  "origin": "web",
+  "title": "Datafield Intelligence home page",
+  "fetched": "2026-11-26",
+  "fetched_at": "2026-11-26T10:50:05-06:00",
+  "url": "https://www.datafieldintelligence.com/",
+  "archive_of": null,
+  "http_status": 200,
+  "sha256": "7cefe879241cdbcd5cd02b1cf59dcc9e282633a43c51d293ba1df1729ab3d377",
+  "self_reported": true
+}

@@ -1,0 +1,15 @@
+{
+  "source": {
+    "id": "strategyzer-test-card",
+    "origin": "web",
+    "title": "Strategyzer, Test Card",
+    "fetched": "2026-11-26",
+    "url": "https://www.strategyzer.com/library/validate-your-ideas-with-the-test-card",
+    "self_reported": false,
+    "fetched_at": "2026-11-26T10:50:08-06:00",
+    "http_status": 200,
+    "sha256": "04c385f2d078586178ac7a070d27e7b0c9ab8dc30b033b51fad2aee9cff49fee",
+    "text_omitted": "Fetched page text not republished (third-party content); see url and sha256"
+  },
+  "text": null
+}

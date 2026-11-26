@@ -1,0 +1,39 @@
+{
+  "venture": "naive",
+  "updated": "2026-11-26",
+  "product": "naive-framework",
+  "statement": "A venture kept as one set of plain, checked records, with a ranked docket of the decisions a person owes and agents that may only propose, so one founder can run what used to need a team.",
+  "alternatives": [
+    "Separate tools (CRM, wiki, finance app, tracker) plus a chat assistant",
+    "Autonomous company builders such as Naive (usenaive.ai) and Polsia",
+    "Doing nothing: a notes file and the founder's memory"
+  ],
+  "difference": "People decide by default; every record has provenance and a gate; definitions are checked by a term engine and Lean. Competitors sell autonomy; Naive sells judgment kept on record. (Positioning is a proposal.)",
+  "evidence": [
+    {
+      "id": "competitor-autonomy",
+      "kind": "desk-research",
+      "summary": "Polsia markets 'AI That Runs Your Company While You Sleep'; Naive (usenaive.ai) describes itself as 'an AI research lab building autonomous companies'.",
+      "source": {
+        "url": "https://polsia.com/",
+        "checked": "2026-11-26"
+      },
+      "audience": "wrong",
+      "specificity": "specific",
+      "collected": "2026-11-26"
+    },
+    {
+      "id": "no-customer-trial",
+      "kind": "opinion",
+      "summary": "No person outside the builder has used Naive in a recorded trial; the beta checkpoints in beta/capabilities.json exist but no feedback records were found.",
+      "source": {
+        "url": "https://github.com/tchjhnsn/Naive/blob/134d2d35063b8b232389b0fb254d152ae40639a1/beta/capabilities.json",
+        "checked": "2026-11-26"
+      },
+      "audience": "wrong",
+      "specificity": "specific",
+      "collected": "2026-11-26",
+      "supports": false
+    }
+  ]
+}

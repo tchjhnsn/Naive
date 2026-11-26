@@ -1,0 +1,95 @@
+{
+  "venture": "naive",
+  "updated": "2026-11-26",
+  "note": "PROPOSED hiring plan. No hire is made or promised. Order and roles are recommendations for Torian.",
+  "roles": [
+    {
+      "id": "founder",
+      "name": "Founder",
+      "occupant": "person",
+      "needed_by": "discovery",
+      "status": "filled",
+      "why": "Decides strategy, money, legal terms and public commitments (governance/roles/agent-roles.json)."
+    },
+    {
+      "id": "chief-of-staff",
+      "name": "Chief of Staff (agent)",
+      "occupant": "agent",
+      "needed_by": "discovery",
+      "status": "filled",
+      "why": "Intake, routing and register upkeep (agents/chief-of-staff/AGENTS.md)."
+    },
+    {
+      "id": "founding-engineer",
+      "name": "Founding engineer: hosted agents",
+      "occupant": "person",
+      "needed_by": "discovery",
+      "status": "open",
+      "why": "Unlocks hosted agent runs in Mentura, the gap between a sign-up and a working product."
+    },
+    {
+      "id": "growth-lead",
+      "name": "Founding growth and GTM lead",
+      "occupant": "person",
+      "needed_by": "discovery",
+      "status": "open",
+      "why": "Unlocks the early-accounts tests and the public site's proof."
+    },
+    {
+      "id": "counsel",
+      "name": "Counsel (contract): data terms and naming",
+      "occupant": "person",
+      "needed_by": "discovery",
+      "status": "open",
+      "why": "Data terms before the first paying customer; trademark review given the usenaive.ai clash."
+    },
+    {
+      "id": "design-engineer",
+      "name": "Design engineer",
+      "occupant": "person",
+      "needed_by": "validation",
+      "status": "planned",
+      "why": "Unlocks a console non-technical owners can use without help."
+    },
+    {
+      "id": "evals-engineer",
+      "name": "Applied AI and evals engineer",
+      "occupant": "person",
+      "needed_by": "validation",
+      "status": "planned",
+      "why": "Unlocks measured agent quality from gold records and accept/edit/reject data."
+    },
+    {
+      "id": "formal-methods",
+      "name": "Formal methods engineer (Lean)",
+      "occupant": "person",
+      "needed_by": "beachhead",
+      "status": "planned",
+      "why": "Closes EE-095's gap: theorems that prove the current properties, not only exist."
+    }
+  ],
+  "recruiting": [
+    {
+      "role": "founding-engineer",
+      "kind": "cofounder",
+      "brief": "Make agents run for people who have no terminal: durable runs, budgets per business, every run kept as a record.",
+      "channels": [
+        "Torian's network"
+      ]
+    },
+    {
+      "role": "growth-lead",
+      "kind": "hire",
+      "brief": "Find the first ten ventures that run on Naive every week, and prove it on the site.",
+      "channels": [
+        "Torian's network"
+      ]
+    },
+    {
+      "role": "counsel",
+      "kind": "contractor",
+      "brief": "Draft data terms (ownership, aggregate use, AI training, opt-out) and clear the name risk.",
+      "channels": []
+    }
+  ]
+}

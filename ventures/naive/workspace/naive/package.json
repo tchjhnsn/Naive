@@ -1,0 +1,20 @@
+{
+  "name": "naive",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "naive dev",
+    "build": "naive build",
+    "start": "naive start",
+    "check": "naive check"
+  },
+  "dependencies": {
+    "effect": "4.1.5"
+  },
+  "devDependencies": {
+    "naive-framework": "git+https://github.com/tchjhnsn/naive.git#134d2d35063b8b232389b0fb254d152ae40639a1"
+  },
+  "engines": {
+    "node": ">=22.19.0"
+  }
+}

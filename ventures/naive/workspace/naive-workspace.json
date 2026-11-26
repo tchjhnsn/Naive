@@ -1,0 +1,14 @@
+{
+  "schema": "everything-ecosystem",
+  "schema_version": "0.5.0",
+  "name": "Naive workspace",
+  "ventures": [
+    "naive"
+  ],
+  "settings": {
+    "cross_venture_reads": true,
+    "route_threshold": 0.8
+  },
+  "timeZone": "America/Chicago",
+  "calendar": "calendar/"
+}

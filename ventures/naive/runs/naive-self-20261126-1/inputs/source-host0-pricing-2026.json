@@ -1,0 +1,15 @@
+{
+  "source": {
+    "id": "host0-pricing-2026",
+    "origin": "web",
+    "title": "host0, AI pricing in 2026: census of 71 AI apps' pricing pages",
+    "fetched": "2026-11-26",
+    "url": "https://host0.ai/blog/ai-pricing-2026",
+    "self_reported": false,
+    "fetched_at": "2026-11-26T10:50:06-06:00",
+    "http_status": 200,
+    "sha256": "70c4b8bb0a7eefeb7f6872f52eb19c3ced8ba35f492347b22305f7a4b6c94a63",
+    "text_omitted": "Fetched page text not republished (third-party content); see url and sha256"
+  },
+  "text": null
+}

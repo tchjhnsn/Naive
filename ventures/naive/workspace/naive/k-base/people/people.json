@@ -1,0 +1,13 @@
+{
+  "venture": "naive",
+  "mode": "solo",
+  "people": [
+    {
+      "id": "founder",
+      "name": "Founder",
+      "role": "founder",
+      "founder_file": "people/founders/founder.json"
+    }
+  ],
+  "updated": "2026-11-26"
+}

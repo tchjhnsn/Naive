@@ -1,0 +1,15 @@
+{
+  "source": {
+    "id": "datafeel-io",
+    "origin": "web",
+    "title": "datafeel.io (redirect check)",
+    "fetched": "2026-11-26",
+    "url": "https://datafeel.io/",
+    "self_reported": true,
+    "fetched_at": "2026-11-26T10:58:13-06:00",
+    "http_status": 200,
+    "sha256": "4d36205166635e36ca2c241e2e4f027a0bf91e611978fc831d8ea608478cd9dc",
+    "text_omitted": "Fetched page text not republished (third-party content); see url and sha256"
+  },
+  "text": null
+}

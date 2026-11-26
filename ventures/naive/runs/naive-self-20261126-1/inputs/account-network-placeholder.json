@@ -1,0 +1,7 @@
+{
+  "id": "network-placeholder",
+  "name": "Torian's LinkedIn network (names TBD by Torian)",
+  "relationship": "customer",
+  "status": "prospect",
+  "note": "Placeholder for named accounts Torian adds. No scraping or enrichment."
+}

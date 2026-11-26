@@ -1,0 +1,28 @@
+{
+  "venture": "naive",
+  "updated": "2026-11-26",
+  "id": "ai-native-solo-founder",
+  "who": "Technical solo founders who already work in an agent harness (Claude Code, Cursor)",
+  "short": "Solo AI-native founder",
+  "primary": true,
+  "customer": "b2c",
+  "phases": [
+    "discovery"
+  ],
+  "traits": [
+    "works alone or with one or two others",
+    "already pays for an AI subscription",
+    "keeps code in GitHub"
+  ],
+  "jobs": [
+    "decide what to do next",
+    "keep the venture's facts where agents can read them"
+  ],
+  "where_to_find": [
+    "Claude Code plugin marketplace",
+    "GitHub",
+    "Torian's LinkedIn network (placeholder: names TBD by Torian)"
+  ],
+  "not": [],
+  "customer_type": "Naive ships as a Claude Code plugin today (README.md, EE-084), so this is the segment the shipped door already reaches."
+}

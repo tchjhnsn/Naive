@@ -1,0 +1,10 @@
+{
+  "id": "default",
+  "name": "Venture",
+  "owner": "founder",
+  "members": [
+    "founder"
+  ],
+  "visibility": "workspace",
+  "created": "2026-11-26T16:46:53Z"
+}

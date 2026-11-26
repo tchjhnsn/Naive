@@ -1,0 +1,137 @@
+{
+  "venture": "naive",
+  "updated": "2026-11-26",
+  "naive_sha": "134d2d35063b8b232389b0fb254d152ae40639a1",
+  "_interim": {
+    "why": "product/[id].features has no status or evidence field, and product cards are locked until product-exists is decided (GAPS.md G-09, G-10)",
+    "status": "proposed"
+  },
+  "capabilities": [
+    {
+      "id": "create-venture",
+      "name": "Create a venture as plain records (`naive new`)",
+      "status": "shipped",
+      "evidence": "runs/naive-self-20261126-1/evidence/naive-new.txt",
+      "note": "Ran in this run; exit 0"
+    },
+    {
+      "id": "decision-docket",
+      "name": "Decision docket: what a person must decide next, ranked",
+      "status": "shipped",
+      "evidence": "runs/naive-self-20261126-1/evidence/cmd-decisions.txt",
+      "note": "Ran in this run"
+    },
+    {
+      "id": "agent-drafts",
+      "name": "Agents propose; strategy and public-commitment writes become drafts for a person",
+      "status": "shipped",
+      "evidence": "runs/naive-self-20261126-1/writes.jsonl",
+      "note": "12 writes landed in k-base/_drafts"
+    },
+    {
+      "id": "provenance",
+      "name": "Provenance chain on every write",
+      "status": "shipped",
+      "evidence": "runs/naive-self-20261126-1/evidence/cmd-check.txt",
+      "note": "`naive check`: 65 entries, every chain holds"
+    },
+    {
+      "id": "source-capture",
+      "name": "A source and its text written together (EE-192)",
+      "status": "shipped",
+      "evidence": "runs/naive-self-20261126-1/writes.jsonl",
+      "note": "30 raw sources written; data-packages check passes"
+    },
+    {
+      "id": "phase-gate",
+      "name": "Phase gate with evidence levels",
+      "status": "partial",
+      "evidence": "https://github.com/tchjhnsn/Naive/blob/134d2d35063b8b232389b0fb254d152ae40639a1/packages/naive/src/phases/gate-policies.json",
+      "note": "Runs (evidence/cmd-system_phase-gate.txt) but only discovery has gate items; drafts do not count toward it"
+    },
+    {
+      "id": "lean-canvas",
+      "name": "Lean Canvas view over records",
+      "status": "shipped",
+      "evidence": "runs/naive-self-20261126-1/evidence/cmd-identity_lean-canvas.txt",
+      "note": "Ran in this run"
+    },
+    {
+      "id": "site-plan",
+      "name": "Plan the public site from records",
+      "status": "partial",
+      "evidence": "runs/naive-self-20261126-1/evidence/cmd-operations_marketing_sitemap.txt",
+      "note": "Runs, but offerings are empty while product cards are locked, and hiring is read only from legacy purpose/icp.json"
+    },
+    {
+      "id": "site-content",
+      "name": "Write public page variants (MDX)",
+      "status": "partial",
+      "evidence": "https://github.com/tchjhnsn/Naive/blob/134d2d35063b8b232389b0fb254d152ae40639a1/packages/naive/src/functions/marketing-and-sales/marketing/site/plan.ts",
+      "note": "marketing/content is a beachhead route; CLI write expects JSON, so MDX cannot be written through it"
+    },
+    {
+      "id": "mcp",
+      "name": "MCP server for any AI client",
+      "status": "shipped",
+      "evidence": "https://github.com/tchjhnsn/Naive/blob/134d2d35063b8b232389b0fb254d152ae40639a1/packages/naive/src/interfaces/mcp",
+      "note": "Code present; not exercised in this run (CLI used instead)"
+    },
+    {
+      "id": "plugin",
+      "name": "Claude Code plugin",
+      "status": "shipped",
+      "evidence": "https://github.com/tchjhnsn/naive-plugins",
+      "note": "Not installed in this run"
+    },
+    {
+      "id": "term-engine",
+      "name": "Term engine with Lean proofs (EE-095)",
+      "status": "partial",
+      "evidence": "https://github.com/tchjhnsn/Naive/blob/134d2d35063b8b232389b0fb254d152ae40639a1/packages/naive/lean",
+      "note": "182 theorems, no sorry (EE-095), but admission checks only that a named theorem exists"
+    },
+    {
+      "id": "port",
+      "name": "Bring an existing project in (`naive port`)",
+      "status": "partial",
+      "evidence": "runs/naive-self-20261126-1/evidence/naive-test.log",
+      "note": "4 sub-tests fail at this SHA"
+    },
+    {
+      "id": "test-suite",
+      "name": "Full test suite green",
+      "status": "partial",
+      "evidence": "runs/naive-self-20261126-1/evidence/naive-test.log",
+      "note": "3 failing groups at this SHA: naive port, founders before ventures, decision affects grammar"
+    },
+    {
+      "id": "npm",
+      "name": "Published package",
+      "status": "shipped",
+      "evidence": "https://registry.npmjs.org/naive-framework",
+      "note": "naive-framework 0.6.0, published 2026-10-29"
+    },
+    {
+      "id": "mentura-account",
+      "name": "Mentura account creation",
+      "status": "partial",
+      "evidence": "https://mentura.xyz/sign-in",
+      "note": "/sign-in offers Create your account; /sign-up returns 404"
+    },
+    {
+      "id": "mentura-hosted-agents",
+      "name": "Agent runs hosted in Mentura",
+      "status": "planned",
+      "evidence": "https://github.com/tchjhnsn/reflect",
+      "note": "Marked \"Not built in B1\""
+    },
+    {
+      "id": "credits-metering",
+      "name": "Metered model credits per organization",
+      "status": "planned",
+      "evidence": "https://github.com/tchjhnsn/reflect",
+      "note": "AGENT_RUNTIME design Q10: pass-through metered cost first, BYOK later; not built"
+    }
+  ]
+}

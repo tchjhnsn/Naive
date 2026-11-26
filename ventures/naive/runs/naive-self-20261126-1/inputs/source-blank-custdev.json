@@ -1,0 +1,15 @@
+{
+  "source": {
+    "id": "blank-custdev",
+    "origin": "web",
+    "title": "Steve Blank, The Customer Development Model (2009-09-17)",
+    "fetched": "2026-11-26",
+    "url": "https://steveblank.com/2009/09/17/",
+    "self_reported": false,
+    "fetched_at": "2026-11-26T10:50:01-06:00",
+    "http_status": 200,
+    "sha256": "1cf4659533141b1041e76a98450cdbd41f02790fcc457f5e3021d3e5457a765f",
+    "text_omitted": "Fetched page text not republished (third-party content); see url and sha256"
+  },
+  "text": null
+}

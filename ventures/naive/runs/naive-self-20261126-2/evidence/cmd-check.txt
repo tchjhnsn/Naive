@@ -1,0 +1,24 @@
+pass  ventures: 1 ventures, 0 products, 4 accounts: all cross-venture rules hold.
+pass  people: 1 ventures, 1 people rosters: every role, hat and founder file agrees.
+pass  provenance: 1 provenance logs, 77 entries: every chain holds.
+pass  sources: 0 source maps: every source has a connector, every record type a source, every function's systems are known, and no two matrix rules tie.
+pass  data-packages: 1 ventures: data packages and raw hold.
+pass  governance: 0 ventures with ownership records: every governance rule holds.
+pass  telos: 0 ventures with a telos: every exit criterion traces to the end.
+pass  publication: 0 ventures with a publication policy: every publication passes the gate.
+pass  private: /workspace/naive-self/workspace/naive: private records stay off the model.
+pass  where-used: 0 where-used lists: 0 live children show their parent's value.
+pass  citations: 20 citations pass
+pass  lint-investors: 0 finding(s); ok
+pass  lint-product: 0 finding(s); ok
+pass  lint-money: 0 finding(s); ok
+pass  lint-customers: 0 finding(s); ok
+pass  lint-validation: 0 finding(s); ok
+pass  lint-finance: 0 finding(s); ok
+pass  lint-legal: 0 finding(s); ok
+pass  lint-people: 6 finding(s); ok
+pass  lint-foundation: 0 finding(s); ok
+pass  effect: package.json pins effect 4.1.5; not installed yet
+pass  workspace: naive-workspace.json matches its schema
+
+all passing

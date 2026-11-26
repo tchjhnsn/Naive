@@ -1,0 +1,65 @@
+{
+  "id": "term-engine-position",
+  "question": "Is the EE-095 term engine and Lean a marketed capability or an internal guarantee?",
+  "status": "open",
+  "needed_in": "discovery",
+  "options": [
+    "Market it as a headline capability",
+    "Keep it under the hood; market the outcome (records you can trust)",
+    "Retire it"
+  ],
+  "answer": null,
+  "decided_by": null,
+  "decided_at": null,
+  "proposed": {
+    "answer": "Keep it, and market the outcome, not the mechanism: 'every definition is checked'. Name the term engine and Lean on the technical-bets and careers pages, where researchers and engineers read.",
+    "options": [
+      "Market it as a headline capability",
+      "Keep it under the hood; market the outcome (records you can trust)",
+      "Retire it"
+    ],
+    "drafted_by": {
+      "kind": "agent",
+      "id": "chief-of-staff"
+    },
+    "proposed_at": "2026-11-26T12:00:00-06:00"
+  },
+  "reasons": [
+    {
+      "claim": "Torian treats EE-095 and Lean as firm strategy.",
+      "kind": "context",
+      "citations": [
+        {
+          "ref": "https://github.com/tchjhnsn/Naive/blob/134d2d35063b8b232389b0fb254d152ae40639a1/docs/decisions/decisions.json EE-095"
+        }
+      ]
+    },
+    {
+      "claim": "Admission does not yet check that a named theorem proves the current properties, only that it exists.",
+      "kind": "against",
+      "citations": [
+        {
+          "ref": "https://github.com/tchjhnsn/Naive/blob/134d2d35063b8b232389b0fb254d152ae40639a1/docs/decisions/decisions.json EE-095 'Not built yet'"
+        }
+      ]
+    },
+    {
+      "claim": "182 theorems in lean/Naive with no sorry, and terms such as observed and sourced/estimated/synthetic/gold already ride on it (EE-191, EE-199).",
+      "kind": "for",
+      "citations": [
+        {
+          "ref": "https://github.com/tchjhnsn/Naive/blob/134d2d35063b8b232389b0fb254d152ae40639a1/packages/naive/lean/Naive"
+        }
+      ]
+    },
+    {
+      "claim": "Buyers judge outcomes; homepage guidance says to state the user benefit in plain words.",
+      "kind": "for",
+      "citations": [
+        {
+          "ref": "https://www.nngroup.com/articles/homepage-design-principles/"
+        }
+      ]
+    }
+  ]
+}

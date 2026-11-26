@@ -1,0 +1,12 @@
+{
+  "id": "datafeel-shop",
+  "origin": "web",
+  "title": "DataFeel Shop (Gen 11 Dev Kit)",
+  "fetched": "2026-11-26",
+  "fetched_at": "2026-11-26T10:58:13-06:00",
+  "url": "https://www.datafeel.com/shop",
+  "archive_of": null,
+  "http_status": 200,
+  "sha256": "1a0b54d9b330347de3188b3d4803f8850c7db08ee9593f896c90e0c7133ee540",
+  "self_reported": true
+}

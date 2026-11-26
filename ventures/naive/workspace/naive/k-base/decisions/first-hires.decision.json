@@ -1,0 +1,51 @@
+{
+  "id": "first-hires",
+  "question": "Which roles come first?",
+  "status": "open",
+  "needed_in": "discovery",
+  "options": [
+    "Founding engineer (TypeScript, Effect, Lean)",
+    "Founding GTM and growth lead",
+    "Design engineer",
+    "Applied AI and evals engineer",
+    "Counsel (contract) for data terms"
+  ],
+  "answer": null,
+  "decided_by": null,
+  "decided_at": null,
+  "proposed": {
+    "answer": "First: a founding engineer who can own Mentura's hosted agent runs, and a growth lead who can run the early-accounts tests. Contract counsel before the first paying customer. Design engineer and evals engineer next.",
+    "options": [
+      "Founding engineer (TypeScript, Effect, Lean)",
+      "Founding GTM and growth lead",
+      "Design engineer",
+      "Applied AI and evals engineer",
+      "Counsel (contract) for data terms"
+    ],
+    "drafted_by": {
+      "kind": "agent",
+      "id": "chief-of-staff"
+    },
+    "proposed_at": "2026-11-26T12:00:00-06:00"
+  },
+  "reasons": [
+    {
+      "claim": "Hosted agent runs are the main missing piece between the site's sign-up and a working product.",
+      "kind": "for",
+      "citations": [
+        {
+          "ref": "https://github.com/tchjhnsn/reflect (web/README.md)"
+        }
+      ]
+    },
+    {
+      "claim": "Data terms must exist before the first paying customer.",
+      "kind": "for",
+      "citations": [
+        {
+          "ref": "/workspace/reference-library/RESEARCH-DATA-RIGHTS.md section 5 (box)"
+        }
+      ]
+    }
+  ]
+}

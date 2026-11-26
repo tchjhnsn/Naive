@@ -1,0 +1,10 @@
+{
+  "venture": "naive",
+  "id": "main-street",
+  "segment": "US small businesses (36.2M, SBA 2026)",
+  "icp": "main-street-operator",
+  "primary": false,
+  "industry": "software-publishers",
+  "updated": "2026-11-26",
+  "cells": {}
+}

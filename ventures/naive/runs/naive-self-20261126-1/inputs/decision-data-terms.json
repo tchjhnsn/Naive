@@ -1,0 +1,36 @@
+{
+  "id": "data-terms",
+  "question": "What do Naive's terms say about venture data before the first paying customer?",
+  "status": "open",
+  "needed_in": "discovery",
+  "options": [
+    "Customer owns data; narrow service licence; separate aggregate clause with CCPA tests; opt-out; minimum group size; AI-training clause",
+    "Defer"
+  ],
+  "answer": null,
+  "decided_by": null,
+  "decided_at": null,
+  "proposed": {
+    "answer": "Adopt the first option as the drafting brief for counsel.",
+    "options": [
+      "Customer owns data; narrow service licence; separate aggregate clause with CCPA tests; opt-out; minimum group size; AI-training clause",
+      "Defer"
+    ],
+    "drafted_by": {
+      "kind": "agent",
+      "id": "chief-of-staff"
+    },
+    "proposed_at": "2026-11-26T12:00:00-06:00"
+  },
+  "reasons": [
+    {
+      "claim": "Gusto separates the service licence from aggregate use; Carta publishes benchmarks only with 10+ companies.",
+      "kind": "for",
+      "citations": [
+        {
+          "ref": "/workspace/reference-library/RESEARCH-DATA-RIGHTS.md (box)"
+        }
+      ]
+    }
+  ]
+}

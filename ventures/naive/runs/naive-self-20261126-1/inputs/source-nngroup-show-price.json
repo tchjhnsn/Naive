@@ -1,0 +1,15 @@
+{
+  "source": {
+    "id": "nngroup-show-price",
+    "origin": "web",
+    "title": "NN/g, Pricing information gives B2B sites a competitive advantage",
+    "fetched": "2026-11-26",
+    "url": "https://www.nngroup.com/articles/show-price/",
+    "self_reported": false,
+    "fetched_at": "2026-11-26T10:50:08-06:00",
+    "http_status": 200,
+    "sha256": "983fb6d33b6e87179ff2418821923ed222fffba7711846d57f15bce2dc008a6a",
+    "text_omitted": "Fetched page text not republished (third-party content); see url and sha256"
+  },
+  "text": null
+}

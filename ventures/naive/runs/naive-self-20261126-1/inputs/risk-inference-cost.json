@@ -1,0 +1,14 @@
+{
+  "id": "inference-cost",
+  "title": "Model cost exposure once Mentura runs agents",
+  "cause": "Token cost dominates infrastructure cost and loops can run away",
+  "consequence": "Unbounded spend per business",
+  "category": "financial",
+  "owner": "founder",
+  "likelihood": null,
+  "impact": null,
+  "treatment": "reduce",
+  "status": "open",
+  "review_date": "2026-12-31",
+  "note": "Likelihood and impact unknown; not estimated."
+}

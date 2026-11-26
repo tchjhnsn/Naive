@@ -1,0 +1,238 @@
+8 workers
+pass  eslint (npm run lint)
+pass  types (tsc checkJs, every file)
+pass  the compiled package: dist/ builds (npm run build, EE-159)
+pass  packages/naive/src/terms/ontology.md matches packages/naive/src/terms/ontology.json (regenerate with node packages/naive/src/checks/check-nouns.ts --md)
+pass  layer relationships in docs/design/LAYERS_AND_KITS_2026-10-27.md match the kits (regenerate with node packages/naive/src/checks/check-data-model.ts --md)
+pass  docs/reference/ROUTES.md matches the kits (regenerate with node packages/naive/src/router/router.ts --md)
+pass  packages/naive/lean/Naive/Generated/ElementCases.lean matches packages/naive/src/engine/element-state.ts (regenerate with node packages/naive/src/engine/element-cases.ts; lake build checks the Lean model against it, EE-190)
+pass  packages/naive/lean/Naive/Generated/Ontology.lean matches packages/naive/src/terms/ontology.json (regenerate with node packages/naive/src/terms/gen-concepts.ts)
+pass  schema records are valid (validate.ts)
+pass  validate.ts agrees with Python's jsonschema: same verdicts and failing paths on every record and its mutants
+pass  RecordValidator and record views: every example record decodes, a broken one fails with the validator lines, an unknown schema cannot run, another registry
+pass  checker tests (with cases that must fail)
+pass  ventures: examples
+pass  nouns
+pass  ontology membership gate
+pass  ontology metamodel: packages/naive/src/terms/ontology.json validates, change lines with an unknown key or a wrong kind are rejected, SKOS and OWL mappings
+pass  operating rules: default module, invalid module, venture override
+pass  integrations and interfaces
+pass  data model and kits
+pass  data packages and raw: examples
+pass  data packages and raw (sensitive streams, originals, idea citations)
+pass  design additions (use model, gate, uncertain)
+FAIL  naive port (a project in, files as they are, read-only)
+      FAIL  a process inside a folder refuses the apply, and nothing moves  
+      FAIL  applying needs the founder to type the confirmation  
+      FAIL  apply says how to repair the worktree  
+      FAIL  the run leaves a trace with a child per folder  
+      pass  a folder that is not the one planned is refused
+pass  naive migrate (a project rewritten as records, decided by a person; stand-in agent)
+pass  releases: naive build and naive start (frozen records, live holes, cover card, export)
+pass  caching: record and judgment caches, lifetimes, per-action memo
+pass  freshness: revalidate records by time and on demand
+pass  the venture development lifecycle: phases, gates, exit criteria met by a person
+pass  artifacts: views name their records, stale when one changes
+pass  context: header first, session layouts, prefetch, context budget, agent vitals
+pass  model steps: use model, judgments, kit boundaries, uncertain routing
+pass  the gate: naive.config.json, one gate per venture, who is acting
+pass  a decision under a renamed route still locks what it unlocks; product-exists holds an agent's product card
+pass  check-records: one business's records against their schemas, the done criterion records-valid
+pass  a person withdraws a decision as a duplicate of another (EE-185)
+pass  one CLI: naive new, and every record command through naive
+pass  naive agent: list, brief and run an agent from the terminal
+pass  the setup page (people, sources of truth, the docket, a discovery goal)
+pass  naive workspace init and rename, the clock and the calendar (derived events, .ics)
+pass  the Claude Code plugin (manifest, skills, MCP server outside a venture, marketplaces)
+pass  the compiled package's build: what is compiled, .ts paths renamed to .js, a relative import that names no file refused (EE-159)
+pass  create-venture and the naive commands (Chapter 1: generator, dev, check, info, upgrade)
+pass  the Effect pin a venture shares with Naive (EE-161)
+pass  durable handoffs: a run killed inside a criterion resumes without rerunning the ones before (EE-161)
+pass  durable triggers: a runner killed after its route call landed does not call it again; each trigger runs once per event (EE-161)
+pass  venture program behaviors: naive run and effect done-criteria (EE-161, Gherkin scenarios)
+pass  setup in the model's harness (state and artifact over MCP, relayed answers the founder confirms)
+pass  writes, reads and boundaries: the call wrapper, containment, private folders
+pass  router write steps as Effects: the schema check through RecordValidator, the gate through Gate, each replaced by a provided service
+pass  blob store and as-of reads: each write's blob, the content at t and nothing later, null before the first write, one blob for the same content
+pass  researcher read clamp: reads, lists, views and agent files as of the cut and nothing later, no late signal, no read without a cut, no live action, writes not clamped, nothing under _eval/
+pass  spend register: finance/spend/[id] is written only by finance-agent or a person (any other role is refused, one the team plan widens included), the template's access matrix masters each field once and check-sources refuses a tie on a register field, and founder-to-finance-agent holds the register's classes
+pass  research programs: programs/<function>.md is a person's (an agent's write is refused, a researcher's included, through the router and the agent filesystem; a person's lands live with provenance), a researcher reads its own program live, and init and naive upgrade copy each listed function's starter only when it is missing
+pass  detection ledger through the router: an accepted held draft is a false alarm, a reverted write a miss, the chain holds under parallel appends
+pass  agent tools over MCP: mentura_agent_brief gives a function agent's agent.md, workflows, decision matrix and MENTURA_ACTOR_ID with repo-relative paths, a lead's spec, and an error naming the roles for an unknown one; mentura_route_task sends finance and risk and compliance to finance-lead
+pass  handoff claim through the router: claims race and one wins, a claim on a non-ready or wrong-role handoff is refused, only the claimant writes progress and evidence and only the requester verifies and accepts
+pass  brand: tokens, voice, glossary, sitemap and assets
+pass  investors lint: raise, terms, unconfirmed update numbers
+pass  product lint: ICP, feature jobs and pricing
+pass  money lint: transfer approver and account owner
+pass  customers lint: ICP match and promises the product keeps
+pass  finance lint: spend, price below cost, metric targets
+pass  legal lint: a public claim with no source, an agreement with no counterparty
+pass  foundation lint: mission, ICP jobs, alignment checks, problem forms
+pass  upgrades: migrations, pins, early adoption, canary, staged agent upgrades
+pass  src layout: naive upgrade --layout src and init-venture --layout src (EE-118 step 8)
+pass  relation names in kebab-case: rename-relations renames old idea relation names and nothing else
+pass  traces: spans in traces/, chained and linked from provenance, naive trace, check-traces (EE-121)
+pass  function agent reach: <function>-agent writes only decisions/* and its function's record routes (finance-agent writing a customer is refused before the schema and nothing lands; its decision and a person's customer are not refused)
+pass  agent files: ls, read, write, edit, glob and grep over the router, drafts for gated writes, tool spans (EE-122)
+pass  hosted mode: each feature that reaches outside the tenant refuses and says why, host hooks stand in, the laptop path is unchanged
+pass  naive upgrade --layout structured: a flat venture moves onto k-base/ and meta/
+pass  structure checks read where files sit: a migrated telos, departments in k-base/, what stays at the top
+pass  the decision library (frames name no answer, premises judged, decisions proposed open)
+pass  premise-attack linter (questions by formula, rules off|warn|error, findings proposed open)
+pass  effect base: tagged errors, VentureFs on memory and on disk, and the runners (EE-125)
+pass  naive.config.json as an Effect service: the file layer, fixed configs, the runtime override
+pass  HostRuntime and Judge as layers: laptop, hosted with its hooks, the live layer reading registerHook at each call, the judge on each
+pass  Provenance as a service: the log over MemoryFs chains and stores blobs, an override, two ventures apart
+pass  NaiveTracer: an Effect.fn run writes chained spans that check-traces accepts, nested under withSpan, errors as status error, nothing with traces off, provenance naming its Effect span
+pass  the engine reads naive.config.json through NaiveConfig with its old shapes and messages
+pass  agent specs: one function agent per function with its module's files and a reach that covers its workflows, four leads covering the 13 functions, and routing
+pass  activity assignments reach the agent: a function agent's brief for a venture carries its function's assigned activities with the rule for each, a step naming one is marked, and the prompt lists them, for catalog activities and APQC level 4 activities, and an unassigned activity whose kind a person performs carries a default the venture's assignment replaces (EE-173, EE-176, EE-179)
+pass  the loop: the mode for a workflow, the plan for manual, ask and auto, and ticks over a venture with a stand-in starter (EE-183)
+pass  the element graph: edges from workflow reads and writes, feeds with their evidence, upstream and downstream, unfed and unread routes, determinism, and naive graph (EE-188)
+pass  element state: the statechart over every state and event, capability levels, propagation over feeds with a chain and cycles, determinism and the what-if (EE-190)
+pass  element effects: state, level and effects from a venture's provenance, run log, schedules and freshness, and naive effects (EE-190)
+pass  what is due: each workflow trigger kind against the run log and the provenance log, cadence arithmetic, the route match, and naive due with record (EE-182)
+pass  a time box write is refused unless it ends after it starts (EE-186)
+pass  element owners: one accountable owner per APQC element by default, inheritance, an owner the venture names and the delegation root for a person's activity; naive owners text, JSON and filters (EE-187)
+pass  owners check: every element a venture runs is owned, and an owner names a real role within its reach or a person; broken on venture folders made in the test (EE-187)
+pass  activity briefing: per function its APQC category and process groups, the activities a person performs or approves by the venture's assignment or by default, the count left to the agent, and the command's text and JSON (EE-180)
+pass  activity kinds: a statement's verb and terms meet a kind's clauses, the first kind wins, the shipped kinds read APQC's own names, and a kind listed twice or a clause that can never apply is refused (EE-179)
+pass  provenance and blobs as Effects: the lock resource, the gate chain and the blob store on memory (EE-125)
+pass  function modules check: each of the 13 functions as a folder with a manifest, an agent, workflows, a decision matrix and skills that agree with decision rights, the data model and the route table
+pass  phase modules check: each of the five phases as a folder with its stage gate, exit evidence from a record type, active workflows that exist and function weights that sum to 1, and the only place a gate is defined (EE-126)
+pass  language rubric check: the language rubric's criteria describe scores 0 and 4, weights sum to 1, sources are reference ids, decisions are EE ids, and the worked examples name only its criteria and rank with no candidate unscored (EE-189)
+pass  language rubric scorer: scoreLanguages ranks Naive's worked examples, rules out a 0 on a gate or a score below a must-have whatever the rest, leaves out a criterion weighted 0, ties totals within the band and says a person decides (EE-189)
+pass  tools check: the tool catalog is a function, APQC process group, tool taxonomy; every group under its function's APQC number, every function and group served, every record type a tool reads or writes in the data model and every one it proposes not, every cluster known
+pass  activities check: the activity catalog files O*NET task statements under APQC process groups the tool catalog has; ids and statements unique per group and scope, statements of one sentence and at most 30 words, ratings inside their scale's range and only with who rated them, every source a reference id
+pass  PCF check: APQC's Process Classification Framework 8.0 as data keeps APQC's attribution and a reference source, unique hierarchy ids, levels that agree with the ids, every parent, sibling numbers with no gap and 13 categories; and a tool catalog whose process groups drift from it fails (EE-165, EE-166)
+pass  APQC citations: departments.json and ontology.json cite PCF 8.0 by element id, and a wrong element id, a 7.4 version and a wrong name each fail (EE-199)
+pass  connections check: the capability cluster catalog names no vendor and only known functions and gap kinds; a send, payment or signature names public-commitment, spend-money or legal-or-terms; a connection never claims a field the source map gives another source
+pass  seam detectors: tools against spend fires on a drifted copy and stays quiet on a clean one, opens a decision for the finance lead carrying its trial, files the same drift once, and a decision acted on resolves a hit and one dismissed a false alarm
+pass  detectors check: fails only on structure, never on a number; a criterion change is proposed once, with 30 resolved trials and an interval that excludes zero, never for a one way door
+pass  frames: instance
+pass  decision roadmaps and lifecycle playbooks (no cycles, known frames, a decider per step, one-way doors the founder's; installs propose open; gate evidence from the playbook)
+pass  roadmaps: instance
+pass  the Next.js translation status (every concept has a status, its evidence exists, the docs page exists in site/ and What's built is current)
+pass  the docs site's marketing pages carry no internal text (Naive's terms and the frozen gate list in site/gate)
+pass  the docs site's marketing pages carry no internal text
+pass  delegation: template (grants within the grantor's, chains reach the founder, no self-verification)
+pass  delegation and the verification substrate (cases that must fail)
+pass  docs claim only what is built (commands, flags, files and routes in the docs, master docs and skills)
+pass  governance: examples
+pass  the canonical core and frameworks for thinking (telos-to-goals, canonical exit criteria, fallback)
+pass  frameworks map onto canonical records only
+pass  a founder's own frameworks and playbooks (list, new, check, publish --dry-run)
+pass  transcript diagnosis (human words only, redacted first, one raw draft per run)
+pass  dependency rules (no new cycle between units, one version per shared dependency)
+pass  dependency rules break on copies that violate them
+pass  vendored repositories match their pins (repos/effect is the installed effect version)
+pass  vendored check breaks on copies
+pass  to-ts: references to a converted module are rewritten, others left
+pass  import-pcf: APQC's PCF hierarchy is written to pcf.json sorted and one element per line, the same hierarchy always gives the same bytes, and the committed file is its output (EE-165)
+pass  activity proposals: a rule picks rated cross-industry activities whose scores meet every condition, under the functions the venture lists; propose files one open decision per rule and function once, a decided one is left alone, and a venture's own lines in naive.config.json turn a rule off or replace its lines and an activity for a NAICS industry applies to a venture in it and merging a decided answer writes who performs each activity (EE-169 to EE-172)
+pass  import-scinet: SciNet's tasks become activities with their statement, source and scores, a rerun writes the same bytes, and other activities are kept (EE-167)
+pass  activity (active minutes, days in the venture's zone, streak)
+pass  telos: examples
+pass  field visibility: only a person sets public, the public reader, the publish check
+pass  internal terms: the founder-edited dictionary, its schema, warn and fail terms
+pass  publish lint: copy distance, leaks, brand, claims, marks, personal data, secrets, and the findings loop
+pass  publish lint: copy distance, leaks, brand, claims, marks, personal data, secrets, and the findings loop
+pass  publish build: every public word compiled through the gate; canaries reach no channel
+pass  publishing: build, the one-way/two-way door gate, the manifest, rollback, embargo, republish on change
+pass  publications: examples
+pass  decision versions: propose, approve, merge, rollback
+pass  decision index: open-decision impact, phase weight and requirements, updates equal to a rebuild, rank history
+pass  decision queue: owning function, per-function index, cross-function score by phase weight and bound measures, themes, the queue in the index (EE-127)
+pass  lean canvas: the shared kernel, owners from the data model, the gate-first roadmap, unlocks, each box at its own route (EE-155)
+pass  venture anatomy: every cell unknown at init, a router write raises confidence, as-of and valid-at time travel, S-K coverage, views, routes (EE-157)
+pass  gate strength: evidence ladders per gate item, policies and presets, enforcement in the lifecycle, the CLI and the route (EE-156)
+pass  gate calibration: interview counts, item minimums and boundaries, staleness, override policy and problem confirmation from the venture's market and industry, unknown cells as assumptions, the proposed decision, the CLI and the route (EE-157)
+pass  decision impact: a merge maps what depends on it across functions, marks it stale, proposes follow-ups
+pass  decision reasons: cited reasons frozen at approval; a changed citation makes the decision stale
+pass  publication: examples
+pass  venture types and people: examples
+pass  people lint: role, hire, decision
+pass  provenance: examples
+pass  traces: examples
+pass  recipes: the example venture's recipe, plan, experiment log and receptions agree (check-recipes)
+pass  sources: examples
+pass  where-used: examples
+pass  departments: examples
+pass  framework/platform boundary
+pass  sdlc catalog: decision classes, roles, clauses and task references
+pass  the type gate fails on what it must catch
+pass  recipe sandbox: the example recipe renders; clock, random, import, eval, loop, state, fs and env each fail closed; 1,000 calls of 40 signals in one child
+pass  recipe scoring: losses, Brier, the seeded bootstrap and verdict; only people and producers settle a claim
+pass  recipe eval sets: windows purged, an agent's write resolves nothing, the verdict identical over two runs; plan is a person's, check reports noise disagreements
+pass  recipe routes: an agent's keep lands as a held draft, a discard is refused, a retry spends nothing; stale base, budget and gate refuse before scoring; no recipe file is written around the route
+pass  recipe accept and monitor: the holdout check passes, fails and is overridden; a retry spends nothing; a regression on forward points proposes one rollback decision
+pass  check-recipes breaks on copies: lint, exports, heard types, facts, projected pattern, plan sha and windows, the log's chain, bases, holdout of the tip, budgets, the live recipe, renders again and noise by ablation
+pass  recipe knobs: read from the source, one value rewritten with every other byte unchanged, steps for numbers, booleans and rating floors
+pass  recipe probes: a deterministic share of noise per consumer, the probe mark and its schema, propensities and the inverse propensity estimate
+pass  recipe search: a fixture venture improves with no model; every knob step an agent's experiment write, held as a draft, none scored twice; stops at the budget
+pass  one writer per file: only the signal projector writes a projection record; a person is refused with the emit hint; the person's master record stays theirs
+pass  the signal pull end to end: two ventures, one shared library, local corrections; a second pull writes nothing
+pass  durable signal pull: a pull killed after its first record write resumes with its plan, writes each record once and moves the cursor (EE-161)
+pass  rendering through recipes end to end: two ventures, naive recipes init and the example recipe, receptions beside each record, hindsight past the horizon; a second pull writes nothing
+pass  check-signals: Naive's packages and the example library (types, worked cases, signals, the day log, listeners)
+pass  check-signals breaks on copies: each rule of signal libraries, types and listeners
+pass  competitors package: its open signal types and listeners hold together, its projections write records it owns, and every worked case matches its type and its records
+pass  raw triage: the Jev request, sure labels file, unsure ones are held, a possible one-way door goes to a person
+pass  routing a classified task (lead agents rules 1 to 5): a one-way door or never-redelegated class to a person, one function to its agent, one portfolio to its lead, across portfolios to the lead accountable for the measure or else a person
+pass  the field merge for offline sync: the five rules, removals, arrays merged by id, records created on both sides, key order is not a change
+pass  conflict decisions for offline sync: a conflict is filed once as an open decision holding both values, a person approves store, local or their own value, and merging writes it at the path, items by id included
+pass  provenance re-chaining for offline sync: a working copy's lines are written again onto the store's chain, keep what they said and prove their original hash, and check-provenance refuses a tampered block, a wrong prev or no working copy
+pass  naive sync end to end against a stand-in store: the device sign-in, two working copies of one business, a pull, offline edits on both, a push, a 409 pulled and retried, one same-field conflict filed as a decision, a file synced by hash, a pull after a pull that writes nothing, and every command refused in hosted mode
+pass  detection arithmetic: Macmillan and Creelman worked examples, Wilson intervals, ROC area equals 2AFC, best criterion is an observed score
+pass  thresholds as detectors: shipped defaults hold today's constants, a venture's detector file moves the line, overrides keep precedence, yes_when below matches the gate
+FAIL  founders before ventures: opaque ids, ideas, references, inspirations, _private/ secrets, only the founder confirms
+
+pass  founders: examples
+pass  term engine: bad tests rejected, relations total, freezing notices change
+pass  data labels: a generated record under a venture passes nothing, an accepted observed record is not gold, a sourced record with a method is estimated
+pass  raw source write: text.md with the record, naive check passes, a second write, a duplicate text and a linkedin.com url are refused
+pass  every glossary term admitted: valid test, cross-run, Lean theorems named (regenerate with node packages/naive/src/terms/admit.ts)
+pass  no symbolic check bypasses EE-095: each check and gate is registered, and a symbolic one reaches the engine, admit or a Lean theorem
+pass  Lean agreement: every theorem an admitted term cites is declared in packages/naive/lean/Naive, and every Lean concept has an admitted term
+pass  Lean ontology concepts: a two-noun fixture regenerates both, --check catches an edited noun, name clashes stop the run
+pass  upper ontology: every noun reaches exactly one top category through broader (term top-category); an orphan, a noun with two top categories and a cycle are named
+pass  ontology catalog: one name@function scope per function, imports acyclic (term layer, L2), every term defined or imported; a cycle is printed and a missing term is an open item for its owning scope
+pass  record types match the schemas (regenerate with node packages/naive/src/records/record-types.ts)
+pass  record types: the mapping, its refusals, the stale check and every record against its type
+pass  record paths: every schema and data-model path goes through packages/naive/src/records
+pass  record paths: the resolver resolves every schema, and the check breaks on copies that bypass it
+pass  Markdown renders reach a reader that waits, whole: check-nouns --md and check-data-model --md flush stdout before they exit
+pass  knowledge connectors: contract evals
+pass  knowledge connectors in Effect: the Effect versions on an in-memory VentureFs (EE-125)
+pass  Connectors as a service: the registry with no layer, a source map, a host replacing it
+pass  knowledge connectors through the router: router, catalog, matrix and attribute evals
+pass  validation lint: claims, shelf life, agent grades, Discovery-grade decisions
+pass  validation: examples
+pass  problem assessment behaviors (Gherkin scenarios)
+pass  strategic foundation: examples
+pass  foundation statement behaviors (Gherkin scenarios)
+FAIL  decision affects grammar: malformed entries rejected, well-formed accepted
+
+pass  record generators (EE-099): glossary, reference, bug, trace span, detector and detector trial describe and draft records that pass their schemas
+pass  signal render: every worked case, the competitors package's included, renders to its expected records; receive, withdraw, the fold, the fixpoint, edge listeners and the diff
+pass  autoresearch record types: recipe, eval plan, experiment log, receptions and settles; the examples validate and agree, the schemas refuse what the design forbids, and the generators draft records that pass
+pass  signal library record types: the examples validate, a signal's id is the address of its content, the schemas refuse what the design forbids, and the generators draft records that pass
+pass  decisions: examples
+pass  decision behaviors (Gherkin scenarios)
+pass  decision harness demo (an agent over MCP, paused until the founder decides)
+pass  Product Anatomy runner
+pass  idea map (ideas verbatim, tags within the conventions)
+pass  site presence (weights, prominence, score)
+pass  venture packages (fit by phase, question matrix, completeness)
+pass  decision analytics (by function and type, wording, outcomes)
+pass  decision docket across functions (value, attention, dominance, replay)
+pass  decision docket against the scenario evidence set (reports agreement; does not gate on it)
+pass  workspace: settings, cross-venture reads, naive capture and the inbox
+pass  validation study: interviews, feedback, bugs, telemetry, the beta gate and feedback routing
+pass  router, CLI, MCP server and API
+pass  write scope: router, engine and interfaces tests write only inside the venture, the temp dir and named exceptions
+pass  write scope: a write outside the venture in a broken copy fails the check
+pass  publishing gate: field visibility, leak canaries, internal terms
+pass  leak canaries: every internal record seeded, facts and both artifacts built through the publish build, only known leaks
+
+3 failing

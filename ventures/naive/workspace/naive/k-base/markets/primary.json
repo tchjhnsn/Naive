@@ -1,0 +1,43 @@
+{
+  "venture": "naive",
+  "id": "primary",
+  "segment": "unknown",
+  "primary": true,
+  "industry": "primary",
+  "updated": "2026-11-26",
+  "cells": {
+    "customer_type": {
+      "status": "unknown"
+    },
+    "reachable_buyers": {
+      "status": "unknown"
+    },
+    "serviceable_market_usd": {
+      "status": "unknown"
+    },
+    "deal_size_usd": {
+      "status": "unknown"
+    },
+    "sales_cycle_days": {
+      "status": "unknown"
+    },
+    "buying_roles": {
+      "status": "unknown"
+    },
+    "purchase_frequency": {
+      "status": "unknown"
+    },
+    "switching_cost": {
+      "status": "unknown"
+    },
+    "network_effects": {
+      "status": "unknown"
+    },
+    "maturity": {
+      "status": "unknown"
+    },
+    "concentration": {
+      "status": "unknown"
+    }
+  }
+}

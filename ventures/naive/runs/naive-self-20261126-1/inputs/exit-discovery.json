@@ -1,0 +1,56 @@
+{
+  "phase": "discovery",
+  "venture": "naive",
+  "updated": "2026-11-26",
+  "framework": "Naive discovery gate items (packages/naive/src/phases/gate-policies.json); Strategyzer say/do evidence; Blank customer discovery",
+  "criteria": [
+    {
+      "id": "customer",
+      "statement": "A named customer segment, with interviews behind it",
+      "serves": [],
+      "met": null
+    },
+    {
+      "id": "problem",
+      "statement": "The problem is confirmed by the segment, not only by the builder",
+      "serves": [],
+      "met": null
+    },
+    {
+      "id": "alternatives",
+      "statement": "What they use today instead is known",
+      "serves": [],
+      "met": null
+    },
+    {
+      "id": "solution-fit",
+      "statement": "People in the segment tried the solution and it addressed the problem",
+      "serves": [],
+      "met": null
+    },
+    {
+      "id": "channel",
+      "statement": "A channel that reaches the segment is known",
+      "serves": [],
+      "met": null
+    },
+    {
+      "id": "economic-signal",
+      "statement": "Someone put money or time at stake",
+      "serves": [],
+      "met": null
+    },
+    {
+      "id": "validation-plan",
+      "statement": "The next tests are written with pass thresholds",
+      "serves": [],
+      "met": null
+    },
+    {
+      "id": "decision",
+      "statement": "A person decided to move on, with reasons",
+      "serves": [],
+      "met": null
+    }
+  ]
+}

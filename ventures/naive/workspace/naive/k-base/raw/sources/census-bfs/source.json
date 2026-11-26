@@ -1,0 +1,12 @@
+{
+  "id": "census-bfs",
+  "origin": "web",
+  "title": "Census Business Formation Statistics",
+  "fetched": "2026-11-26",
+  "fetched_at": "2026-11-26T10:50:01-06:00",
+  "url": "https://www.census.gov/econ/bfs/current/index.html",
+  "archive_of": null,
+  "http_status": 200,
+  "sha256": "4e8ab022cbf80716b6a0b0fbd89520dd43411b1ebe468b3c0203eb05be2c2f2d",
+  "self_reported": false
+}
