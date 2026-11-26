@@ -79,7 +79,8 @@ if (argv.includes("--help") || argv.includes("-h")) {
 const opt = (n) => { const i = argv.indexOf(`--${n}`); return i >= 0 ? argv[i + 1] : undefined; };
 const flag = (n) => argv.includes(`--${n}`);
 const valued = new Set(["phase", "layers", "legal-form", "dump", "framework", "type", "describe", "role", "name", "by", "team", "layout", "venture-name", "door", "account", "mode", "joined", "joined-source", "source"]);
-const booleans = new Set(["help", "h", "observed", "yes", "skip-install", "no-git", "no-workspace", "reset-preferences", "use-npm", "use-pnpm", "use-yarn", "use-bun"]);
+// --rho-fixture is the flag the Get Started page names. The sync command's own answer is what marks a source a fixture.
+const booleans = new Set(["help", "h", "observed", "yes", "skip-install", "no-git", "no-workspace", "reset-preferences", "use-npm", "use-pnpm", "use-yarn", "use-bun", "rho-fixture"]);
 const positional = argv.filter((a, i) => !a.startsWith("--") && !(i > 0 && valued.has(argv[i - 1].slice(2))));
 const bold = (s) => (process.stdout.isTTY ? `\x1b[1m${s}\x1b[22m` : s);
 const cyan = (s) => (process.stdout.isTTY ? `\x1b[36m${s}\x1b[39m` : s);
