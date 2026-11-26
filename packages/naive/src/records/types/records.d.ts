@@ -5053,7 +5053,7 @@ export type Raise = {
   note?: string;
 };
 
-/** Where a founder-supplied source came from, at raw/sources/<id>/source.json (EE-070). text.md is the text. original.* stays out of git. Raw is immutable. */
+/** Where a founder-supplied source came from, at raw/sources/<id>/source.json (EE-070, EE-192). text.md is the text, written with this record. original.* stays out of git. Raw is immutable. fetched_at, url, archive_of, http_status and self_reported are null when not known. sha256 is the text, written by the router on a new write. A record from before EE-192 may omit the new fields. */
 export type RawSource = {
   id: string;
   /** Where this source came from: a url, a person, or a note such as founder-supplied */
@@ -5063,6 +5063,21 @@ export type RawSource = {
    * @format date
    */
   fetched?: string;
+  /**
+   * When it was fetched, with a timezone offset, or null when not known
+   * @format date-time
+   */
+  fetched_at?: string | null;
+  /** The live URL, or null when the source names none */
+  url?: string | null;
+  /** The live URL this capture archives, or null when it is not an archive */
+  archive_of?: string | null;
+  /** The HTTP status of the fetch, or null when there was none */
+  http_status?: number | null;
+  /** sha256 of text.md as written, set by the router */
+  sha256?: string;
+  /** Whether the source is the subject's own account, or null when that is not judged */
+  self_reported?: boolean | null;
 };
 
 /** Every signal a recipe heard for one record, at <record>.reception.json beside it (competitors/acme/signals.reception.json beside competitors/acme/signals.json), as of one render (autoresearch design, everything-ecosystem docs/design/AUTORESEARCH_RECORDS_2026-11-06.md, "Noise stored beside the record"). Only the projector writes it. Each heard signal is salient or noise for this record (a noise reception the venture probed is marked with its rate), with its bitemporal stamps and the factors the engine computed, and later a hindsight label. Noise has a checked meaning: the recipe makes a byte-identical record without the signal. A signal heard by two recipes has a reception in each one's file, so it can be salient for one record and noise for another. The signal pull writes it beside each record a live recipe renders (build plan item 9). */

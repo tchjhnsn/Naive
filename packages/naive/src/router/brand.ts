@@ -137,12 +137,10 @@ export async function addRemote({ venture, workspace, url, license, credit, id, 
   const rid = id ?? rawId(url);
   const reg: PublicAssets = registerOf(dir) ?? emptyRegister();
   if (!existsSync(join(ventureFile(dir, "raw/sources"), rid, "source.json"))) {
-    const w = await call({ venture, route: `raw/sources/${rid}`, action: "write", input: { id: rid, origin: url, title: `Remote image at ${new URL(url).host}`, fetched: today().slice(0, 10) }, actor, workspace, via: "cli", provenance: { note: "a remote image, kept as a link (J-3)" } });
-    if (!w.ok) return w;
     const text = [`# Remote image`, "", `- Link: ${url}`, `- Host: ${new URL(url).host}`, `- License: ${license}`, `- Credit: ${credit ?? "(missing)"}`, ...(fetched ? [`- Fetched: ${fetched.type}${fetched.width ? `, ${fetched.width}x${fetched.height}` : ""}, ${fetched.bytes} bytes, sha256 ${fetched.sha256}`] : []), "",
       copy ? `A copy is kept at ${copy}: the license allows it.` : "The venture links to this image. A full copy stays private (raw/sources/<id>/original.*, out of git) unless the license allows one.", ...(note ? ["", note] : []), ""].join("\n");
-    writeFileSync(join(ventureFile(dir, "raw/sources"), rid, "text.md"), text);
-    prov(dir, { entity: `raw/sources/${rid}/text.md`, route: `raw/sources/${rid}`, activity: "write", agent: agentFromEnv(actor === "person" ? "person" : "agent", "cli"), note: "the note beside a remote image (J-3)" });
+    const w = await call({ venture, route: `raw/sources/${rid}`, action: "write", input: { source: { id: rid, origin: url, title: `Remote image at ${new URL(url).host}`, fetched: today().slice(0, 10), url }, text }, actor, workspace, via: "cli", provenance: { note: "a remote image, kept as a link (J-3)" } });
+    if (!w.ok) return w;
   }
   // The router checks the entry against the register's schema before it is written.
   const entry = Object.fromEntries(Object.entries({ id: rid, url, license, credit, alt: alt ? { text: alt, by: actor === "person" ? "person" : "agent" } : undefined, fetched, copy }).filter(([, v]) => v !== undefined)) as Remote;

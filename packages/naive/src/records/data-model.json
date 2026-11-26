@@ -2489,7 +2489,7 @@
         "instance/**/raw/sources/*/source.json",
         "packages/naive/src/records/examples/**/raw/sources/*/source.json"
       ],
-      "note": "Where a founder-supplied source came from. Raw is immutable (EE-070)."
+      "note": "A raw source and its text, written together by raw/sources/[id] write as { source, text }, create-only, with sha256 set by the router (EE-192). Raw is immutable (EE-070)."
     },
     {
       "id": "artifact",
