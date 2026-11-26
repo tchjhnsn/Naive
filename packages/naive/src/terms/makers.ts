@@ -1,4 +1,4 @@
-// Open maker, named maker and org link (EE-189). The checks read these facts, never a label.
+// Open maker, named maker and org link (EE-193). The checks read these facts, never a label.
 // A maker is the in-venture decision-maker. An org link is one person's reports_to.
 
 import { run, type Base, type Term } from "./engine.ts";
@@ -33,7 +33,7 @@ export const openMaker: Term<MakerFacts> = {
     { id: "U2", says: "the maker is not named", check: (f) => !f.named },
     { id: "U3", says: "the maker was not guessed", check: (f) => !f.guessed },
   ],
-  sources: ["EE-189"],
+  sources: ["EE-193"],
   lean: ["guessed_not_open"],
   predicts: { "named-maker": "disjoint" },
 };
@@ -49,7 +49,7 @@ export const namedMaker: Term<MakerFacts> = {
     { id: "N4", says: "the maker was not guessed", check: (f) => !f.guessed },
     { id: "N5", says: "the maker is not unknown", check: (f) => !f.unknown },
   ],
-  sources: ["EE-189"],
+  sources: ["EE-193"],
   lean: ["guessed_not_named", "open_disjoint_named"],
   predicts: { "open-maker": "disjoint" },
 };
@@ -62,7 +62,7 @@ export const orgLink: Term<OrgFacts> = {
     { id: "O1", says: "absent, or both ends known", check: (f) => f.absent || (f.fromKnown && f.toKnown) },
     { id: "O2", says: "not a cycle", check: (f) => !f.cycle },
   ],
-  sources: ["EE-189"],
+  sources: ["EE-193"],
   lean: ["cycle_not_org_link"],
 };
 
@@ -149,7 +149,7 @@ export const knownJoin: Term<JoinFacts> = {
     { id: "J1", says: "unknown, or a date with a source", check: (f) => f.unknown || (f.dated && f.sourced) },
     { id: "J2", says: "not the run date guessed in", check: (f) => !f.guessed },
   ],
-  sources: ["EE-189"],
+  sources: ["EE-193"],
   lean: ["guessed_not_known_join"],
 };
 
@@ -161,7 +161,7 @@ export const workspaceOwner: Term<SeatFacts> = {
     { id: "W1", says: "unknown or the principal", check: (f) => f.unknown || f.principal },
     { id: "W2", says: "not the named subject", check: (f) => !f.subject },
   ],
-  sources: ["EE-189"],
+  sources: ["EE-193"],
   lean: ["subject_not_workspace_owner"],
 };
 

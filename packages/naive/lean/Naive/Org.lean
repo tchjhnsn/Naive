@@ -1,7 +1,7 @@
 import Naive.Concept
 
 /-
-  Org (EE-189). The in-venture decision-maker is open when unknown and named when it resolves to a
+  Org (EE-193). The in-venture decision-maker is open when unknown and named when it resolves to a
   person or a role. An org link is a reports_to that is absent or has both ends, and is not a cycle.
   These theorems hold for every fact record, not a sample. They are the properties in
   packages/naive/src/terms/makers.ts. The label is not a field, so no check can read it.

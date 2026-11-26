@@ -52,7 +52,7 @@
     },
     "functions": {
       "type": "object",
-      "description": "The venture's functions and their one accountable owner each (EE-071), keyed by function id from packages/naive/src/functions/departments.json. A solo founder owns them all, which is what the manifest assumes when this is left out. An owner is null when nobody is known (EE-189).",
+      "description": "The venture's functions and their one accountable owner each (EE-071), keyed by function id from packages/naive/src/functions/departments.json. A solo founder owns them all, which is what the manifest assumes when this is left out. An owner is null when nobody is known (EE-193).",
       "additionalProperties": {
         "type": "object",
         "required": [
@@ -64,7 +64,7 @@
               "string",
               "null"
             ],
-            "description": "A person id or a role id, or null when no owner is known (EE-189). Never a guess of the founder or the agent."
+            "description": "A person id or a role id, or null when no owner is known (EE-193). Never a guess of the founder or the agent."
           }
         },
         "additionalProperties": false

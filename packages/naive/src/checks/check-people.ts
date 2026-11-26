@@ -71,7 +71,7 @@ for (const dir of walk(ws)) {
       }
     }
   }
-  // null mode (EE-189) means ownership is not known, so it skips this rule. solo still means one person owns every function.
+  // null mode (EE-193) means ownership is not known, so it skips this rule. solo still means one person owns every function.
   if (roster.mode === "solo") {
     if (roster.people.length !== 1) at(`a solo venture has one person; people/people.json lists ${roster.people.length}`);
     else if (roles.get(roster.people[0].role)?.owns_when_solo && imported.size) {

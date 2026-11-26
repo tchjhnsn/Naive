@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Org and decision-maker check (EE-189). Walks a venture, or every venture under a folder, and
+// Org and decision-maker check (EE-193). Walks a venture, or every venture under a folder, and
 // judges each decision_maker and each reports_to through the term engine. It never edits a record.
 //
 //   node packages/naive/src/checks/check-observed.ts <venture or workspace dir>

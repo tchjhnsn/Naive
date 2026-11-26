@@ -20,7 +20,7 @@
         "team",
         null
       ],
-      "description": "solo: one person owns every function the venture imports. team: the people share them. null: ownership is not known (an observed venture, EE-189). solo still means one person owns every function."
+      "description": "solo: one person owns every function the venture imports. team: the people share them. null: ownership is not known (an observed venture, EE-193). solo still means one person owns every function."
     },
     "people": {
       "type": "array",
@@ -76,7 +76,7 @@
               "string",
               "null"
             ],
-            "description": "Another person's id, or null when the org link is unknown (EE-189). A string that names nobody, or a cycle, fails the check."
+            "description": "Another person's id, or null when the org link is unknown (EE-193). A string that names nobody, or a cycle, fails the check."
           }
         }
       }

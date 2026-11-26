@@ -76,6 +76,8 @@ export const REGISTRY: Registry = {
   "packages/naive/src/checks/check-pcf-test.ts": plain("proves the PCF check breaks on each rule on copies"),
   "packages/naive/src/checks/check-data-model.ts": plain("every JSON file maps to a declared record type by path; record types are schema types, not glossary terms"),
   "packages/naive/src/checks/check-data-packages.ts": plain("data package layout, append-only streams and immutable raw sources"),
+  "packages/naive/src/checks/check-decisions.ts": plain("decision ids are unique: it counts id strings and decides no term"),
+  "packages/naive/src/checks/check-decisions-test.ts": plain("proves the decision-id check passes the schema log and fails a repeated id"),
   "packages/naive/src/checks/check-delegation.ts": plain("grant chains, scopes and expiry between roles named in templates"),
   "packages/naive/src/checks/check-detectors.ts": plain("detector records and detection ledgers: schema shape, hash chains, references to trials, sources, roles and record types, and arithmetic on resolved trials"),
   "packages/naive/src/checks/check-detectors-test.ts": plain("proves the detectors check breaks on each structural rule and proposes a criterion once"),

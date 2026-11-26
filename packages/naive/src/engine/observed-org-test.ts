@@ -1,4 +1,4 @@
-// Observed ventures (EE-189), the org slice: subjects stay subjects, and unknown owners and makers stay null.
+// Observed ventures (EE-193), the org slice: subjects stay subjects, and unknown owners and makers stay null.
 // Creates ventures with create-venture and runs the check as a process. It does not import the check.
 
 import { spawnSync } from "node:child_process";
