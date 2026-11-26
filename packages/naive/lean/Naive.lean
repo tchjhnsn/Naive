@@ -1,3 +1,4 @@
+import Naive.Authorship
 import Naive.Citations
 import Naive.Concept
 import Naive.Detection

@@ -151,7 +151,7 @@ t("the answers are kept for the next venture, and --reset-preferences forgets th
 const prompts = (args: string[], lines: string[], extra: Record<string, string> = {}) => spawnSync("node", [join(repo, "packages/create-venture/index.mjs"), ...args, "--layout", "flat", "--skip-install", "--no-git"], { cwd: base, env: { ...env, CREATE_VENTURE_PROMPTS: "1", ...extra }, input: lines.join("\n") + "\n", encoding: "utf8" });
 
 t("structured layout: the org chart in venture.json names each function's owner, and people/ stores no hats", () => {
-  ok(create(["duo", "--type", "software-startup", "--name", "Ana Ruiz", "--team", "Ben Okafor", "--yes", "--skip-install", "--no-git"]).status === 0);
+  ok(create(["duo", "--type", "software-startup", "--name", "Ana Ruiz", "--team", "Ben Okafor", "--yes", "--skip-install", "--no-git"], base, { MENTURA_ACTOR: "person" }).status === 0);
   const v2 = load(join(base, "duo/venture.json"));
   ok(v2.layout === "structured" && Object.values(v2.functions as Record<string, { owner?: string }>).every((f) => f.owner === "ana-ruiz"), JSON.stringify(v2.functions));
   const roster = load(join(base, "duo/k-base/people/people.json"));
@@ -163,7 +163,7 @@ t("structured layout: the org chart in venture.json names each function's owner,
 });
 
 t("the team answer decides the founding-team question as the founder's own: solo, or cofounders on a team", () => {
-  ok(create(["solo-shop", "--type", "software-startup", "--name", "Sam Lee", "--yes", "--skip-install", "--no-git"]).status === 0);
+  ok(create(["solo-shop", "--type", "software-startup", "--name", "Sam Lee", "--yes", "--skip-install", "--no-git"], base, { MENTURA_ACTOR: "person" }).status === 0);
   for (const [name, founder, answer] of [["solo-shop", "sam-lee", "Solo: I am founding it alone"], ["duo", "ana-ruiz", "Cofounders: we are founding it together"]]) {
     const dir = join(base, name);
     const d = load(ventureFile(dir, "decisions/venture.team.decision.json"));

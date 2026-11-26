@@ -2,7 +2,7 @@
 // Definitions: founder suite doc and mentor/coach and unearned-candour docs (2026-10-31); status proposed until Torian decides.
 
 import type { Term } from "./engine.ts";
-import type { Arrangement, CitationFacts, Detector, Encounter, EvalPlan, Experiment, HeldOutFacts, Hierarchy, LabelFacts, LinkGraph, Membership, PersonLabelFacts, Reception, Relationship, Settlement, SourceFacts, Trial } from "./levels.ts";
+import type { Arrangement, Authorship, CitationFacts, Detector, Encounter, EvalPlan, Experiment, HeldOutFacts, Hierarchy, LabelFacts, LinkGraph, Membership, PersonLabelFacts, Reception, Relationship, Settlement, SourceFacts, Trial } from "./levels.ts";
 import { known, mayBeNew, RELATIONS, relationTable, type RelationName } from "./relations.ts";
 
 // The four labels every term carries (N-051 to N-055, docs/design/TERM_LABELS_2026-11-02.md). They sit on the term,
@@ -558,6 +558,26 @@ export const settledRecord: Term<Settlement> = {
   lean: ["agent_never_resolves", "agent_alone_settles_nothing"],
 };
 
+// Faithful author (EE-193, docs/design/OBSERVED_VENTURES_2026-11-26.md). The theorems are in
+// packages/naive/lean/Naive/Authorship.lean. The facts carry no names: the process kind, the written kind,
+// and whether the subject was copied in. A command's claim is not the process.
+export const faithfulAuthor: Term<Authorship> = {
+  id: "faithful-author", form: "compound", label: "Faithful author", level: "authorship", kind: "act",
+  labels: {
+    designation: "term", scope: "shared", grade: "standard",
+    origin: { kind: "adopted", quote: "An agent is something that bears some form of responsibility for an activity taking place, for the existence of an entity, or for another agent's activity." },
+  },
+  meaning: "The process that wrote a record, one of person, agent or unverified, recorded as that same kind. The subject of the record is not copied in as the author. A command's claim of a kind is not the process.",
+  props: [
+    { id: "A1", says: "the process is exactly one kind", check: (f) => [f.processPerson, f.processAgent, f.processUnverified].filter(Boolean).length === 1 },
+    { id: "A2", says: "the written kind matches", check: (f) => f.writtenPerson === f.processPerson && f.writtenAgent === f.processAgent && f.writtenUnverified === f.processUnverified },
+    { id: "A3", says: "subjectCopied is false", check: (f) => f.subjectCopied === false },
+    { id: "A4", says: "a command claim is not the process", check: (f) => f.commandClaimed === false },
+  ],
+  sources: ["W3C PROV-O (2013): prov:Agent", "EE-193"],
+  lean: ["unconfirmed_not_author", "subject_not_author", "claim_not_author"],
+};
+
 // Data labels (EE-191, packages/naive/lean/Naive/Labels.lean). Each check reads the facts and never the declared label.
 // Gold is an accepted record from one of our own ventures. Sourced and estimated are not that pair.
 // Synthetic is generated and sits under no venture.
@@ -699,4 +719,4 @@ export const pcfCitation: Term<CitationFacts> = {
   lean: ["citation_needs_element"],
 };
 
-export const TERMS = [founder, coFounder, earlyEmployee, mentor, coach, friend, unearnedCandour, thresholdGuardian, phaseGate, layer, area, topCategory, typedLink, detector, trial, hit, miss, falseAlarm, correctRejection, signal, listener, reception, salientReception, noise, experiment, keptExperiment, discardedExperiment, evalPlan, settledRecord, sourcedRecord, estimatedRecord, syntheticRecord, goldRecord, allowedSource, heldOutItem, personLabel, pcfCitation];
+export const TERMS = [founder, coFounder, earlyEmployee, mentor, coach, friend, unearnedCandour, thresholdGuardian, phaseGate, layer, area, topCategory, typedLink, detector, trial, hit, miss, falseAlarm, correctRejection, signal, listener, reception, salientReception, noise, experiment, keptExperiment, discardedExperiment, evalPlan, settledRecord, faithfulAuthor, sourcedRecord, estimatedRecord, syntheticRecord, goldRecord, allowedSource, heldOutItem, personLabel, pcfCitation];

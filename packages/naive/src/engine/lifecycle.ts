@@ -26,7 +26,8 @@ import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSy
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { agentFromEnv, record } from "../core/provenance.ts";
+import { record, type EntryAgent } from "../core/provenance.ts";
+import { authorFromProcess } from "../terms/authorship.ts";
 import { phase as changePhase } from "./freshness.ts";
 import { ventureFile } from "../core/venture-paths.ts";
 import { exitCriteria } from "./canonical.ts";
@@ -37,7 +38,28 @@ import { meter, phaseGate } from "./phase-gate.ts";
 import type { ExitCriteria, LifecyclePlaybook, Telos } from "../records/types/records.d.ts";
 
 type Criterion = ExitCriteria["criteria"][number];
-type Agent = ReturnType<typeof agentFromEnv>;
+type Agent = EntryAgent;
+
+/**
+ * The person a phase change or a met criterion is recorded as. An agent process is refused.
+ * MENTURA_ACTOR=person is that person. With the process unset, an explicit person id is the
+ * caller naming who decided. A command that only claims person, with no id and no process, is refused.
+ */
+function phaseAuthor(by: Agent | undefined, error: string): { ok: true; agent: Agent } | { ok: false; error: string } {
+  const env = process.env.MENTURA_ACTOR?.trim().toLowerCase();
+  if (env === "agent" || by?.kind === "agent") return { ok: false, error };
+  if (env === "person") {
+    const fromProcess = authorFromProcess({
+      via: typeof by?.via === "string" ? by.via : "cli",
+      by: typeof by?.id === "string" ? by.id : undefined,
+      account: typeof by?.account === "string" ? by.account : undefined,
+    });
+    if (fromProcess.kind !== "person") return { ok: false, error };
+    return { ok: true, agent: fromProcess };
+  }
+  if (by?.kind === "person" && typeof by.id === "string" && by.id.length > 0) return { ok: true, agent: by };
+  return { ok: false, error };
+}
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "../../../..");
 const load = (f: string) => JSON.parse(readFileSync(f, "utf8"));
@@ -95,6 +117,9 @@ export function lifecycle(dir: string, { decidedBy }: { decidedBy?: string | nul
  * A person marks one of the current phase's exit criteria met, with the evidence for it.
  */
 export function meet(dir: string, id: string, { evidence, by }: { evidence?: string; by?: Agent } = {}) {
+  const resolved = phaseAuthor(by, "only a person can say an exit criterion is met; an agent can propose it");
+  if (resolved.ok === false) return { ok: false, error: resolved.error };
+  const agent = resolved.agent;
   const v: { phase: string } = load(join(dir, "venture.json"));
   const ec = exitCriteria(dir, v.phase);
   if (!ec.file) return { ok: false, error: `the venture has no exit criteria for ${v.phase} yet, so none to meet` };
@@ -102,8 +127,6 @@ export function meet(dir: string, id: string, { evidence, by }: { evidence?: str
   const list: Criterion[] | undefined = ec.source === "telos" ? (rec as Telos).phases?.find((p) => p.phase === v.phase)?.exit_criteria : (rec as ExitCriteria).criteria;
   const c = list?.find((x) => x.id === id);
   if (!c) return { ok: false, error: `${v.phase} has no exit criterion ${id}` };
-  const agent = by ?? agentFromEnv("person", "cli");
-  if (agent.kind !== "person") return { ok: false, error: "only a person can say an exit criterion is met; an agent can propose it" };
   c.met = { at: new Date().toISOString(), by: String(agent.id ?? "person"), ...(evidence ? { evidence } : {}) };
   // Checked against its schema on a scratch copy first, so a bad record never lands.
   const schema = ec.source === "telos" ? "telos.schema.json" : "exit-criteria.schema.json";
@@ -122,8 +145,9 @@ export function meet(dir: string, id: string, { evidence, by }: { evidence?: str
  * A person moves the venture to another phase, through the gate.
  */
 export function advance(dir: string, to: string, { reason, override, by, now }: { reason?: string; override?: string; by?: Agent; now?: string } = {}) {
-  const agent = by ?? agentFromEnv("person", "cli");
-  if (agent.kind !== "person") return { ok: false, error: "a phase change is a person's decision; an agent can suggest it, never make it" };
+  const resolved = phaseAuthor(by, "a phase change is a person's decision; an agent can suggest it, never make it");
+  if (resolved.ok === false) return { ok: false, error: resolved.error };
+  const agent = resolved.agent;
   const l = lifecycle(dir, { decidedBy: String(agent.id ?? "person") });
   const from = PHASES.findIndex((p) => p.id === l.phase), target = PHASES.findIndex((p) => p.id === to);
   if (target < 0) return { ok: false, error: `${to} is not a phase (${PHASES.map((p) => p.id).join(", ")})` };
@@ -153,7 +177,8 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const all = process.argv.slice(2);
   const opt = (k: string) => { const i = all.indexOf(`--${k}`); return i < 0 ? undefined : all[i + 1]; };
   if (!dir || !existsSync(join(dir, "venture.json"))) { console.error("usage: node packages/naive/src/engine/lifecycle.ts <venture dir> [meet <criterion> | advance <phase>]"); process.exit(2); }
-  const by = opt("by") ? agentFromEnv("person", "cli", { id: opt("by") }) : undefined;
+  const named = opt("by");
+  const by = named ? authorFromProcess({ via: "cli", by: named }) : undefined;
   const out = <R,>(r: { ok: boolean; error?: string; result?: R }): R => { if (!r.ok || r.result === undefined) { console.error(r.error); process.exit(1); } return r.result; };
   if (!cmd || cmd.startsWith("--")) { const l = lifecycle(dir); console.log(all.includes("--json") ? JSON.stringify(l, null, 2) : text(l)); }
   else if (cmd === "meet") console.log(text(out(meet(dir, arg, { evidence: opt("evidence"), by }))));

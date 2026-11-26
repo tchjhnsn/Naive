@@ -206,6 +206,7 @@ const steps: Step[] = [
   ["every glossary term admitted: valid test, cross-run, Lean theorems named (regenerate with node packages/naive/src/terms/admit.ts)", "node", ["packages/naive/src/terms/admit.ts", "--check"]],
   ["no symbolic check bypasses EE-095: each check and gate is registered, and a symbolic one reaches the engine, admit or a Lean theorem", "node", ["packages/naive/src/terms/bypass-guard-test.ts"]],
   ["Lean agreement: every theorem an admitted term cites is declared in packages/naive/lean/Naive, and every Lean concept has an admitted term", "node", ["packages/naive/src/terms/lean-agreement-test.ts"]],
+  ["faithful author: the process is the author, a subject named with --name is not, and an agent cannot override a phase", "node", ["packages/naive/src/terms/authorship-test.ts"]],
   ["Lean ontology concepts: a two-noun fixture regenerates both, --check catches an edited noun, name clashes stop the run", "node", ["packages/naive/src/terms/gen-concepts-test.ts"]],
   ["upper ontology: every noun reaches exactly one top category through broader (term top-category); an orphan, a noun with two top categories and a cycle are named", "node", ["packages/naive/src/terms/upper-test.ts"]],
   ["ontology catalog: one name@function scope per function, imports acyclic (term layer, L2), every term defined or imported; a cycle is printed and a missing term is an open item for its owning scope", "node", ["packages/naive/src/terms/catalog-test.ts"]],
