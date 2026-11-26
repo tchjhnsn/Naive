@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "time-box.schema.json",
+  "title": "Time box",
+  "description": "One campaign or sprint (EE-186), at operations/time-boxes/<id>.json (route operations/time-box/[id]): a stretch of time a person sets for some of the business's work, with a goal, a start and an end. It is open from `starts` until `ends` unless a person closed or cancelled it first. While it is open, a function workflow whose trigger says `during` its kind is due when it lists the workflow or its function (packages/naive/src/engine/due.ts), and the loop takes `loop_mode` for the workflows it lists (packages/naive/src/engine/loop.ts). Only a person writes it (writer person), because it commits the business's time.",
+  "type": "object",
+  "required": ["id", "kind", "title", "goal", "starts", "ends", "status"],
+  "anyOf": [{ "required": ["functions"] }, { "required": ["workflows"] }],
+  "dependentRequired": { "loop_mode": ["set_by"] },
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9-]+$", "description": "The file name without .json" },
+    "kind": { "enum": ["campaign", "sprint"], "description": "campaign: a marketing or sales push toward an audience. sprint: a fixed stretch of building or operating work (Scrum Guide 2020)" },
+    "title": { "type": "string", "minLength": 1 },
+    "goal": { "type": "string", "minLength": 1, "description": "What the time box is for, in one sentence: the Sprint Goal, or the campaign's objective" },
+    "starts": { "type": "string", "format": "date-time", "description": "When it opens" },
+    "ends": { "type": "string", "format": "date-time", "description": "When it closes on its own. A write is refused unless this is after starts (packages/naive/src/engine/time-box-span.ts)." },
+    "status": { "enum": ["active", "closed", "cancelled"], "description": "active: open between starts and ends. closed: a person ended it, at its end or early. cancelled: a person called it off" },
+    "functions": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "enum": ["strategy", "products", "marketing-and-sales", "supply-chain", "service-delivery", "customer-service", "human-capital", "it", "finance", "assets", "risk-and-compliance", "external-relationships", "capabilities"] },
+      "description": "The functions whose workflows it covers, ids in packages/naive/src/functions/departments.json"
+    },
+    "workflows": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^[a-z][a-z-]*/[a-z0-9-]+$" },
+      "description": "Workflows it covers by name, `<function>/<workflow>`, as a phase module names them"
+    },
+    "loop_mode": { "enum": ["manual", "ask", "auto"], "description": "The loop mode for the workflows it covers while it is open. A mode set in naive.config.json for a workflow by name still wins" },
+    "set_by": {
+      "type": "object",
+      "required": ["person", "at"],
+      "additionalProperties": false,
+      "properties": { "person": { "type": "string", "minLength": 1 }, "at": { "type": "string", "format": "date-time" } },
+      "description": "The person who set loop_mode, and when"
+    },
+    "owner": { "type": "string", "minLength": 1, "description": "Who is accountable for the goal, a person or a role id" },
+    "note": { "type": "string" }
+  }
+}
