@@ -46,7 +46,7 @@ import { actingAgent, agentFromEnv, entries as provEntries } from "../core/prove
 import { logWrite as prov, schemaFailure } from "./write-effects.ts";
 import type { Entry } from "../core/provenance.ts";
 import { address } from "../store/connectors/contract.ts";
-import { decisionFile, holding, locked } from "../engine/decisions.ts";
+import { decisionFile, holding, locked, undecidedFor } from "../engine/decisions.ts";
 import { timeBoxSpan } from "../engine/time-box-span.ts";
 import { configOf, hold } from "../engine/gate.ts";
 import { blocked as betaBlocked } from "../engine/beta-gate.ts";
@@ -361,6 +361,10 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
     const found = items.map((x) => x.path);
     const draft = cut === null && !remote && r.collection !== "list" && fileFor(r, params, dir) && existsSync(ventureFile(dir, draftPath(fileFor(r, params, dir)))) ? draftPath(fileFor(r, params, dir)) : null;
     const loading: Obj = draft ? { pending_draft: { file: draft, since: provEntries(dir).filter((e: { entity: string }) => e.entity === draft).at(-1)?.at ?? null, accept: `mentura accept ${route} --venture ${venture}` } } : {};
+    // EE-211: a record an open decision still settles comes back with every idea on the table, so an agent
+    // reads all the live options instead of guessing one. The record itself is read as it always was.
+    const undecided = cut === null && !remote && r.collection !== "list" && actor !== "public" ? undecidedFor(dir, fileFor(r, params, dir), venture) : [];
+    if (undecided.length) loading.undecided = undecided;
     if (remote) {
       type Pr = Entry & { source: { pull_request: string } };
       const prs = provEntries(dir).filter((e): e is Pr => !!e.source?.pull_request && found.concat(patterns).some((f: string) => e.entity === address(src.id, f)));
