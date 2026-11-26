@@ -153,6 +153,7 @@ const steps: Step[] = [
   ["publishing: build, the one-way/two-way door gate, the manifest, rollback, embargo, republish on change", "node", ["packages/naive/src/engine/publish-test.ts"]],
   ["publications: examples", "node", ["packages/naive/src/engine/check-publications.ts", "packages/naive/src/records/examples/workspace"]],
   ["decision versions: propose, approve, merge, rollback", "node", ["packages/naive/src/engine/decision-versions-test.ts"]],
+  ["decision candidates: several ideas on one undecided record, one command to withdraw a question or an idea, the chosen idea written, a person's reopen (EE-211)", "node", ["packages/naive/src/interfaces/tests/decision-candidates-test.ts"]],
   ["decision index: open-decision impact, phase weight and requirements, updates equal to a rebuild, rank history", "node", ["packages/naive/src/interfaces/tests/decision-index-test.ts"]],
   ["decision drafts: every held draft gets a decision that accepts it, several drafts of one foundation collection each their own, none waiting on its statement", "node", ["packages/naive/src/engine/decision-drafts-test.ts"]],
   ["decision queue: owning function, per-function index, cross-function score by phase weight and bound measures, themes, the queue in the index (EE-127)", "node", ["packages/naive/src/engine/decision-queue-test.ts"]],
