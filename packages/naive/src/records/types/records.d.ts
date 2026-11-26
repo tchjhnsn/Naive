@@ -1253,6 +1253,8 @@ export type DepartmentCatalog = {
     apqc: {
       id: string;
       name: string;
+      /** The element's id in packages/naive/src/functions/pcf.json */
+      element: number;
     };
     value_chain: "primary" | "support";
     /** The value-chain activity it falls under (Porter 1985) */

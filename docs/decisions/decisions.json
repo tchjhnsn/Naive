@@ -2784,6 +2784,37 @@
       ]
     },
     {
+      "id": "EE-199",
+      "date": "2026-11-26",
+      "status": "in-force",
+      "decision": "Every APQC citation is judged by the pcf-citation term. A citation passes only when its element id is in packages/naive/src/functions/pcf.json, the cited name is that element's name, and the cited version is that file's version. The theorem citation_needs_element says a citation whose element id is not in the PCF does not pass. departments.json cites each category by its 8.0 name and element id, and the six APQC standards in ontology.json cite PCF 8.0. Pricing is 3.2.3 Define pricing strategy (element 10123) and 3.2.3.4 Approve pricing strategies/policies and targets (element 10125). check-pcf.ts (EE-165) and check-tools.ts (EE-166) still compare ids with pcf.json as plain checks. That is debt. Those two checks should move onto this term, and this decision does not move them.",
+      "why": "Torian's rule, recorded as Q6 on 2026-11-26: an id or label membership check goes through EE-095 and Lean. The department name for 7.0 and six ontology standards still cited PCF 7.4, and the pricing citation named 3.2.2, which in 8.0 is brands.",
+      "related": [
+        "EE-095",
+        "EE-165",
+        "EE-166"
+      ],
+      "affects": [
+        {
+          "kind": "term",
+          "target": "pcf-citation",
+          "expect": "defined"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/lean/Naive/Citations.lean",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/checks/check-citations.ts",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
       "id": "EE-154",
       "date": "2026-11-19",
       "status": "in-force",

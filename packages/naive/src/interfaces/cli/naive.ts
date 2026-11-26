@@ -222,7 +222,7 @@ async function dev(dir: string): Promise<void> {
 }
 
 // The checks that read a workspace, run on this venture: it and the ventures nested in it, not its neighbours.
-const CHECKS = ["check-ventures", "check-people", "check-provenance", "check-sources", "check-data-packages", "check-governance", "check-telos", "check-publication", "check-private", "check-where-used", "lint-investors", "lint-product", "lint-money", "lint-customers", "lint-validation", "lint-finance", "lint-legal", "lint-people", "lint-foundation"];
+const CHECKS = ["check-ventures", "check-people", "check-provenance", "check-sources", "check-data-packages", "check-governance", "check-telos", "check-publication", "check-private", "check-where-used", "check-citations", "lint-investors", "lint-product", "lint-money", "lint-customers", "lint-validation", "lint-finance", "lint-legal", "lint-people", "lint-foundation"];
 function check(dir: string): number {
   let failed = 0;
   for (const c of CHECKS) {
