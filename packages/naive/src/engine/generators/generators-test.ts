@@ -14,6 +14,7 @@ import * as connection from "./connection.ts";
 import * as capabilityCluster from "./capability-cluster.ts";
 import * as activityCatalog from "./activity-catalog.ts";
 import * as activityAssignments from "./activity-assignments.ts";
+import * as elementOwners from "./element-owners.ts";
 import * as pcf from "./pcf.ts";
 import * as toolCatalog from "./tool-catalog.ts";
 import * as leadPlan from "./lead-plan.ts";
@@ -141,6 +142,7 @@ t("activity-catalog: ratings with no rated fail the schema", !activityCatalog.dr
 t("activity-catalog: an activity with no process group is refused", !activityCatalog.draft({ statement: "Survey customers about the problem." }).ok);
 t("activity-assignments: a known activity with a performer passes, and an unknown activity or value is refused", activityAssignments.draft({ activities: { "interview-customers": { performer: "agent" } } }, { root: acRoot }).ok && !activityAssignments.draft({ activities: { "no-such-activity": { performer: "agent" } } }, { root: acRoot }).ok && !activityAssignments.draft({ activities: { "interview-customers": { performer: "robot" as "agent" } } }, { root: acRoot }).ok && activityAssignments.draft({}).ok);
 t("activity-assignments: an APQC level 4 activity passes, and one APQC lacks or of another level is refused", activityAssignments.draft({ activities: { "3.5.1.6": { approval: "person" } } }).ok && !activityAssignments.draft({ activities: { "99.9.9.9": { approval: "person" } } }).ok && !activityAssignments.draft({ activities: { "3.5.1": { approval: "person" } } }).ok);
+t("element-owners: a role or a person for a known element passes, and an unknown element or an owner that is both is refused", elementOwners.draft({ owners: { "3.0": { role: "growth-lead" }, "3.5.1.6": { person: "Ana Ruiz" } } }).ok && !elementOwners.draft({ owners: { "99.9": { role: "founder" } } }).ok && !elementOwners.draft({ owners: { "3.0": { role: "growth-lead", person: "Ana" } } }).ok && elementOwners.draft({}).ok);
 const pc = pcf.draft({ elements: [{ id: "1.1", name: "Define the business concept and long-term vision", pcf: 17040, level: 2 }, { id: "1.0", name: "Develop Vision and Strategy", pcf: 10002, level: 1 }] });
 t("pcf: the hierarchy replaces the elements, sorted, under the file's header, and passes the schema", pc.ok && pc.draft?.elements.map((e) => e.id).join(" ") === "1.0 1.1" && pc.draft?.version === "8.0" && pc.draft?.attribution.includes("APQC"));
 t("pcf: format writes one element per line", pc.ok && !!pc.draft && pcf.format(pc.draft).includes('\n    {"id": "1.0", "name": "Develop Vision and Strategy", "pcf": 10002, "level": 1},\n'));

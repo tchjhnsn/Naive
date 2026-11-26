@@ -66,6 +66,9 @@
 //                                                   trigger, the run log and the provenance log (EE-182)
 //   naive due record <function>/<workflow> [--outcome done|failed|skipped] [--by <who>]
 //                                                   record that a workflow ran
+//   naive owners [--function <id>] [--level <n>] [--json]
+//                                                   the accountable owner of each APQC element the venture runs, a
+//                                                   person or an agent, and where it came from (EE-187)
 //   naive loop [plan] [--at <iso>] [--json]         what the loop would do with each due workflow under the venture's
 //                                                   loop modes; writes nothing (EE-183)
 //   naive loop tick [--max <n>] [--json]            ask, skip and start once: an ask files a decision, a start runs the
@@ -423,6 +426,10 @@ else if (cmd === "build" || cmd === "start") {
   // The loop that starts due workflows as far as the venture's mode allows (packages/naive/src/engine/loop.ts, EE-183).
   const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
   process.exit(run("packages/naive/src/engine/loop.ts", [here(), ...args]));
+} else if (cmd === "owners") {
+  // Who is accountable for each element of APQC's framework (packages/naive/src/engine/element-owners.ts, EE-187).
+  const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
+  process.exit(run("packages/naive/src/engine/element-owners.ts", [here(), ...args]));
 } else if (cmd === "activities") {
   // What the activity catalog's scores propose for this venture (packages/naive/src/engine/activity-proposals.ts, EE-169).
   const [what = "list", ...args] = rest.filter((a, i) => !(a === "--venture" || rest[i - 1] === "--venture"));

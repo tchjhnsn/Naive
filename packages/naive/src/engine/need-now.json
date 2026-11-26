@@ -1140,6 +1140,16 @@
       },
       "why": "An unvalidated prior. Written only by merging a person's answer to an activity proposal (EE-172), so it is needed once the venture has agents that could perform catalog activities; a function agent's brief reads it (EE-173)"
     },
+    "element-owners": {
+      "base": {
+        "discovery": 0.05,
+        "validation": 0.1,
+        "beachhead": 0.3,
+        "scale": 0.6,
+        "platform": 0.7
+      },
+      "why": "An unvalidated prior. A venture needs it once someone other than a function's agent answers for part of a function: until then every element is owned by default (EE-187)"
+    },
     "connection": {
       "base": {
         "discovery": 0.1,

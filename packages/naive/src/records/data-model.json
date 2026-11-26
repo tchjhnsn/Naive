@@ -1015,6 +1015,27 @@
       "note": "Who performs each activity of the activity catalog in this venture, agent or person, and whether a person approves it first (EE-172). Written by merging a person's decided answer to an activity proposal; a function agent's brief carries them with the rule to follow (EE-173)"
     },
     {
+      "id": "element-owners",
+      "layer": "operations",
+      "function": null,
+      "level": "venture",
+      "data": "master",
+      "schema": "packages/naive/src/records/element-owners.schema.json",
+      "generator": "packages/naive/src/engine/generators/element-owners.ts",
+      "paths": [
+        "instance/**/operations/element-owners.json",
+        "packages/naive/src/records/examples/**/operations/element-owners.json"
+      ],
+      "refs": [
+        {
+          "field": "owners",
+          "to": "pcf",
+          "checked_by": "packages/naive/src/checks/check-owners.ts"
+        }
+      ],
+      "note": "The accountable owner a venture names for an element of APQC's framework, a role or a person (EE-187). An element with no entry takes its parent's owner, and a category with none is owned by its function's agent; packages/naive/src/engine/element-owners.ts resolves every element and check-owners.ts fails on one left unowned or an owner that names no role"
+    },
+    {
       "id": "activity-catalog",
       "layer": "operations",
       "function": null,
