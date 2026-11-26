@@ -119,8 +119,8 @@ The system is opinionated: it names one default for each choice, and every defau
 | done-criterion | One check that says a handoff is finished: conformance (a command, no model, no reviewer), self-proof (the change exercised for real, with output) or review (fit to intent, by a named role) | definition of done (Scrum) |  |  |  |
 | lead plan | One lead's plan at operations/leads/<lead>.json (route operations/lead/[id]): its portfolio, the telos measures it is accountable for, its bets in priority order, each citing measure ids and handoff ids, and its review cadence. A lead with no plan binding a measure is refused by check-team.ts | portfolio roadmap (PMI); objectives and key results (Doerr 2018) in spirit, with telos measures as the objectives |  |  |  |
 | connection | One outside system a venture connects, as a record at it/connections/<id>.json that the it function owns, under the thesis's eight-point connection contract: the records and fields it is authoritative for (as source map rules), sync direction, scoped reads and writes, signed events, a stable external id with provenance and last-synced time, the approval class of every send (public-commitment), payment (spend-money) and signature (legal-or-terms), idempotency and reconciliation, and the exit plan; plus what goes stale, blocks or degrades when it fails. It says what is allowed and authoritative; an app's connectors act | integration contract (enterprise application integration; data contract) |  | it |  |
-| pricing decision | A decision that sets or approves a price. Marketing and sales owns the decision. Every package of this type lists finance in touches, and the founder approves. | APQC PCF 7.4 Cross-Industry 3.2.2 Define pricing strategy, including 3.2.2.4 Approve pricing strategy |  | marketing-and-sales | yes |
-| product decision | A decision that changes what the venture offers. The products function owns it. | APQC PCF 7.4 Cross-Industry 2.0 Develop and Manage Products and Services |  | products | yes |
+| pricing decision | A decision that sets or approves a price. Marketing and sales owns the decision. Every package of this type lists finance in touches, and the founder approves. | APQC PCF 8.0 3.2.3 element 10123 Define pricing strategy; 3.2.3.4 element 10125 Approve pricing strategies/policies and targets |  | marketing-and-sales | yes |
+| product decision | A decision that changes what the venture offers. The products function owns it. | APQC PCF 8.0 2.0 element 10003 Develop and Manage Products and Services |  | products | yes |
 | research program | A function's person-edited instructions for its researcher (programs/<function>.md), one section per route pattern; the gate refuses an agent's write to it | program.md (autoresearch); research programme (Lakatos 1970) |  |  |  |
 
 ### Evidence
@@ -197,10 +197,10 @@ The system is opinionated: it names one default for each choice, and every defau
 
 | Noun | Meaning | Standard | References | Function | Handoff type |
 | --- | --- | --- | --- | --- | --- |
-| strategy | The function that sets the venture's direction: vision, and the choices that follow from it. A solo founder holds it with the others. Capabilities: founder appointment. | APQC PCF 7.4 Cross-Industry 1.0 Develop Vision and Strategy |  | strategy |  |
-| products | The function that develops what the venture offers, and the decisions that change the offering. Capabilities: product decision. | APQC PCF 7.4 Cross-Industry 2.0 Develop and Manage Products and Services |  | products |  |
-| marketing-and-sales | The function that finds the buyer and sells the offering, including the price. Capabilities: pricing decision, customer@marketing-and-sales. | APQC PCF 7.4 Cross-Industry 3.0 Market and Sell Products and Services |  | marketing-and-sales |  |
-| finance | The function that keeps the books: revenue, cost, and the customer as an account. Capabilities: customer@finance. | APQC PCF 7.4 Cross-Industry 9.0 Manage Financial Resources |  | finance |  |
+| strategy | The function that sets the venture's direction: vision, and the choices that follow from it. A solo founder holds it with the others. Capabilities: founder appointment. | APQC PCF 8.0 1.0 element 10002 Develop Vision and Strategy |  | strategy |  |
+| products | The function that develops what the venture offers, and the decisions that change the offering. Capabilities: product decision. | APQC PCF 8.0 2.0 element 10003 Develop and Manage Products and Services |  | products |  |
+| marketing-and-sales | The function that finds the buyer and sells the offering, including the price. Capabilities: pricing decision, customer@marketing-and-sales. | APQC PCF 8.0 3.0 element 10004 Market and Sell Products and Services |  | marketing-and-sales |  |
+| finance | The function that keeps the books: revenue, cost, and the customer as an account. Capabilities: customer@finance. | APQC PCF 8.0 9.0 element 17058 Manage Financial Resources |  | finance |  |
 
 ### Retired
 
