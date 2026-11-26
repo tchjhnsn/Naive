@@ -1,4 +1,4 @@
-// Faithful author (EE-189). The process that writes a record is the author. --name is the subject in
+// Faithful author (EE-193). The process that writes a record is the author. --name is the subject in
 // people/, and it is not copied into the provenance agent. phase --override records a person only when
 // the process is a person.
 //

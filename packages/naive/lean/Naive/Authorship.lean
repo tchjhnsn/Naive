@@ -1,7 +1,7 @@
 import Naive.Concept
 
 /-
-  Faithful author (EE-189, packages/naive/src/terms/terms.ts). The process that wrote a record is the author.
+  Faithful author (EE-193, packages/naive/src/terms/terms.ts). The process that wrote a record is the author.
   A person or role inside the venture is a subject, and copying that subject in as the author fails.
   These theorems hold for every case, not a sample. They are a hand copy of the properties in
   packages/naive/src/terms/terms.ts.

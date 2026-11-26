@@ -11,7 +11,7 @@ The EE-095 term engine: every term is admitted through one pipeline with a valid
 | Path | Holds |
 |---|---|
 | [`admit.ts`](./admit.ts) | Admit every term through the same pipeline (Torian, 2026-10-31. |
-| [`authorship.ts`](./authorship.ts) | The process that writes a record (EE-188). `authorFromProcess` reads `MENTURA_ACTOR`, `MENTURA_ACTOR_ID`, `MENTURA_MODEL`, `MENTURA_SESSION` and `MENTURA_HARNESS`. It does not copy a subject in as the author. |
+| [`authorship.ts`](./authorship.ts) | The process that writes a record (EE-193). `authorFromProcess` reads `MENTURA_ACTOR`, `MENTURA_ACTOR_ID`, `MENTURA_MODEL`, `MENTURA_SESSION` and `MENTURA_HARNESS`. It does not copy a subject in as the author. |
 | [`authorship-test.ts`](./authorship-test.ts) | An agent plus `--name "Ada Lovelace"` writes `people/founders/ada-lovelace.json` and a provenance line of kind agent id `research-agent`. `phase --override` with `MENTURA_ACTOR=agent` leaves the phase put and writes no person line. A person, `MENTURA_ACTOR=person` and `MENTURA_ACTOR_ID=torian`, may override and the line names torian. |
 | [`admitted.json`](./admitted.json) | The admitted terms, written by `admit.ts`. |
 | [`bypass-guard-test.ts`](./bypass-guard-test.ts) | Fails the suite when a symbolic check bypasses the EE-095 term engine and the Lean proofs. Plain checks, such as `check-traces.ts` (hash chains and links) and `check-write-scope.ts` (path prefixes) and `check-detectors.ts` (ledger chains, references and arithmetic) `check-signals.ts` (schema shape, field owners and reducers, content hashes, paths and references) and `check-recipes.ts` (chains, references, budget counts and renders compared again), are registered with a reason. |

@@ -1,6 +1,6 @@
 // The levels terms are defined at, each with its facts and a seeded case generator. A term is cross-run only
 // against terms at its own level; a relation across levels needs a lift (a session part_of a relationship),
-// which is named, not guessed. The authorship level holds faithful author (EE-188): one write, with no names.
+// which is named, not guessed. The authorship level holds faithful author (EE-193): one write, with no names.
 
 import { rng, type Base } from "./engine.ts";
 import { namesBetween, type Target } from "./relations.ts";

@@ -31,7 +31,7 @@ The ways a person, or an agent, works with a venture: the `naive` and `mentura` 
 - `node packages/naive/src/interfaces/test.ts` tests the router and the three interfaces over it.
 - `node packages/naive/src/interfaces/plugin-test.ts` tests the plugin manifest and skills.
 
-`mentura phase` and `naive phase` record the process that is acting (EE-188, [`terms/authorship.ts`](../terms/authorship.ts)). `--as person` does not record an agent as a person: when `MENTURA_ACTOR` is `agent`, the phase stays put and no provenance line is written. A person, `MENTURA_ACTOR=person`, is recorded as `MENTURA_ACTOR_ID`. `revalidate` and `verify` are unchanged.
+`mentura phase` and `naive phase` record the process that is acting (EE-193, [`terms/authorship.ts`](../terms/authorship.ts)). `--as person` does not record an agent as a person: when `MENTURA_ACTOR` is `agent`, the phase stays put and no provenance line is written. A person, `MENTURA_ACTOR=person`, is recorded as `MENTURA_ACTOR_ID`. `revalidate` and `verify` are unchanged.
 
 ## How it connects
 
