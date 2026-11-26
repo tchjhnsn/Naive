@@ -162,7 +162,7 @@ Applied to the snapshot, these rules require 61 READMEs. 55 of them are missing:
   - `knowledge/connectors/` (as of 2026-11-02; since moved/removed), `knowledge/sdlc/` (as of 2026-11-02; since moved/removed);
   - `lean/` (as of 2026-11-02; since moved/removed), `operations/marketing/site/` (as of 2026-11-02; since moved/removed);
   - `platform/` (as of 2026-11-02; since moved/removed), `platform/kits/` (as of 2026-11-02; since moved/removed);
-  - `purpose/frameworks/idea-map/` (as of 2026-11-02; since moved/removed), `purpose/frameworks/product-anatomy/` (as of 2026-11-02; since moved/removed) and its `examples/ai-labs/` (as of 2026-11-02; since moved/removed), `purpose/kits/validation/` (as of 2026-11-02; since moved/removed);
+  - `packages/naive/src/functions/strategy/frameworks/idea-map/`, `packages/naive/src/functions/products/frameworks/product-anatomy/` and its `packages/naive/src/functions/products/frameworks/product-anatomy/examples/ai-labs/`, `purpose/kits/validation/` (as of 2026-11-02; since moved/removed);
   - `schema/`.
 - **7 `layer.json` files:** purpose, knowledge, operations, evidence, governance, interface, and `schema/` (layer "system").
 - **README and layer.json agree in exactly 1 of 7 folders.** Only `schema/` has both. The other six layer folders have a `layer.json` and no README.
@@ -195,7 +195,7 @@ At file level, `platform/README.md:33-47` (as of 2026-11-02; since moved/removed
 2. **`execution/` (as of 2026-11-02; since moved/removed).** `AGENTS.md:76` names `execution/tooling/` (as of 2026-11-02; since moved/removed) and `AGENTS.md:82` names `execution/handoffs/` (as of 2026-11-02; since moved/removed). No `execution/` (as of 2026-11-02; since moved/removed) folder exists in the tree. EE-038 moved this work into operations.
 3. **Root README file claim.** `README.md:14` says each layer has `tooling/integrations.json`. This is true of the six named layers, but the backticked path is written bare, so a path checker reads it as `tooling/integrations.json` at the root, which does not exist.
 4. **The layer table is written by hand three times:**
-   - `README.md:5-12` lists 6 layers. It omits system/` (as of 2026-11-02; since moved/removed)schema` and platform, and the Purpose row (line 7) names only "Discovery frameworks (BASED goals), ambition tiers".
+   - `README.md:5-12` lists 6 layers. It omits system/`schema` and platform, and the Purpose row (line 7) names only "Discovery frameworks (BASED goals), ambition tiers".
    - `AGENTS.md:11-27` gives a "Where things are" table. That table lacks `agents`, `beta`, `frameworks`, `instance`, `lean`, `packages`, `scripts`, `verification` and `.claude-plugin`.
    - Each `layer.json` holds the canonical purpose.
 5. **The operator console in two places.**
