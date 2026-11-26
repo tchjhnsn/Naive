@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "risk.schema.json",
   "title": "Risk",
-  "description": "One entry of the venture's risk register (ISO 31000:2018 clauses 6.4 to 6.6: risk assessment, risk treatment, monitoring and review), at legal/risks/<id>.json (route legal/risks/[id]): what could happen, why, what it would cost, who owns it and what the venture does about it. Likelihood and impact are 90% ranges, not ordinal scores (Hubbard, The Failure of Risk Management; Cox 2008), so expected loss can be computed and compared. Every live risk has a person owner and a review date. The risk-and-compliance function owns it, and only the risk-and-compliance agent (role risk-and-compliance-agent) or a person writes it (writer function in packages/naive/src/records/data-model.json).",
+  "description": "One entry of the venture's risk register (ISO 31000:2018 clauses 6.4 to 6.6: risk assessment, risk treatment, monitoring and review), at legal/risks/<id>.json (route legal/risks/[id]): what could happen, why, what it would cost, who owns it and what the venture does about it. Likelihood and impact are 90% ranges, not ordinal scores (Hubbard, The Failure of Risk Management; Cox 2008), so expected loss can be computed and compared. The impact cites a source or is marked an estimate, and expected loss carries the same label (EE-212). Every live risk has a person owner and a review date. The risk-and-compliance function owns it, and only the risk-and-compliance agent (role risk-and-compliance-agent) or a person writes it (writer function in packages/naive/src/records/data-model.json).",
   "type": "object",
   "required": ["id", "title", "cause", "consequence", "category", "owner", "likelihood", "impact", "treatment", "status", "review_date"],
   "additionalProperties": false,
@@ -24,8 +24,27 @@
       "type": "object",
       "required": ["low", "high", "currency"],
       "additionalProperties": false,
-      "description": "What it would cost if it happens, as a 90% range",
-      "properties": { "low": { "type": "number", "minimum": 0 }, "high": { "type": "number", "minimum": 0 }, "currency": { "type": "string", "pattern": "^[A-Z]{3}$" } }
+      "description": "What it would cost if it happens, as a 90% range, with exactly one of source or estimate so a money figure is never unsourced (EE-212, the finance function's rule that a number with no source is a guess and says so)",
+      "properties": {
+        "low": { "type": "number", "minimum": 0 },
+        "high": { "type": "number", "minimum": 0 },
+        "currency": { "type": "string", "pattern": "^[A-Z]{3}$" },
+        "source": { "type": "string", "minLength": 1, "pattern": "^(?![Aa]ssumption)", "description": "What the range rests on, as the finance function's figures name it: a record route (such as finance/spend/<id>, assets/leases/<id> or legal/obligations/<id>) or a reference id, so a reader can check it. A guess goes in estimate, not here" },
+        "estimate": {
+          "type": "object",
+          "required": ["basis", "by"],
+          "additionalProperties": false,
+          "description": "Marks the range as an estimate: no record or reference supports it",
+          "properties": {
+            "basis": { "type": "string", "minLength": 1, "description": "How the range was reached: the reasoning, the comparable cases or the calculation" },
+            "by": { "type": "string", "minLength": 1, "description": "Who estimated it: a person by people record id, or the role of the agent that did (such as risk-and-compliance-agent)" }
+          }
+        }
+      },
+      "oneOf": [
+        { "required": ["source"], "description": "The range cites a source" },
+        { "required": ["estimate"], "description": "The range is marked an estimate" }
+      ]
     },
     "treatment": { "enum": ["avoid", "reduce", "transfer", "accept"], "description": "The ISO 31000 6.5 options in short: avoid (stop the activity), reduce (add a control), transfer (insurance or a contract), accept (live with it, with a reason)" },
     "treatment_plan": { "type": "string", "description": "What the venture does, and the handoff or decision that carries it" },
