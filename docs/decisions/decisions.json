@@ -2517,6 +2517,28 @@
       ]
     },
     {
+      "id": "EE-183",
+      "date": "2026-11-26",
+      "status": "in-force",
+      "decision": "The loop starts due function workflows as far as a mode allows. `naive loop` (packages/naive/src/engine/loop.ts) reads what `naive due` says and the mode under `loops` in naive.config.json: `mode` for the venture, `functions` per function and `workflows` per workflow, the most specific winning. manual, the default, starts nothing. ask files one open decision per due occurrence with the options start and skip, starts on start and records a skipped run on skip. auto starts the workflow as its function agent through NAIVE_AGENT_CMD and records the run as done or failed. No mode goes past the gate: there is no bypass mode, and a one-way door stays a person's. A workflow the phase does not list as active is left alone unless a mode names it. A workflow whose last run failed is asked about before it starts again. Only a person sets a mode. `naive loop plan` writes nothing, `tick` acts once under a lock file, and `watch` ticks on Effect's Schedule.spaced. Modes per time box, retries inside a tick and a watch that survives a restart are not built.",
+      "why": "The founder asked on 2026-11-26 for modes like the ones AI tools have, proactive for some functions and patient for others, built on the two-way doors already in Naive, and said a draft must not spin up the next records until he approves it. A mode decides only whether the loop starts an agent. The gate, drafts and decision rights already decide what that agent may write, so the loop adds no second permission system.",
+      "related": [
+        "EE-058",
+        "EE-124",
+        "EE-126",
+        "EE-162",
+        "EE-182"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/loop.ts",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
       "id": "EE-150",
       "date": "2026-11-19",
       "status": "in-force",
