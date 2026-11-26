@@ -3,7 +3,11 @@
 // (EE-011). Starting layers come from scaffold/defaults.json, by phase (EE-012).
 //
 //   node packages/naive/src/engine/init-venture.ts <dir> <id> [--phase discovery] [--parent <id>] [--legal-form llc] [--layers purpose,governance]
-//                                [--type <venture type>] [--layout flat|structured|src]
+//                                [--type <venture type>] [--layout flat|structured|src] [--mode modeled|run]
+//
+// --mode (EE-188) writes venture.json mode. modeled means agents are modeling the venture. run means a person
+// is running it. With no --mode the field stays absent, and absence is not read as run. This is not the loop
+// mode and not people.json mode (solo or team).
 //
 // --type (packages/naive/src/engine/venture-types.json, EE-082) decides the package folders, the functions venture.json
 // imports and the first decisions: a software startup answers the product questions, a VC fund its
@@ -27,7 +31,7 @@ import type { Venture, VentureLayer, VentureTypes } from "../records/types/recor
 type Defaults = { layers: Record<string, string[] | undefined>; formalized: string[]; pillars: { guides: string; stubs: Record<string, string> }; readme: Record<string, string> };
 // The venture.json being drafted, before the schema checks it: phase and legal form are the command line's strings until
 // then, a layer is keyed by its name, and a function's owner is null until create-venture or the founder names one.
-type Draft = Pick<Venture, "id" | "name" | "parent"> & Partial<Pick<Venture, "type" | "core" | "owner" | "status" | "profile" | "layout">> & {
+type Draft = Pick<Venture, "id" | "name" | "parent"> & Partial<Pick<Venture, "type" | "core" | "owner" | "status" | "profile" | "layout" | "mode">> & {
   phase: string; form?: { legal_form?: string; funding?: string }; layers?: Record<string, VentureLayer>; functions?: Record<string, { owner: string | null }>;
 };
 
@@ -42,12 +46,14 @@ const phase = flag("phase") ?? "discovery", parent = flag("parent"), legalForm =
 // Without either, the flat layout.
 const layout = flag("layout") ?? "flat";
 if (!["flat", "structured", "src"].includes(layout)) { console.error(`unknown layout ${layout}: flat, structured or src`); process.exit(2); }
+const modeFlag = flag("mode");
+if (modeFlag !== null && modeFlag !== "modeled" && modeFlag !== "run") { console.error(`unknown mode ${modeFlag}: modeled or run`); process.exit(2); }
 const structured = layout === "structured";
 const ventureTypes: VentureTypes = JSON.parse(readFileSync(join(here, "venture-types.json"), "utf8"));
 const vtype = typeId ? ventureTypes.types.find((t) => t.id === typeId) : null;
 if (typeId && !vtype) { console.error(`unknown venture type ${typeId}: see node packages/naive/src/engine/venture-type.ts list`); process.exit(2); }
 const [dir, id] = args;
-if (!dir || !id) { console.error("usage: node packages/naive/src/engine/init-venture.ts <dir> <id> [--phase discovery] [--parent <id>] [--legal-form llc] [--layout flat|structured|src]"); process.exit(2); }
+if (!dir || !id) { console.error("usage: node packages/naive/src/engine/init-venture.ts <dir> <id> [--phase discovery] [--parent <id>] [--legal-form llc] [--layout flat|structured|src] [--mode modeled|run]"); process.exit(2); }
 if (!layers[phase]) { console.error(`unknown phase ${phase}: one of ${Object.keys(layers).join(", ")}`); process.exit(2); }
 if (existsSync(dir) && readdirSync(dir).length) { console.error(`${dir} already exists and is not empty: init creates new ventures only, and never writes into an existing project`); process.exit(1); }
 
@@ -56,7 +62,7 @@ const on = only !== null ? only.split(",").filter(Boolean) : [...new Set([...(la
 const unknown = on.filter((l) => !ALL.includes(l));
 if (unknown.length) { console.error(`unknown layers: ${unknown.join(", ")}; one of ${ALL.join(", ")}`); process.exit(2); }
 mkdirSync(dir, { recursive: true });
-const venture: Draft = { id, name: id, ...(vtype ? { type: vtype.id } : {}), parent: parent ?? null, phase };
+const venture: Draft = { id, name: id, ...(vtype ? { type: vtype.id } : {}), parent: parent ?? null, phase, ...(modeFlag === "modeled" || modeFlag === "run" ? { mode: modeFlag } : {}) };
 if (legalForm || vtype?.funding) venture.form = { ...(legalForm ? { legal_form: legalForm } : {}), ...(vtype?.funding ? { funding: vtype.funding } : {}) };
 if (phase !== "discovery") venture.core = { promise: "", promised_to: "", must_not: "", competence: "" };
 const ventureLayers: Record<string, VentureLayer> = {};

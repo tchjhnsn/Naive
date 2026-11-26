@@ -116,6 +116,7 @@ export const REGISTRY: Registry = {
   "packages/naive/src/checks/check-types.ts": plain("runs tsc over the code"),
   "packages/naive/src/checks/check-validation-study.ts": plain("interviews, feedback and bugs reference records that exist"),
   "packages/naive/src/checks/check-validation.ts": plain("grades evidence by GRADE arithmetic"),
+  "packages/naive/src/checks/check-venture-mode.ts": symbolic,
   "packages/naive/src/checks/check-ventures.ts": plain("venture ids, parents and links resolve, and no venture is its own ancestor"),
   "packages/naive/src/checks/check-visibility.ts": plain("each public fact came through the visibility gate"),
   "packages/naive/src/checks/check-where-used.ts": plain("each live child shows its parent's value"),

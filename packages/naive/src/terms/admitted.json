@@ -2147,6 +2147,103 @@
       ]
     },
     {
+      "id": "modeled-venture",
+      "label": "Modeled venture",
+      "form": "compound",
+      "level": "conduct",
+      "kind": "role",
+      "labels": {
+        "designation": "term",
+        "scope": "shared",
+        "origin": {
+          "kind": "narrowed"
+        },
+        "grade": "none"
+      },
+      "meaning": "A venture agents are modeling. It is modeled, and it is not being run.",
+      "status": "proposed",
+      "hash": "623474c07fd347b8",
+      "properties": [
+        {
+          "id": "C1",
+          "says": "modeled"
+        },
+        {
+          "id": "C2",
+          "says": "not run"
+        }
+      ],
+      "rule": "every property, and P7 (confirmed facts)",
+      "valid": true,
+      "passes": 4515,
+      "relations": {
+        "run-venture": "disjoint"
+      },
+      "predictions": [
+        {
+          "other": "run-venture",
+          "expected": "disjoint",
+          "found": "disjoint",
+          "confirmed": true
+        }
+      ],
+      "lean": [
+        "modeled_not_run"
+      ],
+      "sources": [
+        "EE-188"
+      ]
+    },
+    {
+      "id": "run-venture",
+      "label": "Run venture",
+      "form": "compound",
+      "level": "conduct",
+      "kind": "role",
+      "labels": {
+        "designation": "term",
+        "scope": "shared",
+        "origin": {
+          "kind": "narrowed"
+        },
+        "grade": "none"
+      },
+      "meaning": "A venture a person is running on Naive. It is run, and it is not being modeled.",
+      "status": "proposed",
+      "hash": "3a07bc25ba6202c5",
+      "properties": [
+        {
+          "id": "D1",
+          "says": "run"
+        },
+        {
+          "id": "D2",
+          "says": "not modeled"
+        }
+      ],
+      "rule": "every property, and P7 (confirmed facts)",
+      "valid": true,
+      "passes": 4570,
+      "relations": {
+        "modeled-venture": "disjoint"
+      },
+      "predictions": [
+        {
+          "other": "modeled-venture",
+          "expected": "disjoint",
+          "found": "disjoint",
+          "confirmed": true
+        }
+      ],
+      "lean": [
+        "run_not_modeled",
+        "modeled_disjoint_run"
+      ],
+      "sources": [
+        "EE-188"
+      ]
+    },
+    {
       "id": "sourced-record",
       "label": "Sourced record",
       "form": "compound",
