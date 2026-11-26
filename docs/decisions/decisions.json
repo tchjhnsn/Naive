@@ -3233,6 +3233,56 @@
       ]
     },
     {
+      "id": "EE-219",
+      "date": "2026-11-26",
+      "status": "in-force",
+      "decision": "A venture's customer problems are a hierarchy, held in the forms of its problem record and ranked on every read. Two relations hold the tree, and they are different claims: parent, which says a problem is a narrower case of another, after Teresa Torres's opportunity solution tree, and cause_of, which says a problem is a cause of another, after problem tree analysis in the Logical Framework Approach. One problem per ICP profile is its core problem, named by a single field on the profile, and one form at a time carries the status target, the problem being worked on now; both records are gated, so only a person settles either. The evidence is counted, never scored: each validation interview codes the problems it bears on with raised unprompted, ranked first and pays for a workaround, and a problem's priority is the weighted sum of those counts, with the weights unvalidated priors in packages/naive/src/functions/strategy/problem-priority.json that a venture replaces under problems in naive.config.json with the person who set them. Primary, secondary and tertiary are labels on the computed order and are never stored; before any interview has coded a problem the order is the founder's own, the order the forms are listed in, and the output labels that basis a hypothesis. A fail-closed rule holds the venture to the problem it says it is solving: no solution, offer or public content while the venture has no problem tree, no form is the target, or the primary profile names no core problem. The customer's problems live here and the business's own do not: those are decisions, seams and handoffs. Every new field is optional, so a record written before this decision is a one-problem tree and stays valid with no migration.",
+      "why": "Torian decided this on 2026-11-26: add all of the problems and a hierarchy over them, a primary, a secondary and tertiary problems or some other method, by the best practices and the standards, and cover his blind spots. He accepted the design the same day with the record it had to hold: a core problem, doesn't know what to do next, with one cause and one narrower case under it. Two standards already answer the shape, so Naive uses both rather than coining one (EE-014), and keeping cause apart from narrower case is what makes the tree say anything. Priority is computed because a stored rank drifts from the evidence, and the weights are data because what counts as evidence of a problem is a judgment a venture owns. The fail-closed rule is a check today; the refusal at the write belongs on the general requires mechanism rather than a second bespoke gate hook.",
+      "related": [
+        "EE-026",
+        "EE-050",
+        "EE-051",
+        "EE-014",
+        "EE-155",
+        "EE-217"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/problems.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/checks/check-problems.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/functions/strategy/problem-priority.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "record",
+          "target": "validation-problem.forms",
+          "expect": "exists"
+        },
+        {
+          "kind": "record",
+          "target": "icp.core_problem",
+          "expect": "exists"
+        },
+        {
+          "kind": "record",
+          "target": "validation-interview.problems",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
       "id": "EE-223",
       "date": "2026-11-26",
       "status": "in-force",

@@ -35,6 +35,7 @@ import * as industryAnatomy from "./industry-anatomy.ts";
 import * as ventureAnatomy from "./venture-anatomy.ts";
 import * as risk from "./risk.ts";
 import * as marketingMessage from "./marketing-message.ts";
+import * as problemPriority from "./problem-priority.ts";
 import { readFileSync } from "node:fs";
 
 let fails = 0;
@@ -46,7 +47,7 @@ writeFileSync(join(v, "venture.json"), JSON.stringify({ id: "kettle" }));
 mkdirSync(join(v, "product/bugs"), { recursive: true });
 writeFileSync(join(v, "product/bugs/save-loses-draft.json"), "{}");
 
-for (const g of [bug, glossary, publishTerms, reference, traceSpan, detector, detectorTrial, connection, capabilityCluster, languageRubric, leadPlan, timeBox, meeting, rawDump, triage, opportunity, supportPolicy, supportCase, validationPlan, gatePolicies, marketAnatomy, industryAnatomy, ventureAnatomy, marketingMessage]) t(`${g.record}: describe asks at least one required field`, g.describe().ask.some((q) => q.required));
+for (const g of [bug, glossary, publishTerms, reference, traceSpan, detector, detectorTrial, connection, capabilityCluster, languageRubric, leadPlan, timeBox, meeting, rawDump, triage, opportunity, supportPolicy, supportCase, validationPlan, gatePolicies, marketAnatomy, industryAnatomy, ventureAnatomy, marketingMessage, problemPriority]) t(`${g.record}: describe asks at least one required field`, g.describe().ask.some((q) => q.required));
 
 const b = bug.draft({ title: "Save loses draft", severity: "P1", found_in: "0.6.0", repro: "open, type, save" }, { venture: v });
 t("bug: draft passes the schema", b.ok);
@@ -244,6 +245,11 @@ t("marketing-message: a drafted element passes, at the id the gap report names",
 t("marketing-message: words no record stands behind are refused", !marketingMessage.draft({ kind: "headline", text: "The best tool ever" }).ok);
 t("marketing-message: a call to action with nowhere named is refused, and none is an answer", !marketingMessage.draft({ kind: "cta-primary", item: "next-step", text: "Start a venture", cites: [{ record: "foundation/core" }] }).ok
   && marketingMessage.draft({ kind: "cta-primary", item: "next-step", text: "Start a venture", destination: { kind: "none", note: "the founder decides where it leads" }, cites: [{ record: "foundation/core" }] }).ok);
+
+const shippedPriority = JSON.parse(readFileSync(new URL("../../functions/strategy/problem-priority.json", import.meta.url), "utf8"));
+t("problem-priority: the shipped weights redraft and pass", problemPriority.draft(shippedPriority).ok);
+t("problem-priority: a draft with no weights is refused, since the ranking has nothing to weigh", !problemPriority.draft({ ...shippedPriority, weights: undefined }).ok);
+t("problem-priority: a negative weight is refused", !problemPriority.draft({ ...shippedPriority, weights: { ...shippedPriority.weights, ranked_first: -1 } }).ok);
 
 console.log(fails ? `${fails} failed` : "record generators: all pass");
 process.exitCode = fails ? 1 : 0;

@@ -12,5 +12,10 @@
   "traits": [
     "Publishes releases by hand",
     "Has users on several operating systems"
-  ]
+  ],
+  "problem_forms": [
+    "first-run",
+    "one-build-per-machine"
+  ],
+  "core_problem": "first-run"
 }

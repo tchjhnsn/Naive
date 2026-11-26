@@ -656,6 +656,39 @@
         }
       }
     },
+    "problems": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "weights",
+        "set_by"
+      ],
+      "description": "The venture's own weights for ranking its customer problems (EE-219), in place of the unvalidated priors in packages/naive/src/functions/strategy/problem-priority.json. A weight left out keeps the prior, and a person sets them (set_by), because what counts as evidence of a problem is a judgment.",
+      "properties": {
+        "weights": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "raised_unprompted": {
+              "type": "number",
+              "minimum": 0
+            },
+            "ranked_first": {
+              "type": "number",
+              "minimum": 0
+            },
+            "pays_for_workaround": {
+              "type": "number",
+              "minimum": 0
+            }
+          }
+        },
+        "set_by": {
+          "type": "string",
+          "description": "The person who set these weights"
+        }
+      }
+    },
     "premise_lint": {
       "type": "object",
       "additionalProperties": false,

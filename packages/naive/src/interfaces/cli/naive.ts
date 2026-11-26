@@ -81,6 +81,10 @@
 //                                                   blocks downstream (EE-213)
 //   naive skipped handback <item> [--to <role>]     hand one item to the owning function agent as an open decision:
 //                                                   it recommends do-now, defer or drop, and a person decides
+//   naive problems [tree|rank] [--json]             the customer problem tree: each problem a narrower case (parent)
+//                                                   or a cause (cause_of) of another, the one target and each
+//                                                   profile's core problem; rank orders them by what the interviews
+//                                                   counted, labelled primary, secondary and tertiary (EE-219)
 //   naive owners [--function <id>] [--level <n>] [--json]
 //                                                   the accountable owner of each APQC element the venture runs, a
 //                                                   person or an agent, and where it came from (EE-187)
@@ -508,6 +512,11 @@ else if (cmd === "build" || cmd === "start") {
   // refused until a person approved the one below, and the heavier formats are the harness's, not Naive's.
   const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
   process.exit(run("packages/naive/src/engine/render-document.ts", [here(), ...args]));
+} else if (cmd === "problems") {
+  // The customer problem tree and its ranking (packages/naive/src/engine/problems.ts, EE-219). The subcommand, tree or
+  // rank, and --json pass through. It reads only.
+  const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
+  process.exit(run("packages/naive/src/engine/problems.ts", [here(), ...args]));
 } else if (cmd === "owners") {
   // Who is accountable for each element of APQC's framework (packages/naive/src/engine/element-owners.ts, EE-187).
   const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
