@@ -63,7 +63,7 @@ The result is drawn as the site's sitemap. The home page sits on top, with the p
   - the audiences and why;
   - any condition;
   - the internal record it draws on;
-  - the public variant a marketing agent writes, at `operations/marketing/content/<page>/<item>.mdx`.
+  - the public variant a marketing agent writes, at `marketing/content/<page>/<item>.mdx`, through the route `marketing/content/<page>/<item>` with the whole text as `{ "text": "..." }`.
 - **The public gate.** `packages/naive/src/engine/check-public.ts` checks every content file before it can be published:
   - it names the internal record it is a variant of, its audience, and whether it is published;
   - a published file names the person who approved it;
