@@ -61,6 +61,7 @@ import { checkPlan, gateWrite, heldDraft, ledgerHook, ownerOfWrite, reachOfWrite
 import { appendLine } from "./appends.ts";
 import { commitRawSource } from "./raw-source.ts";
 import { claimHandoff, handoffWriteRule } from "./handoff-claim.ts";
+import { briefPath, splitBrief } from "./handoff-brief.ts";
 import { LOCAL, attributeSources, connect, sourceFor } from "../store/connectors/index.ts";
 // Caching (packages/naive/src/engine/caching.ts): per-action memo, the record-level cache for command routes, and system/cache, system/judge, system/answer.
 import { command as cachedCommand, forget, internal as cacheInternal } from "../engine/caching.ts";
@@ -477,10 +478,28 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
     // the requester before a claim; after one, the claimant writes progress and evidence and the requester the
     // verification and acceptance. claimBase is the version that rule read, which the write below names.
     let claimBase, claimed = false;
+    // Handoff brief hook (packages/naive/src/router/handoff-brief.ts): brief_text, the Markdown brief, rides beside the
+    // record's fields; it is taken out before the schema and written to the file the record's brief names, once the
+    // record is written.
+    let handoffInput = inp, briefText: string | null = null, briefFile: string | null = null;
     if (r.record === "handoff" && inp) {
+      const split = splitBrief(inp);
+      if ("error" in split) return { ok: false, error: split.error, ...deprecated };
+      handoffInput = split.record;
+      briefText = split.text;
+      if (briefText !== null) {
+        if (remote) return { ok: false, error: `${route} lives in ${src.id}: its brief is kept beside it only in the venture's own folder, so write the brief there`, ...deprecated };
+        const at = briefPath(file, split.record.brief);
+        if ("error" in at) return { ok: false, error: at.error, ...deprecated };
+        briefFile = at.path;
+      }
+    }
+    if (r.record === "handoff" && handoffInput) {
       const person = actor === "person" && !actingAgent(provenance.agent?.id);
-      const rule = await handoffWriteRule({ store, file, input: inp, person, actorId: actor_id, agent: agentFromEnv(person ? "person" : "agent", via, { ...(actor_id && !person ? { id: actor_id } : {}), ...provenance.agent }) });
+      const rule = await handoffWriteRule({ store, file, input: handoffInput, person, actorId: actor_id, agent: agentFromEnv(person ? "person" : "agent", via, { ...(actor_id && !person ? { id: actor_id } : {}), ...provenance.agent }) });
       if (!rule.ok) return { ...rule, ...deprecated };
+      // The brief is the requester's outcome and work: once the handoff is claimed it stays as it was claimed.
+      if (briefText !== null && rule.stored?.claimed_by) return { ok: false, error: `${params.id} is claimed by ${rule.stored.claimed_by}, so its brief stays as it was claimed: write the record without brief_text`, ...deprecated };
       claimBase = rule.base;
       claimed = !!rule.stored?.requested_by && !!rule.stored?.claimed_by && rule.stored.role === actor_id;
     }
@@ -500,7 +519,7 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
       return { ...(await commitRawSource({ dir, id: String(params.id), route, input, store, sourceFile: file, agent, note: provenance.note, schemaName: schemaNameOf(String(r.schema)) })), ...deprecated };
     }
     // Not prose, so the input is the record, an object (checked above).
-    let rec: Obj = inp ?? {};
+    let rec: Obj = handoffInput ?? {};
     // A migrated venture's telos is a view of its canonical records; a telos.json written now would be a second record the lifecycle never reads.
     if (r.record === "telos" && !remote && migrated(dir)) return { ok: false, error: `${venture} keeps its goals and exit criteria as canonical records, so a telos.json is not written: write foundation/goals/telos (measures), foundation/goals/owner-outcome and foundation/exit-criteria/<phase> instead` };
     if (["idea-dump", "raw-text", "raw-dump", "triage"].includes(r.record) && existsSync(ventureFile(dir, file))) return { ok: false, error: `${route} is raw and immutable: add a new capture, do not edit this one` };
@@ -596,6 +615,8 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
     }
 
     const draft = gatedDraft;
+    // A held handoff waits whole for a person; its brief has no draft of its own, so it is written after acceptance.
+    if (draft && briefFile) return { ok: false, error: `the gate holds this write of ${route} as a draft for a person to accept, and a brief cannot wait with it: write the handoff without brief_text, and write the brief once a person accepts it`, ...deprecated };
     // Detection ledger hook (packages/naive/src/router/gate-hooks.ts): only when the venture keeps the gate detector, the gate's
     // confidence call becomes a trial, a person accepting a held draft resolves it as a false alarm, and a person's
     // revert of an accepted write resolves it as a miss. Without the detector file it is null and nothing changes.
@@ -615,7 +636,12 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
     }
     const entry = log(held2 ? held2.written : file, draft ? "draft" : provenance.activity ?? "write", r.view_of ? { statements: statementsIn(rec) } : {});
     const detector = ledger ? await ledger.after(entry.hash) : null;
-    return { ok: true, result: { written: held2 ? held2.written : file, draft, gate: gate?.class ?? null, provenance: entry.hash, note: draft ? (gate?.drafts ? `${r.record} is a ${gate.class} decision (${gate.level}, owner ${gate.owner}): written as a draft for a person to accept` : held ? `decision ${held.id} ${held.why}: written as a draft for a person to accept` : configured ? configured.why : "only a person settles a decision: written as a draft for a person to accept") : "written", ...(held ? { held_by: held.id } : {}), ...(configured ? { gate_rule: configured.rule, ...(configured.owner ? { owner: configured.owner } : {}) } : {}), ...(held2?.variants ? { variant: held2.variant, variants: held2.variants, decision: held2.decision } : {}), ...attributesOut, ...(detector ? { detector } : {}) }, ...deprecated };
+    let briefOut = {};
+    if (briefFile && briefText !== null) {
+      await store.write(briefFile, briefText);
+      briefOut = { brief: { written: briefFile, provenance: log(briefFile, provenance.activity ?? "write", { derived_from: [file] }).hash } };
+    }
+    return { ok: true, result: { ...briefOut, written: held2 ? held2.written : file, draft, gate: gate?.class ?? null, provenance: entry.hash, note: draft ? (gate?.drafts ? `${r.record} is a ${gate.class} decision (${gate.level}, owner ${gate.owner}): written as a draft for a person to accept` : held ? `decision ${held.id} ${held.why}: written as a draft for a person to accept` : configured ? configured.why : "only a person settles a decision: written as a draft for a person to accept") : "written", ...(held ? { held_by: held.id } : {}), ...(configured ? { gate_rule: configured.rule, ...(configured.owner ? { owner: configured.owner } : {}) } : {}), ...(held2?.variants ? { variant: held2.variant, variants: held2.variants, decision: held2.decision } : {}), ...attributesOut, ...(detector ? { detector } : {}) }, ...deprecated };
   }
   return { ok: false, error: `unhandled action ${action}` };
 }
