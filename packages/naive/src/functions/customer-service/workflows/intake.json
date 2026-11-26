@@ -12,7 +12,7 @@
     { "id": "summarize", "do": "Tell the founder how many cases are open, which are past the response target, which are complaints, and the most common contact reasons, each count citing the cases." }
   ],
   "done_criteria": [
-    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/records/validate.ts" },
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
     { "id": "policy-and-cases", "kind": "review", "check": "Is the support policy drafted for the founder with channels, targets and a refund rule, and does every open contact the founder named have a case with a kind, a reason and a status?", "reviewer": "growth-lead" }
   ]
 }

@@ -129,7 +129,9 @@ import { schemaNameOf } from "../../records/index.ts";
 import { naiveScript, PACKAGE_ROOT } from "../../core/scripts.ts";
 import { validateFile } from "../../records/validate.ts";
 import type { VentureRole, VentureTypes } from "../../records/types/records.d.ts";
+import { blockingStdio } from "../../core/stdio.ts";
 
+blockingStdio();
 const repo = new URL("../../../../..", import.meta.url).pathname;
 const [cmd, ...rest] = process.argv.slice(2);
 const opt = (n: string): string | undefined => { const i = rest.indexOf(`--${n}`); return i >= 0 ? rest[i + 1] : undefined; };

@@ -2,11 +2,11 @@
 // structured layout, every logical path still resolves, and the venture checks still pass.
 
 import { spawnSync } from "node:child_process";
-import { cpSync, existsSync, mkdtempSync, readFileSync, readdirSync, rmSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { entries } from "../core/provenance.ts";
-import { layoutOf, ventureFile } from "../core/venture-paths.ts";
+import { layoutOf, logical, logicalFiles, physical, ventureFile } from "../core/venture-paths.ts";
 import { naiveScript } from "../core/scripts.ts";
 
 const repo = new URL("../../../..", import.meta.url).pathname;
@@ -31,6 +31,12 @@ expect("the venture is structured: k-base/, meta/ and README.md", layoutOf(dir) 
 expect("logical paths resolve where the files went", ventureFile(dir, "provenance.jsonl") === join(dir, "meta/provenance.jsonl") && existsSync(ventureFile(dir, "decisions/statement-problem.decision.json")));
 expect("the provenance log keeps its chain and records the move", entries(dir).length === before + 1 && /structured layout/.test(String(entries(dir).at(-1)?.note)));
 expect("hats leave people/ for venture.json functions", !readdirSync(join(ws, "ventures/northstar/k-base/people/founders")).some((f) => "hats" in JSON.parse(readFileSync(join(ws, "ventures/northstar/k-base/people/founders", f), "utf8"))));
+// A structured business keeps its own code in src/ beside k-base/, as create-venture writes it (src/naive/done/venture-named.ts).
+mkdirSync(join(dir, "src/naive/done"), { recursive: true });
+writeFileSync(join(dir, "src/naive/done/venture-named.ts"), "export default () => true;\n");
+expect("code in src/ maps to itself both ways, so every logical file resolves", physical(dir, "src/naive/done/venture-named.ts") === "src/naive/done/venture-named.ts" && logical(dir, "src/naive/done/venture-named.ts") === "src/naive/done/venture-named.ts" && logicalFiles(dir).every((f) => existsSync(ventureFile(dir, f))), logicalFiles(dir).filter((f) => !existsSync(ventureFile(dir, f))).join(", "));
+const listed = spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/naive.ts"), "product", "read"], { cwd: dir, encoding: "utf8", env: { ...process.env, NAIVE_CEILING_DIRECTORIES: base } });
+expect("a list read works in a structured business with code in src/", listed.status === 0 && !/file not found/.test(listed.stdout + listed.stderr), (listed.stdout + listed.stderr).slice(0, 300));
 const again = naive("upgrade", dir, "--layout", "structured");
 expect("a structured venture is left alone", again.status === 0 && /already on the structured layout/.test(again.stdout));
 for (const c of ["check-ventures", "check-provenance", "check-people", "check-governance", "check-telos", "check-validation", "check-publication"]) {

@@ -13,7 +13,7 @@
     { "id": "summarize", "do": "Write the money summary: cash, monthly burn and months of runway projected from the budget, each figure citing the records it came from.", "writes": ["purpose/money/summary"] }
   ],
   "done_criteria": [
-    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/records/validate.ts" },
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
     { "id": "summary-cites", "kind": "review", "check": "Does every figure in the money summary cite the account or spend entries it came from?", "reviewer": "finance-lead" }
   ]
 }

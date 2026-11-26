@@ -12,7 +12,7 @@
     { "id": "summarize", "do": "Tell the founder how many customers and open opportunities there are, which have no reply or no next step, and which channel most opportunities came from, each count citing the records; propose to the growth lead which channels to test first.", "raises": ["set-priorities"] }
   ],
   "done_criteria": [
-    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/records/validate.ts" },
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
     { "id": "pipeline-complete", "kind": "review", "check": "Does every buyer the founder named have an opportunity with a stage, a source and a next step, and does every count in the summary cite its records?", "reviewer": "growth-lead" }
   ]
 }
