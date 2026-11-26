@@ -61,3 +61,7 @@ Without a key, a reasoning model fills the answers file by hand and names itself
 ```
 
 `roles` holds role ids (flagship, substrate, revenue-engine, wedge, end-product, option, unassigned), with `revenue_engine_tied` and `allowed_from` where they apply; `role_text` holds the words the Markdown shows. `test.ts` checks that the two agree.
+
+## Time
+
+Code here reads business time from the one clock, `packages/naive/src/core/clock.ts` (`now`, `nowMs`, `nowIso`), so `NAIVE_NOW` pins it for a simulation or a test, and reads `wallClock()` only for elapsed time, timeouts, lock staleness and unique names (EE-224). `node packages/naive/src/checks/check-clock.ts` fails on a direct read of the system clock.

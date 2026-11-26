@@ -25,6 +25,7 @@ import { VentureFs } from "../../core/effect/fs.ts";
 import { runPromise, runSync } from "../../core/effect/run.ts";
 import { layoutOf, logicalFiles, ventureFile } from "../../core/venture-paths.ts";
 import { git as runGit } from "../../core/runtime.ts";
+import { wallClock } from "../../core/clock.ts";
 
 /** The filesystem connector with Effect methods. Each needs VentureFs and fails with a tagged error. */
 export type EffectConnector = {
@@ -55,7 +56,7 @@ const withLock = <A, E>(f: string, use: Effect.Effect<A, E, "naive/VentureFs">):
     if (yield* fs.createExclusive(lock)) break;
     const st = yield* fs.stat(lock);
     if (!st) continue;
-    if (Date.now() - st.mtimeMs > LOCK_STALE_MS) { yield* fs.remove(lock); continue; }
+    if (wallClock() - st.mtimeMs > LOCK_STALE_MS) { yield* fs.remove(lock); continue; }
     if (i >= LOCK_TRIES) return yield* Effect.fail(new Refused({ rule: "locked", message: `${f} is locked by another writer` }));
     yield* Effect.sleep("10 millis");
   }

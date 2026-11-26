@@ -5,6 +5,7 @@
 import { readDataModel, readSchema } from "../../records/index.ts";
 import { validateValue } from "../../records/validate.ts";
 import type { AnatomyCellEnumCell, AnatomyCellNumberCell, DataModel } from "../../records/types/records.d.ts";
+import { now } from "../../core/clock.ts";
 
 type Cell = AnatomyCellNumberCell | AnatomyCellEnumCell;
 
@@ -34,7 +35,7 @@ export function allCells(record: string, given: Record<string, Cell | undefined>
  * @param venture the venture id
  * @param today YYYY-MM-DD
  */
-export function primaryAnatomy(venture: string, today = new Date().toISOString().slice(0, 10)) {
+export function primaryAnatomy(venture: string, today = now().toISOString().slice(0, 10)) {
   const industry = { venture, id: "primary", name: "unknown", updated: today, cells: allCells("industry-anatomy") };
   const market = { venture, id: "primary", segment: "unknown", primary: true, industry: "primary", updated: today, cells: allCells("market-anatomy") };
   const checks: [string, unknown][] = [["industry-anatomy.schema.json", industry], ["market-anatomy.schema.json", market]];

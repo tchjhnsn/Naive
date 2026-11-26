@@ -23,6 +23,7 @@ import { randomBytes } from "node:crypto";
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { dirname, isAbsolute, join, relative, resolve } from "node:path";
 import type { FounderIdea, FounderInspiration, FounderReference, WorkspaceFounder } from "../records/types/records.d.ts";
+import { now as clockNow } from "../core/clock.ts";
 
 export const FOUNDERS = "founders";
 const PRIVATE = "_private";
@@ -34,7 +35,7 @@ const HANDLE = /^[a-z0-9][a-z0-9-]*$/;
 const PUBLIC_DIRS = ["ideas", "references", "inspirations"];
 const readJson = <T>(f: string): T => JSON.parse(readFileSync(f, "utf8")) as T;
 const writeJson = (f: string, o: unknown): void => { mkdirSync(dirname(f), { recursive: true }); writeFileSync(f, JSON.stringify(o, null, 2) + "\n"); };
-const today = (now: Date = new Date()): string => now.toISOString().slice(0, 10);
+const today = (now: Date = clockNow()): string => now.toISOString().slice(0, 10);
 const slug = (s: string): string => s.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60) || "item";
 const folder = (ws: string, handle: string): string => join(ws, FOUNDERS, handle);
 const founderFile = (ws: string, handle: string): string => join(folder(ws, handle), "founder.json");

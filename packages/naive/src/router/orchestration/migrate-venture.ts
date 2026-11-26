@@ -25,6 +25,7 @@ import { recordPath } from "../../records/index.ts";
 import { HostedRefusal, isHosted } from "../../core/runtime.ts";
 import type { RouteEntry } from "../router.ts";
 import type { DecisionRecord, KnowledgeSources, Venture } from "../../records/types/records.d.ts";
+import { now } from "../../core/clock.ts";
 
 /** One record the agent proposed, and what became of it. */
 type PlanItem = { id: string; from: string[]; route: string; record: unknown; reshaping: string; confidence: number; status: string; why?: string; at?: string };
@@ -124,7 +125,7 @@ Files: ${JSON.stringify(Object.fromEntries(given.map((f) => [f.path, f.text])))}
   }
   for (const l of answer.left_behind ?? []) if (l?.from) { used.add(l.from); left.push({ from: l.from, why: String(l.why ?? "the agent left it") }); }
   for (const f of given) if (!used.has(f.path)) left.push({ from: f.path, why: "the agent did not place it" });
-  return { from: src, venture: (load(join(dir, "venture.json")) as Venture).id, at: new Date().toISOString(), items, left_behind: left };
+  return { from: src, venture: (load(join(dir, "venture.json")) as Venture).id, at: now().toISOString(), items, left_behind: left };
 }
 
 /** Writes the plan into the venture and proposes one open decision per function it touches. */

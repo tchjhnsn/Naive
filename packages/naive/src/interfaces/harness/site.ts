@@ -16,6 +16,7 @@ import { dirname, join } from "node:path";
 import { judgeCommand } from "../../engine/caching.ts";
 import { envCommand, hostHook, isHosted, missingHook } from "../../core/runtime.ts";
 import { factsOf, icpOf, request, score, PRESENCE, type Site } from "../../functions/marketing-and-sales/marketing/site/presence.ts";
+import { wallClock } from "../../core/clock.ts";
 
 /** A command's answer: its exit code and what it printed. */
 type Out = { code: number | null, out: string, err: string };
@@ -34,7 +35,7 @@ const run = (cmd: string[], args: string[], input?: string): Promise<Out> => new
 
 /** Read, judge and score one site. Returns the presence result; writes it into the venture if given. */
 export async function scan(url: string, { venture = null, flags = {}, pages = 10, log = () => {} }: { venture?: string | null, flags?: Record<string, boolean>, pages?: number, log?: (m: string) => void } = {}) {
-  const t0 = Date.now();
+  const t0 = wallClock();
   const siteHook = hostHook("site");
   if (isHosted() && !siteHook) throw missingHook("reading a site", "site");
   const reader = judgeCommand(envCommand("NAIVE_SITE_CMD"));
@@ -42,7 +43,7 @@ export async function scan(url: string, { venture = null, flags = {}, pages = 10
   const r = siteHook ? await runHook(siteHook, [url, "--pages", String(pages)]) : await run(reader ?? [], [url, "--pages", String(pages)]);
   if (r.code !== 0) throw new Error(`could not read ${url}: ${r.err.trim() || `exit ${r.code}`}`);
   const site = JSON.parse(r.out) as Site;
-  log(`read ${site.pages.filter((p) => !p.error).length} pages of ${site.site} via ${site.via} in ${Date.now() - t0} ms`);
+  log(`read ${site.pages.filter((p) => !p.error).length} pages of ${site.site} via ${site.via} in ${wallClock() - t0} ms`);
   const icp = icpOf(venture, site);
   let answers: Record<string, { noul?: number } | undefined> | null = null;
   const judgeHook = hostHook("judge");

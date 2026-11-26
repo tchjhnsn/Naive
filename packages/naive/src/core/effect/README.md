@@ -84,3 +84,7 @@ stateDiagram-v2
 
 - The router, the engine and the rest of the checks are not written in Effect yet; each unit moves in its own pull request.
 - The venture layer holds `VentureFs`, `NaiveConfig`, `Provenance`, `HostRuntime`, `Judge` and the tracer. `RecordValidator` (`../../records/record-validator.ts`) and `Connectors` (`../../store/connectors/service.ts`) are references with defaults in their own units, because those units import core and not the other way, so they need no layer. The other services in [the design](../../../../../docs/design/TYPESCRIPT_AND_EFFECT_RUNTIME_2026-11-22.md) (`Clock`, and `WorkflowEngine` as a venture service: durable handoffs build their own engine in `packages/naive/src/router/orchestration/durable-handoff.ts`) are not built, and the CLIs, the MCP server and the local API do not boot a venture runtime of their own yet (the code among them written as Effects runs through the process's runtime in `run.ts`).
+
+## Time
+
+Code here reads business time from the one clock, `packages/naive/src/core/clock.ts` (`now`, `nowMs`, `nowIso`), so `NAIVE_NOW` pins it for a simulation or a test, and reads `wallClock()` only for elapsed time, timeouts, lock staleness and unique names (EE-224). `node packages/naive/src/checks/check-clock.ts` fails on a direct read of the system clock.

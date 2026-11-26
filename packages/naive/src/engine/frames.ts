@@ -27,6 +27,7 @@ import { ventureFile } from "../core/venture-paths.ts";
 import { envCommand, hostHook, isHosted, missingHook } from "../core/runtime.ts";
 
 import type { Frame } from "../records/types/records.d.ts";
+import { nowMs } from "../core/clock.ts";
 
 /** A frame as a package ships it, with the package and file it came from. */
 export type LoadedFrame = Frame & { package: string; file: string };
@@ -169,7 +170,7 @@ async function ask(dir: string, req: ReturnType<typeof request> & { package?: st
 // ---- run ----
 
 /** Options a lookup found, kept only when dated within the frame's freshness and cited. */
-export function fresh(f: Frame, lookup: { options?: Option[] } | Option[] | null | undefined, now = Date.now()) {
+export function fresh(f: Frame, lookup: { options?: Option[] } | Option[] | null | undefined, now = nowMs()) {
   const max = f.freshness.max_age_days * 864e5;
   const list: Option[] = Array.isArray(lookup) ? lookup : lookup?.options ?? [];
   const kept = list.filter((o): o is Required<Option> => !!(o.option && o.source && o.as_of) && now - Date.parse(String(o.as_of)) <= max);
@@ -180,7 +181,7 @@ export function fresh(f: Frame, lookup: { options?: Option[] } | Option[] | null
  * Match (or take) a frame, judge its premises against the venture, and propose its decisions, open.
  * via is the interface the proposals are recorded as coming through (mcp unless the caller says).
  */
-export async function run(dir: string, { id, text, lookup, now = Date.now(), agentId = "frames", harness, model, via = "mcp" }: {
+export async function run(dir: string, { id, text, lookup, now = nowMs(), agentId = "frames", harness, model, via = "mcp" }: {
   id?: string; text?: string; lookup?: { options?: Option[] } | Option[] | null; now?: number; agentId?: string; harness?: string; model?: string; via?: string;
 } = {}) {
   const f = id ? frameOf(id) : (text ? frameOf(match(text)[0]?.id) : null);

@@ -23,6 +23,7 @@ import { VentureFs } from "../../core/effect/fs.ts";
 import { runMain, runPromise, runSync } from "../../core/effect/run.ts";
 import { ventureFile } from "../../core/venture-paths.ts";
 import type { RecordRoute } from "../../records/routes/routes.ts";
+import { now } from "../../core/clock.ts";
 
 /** Where an item sits in the route table, when it is a record. */
 export type RouteOf = { route: string | null; record: string | null };
@@ -110,7 +111,7 @@ export const buildEffect = (dir: string, { write = true, sources }: BuildOptions
     }
   }
   stats.items = items.length;
-  const catalog: Catalog = { built_at: new Date().toISOString(), sources: conns.map(({ source }) => ({ id: source.id, connector: source.connector })), items };
+  const catalog: Catalog = { built_at: now().toISOString(), sources: conns.map(({ source }) => ({ id: source.id, connector: source.connector })), items };
   if (write) yield* fs.writeText(ventureFile(dir, FILE), JSON.stringify(catalog) + "\n");
   return { catalog, stats };
 });

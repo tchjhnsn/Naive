@@ -5,6 +5,7 @@ import { Context, Effect, Layer, Predicate } from "effect";
 import { appendFileSync, closeSync, existsSync, linkSync, mkdirSync, openSync, readdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { IoError, NotFound, ParseError } from "./errors.ts";
+import { wallClock } from "../clock.ts";
 
 export type VentureFsShape = {
   readonly exists: (path: string) => Effect.Effect<boolean>;
@@ -56,7 +57,7 @@ export const memoryFs = (files: Record<string, string> = {}): VentureFsShape & {
   const mtimes = new Map<string, number>();
   let inode = 0;
   const inodes = new Map<string, number>();
-  const touch = (path: string) => { mtimes.set(path, Date.now()); if (!inodes.has(path)) inodes.set(path, ++inode); };
+  const touch = (path: string) => { mtimes.set(path, wallClock()); if (!inodes.has(path)) inodes.set(path, ++inode); };
   const under = (dir: string) => [...map.keys()].filter((k) => k.startsWith(dir.endsWith("/") ? dir : `${dir}/`));
   return {
     files: map,
@@ -76,7 +77,7 @@ export const memoryFs = (files: Record<string, string> = {}): VentureFsShape & {
     link: (from, to) => Effect.suspend(() => {
       const t = map.get(from);
       if (t === undefined || map.has(to)) return Effect.fail(new IoError({ path: from, op: "link", cause: t === undefined ? "missing" : "exists" }));
-      map.set(to, t); inodes.set(to, inodes.get(from) ?? ++inode); mtimes.set(to, mtimes.get(from) ?? Date.now());
+      map.set(to, t); inodes.set(to, inodes.get(from) ?? ++inode); mtimes.set(to, mtimes.get(from) ?? wallClock());
       return Effect.void;
     }),
   };

@@ -10,6 +10,7 @@
 //     grade low or better; down one when an item at that grade or better contradicts the claim. No evidence: very low.
 
 import type { ValidationEvidence } from "../records/types/records.d.ts";
+import { now } from "../core/clock.ts";
 
 export const LEVELS: string[] = ["very low", "low", "moderate", "high"];
 export const WEIGHT: Record<string, number> = { "very low": 0.1, low: 0.4, moderate: 0.7, high: 1 };
@@ -19,7 +20,7 @@ export const STALE_MONTHS = 18, MIN_SAMPLE = 5;
 /** The fields of an evidence item that grade it. */
 export type GradedFields = Pick<ValidationEvidence, "kind" | "audience" | "collected"> & Partial<Pick<ValidationEvidence, "sample" | "specificity">>;
 
-export function gradeItem(e: GradedFields, today = new Date(), staleMonths = STALE_MONTHS): { level: string; why: string[] } {
+export function gradeItem(e: GradedFields, today = now(), staleMonths = STALE_MONTHS): { level: string; why: string[] } {
   let g = START[e.kind];
   const why: string[] = [];
   const down = (n: number, reason: string) => { g -= n; why.push(reason); };
@@ -32,7 +33,7 @@ export function gradeItem(e: GradedFields, today = new Date(), staleMonths = STA
   return { level: LEVELS[Math.max(0, g)], why };
 }
 
-export function gradeRecord(rec: { evidence?: ValidationEvidence[] }, today = new Date(), staleMonths = STALE_MONTHS) {
+export function gradeRecord(rec: { evidence?: ValidationEvidence[] }, today = now(), staleMonths = STALE_MONTHS) {
   const items = (rec.evidence ?? []).map((e) => ({ e, ...gradeItem(e, today, staleMonths) }));
   const sup = items.filter((i) => i.e.supports !== false);
   if (!sup.length) return { level: "very low", weight: WEIGHT["very low"], why: [items.length ? "no supporting evidence" : "claim only: no evidence cited"], items };

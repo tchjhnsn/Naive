@@ -9,6 +9,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync
 import { dirname, join } from "node:path";
 import { ventureFile } from "../core/venture-paths.ts";
 import type { Adapter } from "../records/types/records.d.ts";
+import { now as clockNow } from "../core/clock.ts";
 
 const repo = new URL("../../../..", import.meta.url).pathname;
 export const STATE = ".naive/adapters.json";
@@ -76,7 +77,7 @@ export async function adapt(dir: string, name: string) {
     if (want.some((w) => w.path === p) || !existsSync(ventureFile(dir, p))) continue;
     if (sha(readFileSync(ventureFile(dir, p), "utf8")) === h) { rmSync(ventureFile(dir, p)); removed.push(p); } else kept.push({ path: p, why: "no longer needed, but changed by a person, so kept" });
   }
-  state.adapters[name] = { at: new Date().toISOString(), files };
+  state.adapters[name] = { at: clockNow().toISOString(), files };
   mkdirSync(join(dir, ".naive"), { recursive: true });
   writeFileSync(ventureFile(dir, STATE), JSON.stringify(state, null, 2) + "\n");
   return { adapter: name, written, current, kept, removed, skills: want.filter((w) => w.skill).map((w) => w.skill) };

@@ -20,6 +20,7 @@ import { appendFileSync, existsSync, mkdirSync, readdirSync, readFileSync, statS
 import { dirname, join, relative, resolve } from "node:path";
 import { leaks } from "./check-leaks.ts";
 import type { NaiveConfig } from "../records/types/records.d.ts";
+import { now } from "../core/clock.ts";
 
 type PublishLint = NonNullable<NaiveConfig["publish_lint"]>;
 export type Level = "off" | "warn" | "error";
@@ -165,7 +166,7 @@ export async function check(paths: string[], { venture }: { venture?: string } =
 
 export const logFile = (venture: string | undefined, log: string | undefined) => log ?? join(venture ?? process.cwd(), ".naive", "lint-findings.jsonl");
 
-export function append(file: string, findings: Finding[], at = new Date().toISOString()) {
+export function append(file: string, findings: Finding[], at = now().toISOString()) {
   mkdirSync(dirname(file), { recursive: true });
   appendFileSync(file, findings.map((f) => JSON.stringify({ at, ...f }) + "\n").join(""));
 }

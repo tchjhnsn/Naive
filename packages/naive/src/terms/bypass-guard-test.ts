@@ -104,6 +104,8 @@ export const REGISTRY: Registry = {
   "packages/naive/src/checks/check-reasons.ts": plain("cited files still match the hash frozen at approval"),
   "packages/naive/src/checks/check-recipes.ts": plain("recipes across files: schema shape, sha addresses, hash chains, window order, budget counts, references to plans, recipes, record types and library signals, and that the sandbox renders the same record again, with and without each noise signal; it compares canonical JSON and checks the projector's labels by ablation, it does not decide what a thing is"),
   "packages/naive/src/checks/check-recipes-test.ts": plain("proves the recipes check breaks on each rule on copies of the example venture"),
+  "packages/naive/src/checks/check-clock-test.ts": plain("proves the one clock pins every reader and the clock check catches a direct read"),
+  "packages/naive/src/checks/check-clock.ts": plain("business time comes from core/clock.ts; it matches code text for direct system clock reads"),
   "packages/naive/src/checks/check-record-paths-test.ts": plain("proves the record paths check catches what it must"),
   "packages/naive/src/checks/check-record-paths.ts": plain("code reads schema files and the data model through packages/naive/src/records; it matches path text"),
   "packages/naive/src/engine/check-roadmap.ts": plain("roadmap steps form no cycle and name known frames and roles"),

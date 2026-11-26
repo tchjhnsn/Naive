@@ -63,3 +63,7 @@ flowchart TD
 - Calls: [`checks`](../checks/README.md), [`engine`](../engine/README.md), [`store`](../store/README.md), [`records`](../records/README.md).
 
 The router and `boundaries.ts` validate each record before a write in process, with `validateFile` from [`packages/naive/src/records/validate.ts`](../records/README.md). No write starts a Python process.
+
+## Time
+
+Code here reads business time from the one clock, `packages/naive/src/core/clock.ts` (`now`, `nowMs`, `nowIso`), so `NAIVE_NOW` pins it for a simulation or a test, and reads `wallClock()` only for elapsed time, timeouts, lock staleness and unique names (EE-224). `node packages/naive/src/checks/check-clock.ts` fails on a direct read of the system clock.

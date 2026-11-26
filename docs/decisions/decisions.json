@@ -3013,6 +3013,32 @@
           "expect": "exists"
         }
       ]
+    },
+    {
+      "id": "EE-224",
+      "date": "2026-11-26",
+      "status": "in-force",
+      "decision": "Naive reads business time from one clock, packages/naive/src/core/clock.ts. now(), nowMs() and nowIso() give the time a record was written, what is due and what is stale; NAIVE_NOW (ISO 8601) pins it for a simulation or a test, an unreadable value throws instead of falling back to the system clock, and a hosted run ignores it. wallClock() is the system clock and is used only for elapsed time, timeouts, lock staleness against file mtimes and unique names. naiveClock is Effect's Clock over the same time (withNaiveClock provides it), and sleeping waits in real time. Every module under packages/naive/src that read the system clock now reads the one clock, and packages/naive/src/checks/check-clock.ts fails on a direct read outside three named files.",
+      "why": "Step 2 of the simulation design (EE-223): a simulated business must have every part of Naive agree on the simulated date. engine/clock.ts already honoured NAIVE_NOW, but 87 other modules read the system clock directly, among them provenance, freshness, decisions and the loop, so a run with a pinned date wrote real times into its records. Elapsed times and lock staleness must stay on real time, or a pinned clock would stop timeouts and break locks.",
+      "related": [
+        "EE-125",
+        "EE-183",
+        "EE-223"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/core/clock.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/checks/check-clock.ts",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
     }
   ]
 }

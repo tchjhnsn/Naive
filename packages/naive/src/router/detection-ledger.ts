@@ -16,6 +16,7 @@ import { lineHash } from "../core/provenance.ts";
 import { call } from "./router.ts";
 import type { Answer, CallProvenance } from "./router.ts";
 import type { DetectorTrial } from "../records/types/records.d.ts";
+import { now } from "../core/clock.ts";
 
 const RETRIES = 200;
 const pause = () => new Promise<void>((ok) => setTimeout(ok, 1 + Math.random() * 10));
@@ -81,7 +82,7 @@ export function verify(lines: Line[]): { ok: boolean; errors: string[] } {
 export async function appendTrial(ctx: Ctx, { detector, score, criterion, call: made, provenance, id, at, note }: {
   detector: string; score: number; criterion: DetectorTrial["criterion"]; call: "yes" | "no" | "unsure"; provenance?: string; id?: string; at?: string; note?: string;
 }) {
-  const line = drop({ kind: "trial", id: id ?? randomUUID(), detector, at: at ?? new Date().toISOString(), score, criterion, call: made, provenance, note });
+  const line = drop({ kind: "trial", id: id ?? randomUUID(), detector, at: at ?? now().toISOString(), score, criterion, call: made, provenance, note });
   return (await call({ venture: ctx.venture, workspace: ctx.workspace, route: ledgerRoute(detector), action: "append", input: { line }, actor: ctx.actor ?? "agent", actor_id: ctx.actor_id, via: ctx.via ?? "router", provenance: ctx.provenance })) as Appended;
 }
 
@@ -99,7 +100,7 @@ export async function resolveTrial(ctx: Ctx, { detector, trial, outcome, by, sig
     const done = lines.find((l) => l.kind === "resolution" && l.trial === trial);
     if (done) return { ok: false, error: `trial ${trial} is already resolved as ${done.outcome} (${done.id})`, resolved_by: done.id };
     if (!(FITS[t.call ?? ""] ?? []).includes(outcome)) return { ok: false, error: `trial ${trial} was a ${t.call} call, which cannot resolve as ${outcome}` };
-    const line = drop({ kind: "resolution", id: id ?? randomUUID(), detector, at: at ?? new Date().toISOString(), trial, outcome, signal, by, note });
+    const line = drop({ kind: "resolution", id: id ?? randomUUID(), detector, at: at ?? now().toISOString(), trial, outcome, signal, by, note });
     const res = await call({ venture: ctx.venture, workspace: ctx.workspace, route: ledgerRoute(detector), action: "append", input: { line, base: version }, actor: ctx.actor ?? "person", actor_id: ctx.actor_id, via: ctx.via ?? "router", provenance: ctx.provenance });
     if (res.ok || !res.conflict || i >= RETRIES) return res as Appended;
     await pause();

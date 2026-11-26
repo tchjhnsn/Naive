@@ -46,6 +46,7 @@ import type { Scored } from "../engine/recipes/eval-set.ts";
 import { chainOnto } from "../engine/generators/experiment.ts";
 import { gateWrite, heldDraft } from "./gate-hooks.ts";
 import type { EvalPlan, Experiment } from "../records/types/records.d.ts";
+import { now as clockNow, wallClock } from "../core/clock.ts";
 
 type Obj = Record<string, unknown>;
 type Answer = { ok: boolean; [k: string]: unknown };
@@ -117,12 +118,12 @@ export function liveHistory(dir: string, lines: readonly Experiment[]): { sha: s
 async function locked<T>(dir: string, pattern: string, fn: () => Promise<T>): Promise<T> {
   const lock = ventureFile(dir, `.naive/recipes/${sha(pattern).slice(0, 16)}.lock`);
   mkdirSync(dirname(lock), { recursive: true });
-  const STALE = 10 * 60_000, until = Date.now() + STALE;
+  const STALE = 10 * 60_000, until = wallClock() + STALE;
   for (;;) {
     try { closeSync(openSync(lock, "wx")); break; } catch (e) {
       if ((e as { code?: string }).code !== "EEXIST") throw e;
-      try { if (Date.now() - statSync(lock).mtimeMs > STALE) { rmSync(lock, { force: true }); continue; } } catch { continue; }
-      if (Date.now() > until) throw new Error(`another write to recipes/${pattern} holds its lock`);
+      try { if (wallClock() - statSync(lock).mtimeMs > STALE) { rmSync(lock, { force: true }); continue; } } catch { continue; }
+      if (wallClock() > until) throw new Error(`another write to recipes/${pattern} holds its lock`);
       await new Promise((ok) => setTimeout(ok, 50));
     }
   }
@@ -204,7 +205,7 @@ export async function recipeAction(c: RecipeCall): Promise<Answer> {
       Object.assign(attributes, { "naive.outcome": scored.verdict, ...("dev" in scored ? { "naive.score": scored.dev.score, "naive.threshold": scored.dev.margin } : {}) });
       const span = tracing(dir).on ? { trace_id: ctx.trace_id, span_id: ctx.span_id, ...(ctx.session !== ctx.trace_id ? { session: ctx.session } : {}) } : undefined;
       const lineOf = (provenance: string | undefined) => Object.fromEntries(Object.entries({
-        kind: "experiment", id: sha(`${plan.sha} ${candidate} ${base ?? "null"}`).slice(0, 24), at: new Date().toISOString(), pattern, plan: plan.sha, candidate, base,
+        kind: "experiment", id: sha(`${plan.sha} ${candidate} ${base ?? "null"}`).slice(0, 24), at: clockNow().toISOString(), pattern, plan: plan.sha, candidate, base,
         verdict: scored.verdict, kept_as: "kept_as" in scored ? scored.kept_as : undefined, dev: "dev" in scored ? scored.dev : undefined, training: "training" in scored ? scored.training : undefined,
         reason: scored.reason, actor: agent, span, provenance,
       }).filter(([, v]) => v !== undefined)) as unknown as Omit<Experiment, "prev" | "hash">;

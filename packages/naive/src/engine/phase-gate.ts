@@ -32,6 +32,7 @@ import { readDataModel, venturePaths } from "../records/index.ts";
 import { gradeRecord, LEVELS } from "./evidence-grade.ts";
 import { CONFIG } from "./naive-config.ts";
 import type { NaiveConfig, PhaseGatePolicies, PhaseGatePoliciesLevel } from "../records/types/records.d.ts";
+import { now } from "../core/clock.ts";
 
 export type Level = PhaseGatePoliciesLevel;
 export type Boundary = "fail-open" | "fail-closed";
@@ -115,7 +116,7 @@ export function itemStrength(item: GateItem, ctx: GateContext): Strength {
   if (missing.length) return { level: "very low", missing, why: [`${missing.join(", ")} ${missing.length === 1 ? "is" : "are"} empty`], next: `fill ${missing.join(", ")} in ${found?.file}` };
 
   if (kind === "grade") {
-    const g = gradeRecord(rec, ctx.today ?? new Date(), ctx.staleMonths);
+    const g = gradeRecord(rec, ctx.today ?? now(), ctx.staleMonths);
     const level = g.level as Level;
     const up = rank(level) < 3 ? (at(rank(level) + 1) as "low" | "moderate" | "high") : null;
     return { level, missing: [], why: [`evidence grades ${level}`, ...g.why], next: up ? `${up}: ${GRADE_NEXT[up]}` : null };
@@ -124,7 +125,7 @@ export function itemStrength(item: GateItem, ctx: GateContext): Strength {
   if (kind === "count") {
     const n = countedInterviews(item.measure.of, ctx).length;
     const byCount = levelFromCount(n, ctx.countLevels);
-    const g = gradeRecord(rec, ctx.today ?? new Date(), ctx.staleMonths).level as Level;
+    const g = gradeRecord(rec, ctx.today ?? now(), ctx.staleMonths).level as Level;
     const level = rank(g) > rank(byCount) ? g : byCount;
     const why = [`${n} ${countNoun(item.measure.of)} (${byCount})`, ...(rank(g) > rank(byCount) ? [`the record's own evidence grades ${g}`] : [])];
     if (rank(level) >= 3) return { level, missing: [], why, next: null, count: n };

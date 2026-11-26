@@ -19,6 +19,7 @@ import type { WorkflowEngine, WorkflowInstance } from "effect/workflow/WorkflowE
 import { NodeSqlite } from "./node-sqlite.ts";
 import { crashSeam } from "../crash-seam.ts";
 import { hostHook, missingHook } from "../runtime.ts";
+import { now } from "../clock.ts";
 
 /** The durable engines naive.config.json may name. */
 export type DurableEngine = "memory" | "sqlite" | "postgres";
@@ -95,7 +96,7 @@ export function openRun(dir: string, kind: string, name: string): string {
   try { return (JSON.parse(readFileSync(f, "utf8")) as { id: string }).id; } catch { /* no open run */ }
   const id = randomUUID();
   mkdirSync(dirname(f), { recursive: true });
-  writeFileSync(f, JSON.stringify({ id, opened: new Date().toISOString() }) + "\n");
+  writeFileSync(f, JSON.stringify({ id, opened: now().toISOString() }) + "\n");
   return id;
 }
 

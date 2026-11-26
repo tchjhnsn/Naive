@@ -22,6 +22,7 @@ import { ventureFile } from "../core/venture-paths.ts";
 import { findWorkspace } from "./workspace.ts";
 import { HostedRefusal, isHosted } from "../core/runtime.ts";
 import type { Activity, ActivitySummary, Venture } from "../records/types/records.d.ts";
+import { now as clockNow } from "../core/clock.ts";
 
 export const GAP_MINUTES = 10;
 export const NUDGE_DAYS = 7;
@@ -146,7 +147,7 @@ export function summarize(venture: string, tz: string, activeDates: string[], to
 }
 
 /** Writes each day's record and the summary into each venture's operations/activity/. */
-export function writeActivity(result: VentureActivity[], now = new Date()): string[] {
+export function writeActivity(result: VentureActivity[], now = clockNow()): string[] {
   const written: string[] = [];
   for (const v of result) {
     const folder = ventureFile(v.dir, "operations/activity");

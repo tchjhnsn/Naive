@@ -34,6 +34,7 @@ import { adopted } from "./naive-config.ts";
 import { ventureFile } from "../core/venture-paths.ts";
 import { scale } from "./canonical.ts";
 import { readDataModel, venturePaths } from "../records/index.ts";
+import { now as clockNow } from "../core/clock.ts";
 
 /** A record's state in this venture. */
 type Status = "confirmed" | "agent" | "draft" | "missing";
@@ -178,7 +179,7 @@ export function packages(dir: string, { flags = {}, answers = null, routes = nul
   const order = (a: Fit, b: Fit) => ({ now: 0, next: 1, held: 2 }[a.in] - { now: 0, next: 1, held: 2 }[b.in]) || b.fit - a.fit;
   core.sort(order); handoff.sort(order);
   const open = core.filter((p) => p.in === "now");
-  const built = { version: PACKAGES.version, venture: v.id, name: v.name, phase, built_at: new Date().toISOString().replace(/\.\d+Z$/, "Z"),
+  const built = { version: PACKAGES.version, venture: v.id, name: v.name, phase, built_at: clockNow().toISOString().replace(/\.\d+Z$/, "Z"),
     situation: { facts: Object.fromEntries(questions.map((q) => [q.id, q.value])), questions: questions.map((q) => ({ id: q.id, ask: q.ask, value: q.value, by: q.by, ...(q.p != null ? { p: q.p } : {}), moves: q.moves })) },
     progress: open.length ? r2(open.reduce((s, p) => s + p.progress, 0) / open.length) : 0,
     complete: [...core, ...handoff].filter((p) => p.in === "now" && p.state === "complete").map((p) => p.id),

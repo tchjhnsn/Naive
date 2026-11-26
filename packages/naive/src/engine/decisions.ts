@@ -43,6 +43,7 @@ import { grantBacked, layoutOf, liveGrant, logicalFiles, readDelegation, scopeWi
 import { readDataModel, schemaNameOf, venturePaths } from "../records/index.ts";
 import { validateFile } from "../records/validate.ts";
 import type { DataModel, DecisionRecord, DecisionRecordReason, DecisionRights, Delegation, People, StrategicFoundation, Venture } from "../records/types/records.d.ts";
+import { now as clockNow, nowMs } from "../core/clock.ts";
 
 /** Where a decision in the matrix comes from: a root, a decision record, an unconfirmed foundation statement or an agent's draft. */
 export type DecisionSource = "root" | "file" | "foundation" | "draft";
@@ -171,7 +172,7 @@ export function decidedPath(file: string): string {
 export function decisions(dir: string, now?: number | string | Date): Matrix {
   return now === undefined ? memo("decisions", () => decisionsAt(dir), { dir }) : decisionsAt(dir, Number(now));
 }
-function decisionsAt(dir: string, now = Date.parse(process.env.DECISIONS_NOW ?? "") || Date.now()): Matrix {
+function decisionsAt(dir: string, now = Date.parse(process.env.DECISIONS_NOW ?? "") || nowMs()): Matrix {
   const venture: Venture = load(join(dir, "venture.json"));
   const phase = PHASES.indexOf(venture.phase);
   const productOnly = venture.kind === "product";
@@ -323,7 +324,7 @@ export function actionFor(d: { id: string; question: string; source: DecisionSou
 /** A decision's own weight, before anything that waits on it (EE-057): a deadline, a stale parent, what
  *  it unlocks, whether it settles the foundation, a draft ready to approve, outcomes to test. Scored for
  *  every open decision, so a gate can carry the weight of what it holds (packages/naive/src/engine/docket.ts). */
-export function ownScore(d: Scorable, phase: string, now = Date.now()): { score: number; why: string[]; why_cites?: WhyCite[] } {
+export function ownScore(d: Scorable, phase: string, now = nowMs()): { score: number; why: string[]; why_cites?: WhyCite[] } {
   const why: string[] = [];
   let s = 0;
   if (d.render === "overdue") { s += 100; why.push("past its due time"); }
@@ -359,7 +360,7 @@ export function ownScore(d: Scorable, phase: string, now = Date.now()): { score:
 /** Which open decisions matter most now, and why (EE-057): a decision's own weight plus 12 for each
  *  decision that waits on it. Ranks the decisions that render now, overdue or stale; the others keep
  *  rank null. Higher first; ties keep their order. */
-export function rank(ds: ResolvedDecision[], phase: string, now = Date.now()): RankedDecision[] {
+export function rank(ds: ResolvedDecision[], phase: string, now = nowMs()): RankedDecision[] {
   const below = (id: string) => ds.filter((x) => x.held_by === id || x.parent === id).length;
   const scored = ds.map((d): RankedDecision => {
     if (!["now", "overdue", "stale"].includes(d.render) || d.source === "root") return { ...d, rank: null };
@@ -463,7 +464,7 @@ export function propose(dir: string, input: ProposeInput | null | undefined, { a
     // An agent never un-decides (EE-058): the decided version stays current, and the new wording waits
     // in proposed as a draft of the next version until a person approves it.
     if (!rest.answer) return { ok: false, error: `${rest.id} is decided; propose new wording as an answer, and a person approves it as the next version` };
-    d = { ...before, proposed: { answer: rest.answer, ...(rest.options ? { options: rest.options } : {}), drafted_by, proposed_at: new Date().toISOString().replace(/\.\d+Z$/, "Z") } };
+    d = { ...before, proposed: { answer: rest.answer, ...(rest.options ? { options: rest.options } : {}), drafted_by, proposed_at: clockNow().toISOString().replace(/\.\d+Z$/, "Z") } };
   } else {
     // New wording for an open decision keeps what the agent did not restate: its parent, boundary, unlocks.
     if (rest.reasons) rest.reasons = stamp(dir, rest.reasons);
@@ -480,7 +481,7 @@ export function propose(dir: string, input: ProposeInput | null | undefined, { a
 /** The decision with its current version moved into versions and the version number raised. */
 function nextVersion(d: DecisionRecord): DecisionRecord {
   const { versions = [], ...cur } = d;
-  const snap = { version: cur.version ?? 1, status: cur.status, answer: cur.answer ?? null, ...(cur.options ? { options: cur.options } : {}), ...(cur.provenance ? { provenance: cur.provenance } : {}), ...(cur.merged?.version === (cur.version ?? 1) ? { merged: cur.merged } : {}), superseded_at: new Date().toISOString().replace(/\.\d+Z$/, "Z") };
+  const snap = { version: cur.version ?? 1, status: cur.status, answer: cur.answer ?? null, ...(cur.options ? { options: cur.options } : {}), ...(cur.provenance ? { provenance: cur.provenance } : {}), ...(cur.merged?.version === (cur.version ?? 1) ? { merged: cur.merged } : {}), superseded_at: clockNow().toISOString().replace(/\.\d+Z$/, "Z") };
   const { rolled_back_from, merged, proposed, ...rest } = cur;
   return { ...rest, version: (cur.version ?? 1) + 1, versions: [...versions, snap] };
 }
@@ -559,7 +560,7 @@ export function merge(dir: string, id: string, { by, role, via = "cli", note, to
     prov(dir, { entity: t.file, route: "governance/decisions", activity: "write", agent: actor, decision: id, note: `merged ${id} version ${version}${chosen ? ` candidate ${chosen.id}` : ""} into ${t.field}` });
     files.push(t.file);
   }
-  const out = { ...d, merged: { version, by, at: new Date().toISOString().replace(/\.\d+Z$/, "Z"), files } };
+  const out = { ...d, merged: { version, by, at: clockNow().toISOString().replace(/\.\d+Z$/, "Z"), files } };
   writeFileSync(ventureFile(dir, file), JSON.stringify(out, null, 2) + "\n");
   const e = prov(dir, { entity: file, route: "governance/decisions", activity: "merge", agent: actor, note: note ?? `merged ${id} version ${version}${may.grant ? ` under grant ${may.grant}` : ""}` });
   // Public variants written from a merged field (MDX with variant_of: <file>#<field>) were worded from
@@ -649,7 +650,7 @@ export function refusedPerson(dir: string, by: string | undefined): string | nul
  *  founder merges a one-way door. A role (an agent or a delegate acting as one) may only under a live
  *  delegation grant to that role that names may_merge and the decision's class, whose chain reaches the
  *  root and whose scope holds every record the decision writes. */
-export function mayMerge(dir: string, d: Pick<DecisionRecord, "id" | "class" | "applies_to">, { by, role, today = new Date().toISOString().slice(0, 10) }: { by?: string; role?: string; today?: string } = {}): { ok: false; error: string; grant?: undefined } | { ok: true; grant?: string; error?: undefined } {
+export function mayMerge(dir: string, d: Pick<DecisionRecord, "id" | "class" | "applies_to">, { by, role, today = clockNow().toISOString().slice(0, 10) }: { by?: string; role?: string; today?: string } = {}): { ok: false; error: string; grant?: undefined } | { ok: true; grant?: string; error?: undefined } {
   let del: Delegation | null;
   try { del = delegationOf(dir); } catch (e) { return { ok: false, error: `${(e as Error).message}: no one merges until it is fixed` }; }
   if (by && role) return { ok: false, error: "merge as a person (--by) or as a role (--role), not both" };
@@ -718,7 +719,7 @@ export function rollback(dir: string, id: string, to: string | number, { by, via
   if (old.status !== "decided") return { ok: false, error: `${id} version ${to} was never decided; only a decided version can be restored` };
   const n = nextVersion(d);
   const { signer: _claimed, signer_account: _account, ...restored } = old.provenance ?? {};
-  const out = { ...n, status: "decided", answer: old.answer, ...(old.options ? { options: old.options } : {}), rolled_back_from: Number(to), provenance: { ...restored, drafted_by: old.provenance?.drafted_by ?? { kind: "person", id: by }, approved_by: by, approved_at: new Date().toISOString().replace(/\.\d+Z$/, "Z"), phase: load(join(dir, "venture.json")).phase, wording: "own", via } };
+  const out = { ...n, status: "decided", answer: old.answer, ...(old.options ? { options: old.options } : {}), rolled_back_from: Number(to), provenance: { ...restored, drafted_by: old.provenance?.drafted_by ?? { kind: "person", id: by }, approved_by: by, approved_at: clockNow().toISOString().replace(/\.\d+Z$/, "Z"), phase: load(join(dir, "venture.json")).phase, wording: "own", via } };
   if (old.provenance?.reasons) out.reasons = old.provenance.reasons as DecisionRecordReason[];
   else delete out.reasons;
   const bad = validate(out);
@@ -773,7 +774,7 @@ export function approve(dir: string, id: string, { by, answer, via = "cli", note
   const given = [...(d.versions?.length ? kept : stamp(dir, kept, { keep: false })), ...stamp(dir, reasons ?? [], { keep: false })];
   const { reasons: _old, signer: _signer, signer_account: _account, ...pv } = d.provenance ?? {};
   const frozen = given.length ? given : null;
-  const out = { ...d, status: "decided", answer: answer ?? d.answer, ...(frozen ? { reasons: frozen } : {}), provenance: { ...pv, drafted_by: drafted, approved_by: by, approved_at: new Date().toISOString().replace(/\.\d+Z$/, "Z"), phase, ...(unverified ? { signer: "unverified" } : { wording }), ...(account ? { signer: "verified", signer_account: account } : {}), via, ...(frozen ? { reasons: frozen } : {}) } };
+  const out = { ...d, status: "decided", answer: answer ?? d.answer, ...(frozen ? { reasons: frozen } : {}), provenance: { ...pv, drafted_by: drafted, approved_by: by, approved_at: clockNow().toISOString().replace(/\.\d+Z$/, "Z"), phase, ...(unverified ? { signer: "unverified" } : { wording }), ...(account ? { signer: "verified", signer_account: account } : {}), via, ...(frozen ? { reasons: frozen } : {}) } };
   const bad = validate(out);
   if (bad) return { ok: false, error: bad };
   writeFileSync(ventureFile(dir, file), JSON.stringify(out, null, 2) + "\n");
@@ -805,7 +806,7 @@ export function withdraw(dir: string, id: string, { by, duplicateOf, option, why
     if (!other) return { ok: false, error: `no decision ${duplicateOf} to be a duplicate of` };
     if ((load(ventureFile(dir, other)) as DecisionRecord).status === "withdrawn") return { ok: false, error: `${duplicateOf} is withdrawn itself; name the decision that still asks the question` };
   }
-  const out: DecisionRecord = { ...d, status: "withdrawn", ...(duplicateOf ? { duplicate_of: duplicateOf } : {}), withdrawn_by: by, withdrawn_at: new Date().toISOString().replace(/\.\d+Z$/, "Z") };
+  const out: DecisionRecord = { ...d, status: "withdrawn", ...(duplicateOf ? { duplicate_of: duplicateOf } : {}), withdrawn_by: by, withdrawn_at: clockNow().toISOString().replace(/\.\d+Z$/, "Z") };
   const bad = validate(out);
   if (bad) return { ok: false, error: bad };
   writeFileSync(ventureFile(dir, file), JSON.stringify(out, null, 2) + "\n");
@@ -823,7 +824,7 @@ function withdrawOption(dir: string, file: string, d: DecisionRecord, option: st
   // The answer is never left naming an idea no longer on the table: change the answer first.
   if (d.answer === option) return { ok: false, error: `${option} is the answer of ${d.id}: ${d.status === "decided" ? `reopen it first (mentura reopen ${d.id} --by ${by})` : "word another answer first"}` };
   const out: DecisionRecord = { ...d, candidates: (d.candidates ?? []).map((x) => x.id === option
-    ? { ...x, withdrawn_by: by, withdrawn_at: new Date().toISOString().replace(/\.\d+Z$/, "Z"), ...(why ? { withdrawn_why: why } : {}) } : x) };
+    ? { ...x, withdrawn_by: by, withdrawn_at: clockNow().toISOString().replace(/\.\d+Z$/, "Z"), ...(why ? { withdrawn_why: why } : {}) } : x) };
   const bad = validate(out);
   if (bad) return { ok: false, error: bad };
   writeFileSync(ventureFile(dir, file), JSON.stringify(out, null, 2) + "\n");
@@ -857,7 +858,7 @@ export function addCandidate(dir: string, id: string, input: CandidateInput | nu
   if (was && !was.withdrawn_at) return { ok: false, error: `${id} already has an option ${c.id}; give it another id` };
   if (was && !person) return { ok: false, error: `${c.id} was withdrawn from ${id} by ${was.withdrawn_by ?? "a person"}; only a person puts it back` };
   c.proposed_by = person ? { kind: "person", id: by } : { kind: "agent", ...(agentId ? { id: agentId } : {}) };
-  c.created = c.created ?? new Date().toISOString().replace(/\.\d+Z$/, "Z");
+  c.created = c.created ?? clockNow().toISOString().replace(/\.\d+Z$/, "Z");
   const next = c as Candidate;
   const out: DecisionRecord = { ...d, candidates: was ? (d.candidates ?? []).map((x) => x.id === c.id ? next : x) : [...(d.candidates ?? []), next] };
   const bad = validate(out);
@@ -902,7 +903,7 @@ export function reopen(dir: string, id: string, { by, why, override = false, via
   const { decided_by: _by, ...cur } = nextVersion(d);
   const out: DecisionRecord = { ...cur, status: "open", answer: null, decided_at: null,
     provenance: { drafted_by: { kind: "person", id: by }, ...(via ? { via } : {}) },
-    reopened: [...(d.reopened ?? []), { version: from, answer: d.answer ?? null, by, at: new Date().toISOString().replace(/\.\d+Z$/, "Z"), phase: phase as NonNullable<DecisionRecord["reopened"]>[number]["phase"], ...(why ? { why } : {}), ...(override ? { override: true as const } : {}) }] };
+    reopened: [...(d.reopened ?? []), { version: from, answer: d.answer ?? null, by, at: clockNow().toISOString().replace(/\.\d+Z$/, "Z"), phase: phase as NonNullable<DecisionRecord["reopened"]>[number]["phase"], ...(why ? { why } : {}), ...(override ? { override: true as const } : {}) }] };
   const bad = validate(out);
   if (bad) return { ok: false, error: bad };
   writeFileSync(ventureFile(dir, file), JSON.stringify(out, null, 2) + "\n");

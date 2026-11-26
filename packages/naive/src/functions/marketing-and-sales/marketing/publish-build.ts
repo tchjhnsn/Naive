@@ -34,6 +34,7 @@ import { leaks } from "../../../engine/check-leaks.ts";
 import { visibilityOf } from "../../../engine/visibility.ts";
 import { ventureFile } from "../../../core/venture-paths.ts";
 import { configFor } from "../../../engine/naive-config.ts";
+import { now } from "../../../core/clock.ts";
 
 const sha = (s: string | Buffer) => createHash("sha256").update(s).digest("hex");
 
@@ -144,7 +145,7 @@ export function build(channel: string, dir: string, opts: { out?: string, channe
   const record: BuildRecord = {
     channel,
     venture: JSON.parse(readFileSync(join(dir, "venture.json"), "utf8")).id ?? null,
-    built_at: new Date().toISOString(),
+    built_at: now().toISOString(),
     outputs: outputs.map((o) => ({ path: o.path, sha256: sha(readFileSync(o.file)) })),
     sources: all.filter((v) => v.approved).map(({ file, variant_of, approved_by, sha256 }) => ({ file, variant_of, approved_by, sha256 })),
     pending: all.filter((v) => !v.approved).map(({ file, variant_of }) => ({ file, variant_of })),

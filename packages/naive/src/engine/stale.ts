@@ -24,6 +24,7 @@ import { resolve as resolveRoute } from "../records/routes/routes.ts";
 import { address } from "../store/connectors/contract.ts";
 import { LOCAL, sourcesOf } from "../store/connectors/index.ts";
 import { ventureFile } from "../core/venture-paths.ts";
+import { now as clockNow } from "../core/clock.ts";
 
 /** What changed, as a notification or a caller named it. */
 export type Because = { source: string, paths: string[], version?: string, at: string, via: string };
@@ -34,7 +35,7 @@ type Marks = { marks: Mark[], notifications?: (Because & { marked: number, recei
 
 export const MARKS = ".naive/stale.json";
 const load = (p: string) => JSON.parse(readFileSync(p, "utf8"));
-const now = () => new Date().toISOString();
+const now = () => clockNow().toISOString();
 const WRITES = new Set(["write", "accept", "baseline"]);
 
 const readMarks = (dir: string): Marks => (existsSync(ventureFile(dir, MARKS)) ? load(ventureFile(dir, MARKS)) : { marks: [] });

@@ -43,6 +43,7 @@ import { dueFor, recordRun, workflowsOf } from "./due.ts";
 import type { CoveringBox, DueEntry } from "./due.ts";
 import { CONFIG, readConfig, writeConfig } from "./naive-config.ts";
 import { functionsOf } from "./research-programs.ts";
+import { now as clockNow, nowMs } from "../core/clock.ts";
 
 export const MODES = ["manual", "ask", "auto"] as const;
 export type LoopMode = typeof MODES[number];
@@ -153,7 +154,7 @@ export const startAgent: Starter = (dir, step) => agentMain(["run", step.role, `
  */
 export const tick = (dir: string, now: string, opts: { start?: Starter; max?: number; canStart?: boolean; clock?: () => string } = {}): Effect.Effect<LoopResult[], NaiveError, "naive/VentureFs"> => {
   const start = opts.start ?? startAgent, max = opts.max ?? Infinity;
-  const clock = opts.clock ?? (() => new Date(Math.max(Date.parse(now), Date.now())).toISOString());
+  const clock = opts.clock ?? (() => new Date(Math.max(Date.parse(now), nowMs())).toISOString());
   const work = Effect.gen(function* () {
     const steps = yield* planFor(dir, now, opts.canStart ?? (opts.start !== undefined || envCommand("NAIVE_AGENT_CMD") !== undefined));
     const out: LoopResult[] = [];
@@ -191,7 +192,7 @@ export const tick = (dir: string, now: string, opts: { start?: Starter; max?: nu
 
 /** Ticks now and then again every `every`, until the process is stopped. A tick that fails is reported and the loop goes on. */
 export const watch = (dir: string, every: Duration.Input, opts: { start?: Starter; max?: number; report?: (r: LoopResult[] | string) => void } = {}): Effect.Effect<void, never, "naive/VentureFs"> =>
-  Effect.suspend(() => tick(dir, new Date().toISOString(), opts)).pipe(
+  Effect.suspend(() => tick(dir, clockNow().toISOString(), opts)).pipe(
     Effect.match({ onSuccess: (r) => opts.report?.(r), onFailure: (e) => opts.report?.(e.message) }),
     Effect.repeat(Schedule.spaced(every)),
     Effect.asVoid,
@@ -217,7 +218,7 @@ export const setMode = (dir: string, mode: string, o: { function?: string; workf
       if (o.workflow) loops.workflows = { ...(loops.workflows ?? {}), [o.workflow]: mode };
       else if (o.function) loops.functions = { ...(loops.functions ?? {}), [o.function]: mode };
       else loops.mode = mode;
-      loops.set_by = { person: by, at: o.at ?? new Date().toISOString() };
+      loops.set_by = { person: by, at: o.at ?? clockNow().toISOString() };
       writeConfig(dir, { ...cfg, loops } as Parameters<typeof writeConfig>[1]);
       record(dir, { entity: CONFIG, route: "system/naive-config", activity: "write", agent: agentFromEnv("person", "cli", { id: by }), note: `loop mode ${mode} for ${o.workflow ?? o.function ?? "the venture"}` } as Parameters<typeof record>[1]);
       return loops;
@@ -244,7 +245,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const valued = ["--at", "--max", "--every", "--function", "--workflow", "--by"];
   const [dir, cmd = "plan", arg] = args.filter((a, i) => !a.startsWith("--") && !valued.includes(args[i - 1]));
   const json = args.includes("--json");
-  const at = flag("--at") ?? new Date().toISOString();
+  const at = flag("--at") ?? clockNow().toISOString();
   const max = flag("--max") === undefined ? undefined : Number(flag("--max"));
   const usage = "usage: node packages/naive/src/engine/loop.ts <venture dir> [plan] [--at <iso>] [--json]\n       node packages/naive/src/engine/loop.ts <venture dir> tick [--max <n>] [--at <iso>] [--json]\n       node packages/naive/src/engine/loop.ts <venture dir> watch [--every <duration>] [--max <n>]\n       node packages/naive/src/engine/loop.ts <venture dir> mode [<manual|ask|auto> [--function <id> | --workflow <function>/<workflow>] --by <person>]";
   const line = (s: LoopStep, did?: string): string => `${(did && did !== "nothing" ? did : s.action).padEnd(15)} ${s.workflow.padEnd(44)} ${s.why}`;
@@ -263,7 +264,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       else for (const s of done) console.log(line(s, s.did));
     } else if (cmd === "watch") {
       const every = yield* Effect.fromOption(Duration.fromInput((flag("--every") ?? "15 minutes") as Duration.Input)).pipe(Effect.mapError(() => new CannotRun({ message: `--every takes a duration such as "15 minutes" or "1 hour"` })));
-      yield* watch(dir, every, { max, report: (r) => { const t = new Date().toISOString(); if (typeof r === "string") console.error(`${t} ${r}`); else for (const s of r) console.log(`${t} ${line(s, s.did)}`); } });
+      yield* watch(dir, every, { max, report: (r) => { const t = clockNow().toISOString(); if (typeof r === "string") console.error(`${t} ${r}`); else for (const s of r) console.log(`${t} ${line(s, s.did)}`); } });
     } else if (cmd === "mode") {
       if (arg === undefined) {
         const cfg = yield* loopConfig(dir);

@@ -16,6 +16,7 @@ import { join } from "node:path";
 import { ventureFile } from "../core/venture-paths.ts";
 import { reviewIsIndependent } from "./verify.ts";
 import type { Decision, DecisionRights, Handoff } from "../records/types/records.d.ts";
+import { now } from "../core/clock.ts";
 
 const [dir, id] = process.argv.slice(2);
 if (!dir || !id) { console.error("usage: node packages/naive/src/checks/check-ready.ts <venture dir> <handoff id> [--record --by <who>]"); process.exit(2); }
@@ -88,7 +89,7 @@ if (process.argv.includes("--record")) {
   const by = opt("--by");
   if (!by) { console.error("--record needs --by <role or session>"); process.exit(2); }
   const version = execSync("git rev-parse --short HEAD", { cwd: root, encoding: "utf8" }).trim();
-  h.ready_check = { at: new Date().toISOString().replace(/\.\d+Z$/, "Z"), by, version, items: items.length };
+  h.ready_check = { at: now().toISOString().replace(/\.\d+Z$/, "Z"), by, version, items: items.length };
   if (h.status === "draft") h.status = "ready";
   writeFileSync(hPath, JSON.stringify(h, null, 2) + "\n");
   console.log(`recorded in ${hPath}`);

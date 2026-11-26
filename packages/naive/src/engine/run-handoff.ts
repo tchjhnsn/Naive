@@ -24,6 +24,7 @@ import { ventureFile } from "../core/venture-paths.ts";
 import { HostedRefusal, git, hostHook, isHosted, missingHook } from "../core/runtime.ts";
 import type { Evidence, Handoff } from "../records/types/records.d.ts";
 import { outputOf, passes, runProgram } from "./venture-program.ts";
+import { now } from "../core/clock.ts";
 
 const root = new URL("../../../..", import.meta.url).pathname;
 const trim = (s: string) => s.trim().split("\n").slice(-12).join("\n");
@@ -101,7 +102,7 @@ export async function runHandoff(dir: string, id: string, { runner = "local", re
     log(`${r.passed ? "pass" : "FAIL"} ${c.id}`);
   }
 
-  const at = new Date().toISOString().replace(/\.\d+Z$/, "Z");
+  const at = now().toISOString().replace(/\.\d+Z$/, "Z");
   const ev = evidenceOf(h, results, { at, runner, version });
   const eid = ev.id;
   mkdirSync(join(ventureFile(dir, "evidence/results")), { recursive: true });

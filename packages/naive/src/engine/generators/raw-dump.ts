@@ -4,6 +4,7 @@
 // capture time plus a short suffix, as naive capture makes it. Raw is immutable, so the route refuses a write to a
 // capture that exists; a new capture is a new file.
 import { cli } from "./generate.ts";
+import { now } from "../../core/clock.ts";
 
 export const record = "raw-dump";
 export const describe = () => ({ record, ask: [
@@ -18,7 +19,7 @@ export const captureId = (at: string, suffix: string): string => `${at.replace(/
 
 export function draft(a: { text?: string; channel?: string; person?: string; captured?: string; suffix?: string }) {
   if (!a.text || !a.text.trim()) return { ok: false, record, errors: ["a capture needs its text, in the founder's own words"] };
-  const captured = a.captured ?? new Date().toISOString();
+  const captured = a.captured ?? now().toISOString();
   if (Number.isNaN(Date.parse(captured))) return { ok: false, record, errors: [`captured is not a date-time: ${captured}`] };
   const id = captureId(captured, a.suffix ?? Math.random().toString(36).slice(2, 6));
   const head = ["---", `id: ${id}`, `captured: ${captured}`, ...(a.channel ? [`channel: ${a.channel}`] : []), ...(a.person ? [`person: ${a.person}`] : []), "---", "", ""].join("\n");

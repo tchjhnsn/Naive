@@ -24,6 +24,7 @@ import { ventureFile } from "../../../../core/venture-paths.ts";
 import { runSync } from "../../../../core/effect/run.ts";
 import { loadPhases } from "../../../../phases/phases.ts";
 import type { Product, Venture } from "../../../../records/types/records.d.ts";
+import { now as clockNow } from "../../../../core/clock.ts";
 
 /** One typed question Jev answers per product (questions.json). */
 type Question = { type: "noul" | "score"; instructions: string; criteria: string[] };
@@ -82,7 +83,7 @@ async function score(input: Input, outPath: string) {
   });
   if (!res.ok) throw new Error(`TypeSafe returned ${res.status}: ${await res.text()}`);
   const { answers } = (await res.json()) as { answers: Record<string, { type: string; noul?: number; score?: number; confidence?: number }> };
-  const out: { scorer: string; scored: string; answers: Record<string, Record<string, number | null | undefined>> } = { scorer: MODEL, scored: new Date().toISOString(), answers: {} };
+  const out: { scorer: string; scored: string; answers: Record<string, Record<string, number | null | undefined>> } = { scorer: MODEL, scored: clockNow().toISOString(), answers: {} };
   for (const [key, a] of Object.entries(answers)) {
     const [qid, pid] = key.split(":");
     out.answers[pid] ??= {};

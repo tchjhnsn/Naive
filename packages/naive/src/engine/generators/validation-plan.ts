@@ -8,6 +8,7 @@
 import { join } from "node:path";
 import { cli, drop, questions, readJson, repo, schemaOf, slug, validate } from "./generate.ts";
 import type { PhaseGatePolicies, ValidationPlan } from "../../records/types/records.d.ts";
+import { now } from "../../core/clock.ts";
 
 export const record = "validation-plan";
 const DERIVED = ["venture", "updated"];
@@ -34,7 +35,7 @@ export function draft(a: { assumptions?: Partial<Assumption>[], updated?: string
     seen.add(id);
     return drop({ id, statement: x.statement, item: x.item, test: x.test, pass: x.pass, by: x.by, status: x.status ?? "open" }) as Assumption;
   });
-  const rec = drop({ venture: v0?.id ?? "venture", updated: a.updated ?? new Date().toISOString().slice(0, 10), assumptions }) as ValidationPlan;
+  const rec = drop({ venture: v0?.id ?? "venture", updated: a.updated ?? now().toISOString().slice(0, 10), assumptions }) as ValidationPlan;
   const v = validate(record, rec);
   const unknown = items.size ? assumptions.filter((x) => !items.has(x.item)).map((x) => `assumption ${x.id}: no phase gate names the item ${x.item}`) : [];
   return { ok: v.ok && !unknown.length, record, route: "validation/plan", draft: rec, errors: [...v.errors, ...unknown] };

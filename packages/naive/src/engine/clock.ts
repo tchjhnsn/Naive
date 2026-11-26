@@ -3,7 +3,7 @@
 // IANA time zone in naive-workspace.json or venture.json (timeZone), else the nearest workspace's, else
 // the system's. Dates a person reads are local dates in that zone, never UTC slices.
 //
-//   now()                         the current instant (a Date); NAIVE_NOW (ISO) pins it for tests
+//   now()                         the current instant (a Date), from core/clock.ts; NAIVE_NOW (ISO) pins it
 //   zoneOf(dir)                   the IANA zone for a venture or workspace folder
 //   systemZone()                  the machine's zone
 //   localDate(instant, zone)      "YYYY-MM-DD" in that zone
@@ -19,7 +19,9 @@ import { dirname, join, resolve } from "node:path";
 
 const read = (f: string) => { try { return JSON.parse(readFileSync(f, "utf8")); } catch { return null; } };
 
-export const now = (): Date => (process.env.NAIVE_NOW ? new Date(process.env.NAIVE_NOW) : new Date());
+/** The current instant, from the one clock (packages/naive/src/core/clock.ts, EE-224). */
+import { now } from "../core/clock.ts";
+export { now };
 export const systemZone = (): string => Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
 
 /** Whether zone is a time zone this runtime knows. */

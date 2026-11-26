@@ -24,6 +24,7 @@ import { initCalendar } from "./calendar.ts";
 import { goals } from "./canonical.ts";
 import { validateFile } from "../records/validate.ts";
 import type { Workspace } from "../records/types/records.d.ts";
+import { now as clockNow } from "../core/clock.ts";
 
 /** A loaded workspace: its file, its settings with defaults filled, and its ventures by id (id to folder). */
 export type LoadedWorkspace = ReturnType<typeof loadWorkspace>;
@@ -35,7 +36,7 @@ export type CaptureOpts = { split?: (_text: string) => string[], score?: (_chunk
 export const WORKSPACE_FILE = "naive-workspace.json";
 const DEFAULTS = { cross_venture_reads: true, route_threshold: 0.8 };
 const repo = new URL("../../../..", import.meta.url).pathname;
-const now = () => new Date().toISOString();
+const now = () => clockNow().toISOString();
 const read = (f: string) => { try { return JSON.parse(readFileSync(f, "utf8")); } catch { return null; } };
 
 // Other tools also use the name workspace.json (Nx, for one), so that file counts only when it says it is ours.

@@ -44,3 +44,7 @@ The modules that compose routes. Each one runs records through the router's `cal
 `recipe-search.ts` runs as a durable workflow when `durable.engine` is set (`searchDurable`, EE-161, phase 12c): the read and each experiment write are steps, so a search that dies resumes without writing a step twice and ends where a plain search ends. `search` takes a `Step` and is unchanged on the memory path.
 
 `signals.ts` runs `naive signals pull` as a durable workflow when `durable.engine` is set (`pullDurable`, EE-161, phase 12b): the plan (render, recipe renders and the diff) is one step, and each record write, verify, receptions write, proposal, stale mark, hindsight label and the cursor move is its own, each checking first whether its write already landed, so a pull that dies resumes with the plan it made and writes nothing twice. `pull` takes a `Step` and is unchanged on the memory path.
+
+## Time
+
+Code here reads business time from the one clock, `packages/naive/src/core/clock.ts` (`now`, `nowMs`, `nowIso`), so `NAIVE_NOW` pins it for a simulation or a test, and reads `wallClock()` only for elapsed time, timeouts, lock staleness and unique names (EE-224). `node packages/naive/src/checks/check-clock.ts` fails on a direct read of the system clock.

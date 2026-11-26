@@ -23,6 +23,7 @@ import { patternRe } from "./gate.ts";
 import { ventureFile } from "../core/venture-paths.ts";
 import { route as routeFeedback } from "./feedback-route.ts";
 import type { BetaCapabilities, ValidationFeedback } from "../records/types/records.d.ts";
+import { now as clockNow } from "../core/clock.ts";
 
 /** One capability in the manifest. */
 export type Capability = BetaCapabilities["capabilities"][number];
@@ -127,7 +128,7 @@ export function status(dir: string, tester: string | undefined, m = manifest()) 
  * Records a tester's checkpoint answers as validation/feedback/<id>.json, routed with the feedback router.
  * Refuses a locked capability, an unknown question and a missing required answer.
  */
-export async function giveFeedback(dir: string, capId: string, answers: Answers, { tester, m = manifest(), now = new Date(), routing = {} }: { tester?: string; m?: BetaCapabilities; now?: Date; routing?: Parameters<typeof routeFeedback>[1] } = {}): Promise<{ ok: false; error: string; questions?: Capability["checkpoint"]["questions"]; written?: undefined; record?: undefined; next?: undefined } | { ok: true; written: string; record: ValidationFeedback; next: Next; error?: undefined; questions?: undefined }> {
+export async function giveFeedback(dir: string, capId: string, answers: Answers, { tester, m = manifest(), now = clockNow(), routing = {} }: { tester?: string; m?: BetaCapabilities; now?: Date; routing?: Parameters<typeof routeFeedback>[1] } = {}): Promise<{ ok: false; error: string; questions?: Capability["checkpoint"]["questions"]; written?: undefined; record?: undefined; next?: undefined } | { ok: true; written: string; record: ValidationFeedback; next: Next; error?: undefined; questions?: undefined }> {
   const t = testerOf(tester);
   if (!TESTER.test(t)) return { ok: false, error: badTester(t) };
   const cap = m.capabilities.find((c) => c.id === capId);
@@ -151,7 +152,7 @@ export async function giveFeedback(dir: string, capId: string, answers: Answers,
 }
 
 /** Unlocks the next capability when the feedback on the one before exists. */
-export function unlock(dir: string, tester: string | undefined, { m = manifest(), now = new Date() }: { m?: BetaCapabilities; now?: Date } = {}): { ok: false; error: string; unlocked?: undefined; note?: undefined; next?: undefined } | { ok: true; unlocked: string | null; note?: string; next?: Next; error?: undefined } {
+export function unlock(dir: string, tester: string | undefined, { m = manifest(), now = clockNow() }: { m?: BetaCapabilities; now?: Date } = {}): { ok: false; error: string; unlocked?: undefined; note?: undefined; next?: undefined } | { ok: true; unlocked: string | null; note?: string; next?: Next; error?: undefined } {
   const t = testerOf(tester);
   if (!TESTER.test(t)) return { ok: false, error: badTester(t) };
   const n = next(dir, t, m);

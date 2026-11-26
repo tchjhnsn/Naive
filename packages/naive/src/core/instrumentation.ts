@@ -28,6 +28,7 @@ import { appendFileSync, existsSync, mkdirSync, readdirSync, readFileSync } from
 import { join } from "node:path";
 import { ventureFile } from "./venture-paths.ts";
 import type { NaiveConfig, TraceSpan } from "../records/types/records.d.ts";
+import { now as clockNow } from "./clock.ts";
 
 export const EVENTS = ".naive/events.jsonl";
 export const TRACES = "traces";
@@ -101,7 +102,7 @@ export function enabled(dir: string | null | undefined): boolean {
 
 /** Emits one event: to every listener, and to the venture's events log when it is on. */
 export function emit(dir: string | null | undefined, event: EventInput): InstrumentEvent {
-  const e: InstrumentEvent = { at: new Date().toISOString(), id: randomUUID(), session: process.env.MENTURA_SESSION ?? null, ...event };
+  const e: InstrumentEvent = { at: clockNow().toISOString(), id: randomUUID(), session: process.env.MENTURA_SESSION ?? null, ...event };
   for (const [k, v] of Object.entries(e)) if (v === undefined) Reflect.deleteProperty(e, k);
   for (const fn of listeners) { try { fn(e, dir); } catch {} }
   try { traceHook(e, dir); } catch {}
@@ -197,7 +198,7 @@ export function span(dir: string, s: SpanInput, { force = false }: { force?: boo
   const trace_id = s.trace_id ?? parent?.trace_id ?? randomUUID();
   const session = s.session ?? parent?.session ?? process.env.MENTURA_SESSION ?? trace_id;
   const attributes = Object.fromEntries(Object.entries(s.attributes ?? {}).filter((e): e is [string, SpanAttribute] => isAttribute(e[1]) && (t.content || !CONTENT.test(e[0]))));
-  const now = new Date().toISOString();
+  const now = clockNow().toISOString();
   const f = traceFile(dir, session);
   const prior = spans(dir, session);
   const prev = prior.at(-1)?.hash ?? "genesis";
@@ -220,7 +221,7 @@ export async function withSpan<T>(dir: string, s: Pick<SpanInput, "name" | "kind
   const parent = currentSpan();
   const trace_id = parent?.trace_id ?? randomUUID();
   const ctx: SpanContext = { trace_id, span_id: randomUUID(), session: s.session ?? parent?.session ?? process.env.MENTURA_SESSION ?? trace_id };
-  const start = new Date().toISOString();
+  const start = clockNow().toISOString();
   const write = (extra: Partial<SpanInput>) => { try { span(dir, { ...s, ...ctx, parent_span_id: parent?.span_id ?? null, start, ...extra }); } catch {} };
   // With traces off nothing is written, so nothing runs inside the span either: a provenance line must not name it.
   if (!tracing(dir).on) return await fn(ctx);

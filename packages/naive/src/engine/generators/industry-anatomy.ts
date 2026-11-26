@@ -7,6 +7,7 @@ import { join } from "node:path";
 import { cli, drop, questions, readJson, schemaOf, slug, validate } from "./generate.ts";
 import { allCells } from "./anatomy-cells.ts";
 import type { AnatomyCellEnumCell, AnatomyCellNumberCell } from "../../records/types/records.d.ts";
+import { now } from "../../core/clock.ts";
 
 type Cell = AnatomyCellNumberCell | AnatomyCellEnumCell;
 import type { IndustryAnatomy } from "../../records/types/records.d.ts";
@@ -22,7 +23,7 @@ export function draft(a: Answers = {}, opts: { venture?: string } = {}) {
   const v0 = opts.venture ? readJson(join(opts.venture, "venture.json")) as { id?: string } | null : null;
   const id = slug(a.id ?? (a.naics ? `naics-${a.naics}` : "primary")) || "primary";
   const rec = drop({ venture: a.venture ?? v0?.id ?? "venture", id, name: a.name ?? "unknown", naics: a.naics,
-    updated: a.updated ?? new Date().toISOString().slice(0, 10), cells: allCells(record, a.cells) }) as IndustryAnatomy;
+    updated: a.updated ?? now().toISOString().slice(0, 10), cells: allCells(record, a.cells) }) as IndustryAnatomy;
   const v = validate(record, rec);
   return { ok: v.ok, record, route: `industries/${id}`, draft: rec, errors: v.errors };
 }

@@ -49,6 +49,7 @@ import { mergeRecord, type Json } from "./merge.ts";
 import { readConfig } from "./naive-config.ts";
 import { fileConflicts } from "./sync-conflicts.ts";
 import { readToken, saveToken, type TokenStore } from "./sync-credentials.ts";
+import { nowMs, wallClock } from "../core/clock.ts";
 
 /** The working copy's sync state, <venture>/.naive/sync.json. Local to one working copy and never synced. */
 export const STATE = ".naive/sync.json";
@@ -295,7 +296,7 @@ export function configuredHost(dir: string, flag?: string): string | null {
 }
 
 /** A working copy's own id, as the host sees it. Random, so no machine name leaves the laptop. */
-export const newWorkingCopy = (): string => `wc-${blobHash(`${Date.now()}:${Math.random()}`).slice(0, 12)}`;
+export const newWorkingCopy = (): string => `wc-${blobHash(`${wallClock()}:${Math.random()}`).slice(0, 12)}`;
 
 type Options = { http?: Http; token?: string; log?: (line: string) => void };
 const quiet = () => {};
@@ -517,7 +518,7 @@ export async function link(dir: string, business: string | null, o: LinkOptions 
   const http = o.http ?? httpFetch;
   const log = o.log ?? quiet;
   const sleep = o.sleep ?? wait;
-  const now = o.now ?? (() => Date.now());
+  const now = o.now ?? (() => nowMs());
   const post = async (path: string, body: unknown): Promise<HttpReply> =>
     await http({ method: "POST", url: `${base(host)}/api/naive/device/${path}`, headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
 

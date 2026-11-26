@@ -15,6 +15,7 @@ import { label } from "../engine/assess-problem.ts";
 import { logicalFiles, ventureFile } from "../core/venture-paths.ts";
 import type { Graded, SubScoreRecord } from "./check-validation.ts";
 import type { ValidationEvidence, ValidationProblem } from "../records/types/records.d.ts";
+import { now as clockNow } from "../core/clock.ts";
 
 // The records here may be malformed, so they are read as loose objects and each field is narrowed where it is used.
 type Loose = { readonly [key: string]: unknown };
@@ -166,9 +167,9 @@ function evidenceOf(rec: Loose): Loose[] {
   return Array.isArray(rec.evidence) ? (rec.evidence as unknown[]).filter(usable) : [];
 }
 
-export function lint(dir: string, { now = new Date() }: { now?: Date | string | number } = {}): { ok: boolean, rules: typeof RULES, findings: Finding[] } {
+export function lint(dir: string, { now = clockNow() }: { now?: Date | string | number } = {}): { ok: boolean, rules: typeof RULES, findings: Finding[] } {
   const today = now instanceof Date ? now : new Date(now);
-  const t = Number.isNaN(today.getTime()) ? new Date() : today;
+  const t = Number.isNaN(today.getTime()) ? clockNow() : today;
   const nowMs = t.getTime();
   const cfg = get(get(read(dir, "naive.config.json"), "validation_lint"), "rules") ?? {};
   const rules = RULES.map((r) => {

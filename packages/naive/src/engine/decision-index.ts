@@ -37,6 +37,7 @@ import { line } from "./detectors.ts";
 import { rank } from "./decision-queue.ts";
 import type { RankedDecision } from "./decisions.ts";
 import type { DecisionRecord, Requirement } from "../records/types/records.d.ts";
+import { now as clockNow, nowMs } from "../core/clock.ts";
 
 /** A requirement as the index reads it, with its file. phase and check are read when a requirement carries them. */
 export type IndexedRequirement = Requirement & { file: string; phase?: string; check?: { answer_must_match?: string; answer_must_not_match?: string } };
@@ -59,7 +60,7 @@ export const STRENGTH = { parent: 0.8, child: 0.8, held_by: 0.8, holds: 0.8, blo
 export const HEAVY_REQUIREMENT = 0.5;
 
 const load = (p: string) => JSON.parse(readFileSync(p, "utf8"));
-const stamp = () => new Date().toISOString().replace(/\.\d+Z$/, "Z");
+const stamp = () => clockNow().toISOString().replace(/\.\d+Z$/, "Z");
 const ACTIVE = (d: RankedDecision) => !["done", "withdrawn"].includes(d.render) && d.source !== "root";
 
 /** The venture's requirements, by id. None is fine: the index works without them. */
@@ -220,7 +221,7 @@ export function read(dir: string): DecisionIndex | null {
 }
 
 /** Rebuilds the whole index and records every active decision's rank. */
-export function rebuild(dir: string, { now = Date.now(), cause = "rebuild" }: { now?: number; cause?: string } = {}): DecisionIndex {
+export function rebuild(dir: string, { now = nowMs(), cause = "rebuild" }: { now?: number; cause?: string } = {}): DecisionIndex {
   const ctx = context(dir, now);
   const log = provenance(dir);
   const entries = order(ctx.m.decisions.filter(ACTIVE).map((d) => entry(d, ctx, now)));
@@ -233,7 +234,7 @@ export function rebuild(dir: string, { now = Date.now(), cause = "rebuild" }: { 
 /** Re-scores every active decision, as a rebuild does: scores depend on time (due, overdue) and on
  *  files outside provenance, so no cached entry can be reused. Appends history only for decisions
  *  whose rank or score moved, and counts the provenance events since the cursor (or since a time). */
-export function update(dir: string, { now = Date.now(), since }: { now?: number; since?: string } = {}): DecisionIndex {
+export function update(dir: string, { now = nowMs(), since }: { now?: number; since?: string } = {}): DecisionIndex {
   const idx = read(dir);
   if (!idx) return rebuild(dir, { now, cause: "first build" });
   const log = provenance(dir);

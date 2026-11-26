@@ -30,6 +30,7 @@ import { LEVELS } from "./evidence-grade.ts";
 import { decisionFile, propose } from "./decisions.ts";
 import { CONFIG } from "./naive-config.ts";
 import { DEFAULT_PRESET, POLICIES } from "./phase-gate.ts";
+import { now } from "../core/clock.ts";
 
 /** The rules file. */
 export const RULES = "packages/naive/src/phases/gate-calibration.json";
@@ -80,7 +81,7 @@ export type Found<T> = { file: string, value: T };
 /** Whether a string is a real calendar date written YYYY-MM-DD. */
 export const isIsoDate = (s: string): s is IsoDate => /^\d{4}-\d{2}-\d{2}$/.test(s) && !Number.isNaN(Date.parse(s)) && new Date(s).toISOString().slice(0, 10) === s;
 /** Today as an IsoDate. */
-export const today = (): IsoDate => { const d = new Date().toISOString().slice(0, 10); if (!isIsoDate(d)) throw new Error("the clock gave no date"); return d; };
+export const today = (): IsoDate => { const d = now().toISOString().slice(0, 10); if (!isIsoDate(d)) throw new Error("the clock gave no date"); return d; };
 
 const isPreset = (policies: PhaseGatePolicies, phase: string, name: string): name is PresetName => {
   const def = policies.phases[phase];

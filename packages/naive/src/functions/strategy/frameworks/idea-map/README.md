@@ -117,3 +117,7 @@ The docket is every open decision, staged the same way and ranked as before (EE-
 - `/`: the decision board.
 
 The map and the graph use React Flow, because their value is structure on a canvas. The Kanban boards are plain columns: a board is a list per stage, and dragging a card would bypass the framework, since cards move only when the founder or an agent does the step.
+
+## Time
+
+Code here reads business time from the one clock, `packages/naive/src/core/clock.ts` (`now`, `nowMs`, `nowIso`), so `NAIVE_NOW` pins it for a simulation or a test, and reads `wallClock()` only for elapsed time, timeouts, lock staleness and unique names (EE-224). `node packages/naive/src/checks/check-clock.ts` fails on a direct read of the system clock.

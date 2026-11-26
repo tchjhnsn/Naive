@@ -24,12 +24,13 @@ import { grantBacked, liveGrant, readDelegation } from "../core/venture-paths.ts
 import { independent } from "./verify.ts";
 import { readSchema } from "../records/index.ts";
 import type { Delegation, DecisionRights, DepartmentCatalog, RoleTemplate } from "../records/types/records.d.ts";
+import { now } from "../core/clock.ts";
 
 const root = new URL("../../../..", import.meta.url).pathname;
 const template = join(root, "packages/naive/template/governance");
 const load = <T>(p: string): T => JSON.parse(readFileSync(p, "utf8")) as T;
 const opt = (n: string): string | undefined => process.argv.includes(n) ? process.argv[process.argv.indexOf(n) + 1] : undefined;
-const today = opt("--today") ?? new Date().toISOString().slice(0, 10);
+const today = opt("--today") ?? now().toISOString().slice(0, 10);
 
 const arg = process.argv[2] && !process.argv[2].startsWith("--") ? process.argv[2] : null;
 const venture = arg && statSync(arg).isDirectory() ? arg : null;

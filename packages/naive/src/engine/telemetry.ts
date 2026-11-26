@@ -15,6 +15,7 @@ import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } fr
 import { dirname, join } from "node:path";
 import { namedPerson, rawConfig } from "./naive-config.ts";
 import type { NaiveConfig } from "../records/types/records.d.ts";
+import { now as clockNow } from "../core/clock.ts";
 
 // An event before it is checked: a caller's input or a line read back from the file.
 type Unchecked = Record<string, unknown>;
@@ -66,7 +67,7 @@ export function refuse(event: Unchecked): string | null {
 }
 
 /** Appends one event when telemetry is on. Returns { written, event } or { written: false, why }. */
-export function record(dir: string, input: Unchecked, { now = new Date() }: { now?: Date } = {}) {
+export function record(dir: string, input: Unchecked, { now = clockNow() }: { now?: Date } = {}) {
   if (!settings(dir).enabled) return { written: false, why: "telemetry is off (opt in with telemetry.enabled in naive.config.json)" };
   let id = "";
   try { id = JSON.parse(readFileSync(join(dir, "venture.json"), "utf8")).id ?? ""; } catch {}

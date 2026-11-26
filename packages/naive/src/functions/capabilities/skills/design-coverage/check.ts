@@ -15,6 +15,7 @@ import { readFileSync, writeFileSync, readdirSync, statSync, existsSync, mkdirSy
 import { join, basename, dirname, resolve } from "node:path";
 import { createHash } from "node:crypto";
 import { homedir } from "node:os";
+import { now } from "../../../../core/clock.ts";
 
 /** One design document the registry requires: where its evidence is found and the questions it must answer. */
 type RegDoc = { id: string; name: string; layer: string; stage: string; required_when: string; questions: { text: string }[];
@@ -187,7 +188,7 @@ if (!quick) writeFileSync(cachePath, JSON.stringify(cache));
 
 const required_ = results.filter((r) => !["not_applicable", "not_started"].includes(r.status));
 const gaps = required_.filter((r) => r.status !== "exists" && r.status !== "candidate");
-const report = { generated: new Date().toISOString(), mode: quick ? "quick" : "deep", model: quick ? null : MODEL, registry: REG.version,
+const report = { generated: now().toISOString(), mode: quick ? "quick" : "deep", model: quick ? null : MODEL, registry: REG.version,
   entity: entityDir ? { path: tilde(entityDir), name: profile?.name, entityClass, designProfile: profile?.found ? "declared" : profile?.why, systemsDesign, experienceDesign: layerState.experience, interfaceDesign: layerState.interface } : null,
   roots: roots.map(tilde), include: include?.source ?? null, characteristics: [...chars], obligations: [...obls],
   tokens, usd: +((tokens / 1e6) * 0.042).toFixed(4),

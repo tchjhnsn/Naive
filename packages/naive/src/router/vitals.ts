@@ -23,6 +23,7 @@ import { events } from "../core/instrumentation.ts";
 import type { InstrumentEvent } from "../core/instrumentation.ts";
 import { entries } from "../core/provenance.ts";
 import { ventureFile } from "../core/venture-paths.ts";
+import { now as clockNow, nowMs } from "../core/clock.ts";
 
 /** One instrumentation event (packages/naive/src/core/instrumentation.ts): a call or a judgment. */
 type Ev = InstrumentEvent;
@@ -52,7 +53,7 @@ export function tasks(dir: string) {
 }
 
 /** Each decision the provenance log saw open: when it opened, when a person decided it, and the hours between. */
-export function decisionLatency(dir: string, now = Date.now()) {
+export function decisionLatency(dir: string, now = nowMs()) {
   type Seen = { file: string; opened: string | null; decided: string | null };
   const by = new Map<string, Seen>();
   for (const e of entries(dir).filter((x: { entity?: string }) => DECISION.test(x.entity ?? "")) as { entity: string; at: string; activity: string }[]) {
@@ -70,7 +71,7 @@ export function decisionLatency(dir: string, now = Date.now()) {
 }
 
 /** The venture's vitals, each at p75 against its threshold. */
-export function vitals(dir: string, now = Date.now()) {
+export function vitals(dir: string, now = nowMs()) {
   const limits: Record<string, number> = { ...THRESHOLDS, ...(config(dir).vitals ?? {}) };
   const ts = tasks(dir), ds = decisionLatency(dir, now);
   const measure = (name: string, xs: number[], never = 0): Vital => {
@@ -100,7 +101,7 @@ export function trace(dir: string, session?: string) {
   const judged = es.filter((e) => e.kind === "judgment").map((e): Run => ({ name: `judgment ${e.question ?? e.route ?? ""}`.trim(), run_type: "llm", start: new Date(Date.parse(e.at) - (e.ms ?? 0)).toISOString(), end: e.at,
     inputs: { question: e.question, route: e.route }, outputs: { score: e.score, threshold: e.threshold, outcome: e.outcome }, metadata: { model: e.model, owner: e.owner } }));
   const v = vitals(dir);
-  const start = es.length ? new Date(Math.min(...es.map((e) => Date.parse(e.at) - (e.ms ?? 0)))).toISOString() : new Date().toISOString();
+  const start = es.length ? new Date(Math.min(...es.map((e) => Date.parse(e.at) - (e.ms ?? 0)))).toISOString() : clockNow().toISOString();
   const end = es.at(-1)?.at ?? start;
   return { name: `naive ${JSON.parse(readFileSync(join(dir, "venture.json"), "utf8")).id}${session ? ` ${session}` : ""}`, run_type: "chain", start, end,
     inputs: { session: session ?? null }, outputs: { calls: calls.filter((c) => !c.parent).length, judgments: judged.length },
