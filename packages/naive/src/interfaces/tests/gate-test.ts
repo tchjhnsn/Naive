@@ -16,7 +16,7 @@ import { handle } from "../mcp/server.ts";
 import { DEFAULTS, configFor, installed, packagesOf } from "../../engine/naive-config.ts";
 import { evaluate, matches, packageRules, patternRe, rulesFor } from "../../engine/gate.ts";
 import { inbox, variantsDecision } from "../../engine/gate-drafts.ts";
-import { decisions } from "../../engine/decisions.ts";
+import { approve, decisions } from "../../engine/decisions.ts";
 import { entries } from "../../core/provenance.ts";
 
 const repo = new URL("../../../../..", import.meta.url).pathname;
@@ -43,6 +43,10 @@ const call = typed<Got, Extra>(routerCall);
 const init = cli("init", join(ws, "ventures/gt"), "--id", "gt", "--layers", "purpose");
 expect("a venture to test in", init.status === 0, init.stderr);
 const dir = join(ws, "ventures/gt");
+// This test is about gate rules, not product-exists, which unlocks product cards, so a person settles it first (the
+// lock itself is tested in product-lock-test.ts).
+const exists = approve(dir, "product-exists", { by: "Founder", answer: "Yes: one or more products exist" });
+expect("a person decides product-exists before the gate tests", exists.ok, exists);
 const cfgFile = join(dir, "naive.config.json");
 const setConfig = (c: unknown): void => writeFileSync(cfgFile, json(c));
 const write = (route: string, input: unknown, extra: Record<string, unknown> = {}) => call({ venture: "gt", route, action: "write", input, workspace: ws, ...extra });

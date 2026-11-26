@@ -31,7 +31,7 @@ import { tmpdir } from "node:os";
 import { dirname, isAbsolute, join, relative } from "node:path";
 import { FRAME, foundation, type StatementReport } from "./foundation.ts";
 import { actingAgent, agentFromEnv, record as prov } from "../core/provenance.ts";
-import { glob as routeFileGlob, routes, type RecordRoute } from "../records/routes/routes.ts";
+import { canonical, glob as routeFileGlob, routes, type RecordRoute } from "../records/routes/routes.ts";
 // Caching hook (F-12): the decision list is computed once per router action (packages/naive/src/engine/caching.ts).
 import { memo } from "./caching.ts";
 import { roles as ventureRoles } from "./venture-type.ts";
@@ -374,7 +374,7 @@ export function locked(dir: string, route: string, actorId?: string | null): { i
   if (!existsSync(join(dir, "venture.json"))) return null;
   const files = decisionFiles(dir).map((f): DecisionRecord => load(ventureFile(dir, f)));
   const d = files.find((x) => x.status !== "decided" && x.status !== "withdrawn" && (x.unlocks ?? []).some((u) =>
-    (u.routes ?? []).some((g) => routeGlob(g).test(route)) && (!u.for?.length || !actorId || u.for.includes(actorId))));
+    (u.routes ?? []).some((g) => routeGlob(canonical(g)).test(canonical(route))) && (!u.for?.length || !actorId || u.for.includes(actorId))));
   return d ? { id: d.id, question: d.question } : null;
 }
 
