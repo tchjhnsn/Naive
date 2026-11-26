@@ -67,7 +67,8 @@ const put = (dir: string, rel: string, x: unknown) => { mkdirSync(join(dir, rel,
 
 const acme = init("acme");
 const other = init("other");
-const { call, ventures } = await import("./router.ts");
+const { call, routes, ventures } = await import("./router.ts");
+const { next } = await import("./writes.ts");
 const { structure, manifest, checkManifest, routable } = await import("../engine/structure.ts");
 const { boundaries, recover, ventureHealth, frameworkHealth } = await import("./boundaries.ts");
 const c = async <T = Items>(route: string, action: string, extra: Partial<CallArgs> = {}) => (await call({ venture: "acme", route, action, workspace: ws, ...extra })) as Reply<T>;
@@ -91,6 +92,53 @@ expect("M-17: after a write held as a draft, the next route is accepting it", w3
 const cliW = spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.ts"), "validation/solution", "write", "--venture", "acme", "--input", "-", "--as", "person"], { encoding: "utf8", env, input: JSON.stringify({ venture: "acme", statement: "Online booking", alternatives: ["a receptionist"], evidence: [] }) });
 const cliOut = JSON.parse(cliW.stdout || "{}");
 expect("M-3 and M-17 through the CLI: the answer carries changed and next", cliW.status === 0 && cliOut.changed?.record?.to === "confirmed" && cliOut.next?.route, cliW.stderr || cliOut);
+
+// A next write is suggested only when that route has the action. knowledge/venture-profile has read, view and layout.
+type RouteRow = { route: string; kind: string; record?: string; actions: string[]; collection?: string };
+type Hint = { route: string | null; action: string | null; command?: string };
+const routeTable = routes() as RouteRow[];
+const quiet = {
+  packages: { core: [] as { id: string; title?: string; records: { record: string; role?: string; moves?: string; status?: string }[] }[], handoff: [] as [] },
+  need: { rows: [] as { type: string; status: string; now: number; why?: string }[] },
+  decisions: null as null,
+};
+const probe = { record: undefined as string | undefined, route: "probe", draft: null, venture: "acme", change: { moves_now: [] as { record: string; package: string; route: string | null }[] } };
+const named = (route: string | null, action: string | null) => !!route && !!action && routeTable.some((r) => r.route === route && r.actions.includes(action));
+const violations: string[] = [];
+const checkHint = (label: string, hint: Hint) => { if (hint.route && hint.action && !named(hint.route, hint.action)) violations.push(`${label} -> ${hint.route} ${hint.action}`); };
+const recordTypes = [...new Set(routeTable.filter((r) => r.kind === "record" && r.record).map((r) => String(r.record)))];
+for (const type of recordTypes) {
+  checkHint(`need-now ${type}`, await next({ ...quiet, need: { rows: [{ type, status: "suggest now", now: 1, why: "probe" }] } }, probe) as Hint);
+  checkHint(`required ${type}`, await next({
+    ...quiet,
+    packages: { core: [{ id: "foundation", title: "Foundation", records: [
+      { record: "validation-problem", role: "required", moves: "now", status: "confirmed" },
+      { record: type, role: "required", moves: "now", status: "missing" },
+    ] }], handoff: [] },
+  }, { ...probe, record: "validation-problem", route: "foundation/problem" }) as Hint);
+}
+for (const r of routeTable) {
+  if (r.kind !== "record") continue;
+  checkHint(`moves ${r.route}`, await next(quiet, { ...probe, change: { moves_now: [{ record: r.record ?? r.route, package: "p", route: r.route }] } }) as Hint);
+}
+expect("every next the router can produce names a route that has the suggested action", violations.length === 0, violations.filter((v) => v.includes("venture-profile")).concat(violations).slice(0, 8).join("; "));
+const profileHint = await next({ ...quiet, need: { rows: [{ type: "venture-profile", status: "suggest now", now: 1, why: "A few sentences on what the venture is" }] } }, probe) as Hint;
+expect("need-now gives no next for knowledge/venture-profile, which has no write", profileHint.route === null && profileHint.action === null && profileHint.command === undefined, profileHint);
+const problemHint = await next({ ...quiet, need: { rows: [{ type: "validation-problem", status: "suggest now", now: 1, why: "probe" }] } }, probe) as Hint;
+expect("need-now still suggests a write when the route has one", problemHint.action === "write" && problemHint.route === "foundation/problem" && named(problemHint.route, problemHint.action) && /mentura foundation\/problem write --venture acme/.test(problemHint.command ?? ""), problemHint);
+const movedProfile = await next(quiet, { ...probe, change: { moves_now: [{ record: "venture-profile", package: "knowledge", route: "knowledge/venture-profile" }] } }) as Hint;
+expect("a record that now moves is not a next write when its route has no write", movedProfile.route === null && movedProfile.action === null, movedProfile);
+
+const badFile = join(ws, "not.json");
+writeFileSync(badFile, "not json\n");
+const provPath = join(acme, "provenance.jsonl");
+const beforeProv = existsSync(provPath) ? readFileSync(provPath, "utf8") : "";
+const badW = cli("knowledge/venture-profile", "write", "--venture", "acme", "--input", badFile, "--as", "person");
+const afterProv = existsSync(provPath) ? readFileSync(provPath, "utf8") : "";
+const errLine = badW.stderr.trim();
+expect("a write with non-JSON input exits 2 with one line naming the file and the parse error, and writes no provenance",
+  badW.status === 2 && errLine.split("\n").length === 1 && errLine.startsWith(`${badFile}: `) && /Unexpected token/.test(errLine) && /not valid JSON/.test(errLine) && afterProv === beforeProv && badW.stdout === "",
+  { status: badW.status, stderr: badW.stderr.slice(0, 400), stdout: badW.stdout });
 
 // P-37 and L-6: a package's own route.
 const fnd = await c<PackageRead>("foundation", "read");
