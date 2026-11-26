@@ -1,6 +1,6 @@
 # Hooks and loops across the 13 functions
 
-Date: 2026-11-26. Decision: EE-182. Status: step 1, what is due (`packages/naive/src/engine/due.ts`, `naive due`), is built. Steps 2 to 6 are not built.
+Date: 2026-11-26. Decision: EE-182. Status: steps 1 to 3 and 5 are built: what is due (`packages/naive/src/engine/due.ts`, `naive due`), the loop (EE-183), record data categories (EE-184) and owners (EE-187, `packages/naive/src/engine/element-owners.ts`, `naive owners`). Steps 4 and 6 to 8 are not built.
 
 ## The ask
 
@@ -12,8 +12,8 @@ An element is one node of APQC's Process Classification Framework as Naive carri
 
 | Aspect of an element | Standard | In Naive today |
 |---|---|---|
-| Inputs, outputs, owner, measures | ISO 9001 process approach | Workflow `reads` and step `writes`. No owner per element. |
-| Who is accountable | RACI | Performer and approval per activity (EE-172, EE-179). Not built above an activity. |
+| Inputs, outputs, owner, measures | ISO 9001 process approach | Workflow `reads` and step `writes`. One owner per element (EE-187). |
+| Who is accountable | RACI | Accountable: one owner per element at every level (EE-187). Responsible: performer and approval per activity (EE-172, EE-179). |
 | What starts it | Event, time or request | Workflow `trigger`, read by `naive due` (EE-182). Record triggers and signal listeners for events. |
 | State | Statechart | Not built. |
 | Quality | ISO/IEC 33020 process capability levels 0 to 5 | Not built. Evidence grades exist for validation records only. |
@@ -71,7 +71,7 @@ One pull request each.
 2. The loop with modes (EE-183). Built: `naive loop plan`, `naive loop tick`, `naive loop watch` and `naive loop mode`, described below.
 3. Record data categories (EE-184). Built: every workspace and venture record type in the data model names `data`, master, reference, transactional or derived, and `check-data-model.ts` requires it. Nothing reads it yet: steps 6 and 7 do.
 4. Time boxes (EE-186). Built: the time box record for a campaign or a sprint, the trigger `during`, and a loop mode per time box, described below.
-5. Owners. Not built: one accountable owner per element, inherited from its parent, and a check that nothing is unowned.
+5. Owners (EE-187). Built: one accountable owner per element, inherited from its parent, and a check that nothing is unowned, described below.
 6. The element graph. Not built: edges from workflow reads and writes.
 7. State and quality. Not built: the statechart above, a capability level per element from evidence, and the effect of an absent or weak element on the elements it feeds.
 8. Proofs. Not built: Lean proofs of the transition function and of propagation.
@@ -138,10 +138,49 @@ flowchart TD
 
 Not built: a time box's own measures and review, a check that a time box names workflows the venture has, and a command to open or close one (a person writes the record through its route).
 
+## Owners
+
+Every element has one accountable owner, the A of RACI: a role or a person. The owner answers for the element. It is not the performer: who performs an activity, and whether a person approves it, is the venture's `operations/activity-assignments.json` or the default for the activity's kind, and `naive owners` shows both beside each other.
+
+`resolveOwners()` in `packages/naive/src/engine/element-owners.ts` is a pure function. It walks the framework in order, so a parent is resolved before its children, and gives each element the first rule that applies:
+
+| Order | Source | Rule |
+|---|---|---|
+| 1 | explicit | The venture names the owner in `operations/element-owners.json`: `{ "role": "growth-lead" }` or `{ "person": "Ana Ruiz" }` per hierarchy id, at any level. |
+| 2 | root | The element is an activity a person performs or approves, and the owner it would inherit is an agent. An agent does not answer for a person's work, so the delegation root owns it: `root` in the venture's `governance/delegation.json`, the founder by default. |
+| 3 | inherited | The parent's owner. The entry names the element where it was set. |
+| 4 | default | A category the venture lists in venture.json departments is owned by its function's agent, `<function>-agent`. A category it does not list has no owner, and neither do its elements. |
+
+```mermaid
+flowchart TD
+  E[an element] --> X{named in operations/element-owners.json?}
+  X -- yes --> EX[explicit owner]
+  X -- no --> L1{a category?}
+  L1 -- yes --> LI{the venture lists its function?}
+  LI -- yes --> D[default: function-agent]
+  LI -- no --> N[no owner]
+  L1 -- no --> P[the parent's owner, inherited]
+  P --> A{an activity a person performs or approves, by assignment or kind?}
+  A -- no --> OUT[owner]
+  A -- yes --> K{the inherited owner is an agent?}
+  K -- no --> OUT
+  K -- yes --> R[root: the delegation root, a person]
+  D --> OUT
+  EX --> OUT
+  R --> OUT
+```
+
+A role is a role template, Naive's (`packages/naive/template/governance/roles/`) or the venture's own (`governance/roles/`), or a function agent. A role whose template has `default_tier` person is a person, and the rest are agents. A role answers only within its reach: a lead within its portfolio, a role whose template names one function within that function, a function agent within its own function, and a role of function all anywhere.
+
+`packages/naive/src/checks/check-owners.ts <venture dir>` fails on a record that does not match its schema, an element APQC lacks or one under a function the venture does not list, an owner that names no role, a role outside its reach, a delegation root that is not a role, and an element left unowned. A person named by name is not checked against a register, because Naive keeps none of people by name.
+
+Not built for owners: a route that serves the list, the catalog's own activities (`activities.json`) as elements, the gate refusing a write by a role that does not own the element, a consulted and informed list for the C and I of RACI, and a person's name checked against the venture's people.
+
 ## Not built
 
-- Everything in steps 5 to 8.
+- Everything in steps 6 to 8.
 - Retries with backoff inside one tick. A durable watch on `workflow/DurableClock`. Starting more than one workflow at once. A hosted starter: with `NAIVE_RUNTIME=hosted` there is no `NAIVE_AGENT_CMD`, so a start is blocked.
+
 - The run log is not synced (`naive sync` skips `.naive/`), no route serves it, and it has no hash chain.
 - A workflow step's `when` (EE-181) is still a sentence an agent reads.
 - Language choice: Naive is TypeScript on Effect, with Lean for proofs. A rubric for choosing another language for a system is not written.

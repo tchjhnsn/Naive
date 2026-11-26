@@ -1436,6 +1436,25 @@ export type DetectorLine = {
   decision?: string;
 };
 
+/** The accountable owner a venture names for an element of APQC's Process Classification Framework (EE-187): a category, process group, process, activity or task in packages/naive/src/functions/pcf.json. An element with no entry takes its parent's owner, and a category with none is owned by its function's agent. The owner is accountable, the one who answers for the element; who performs an activity is in operations/activity-assignments.json. The file is operations/element-owners.json, and packages/naive/src/engine/element-owners.ts resolves it. */
+export type ElementOwners = {
+  /** Per element, by its APQC hierarchy id (3.0 for a category, 3.5 for a process group, 3.5.1.6 for an activity): the role or the person accountable for it */
+  owners: {
+    [key: string]: {
+      /** A role id: a role template in packages/naive/template/governance/roles/ or the venture's governance/roles/, or a function agent, <function>-agent. A role whose template has default_tier person is a person; the rest are agents */
+      role?: string;
+      /** A person by name, when the accountable owner is a named person rather than a role */
+      person?: string;
+    } & ({
+      /** A role id: a role template in packages/naive/template/governance/roles/ or the venture's governance/roles/, or a function agent, <function>-agent. A role whose template has default_tier person is a person; the rest are agents */
+      role: string;
+    } | {
+      /** A person by name, when the accountable owner is a named person rather than a role */
+      person: string;
+    });
+  };
+};
+
 /** One client engagement, at service-delivery/engagements/<id>.json (route service-delivery/engagements/[id]): the client, the offer it delivers, each deliverable with its acceptance criteria and due date, approved and pending change requests, the budget and the status. It follows APQC PCF 5.3 (deliver service to customer: initiate, execute and complete service delivery). The work itself runs as handoffs, which the engagement lists by id. The service-delivery function owns it, and only the service-delivery agent (role service-delivery-agent) or a person writes it. Signing the statement of work is a legal-or-terms decision, and the engagement only records that it was signed. */
 export type Engagement = {
   /** The engagement's id, the file name without .json */
