@@ -2,6 +2,8 @@
   "id": "intake",
   "function": "supply-chain",
   "title": "Learn the venture's suppliers and orders",
+  "goal": "The venture's suppliers and open orders are recorded with their lead times and commitments, or the function is declared to have nothing to do, and every single-sourced critical item is named.",
+  "measures": ["cost_or_time_saved", "flow_and_lead_time"],
   "trigger": { "kind": "intake" },
   "reads": ["venture", "foundation/telos", "foundation/constraints", "product", "finance/spend", "supply-chain/suppliers", "supply-chain/purchase-orders"],
   "steps": [

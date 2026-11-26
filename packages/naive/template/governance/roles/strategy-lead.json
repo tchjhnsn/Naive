@@ -22,5 +22,5 @@
   "default_tier": "frontier",
   "lint_suites": [],
   "verified_by": "founder",
-  "skill": "packages/naive/src/functions/strategy/skills/telos/SKILL.md"
+  "skill": "packages/naive/src/interfaces/skills/lead/SKILL.md"
 }

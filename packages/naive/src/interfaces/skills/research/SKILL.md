@@ -21,6 +21,8 @@ Interface layer, for every function. This is the loop a function's researcher ru
 
 The skill is Naive's file, not a venture record, so no route writes it: every researcher reads it and none edits it.
 
+One pass of the loop is done when it has written one experiment line for one change to one recipe, or when it has said which of the stopping conditions in step 7 holds and stopped. A pass that read and thought and wrote no line is not done; say what blocked it.
+
 ## Who you are
 
 - Your role is `<function>-researcher`, such as `strategy-researcher`. You work only the patterns your function's program lists.

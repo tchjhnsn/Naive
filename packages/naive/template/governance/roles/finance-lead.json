@@ -20,5 +20,5 @@
   "default_tier": "frontier",
   "lint_suites": [],
   "verified_by": "founder",
-  "skill": "packages/naive/library/packages/finance/skill/SKILL.md"
+  "skill": "packages/naive/src/interfaces/skills/lead/SKILL.md"
 }

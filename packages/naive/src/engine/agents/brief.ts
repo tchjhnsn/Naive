@@ -80,7 +80,7 @@ export function agentBrief(role: string, dir: string | null): AgentBrief | Error
       instructions: text(s.instructions), workflows, decisions: json(s.decisions, "decisions"),
       ...(assigned ? { assignments: assigned.activities } : {}),
       env: { MENTURA_ACTOR_ID: s.role }, team_plan_entry: teamPlanEntry(s, phase), ...staffing(s.role),
-      how: `Act as ${s.role}: follow instructions, run a workflow's steps in order (a step with consider is optional: run it only when its when condition holds or a person asks, and otherwise say you considered it and why you did not run it), raise a question in decisions/* when the decision matrix says escalate, and write only the routes in spec.writes. Skill paths under /function/ are relative to spec.module.${assigned?.activities.length ? " Some of your activities have a rule, from the venture's own assignments or by default from the activity's kind: follow the rule of each entry in assignments, and of a step's assignment." : ""}`,
+      how: `Act as ${s.role}: follow instructions, read foundation/telos and foundation/goals first and name which goal the run serves, run a workflow's steps in order (a step with consider is optional: run it only when its when condition holds or a person asks, and otherwise say you considered it and why you did not run it), reach the workflow's goal and stop only when its done_criteria pass, raise a question in decisions/* when the decision matrix says escalate, and write only the routes in spec.writes. Ask the person what only they can know; when no one answers, record the gap as an assumption on the record and never write a guess as a fact. Cite the record behind every claim. Skill paths under /function/ are relative to spec.module.${assigned?.activities.length ? " Some of your activities have a rule, from the venture's own assignments or by default from the activity's kind: follow the rule of each entry in assignments, and of a step's assignment." : ""}`,
     };
   }
   if ((leadIds() as string[]).includes(role)) {
@@ -89,7 +89,7 @@ export function agentBrief(role: string, dir: string | null): AgentBrief | Error
     return {
       kind: "lead", role: l.role, spec: { ...l, skill: l.skill ? rel(l.skill) : null },
       skill: text(skillFile), env: { MENTURA_ACTOR_ID: l.role }, team_plan_entry: leadTeamPlanEntry(l, phase), ...staffing(l.role),
-      how: `Act as ${l.role}: plan and verify cross-function work for ${l.portfolio.join(", ")}, hand work to their function agents as handoffs (mentura_route_task says who takes a task), and write only the routes in spec.writes.`,
+      how: `Act as ${l.role}: read the skill, plan and verify cross-function work for ${l.portfolio.join(", ")} against the telos measures your lead plan binds, hand work to their function agents as handoffs (mentura_route_task says who takes a task), verify what comes back and never your own work, and write only the routes in spec.writes. A one-way door or a never-redelegated class is a person's, however your plan ranks it.`,
     };
   }
   return new Error(`no agent ${role}: the roles are ${agentRoles().join(", ")}`);

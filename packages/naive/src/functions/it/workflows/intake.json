@@ -2,6 +2,8 @@
   "id": "intake",
   "function": "it",
   "title": "Learn the venture's systems and access",
+  "goal": "Every outside system the venture connects is a connection record with its scopes and holders, and every account without MFA, every shared credential and every connection with no exit plan is named.",
+  "measures": ["compliance_met"],
   "trigger": { "kind": "intake" },
   "reads": ["venture", "it/connections", "finance/spend", "knowledge/knowledge-sources", "people/team-plan", "governance/delegation"],
   "steps": [
