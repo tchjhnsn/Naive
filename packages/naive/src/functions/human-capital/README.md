@@ -4,7 +4,7 @@ Up: [functions](../README.md)
 
 ## What this is
 
-The human capital (hr) function (APQC 7.0, Develop and Manage Human Capital). Its governance side is hR policies, the handbook, hiring decision rights; its operations side is recruiting, onboarding, payroll runs. This module holds the skills, templates and frameworks Naive ships for it (EE-118 step 7). A function exists even when it ships nothing yet (EE-115), so the folder is here either way.
+The human capital (hr) function (APQC 7.0, Develop and Manage Human Resources, element 10007). Its governance side is hR policies, the handbook, hiring decision rights; its operations side is recruiting, onboarding, payroll runs. This module holds the skills, templates and frameworks Naive ships for it (EE-118 step 7). A function exists even when it ships nothing yet (EE-115), so the folder is here either way.
 
 ## Where things are
 

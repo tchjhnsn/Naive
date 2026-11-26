@@ -405,6 +405,23 @@ export type LabelFacts = Base & {
   underVenture: boolean;  // it sits under some venture
 };
 
+/** One citation of an APQC element (EE-199). The three flags are the facts. The words of the citation are not. */
+export type CitationFacts = Base & {
+  elementKnown: boolean;   // the cited element id is in pcf.json
+  nameMatches: boolean;    // the cited name is that element's name
+  versionMatches: boolean; // the cited version is pcf.json's version
+};
+
+/** Each of the three flags is drawn on its own, so each property passes and fails. */
+export function citationCases(seed = 71): CitationFacts[] {
+  const r = rng(seed);
+  const b = (p = 0.5) => r() < p;
+  return Array.from({ length: N }, () => ({
+    confirmed: b(0.9), label: ["pcf citation", "citation", "reference", undefined][Math.floor(r() * 4)],
+    elementKnown: b(), nameMatches: b(), versionMatches: b(),
+  }));
+}
+
 /** Each of the six flags is drawn on its own, so each property passes and fails. */
 export function dataCases(seed = 67): LabelFacts[] {
   const r = rng(seed);
