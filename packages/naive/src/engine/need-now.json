@@ -1292,6 +1292,17 @@
       },
       "why": "Bugs matter once people use the product; stable means no open P0 or P1"
     },
+    "product-capability": {
+      "base": {
+        "discovery": 0.05,
+        "validation": 0.4,
+        "beachhead": 0.7,
+        "scale": 0.8,
+        "platform": 0.8
+      },
+      "when": [],
+      "why": "Capabilities matter once a product does several things people can name, each with an owner who keeps its words and its pages current; before Validation a product is one job"
+    },
     "telemetry-event": {
       "base": {
         "discovery": 0.1,

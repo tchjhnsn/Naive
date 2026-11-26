@@ -1,0 +1,10 @@
+{
+  "id": "releasing",
+  "name": "Releasing",
+  "product": "cli",
+  "kind": "category",
+  "parent": null,
+  "owner": "releasing-agent",
+  "status": "live",
+  "summary": "Everything the CLI does to cut a release."
+}

@@ -1,0 +1,10 @@
+{
+  "id": "changelog",
+  "name": "Changelog from commits",
+  "product": "cli",
+  "kind": "capability",
+  "parent": "releasing",
+  "owner": "changelog-agent",
+  "status": "building",
+  "summary": "Writes the release's changelog from the commits since the last tag."
+}

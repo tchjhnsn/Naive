@@ -21,6 +21,7 @@ import * as languageRubric from "./language-rubric.ts";
 import * as leadPlan from "./lead-plan.ts";
 import * as timeBox from "./time-box.ts";
 import * as meeting from "./meeting.ts";
+import * as productCapability from "./product-capability.ts";
 import * as rawDump from "./raw-dump.ts";
 import * as triage from "./triage.ts";
 import * as opportunity from "./opportunity.ts";
@@ -44,7 +45,7 @@ writeFileSync(join(v, "venture.json"), JSON.stringify({ id: "kettle" }));
 mkdirSync(join(v, "product/bugs"), { recursive: true });
 writeFileSync(join(v, "product/bugs/save-loses-draft.json"), "{}");
 
-for (const g of [bug, glossary, reference, traceSpan, detector, detectorTrial, connection, capabilityCluster, languageRubric, leadPlan, timeBox, meeting, rawDump, triage, opportunity, supportPolicy, supportCase, validationPlan, gatePolicies, marketAnatomy, industryAnatomy, ventureAnatomy]) t(`${g.record}: describe asks at least one required field`, g.describe().ask.some((q) => q.required));
+for (const g of [bug, glossary, reference, traceSpan, detector, detectorTrial, connection, capabilityCluster, languageRubric, leadPlan, timeBox, meeting, productCapability, rawDump, triage, opportunity, supportPolicy, supportCase, validationPlan, gatePolicies, marketAnatomy, industryAnatomy, ventureAnatomy]) t(`${g.record}: describe asks at least one required field`, g.describe().ask.some((q) => q.required));
 
 const b = bug.draft({ title: "Save loses draft", severity: "P1", found_in: "0.6.0", repro: "open, type, save" }, { venture: v });
 t("bug: draft passes the schema", b.ok);
@@ -133,6 +134,11 @@ t("meeting: the schema refuses a closed meeting with a pending item, or with no 
   && !validate("meeting", { ...closedBad, agenda: [{ ...mt.draft?.agenda[0], status: "done" }], outcome: undefined }).ok
   && validate("meeting", { ...closedBad, agenda: [{ ...mt.draft?.agenda[0], status: "done" }] }).ok);
 t("meeting: the schema refuses an open meeting with no opened_at", !validate("meeting", { ...mt.draft, status: "open" }).ok);
+const cap = productCapability.draft({ name: "Time travel", product: "kettle", kind: "capability", parent: "history", owner: "time-travel-agent" });
+t("product-capability: draft takes its id from the name, starts building, and goes to product/capabilities/<id>", cap.ok && cap.route === "product/capabilities/time-travel" && cap.draft?.status === "building");
+t("product-capability: a category may sit directly under the products function", productCapability.draft({ name: "History", product: "kettle", kind: "category", owner: "history-agent" }).draft?.parent === null);
+t("product-capability: a capability with no category, or no owner, is refused", !productCapability.draft({ ...cap.draft, parent: null }).ok && !productCapability.draft({ ...cap.draft, owner: undefined }).ok);
+t("product-capability: the schema refuses a capability whose parent is null, and an unknown status", !validate("product-capability", { ...cap.draft, parent: null }).ok && !validate("product-capability", { ...cap.draft, status: "paused" }).ok);
 const lp = leadPlan.draft({ lead: "growth-lead", measures: ["paying-teams"] });
 t("lead-plan: draft takes the portfolio from the role template, no bets and a monthly review", lp.ok && lp.route === "operations/lead/growth-lead"
   && lp.draft.portfolio.join() === "marketing-and-sales,customer-service" && lp.draft.bets.length === 0 && lp.draft.review_cadence === "monthly");

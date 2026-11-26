@@ -3054,6 +3054,31 @@
           "expect": "exists"
         }
       ]
+    },
+    {
+      "id": "EE-224",
+      "date": "2026-11-26",
+      "status": "in-force",
+      "decision": "A product's capabilities are records. product-capability.schema.json is one capability, or a category of capabilities, at <venture>/product/capabilities/<id>.json (route product/capabilities/[id]), in the purpose layer with function products and data master: a name, the product it belongs to, its kind, its parent category (null for a category directly under the products function; a capability always has one), the agent role that owns it and its status, live, building or retired. check-ventures.ts checks the tree across files: the product exists, the parent is a category of the same product, categories form no loop, and nothing under a retired category is live or building. An app reads the records to staff a capability agent (<capability>-agent) and its category agent, and to give a site or docs container its owner. Naive starts no agent and enforces no container: that stays in the app.",
+      "why": "Torian on 2026-11-26 asked for one agent per capability (time travel, for example), with category agents holding authority over their group, each owning the containers of the marketing site and docs that describe it. Mentura's site agents (containers.json) need a source for which capabilities exist, who owns each and whether it is still live; product.schema.json has features with no owner, status or hierarchy. A record keeps that in the business's own store, with provenance, instead of in an app's config.",
+      "related": [
+        "EE-099",
+        "EE-200"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/records/product-capability.schema.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/generators/product-capability.ts",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
     }
   ]
 }
