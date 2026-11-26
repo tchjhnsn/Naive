@@ -3,6 +3,7 @@
 // which is named, not guessed.
 
 import { rng, type Base } from "./engine.ts";
+import type { MakerFacts, OrgFacts } from "./makers.ts";
 import { namesBetween, type Target } from "./relations.ts";
 
 /** One person's relationship to one venture. */
@@ -381,6 +382,37 @@ export function evalPlanCases(seed = 47): EvalPlan[] {
       priorHoldoutEnd: b(0.5) ? null : b(0.9) ? Math.floor(r() * devStart) : holdStart + 200,
       holdoutChecks: b(0.95) ? 1 + Math.floor(r() * 3) : 0,
     };
+  });
+}
+
+const makerLabel = ["open maker", "named maker", "decision-maker", undefined] as const;
+const orgLabel = ["org link", "reports to", "manager", undefined] as const;
+
+/** Coherent open makers and named makers, plus independent bits so each property fails on its own. */
+export function makerCases(seed = 59): MakerFacts[] {
+  const r = rng(seed);
+  const b = (p = 0.5) => r() < p;
+  const label = () => makerLabel[Math.floor(r() * makerLabel.length)];
+  return Array.from({ length: N }, () => {
+    const confirmed = b(0.9);
+    const roll = r();
+    if (roll < 0.25) return { confirmed, label: label(), unknown: true, named: false, resolves: false, isActor: false, guessed: false };
+    if (roll < 0.5) return { confirmed, label: label(), unknown: false, named: true, resolves: true, isActor: false, guessed: false };
+    return { confirmed, label: label(), unknown: b(), named: b(), resolves: b(), isActor: b(0.3), guessed: b(0.3) };
+  });
+}
+
+/** Absent links and links with both ends, plus cycles and missing ends so each property fails on its own. */
+export function orgCases(seed = 61): OrgFacts[] {
+  const r = rng(seed);
+  const b = (p = 0.5) => r() < p;
+  const label = () => orgLabel[Math.floor(r() * orgLabel.length)];
+  return Array.from({ length: N }, () => {
+    const confirmed = b(0.9);
+    const roll = r();
+    if (roll < 0.3) return { confirmed, label: label(), absent: true, fromKnown: b(), toKnown: b(), cycle: false };
+    if (roll < 0.6) return { confirmed, label: label(), absent: false, fromKnown: true, toKnown: true, cycle: false };
+    return { confirmed, label: label(), absent: b(0.2), fromKnown: b(), toKnown: b(), cycle: b() };
   });
 }
 

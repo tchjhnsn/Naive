@@ -21,6 +21,7 @@
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { ventureFile } from "../core/venture-paths.ts";
+import { ventureModeled } from "../terms/conduct.ts";
 
 const repo = new URL("../../../..", import.meta.url).pathname;
 const load = (f: string) => JSON.parse(readFileSync(f, "utf8"));
@@ -142,7 +143,9 @@ export async function manifest(dir: string) {
   const owners: Record<string, { owner?: string }> = v.functions ?? {};
   const fnOf = (n: string): string | null => { const k = names.includes(n) ? pkgOf(n) : {}; return k.function ?? k.department ?? null; };
   const solo = !(v.members?.length);
-  const functions = [...new Set(used.map(fnOf).filter((f): f is string => Boolean(f)))].map((f): { function: string, owner: string | null | undefined, declared: boolean, packages: string[] } => ({ function: f, owner: owners[f]?.owner ?? (solo ? "the founder" : null), declared: !!owners[f], packages: used.filter((n) => fnOf(n) === f) }));
+  // A modeled venture leaves an unknown owner null. A run venture, or one with no mode, still reads a missing owner as the founder when it is solo.
+  const modeled = ventureModeled(v.mode);
+  const functions = [...new Set(used.map(fnOf).filter((f): f is string => Boolean(f)))].map((f): { function: string, owner: string | null | undefined, declared: boolean, packages: string[] } => ({ function: f, owner: owners[f]?.owner ?? (modeled ? null : solo ? "the founder" : null), declared: !!owners[f], packages: used.filter((n) => fnOf(n) === f) }));
   for (const [f, o] of Object.entries(owners)) if (!functions.some((x) => x.function === f)) functions.push({ function: f, owner: o.owner, declared: true, packages: [] });
   return {
     identity: { id: v.id, name: v.name, kind: v.kind ?? "venture", parent: v.parent, owner: v.owner, status: v.status },
@@ -162,7 +165,7 @@ export function checkManifest(dir: string) {
   for (const n of v.packages ?? []) if (!names.includes(n)) errors.push(`venture.json packages: ${n} is not a Naive package (one of ${names.join(", ")})`);
   for (const [f, o] of Object.entries<{ owner?: string } | null>(v.functions ?? {})) {
     if (!fns.includes(f)) errors.push(`venture.json functions: ${f} is not a function (one of ${fns.join(", ")})`);
-    if (!o?.owner) errors.push(`venture.json functions: ${f} has no owner; every function has one accountable owner`);
+    if (!o?.owner && !ventureModeled(v.mode)) errors.push(`venture.json functions: ${f} has no owner; every function has one accountable owner`);
   }
   for (const k of v.kits ?? []) {
     if (!names.includes(k.extends)) errors.push(`venture.json kits: ${k.id} extends ${k.extends}, which is not a Naive package`);

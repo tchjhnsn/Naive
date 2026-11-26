@@ -14,6 +14,7 @@ The EE-095 term engine: every term is admitted through one pipeline with a valid
 | [`admitted.json`](./admitted.json) | The admitted terms, written by `admit.ts`. |
 | [`bypass-guard-test.ts`](./bypass-guard-test.ts) | Fails the suite when a symbolic check bypasses the EE-095 term engine and the Lean proofs. Plain checks, such as `check-traces.ts` (hash chains and links) and `check-write-scope.ts` (path prefixes) and `check-detectors.ts` (ledger chains, references and arithmetic) `check-signals.ts` (schema shape, field owners and reducers, content hashes, paths and references) and `check-recipes.ts` (chains, references, budget counts and renders compared again), are registered with a reason. |
 | [`catalog-test.ts`](./catalog-test.ts) | Checks the catalog of ontologies (N-050). |
+| [`conduct.ts`](./conduct.ts) | The modeled-venture term (EE-187): `ventureModeled` runs it on venture.json `mode`. `modeled` and not `run` passes. Absent is neither. |
 | [`engine-test.ts`](./engine-test.ts) | Tests the term engine. |
 | [`engine.ts`](./engine.ts) | The term engine (EE-095; Torian, 2026-10-31). |
 | [`fixtures/`](./fixtures) | Fixtures for the membership gate's tests. |
@@ -22,7 +23,8 @@ The EE-095 term engine: every term is admitted through one pipeline with a valid
 | [`gen-concepts.ts`](./gen-concepts.ts) | Writes one Lean `Concept` per noun in packages/naive/src/terms/ontology.json to packages/naive/lean/Naive/Generated/Ontology.lean. |
 | [`lean-agreement.ts`](./lean-agreement.ts) | Reads the Lean proofs and the admitted terms and lists where they disagree (`disagreements`, `readLean`). It ships in the package, so an app such as Mentura's reconcile runner imports it. |
 | [`lean-agreement-test.ts`](./lean-agreement-test.ts) | Runs `lean-agreement.ts` as a test: fails the suite when the term engine and the Lean proofs disagree about which terms and theorems exist. |
-| [`levels.ts`](./levels.ts) | The levels terms are defined at, each with its facts and a seeded case generator. The detector and trial levels hold the signal detection terms. The reception level (one signal arriving at one listener) holds the signal library terms; its signals and listeners come from pools, so one signal reaches many listeners. The experiment, plan and settlement levels hold the autoresearch terms. |
+| [`levels.ts`](./levels.ts) | The levels terms are defined at, each with its facts and a seeded case generator. The detector and trial levels hold the signal detection terms. The reception level (one signal arriving at one listener) holds the signal library terms; its signals and listeners come from pools, so one signal reaches many listeners. The experiment, plan and settlement levels hold the autoresearch terms. The maker and org levels hold the modeled-venture maker and org-link cases (`makerCases`, `orgCases`). |
+| [`makers.ts`](./makers.ts) | Open maker, named maker and org link (EE-187). `judgeMaker`, `judgeOrg`, `makerFacts`, `orgFacts` and `reportingCycle` read facts, not labels. The theorems are in [`../../lean/Naive/Org.lean`](../../lean/Naive/Org.lean). |
 | [`ontology-catalog.json`](./ontology-catalog.json) | The catalog of ontologies, one scope per function (N-050). |
 | [`ontology-gate-test.ts`](./ontology-gate-test.ts) | Behavior of the membership gate. |
 | [`ontology-gate.ts`](./ontology-gate.ts) | The membership gate (the first gate of the handoff pipeline). |

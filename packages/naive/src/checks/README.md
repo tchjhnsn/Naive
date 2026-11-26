@@ -42,6 +42,7 @@ The checkers and lints. A checker reads a workspace, a venture or the repository
 | [`check-governance.ts`](./check-governance.ts) | Checks each venture's ownership-and-control records (EE-022). |
 | [`check-integrations.ts`](./check-integrations.ts) | Checks every layer's tooling/integrations.json for the rules one entry's schema cannot state. |
 | [`check-nextjs-status.ts`](./check-nextjs-status.ts) | Checks docs/design/naive-nextjs-status.json against the Next.js translation ledger and the code. `node test.ts` runs it with `--docs site/content/docs`, the docs site in this repository, so each named page must exist and the What's built page must be current. |
+| [`check-modeled.ts`](./check-modeled.ts) | Walks a venture and judges each `decision_maker` and each `reports_to` through the open-maker, named-maker and org-link terms (EE-187, [`../terms/makers.ts`](../terms/makers.ts)). A string maker must be a roster id or a role id, and must not be the actor when `provenance.drafted_by` is an agent. `reports_to` null or absent passes. A missing person or a cycle fails. It never edits a record. Old decisions with the field absent pass. |
 | [`check-nouns.ts`](./check-nouns.ts) | Checks the system's nouns (EE-014). With `--md` it writes the glossary in one write and exits only once it is flushed, because stdout to a pipe is asynchronous and an early exit cut the render that `test.ts` compares with `ontology.md`. |
 | [`check-people.ts`](./check-people.ts) | Checks venture types and people (EE-082) in a workspace. |
 | [`check-private.ts`](./check-private.ts) | Private records, fields, and sensitive streams never reach a model (EE-073). |
@@ -81,7 +82,7 @@ The checkers and lints. A checker reads a workspace, a venture or the repository
 | [`lint-money-test.ts`](./lint-money-test.ts) | Money lint (packages/naive/src/checks/lint-money.ts, route money/lint) on made-up ventures in a temp folder. |
 | [`lint-money.ts`](./lint-money.ts) | Money lint. |
 | [`lint-people-test.ts`](./lint-people-test.ts) | People lint (people/lint). |
-| [`lint-people.ts`](./lint-people.ts) | People alignment lint. |
+| [`lint-people.ts`](./lint-people.ts) | People alignment lint. `role-no-function` does not fire when the modeled-venture term says the venture is modeled (EE-187, [`../terms/conduct.ts`](../terms/conduct.ts)). |
 | [`lint-product.ts`](./lint-product.ts) | Product alignment lint. |
 | [`lint-validation.ts`](./lint-validation.ts) | Validation alignment lint. |
 | [`premise-lint-test.ts`](./premise-lint-test.ts) | Tests the premise-attack linter. |

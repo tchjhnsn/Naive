@@ -2094,6 +2094,158 @@
         "Murphy and Winkler, A general framework for forecast verification (1987)",
         "everything-ecosystem docs/design/AUTORESEARCH_RECORDS_2026-11-06.md"
       ]
+    },
+    {
+      "id": "open-maker",
+      "label": "Open maker",
+      "form": "compound",
+      "level": "maker",
+      "kind": "role",
+      "labels": {
+        "designation": "term",
+        "scope": "shared",
+        "origin": {
+          "kind": "narrowed"
+        },
+        "grade": "none"
+      },
+      "meaning": "The in-venture decision-maker is unknown, and it was not guessed.",
+      "status": "proposed",
+      "hash": "80ae25df8afa0fef",
+      "properties": [
+        {
+          "id": "U1",
+          "says": "the maker is unknown"
+        },
+        {
+          "id": "U2",
+          "says": "the maker is not named"
+        },
+        {
+          "id": "U3",
+          "says": "the maker was not guessed"
+        }
+      ],
+      "rule": "every property, and P7 (confirmed facts)",
+      "valid": true,
+      "passes": 6080,
+      "relations": {
+        "named-maker": "disjoint"
+      },
+      "predictions": [
+        {
+          "other": "named-maker",
+          "expected": "disjoint",
+          "found": "disjoint",
+          "confirmed": true
+        }
+      ],
+      "lean": [
+        "guessed_not_open"
+      ],
+      "sources": [
+        "EE-187"
+      ]
+    },
+    {
+      "id": "named-maker",
+      "label": "Named maker",
+      "form": "compound",
+      "level": "maker",
+      "kind": "role",
+      "labels": {
+        "designation": "term",
+        "scope": "shared",
+        "origin": {
+          "kind": "narrowed"
+        },
+        "grade": "none"
+      },
+      "meaning": "The maker names a person or a role in the venture, is not the acting agent, and was not guessed.",
+      "status": "proposed",
+      "hash": "3bea8b92538a2c48",
+      "properties": [
+        {
+          "id": "N1",
+          "says": "the maker is named"
+        },
+        {
+          "id": "N2",
+          "says": "the name resolves to a person or a role"
+        },
+        {
+          "id": "N3",
+          "says": "the maker is not the acting agent"
+        },
+        {
+          "id": "N4",
+          "says": "the maker was not guessed"
+        },
+        {
+          "id": "N5",
+          "says": "the maker is not unknown"
+        }
+      ],
+      "rule": "every property, and P7 (confirmed facts)",
+      "valid": true,
+      "passes": 5086,
+      "relations": {
+        "open-maker": "disjoint"
+      },
+      "predictions": [
+        {
+          "other": "open-maker",
+          "expected": "disjoint",
+          "found": "disjoint",
+          "confirmed": true
+        }
+      ],
+      "lean": [
+        "guessed_not_named",
+        "open_disjoint_named"
+      ],
+      "sources": [
+        "EE-187"
+      ]
+    },
+    {
+      "id": "org-link",
+      "label": "Org link",
+      "form": "compound",
+      "level": "org",
+      "kind": "role",
+      "labels": {
+        "designation": "term",
+        "scope": "shared",
+        "origin": {
+          "kind": "narrowed"
+        },
+        "grade": "convention"
+      },
+      "meaning": "reports_to is absent or null, or both ends are known, and the link is not a cycle.",
+      "status": "proposed",
+      "hash": "09dc6f9586d34f0d",
+      "properties": [
+        {
+          "id": "O1",
+          "says": "absent, or both ends known"
+        },
+        {
+          "id": "O2",
+          "says": "not a cycle"
+        }
+      ],
+      "rule": "every property, and P7 (confirmed facts)",
+      "valid": true,
+      "passes": 12250,
+      "relations": {},
+      "predictions": [],
+      "lean": [
+        "cycle_not_org_link"
+      ],
+      "sources": [
+        "EE-187"
+      ]
     }
   ],
   "fixtures": [

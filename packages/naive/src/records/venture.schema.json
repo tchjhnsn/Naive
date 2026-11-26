@@ -34,6 +34,13 @@
       "pattern": "^[a-z0-9-]+$",
       "description": "The venture type, an id from packages/naive/src/engine/venture-types.json: what kind of venture this is (a software startup, a VC fund), which decides its starting packages, first decisions, functions and roles (EE-082)"
     },
+    "mode": {
+      "enum": [
+        "modeled",
+        "run"
+      ],
+      "description": "Whether agents are modeling the venture or a person is running it (EE-187). modeled: the people, roles and org links are subjects. run: the venture is being run on Naive. Absent means the record was written before this field and is not read as run."
+    },
     "layout": {
       "enum": [
         "flat",
@@ -45,7 +52,7 @@
     },
     "functions": {
       "type": "object",
-      "description": "The venture's functions and their one accountable owner each (EE-071), keyed by function id from packages/naive/src/functions/departments.json. A solo founder owns them all, which is what the manifest assumes when this is left out.",
+      "description": "The venture's functions and their one accountable owner each (EE-071), keyed by function id from packages/naive/src/functions/departments.json. A solo founder owns them all, which is what the manifest assumes when this is left out. An owner is null when nobody is known (EE-187).",
       "additionalProperties": {
         "type": "object",
         "required": [
@@ -53,8 +60,11 @@
         ],
         "properties": {
           "owner": {
-            "type": "string",
-            "description": "A role or a person's name; no personal details"
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "A person id or a role id, or null when no owner is known (EE-187). Never a guess of the founder or the agent."
           }
         },
         "additionalProperties": false

@@ -150,6 +150,13 @@
       ],
       "description": "Who decided: a person's name. An agent never decides a fail-closed decision. Deprecated in favour of provenance.approved_by, which it must equal when both are present."
     },
+    "decision_maker": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "The in-venture decision-maker: a person id or a role id, or null when unknown (EE-187). Absent means the same as null. Not the actor who writes the record. Never defaulted to the founder or the agent."
+    },
     "decided_at": {
       "type": [
         "string",

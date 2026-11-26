@@ -80,6 +80,7 @@ export const REGISTRY: Registry = {
   "packages/naive/src/checks/check-integrations.ts": plain("integration ids are unique and an interface reaches three other layers"),
   "packages/naive/src/engine/check-leaks.ts": plain("matches internal-term patterns in public text; it finds words and does not decide what a thing is"),
   "packages/naive/src/checks/check-nextjs-status.ts": plain("status ledger rows cite files and pages that exist"),
+  "packages/naive/src/checks/check-modeled.ts": symbolic,
   "packages/naive/src/checks/check-nouns.ts": symbolic,
   "packages/naive/src/checks/check-people.ts": { kind: "unwired", reason: "decides who is a founder from the role label (role.founder), and EE-095 records that founder records are not yet checked against the founder term" },
   "packages/naive/src/checks/check-private.ts": plain("private records never reach a use_model step"),

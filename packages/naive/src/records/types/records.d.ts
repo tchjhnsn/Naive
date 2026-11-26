@@ -938,6 +938,8 @@ export type DecisionRecord = {
   answer?: string | null;
   /** Who decided: a person's name. An agent never decides a fail-closed decision. Deprecated in favour of provenance.approved_by, which it must equal when both are present. */
   decided_by?: string | null;
+  /** The in-venture decision-maker: a person id or a role id, or null when unknown (EE-187). Absent means the same as null. Not the actor who writes the record. Never defaulted to the founder or the agent. */
+  decision_maker?: string | null;
   /**
    * @format date-time
    */
@@ -4322,8 +4324,8 @@ export type Pcf = {
 /** The venture's people (people/people.json): who is in it, in which role, and which functions (hats) each owns. It is to human capital what venture.json is to the venture. A founder also has a file in people/founders/. Names only: no personal details. */
 export type People = {
   venture: string;
-  /** solo: one person owns every function the venture imports */
-  mode: "solo" | "team";
+  /** solo: one person owns every function the venture imports. team: the people share them. null: ownership is not known (a modeled venture, EE-187). solo still means one person owns every function. */
+  mode: "solo" | "team" | null;
   people: {
     id: string;
     name: string;
@@ -4332,6 +4334,8 @@ export type People = {
     /** The functions this person owns. In the structured layout (EE-086) hats are read from the org chart in venture.json and not stored here */
     hats?: ("strategy" | "products" | "marketing-and-sales" | "supply-chain" | "service-delivery" | "customer-service" | "human-capital" | "it" | "finance" | "assets" | "risk-and-compliance" | "external-relationships" | "capabilities")[];
     founder_file?: string;
+    /** Another person's id, or null when the org link is unknown (EE-187). A string that names nobody, or a cycle, fails the check. */
+    reports_to?: string | null;
   }[];
   /** The founder agreement, once there is one (governance/founder-agreement.json) */
   founder_agreement?: string;
@@ -6706,13 +6710,15 @@ export type Venture = {
   kind?: "venture" | "product";
   /** The venture type, an id from packages/naive/src/engine/venture-types.json: what kind of venture this is (a software startup, a VC fund), which decides its starting packages, first decisions, functions and roles (EE-082) */
   type?: string;
+  /** Whether agents are modeling the venture or a person is running it (EE-187). modeled: the people, roles and org links are subjects. run: the venture is being run on Naive. Absent means the record was written before this field and is not read as run. */
+  mode?: "modeled" | "run";
   /** Where the venture's files sit (EE-086). structured: venture.json, README.md and AGENTS.md at the top, the knowledge base in knowledge/, sources.json, naive.config.json, the provenance log and releases in meta/, and code in an optional repo/. flat: every venture made before EE-086, with packages at the top. src (EE-118 step 8, what naive init writes): venture.json and naive.config.json at the top, each package folder a function owns in src/<function>/<package>/, decisions/, evidence/ and raw/ at the top, and the static files the venture hands out in public/. */
   layout?: "flat" | "structured" | "src";
-  /** The venture's functions and their one accountable owner each (EE-071), keyed by function id from packages/naive/src/functions/departments.json. A solo founder owns them all, which is what the manifest assumes when this is left out. */
+  /** The venture's functions and their one accountable owner each (EE-071), keyed by function id from packages/naive/src/functions/departments.json. A solo founder owns them all, which is what the manifest assumes when this is left out. An owner is null when nobody is known (EE-187). */
   functions?: {
     [key: string]: {
-      /** A role or a person's name; no personal details */
-      owner: string;
+      /** A person id or a role id, or null when no owner is known (EE-187). Never a guess of the founder or the agent. */
+      owner: string | null;
     };
   };
   /** The id of the venture that holds this one; null at the top of a workspace. */

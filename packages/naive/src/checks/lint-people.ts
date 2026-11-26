@@ -11,6 +11,7 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join, relative } from "node:path";
 import { logical, ventureFile } from "../core/venture-paths.ts";
 import { roles as roleRegistry } from "../engine/venture-type.ts";
+import { ventureModeled } from "../terms/conduct.ts";
 import type { VentureRole } from "../records/types/records.d.ts";
 
 // A JSON object from a record that may be malformed: every field is unknown until checked. The generated record
@@ -143,6 +144,8 @@ export function lint(dir: string) {
 
   const ventureRec = loadRecord(dir, "venture.json");
   const venture = ventureRec.status === "ok" ? ventureRec.value : null;
+  // A modeled venture's owners are unknown. role-no-function does not treat that as a role with no function.
+  const modeled = ventureModeled(venture?.mode);
   const roster = loadRecord(dir, "people/people.json");
   const people = roster.status === "ok" ? asArray(roster.value.people).filter((p): p is Loose => Boolean(p) && typeof p === "object") : [];
   const names = new Set(people.flatMap((p) => [p.id, typeof p.name === "string" ? p.name.trim() : ""].filter((x) => typeof x === "string" && x)));
@@ -150,13 +153,13 @@ export function lint(dir: string) {
   const named = plan.status === "ok" ? namedRoles(plan.value) : new Set<string>();
   const reported = new Set<unknown>();
 
-  if (roster.status === "ok") for (const p of people) {
+  if (!modeled && roster.status === "ok") for (const p of people) {
     if (!mustOwn(p.role, reg) || personOwns(p, venture)) continue;
     reported.add(p.role);
     const who = p.name || p.id || p.role;
     add("role-no-function", "people/people.json", `${who} is a ${p.role} and owns no function`, `name ${p.id || p.role} as the owner of a function in venture.json, or give them a hat the venture imports`);
   }
-  if (plan.status === "ok") for (const r of entries(plan.value.roles)) {
+  if (!modeled && plan.status === "ok") for (const r of entries(plan.value.roles)) {
     if (!r || r.occupant !== "person" || typeof r.id !== "string" || !mustOwn(r.id, reg) || reported.has(r.id)) continue;
     const held = people.some((p) => p.role === r.id && personOwns(p, venture));
     const byId = (venture?.layout === "structured" || (venture?.layout === "src" && venture.functions !== undefined)) && ownersOf(venture).has(r.id);

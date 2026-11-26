@@ -8,7 +8,7 @@
 //   npx create-venture [dir] [--yes] [--type <type> | --describe "<a few words>"] [--role <role>]
 //                      [--name "<your name>"] [--team "<name>, <name>"] [--phase <phase>]
 //                      [--source <function>=<system>[:<address>],... ...]
-//                      [--layers a,b] [--legal-form <form>] [--dump <file>]
+//                      [--layers a,b] [--legal-form <form>] [--dump <file>] [--modeled | --mode modeled|run]
 //                      [--use-npm | --use-pnpm | --use-yarn | --use-bun] [--skip-install] [--no-git]
 //                      [--framework <spec>] [--reset-preferences] [--venture-name "<name>"] [--no-workspace]
 //                      [--door <door>] [--account <id>]
@@ -57,7 +57,7 @@ const FORMS = readSchema("venture").properties.form.properties.legal_form.enum;
 const argv = process.argv.slice(2);
 const opt = (n) => { const i = argv.indexOf(`--${n}`); return i >= 0 ? argv[i + 1] : undefined; };
 const flag = (n) => argv.includes(`--${n}`);
-const valued = new Set(["phase", "layers", "legal-form", "dump", "framework", "type", "describe", "role", "name", "team", "layout", "venture-name", "door", "account"]);
+const valued = new Set(["phase", "layers", "legal-form", "dump", "framework", "type", "describe", "role", "name", "team", "layout", "venture-name", "door", "account", "mode"]);
 const positional = argv.filter((a, i) => !a.startsWith("--") && !(i > 0 && valued.has(argv[i - 1].slice(2))));
 const bold = (s) => (process.stdout.isTTY ? `\x1b[1m${s}\x1b[22m` : s);
 const cyan = (s) => (process.stdout.isTTY ? `\x1b[36m${s}\x1b[39m` : s);
@@ -151,6 +151,10 @@ if (!vtype.roles.includes(role)) fail(`a ${vtype.label.toLowerCase()} has no ${r
 
 // 4. You, and whether you are building it solo or with a team.
 // A git identity is not a person's name (a cloud session's is "claude"), so the founder is asked, or is "Founder" until named.
+// --modeled (or --mode modeled) records the named people as subjects. Owners stay unknown. --mode run writes run.
+const modeName = opt("mode");
+if (modeName && modeName !== "modeled" && modeName !== "run") fail(`unknown mode ${modeName}: modeled or run`);
+const modeled = flag("modeled") || modeName === "modeled";
 const me = opt("name") ?? (interactive ? await ask("What is your name?", "Founder") : "Founder");
 let others = opt("team") ? opt("team").split(",").map((x) => x.trim()).filter(Boolean) : [];
 if (!opt("team") && interactive && (await choose("Are you building it solo or with a team?", ["solo", "team"], prefs?.mode ?? "solo")) === "team") {
@@ -180,8 +184,9 @@ const fnLabel = (f) => (structured ? f : deptLabel(f));
 const owners = people.filter((p) => roleOf(p.role)?.owns_when_solo);
 const ownerOf = {};
 for (const p of people) p.hats = [];
-if (owners.length === 1 || !interactive) for (const f of fnIds) { ownerOf[f] = owners[0]?.id ?? null; owners[0]?.hats.push(f); }
-else for (const f of fnIds) {
+// A modeled venture does not hand functions or hats to the named person. A run venture keeps solo ownership.
+if (!modeled && (owners.length === 1 || !interactive)) for (const f of fnIds) { ownerOf[f] = owners[0]?.id ?? null; owners[0]?.hats.push(f); }
+else if (!modeled) for (const f of fnIds) {
   const who = await choose(`Who owns ${fnLabel(f)}?`, owners.map((p) => p.id), owners[0].id);
   ownerOf[f] = who;
   owners.find((p) => p.id === who).hats.push(f);
@@ -235,17 +240,18 @@ const manager = ["npm", "pnpm", "yarn", "bun"].includes(pm) ? pm : "npm";
 rl?.close();
 
 // 4. The venture itself, by the framework's own scaffold.
-console.log(`\nCreating a new ${vtype.label.toLowerCase()} in ${bold(dir)}, with ${mode === "solo" ? `${me} as its ${role}, wearing every hat` : `${people.length} founders`}.\n`);
+console.log(`\nCreating a new ${vtype.label.toLowerCase()} in ${bold(dir)}, with ${modeled ? `${me} on the roster and no owner named` : mode === "solo" ? `${me} as its ${role}, wearing every hat` : `${people.length} founders`}.\n`);
 const initScript = fwModule("packages/naive/src/engine/init-venture.ts");
 const init = spawnSync("node", [initScript, dir, id, "--phase", answers.phase, "--type", vtype.id, "--layout", layout,
-  ...(answers.layers ? ["--layers", answers.layers] : []), ...(answers.legalForm ? ["--legal-form", answers.legalForm] : [])], { encoding: "utf8" });
+  ...(answers.layers ? ["--layers", answers.layers] : []), ...(answers.legalForm ? ["--legal-form", answers.legalForm] : []),
+  ...(modeled ? ["--modeled"] : modeName === "run" ? ["--mode", "run"] : [])], { encoding: "utf8" });
 if (init.status !== 0) fail((init.stderr || init.stdout).trim());
 const vfile = join(dir, "venture.json");
 const venture = JSON.parse(readFileSync(vfile, "utf8"));
 venture.name = ventureName;
 if (mode === "team") venture.members = people.slice(1).map((p) => ({ role: p.role === "general-partner" ? "partner" : p.role, kind: "person" }));
 // The org chart (EE-086): each function's owner. Hats are read from here, never stored twice.
-if (structured) for (const f of Object.keys(venture.functions ?? {})) venture.functions[f].owner = ownerOf[f] ?? null;
+if (structured) for (const f of Object.keys(venture.functions ?? {})) venture.functions[f].owner = modeled ? null : (ownerOf[f] ?? null);
 writeFileSync(vfile, JSON.stringify(venture, null, 2) + "\n");
 // Where each logical file sits in this venture's layout (packages/naive/src/core/venture-paths.ts).
 const { ventureFile: vf, physical } = await import(fwModule("packages/naive/src/core/venture-paths.ts"));
@@ -257,14 +263,19 @@ mkdirSync(vf(dir, "people/founders"), { recursive: true });
 const door = opt("door") ?? "cli";
 const account = opt("account");
 const founderKind = door === "cli" || account ? "person" : "unverified";
-const asPerson = agentFromEnv(founderKind, door, { id: people[0].id, account });
+// A run venture still records the named person. A modeled venture records the process (MENTURA_ACTOR), not that person.
+const envActor = process.env.MENTURA_ACTOR?.trim().toLowerCase();
+const asPerson = modeled
+  ? agentFromEnv(envActor === "agent" ? "agent" : founderKind, door, account ? { account } : {})
+  : agentFromEnv(founderKind, door, { id: people[0].id, account });
 for (const p of people.filter((x) => roleOf(x.role)?.founder)) {
   p.founder_file = `people/founders/${p.id}.json`;
   writeFileSync(vf(dir, p.founder_file), JSON.stringify({ id: p.id, name: p.name, role: p.role, ...(structured ? {} : { hats: p.hats }), joined: today }, null, 2) + "\n");
   record(dir, { entity: p.founder_file, route: `people/founders/${p.id}`, activity: "write", agent: asPerson, note: `${p.name}, ${p.role}, as answered at create-venture` });
 }
-writeFileSync(vf(dir, "people/people.json"), JSON.stringify({ venture: id, mode, people: people.map(({ id: pid, name, role: r, hats, founder_file }) => ({ id: pid, name, role: r, ...(structured ? {} : { hats }), ...(founder_file ? { founder_file } : {}) })), updated: today }, null, 2) + "\n");
-record(dir, { entity: "people/people.json", route: "people", activity: "write", agent: asPerson, note: `${mode}: ${people.map((p) => `${p.name} (${p.role})`).join(", ")}` });
+const rosterMode = modeled ? null : mode;
+writeFileSync(vf(dir, "people/people.json"), JSON.stringify({ venture: id, mode: rosterMode, people: people.map(({ id: pid, name, role: r, hats, founder_file }) => ({ id: pid, name, role: r, ...(structured || modeled ? {} : { hats }), ...(founder_file ? { founder_file } : {}) })), updated: today }, null, 2) + "\n");
+record(dir, { entity: "people/people.json", route: "people", activity: "write", agent: asPerson, note: `${rosterMode ?? "unknown"}: ${people.map((p) => `${p.name} (${p.role})`).join(", ")}` });
 if (answers.dump) {
   mkdirSync(vf(dir, "raw"), { recursive: true });
   copyFileSync(resolve(answers.dump), vf(dir, "raw/dump.md"));
