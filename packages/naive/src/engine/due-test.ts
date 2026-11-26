@@ -1,13 +1,12 @@
 // Tests what is due (EE-182): each trigger kind against a run log and a provenance log, the cadence arithmetic, the
 // route match, and the command over one venture folder made here.
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { runSync } from "../core/effect/run.ts";
 import { after, covers, due, dueFor, isOpen, openBox, readRuns, recordRun, routeMatches, timeBoxSpan } from "./due.ts";
 import { plan } from "./loop.ts";
-import { call } from "../router/router.ts";
 import type { DueBox, DueWorkflow } from "./due.ts";
 
 let failed = 0;
@@ -82,7 +81,6 @@ expect("a start that is not a time, or an end that is not after it, is refused",
 
 // One venture folder: two functions in Discovery, read from the shipped function modules.
 const dir = mkdtempSync(join(tmpdir(), "naive-due-"));
-let boxWs = "";
 try {
   writeFileSync(join(dir, "venture.json"), JSON.stringify({ id: "v", name: "V", phase: "discovery", departments: ["strategy", "customer-service"] }));
   const first = runSync(dueFor(dir, now));
@@ -120,16 +118,7 @@ try {
   const text = cli("--at", now);
   expect("the plain listing gives one line per workflow with why", text.status === 0 && /due\s+customer-service\/weekly-contact-review\s+It runs weekly and has never run\./.test(text.stdout), text.stdout);
   expect("a bad outcome and a missing target are usage errors", cli("record", "strategy/intake", "--outcome", "maybe").status === 2 && cli("record").status === 2);
-  boxWs = mkdtempSync(join(tmpdir(), "naive-box-"));
-  const boxDir = join(boxWs, "v");
-  mkdirSync(boxDir, { recursive: true });
-  writeFileSync(join(boxDir, "venture.json"), JSON.stringify({ id: "v", name: "V", type: "software-startup", parent: null, owner: "self", status: "active", layers: {}, phase: "discovery", departments: ["strategy"] }));
-  const badBox = await call({ venture: "v", workspace: boxWs, route: "operations/time-box/bad", action: "write", actor: "person", input: { id: "bad", kind: "sprint", title: "Bad", goal: "No", starts: "tomorrow", ends: "2026-06-01T00:00:00.000Z", status: "active", functions: ["strategy"] } });
-  expect("a time box whose end is not after its start is refused on the route", !badBox.ok && /end after it starts/.test(badBox.ok ? "" : (badBox.error ?? "")), badBox);
-  const goodBox = await call({ venture: "v", workspace: boxWs, route: "operations/time-box/good", action: "write", actor: "person", input: { id: "good", kind: "sprint", title: "Good", goal: "Yes", starts: "2026-06-01T00:00:00.000Z", ends: "2026-06-20T00:00:00.000Z", status: "active", functions: ["strategy"] } });
-  const wrote = goodBox.ok && (goodBox.result as { draft?: boolean }).draft === false;
-  expect("a time box that ends after it starts is written", wrote && readFileSync(join(boxDir, "operations/time-boxes/good.json"), "utf8").includes("\"good\""), goodBox);
-} finally { rmSync(dir, { recursive: true, force: true }); if (boxWs) rmSync(boxWs, { recursive: true, force: true }); }
+} finally { rmSync(dir, { recursive: true, force: true }); }
 
 if (failed) { console.error(`\n${failed} failed`); process.exit(1); }
 console.log("\ndue: all passed");

@@ -4,7 +4,7 @@
 // write chain for operations/time-boxes/<id>.json (route operations/time-box/[id]), which only a person writes.
 import { cli, drop, questions, schemaOf, slug, validate } from "./generate.ts";
 import type { TimeBox } from "../../records/types/records.d.ts";
-import { timeBoxSpan } from "../due.ts";
+import { timeBoxSpan } from "../time-box-span.ts";
 
 export const record = "time-box";
 const DERIVED = ["id", "status"];

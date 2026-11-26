@@ -47,7 +47,7 @@ import { logWrite as prov, schemaFailure } from "./write-effects.ts";
 import type { Entry } from "../core/provenance.ts";
 import { address } from "../store/connectors/contract.ts";
 import { decisionFile, holding, locked } from "../engine/decisions.ts";
-import { timeBoxSpan } from "../engine/due.ts";
+import { timeBoxSpan } from "../engine/time-box-span.ts";
 import { configOf, hold } from "../engine/gate.ts";
 import { blocked as betaBlocked } from "../engine/beta-gate.ts";
 // Freshness (Revalidating, V-1 to V-8): stale flags on reads, and the freshness and revalidate commands.

@@ -5962,7 +5962,7 @@ export type TimeBox = {
    */
   starts: string;
   /**
-   * When it closes on its own; after starts
+   * When it closes on its own. A write is refused unless this is after starts (packages/naive/src/engine/time-box-span.ts).
    * @format date-time
    */
   ends: string;
