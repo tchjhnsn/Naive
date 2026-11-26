@@ -31,7 +31,7 @@ Tests that run a module in `packages/naive/src/engine/` through the router: its 
 | [`gate-test.ts`](./gate-test.ts) | The write gate: `naive.config.json`, one gate per venture, who is acting. |
 | [`product-lock-test.ts`](./product-lock-test.ts) | An agent's product card waits while product-exists is open, in a new venture and in one whose decision still names the old route `purpose/product/*`. |
 | [`caching-test.ts`](./caching-test.ts) | Record and judgment caches, lifetimes, the per-action memo. |
-| [`freshness-test.ts`](./freshness-test.ts) | Revalidating records by time and on demand. |
+| [`freshness-test.ts`](./freshness-test.ts) | Revalidating records by time and on demand. A phase change in the test is a person process (`MENTURA_ACTOR=person`). `--as person` alone does not make the process a person (EE-193). |
 | [`model-steps-test.ts`](./model-steps-test.ts) | Model steps, judgments, kit boundaries, uncertain routing. |
 | [`setup-test.ts`](./setup-test.ts) | Setup in the model's harness over MCP, including that the docket carries each decision's statement and options. A venture from create-venture already has `founding-team` decided, so one decision is settled before a relayed answer is open. |
 | [`brand-test.ts`](./brand-test.ts) | Brand tokens, voice, glossary, sitemap and assets. A remote image is recorded through `addAsset` and `addRemote` in [`packages/naive/src/router/brand.ts`](../../router/brand.ts), the calls an app's fetcher makes; fetching is not Naive's. |
