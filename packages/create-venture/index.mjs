@@ -78,12 +78,24 @@ if (argv.includes("--help") || argv.includes("-h")) {
 }
 const opt = (n) => { const i = argv.indexOf(`--${n}`); return i >= 0 ? argv[i + 1] : undefined; };
 const flag = (n) => argv.includes(`--${n}`);
-const valued = new Set(["phase", "layers", "legal-form", "dump", "framework", "type", "describe", "role", "name", "by", "team", "layout", "venture-name", "door", "account", "mode", "joined", "joined-source"]);
+const valued = new Set(["phase", "layers", "legal-form", "dump", "framework", "type", "describe", "role", "name", "by", "team", "layout", "venture-name", "door", "account", "mode", "joined", "joined-source", "source"]);
+const booleans = new Set(["help", "h", "observed", "yes", "skip-install", "no-git", "no-workspace", "reset-preferences", "use-npm", "use-pnpm", "use-yarn", "use-bun"]);
 const positional = argv.filter((a, i) => !a.startsWith("--") && !(i > 0 && valued.has(argv[i - 1].slice(2))));
 const bold = (s) => (process.stdout.isTTY ? `\x1b[1m${s}\x1b[22m` : s);
 const cyan = (s) => (process.stdout.isTTY ? `\x1b[36m${s}\x1b[39m` : s);
 const fail = (m) => { console.error(m); process.exit(1); };
-if (argv.includes("--modeled")) fail("unknown flag --modeled");
+// An unknown flag is not a value and not a directory. Leaving it on the floor used to write mode run.
+const unknownFlags = [];
+for (let i = 0; i < argv.length; i++) {
+  const arg = argv[i];
+  if (arg === "-h") continue;
+  if (!arg.startsWith("-")) continue;
+  const name = arg.startsWith("--") ? arg.slice(2) : "";
+  if (valued.has(name)) { i += 1; continue; }
+  if (booleans.has(name)) continue;
+  unknownFlags.push(arg);
+}
+if (unknownFlags.length) fail(`unknown flag ${unknownFlags.join(" ")}`);
 const modeAt = argv.indexOf("--mode");
 const askedMode = modeAt < 0 ? undefined : argv[modeAt + 1];
 if (modeAt >= 0 && askedMode !== "observed" && askedMode !== "run") fail(`unknown mode ${askedMode ?? ""}: observed or run`);

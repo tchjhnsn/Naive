@@ -52,6 +52,8 @@ const ventureMode: "observed" | "run" | null = observed ? "observed" : modeName 
 // Without either, the flat layout.
 const layout = flag("layout") ?? "flat";
 if (!["flat", "structured", "src"].includes(layout)) { console.error(`unknown layout ${layout}: flat, structured or src`); process.exit(2); }
+const unknownFlag = args.find((a) => a.startsWith("--"));
+if (unknownFlag) { console.error(`unknown flag ${unknownFlag}`); process.exit(2); }
 const structured = layout === "structured";
 const ventureTypes: VentureTypes = JSON.parse(readFileSync(join(here, "venture-types.json"), "utf8"));
 const vtype = typeId ? ventureTypes.types.find((t) => t.id === typeId) : null;
