@@ -34,6 +34,7 @@
   },
   "workflows": [
     "marketing-and-sales/weekly-pipeline-review",
+    "marketing-and-sales/campaign-daily-review",
     "products/weekly-product-review",
     "customer-service/case-triage",
     "service-delivery/weekly-engagement-review",
