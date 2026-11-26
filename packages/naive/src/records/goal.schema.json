@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "goal.schema.json",
   "title": "Goal",
-  "description": "A canonical goal, at <venture>/foundation/goals/<id>.json: what the venture means to reach, by when, how anyone would know (measures with targets) and who owns it. Framework-neutral: the telos, ambition tiers, OKRs and other frameworks for thinking write goals through their maps_to and never change this shape (Torian, 2026-10-30: opinionated schema, swappable frameworks). Requirements derive from goals and measures; exit criteria serve measures.",
+  "description": "A canonical goal, at <venture>/foundation/goals/<id>.json: what the venture means to reach, by when, how anyone would know (measures with targets) and who owns it. Framework-neutral: the telos, ambition tiers, OKRs and other frameworks for thinking write goals through their maps_to and never change this shape (Torian, 2026-10-30: opinionated schema, swappable frameworks). Requirements derive from goals and measures; exit criteria serve measures. A goal is a durable record, like the decision ledger (EE-210): it carries a status only a person settles, the goal it serves, the goals it replaces, and every version of it stays readable from the provenance log and the blob store (naive goals history, packages/naive/src/store/as-of.ts).",
   "type": "object",
   "required": ["id", "statement", "kind"],
   "additionalProperties": false,
@@ -14,6 +14,17 @@
       "enum": ["venture", "owner", "scale", "product", "function", "learning"],
       "description": "venture: the end the venture exists for. owner: what the owners intend once it is reached (hold, sell, list, wind down). scale: how far through the phases the venture means to go. product, function: a goal of one product or function. learning: what the venture must find out"
     },
+    "status": {
+      "enum": ["proposed", "active", "met", "missed", "dropped", "superseded"],
+      "default": "proposed",
+      "description": "Where the goal stands (EE-210). A record with no status is proposed, so goals written before the ledger stay valid. Only a person moves a goal on (naive goals status <id> <status> --by <person>); an agent proposes one, and its write of a lifecycle field is held as a draft whatever the gate says, as a write that settles a decision is (EE-058). The transitions, in packages/naive/src/engine/goals.ts LIFECYCLE: proposed to active, dropped or superseded; active to met, missed, dropped or superseded; a settled goal reopens only to active. A goal nobody adopted is never met or missed."
+    },
+    "status_by": { "type": "string", "description": "The person who set the current status. Never an agent" },
+    "status_at": { "type": "string", "format": "date-time", "description": "When the current status was set" },
+    "due": { "type": "string", "format": "date", "description": "The date by which the goal should be met or missed, when it has one. horizon is the ambition (a year, a phase or open); due is the date the ledger measures against" },
+    "parent": { "type": "string", "pattern": "^[a-z0-9-]+$", "description": "The goal this one serves, by id: a function or product goal serves a venture goal. A goal with no parent is a root, and no parent chain may cycle (packages/naive/src/checks/check-goals.ts)" },
+    "supersedes": { "type": "array", "items": { "type": "string", "pattern": "^[a-z0-9-]+$" }, "description": "The goals this one replaces, by id. A person records the replacement on both sides: the old goal's status becomes superseded and its superseded_by names this one" },
+    "superseded_by": { "type": "string", "pattern": "^[a-z0-9-]+$", "description": "The goal that replaced this one, by id. Set exactly when the status is superseded" },
     "horizon": { "type": ["integer", "string"], "description": "The year it should be reached by, a date, a phase id, or 'open'" },
     "end_state": { "type": "string", "description": "What is true in the world when it is reached" },
     "value": { "type": "string", "description": "A goal's chosen value when its kind has a fixed set: the scale (hobby, survival, lifestyle, managed-growth, aggressive-growth) or the owner path (acquisition, ipo, secondary-sale, merger, management-buyout, wind-down, hold)" },
@@ -34,10 +45,40 @@
         }
       }
     },
+    "result": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "What happened, written when a person settles the goal as met or missed. It carries a note, or each measure as it stood, or both; check-goals.ts fails a met or missed goal with neither",
+      "properties": {
+        "note": { "type": "string", "description": "What happened, in the person's words" },
+        "measures": {
+          "type": "array",
+          "description": "Each measure of this goal as it stood when the goal was settled",
+          "items": {
+            "type": "object",
+            "required": ["id", "value"],
+            "additionalProperties": false,
+            "properties": {
+              "id": { "type": "string", "pattern": "^[a-z0-9-]+$", "description": "A measure id of this goal" },
+              "value": { "type": ["string", "number"], "description": "What the measure reached" },
+              "evidence": { "type": "array", "items": { "type": "string" }, "description": "Evidence ids or venture-relative paths behind the value" }
+            }
+          }
+        },
+        "by": { "type": "string", "description": "The person who recorded it" },
+        "at": { "type": "string", "format": "date-time" }
+      }
+    },
     "owner": { "type": "string", "description": "The person or role who owns the goal" },
+    "sources": { "type": "array", "items": { "type": "string", "minLength": 1 }, "description": "Where the goal came from, so a reader of the goal alone can trace it: a venture-relative path (raw/sources/<id>.json, raw/dump.mdx), a raw source id, or a record ref such as decisions/<id>. Not checked against the files" },
     "framework": { "type": "string", "description": "The framework for thinking the goal was written through (frameworks/<id>), if any" },
     "updated": { "type": "string" },
     "conversation": { "type": "array", "description": "The founder's messages this record was made from (naive diagnose catches)", "items": { "$ref": "conversation-ref.schema.json" } },
     "decision": { "type": "string" }
-  }
+  },
+  "allOf": [
+    { "if": { "required": ["status"], "properties": { "status": { "const": "superseded" } } }, "then": { "required": ["superseded_by"] } },
+    { "if": { "required": ["superseded_by"] }, "then": { "required": ["status"], "properties": { "status": { "const": "superseded" } } } },
+    { "if": { "required": ["status"], "properties": { "status": { "enum": ["met", "missed"] } } }, "then": { "required": ["result"] } }
+  ]
 }

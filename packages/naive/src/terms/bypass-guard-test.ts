@@ -49,6 +49,8 @@ export const REGISTRY: Registry = {
   "packages/naive/src/engine/gate-calibration.ts": plain("gate calibration (EE-157): compares market and industry cell values with listed values and numeric thresholds, clamps a share of reachable buyers into interview counts and raises gate levels by rule; it decides no term"),
   "packages/naive/src/engine/gate-calibration-test.ts": plain("tests gate calibration's counts, rules, validity windows, proposed decision, CLI and route on temp ventures"),
   "packages/naive/src/engine/check-artifacts.ts": plain("artifacts name records that exist, and a changed source hash marks one stale"),
+  "packages/naive/src/checks/check-goals.ts": plain("the goal ledger across records (EE-210): parents exist without a cycle, a superseded goal names its successor, a settled goal has a note or a result, an active goal has an owner and a measure; it compares ids and statuses, not a term"),
+  "packages/naive/src/checks/check-goals-test.ts": plain("breaks each rule of check-goals.ts on temp ventures"),
   "packages/naive/src/checks/check-assets.ts": plain("each public asset has a source, a license, a credit and alt text"),
   "packages/naive/src/checks/check-boundary.ts": plain("path text: no code names a module of an app that uses Naive, and registered connectors work offline"),
   "packages/naive/src/checks/check-brand.ts": plain("brand records: colors, licensed typefaces, marks and voice rules against fixed lists"),
