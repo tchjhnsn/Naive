@@ -208,17 +208,21 @@ function decisionsAt(dir: string, now = Date.parse(process.env.DECISIONS_NOW ?? 
   }
   const statementFor = (record: string | null | undefined) => list.find((x) => x.part_of === "foundation" && x.status === "open" && x.decides?.record === record);
   // An agent's draft of a gated record waits for a person to accept it.
-  const drafts = existsSync(join(ventureFile(dir, "_drafts"))) ? readdirSync(join(ventureFile(dir, "_drafts"))).filter((f) => f.endsWith(".draft")) : [];
+  const drafts = existsSync(join(ventureFile(dir, "_drafts"))) ? readdirSync(join(ventureFile(dir, "_drafts"))).filter((f) => f.endsWith(".draft")).sort() : [];
   for (const d of drafts) {
     const path = d.replace(/\.draft$/, "").replace(/__/g, "/");
     const record = recordOf(path);
-    // A draft of a foundation record is settled through its statement, which says to accept it.
+    // A draft of a foundation record is settled through its statement, which says to accept it. A statement names
+    // one draft, so a collection with several drafts (two ICP profiles) has its statement accept the first, and every
+    // other draft gets its own accept decision, part of the foundation like the statement.
     const s = statementFor(record);
-    if (s?.statement_status === "draft") { s.decides = { record, path }; continue; }
-    if (list.some((x) => x.statement_status === "draft" && x.decides?.path === path)) continue;
+    if (s?.statement_status === "draft" && !s.decides?.path) { s.decides = { record, path }; s.question = `Accept the agent's draft of ${path} (the ${s.id.replace(/^foundation-/, "")} statement)`; continue; }
+    if (list.some((x) => x.decides?.path === path && (x.statement_status === "draft" || x.source === "draft"))) continue;
+    // Never under its own open statement: accepting the draft is what settles the statement, so waiting on it would
+    // hold the draft forever.
     list.push({ id: `draft-${path.replace(/[^a-z0-9]+/g, "-").replace(/-json$/, "")}`, question: `Accept the agent's draft of ${path}`, source: "draft",
-      layer: MODEL.records.find((r) => r.id === record)?.layer ?? path.split("/")[0], decides: { record, path }, parent: FOUNDATION_RECORDS.has(record) ? (statementFor(record)?.id ?? "venture") : "venture",
-      boundary: "inherit", status: "open", needed_in: venture.phase });
+      layer: MODEL.records.find((r) => r.id === record)?.layer ?? path.split("/")[0], decides: { record, path }, parent: "venture",
+      ...(FOUNDATION_RECORDS.has(record) ? { part_of: "foundation" } : {}), boundary: "inherit", status: "open", needed_in: venture.phase });
   }
   // A decision about a foundation record waits on that record's open statement only, so one open
   // statement does not hold every decision about the foundation.

@@ -140,6 +140,7 @@ const steps: Step[] = [
   ["publications: examples", "node", ["packages/naive/src/engine/check-publications.ts", "packages/naive/src/records/examples/workspace"]],
   ["decision versions: propose, approve, merge, rollback", "node", ["packages/naive/src/engine/decision-versions-test.ts"]],
   ["decision index: open-decision impact, phase weight and requirements, updates equal to a rebuild, rank history", "node", ["packages/naive/src/interfaces/tests/decision-index-test.ts"]],
+  ["decision drafts: every held draft gets a decision that accepts it, several drafts of one foundation collection each their own, none waiting on its statement", "node", ["packages/naive/src/engine/decision-drafts-test.ts"]],
   ["decision queue: owning function, per-function index, cross-function score by phase weight and bound measures, themes, the queue in the index (EE-127)", "node", ["packages/naive/src/engine/decision-queue-test.ts"]],
   ["lean canvas: the shared kernel, owners from the data model, the gate-first roadmap, unlocks, each box at its own route (EE-155)", "node", ["packages/naive/src/engine/lean-canvas-test.ts"]],
   ["venture anatomy: every cell unknown at init, a router write raises confidence, as-of and valid-at time travel, S-K coverage, views, routes (EE-157)", "node", ["packages/naive/src/engine/venture-anatomy-test.ts"]],
