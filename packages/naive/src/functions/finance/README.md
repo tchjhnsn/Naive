@@ -20,3 +20,5 @@ The finance and accounting function (APQC 9.0, Manage Financial Resources). Its 
 | [skills/exit-planning](./skills/exit-planning) | Skill: Help a founder decide which ways the venture might end it should keep open (acquisition, IPO, secondary sales, merger, management buyout, wind-down, or hold) and see what |
 | [skills/financing-and-investor-rights](./skills/financing-and-investor-rights) | Skill: Help a founder decide whether and how to take outside money and what rights investors get in return: bootstrapping, grants, debt, SAFEs, convertible notes and priced roun |
 | [templates/research-program.md](./templates/research-program.md) | Template: the function's starter research program (autoresearch). Init and `naive upgrade` copy it to a venture's `programs/finance.md` once, when the venture lists this function in venture.json departments and has no program; the copy is then the founder's, and only a person writes it |
+
+Each workflow's done criterion `records-valid` runs `node packages/naive/src/checks/check-records.ts "$NAIVE_VENTURE"`: it validates the business's records, the folder the handoff runner names in `NAIVE_VENTURE`, not Naive's own.

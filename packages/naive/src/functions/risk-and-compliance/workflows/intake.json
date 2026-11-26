@@ -12,7 +12,7 @@
     { "id": "summarize", "do": "Tell the founder the next five deadlines and the top three risks by expected loss, each citing its record, and raise which risks to treat first to the finance lead.", "raises": ["set-priorities"] }
   ],
   "done_criteria": [
-    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/records/validate.ts" },
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
     { "id": "no-uncurable-gap", "kind": "review", "check": "Does every duty that cannot be cured if missed (such as an 83(b) election) have an obligation with an owner and a due date, and does every risk have a person owner?", "reviewer": "finance-lead" }
   ]
 }

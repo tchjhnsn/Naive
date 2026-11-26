@@ -28,3 +28,5 @@ The business capabilities function (APQC 13.0, Develop and Manage Business Capab
 | [skills/working-procedure](./skills/working-procedure) | Skill: Turn recurring work into a process record: one owner, SIPOC, steps with control points, and cycle time, rework rate and first-pass yield |
 | [templates/glossary.md](./templates/glossary.md) | Template: package glossary |
 | [templates/research-program.md](./templates/research-program.md) | Template: the function's starter research program (autoresearch). Init and `naive upgrade` copy it to a venture's `programs/capabilities.md` once, when the venture lists this function in venture.json departments and has no program; the copy is then the founder's, and only a person writes it |
+
+Each workflow's done criterion `records-valid` runs `node packages/naive/src/checks/check-records.ts "$NAIVE_VENTURE"`: it validates the business's records, the folder the handoff runner names in `NAIVE_VENTURE`, not Naive's own.

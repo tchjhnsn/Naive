@@ -11,7 +11,7 @@
     { "id": "propose-reorders", "do": "Where stock on hand will not cover demand over the supplier's lead time, draft a reorder as a purchase order with its total, for the founder to approve and send.", "skill": "supplier-and-purchasing", "writes": ["supply-chain/purchase-orders/[id]"], "raises": ["spend-money", "public-commitment"] }
   ],
   "done_criteria": [
-    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/records/validate.ts" },
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
     { "id": "orders-decided-or-open", "kind": "review", "check": "Is every drafted order either approved by a person or open as a spend decision, and every late order flagged?", "reviewer": "product-lead" }
   ]
 }

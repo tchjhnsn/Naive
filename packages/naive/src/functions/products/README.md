@@ -21,3 +21,5 @@ The products and services function (APQC 2.0, Develop and Manage Products and Se
 | [sdlc/catalog.json](./sdlc/catalog.json) | A record |
 | [skills/product-pillar](./skills/product-pillar) | Skill: Provide Product pillar context: teams, roles, Tier 1 + Tier 2 deliverables, cross-pillar overlap zones: when working on product-pillar work. |
 | [templates/research-program.md](./templates/research-program.md) | Template: the function's starter research program (autoresearch). Init and `naive upgrade` copy it to a venture's `programs/products.md` once, when the venture lists this function in venture.json departments and has no program; the copy is then the founder's, and only a person writes it |
+
+Each workflow's done criterion `records-valid` runs `node packages/naive/src/checks/check-records.ts "$NAIVE_VENTURE"`: it validates the business's records, the folder the handoff runner names in `NAIVE_VENTURE`, not Naive's own.
