@@ -935,6 +935,67 @@ export type DecisionRecord = {
   due?: string;
   status: "open" | "decided" | "deferred" | "withdrawn";
   options?: string[];
+  /** The ideas on the table, each a proposed body or patch of the record this decision decides (EE-211). Any number coexist while the decision is open, so an undecided record holds several ideas at once instead of one guess. An agent or a person adds one (mentura option add); only a person withdraws one, and a withdrawn candidate is kept, never removed. Each live candidate's id is an option beside the strings in options, and deciding with that id makes mentura merge write that candidate; the ones not chosen stay here for later. */
+  candidates?: {
+    /** Unique within the decision. It is the answer that chooses this candidate. */
+    id: string;
+    /** The idea in a few words. A candidate with no body and no patch merges its label, the way an options string does. */
+    label: string;
+    /** Why this idea, in the proposer's own words */
+    why?: string;
+    /** Who put the idea on the table. An agent may propose any number; it never chooses one. */
+    proposed_by: {
+      kind: "person" | "agent";
+      /** The person's name or the agent's id */
+      id?: string;
+    };
+    /**
+     * @format date-time
+     */
+    created?: string;
+    /** What this idea rests on: venture-relative record paths, evidence ids, research cell ids or decision ids */
+    evidence?: string[];
+    /** The venture-relative record this candidate proposes, when it is not the one the decision's file name names (decides.path) */
+    file?: string;
+    /** The whole proposed record. Merging writes it to file, checked against that record type's schema first */
+    body?: {
+      [key: string]: unknown;
+    };
+    /** The fields this idea proposes. Merging sets each one, checked against the record type's schema first */
+    patch?: {
+      /** The venture-relative record, when it is not the candidate's file */
+      file?: string;
+      /** A dotted field path, such as price.amount */
+      field: string;
+      /** The value to set, of any JSON type */
+      value: unknown;
+    }[];
+    /** The person who took this idea off the table */
+    withdrawn_by?: string;
+    /**
+     * @format date-time
+     */
+    withdrawn_at?: string;
+    withdrawn_why?: string;
+  }[];
+  /** Each time a person reopened this decision (EE-211), oldest first. The answer it had stays in versions, so mentura decide --rollback <version> restores it. */
+  reopened?: {
+    /** The decided version that was reopened; it is kept in versions */
+    version: number;
+    /** The answer that version held */
+    answer?: string | null;
+    /** The person who reopened it. Never an agent. */
+    by: string;
+    /**
+     * @format date-time
+     */
+    at: string;
+    /** The venture's phase when it was reopened */
+    phase: "discovery" | "validation" | "beachhead" | "scale" | "platform";
+    why?: string;
+    /** The person reopened it past Validation, or reopened a one-way door, on their own say-so */
+    override?: true;
+  }[];
   answer?: string | null;
   /** Who decided: a person's name. An agent never decides a fail-closed decision. Deprecated in favour of provenance.approved_by, which it must equal when both are present. */
   decided_by?: string | null;

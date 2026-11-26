@@ -137,6 +137,171 @@
         "type": "string"
       }
     },
+    "candidates": {
+      "type": "array",
+      "description": "The ideas on the table, each a proposed body or patch of the record this decision decides (EE-211). Any number coexist while the decision is open, so an undecided record holds several ideas at once instead of one guess. An agent or a person adds one (mentura option add); only a person withdraws one, and a withdrawn candidate is kept, never removed. Each live candidate's id is an option beside the strings in options, and deciding with that id makes mentura merge write that candidate; the ones not chosen stay here for later.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "label",
+          "proposed_by"
+        ],
+        "not": {
+          "required": [
+            "body",
+            "patch"
+          ]
+        },
+        "description": "One idea for the record this decision decides. body proposes the whole record, patch proposes fields of it, and a candidate with neither is an option with provenance whose label merges as the answer. body and patch are never both present.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]*$",
+            "description": "Unique within the decision. It is the answer that chooses this candidate."
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The idea in a few words. A candidate with no body and no patch merges its label, the way an options string does."
+          },
+          "why": {
+            "type": "string",
+            "description": "Why this idea, in the proposer's own words"
+          },
+          "proposed_by": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "kind"
+            ],
+            "description": "Who put the idea on the table. An agent may propose any number; it never chooses one.",
+            "properties": {
+              "kind": {
+                "enum": [
+                  "person",
+                  "agent"
+                ]
+              },
+              "id": {
+                "type": "string",
+                "description": "The person's name or the agent's id"
+              }
+            }
+          },
+          "created": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "What this idea rests on: venture-relative record paths, evidence ids, research cell ids or decision ids"
+          },
+          "file": {
+            "type": "string",
+            "description": "The venture-relative record this candidate proposes, when it is not the one the decision's file name names (decides.path)"
+          },
+          "body": {
+            "type": "object",
+            "description": "The whole proposed record. Merging writes it to file, checked against that record type's schema first"
+          },
+          "patch": {
+            "type": "array",
+            "minItems": 1,
+            "description": "The fields this idea proposes. Merging sets each one, checked against the record type's schema first",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "field",
+                "value"
+              ],
+              "properties": {
+                "file": {
+                  "type": "string",
+                  "description": "The venture-relative record, when it is not the candidate's file"
+                },
+                "field": {
+                  "type": "string",
+                  "description": "A dotted field path, such as price.amount"
+                },
+                "value": {
+                  "description": "The value to set, of any JSON type"
+                }
+              }
+            }
+          },
+          "withdrawn_by": {
+            "type": "string",
+            "description": "The person who took this idea off the table"
+          },
+          "withdrawn_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "withdrawn_why": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "reopened": {
+      "type": "array",
+      "description": "Each time a person reopened this decision (EE-211), oldest first. The answer it had stays in versions, so mentura decide --rollback <version> restores it.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "version",
+          "by",
+          "at",
+          "phase"
+        ],
+        "properties": {
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "The decided version that was reopened; it is kept in versions"
+          },
+          "answer": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The answer that version held"
+          },
+          "by": {
+            "type": "string",
+            "description": "The person who reopened it. Never an agent."
+          },
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "phase": {
+            "enum": [
+              "discovery",
+              "validation",
+              "beachhead",
+              "scale",
+              "platform"
+            ],
+            "description": "The venture's phase when it was reopened"
+          },
+          "why": {
+            "type": "string"
+          },
+          "override": {
+            "const": true,
+            "description": "The person reopened it past Validation, or reopened a one-way door, on their own say-so"
+          }
+        }
+      }
+    },
     "answer": {
       "type": [
         "string",

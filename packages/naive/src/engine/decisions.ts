@@ -24,6 +24,7 @@
 // Exit 1 on a duplicate id, an unknown parent, a cycle, or an id that takes a reserved root name.
 
 import { pathText } from "./merge.ts";
+import { brief, type Candidate, type CandidateBrief, candidateFor, liveCandidates, optionsOf, proposesOf, withdrawnCandidate, writeOf } from "./decision-candidates.ts";
 import { applySyncConflict, chosenValue, type SyncConflict } from "./sync-apply.ts";
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -95,6 +96,8 @@ export type ResolvedDecision = {
   file?: string;
   answer?: string | null;
   options?: DecisionRecord["options"];
+  /** The ideas on the table (EE-211), each without its body: an undecided record holds several at once. */
+  candidates?: CandidateBrief[];
   statement?: DecisionRecord["statement"];
   version?: DecisionRecord["version"];
   applies_to?: DecisionRecord["applies_to"];
@@ -155,6 +158,13 @@ export function decisionFiles(dir: string, sub = ""): string[] {
   });
 }
 
+/** The record a decision file decides by convention: decisions/<record>[.<topic>].decision.json decides
+ *  <record>.json in the folder that holds decisions/. A record's own decides.path overrides it. */
+export function decidedPath(file: string): string {
+  const at = file.split("/").slice(0, -2).join("/"), base = (file.split("/").at(-1) ?? "").split(".")[0];
+  return at ? `${at}/${base}.json` : `${base}.json`;
+}
+
 /** Every decision of a venture, resolved: boundary, render state and what holds it. */
 // Caching hook (F-12): without an explicit now, one action shares one decision list; now is the action's.
 // now may be a Date or a string, as callers pass it; Number() reads it as the arithmetic below always did.
@@ -178,9 +188,7 @@ function decisionsAt(dir: string, now = Date.parse(process.env.DECISIONS_NOW ?? 
   ];
   for (const f of decisionFiles(dir)) {
     const d: DecisionRecord = load(ventureFile(dir, f));
-    // decisions/<record>[.<topic>].decision.json decides <record>.json in the folder that holds decisions/.
-    const at = f.split("/").slice(0, -2).join("/"), base = (f.split("/").at(-1) ?? "").split(".")[0];
-    const path = d.decides?.path ?? (at ? `${at}/${base}.json` : `${base}.json`);
+    const path = d.decides?.path ?? decidedPath(f);
     const record = d.decides?.record ?? recordOf(path);
     const layer = d.layer ?? MODEL.records.find((r) => r.id === record)?.layer ?? f.split("/")[0];
     if (["venture", "foundation"].includes(d.id)) errors.push(`${f}: ${d.id} is a reserved root`);
@@ -279,7 +287,8 @@ function decisionsAt(dir: string, now = Date.parse(process.env.DECISIONS_NOW ?? 
     const lane = boundary === "fail-open" ? "async" : "sync";
     return { id: d.id, question: d.question, source: d.source, layer: d.layer, parent: d.parent, boundary, lane, needed_in: d.needed_in ?? null, status: d.status, render, firmness,
       ...((render === "waiting" || (overdue && holder)) && holder ? { held_by: holder.id } : {}),
-      ...(d.due ? { due: d.due, due_in_hours: Math.round((Date.parse(d.due) - now) / 36e5) } : {}), ...(d.part_of ? { part_of: d.part_of } : {}), ...(d.decides ? { decides: d.decides } : {}), ...(d.file ? { file: d.file } : {}), ...(d.answer ? { answer: d.answer } : {}), ...(d.options?.length ? { options: d.options } : {}), ...(d.statement ? { statement: d.statement } : {}), ...(d.version ? { version: d.version } : {}), ...(d.applies_to?.length ? { applies_to: d.applies_to } : {}), ...(d.decided_at ? { decided_at: d.decided_at } : {}), ...(d.ideas?.length ? { ideas: d.ideas } : {}),
+      ...(d.due ? { due: d.due, due_in_hours: Math.round((Date.parse(d.due) - now) / 36e5) } : {}), ...(d.part_of ? { part_of: d.part_of } : {}), ...(d.decides ? { decides: d.decides } : {}), ...(d.file ? { file: d.file } : {}), ...(d.answer ? { answer: d.answer } : {}), ...(d.options?.length ? { options: d.options } : {}),
+      ...(liveCandidates(d).length ? { candidates: liveCandidates(d).map((c) => brief(c, d.decides?.path)) } : {}), ...(d.statement ? { statement: d.statement } : {}), ...(d.version ? { version: d.version } : {}), ...(d.applies_to?.length ? { applies_to: d.applies_to } : {}), ...(d.decided_at ? { decided_at: d.decided_at } : {}), ...(d.ideas?.length ? { ideas: d.ideas } : {}),
       ...(d.status === "open" && d.answer && d.provenance?.drafted_by?.kind === "agent" ? { awaiting: "approval" } : {}),
       ...(d.provenance ? { provenance: d.provenance } : {}),
       ...(d.reasons?.length ? { reasons: d.reasons } : {}),
@@ -371,6 +380,30 @@ export function holding(dir: string, file: string): { id: string; why: string } 
   const m = decisions(dir).decisions.find((d) => d.source === "file" && (d.decides?.path === file || (!d.decides?.path && d.decides?.record === record))
     && (d.render === "waiting" || d.render === "stale" || (d.status === "open" && d.boundary === "fail-closed")));
   return m ? { id: m.id, why: m.render === "waiting" ? `waits on ${m.held_by}` : m.render === "stale" ? "is stale" : "is open and fails closed" } : null;
+}
+
+/** One open decision over a record, as a read reports it (EE-211). */
+export type Undecided = { decision: string; question: string; status: DecisionRecord["status"]; options: string[]; candidates: (Candidate & { proposes: string })[]; decide: string };
+
+/** What an agent reading a record has to know before it writes one (EE-211): the decisions still open over
+ *  that record, with every idea on the table, so it reads all the live options instead of guessing one. Each
+ *  candidate comes whole, body and all, because this is where the ideas are compared. Reads the decision
+ *  files, not the matrix, so a record read costs no more than it did. */
+export function undecidedFor(dir: string, file: string, venture?: string): Undecided[] {
+  if (!existsSync(join(dir, "venture.json"))) return [];
+  const out: Undecided[] = [];
+  // Caching hook (F-12): one action scans the decision files once, however many records it reads.
+  const records = memo("decision-records", () => decisionFiles(dir).map((f): [string, DecisionRecord] => [f, load(ventureFile(dir, f))]), { dir });
+  for (const [f, d] of records) {
+    if (d.status !== "open" && d.status !== "deferred") continue;
+    const path = d.decides?.path ?? decidedPath(f);
+    if (path !== file) continue;
+    const v = venture ? ` --venture ${venture}` : "";
+    out.push({ decision: d.id, question: d.question, status: d.status, options: optionsOf(d),
+      candidates: liveCandidates(d).map((c) => ({ ...c, proposes: proposesOf(c, path) })),
+      decide: `mentura decide ${d.id}${v} --by <your name> --answer <${optionsOf(d).join("|") || "your words"}>` });
+  }
+  return out;
 }
 
 // Routes an unlock names are globs over routes, as in the team plan's robots.
@@ -466,11 +499,20 @@ export function merge(dir: string, id: string, { by, role, via = "cli", note, to
   const d: DecisionRecord = load(ventureFile(dir, file));
   if (d.status !== "decided") return { ok: false, error: `${id} is not decided; approve it before merging` };
   const sc = d.sync_conflict as SyncConflict | undefined;
-  if (!d.applies_to?.length && !sc) return { ok: false, error: `${id} names no applies_to: nothing to merge into` };
+  // A chosen candidate (EE-211) brings the record it proposes: its whole body, or the fields it patches.
+  // One with neither is an option with provenance, so its label merges at applies_to the way an answer does.
+  const chosen = candidateFor(d, d.answer);
+  const cw = chosen ? writeOf(chosen, d.decides?.path ?? decidedPath(file)) : null;
+  if (cw && !cw.ok) return { ok: false, error: `${id}: ${cw.error}` };
+  const write = cw?.ok ? cw.write : null;
+  const whole = write?.kind === "body" ? write : null, patch = write?.kind === "patch" ? write.targets : null;
+  const value = write?.kind === "label" ? write.label : d.answer;
+  if (!d.applies_to?.length && !sc && !whole && !patch) return { ok: false, error: `${id} names no applies_to: nothing to merge into` };
   const version = d.version ?? 1;
   if (d.merged?.version === version) return { ok: false, error: `${id} version ${version} is already merged` };
   // A sync conflict (EE-174) writes the chosen value at its path in its one file instead of an answer at applies_to.
-  const targets = sc ? [{ file: sc.file, field: pathText(sc.path) }] : d.applies_to ?? [];
+  const targets = whole ? [{ file: whole.file, field: pathText([]) }] : patch ? patch.map((t) => ({ file: t.file, field: t.field }))
+    : sc ? [{ file: sc.file, field: pathText(sc.path) }] : d.applies_to ?? [];
   const outside = targets.find((t) => !inside(t?.file));
   if (outside) return { ok: false, error: `${id} applies_to ${outside?.file} is not a path inside the venture` };
   const may = mayMerge(dir, d, { by, role, today });
@@ -479,18 +521,20 @@ export function merge(dir: string, id: string, { by, role, via = "cli", note, to
   const actor = role ? agentFromEnv("agent", via, { id: role }) : agentFromEnv("person", via, { id: by });
   // Every target is built and checked against its record type's schema before any is written.
   const recs = new Map<string, Fields>();
-  if (sc) {
-    const chosen = chosenValue(d.answer, sc);
-    if (!chosen.ok) return { ok: false, error: `${id}: ${chosen.error}` };
+  const recordAt = (rel: string): Fields => { const f = ventureFile(dir, rel); return recs.get(rel) ?? (existsSync(f) ? load(f) : {}); };
+  if (whole) recs.set(whole.file, whole.body as Fields);
+  else if (patch) for (const t of patch) { const rec = recordAt(t.file); setField(rec, t.field, t.value); recs.set(t.file, rec); }
+  else if (sc) {
+    const picked = chosenValue(d.answer, sc);
+    if (!picked.ok) return { ok: false, error: `${id}: ${picked.error}` };
     const f = ventureFile(dir, sc.file);
-    const applied = applySyncConflict(existsSync(f) ? load(f) : {}, sc.path, chosen.value);
+    const applied = applySyncConflict(existsSync(f) ? load(f) : {}, sc.path, picked.value);
     if (!applied.ok) return { ok: false, error: `${id}: ${applied.error}` };
     recs.set(sc.file, applied.record);
   }
   else for (const t of targets) {
-    const f = ventureFile(dir, t.file);
-    const rec = recs.get(t.file) ?? (existsSync(f) ? load(f) : {});
-    setField(rec, t.field, d.answer);
+    const rec = recordAt(t.file);
+    setField(rec, t.field, value);
     recs.set(t.file, rec);
   }
   // Gaps the record already had (a field not written yet) do not block a merge; errors the answer adds
@@ -512,7 +556,7 @@ export function merge(dir: string, id: string, { by, role, via = "cli", note, to
     // A merge may create the record, in a folder the venture does not have yet.
     mkdirSync(dirname(ventureFile(dir, t.file)), { recursive: true });
     writeFileSync(ventureFile(dir, t.file), JSON.stringify(recs.get(t.file), null, 2) + "\n");
-    prov(dir, { entity: t.file, route: "governance/decisions", activity: "write", agent: actor, decision: id, note: `merged ${id} version ${version} into ${t.field}` });
+    prov(dir, { entity: t.file, route: "governance/decisions", activity: "write", agent: actor, decision: id, note: `merged ${id} version ${version}${chosen ? ` candidate ${chosen.id}` : ""} into ${t.field}` });
     files.push(t.file);
   }
   const out = { ...d, merged: { version, by, at: new Date().toISOString().replace(/\.\d+Z$/, "Z"), files } };
@@ -698,6 +742,9 @@ export function approve(dir: string, id: string, { by, answer, via = "cli", note
   const refused = notAPerson(dir, del, by, { rosterRequired: false });
   if (refused) return { ok: false, error: `only a person approves a decision: ${refused}` };
   const d: DecisionRecord = load(ventureFile(dir, file));
+  // An idea a person took off the table is never the answer (EE-211); every live one still is.
+  const gone = withdrawnCandidate(d, answer);
+  if (gone) return { ok: false, error: `${answer} was withdrawn from ${id}${gone.withdrawn_by ? ` by ${gone.withdrawn_by}` : ""}: choose one of ${optionsOf(d).join(", ") || "none"}, word your own answer, or put it back with mentura option add` };
   // A decided decision changes by a new version: the decided one is kept, and this one supersedes it.
   // An agent's pending wording (proposed) is what the person approves when they give no answer of their own.
   if (d.status === "decided" && !answer && d.proposed) answer = d.proposed.answer;
@@ -735,18 +782,22 @@ export function approve(dir: string, id: string, { by, answer, via = "cli", note
 }
 
 /** A person withdraws an open or deferred decision, optionally as a duplicate of another, so the queue keeps one
- *  question. Only a person withdraws (an agent proposes; it never removes a question), a decided decision changes by a
+ *  question. With option, it withdraws that one candidate instead and the decision stays open (EE-211): one command
+ *  takes a question or an idea off the table. Nothing is ever removed, so a withdrawal is recoverable: a withdrawn
+ *  candidate is kept in the record and a person's mentura option add of the same id puts it back.
+ *  Only a person withdraws (an agent proposes; it never removes a question), a decided decision changes by a
  *  new version instead, and the decision it duplicates must exist, be another one, and not itself be withdrawn. */
-export function withdraw(dir: string, id: string, { by, duplicateOf, note, via = "cli" }: { by?: string; duplicateOf?: string; note?: string; via?: string } = {}): DoorResult<{ withdrawn: string; duplicate_of?: string; provenance: string }> {
+export function withdraw(dir: string, id: string, { by, duplicateOf, option, why, note, via = "cli" }: { by?: string; duplicateOf?: string; option?: string; why?: string; note?: string; via?: string } = {}): DoorResult<{ withdrawn: string; option?: string; left?: string[]; duplicate_of?: string; provenance: string }> {
   const file = fileOf(dir, id);
   if (!file) return { ok: false, error: `no decision ${id}` };
   if (!by) return { ok: false, error: "withdrawing needs the person's name (--by)" };
   let del: Delegation | null;
   try { del = delegationOf(dir); } catch (e) { return { ok: false, error: `${(e as Error).message}: no one withdraws until it is fixed` }; }
   const refused = notAPerson(dir, del, by, { rosterRequired: false });
-  if (refused) return { ok: false, error: `only a person withdraws a decision: ${refused}` };
+  if (refused) return { ok: false, error: `only a person withdraws ${option ? "an option" : "a decision"}: ${refused}` };
   const d: DecisionRecord = load(ventureFile(dir, file));
-  if (d.status === "decided") return { ok: false, error: `${id} is decided; change it with a new version, not a withdrawal` };
+  if (option !== undefined) return withdrawOption(dir, file, d, option, { by, why, note, via });
+  if (d.status === "decided") return { ok: false, error: `${id} is decided; change it with a new version, not a withdrawal${d.answer ? `, or reopen it: mentura reopen ${id} --by ${by}` : ""}` };
   if (d.status === "withdrawn") return { ok: false, error: `${id} is already withdrawn` };
   if (duplicateOf !== undefined) {
     if (duplicateOf === id) return { ok: false, error: `${id} cannot be a duplicate of itself` };
@@ -760,6 +811,105 @@ export function withdraw(dir: string, id: string, { by, duplicateOf, note, via =
   writeFileSync(ventureFile(dir, file), JSON.stringify(out, null, 2) + "\n");
   const e = prov(dir, { entity: file, route: "governance/decisions", activity: "write", agent: agentFromEnv("person", via, { id: by }), note: note ?? (duplicateOf ? `withdrew decision ${id} as a duplicate of ${duplicateOf}` : `withdrew decision ${id}`) } as Parameters<typeof prov>[1]);
   return { ok: true, result: { withdrawn: id, ...(duplicateOf ? { duplicate_of: duplicateOf } : {}), provenance: e.hash } };
+}
+
+/** One candidate off the table, by a person, with the decision left open (EE-211). The candidate is kept
+ *  with who withdrew it and why, never removed, so the idea can be read again and put back. */
+function withdrawOption(dir: string, file: string, d: DecisionRecord, option: string, { by, why, note, via }: { by: string; why?: string; note?: string; via?: string }): DoorResult<{ withdrawn: string; option: string; left: string[]; provenance: string }> {
+  if (d.status === "withdrawn") return { ok: false, error: `${d.id} is withdrawn: its options went with it` };
+  const c = (d.candidates ?? []).find((x) => x.id === option);
+  if (!c) return { ok: false, error: `${d.id} has no option ${option} (it has ${optionsOf(d).join(", ") || "none"})` };
+  if (c.withdrawn_at) return { ok: false, error: `${option} is already withdrawn from ${d.id}` };
+  // The answer is never left naming an idea no longer on the table: change the answer first.
+  if (d.answer === option) return { ok: false, error: `${option} is the answer of ${d.id}: ${d.status === "decided" ? `reopen it first (mentura reopen ${d.id} --by ${by})` : "word another answer first"}` };
+  const out: DecisionRecord = { ...d, candidates: (d.candidates ?? []).map((x) => x.id === option
+    ? { ...x, withdrawn_by: by, withdrawn_at: new Date().toISOString().replace(/\.\d+Z$/, "Z"), ...(why ? { withdrawn_why: why } : {}) } : x) };
+  const bad = validate(out);
+  if (bad) return { ok: false, error: bad };
+  writeFileSync(ventureFile(dir, file), JSON.stringify(out, null, 2) + "\n");
+  const e = prov(dir, { entity: file, route: "governance/decisions", activity: "write", agent: agentFromEnv("person", via ?? "cli", { id: by }),
+    note: note ?? `withdrew option ${option} from decision ${d.id}${why ? `: ${why}` : ""}` } as Parameters<typeof prov>[1]);
+  return { ok: true, result: { withdrawn: d.id, option, left: optionsOf(out), provenance: e.hash } };
+}
+
+/** What a caller may send as a candidate: the schema check, not the type, holds proposed_by's kind. */
+export type CandidateInput = Omit<Partial<Candidate>, "proposed_by"> & { proposed_by?: { kind?: string; id?: string } };
+
+/** An agent or a person puts one more idea on the table of an open decision (EE-211). Any number coexist,
+ *  so nothing has to be settled before the right time; each id becomes an option, beside the strings in
+ *  options. An agent never chooses one: only a person decides. A person adding an id that was withdrawn
+ *  puts that idea back, which is how a withdrawal stays recoverable; an agent may not, because a person
+ *  took it off the table. */
+export function addCandidate(dir: string, id: string, input: CandidateInput | null | undefined, { by, agentId, via = "cli", note }: { by?: string; agentId?: string; via?: string; note?: string } = {}): DoorResult<{ decision: string; option: string; options: string[]; restored?: true; proposes: string; provenance: string; decide: string }> {
+  const file = fileOf(dir, id);
+  if (!file) return { ok: false, error: `no decision ${id}` };
+  const c = { ...(input ?? {}) } as CandidateInput;
+  if (!c.id || !c.label) return { ok: false, error: "an option needs an id and a label" };
+  if (c.withdrawn_by || c.withdrawn_at || c.withdrawn_why) return { ok: false, error: "an option is withdrawn with mentura withdraw, not written as withdrawn" };
+  const person = by !== undefined;
+  if (person) {
+    const refused = refusedPerson(dir, by);
+    if (refused) return { ok: false, error: `adding an option as a person: ${refused}` };
+  }
+  const d: DecisionRecord = load(ventureFile(dir, file));
+  if (d.status !== "open" && d.status !== "deferred") return { ok: false, error: `${id} is ${d.status}; options go on an open decision${d.status === "decided" ? `, so reopen it first: mentura reopen ${id} --by <your name>` : ""}` };
+  const was = (d.candidates ?? []).find((x) => x.id === c.id);
+  if (was && !was.withdrawn_at) return { ok: false, error: `${id} already has an option ${c.id}; give it another id` };
+  if (was && !person) return { ok: false, error: `${c.id} was withdrawn from ${id} by ${was.withdrawn_by ?? "a person"}; only a person puts it back` };
+  c.proposed_by = person ? { kind: "person", id: by } : { kind: "agent", ...(agentId ? { id: agentId } : {}) };
+  c.created = c.created ?? new Date().toISOString().replace(/\.\d+Z$/, "Z");
+  const next = c as Candidate;
+  const out: DecisionRecord = { ...d, candidates: was ? (d.candidates ?? []).map((x) => x.id === c.id ? next : x) : [...(d.candidates ?? []), next] };
+  const bad = validate(out);
+  if (bad) return { ok: false, error: `does not match packages/naive/src/records/decision-record.schema.json:\n${bad}` };
+  // What the candidate would write has to resolve now, so a person is never offered an idea that cannot be merged.
+  const w = writeOf(next, d.decides?.path ?? decidedPath(file));
+  if (!w.ok) return { ok: false, error: w.error };
+  writeFileSync(ventureFile(dir, file), JSON.stringify(out, null, 2) + "\n");
+  const e = prov(dir, { entity: file, route: "governance/decisions", activity: person ? "write" : "draft",
+    agent: agentFromEnv(person ? "person" : "agent", via, person ? { id: by } : { ...(agentId ? { id: agentId } : {}) }),
+    note: note ?? `${was ? "put back" : "added"} option ${next.id} on decision ${id}: ${next.label}` } as Parameters<typeof prov>[1]);
+  return { ok: true, result: { decision: id, option: next.id, options: optionsOf(out), ...(was ? { restored: true as const } : {}), proposes: proposesOf(next, d.decides?.path ?? decidedPath(file)),
+    provenance: e.hash, decide: `mentura decide ${id} --by <your name> --answer ${next.id}` } };
+}
+
+/** A person reopens a decided decision (EE-211), so a decision stays easy to change. The decided version is
+ *  kept, the decision asks its question again with every candidate still on the table, and reopened records
+ *  who, when, in which phase and why. The answer stays recoverable: mentura decide <id> --rollback <version>
+ *  restores it.
+ *
+ *  Decisions are fluid while a venture is still finding its shape: in Discovery and Validation a person
+ *  reopens one as a matter of course. Later a reopen is a change to something the venture has built on, so
+ *  it needs the person's explicit override. A one-way door needs the override in every phase, and a founder,
+ *  because it is the kind of decision the venture cannot take back. */
+export function reopen(dir: string, id: string, { by, why, override = false, via = "cli", note }: { by?: string; why?: string; override?: boolean; via?: string; note?: string } = {}): DoorResult<{ reopened: string; version: number | undefined; was: string | null; from_version: number; phase: string; override?: true; options: string[]; provenance: string; restore: string }> {
+  const file = fileOf(dir, id);
+  if (!file) return { ok: false, error: `no decision ${id}` };
+  if (!by) return { ok: false, error: "reopening needs the person's name (--by)" };
+  let del: Delegation | null;
+  try { del = delegationOf(dir); } catch (e) { return { ok: false, error: `${(e as Error).message}: no one reopens until it is fixed` }; }
+  const refused = notAPerson(dir, del, by, { rosterRequired: false });
+  if (refused) return { ok: false, error: `only a person reopens a decision: ${refused}` };
+  const d: DecisionRecord = load(ventureFile(dir, file));
+  if (d.status !== "decided") return { ok: false, error: `${id} is ${d.status}, not decided: there is nothing to reopen` };
+  const phase: string = load(join(dir, "venture.json")).phase;
+  const fluid = phase === "discovery" || phase === "validation";
+  const oneWay = d.door === "one-way" || (d.class !== undefined && oneWayDoors(dir).has(d.class));
+  if (oneWay && !override) return { ok: false, error: `${id} is a one-way door: reopening it is the founder's own call, with the override (--override)` };
+  if (oneWay && !signers(dir).has(by)) return { ok: false, error: `${id} is a one-way door: only a founder reopens it` };
+  if (!fluid && !override) return { ok: false, error: `${id} was decided and ${phase} is past Validation: work has been built on it. Reopen it with the override (--override) if you mean to change it` };
+  const from = d.version ?? 1;
+  const { decided_by: _by, ...cur } = nextVersion(d);
+  const out: DecisionRecord = { ...cur, status: "open", answer: null, decided_at: null,
+    provenance: { drafted_by: { kind: "person", id: by }, ...(via ? { via } : {}) },
+    reopened: [...(d.reopened ?? []), { version: from, answer: d.answer ?? null, by, at: new Date().toISOString().replace(/\.\d+Z$/, "Z"), phase: phase as NonNullable<DecisionRecord["reopened"]>[number]["phase"], ...(why ? { why } : {}), ...(override ? { override: true as const } : {}) }] };
+  const bad = validate(out);
+  if (bad) return { ok: false, error: bad };
+  writeFileSync(ventureFile(dir, file), JSON.stringify(out, null, 2) + "\n");
+  const e = prov(dir, { entity: file, route: "governance/decisions", activity: "write", agent: agentFromEnv("person", via, { id: by }),
+    note: note ?? `reopened decision ${id} from version ${from}${override ? ` with the override in ${phase}` : ""}${why ? `: ${why}` : ""}` } as Parameters<typeof prov>[1]);
+  return { ok: true, result: { reopened: id, version: out.version, was: d.answer ?? null, from_version: from, phase, ...(override ? { override: true as const } : {}),
+    options: optionsOf(out), provenance: e.hash, restore: `mentura decide ${id} --by ${by} --rollback ${from}` } };
 }
 
 /** The matrix: for each layer, the decisions that render now, wait, or come later, by phase. */
@@ -780,7 +930,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     console.log(`\n${relative(process.cwd(), r.dir) || "."} (${r.phase}, ${r.kind})`);
     const order = ["overdue", "stale", "now", "waiting", "later", "deferred", "done"];
     const byDue = (a: RankedDecision, b: RankedDecision) => (b.rank ?? -1) - (a.rank ?? -1) || (a.due ?? "~").localeCompare(b.due ?? "~");
-    for (const state of order) for (const d of r.decisions.filter((x) => x.render === state && x.source !== "root" || (x.id === "foundation" && x.render === state)).sort(byDue)) console.log(`  ${state.padEnd(8)} ${d.id.padEnd(30)} ${d.boundary.padEnd(11)} ${d.layer.padEnd(10)} ${d.question}${d.held_by ? ` [held by ${d.held_by}]` : ""}${d.render === "done" ? ` [${d.firmness}${d.provenance?.approved_by ? `, approved by ${d.provenance.approved_by} in ${d.provenance.phase}` : ""}]` : ""}${d.awaiting ? " [agent's wording, awaiting approval]" : ""}${d.due && d.render !== "done" ? ` [due ${d.due}, ${d.due_in_hours}h]` : ""}${d.outcomes?.due?.length ? ` [outcomes due: ${d.outcomes.due.join(", ")}]` : ""}${d.why?.length ? `\n           why now: ${d.why.join("; ")}` : ""}`);
+    for (const state of order) for (const d of r.decisions.filter((x) => x.render === state && x.source !== "root" || (x.id === "foundation" && x.render === state)).sort(byDue)) console.log(`  ${state.padEnd(8)} ${d.id.padEnd(30)} ${d.boundary.padEnd(11)} ${d.layer.padEnd(10)} ${d.question}${d.held_by ? ` [held by ${d.held_by}]` : ""}${d.render === "done" ? ` [${d.firmness}${d.provenance?.approved_by ? `, approved by ${d.provenance.approved_by} in ${d.provenance.phase}` : ""}]` : ""}${d.awaiting ? " [agent's wording, awaiting approval]" : ""}${d.candidates?.length && d.render !== "done" ? ` [${d.candidates.length} ideas on the table: ${d.candidates.map((c) => c.id).join(", ")}]` : ""}${d.due && d.render !== "done" ? ` [due ${d.due}, ${d.due_in_hours}h]` : ""}${d.outcomes?.due?.length ? ` [outcomes due: ${d.outcomes.due.join(", ")}]` : ""}${d.why?.length ? `\n           why now: ${d.why.join("; ")}` : ""}`);
     if (process.argv.includes("--md")) {
       const m = matrix(r);
       console.log(`\n| layer | ${PHASES.join(" | ")} |\n| --- | ${PHASES.map(() => "---").join(" | ")} |`);

@@ -22,7 +22,18 @@
 //                                                   a person accepts the held recipe tip: the one-bit holdout check runs,
 //                                                   and the tip goes live on a pass, or over a failed check with --over-holdout
 //   mentura decide <decision> --venture <id> --by <name> [--answer <text>] [--rollback <version>] [--confirm <decision>]
-//   mentura withdraw <decision> --venture <id> --by <name> [--duplicate-of <decision>] [--note <text>] [--confirm <decision>]
+//   mentura withdraw <decision> --venture <id> --by <name> [--duplicate-of <decision>] [--option <id>] [--why <text>] [--note <text>] [--confirm <decision>]
+//                                                   a person takes a question off the table, or with --option one
+//                                                   of its options; nothing is removed, so both stay recoverable
+//   mentura option add <decision> --venture <id> --input <file.json> [--by <name>] [--as <role>]
+//                                                   an agent or a person puts one more idea on an open decision
+//                                                   (EE-211): id, label, why, evidence, and body or patch, the
+//                                                   record it proposes. Any number coexist; a person adding a
+//                                                   withdrawn id puts that idea back
+//   mentura reopen <decision> --venture <id> --by <name> [--why <text>] [--override] [--confirm <decision>]
+//                                                   a person reopens a decided decision (EE-211). Free in
+//                                                   Discovery and Validation; later, and for a one-way door,
+//                                                   it needs --override. The answer stays in versions
 //          [--reason "<claim>" | --against "<claim>" | --context "<claim>"] [--cite <ref> [--locator <where>]] ...
 //                                                   reasons with citations, frozen with each cited file's sha256 at approval
 //   mentura decisions --venture <id> [--why <decision>] [--json]
@@ -83,7 +94,7 @@ import { spawnSync } from "node:child_process";
 import { call, draftOf, files, glob, groups, repo, routes, routesMd, ventureDir, ventures } from "../../router/router.ts";
 import { agentFromEnv, entries, record } from "../../core/provenance.ts";
 import { FRAME, filesOf, statementFiles } from "../../engine/foundation.ts";
-import { approve, decisionFile, decisions, merge, propose, rollback, withdraw } from "../../engine/decisions.ts";
+import { addCandidate, approve, type CandidateInput, decisionFile, decisions, merge, propose, reopen, rollback, withdraw } from "../../engine/decisions.ts";
 import { reasonsFromArgs, whyLines } from "../../engine/reasons.ts";
 import { impact } from "../../engine/impact.ts";
 // Gate group hook (X-2): held drafts kept side by side.
@@ -396,9 +407,44 @@ if (cmd === "withdraw") {
   if (!dir || !id) usage();
   const d = listed(dir).find((x) => x.id === id);
   if (!d || d.source !== "file") { console.error(`no decision record ${id} in ${venture}`); process.exit(1); }
-  const dup = opt("duplicate-of");
-  if (!(await typed(id, `Withdrawing ${id}: ${d.question}${dup ? `\n  as a duplicate of ${dup}` : ""}`, "Its question leaves the queue."))) { console.error("not withdrawn: the confirmation did not match"); process.exit(1); }
-  const r = withdraw(dir, id, { by: opt("by") ?? process.env.MENTURA_PERSON, duplicateOf: dup, note: opt("note") });
+  const dup = opt("duplicate-of"), option = opt("option");
+  // One command takes either off the table (EE-211): the question, or one of its options. Neither is removed.
+  const what = option ? `Withdrawing option ${option} of ${id}: ${d.question}` : `Withdrawing ${id}: ${d.question}${dup ? `\n  as a duplicate of ${dup}` : ""}`;
+  if (!(await typed(id, what, option ? "The option leaves the table; the decision stays open, and the option is kept." : "Its question leaves the queue."))) { console.error("not withdrawn: the confirmation did not match"); process.exit(1); }
+  const r = withdraw(dir, id, { by: opt("by") ?? process.env.MENTURA_PERSON, duplicateOf: dup, option, why: opt("why"), note: opt("note") });
+  if (!r.ok) { console.error(r.error); process.exit(1); }
+  out(r.result);
+  process.exit(0);
+}
+
+if (cmd === "option") {
+  // An agent or a person puts one more idea on an open decision (EE-211). Any number coexist, so nothing has
+  // to be settled before the right time; only a person ever chooses one (mentura decide).
+  const venture = opt("venture"), sub = action, id = positional[2];
+  const dir = venture && ventureDir(venture, workspace);
+  if (!dir || sub !== "add" || !id) usage();
+  const inputFile = opt("input");
+  if (!inputFile) { console.error("name the option: mentura option add <decision> --venture <id> --input <file.json>"); process.exit(2); }
+  let input: CandidateInput;
+  try { input = JSON.parse(readFileSync(resolve(inputFile), "utf8")); } catch (e) { console.error(`${inputFile}: ${(e as Error).message}`); process.exit(2); }
+  // --by is a person adding their own idea; with no name it is the acting agent's.
+  const by = opt("by") ?? (opt("as") ? undefined : process.env.MENTURA_PERSON);
+  const r = addCandidate(dir, id, input, { by, agentId: opt("as") ?? (by ? undefined : process.env.MENTURA_ACTOR_ID), via: "cli", note: opt("note") });
+  if (!r.ok) { console.error(r.error); process.exit(1); }
+  out(r.result);
+  process.exit(0);
+}
+
+if (cmd === "reopen") {
+  // A person reopens a decided decision (EE-211): in Discovery and Validation as a matter of course, later
+  // and for a one-way door only with --override. Typing the decision's id confirms it.
+  const venture = opt("venture"), id = action;
+  const dir = venture && ventureDir(venture, workspace);
+  if (!dir || !id) usage();
+  const d = listed(dir).find((x) => x.id === id);
+  if (!d || d.source !== "file") { console.error(`no decision record ${id} in ${venture}`); process.exit(1); }
+  if (!(await typed(id, `Reopening ${id}: ${d.question}\n  decided as: ${d.answer ?? "(no answer)"}`, "Its question comes back, with every option still on the table. The answer stays in versions."))) { console.error("not reopened: the confirmation did not match"); process.exit(1); }
+  const r = reopen(dir, id, { by: opt("by") ?? process.env.MENTURA_PERSON, why: opt("why"), override: flag("override"), note: opt("note") });
   if (!r.ok) { console.error(r.error); process.exit(1); }
   out(r.result);
   process.exit(0);
