@@ -145,7 +145,8 @@ export function physical(dir: string, rel: string): string {
   if (r === ".release" || r.startsWith(".release/")) return "meta/releases" + r.slice(".release".length);
   if (r.startsWith(".naive/") || r === ".naive" || r.startsWith("node_modules") || r.startsWith(".git")) return r;
   const kb = kbaseOf(dir);
-  if (r.startsWith(`${kb}/`) || r === kb || r.startsWith("meta/") || r.startsWith(`${CODEBASE}/`) || r.startsWith("repo/")) return r;
+  // Code beside k-base/ (src/) stays where it is: logical() leaves it unchanged, so physical() must too.
+  if (r.startsWith(`${kb}/`) || r === kb || r.startsWith("meta/") || r.startsWith(`${CODEBASE}/`) || r.startsWith("repo/") || r.startsWith(`${SRC}/`)) return r;
   const pkg = r.split("/")[0];
   const g = groupOf(dir, pkg);
   return `${kb}/${g ? `${g}/` : ""}${r}`;
