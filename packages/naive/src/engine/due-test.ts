@@ -1,11 +1,13 @@
 // Tests what is due (EE-182): each trigger kind against a run log and a provenance log, the cadence arithmetic, the
 // route match, and the command over one venture folder made here.
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { runSync } from "../core/effect/run.ts";
-import { after, covers, due, dueFor, isOpen, openBox, readRuns, recordRun, routeMatches } from "./due.ts";
+import { after, covers, due, dueFor, isOpen, openBox, readRuns, recordRun, routeMatches, timeBoxSpan } from "./due.ts";
+import { plan } from "./loop.ts";
+import { call } from "../router/router.ts";
 import type { DueBox, DueWorkflow } from "./due.ts";
 
 let failed = 0;
@@ -61,9 +63,26 @@ const campaignWrites = [{ route: "marketing/content", at: "2026-06-05T00:00:00.0
 const camp = (from: string) => by(due(sprintFlows, [], campaignWrites, now, new Set(), [box("c1", { kind: "campaign", starts: from })]))["f/launch"].status;
 expect("during a campaign an event counts only from the campaign's start", camp("2026-06-01T00:00:00.000Z") === "due" && camp("2026-06-10T00:00:00.000Z") === "not-due");
 expect("of two open sprints, the later to start covers it", openBox([box("a"), box("b", { starts: "2026-06-12T00:00:00.000Z" })], "f/x", now)?.id === "b");
+const set = { person: "Founder", at: "2026-06-01T00:00:00.000Z" };
+const since = [{ route: "marketing/content", at: "2026-06-02T00:00:00.000Z" }];
+const both = by(due(sprintFlows, [], since, now, new Set(["f/launch"]), [
+  box("spring", { kind: "campaign", starts: "2026-06-01T00:00:00.000Z", loop_mode: "auto", set_by: set, workflows: ["f/launch"] }),
+  box("focus", { kind: "sprint", starts: "2026-06-12T00:00:00.000Z", loop_mode: "manual", set_by: set, functions: undefined, workflows: ["f/launch"] }),
+]));
+expect("a later sprint that names the workflow sets the mode over an earlier campaign", both["f/launch"].status === "due" && both["f/launch"].time_box?.id === "focus" && both["f/launch"].time_box?.loop_mode === "manual", both["f/launch"]);
+const held = plan([both["f/launch"]], { functions: { f: "auto" } }, new Map(), true)[0];
+expect("the loop follows that later mode and does not start it", held?.action === "leave" && held?.mode === "manual" && held?.from === "time-box", held);
+const focusAuto = by(due(sprintFlows, [], since, now, new Set(), [
+  box("spring", { kind: "campaign", starts: "2026-06-01T00:00:00.000Z", workflows: ["f/launch"] }),
+  box("focus", { kind: "sprint", starts: "2026-06-12T00:00:00.000Z", loop_mode: "auto", set_by: set, functions: undefined, workflows: ["f/launch"] }),
+]));
+const started = plan([focusAuto["f/launch"]], { functions: { f: "manual" } }, new Map(), true)[0];
+expect("a later sprint's mode applies when the earlier campaign sets none", focusAuto["f/launch"].status === "due" && focusAuto["f/launch"].time_box?.id === "focus" && started?.action === "start" && started?.mode === "auto", started);
+expect("a start that is not a time, or an end that is not after it, is refused", timeBoxSpan("tomorrow", "2026-06-02T00:00:00.000Z") !== null && timeBoxSpan("2026-06-02T00:00:00.000Z", "2026-06-01T00:00:00.000Z") !== null && timeBoxSpan("2026-06-01T00:00:00.000Z", "2026-06-01T00:00:00.000Z") !== null && timeBoxSpan("2026-06-01T00:00:00.000Z", "2026-06-02T00:00:00.000Z") === null);
 
 // One venture folder: two functions in Discovery, read from the shipped function modules.
 const dir = mkdtempSync(join(tmpdir(), "naive-due-"));
+let boxWs = "";
 try {
   writeFileSync(join(dir, "venture.json"), JSON.stringify({ id: "v", name: "V", phase: "discovery", departments: ["strategy", "customer-service"] }));
   const first = runSync(dueFor(dir, now));
@@ -101,7 +120,16 @@ try {
   const text = cli("--at", now);
   expect("the plain listing gives one line per workflow with why", text.status === 0 && /due\s+customer-service\/weekly-contact-review\s+It runs weekly and has never run\./.test(text.stdout), text.stdout);
   expect("a bad outcome and a missing target are usage errors", cli("record", "strategy/intake", "--outcome", "maybe").status === 2 && cli("record").status === 2);
-} finally { rmSync(dir, { recursive: true, force: true }); }
+  boxWs = mkdtempSync(join(tmpdir(), "naive-box-"));
+  const boxDir = join(boxWs, "v");
+  mkdirSync(boxDir, { recursive: true });
+  writeFileSync(join(boxDir, "venture.json"), JSON.stringify({ id: "v", name: "V", type: "software-startup", parent: null, owner: "self", status: "active", layers: {}, phase: "discovery", departments: ["strategy"] }));
+  const badBox = await call({ venture: "v", workspace: boxWs, route: "operations/time-box/bad", action: "write", actor: "person", input: { id: "bad", kind: "sprint", title: "Bad", goal: "No", starts: "tomorrow", ends: "2026-06-01T00:00:00.000Z", status: "active", functions: ["strategy"] } });
+  expect("a time box whose end is not after its start is refused on the route", !badBox.ok && /end after it starts/.test(badBox.ok ? "" : (badBox.error ?? "")), badBox);
+  const goodBox = await call({ venture: "v", workspace: boxWs, route: "operations/time-box/good", action: "write", actor: "person", input: { id: "good", kind: "sprint", title: "Good", goal: "Yes", starts: "2026-06-01T00:00:00.000Z", ends: "2026-06-20T00:00:00.000Z", status: "active", functions: ["strategy"] } });
+  const wrote = goodBox.ok && (goodBox.result as { draft?: boolean }).draft === false;
+  expect("a time box that ends after it starts is written", wrote && readFileSync(join(boxDir, "operations/time-boxes/good.json"), "utf8").includes("\"good\""), goodBox);
+} finally { rmSync(dir, { recursive: true, force: true }); if (boxWs) rmSync(boxWs, { recursive: true, force: true }); }
 
 if (failed) { console.error(`\n${failed} failed`); process.exit(1); }
 console.log("\ndue: all passed");

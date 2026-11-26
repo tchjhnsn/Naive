@@ -80,6 +80,14 @@ export interface DueEntry {
   readonly time_box: CoveringBox | null,
 }
 
+/** Why a start and an end cannot be a time box, or null when the end is after the start. */
+export function timeBoxSpan(starts: unknown, ends: unknown): string | null {
+  const a = typeof starts === "string" ? Date.parse(starts) : Number.NaN;
+  const b = typeof ends === "string" ? Date.parse(ends) : Number.NaN;
+  if (Number.isNaN(a) || Number.isNaN(b) || b <= a) return `a time box must end after it starts: ${String(ends)} is not after ${String(starts)}`;
+  return null;
+}
+
 /** Whether a time box is open at `now`: active, started and not yet ended. */
 export const isOpen = (b: DueBox, now: string): boolean => b.status === "active" && Date.parse(b.starts) <= Date.parse(now) && Date.parse(now) < Date.parse(b.ends);
 /** Whether a time box lists a workflow by name or its function. */
@@ -114,12 +122,16 @@ export function due(workflows: readonly DueWorkflow[], runs: readonly WorkflowRu
   const out = workflows.map((w): DueEntry => {
     const key = `${w.function}/${w.id}`;
     const during = w.trigger.during;
-    const box = openBox(boxes, key, now, during);
-    const time_box: CoveringBox | null = box ? { id: box.id, kind: box.kind, loop_mode: box.loop_mode ?? null, set_by: box.set_by?.person ?? null } : null;
-    const entry = dueOne(w, key, runs, written, now, active, box && during ? box.starts : null);
+    // Due-ness and the event window follow a box of the trigger's kind. The entry names the later open box that
+    // covers the workflow, of any kind, and the loop takes that box's mode.
+    const duringBox = during ? openBox(boxes, key, now, during) : null;
+    const cover = openBox(boxes, key, now);
+    const named = during ? (duringBox ? cover : null) : cover;
+    const time_box: CoveringBox | null = named ? { id: named.id, kind: named.kind, loop_mode: named.loop_mode ?? null, set_by: named.set_by?.person ?? null } : null;
+    const entry = dueOne(w, key, runs, written, now, active, duringBox ? duringBox.starts : null);
     if (!during || entry.status === "on-request") return { ...entry, time_box };
-    if (!box) return { ...entry, status: "not-due", why: `It runs only while a ${during} that lists it is open, and none is.`, next_due: null, time_box };
-    return { ...entry, why: `${entry.why} The ${during} ${box.id} is open until ${box.ends.slice(0, 10)}.`, time_box };
+    if (!duringBox) return { ...entry, status: "not-due", why: `It runs only while a ${during} that lists it is open, and none is.`, next_due: null, time_box };
+    return { ...entry, why: `${entry.why} The ${during} ${duringBox.id} is open until ${duringBox.ends.slice(0, 10)}.`, time_box };
   });
   return [...out.filter((e) => e.status === "due"), ...out.filter((e) => e.status !== "due")];
 }

@@ -14,7 +14,7 @@
     "title": { "type": "string", "minLength": 1 },
     "goal": { "type": "string", "minLength": 1, "description": "What the time box is for, in one sentence: the Sprint Goal, or the campaign's objective" },
     "starts": { "type": "string", "format": "date-time", "description": "When it opens" },
-    "ends": { "type": "string", "format": "date-time", "description": "When it closes on its own; after starts" },
+    "ends": { "type": "string", "format": "date-time", "description": "When it closes on its own. A write is refused unless this is after starts (packages/naive/src/engine/due.ts timeBoxSpan)." },
     "status": { "enum": ["active", "closed", "cancelled"], "description": "active: open between starts and ends. closed: a person ended it, at its end or early. cancelled: a person called it off" },
     "functions": {
       "type": "array",
