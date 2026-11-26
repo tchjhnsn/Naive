@@ -2539,6 +2539,27 @@
       ]
     },
     {
+      "id": "EE-184",
+      "date": "2026-11-26",
+      "status": "in-force",
+      "decision": "Every workspace and venture record type in the data model names `data`, what its records are to the business in data management's terms: master (a lasting fact kept as one current record that is edited), reference (a list or setting other records are read against), transactional (one event or one piece of work at a time, which accumulates) or derived (computed from other records, never a source of truth). packages/naive/src/checks/check-data-model.ts requires it on those types, holds a log to transactional, and `dataOf` in packages/naive/src/records/index.ts reads it. It is separate from `kind` (record, log or derived), which says how a host commits the file. An app's record types may leave it out. The first classification of the 119 types is the agent's and a person may change any line. Nothing else reads it yet.",
+      "why": "The founder asked on 2026-11-26 whether the hooks and loops plan accounts for golden records and transactional records. Naive had a customer master schema and logs, and no field that says which of its record types are the business's lasting facts and which are events. The element state and quality steps need that: an element's master records say whether it is present and current, and its transactional records are evidence that it operates.",
+      "related": [
+        "EE-018",
+        "EE-070",
+        "EE-182",
+        "EE-183"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/records/data-model.json",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
       "id": "EE-152",
       "date": "2026-11-19",
       "status": "in-force",
