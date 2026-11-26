@@ -38,7 +38,8 @@ export function functionWrites(fn: string): string[] {
   const all: { route: string; record?: string; actions?: string[]; files?: string[] }[] = routes();
   const owned = all.filter((r) => r.actions?.includes("write") && r.files?.length && r.record && mine.has(r.record)
     && !r.files.some((f) => PLANS.includes(f)));
-  const writes = ["decisions/*", "operations/handoff/*", ...[...new Set(owned.map((r) => r.route.replace("[id]", "*")))].sort()];
+  // Deduplicated: a function that owns the handoff record type would otherwise list operations/handoff/* twice.
+  const writes = [...new Set(["decisions/*", "operations/handoff/*", ...[...new Set(owned.map((r) => r.route.replace("[id]", "*")))].sort()])];
   cache.set(fn, writes);
   return writes;
 }
