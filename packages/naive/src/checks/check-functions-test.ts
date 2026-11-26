@@ -20,14 +20,16 @@ const copy = (): string => {
   return d;
 };
 type Row = { class: string, level: string, examples: string[] };
-type Step = { writes?: string[], raises?: string[], skill?: string, activity?: string, consider?: { why?: string, when?: string } };
-type Doc = { rows: Row[], steps: Step[], intake?: string, clusters?: string[] };
+type Step = { reads?: string[], writes?: string[], raises?: string[], skill?: string, activity?: string, consider?: { why?: string, when?: string } };
+type Doc = { rows: Row[], steps: Step[], reads?: string[], intake?: string, clusters?: string[] };
 const edit = (root: string, rel: string, f: (j: Doc) => void) => { const p = join(root, rel); const j = JSON.parse(readFileSync(p, "utf8")) as Doc; f(j); writeFileSync(p, JSON.stringify(j, null, 2) + "\n"); };
 const CATALOG_ACTIVITY = (JSON.parse(readFileSync(join(repo, "packages/naive/src/functions/activities.json"), "utf8")) as { activities: { id: string, process_group: string }[] }).activities.find((x) => x.process_group.startsWith("3."))?.id ?? "";
 const FIN = "packages/naive/src/functions/finance";
 const cases: [string, (d: string) => void, RegExp][] = [
   ["a one-way door that is not escalate fails", (d) => edit(d, `${FIN}/decisions.json`, (j) => { const row = j.rows.find((r) => r.class === "ownership-or-control"); if (row) row.level = "decide"; }), /ownership-or-control is a one-way door or never redelegated/],
   ["a class decision-rights does not have fails", (d) => edit(d, `${FIN}/decisions.json`, (j) => { j.rows.push({ class: "made-up", level: "decide", examples: ["x"] }); }), /made-up is not in decision-rights/],
+  ["a workflow that reads a route the router does not serve fails", (d) => edit(d, `${FIN}/workflows/intake.json`, (j) => { j.reads = [...(j.reads ?? []), "knowledge/sources"]; }), /reads knowledge\/sources, which no route serves/],
+  ["a step that reads a route the router does not serve fails", (d) => edit(d, `${FIN}/workflows/intake.json`, (j) => { j.steps[0].reads = ["finance/nowhere"]; }), /step \S+ reads finance\/nowhere, which no route serves/],
   ["a step that writes outside the function's reach fails", (d) => edit(d, `${FIN}/workflows/intake.json`, (j) => { j.steps[0].writes = ["foundation/problem"]; }), /outside the function's write reach/],
   ["a step that writes the team plan fails, whoever owns its record type", (d) => edit(d, "packages/naive/src/functions/human-capital/workflows/intake.json", (j) => { j.steps[0].writes = ["people/team-plan"]; }), /writes people\/team-plan, outside the function's write reach/],
   ["a step that raises a class with no row fails", (d) => edit(d, `${FIN}/workflows/intake.json`, (j) => { j.steps[0].raises = ["production-ship"]; }), /raises production-ship, which decisions.json has no row for/],

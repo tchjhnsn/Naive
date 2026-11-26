@@ -3,7 +3,7 @@
   "function": "it",
   "title": "Learn the venture's systems and access",
   "trigger": { "kind": "intake" },
-  "reads": ["venture", "it/connections", "finance/spend", "knowledge/sources", "people/team-plan", "governance/delegation"],
+  "reads": ["venture", "it/connections", "finance/spend", "knowledge/knowledge-sources", "people/team-plan", "governance/delegation"],
   "steps": [
     { "id": "read-what-exists", "do": "Read the connections, spend register, source map and team plan, and list what is missing, most needed first." },
     { "id": "ask-systems", "do": "Ask the founder which outside systems the venture uses (email, domain, code host, hosting, payments, storage, any tool an agent acts in), and write one connection each with its capability cluster, what it is authoritative for and its access scopes.", "ask": true, "writes": ["it/connections/[id]"] },

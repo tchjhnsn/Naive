@@ -3,7 +3,7 @@
   "function": "it",
   "title": "Review access and tools each quarter",
   "trigger": { "kind": "schedule", "cadence": "quarterly" },
-  "reads": ["it/connections", "finance/spend", "people/team-plan", "governance/delegation", "knowledge/sources"],
+  "reads": ["it/connections", "finance/spend", "people/team-plan", "governance/delegation", "knowledge/knowledge-sources"],
   "steps": [
     { "id": "review-scopes", "do": "For each connection, compare the scopes each person and agent role holds with what its work used this quarter, and remove what was not used.", "skill": "access-review", "writes": ["it/connections/[id]"], "raises": ["security-tightening"] },
     { "id": "check-leavers", "do": "Check that every person who left and every retired agent role has no remaining access, and revoke what remains.", "skill": "access-review", "writes": ["it/connections/[id]"], "raises": ["security-tightening"] },
