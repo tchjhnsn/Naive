@@ -462,22 +462,22 @@ def «strategicFoundation» : Concept Placement := ⟨[
 def «guidingStatement» : Concept Placement := ⟨[
   ("level venture", fun f => Decidable.decide (f.level = Level.«venture»))]⟩
 
-/-- [D] strategy (proposed). The function that sets the venture's direction: vision, and the choices that follow from it. A solo founder holds it with the others. Standard: APQC PCF 7.4 Cross-Industry 1.0 Develop Vision and Strategy. Fields: broader ["function"]; capabilities ["founder appointment"]; handoff_type false. -/
+/-- [D] strategy (proposed). The function that sets the venture's direction: vision, and the choices that follow from it. A solo founder holds it with the others. Standard: APQC PCF 8.0 1.0 element 10002 Develop Vision and Strategy. Fields: broader ["function"]; capabilities ["founder appointment"]; handoff_type false. -/
 def «strategy» : Concept Placement := ⟨[
   ("level function", fun f => Decidable.decide (f.level = Level.«function»)),
   ("function strategy", fun f => Decidable.decide (f.department = Option.some Department.«strategy»))]⟩
 
-/-- [D] products (proposed). The function that develops what the venture offers, and the decisions that change the offering. Standard: APQC PCF 7.4 Cross-Industry 2.0 Develop and Manage Products and Services. Fields: broader ["function"]; capabilities ["product decision"]; handoff_type false. -/
+/-- [D] products (proposed). The function that develops what the venture offers, and the decisions that change the offering. Standard: APQC PCF 8.0 2.0 element 10003 Develop and Manage Products and Services. Fields: broader ["function"]; capabilities ["product decision"]; handoff_type false. -/
 def «products» : Concept Placement := ⟨[
   ("level function", fun f => Decidable.decide (f.level = Level.«function»)),
   ("function products", fun f => Decidable.decide (f.department = Option.some Department.«products»))]⟩
 
-/-- [D] marketing-and-sales (proposed). The function that finds the buyer and sells the offering, including the price. Standard: APQC PCF 7.4 Cross-Industry 3.0 Market and Sell Products and Services. Fields: broader ["function"]; capabilities ["pricing decision","customer@marketing-and-sales"]; handoff_type false. -/
+/-- [D] marketing-and-sales (proposed). The function that finds the buyer and sells the offering, including the price. Standard: APQC PCF 8.0 3.0 element 10004 Market and Sell Products and Services. Fields: broader ["function"]; capabilities ["pricing decision","customer@marketing-and-sales"]; handoff_type false. -/
 def «marketingAndSales» : Concept Placement := ⟨[
   ("level function", fun f => Decidable.decide (f.level = Level.«function»)),
   ("function marketing-and-sales", fun f => Decidable.decide (f.department = Option.some Department.«marketingAndSales»))]⟩
 
-/-- [D] finance (proposed). The function that keeps the books: revenue, cost, and the customer as an account. Standard: APQC PCF 7.4 Cross-Industry 9.0 Manage Financial Resources. Fields: broader ["function"]; capabilities ["customer@finance"]; handoff_type false. -/
+/-- [D] finance (proposed). The function that keeps the books: revenue, cost, and the customer as an account. Standard: APQC PCF 8.0 9.0 element 17058 Manage Financial Resources. Fields: broader ["function"]; capabilities ["customer@finance"]; handoff_type false. -/
 def «finance» : Concept Placement := ⟨[
   ("level function", fun f => Decidable.decide (f.level = Level.«function»)),
   ("function finance", fun f => Decidable.decide (f.department = Option.some Department.«finance»))]⟩
@@ -492,12 +492,12 @@ def «customer_finance» : Concept Placement := ⟨[
   ("level venture", fun f => Decidable.decide (f.level = Level.«venture»)),
   ("function finance", fun f => Decidable.decide (f.department = Option.some Department.«finance»))]⟩
 
-/-- [D] pricing decision (proposed). A decision that sets or approves a price. Marketing and sales owns the decision. Every package of this type lists finance in touches, and the founder approves. Standard: APQC PCF 7.4 Cross-Industry 3.2.2 Define pricing strategy, including 3.2.2.4 Approve pricing strategy. Fields: broader ["decision"]; handoff_type true; required_touches ["finance"]. -/
+/-- [D] pricing decision (proposed). A decision that sets or approves a price. Marketing and sales owns the decision. Every package of this type lists finance in touches, and the founder approves. Standard: APQC PCF 8.0 3.2.3 element 10123 Define pricing strategy; 3.2.3.4 element 10125 Approve pricing strategies/policies and targets. Fields: broader ["decision"]; handoff_type true; required_touches ["finance"]. -/
 def «pricingDecision» : Concept Placement := ⟨[
   ("level operations", fun f => Decidable.decide (f.level = Level.«operations»)),
   ("function marketing-and-sales", fun f => Decidable.decide (f.department = Option.some Department.«marketingAndSales»))]⟩
 
-/-- [D] product decision (proposed). A decision that changes what the venture offers. The products function owns it. Standard: APQC PCF 7.4 Cross-Industry 2.0 Develop and Manage Products and Services. Fields: broader ["decision"]; handoff_type true. -/
+/-- [D] product decision (proposed). A decision that changes what the venture offers. The products function owns it. Standard: APQC PCF 8.0 2.0 element 10003 Develop and Manage Products and Services. Fields: broader ["decision"]; handoff_type true. -/
 def «productDecision» : Concept Placement := ⟨[
   ("level operations", fun f => Decidable.decide (f.level = Level.«operations»)),
   ("function products", fun f => Decidable.decide (f.department = Option.some Department.«products»))]⟩
