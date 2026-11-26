@@ -3,11 +3,11 @@
 // (EE-011). Starting layers come from scaffold/defaults.json, by phase (EE-012).
 //
 //   node packages/naive/src/engine/init-venture.ts <dir> <id> [--phase discovery] [--parent <id>] [--legal-form llc] [--layers purpose,governance]
-//                                [--type <venture type>] [--layout flat|structured|src] [--mode observed|run]
+//                                [--type <venture type>] [--layout flat|structured|src] [--mode observed|run] [--observed]
 //
-// --mode (EE-193) writes venture.json mode. observed means agents are modeling the venture. run means a person
-// is running it. With no --mode the field stays absent, and absence is not read as run. This is not the loop
-// mode and not people.json mode (solo or team).
+// --mode (EE-193) writes venture.json mode. observed means an outside-in model of a company. run means a person
+// is running it. --observed is the same as --mode observed. With neither, the field stays absent, and absence is
+// not read as run. This is not the loop mode and not people.json mode (solo or team).
 //
 // --type (packages/naive/src/engine/venture-types.json, EE-082) decides the package folders, the functions venture.json
 // imports and the first decisions: a software startup answers the product questions, a VC fund its
@@ -33,6 +33,7 @@ type Defaults = { layers: Record<string, string[] | undefined>; formalized: stri
 // then, a layer is keyed by its name, and a function's owner is null until create-venture or the founder names one.
 type Draft = Pick<Venture, "id" | "name" | "parent"> & Partial<Pick<Venture, "type" | "core" | "owner" | "status" | "profile" | "layout" | "mode">> & {
   phase: string; form?: { legal_form?: string; funding?: string }; layers?: Record<string, VentureLayer>; functions?: Record<string, { owner: string | null }>;
+  mode?: "observed" | "run";
 };
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -40,20 +41,25 @@ const repo = join(here, "../../../..");
 const { layers, formalized, pillars, readme }: Defaults = JSON.parse(readFileSync(join(here, "scaffold/defaults.json"), "utf8"));
 const args = process.argv.slice(2);
 const flag = (name: string): string | null => { const i = args.indexOf(`--${name}`); return i < 0 ? null : args.splice(i, 2)[1]; };
+const boolFlag = (name: string): boolean => { const i = args.indexOf(`--${name}`); if (i < 0) return false; args.splice(i, 1); return true; };
 const phase = flag("phase") ?? "discovery", parent = flag("parent"), legalForm = flag("legal-form"), only = flag("layers"), typeId = flag("type");
+const modeName = flag("mode");
+if (modeName && modeName !== "observed" && modeName !== "run") { console.error(`unknown mode ${modeName}: observed or run`); process.exit(2); }
+const observed = boolFlag("observed") || modeName === "observed";
+const ventureMode: "observed" | "run" | null = observed ? "observed" : modeName === "run" ? "run" : null;
 // --layout structured (EE-086): knowledge/, meta/ and an org chart in venture.json. --layout src (EE-118
 // step 8): the template's src/<function>/ and public/, with each package folder under its function.
 // Without either, the flat layout.
 const layout = flag("layout") ?? "flat";
 if (!["flat", "structured", "src"].includes(layout)) { console.error(`unknown layout ${layout}: flat, structured or src`); process.exit(2); }
-const modeFlag = flag("mode");
-if (modeFlag !== null && modeFlag !== "observed" && modeFlag !== "run") { console.error(`unknown mode ${modeFlag}: observed or run`); process.exit(2); }
+const unknownFlag = args.find((a) => a.startsWith("--"));
+if (unknownFlag) { console.error(`unknown flag ${unknownFlag}`); process.exit(2); }
 const structured = layout === "structured";
 const ventureTypes: VentureTypes = JSON.parse(readFileSync(join(here, "venture-types.json"), "utf8"));
 const vtype = typeId ? ventureTypes.types.find((t) => t.id === typeId) : null;
 if (typeId && !vtype) { console.error(`unknown venture type ${typeId}: see node packages/naive/src/engine/venture-type.ts list`); process.exit(2); }
 const [dir, id] = args;
-if (!dir || !id) { console.error("usage: node packages/naive/src/engine/init-venture.ts <dir> <id> [--phase discovery] [--parent <id>] [--legal-form llc] [--layout flat|structured|src] [--mode observed|run]"); process.exit(2); }
+if (!dir || !id) { console.error("usage: node packages/naive/src/engine/init-venture.ts <dir> <id> [--phase discovery] [--parent <id>] [--legal-form llc] [--layout flat|structured|src] [--mode observed|run] [--observed]"); process.exit(2); }
 if (!layers[phase]) { console.error(`unknown phase ${phase}: one of ${Object.keys(layers).join(", ")}`); process.exit(2); }
 if (existsSync(dir) && readdirSync(dir).length) { console.error(`${dir} already exists and is not empty: init creates new ventures only, and never writes into an existing project`); process.exit(1); }
 
@@ -62,18 +68,22 @@ const on = only !== null ? only.split(",").filter(Boolean) : [...new Set([...(la
 const unknown = on.filter((l) => !ALL.includes(l));
 if (unknown.length) { console.error(`unknown layers: ${unknown.join(", ")}; one of ${ALL.join(", ")}`); process.exit(2); }
 mkdirSync(dir, { recursive: true });
-const venture: Draft = { id, name: id, ...(vtype ? { type: vtype.id } : {}), parent: parent ?? null, phase, ...(modeFlag === "observed" || modeFlag === "run" ? { mode: modeFlag } : {}) };
+const venture: Draft = { id, name: id, ...(vtype ? { type: vtype.id } : {}), parent: parent ?? null, phase, ...(ventureMode ? { mode: ventureMode } : {}) };
 if (legalForm || vtype?.funding) venture.form = { ...(legalForm ? { legal_form: legalForm } : {}), ...(vtype?.funding ? { funding: vtype.funding } : {}) };
 if (phase !== "discovery") venture.core = { promise: "", promised_to: "", must_not: "", competence: "" };
 const ventureLayers: Record<string, VentureLayer> = {};
-Object.assign(venture, { owner: "self", status: "active", profile: structured ? "README.md" : "profile.md", layers: ventureLayers });
+const departmentIds = (): string[] => (JSON.parse(readFileSync(join(here, "../functions/departments.json"), "utf8")) as { departments: { id: string }[] }).departments.map((d) => d.id);
+Object.assign(venture, { owner: observed ? null : "self", status: "active", profile: structured ? "README.md" : "profile.md", layers: ventureLayers });
+// An observed venture names no owner and lists every current function with a null owner. The package
+// folders are not function ids.
+if (observed) venture.functions = Object.fromEntries(departmentIds().map((id) => [id, { owner: null }]));
 // The package folders (EE-070); a typed venture gets its type's packages.
 const packageDirs = vtype ? vtype.packages : ["foundation", "validation", "product", "marketing", "finance", "people", "customers", "investors", "money"];
 if (structured) {
   // venture.json first, so every path below resolves into k-base/ and meta/. The org chart starts flat:
   // one function per package, owned by no one until create-venture or the founder names the owner.
   venture.layout = "structured";
-  venture.functions = Object.fromEntries(packageDirs.map((p) => [p, { owner: null }]));
+  if (!observed) venture.functions = Object.fromEntries(packageDirs.map((p) => [p, { owner: null }]));
   for (const layer of ALL) ventureLayers[layer] = on.includes(layer) ? { location: `${KBASE}/` } : false;
   writeFileSync(join(dir, "venture.json"), JSON.stringify(venture, null, 2) + "\n");
   for (const sub of [KBASE, "meta"]) mkdirSync(join(dir, sub), { recursive: true });
@@ -150,10 +160,13 @@ const productFoundation = [
 // The team question (EE-060): asked in Discovery, failing open, so validation never waits on it. A
 // founding team, or a founder looking for one, gets the founder-agreement kit beside validation.
 mkdirSync(join(ventureFile(dir, "decisions")), { recursive: true });
-writeFileSync(join(ventureFile(dir, "decisions/venture.team.decision.json")), JSON.stringify({ id: "founding-team", question: "Who is founding this venture: you alone, you with cofounders, or you looking for cofounders?",
+const founding = observed
+  ? { question: "Who is founding this venture: one person, cofounders, or a founder looking for cofounders?", options: ["Solo: one person is founding it alone", "Cofounders: the founders are founding it together", "Looking: a founder wants cofounders"] }
+  : { question: "Who is founding this venture: you alone, you with cofounders, or you looking for cofounders?", options: ["Solo: I am founding it alone", "Cofounders: we are founding it together", "Looking: I want cofounders"] };
+const maker = observed ? { decision_maker: null } : {};
+writeFileSync(join(ventureFile(dir, "decisions/venture.team.decision.json")), JSON.stringify({ id: "founding-team", ...founding,
   decides: { record: "founder-agreement", path: "governance/founder-agreement.json" }, layer: "governance", boundary: "fail-open", needed_in: phase, status: "open",
-  options: ["Solo: I am founding it alone", "Cofounders: we are founding it together", "Looking: I want cofounders"],
-  unlocks: [{ activity: "Draft the founder agreement with the founding-agreement kit", routes: ["governance/founder-agreement"] }], provenance: framework }, null, 2) + "\n");
+  unlocks: [{ activity: "Draft the founder agreement with the founding-agreement kit", routes: ["governance/founder-agreement"] }], ...maker, provenance: framework }, null, 2) + "\n");
 // A fund's foundation (EE-082): the thesis first, then the terms it raises under, then the first close.
 const fundFoundation = [
   { id: "fund-thesis", question: "What does the fund invest in, and why does it win: rounds, sectors, geographies, check size and its edge?", decides: { record: "fund-thesis", path: "fund/thesis.json" },
@@ -167,13 +180,13 @@ const decisionSet = vtype?.decisions ?? "product-foundation";
 if (decisionSet === "fund-foundation") {
   mkdirSync(join(ventureFile(dir, "fund/decisions")), { recursive: true });
   for (const d of fundFoundation) writeFileSync(join(ventureFile(dir, "fund/decisions"), `${d.id === "first-close" ? "terms.first-close" : d.id.replace(/^fund-/, "")}.decision.json`),
-    JSON.stringify({ ...d, layer: "purpose", boundary: "fail-closed", needed_in: phase, status: "open", provenance: framework }, null, 2) + "\n");
+    JSON.stringify({ ...d, layer: "purpose", boundary: "fail-closed", needed_in: phase, status: "open", ...maker, provenance: framework }, null, 2) + "\n");
 }
 // The product questions sit beside the products: product/ in the structured layout, products/ in the flat one.
 const productDecisions = structured ? "product/decisions" : "products/decisions";
 if (decisionSet === "product-foundation") mkdirSync(join(ventureFile(dir, productDecisions)), { recursive: true });
 if (decisionSet === "product-foundation") for (const d of productFoundation) writeFileSync(join(ventureFile(dir, productDecisions), `product.${d.id.replace(/^product-/, "")}.decision.json`),
-  JSON.stringify({ ...d, layer: "purpose", boundary: "fail-closed", needed_in: phase, status: "open", provenance: framework }, null, 2) + "\n");
+  JSON.stringify({ ...d, layer: "purpose", boundary: "fail-closed", needed_in: phase, status: "open", ...maker, provenance: framework }, null, 2) + "\n");
 // The Venture Anatomy Matrix (EE-157): every venture starts with its primary market and industry, every cell unknown,
 // so the matrix is whole from the first day and filling it moves cells to estimated or known. The cells come from the
 // schemas through generators/anatomy-cells.ts, which the market and industry generators share.

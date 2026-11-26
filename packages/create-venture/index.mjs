@@ -8,7 +8,7 @@
 //   npx create-venture [dir] [--yes] [--type <type> | --describe "<a few words>"] [--role <role>]
 //                      [--name "<your name>"] [--by <person>] [--team "<name>, <name>"] [--phase <phase>]
 //                      [--source <function>=<system>[:<address>],... ...]
-//                      [--layers a,b] [--legal-form <form>] [--dump <file>]
+//                      [--layers a,b] [--legal-form <form>] [--dump <file>] [--observed | --mode observed|run]
 //                      [--use-npm | --use-pnpm | --use-yarn | --use-bun] [--skip-install] [--no-git]
 //                      [--framework <spec>] [--reset-preferences] [--venture-name "<name>"] [--no-workspace]
 //                      [--door <door>] [--account <id>] [--observed] [--mode observed|run]
@@ -21,8 +21,11 @@
 // MENTURA_ACTOR, MENTURA_ACTOR_ID, MENTURA_MODEL, MENTURA_SESSION, MENTURA_HARNESS. An agent process is
 // kind agent. A person process is kind person. --by names a person only when that process is a person and
 // MENTURA_ACTOR_ID is unset. An agent ignores --by.
-// --door names the interface when it is not the CLI. Without --account, and with MENTURA_ACTOR unset, the
-// founder's name is a claim and the provenance log says unverified; --account names the account that door checked.
+// --door names the interface when it is not the CLI. With MENTURA_ACTOR unset the provenance kind is
+// unverified. A command does not claim person. --account names the account a door checked, which is a person.
+// --help prints this usage and writes nothing.
+// --joined YYYY-MM-DD --joined-source <where> sets an observed person's join date. Without both, joined is null.
+// An observed venture does not make the named person the workspace owner. The owner is the writing person, or null.
 // --source says where a function keeps its truth (packages/naive/src/engine/systems-catalog.json), recorded as pointers in
 // knowledge/sources.json: --source products=local-repo:../app,github:acme/app,vercel:acme/app
 // --source finance=rho. A system whose sync command the app names (NAIVE_SYNC_<SYSTEM>, packages/naive/src/core/sync.ts)
@@ -63,19 +66,47 @@ const { readSchema } = await import(fwModule("packages/naive/src/records/index.t
 const FORMS = readSchema("venture").properties.form.properties.legal_form.enum;
 
 const argv = process.argv.slice(2);
+if (argv.includes("--help") || argv.includes("-h")) {
+  const head = [];
+  for (const line of readFileSync(fileURLToPath(import.meta.url), "utf8").split("\n")) {
+    if (line.startsWith("#!")) continue;
+    if (line.startsWith("//")) head.push(line.replace(/^\/\/ ?/, ""));
+    else if (head.length) break;
+  }
+  console.log(head.join("\n"));
+  process.exit(0);
+}
 const opt = (n) => { const i = argv.indexOf(`--${n}`); return i >= 0 ? argv[i + 1] : undefined; };
 const flag = (n) => argv.includes(`--${n}`);
-const valued = new Set(["phase", "layers", "legal-form", "dump", "framework", "type", "describe", "role", "name", "by", "team", "layout", "venture-name", "door", "account", "mode"]);
+const valued = new Set(["phase", "layers", "legal-form", "dump", "framework", "type", "describe", "role", "name", "by", "team", "layout", "venture-name", "door", "account", "mode", "joined", "joined-source", "source"]);
+// --rho-fixture is the flag the Get Started page names. The sync command's own answer is what marks a source a fixture.
+const booleans = new Set(["help", "h", "observed", "yes", "skip-install", "no-git", "no-workspace", "reset-preferences", "use-npm", "use-pnpm", "use-yarn", "use-bun", "rho-fixture"]);
 const positional = argv.filter((a, i) => !a.startsWith("--") && !(i > 0 && valued.has(argv[i - 1].slice(2))));
 const bold = (s) => (process.stdout.isTTY ? `\x1b[1m${s}\x1b[22m` : s);
 const cyan = (s) => (process.stdout.isTTY ? `\x1b[36m${s}\x1b[39m` : s);
 const fail = (m) => { console.error(m); process.exit(1); };
-if (argv.includes("--modeled")) fail("unknown flag --modeled");
+// An unknown flag is not a value and not a directory. Leaving it on the floor used to write mode run.
+const unknownFlags = [];
+for (let i = 0; i < argv.length; i++) {
+  const arg = argv[i];
+  if (arg === "-h") continue;
+  if (!arg.startsWith("-")) continue;
+  const name = arg.startsWith("--") ? arg.slice(2) : "";
+  if (valued.has(name)) { i += 1; continue; }
+  if (booleans.has(name)) continue;
+  unknownFlags.push(arg);
+}
+if (unknownFlags.length) fail(`unknown flag ${unknownFlags.join(" ")}`);
 const modeAt = argv.indexOf("--mode");
 const askedMode = modeAt < 0 ? undefined : argv[modeAt + 1];
 if (modeAt >= 0 && askedMode !== "observed" && askedMode !== "run") fail(`unknown mode ${askedMode ?? ""}: observed or run`);
 if (flag("observed") && askedMode === "run") fail("--observed writes observed, and --mode run says run");
 const ventureMode = askedMode === "observed" || askedMode === "run" ? askedMode : (flag("observed") ? "observed" : "run");
+const joinedOn = opt("joined");
+const joinedSource = opt("joined-source");
+if (ventureMode === "observed" && joinedOn && !joinedSource) fail("--joined needs --joined-source on an observed venture");
+if (ventureMode === "observed" && joinedSource && !joinedOn) fail("--joined-source needs --joined");
+if (joinedOn && !/^\d{4}-\d{2}-\d{2}$/.test(joinedOn)) fail(`--joined ${joinedOn} is not a date`);
 const slug = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
 // Preferences, so a second venture can reuse the first one's answers (create-next-app's "reuse previous settings").
@@ -165,6 +196,10 @@ if (!vtype.roles.includes(role)) fail(`a ${vtype.label.toLowerCase()} has no ${r
 
 // 4. You, and whether you are building it solo or with a team.
 // A git identity is not a person's name (a cloud session's is "claude"), so the founder is asked, or is "Founder" until named.
+// --observed (or --mode observed) records the named people as subjects. Owners stay unknown. --mode run writes run.
+const modeName = opt("mode");
+if (modeName && modeName !== "observed" && modeName !== "run") fail(`unknown mode ${modeName}: observed or run`);
+const observed = flag("observed") || modeName === "observed";
 const me = opt("name") ?? (interactive ? await ask("What is your name?", "Founder") : "Founder");
 let others = opt("team") ? opt("team").split(",").map((x) => x.trim()).filter(Boolean) : [];
 if (!opt("team") && interactive && (await choose("Are you building it solo or with a team?", ["solo", "team"], prefs?.mode ?? "solo")) === "team") {
@@ -194,8 +229,9 @@ const fnLabel = (f) => (structured ? f : deptLabel(f));
 const owners = people.filter((p) => roleOf(p.role)?.owns_when_solo);
 const ownerOf = {};
 for (const p of people) p.hats = [];
-if (owners.length === 1 || !interactive) for (const f of fnIds) { ownerOf[f] = owners[0]?.id ?? null; owners[0]?.hats.push(f); }
-else for (const f of fnIds) {
+// An observed venture does not hand functions or hats to the named person. A run venture keeps solo ownership.
+if (!observed && (owners.length === 1 || !interactive)) for (const f of fnIds) { ownerOf[f] = owners[0]?.id ?? null; owners[0]?.hats.push(f); }
+else if (!observed) for (const f of fnIds) {
   const who = await choose(`Who owns ${fnLabel(f)}?`, owners.map((p) => p.id), owners[0].id);
   ownerOf[f] = who;
   owners.find((p) => p.id === who).hats.push(f);
@@ -249,7 +285,7 @@ const manager = ["npm", "pnpm", "yarn", "bun"].includes(pm) ? pm : "npm";
 rl?.close();
 
 // 4. The venture itself, by the framework's own scaffold.
-console.log(`\nCreating a new ${vtype.label.toLowerCase()} in ${bold(dir)}, with ${mode === "solo" ? `${me} as its ${role}, wearing every hat` : `${people.length} founders`}.\n`);
+console.log(`\nCreating a new ${vtype.label.toLowerCase()} in ${bold(dir)}, with ${observed ? "no people and no owner named" : mode === "solo" ? `${me} as its ${role}, wearing every hat` : `${people.length} founders`}.\n`);
 const initScript = fwModule("packages/naive/src/engine/init-venture.ts");
 const init = spawnSync("node", [initScript, dir, id, "--phase", answers.phase, "--type", vtype.id, "--layout", layout, "--mode", ventureMode,
   ...(answers.layers ? ["--layers", answers.layers] : []), ...(answers.legalForm ? ["--legal-form", answers.legalForm] : [])], { encoding: "utf8" });
@@ -259,43 +295,45 @@ const venture = JSON.parse(readFileSync(vfile, "utf8"));
 venture.name = ventureName;
 if (mode === "team") venture.members = people.slice(1).map((p) => ({ role: p.role === "general-partner" ? "partner" : p.role, kind: "person" }));
 // The org chart (EE-086): each function's owner. Hats are read from here, never stored twice.
-if (structured) for (const f of Object.keys(venture.functions ?? {})) venture.functions[f].owner = ownerOf[f] ?? null;
+if (structured) for (const f of Object.keys(venture.functions ?? {})) venture.functions[f].owner = observed ? null : (ownerOf[f] ?? null);
 writeFileSync(vfile, JSON.stringify(venture, null, 2) + "\n");
 // Where each logical file sits in this venture's layout (packages/naive/src/core/venture-paths.ts).
 const { ventureFile: vf, physical } = await import(fwModule("packages/naive/src/core/venture-paths.ts"));
 
 // people/: the roster and one file per founder, the venture.json of human capital (EE-082).
+// An observed venture creates no people. A placeholder Founder is a guess, and joined is not today.
 const { record } = await import(fwModule("packages/naive/src/core/provenance.ts"));
 const { authorFromProcess } = await import(fwModule("packages/naive/src/terms/authorship.ts"));
 const today = new Date().toISOString().slice(0, 10);
-mkdirSync(vf(dir, "people/founders"), { recursive: true });
 const door = opt("door") ?? "cli";
 const account = opt("account");
 // The process wins over the door. A CLI door, or an account, claims a person only when MENTURA_ACTOR is unset.
 const claim = door === "cli" || account ? "person" : "unverified";
 const founderKind = claim;
 const asAuthor = authorFromProcess({ via: door, by: opt("by"), account, claim });
-for (const p of people.filter((x) => roleOf(x.role)?.founder)) {
-  p.founder_file = `people/founders/${p.id}.json`;
-  writeFileSync(vf(dir, p.founder_file), JSON.stringify({ id: p.id, name: p.name, role: p.role, ...(structured ? {} : { hats: p.hats }), joined: today }, null, 2) + "\n");
-  record(dir, { entity: p.founder_file, route: `people/founders/${p.id}`, activity: "write", agent: asAuthor, note: `${p.name}, ${p.role}, as answered at create-venture` });
-}
-writeFileSync(vf(dir, "people/people.json"), JSON.stringify({ venture: id, mode, people: people.map(({ id: pid, name, role: r, hats, founder_file }) => ({ id: pid, name, role: r, ...(structured ? {} : { hats }), ...(founder_file ? { founder_file } : {}) })), updated: today }, null, 2) + "\n");
-record(dir, { entity: "people/people.json", route: "people", activity: "write", agent: asAuthor, note: `${mode}: ${people.map((p) => `${p.name} (${p.role})`).join(", ")}` });
-// A framework decision whose question the founder already answered here is decided now, as the founder's own answer
-// (approve in packages/naive/src/engine/decisions.ts), so no one is asked twice. Only a person process approves.
-// An agent, or an unset process, does not record the named founder as the author.
-if (asAuthor.kind === "person") {
-const { approve, decisionFile } = await import(fwModule("packages/naive/src/engine/decisions.ts"));
-const answered = [{ id: "founding-team", option: mode === "solo" ? "Solo" : "Cofounders" }];
-for (const { id: decision, option } of answered) {
-  const file = decisionFile(dir, decision);
-  if (!file) continue;
-  const answer = (JSON.parse(readFileSync(vf(dir, file), "utf8")).options ?? []).find((o) => o.split(":")[0] === option);
-  if (!answer) fail(`${file} offers no option for ${option}`);
-  const r = approve(dir, decision, { by: people[0].id, answer, via: door, unverified: founderKind === "unverified", ...(account ? { account } : {}), note: `decided ${decision} from the founder's answer at create-venture: ${option.toLowerCase()}` });
-  if (!r.ok) fail(`${decision}: ${r.error}`);
-}
+if (!observed) {
+  mkdirSync(vf(dir, "people/founders"), { recursive: true });
+  const joined = joinedOn ?? today;
+  for (const p of people.filter((x) => roleOf(x.role)?.founder)) {
+    p.founder_file = `people/founders/${p.id}.json`;
+    writeFileSync(vf(dir, p.founder_file), JSON.stringify({ id: p.id, name: p.name, role: p.role, ...(structured ? {} : { hats: p.hats }), joined, ...(joinedSource ? { joined_source: joinedSource } : {}) }, null, 2) + "\n");
+    record(dir, { entity: p.founder_file, route: `people/founders/${p.id}`, activity: "write", agent: asAuthor, note: `${p.name}, ${p.role}, as answered at create-venture` });
+  }
+  writeFileSync(vf(dir, "people/people.json"), JSON.stringify({ venture: id, mode, people: people.map(({ id: pid, name, role: r, hats, founder_file }) => ({ id: pid, name, role: r, ...(structured ? {} : { hats }), ...(founder_file ? { founder_file } : {}) })), updated: today }, null, 2) + "\n");
+  record(dir, { entity: "people/people.json", route: "people", activity: "write", agent: asAuthor, note: `${mode}: ${people.map((p) => `${p.name} (${p.role})`).join(", ")}` });
+  // Only a person process approves. An agent, or an unset process, does not record the named founder as the author.
+  if (asAuthor.kind === "person") {
+    const { approve, decisionFile } = await import(fwModule("packages/naive/src/engine/decisions.ts"));
+    const answered = [{ id: "founding-team", option: mode === "solo" ? "Solo" : "Cofounders" }];
+    for (const { id: decision, option } of answered) {
+      const file = decisionFile(dir, decision);
+      if (!file) continue;
+      const answer = (JSON.parse(readFileSync(vf(dir, file), "utf8")).options ?? []).find((o) => o.split(":")[0] === option);
+      if (!answer) fail(`${file} offers no option for ${option}`);
+      const r = approve(dir, decision, { by: people[0].id, answer, via: door, unverified: founderKind === "unverified", ...(account ? { account } : {}), note: `decided ${decision} from the founder's answer at create-venture: ${option.toLowerCase()}` });
+      if (!r.ok) fail(`${decision}: ${r.error}`);
+    }
+  }
 }
 if (answers.dump) {
   mkdirSync(vf(dir, "raw"), { recursive: true });
@@ -415,7 +453,7 @@ if (!flag("no-git") && spawnSync("git", ["--version"]).status === 0 && spawnSync
 let workspace = null;
 if (!flag("no-workspace")) {
   const root = ownWorkspace ?? dirname(dir);
-  const { ws } = ensureWorkspace(root, { owner: people[0].id });
+  const { ws } = ensureWorkspace(root, { owner: observed ? null : people[0].id });
   addVenture(root, dir);
   workspace = { root, name: ws.name, timeZone: ws.timeZone };
 }

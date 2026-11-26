@@ -8,7 +8,7 @@
   "properties": {
     "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$", "description": "The calendar's id, the file's name without .json" },
     "name": { "type": "string" },
-    "owner": { "type": "string", "description": "The person who owns it, by id (a founder id, or founder)" },
+    "owner": { "description": "The person who owns it, by id, or null when the owner is not known. An observed venture does not put the named subject here.", "anyOf": [{ "type": "string" }, { "type": "null" }] },
     "members": { "type": "array", "items": { "type": "string" }, "description": "People on the calendar, by id" },
     "visibility": { "enum": ["private", "members", "workspace"], "description": "private: the owner only; members: those listed; workspace: everyone in the workspace" },
     "description": { "type": "string" },

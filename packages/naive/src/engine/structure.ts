@@ -19,8 +19,22 @@
 // Never calls a model. Reads the venture folder only.
 
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { createRequire } from "node:module";
 import { join } from "node:path";
 import { ventureFile } from "../core/venture-paths.ts";
+
+// The router imports this module for routable. The conduct term loads only when a manifest is built,
+// the same way the idea map loads the term engine only when a relation is stated.
+function ventureObserved(mode: unknown): boolean {
+  const require = createRequire(import.meta.url);
+  try {
+    const conduct = require("../terms/conduct.ts") as { ventureObserved: (mode: unknown) => boolean };
+    return conduct.ventureObserved(mode);
+  } catch (e) {
+    if ((e as { code?: string } | null)?.code === "ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING") return false;
+    throw e;
+  }
+}
 
 const repo = new URL("../../../..", import.meta.url).pathname;
 const load = (f: string) => JSON.parse(readFileSync(f, "utf8"));
@@ -142,7 +156,9 @@ export async function manifest(dir: string) {
   const owners: Record<string, { owner?: string }> = v.functions ?? {};
   const fnOf = (n: string): string | null => { const k = names.includes(n) ? pkgOf(n) : {}; return k.function ?? k.department ?? null; };
   const solo = !(v.members?.length);
-  const functions = [...new Set(used.map(fnOf).filter((f): f is string => Boolean(f)))].map((f): { function: string, owner: string | null | undefined, declared: boolean, packages: string[] } => ({ function: f, owner: owners[f]?.owner ?? (solo ? "the founder" : null), declared: !!owners[f], packages: used.filter((n) => fnOf(n) === f) }));
+  // An observed venture leaves an unknown owner null. A run venture, or one with no mode, still reads a missing owner as the founder when it is solo.
+  const observed = ventureObserved(v.mode);
+  const functions = [...new Set(used.map(fnOf).filter((f): f is string => Boolean(f)))].map((f): { function: string, owner: string | null | undefined, declared: boolean, packages: string[] } => ({ function: f, owner: owners[f]?.owner ?? (observed ? null : solo ? "the founder" : null), declared: !!owners[f], packages: used.filter((n) => fnOf(n) === f) }));
   for (const [f, o] of Object.entries(owners)) if (!functions.some((x) => x.function === f)) functions.push({ function: f, owner: o.owner, declared: true, packages: [] });
   return {
     identity: { id: v.id, name: v.name, kind: v.kind ?? "venture", parent: v.parent, owner: v.owner, status: v.status },
@@ -162,7 +178,7 @@ export function checkManifest(dir: string) {
   for (const n of v.packages ?? []) if (!names.includes(n)) errors.push(`venture.json packages: ${n} is not a Naive package (one of ${names.join(", ")})`);
   for (const [f, o] of Object.entries<{ owner?: string } | null>(v.functions ?? {})) {
     if (!fns.includes(f)) errors.push(`venture.json functions: ${f} is not a function (one of ${fns.join(", ")})`);
-    if (!o?.owner) errors.push(`venture.json functions: ${f} has no owner; every function has one accountable owner`);
+    if (!o?.owner && !ventureObserved(v.mode)) errors.push(`venture.json functions: ${f} has no owner; every function has one accountable owner`);
   }
   for (const k of v.kits ?? []) {
     if (!names.includes(k.extends)) errors.push(`venture.json kits: ${k.id} extends ${k.extends}, which is not a Naive package`);

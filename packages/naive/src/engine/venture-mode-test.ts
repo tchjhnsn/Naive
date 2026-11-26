@@ -87,8 +87,19 @@ const explicit = create("explicit", ["--mode", "observed"]);
 expect("create-venture --mode observed writes observed", explicit.r.status === 0 && load(explicit.dir).mode === "observed", explicit.r.stderr);
 const clash = create("clash", ["--observed", "--mode", "run"]);
 expect("create-venture refuses --observed with --mode run", clash.r.status !== 0 && !existsSync(join(clash.dir, "venture.json")), clash.r.stderr);
-const leftover = create("leftover", ["--modeled"]);
-expect("create-venture --modeled is refused and writes nothing", leftover.r.status !== 0 && leftover.r.stderr.includes("unknown flag --modeled") && !existsSync(join(leftover.dir, "venture.json")), leftover.r.stderr);
+const leftoverCreate = create("leftover", ["--modeled"]);
+expect("create-venture --modeled is refused and writes nothing", leftoverCreate.r.status !== 0 && leftoverCreate.r.stderr.includes("unknown flag --modeled") && !existsSync(join(leftoverCreate.dir, "venture.json")), leftoverCreate.r.stderr);
+const naiveNew = (id: string, extra: string[]) => {
+  const dir = join(base, id);
+  const r = node("packages/naive/src/interfaces/cli/naive.ts", ["new", dir, "--yes", "--skip-install", "--no-git", "--type", "software-startup", ...extra], env);
+  return { dir, r };
+};
+const leftover = naiveNew("leftover-new", ["--modeled"]);
+expect("naive new --modeled is refused and writes nothing", leftover.r.status !== 0 && leftover.r.stderr.includes("unknown flag --modeled") && !existsSync(join(leftover.dir, "venture.json")), leftover.r.stderr + leftover.r.stdout);
+const observedNew = naiveNew("naive-observed", ["--observed"]);
+expect("naive new --observed writes observed", observedNew.r.status === 0 && load(observedNew.dir).mode === "observed", observedNew.r.stderr);
+const runNew = naiveNew("naive-run", []);
+expect("naive new with no mode flag writes run", runNew.r.status === 0 && load(runNew.dir).mode === "run", runNew.r.stderr);
 
 rmSync(base, { recursive: true, force: true });
 if (failed) process.exit(1);

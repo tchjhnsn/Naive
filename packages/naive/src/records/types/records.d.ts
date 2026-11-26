@@ -491,8 +491,8 @@ export type Calendar = {
   /** The calendar's id, the file's name without .json */
   id: string;
   name: string;
-  /** The person who owns it, by id (a founder id, or founder) */
-  owner: string;
+  /** The person who owns it, by id, or null when the owner is not known. An observed venture does not put the named subject here. */
+  owner: string | null;
   /** People on the calendar, by id */
   members: string[];
   /** private: the owner only; members: those listed; workspace: everyone in the workspace */
@@ -938,6 +938,8 @@ export type DecisionRecord = {
   answer?: string | null;
   /** Who decided: a person's name. An agent never decides a fail-closed decision. Deprecated in favour of provenance.approved_by, which it must equal when both are present. */
   decided_by?: string | null;
+  /** The in-venture decision-maker: a person id or a role id, or null when unknown (EE-193). Absent means the same as null. Not the actor who writes the record. Never defaulted to the founder or the agent. */
+  decision_maker?: string | null;
   /**
    * @format date-time
    */
@@ -1955,10 +1957,10 @@ export type Founder = {
   role: "founder" | "co-founder" | "general-partner";
   /** The functions this founder owns, in the flat layout. In the structured layout (EE-086) they are read from venture.json */
   hats?: ("strategy" | "products" | "marketing-and-sales" | "supply-chain" | "service-delivery" | "customer-service" | "human-capital" | "it" | "finance" | "assets" | "risk-and-compliance" | "external-relationships" | "capabilities")[];
-  /**
-   * @format date
-   */
-  joined: string;
+  /** When this person joined, or null when that is not known. An observed venture writes null unless a date is supplied with joined_source. The run date is not a default. */
+  joined: string | null;
+  /** Where a join date came from. An observed venture requires this when joined is a date. */
+  joined_source?: string;
   agreement?: {
     path: string;
     signed: boolean;
@@ -4416,8 +4418,8 @@ export type Pcf = {
 /** The venture's people (people/people.json): who is in it, in which role, and which functions (hats) each owns. It is to human capital what venture.json is to the venture. A founder also has a file in people/founders/. Names only: no personal details. */
 export type People = {
   venture: string;
-  /** solo: one person owns every function the venture imports */
-  mode: "solo" | "team";
+  /** solo: one person owns every function the venture imports. team: the people share them. null: ownership is not known (an observed venture, EE-193). solo still means one person owns every function. */
+  mode: "solo" | "team" | null;
   people: {
     id: string;
     name: string;
@@ -4426,6 +4428,8 @@ export type People = {
     /** The functions this person owns. In the structured layout (EE-086) hats are read from the org chart in venture.json and not stored here */
     hats?: ("strategy" | "products" | "marketing-and-sales" | "supply-chain" | "service-delivery" | "customer-service" | "human-capital" | "it" | "finance" | "assets" | "risk-and-compliance" | "external-relationships" | "capabilities")[];
     founder_file?: string;
+    /** Another person's id, or null when the org link is unknown (EE-193). A string that names nobody, or a cycle, fails the check. */
+    reports_to?: string | null;
   }[];
   /** The founder agreement, once there is one (governance/founder-agreement.json) */
   founder_agreement?: string;
@@ -6813,17 +6817,17 @@ export type Venture = {
   name: string;
   /** venture: building a venture, whose root and strategic foundation fail closed. product: a product without a venture, which fails open (EE-054). */
   kind?: "venture" | "product";
-  /** Whether the venture is observed or a person is running it (EE-193). observed means an outside-in model of a company built from public information, and the people, roles and org links in it are subjects. run means a person is running it on Naive. Left out, the record was written before this field and is not read as run. This field is not the loop mode in naive.config.json (manual, ask or auto) and not the mode on people.json (solo or team). */
-  mode?: "observed" | "run";
   /** The venture type, an id from packages/naive/src/engine/venture-types.json: what kind of venture this is (a software startup, a VC fund), which decides its starting packages, first decisions, functions and roles (EE-082) */
   type?: string;
+  /** Whether the venture is observed or a person is running it (EE-193). observed means an outside-in model of a company built from public information, and the people, roles and org links in it are subjects. run means a person is running it on Naive. Left out, the record was written before this field and is not read as run. This field is not the loop mode in naive.config.json (manual, ask or auto) and not the mode on people.json (solo or team). */
+  mode?: "observed" | "run";
   /** Where the venture's files sit (EE-086). structured: venture.json, README.md and AGENTS.md at the top, the knowledge base in knowledge/, sources.json, naive.config.json, the provenance log and releases in meta/, and code in an optional repo/. flat: every venture made before EE-086, with packages at the top. src (EE-118 step 8, what naive init writes): venture.json and naive.config.json at the top, each package folder a function owns in src/<function>/<package>/, decisions/, evidence/ and raw/ at the top, and the static files the venture hands out in public/. */
   layout?: "flat" | "structured" | "src";
-  /** The venture's functions and their one accountable owner each (EE-071), keyed by function id from packages/naive/src/functions/departments.json. A solo founder owns them all, which is what the manifest assumes when this is left out. */
+  /** The venture's functions and their one accountable owner each (EE-071), keyed by function id from packages/naive/src/functions/departments.json. A solo founder owns them all, which is what the manifest assumes when this is left out. An owner is null when nobody is known (EE-193). */
   functions?: {
     [key: string]: {
-      /** A role or a person's name; no personal details */
-      owner: string;
+      /** A person id or a role id, or null when no owner is known (EE-193). Never a guess of the founder or the agent. */
+      owner: string | null;
     };
   };
   /** The id of the venture that holds this one; null at the top of a workspace. */
@@ -6873,7 +6877,8 @@ export type Venture = {
     /** The brand's enduring short line, kept across campaigns (Burger King's 'Have it your way'). A campaign's slogan is not this; it belongs to the campaign. */
     tagline?: string;
   };
-  owner: "self" | "shared" | "other";
+  /** Who the venture is for: self, shared or other. null when an observed venture has not named an owner. */
+  owner: "self" | "shared" | "other" | null;
   /** The others who work in the venture, by role, people and agents alike: a string role (co-founder, partner, investor) or an object naming the kind. No personal details. Any member switches on governance, since agents need decision rights too. */
   members?: (string | {
     /** A role id from the roles register (builder, architect) or a plain role */

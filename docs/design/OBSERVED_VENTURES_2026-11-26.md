@@ -59,7 +59,7 @@ Already decided by others, and only referenced here:
 
 | Need | What exists | Where |
 |---|---|---|
-| Observed or run mode | `venture.json` `mode` is `observed` or `run`, checked by the conduct terms, with Lean `observed_disjoint_run` (`Conduct.lean` line 39). Owner, function owners, workspace owner and `joined` are null for an observed venture. | Stack #156 `335f1a88` (heads may move): `terms/conduct.ts`, `lean/Naive/Conduct.lean`, `docs/design/OBSERVED_VENTURE_ACTOR_2026-11-26.md` (the stack's EE-189 conduct note, a different document from this proposal) |
+| Observed or run mode | `venture.json` `mode` is `observed` or `run`, checked by the conduct terms, with Lean `observed_disjoint_run` (`Conduct.lean` line 39). Owner, function owners, workspace owner and `joined` are null for an observed venture. | Stack #156 `335f1a88` (heads may move): `terms/conduct.ts`, `lean/Naive/Conduct.lean`, `docs/design/OBSERVED_VENTURE_ACTOR_2026-11-26.md` (the stack's EE-193 conduct note, a different document from this proposal) |
 | Known join and workspace owner terms | `knownJoin` and `workspaceOwner` are in `TERMS` | Stack #156 `335f1a88` (heads may move): `terms/terms.ts` line 608, `terms/makers.ts` |
 | A closed relation table checked by a term | `typed-link` over `relationTable()`, with Lean `idea_inverse_involutive`, `idea_inverse_same_order` and `idea_order_canonical` | On main `08a54666`: `terms/relations.ts`, `terms/terms.ts` line 291, `lean/Naive/Terms.lean` lines 172–181. On #156 `335f1a88` the same `typed-link` id is `terms.ts` line 292, and the three theorems are still lines 172, 177 and 181. |
 | Venture-to-venture data | `venture.json` `links`: `access` `reads` or `shares-with`. This is data flow between our own ventures, not a relation between companies. | `records/venture.schema.json`: `access` is required at line 337, and the enum is `reads` or `shares-with` at lines 346–347 |
@@ -171,7 +171,7 @@ type Author = { kind: "agent" | "person" | "unverified"; id: string; model?: str
 
 **Owner:** Naive, `packages/naive` (engine `init-venture.ts`, `create-venture/index.mjs`, router).
 
-**Already in the stack** (the EE-189 conduct note `docs/design/OBSERVED_VENTURE_ACTOR_2026-11-26.md` at #156 `335f1a88`. Heads may move.):
+**Already in the stack** (the EE-193 conduct note `docs/design/OBSERVED_VENTURE_ACTOR_2026-11-26.md` at #156 `335f1a88`. Heads may move.):
 - no placeholder Founder;
 - `joined` is a date or null;
 - `owner` is null;
@@ -766,7 +766,7 @@ Torian, Nov 26: "Research or just consider the best approaches to these question
 - `packages/naive/src/router/brand.ts`
 - `packages/naive/src/functions/`: `departments.json`, `pcf.json`
 - `docs/reference/ROUTES.md`; `docs/decisions/decisions.json` (EE-165, EE-166; EE-189 on the stack; no EE-107)
-- `docs/design/`: `OBSERVED_VENTURE_ACTOR_2026-11-26.md` on the stack at #156 `335f1a88` (the EE-189 conduct note, not this proposal), `HOOKS_AND_LOOPS_2026-11-26.md`, `ACTIVITY_CATALOG_2026-11-25.md`
+- `docs/design/`: `OBSERVED_VENTURE_ACTOR_2026-11-26.md` on the stack at #156 `335f1a88` (the EE-193 conduct note, not this proposal), `HOOKS_AND_LOOPS_2026-11-26.md`, `ACTIVITY_CATALOG_2026-11-25.md`
 
 **Dogfood** (private, read through cursor-github at about 6:55 AM CST): `README.md`, `docs/decisions/STORAGE_AND_EVALS_2026-11-26.md`, and the repository visibility for Dogfood and Naive.
 

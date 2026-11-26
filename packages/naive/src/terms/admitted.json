@@ -2160,7 +2160,7 @@
         },
         "grade": "none"
       },
-      "meaning": "A venture agents are modeling. It is observed, and it is not being run.",
+      "meaning": "An outside-in model of a company, built from public information. Its mode is observed, and it is not being run.",
       "status": "proposed",
       "hash": "e552558c4f41632d",
       "properties": [
@@ -2191,7 +2191,7 @@
         "observed_not_run"
       ],
       "sources": [
-        "EE-188"
+        "EE-193"
       ]
     },
     {
@@ -2240,7 +2240,237 @@
         "observed_disjoint_run"
       ],
       "sources": [
-        "EE-188"
+        "EE-193"
+      ]
+    },
+    {
+      "id": "open-maker",
+      "label": "Open maker",
+      "form": "compound",
+      "level": "maker",
+      "kind": "role",
+      "labels": {
+        "designation": "term",
+        "scope": "shared",
+        "origin": {
+          "kind": "narrowed"
+        },
+        "grade": "none"
+      },
+      "meaning": "The in-venture decision-maker is unknown, and it was not guessed.",
+      "status": "proposed",
+      "hash": "80ae25df8afa0fef",
+      "properties": [
+        {
+          "id": "U1",
+          "says": "the maker is unknown"
+        },
+        {
+          "id": "U2",
+          "says": "the maker is not named"
+        },
+        {
+          "id": "U3",
+          "says": "the maker was not guessed"
+        }
+      ],
+      "rule": "every property, and P7 (confirmed facts)",
+      "valid": true,
+      "passes": 6080,
+      "relations": {
+        "named-maker": "disjoint"
+      },
+      "predictions": [
+        {
+          "other": "named-maker",
+          "expected": "disjoint",
+          "found": "disjoint",
+          "confirmed": true
+        }
+      ],
+      "lean": [
+        "guessed_not_open"
+      ],
+      "sources": [
+        "EE-193"
+      ]
+    },
+    {
+      "id": "named-maker",
+      "label": "Named maker",
+      "form": "compound",
+      "level": "maker",
+      "kind": "role",
+      "labels": {
+        "designation": "term",
+        "scope": "shared",
+        "origin": {
+          "kind": "narrowed"
+        },
+        "grade": "none"
+      },
+      "meaning": "The maker names a person or a role in the venture, is not the acting agent, and was not guessed.",
+      "status": "proposed",
+      "hash": "3bea8b92538a2c48",
+      "properties": [
+        {
+          "id": "N1",
+          "says": "the maker is named"
+        },
+        {
+          "id": "N2",
+          "says": "the name resolves to a person or a role"
+        },
+        {
+          "id": "N3",
+          "says": "the maker is not the acting agent"
+        },
+        {
+          "id": "N4",
+          "says": "the maker was not guessed"
+        },
+        {
+          "id": "N5",
+          "says": "the maker is not unknown"
+        }
+      ],
+      "rule": "every property, and P7 (confirmed facts)",
+      "valid": true,
+      "passes": 5086,
+      "relations": {
+        "open-maker": "disjoint"
+      },
+      "predictions": [
+        {
+          "other": "open-maker",
+          "expected": "disjoint",
+          "found": "disjoint",
+          "confirmed": true
+        }
+      ],
+      "lean": [
+        "guessed_not_named",
+        "open_disjoint_named"
+      ],
+      "sources": [
+        "EE-193"
+      ]
+    },
+    {
+      "id": "org-link",
+      "label": "Org link",
+      "form": "compound",
+      "level": "org",
+      "kind": "role",
+      "labels": {
+        "designation": "term",
+        "scope": "shared",
+        "origin": {
+          "kind": "narrowed"
+        },
+        "grade": "convention"
+      },
+      "meaning": "reports_to is absent or null, or both ends are known, and the link is not a cycle.",
+      "status": "proposed",
+      "hash": "09dc6f9586d34f0d",
+      "properties": [
+        {
+          "id": "O1",
+          "says": "absent, or both ends known"
+        },
+        {
+          "id": "O2",
+          "says": "not a cycle"
+        }
+      ],
+      "rule": "every property, and P7 (confirmed facts)",
+      "valid": true,
+      "passes": 12250,
+      "relations": {},
+      "predictions": [],
+      "lean": [
+        "cycle_not_org_link"
+      ],
+      "sources": [
+        "EE-193"
+      ]
+    },
+    {
+      "id": "known-join",
+      "label": "Known join",
+      "form": "compound",
+      "level": "join",
+      "kind": "role",
+      "labels": {
+        "designation": "term",
+        "scope": "shared",
+        "origin": {
+          "kind": "narrowed"
+        },
+        "grade": "none"
+      },
+      "meaning": "The join date is unknown, or it was supplied with a source and was not the run date.",
+      "status": "proposed",
+      "hash": "e8a3039f0783734a",
+      "properties": [
+        {
+          "id": "J1",
+          "says": "unknown, or a date with a source"
+        },
+        {
+          "id": "J2",
+          "says": "not the run date guessed in"
+        }
+      ],
+      "rule": "every property, and P7 (confirmed facts)",
+      "valid": true,
+      "passes": 13900,
+      "relations": {},
+      "predictions": [],
+      "lean": [
+        "guessed_not_known_join"
+      ],
+      "sources": [
+        "EE-193"
+      ]
+    },
+    {
+      "id": "workspace-owner",
+      "label": "Workspace owner",
+      "form": "compound",
+      "level": "seat",
+      "kind": "role",
+      "labels": {
+        "designation": "term",
+        "scope": "shared",
+        "origin": {
+          "kind": "narrowed"
+        },
+        "grade": "none"
+      },
+      "meaning": "The workspace owner is the writing actor's principal, or unknown. The named subject is not the owner.",
+      "status": "proposed",
+      "hash": "ed47a920fc77ec90",
+      "properties": [
+        {
+          "id": "W1",
+          "says": "unknown or the principal"
+        },
+        {
+          "id": "W2",
+          "says": "not the named subject"
+        }
+      ],
+      "rule": "every property, and P7 (confirmed facts)",
+      "valid": true,
+      "passes": 14325,
+      "relations": {},
+      "predictions": [],
+      "lean": [
+        "subject_not_workspace_owner"
+      ],
+      "sources": [
+        "EE-193"
       ]
     },
     {

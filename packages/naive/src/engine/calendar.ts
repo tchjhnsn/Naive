@@ -32,13 +32,14 @@ const write = (f: string, o: unknown) => writeFileSync(f, JSON.stringify(o, null
 const stamp = () => now().toISOString().replace(/\.\d+Z$/, "Z");
 
 /** Make the calendar folder and the default calendar, if they are not there yet. Returns the calendar file. */
-export function initCalendar(root: string, { owner = "founder", id = DEFAULT_CALENDAR, name = "Venture" }: { owner?: string; id?: string; name?: string } = {}): string {
+export function initCalendar(root: string, { owner, id = DEFAULT_CALENDAR, name = "Venture" }: { owner?: string | null; id?: string; name?: string } = {}): string {
+  const who = owner === undefined ? "founder" : owner;
   mkdirSync(join(root, CALENDAR_DIR, "calendars"), { recursive: true });
   mkdirSync(join(root, CALENDAR_DIR, "events"), { recursive: true });
   const ev = join(root, CALENDAR_DIR, "events", ".gitkeep");
   if (!readdirSync(join(root, CALENDAR_DIR, "events")).length) writeFileSync(ev, "");
   const f = join(root, CALENDAR_DIR, "calendars", `${id}.json`);
-  if (!existsSync(f)) write(f, { id, name, owner, members: [owner], visibility: "workspace", created: stamp() });
+  if (!existsSync(f)) write(f, { id, name, owner: who, members: who === null ? [] : [who], visibility: "workspace", created: stamp() });
   return f;
 }
 

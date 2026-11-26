@@ -3,6 +3,7 @@
 
 import type { Term } from "./engine.ts";
 import type { Arrangement, Authorship, CitationFacts, Conduct, Detector, Encounter, EvalPlan, Experiment, HeldOutFacts, Hierarchy, LabelFacts, LinkGraph, Membership, PersonLabelFacts, Reception, Relationship, Settlement, SourceFacts, Trial } from "./levels.ts";
+import { knownJoin, namedMaker, openMaker, orgLink, workspaceOwner } from "./makers.ts";
 import { known, mayBeNew, RELATIONS, relationTable, type RelationName } from "./relations.ts";
 
 // The four labels every term carries (N-051 to N-055, docs/design/TERM_LABELS_2026-11-02.md). They sit on the term,
@@ -581,7 +582,7 @@ export const faithfulAuthor: Term<Authorship> = {
 export const observedVenture: Term<Conduct> = {
   id: "observed-venture", form: "compound", label: "Observed venture", level: "conduct", kind: "role",
   labels: sharedTerm("narrowed", "none"),
-  meaning: "A venture agents are modeling. It is observed, and it is not being run.",
+  meaning: "An outside-in model of a company, built from public information. Its mode is observed, and it is not being run.",
   props: [
     { id: "C1", says: "observed", check: (f) => f.observed },
     { id: "C2", says: "not run", check: (f) => !f.run },
@@ -745,4 +746,4 @@ export const pcfCitation: Term<CitationFacts> = {
   lean: ["citation_needs_element"],
 };
 
-export const TERMS = [founder, coFounder, earlyEmployee, mentor, coach, friend, unearnedCandour, thresholdGuardian, phaseGate, layer, area, topCategory, typedLink, detector, trial, hit, miss, falseAlarm, correctRejection, signal, listener, reception, salientReception, noise, experiment, keptExperiment, discardedExperiment, evalPlan, settledRecord, faithfulAuthor, observedVenture, runVenture, sourcedRecord, estimatedRecord, syntheticRecord, goldRecord, allowedSource, heldOutItem, personLabel, pcfCitation];
+export const TERMS = [founder, coFounder, earlyEmployee, mentor, coach, friend, unearnedCandour, thresholdGuardian, phaseGate, layer, area, topCategory, typedLink, detector, trial, hit, miss, falseAlarm, correctRejection, signal, listener, reception, salientReception, noise, experiment, keptExperiment, discardedExperiment, evalPlan, settledRecord, faithfulAuthor, observedVenture, runVenture, openMaker, namedMaker, orgLink, knownJoin, workspaceOwner, sourcedRecord, estimatedRecord, syntheticRecord, goldRecord, allowedSource, heldOutItem, personLabel, pcfCitation];

@@ -14,14 +14,14 @@ import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { freeze, passSet, relation, run, validTest, type Base, type Relation, type Term } from "./engine.ts";
 import { arrangementFixtures, type Fixture } from "./fixtures.ts";
-import { arrangementCases, authorshipCases, citationCases, conductCases, dataCases, detectorCases, encounterCases, evalPlanCases, experimentCases, hierarchyCases, linkCases, membershipCases, receptionCases, relationshipCases, settlementCases, sourceCases, trialCases } from "./levels.ts";
+import { arrangementCases, authorshipCases, citationCases, conductCases, dataCases, detectorCases, encounterCases, evalPlanCases, experimentCases, hierarchyCases, joinCases, linkCases, makerCases, membershipCases, orgCases, receptionCases, relationshipCases, seatCases, settlementCases, sourceCases, trialCases } from "./levels.ts";
 import { labelProblems, TERMS } from "./terms.ts";
 
 const here = new URL(".", import.meta.url).pathname;
 const repo = join(here, "../../../..");
 const out = join(here, "admitted.json");
 
-const CASES: Record<string, Base[]> = { membership: membershipCases(), relationship: relationshipCases(), encounter: encounterCases(), arrangement: arrangementCases(), hierarchy: hierarchyCases(), link: linkCases(), detector: detectorCases(), trial: trialCases(), reception: receptionCases(), experiment: experimentCases(), plan: evalPlanCases(), settlement: settlementCases(), authorship: authorshipCases(), conduct: conductCases(), data: dataCases(), source: sourceCases(), citation: citationCases() };
+const CASES: Record<string, Base[]> = { membership: membershipCases(), relationship: relationshipCases(), encounter: encounterCases(), arrangement: arrangementCases(), hierarchy: hierarchyCases(), link: linkCases(), detector: detectorCases(), trial: trialCases(), reception: receptionCases(), experiment: experimentCases(), plan: evalPlanCases(), settlement: settlementCases(), authorship: authorshipCases(), conduct: conductCases(), maker: makerCases(), org: orgCases(), join: joinCases(), seat: seatCases(), data: dataCases(), source: sourceCases(), citation: citationCases() };
 const FIXTURES: Record<string, Fixture<Base>[]> = { arrangement: arrangementFixtures(repo) };
 
 /** The catalog's scopes. A catalog that cannot be read throws, so admission fails closed. */
