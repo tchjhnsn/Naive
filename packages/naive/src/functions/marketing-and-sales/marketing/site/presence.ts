@@ -23,6 +23,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { ventureFile } from "../../../../core/venture-paths.ts";
+import { icpProfiles } from "../../../../engine/foundation.ts";
 import type { SitePresence, Venture } from "../../../../records/types/records.d.ts";
 
 /** A prominence level: where on the site an item sits. */
@@ -78,9 +79,9 @@ const r2 = (x: number) => Math.round(x * 100) / 100;
 /** The venture's facts: flags the founder gave, else what its ICP record says about who it courts. */
 export function factsOf(dir: string | null | undefined, flags: Record<string, unknown> = {}) {
   const f: Facts = { raising: false, hiring: false, contributors: false };
-  const icpFile = dir && join(ventureFile(dir, "purpose/icp.json"));
-  if (icpFile && existsSync(icpFile)) {
-    const said = JSON.stringify(load(icpFile)).toLowerCase();
+  const profiles = dir ? icpProfiles(dir) : [];
+  if (profiles.length) {
+    const said = JSON.stringify(profiles).toLowerCase();
     if (/investor|angel|\bvc\b/.test(said)) f.raising = true;
     if (/candidate|hire|recruit/.test(said)) f.hiring = true;
     if (/contributor|open source|volunteer/.test(said)) f.contributors = true;
@@ -101,8 +102,7 @@ export function icpOf(dir: string | null | undefined, site: Site | null | undefi
   const who = ok.filter((p) => /customer|solution|who|industr|use-case|about|for-/i.test(p.path));
   const says = [...new Set([home, ...who].filter((p): p is SitePage => Boolean(p)).flatMap((p) => (p.text ?? "").match(SAYS) ?? []).map((x) => x.trim()))].slice(0, 8);
   const opening = (home?.text ?? "").slice(0, 500);
-  const icpFile = dir && join(ventureFile(dir, "purpose/icp.json"));
-  const stated = icpFile && existsSync(icpFile) ? ((load(icpFile) as { profiles?: { who?: string; description?: string; name?: string }[] }).profiles ?? []).map((p) => p.who ?? p.description ?? p.name).filter((x): x is string => Boolean(x)) : null;
+  const stated = dir ? (icpProfiles(dir) as { who?: string; description?: string; name?: string }[]).map((p) => p.who ?? p.description ?? p.name).filter((x): x is string => Boolean(x)) : null;
   return { text: [says.join(" | "), opening].filter(Boolean).join(" || "), source: says.length ? "site" : "inferred", says,
     cite: says.length ? `what the site says about who it is for (${says.length} phrase${says.length > 1 ? "s" : ""}), with the home page's opening` : "the home page's opening text (inferred: the site does not say outright who it is for)",
     ...(stated?.length ? { stated } : {}) };
@@ -288,11 +288,11 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     const answers = answersFile ? ((load(answersFile) as { answers?: JevAnswers }).answers ?? load(answersFile)) as JevAnswers : null;
     const facts = factsOf(dir, Object.fromEntries(["raising", "hiring", "contributors"].filter(has).map((k) => [k, true])));
     const r = score(site, { answers, facts, icp: icpOf(dir, site), venture: dir ? (load(join(dir, "venture.json")) as Venture).id : null });
-    if (dir) { mkdirSync(join(dir, dirname(PRESENCE)), { recursive: true }); writeFileSync(ventureFile(dir, PRESENCE), JSON.stringify(r, null, 2) + "\n"); }
+    if (dir) { mkdirSync(dirname(ventureFile(dir, PRESENCE)), { recursive: true }); writeFileSync(ventureFile(dir, PRESENCE), JSON.stringify(r, null, 2) + "\n"); }
     console.log(JSON.stringify(r, null, 2));
   } else if (a && existsSync(join(a, "venture.json"))) {
-    if (!existsSync(join(a, PRESENCE))) { console.error(`${PRESENCE} does not exist yet: read the site first (node packages/naive/src/interfaces/harness/site.ts <url> --venture <dir>)`); process.exit(1); }
-    const r = load(join(a, PRESENCE)) as SitePresence;
+    if (!existsSync(ventureFile(a, PRESENCE))) { console.error(`${PRESENCE} does not exist yet: read the site first (node packages/naive/src/interfaces/harness/site.ts <url> --venture <dir>)`); process.exit(1); }
+    const r = load(ventureFile(a, PRESENCE)) as SitePresence;
     if (has("json")) console.log(JSON.stringify(r, null, 2));
     else {
       console.log(`${r.site}: site presence ${r.score}/100 (${r.judged_by}); customers: ${r.icp.types.map((t) => t.label).join(", ")} (ICP ${r.icp.source})`);
