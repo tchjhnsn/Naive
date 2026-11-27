@@ -15,7 +15,7 @@ The function's purpose: Decide what to build for whom, check each risk before bu
 
 ## What you own
 
-Writes: product cards (`product/*`) bugs (`product/bugs/*`) and capabilities with their owning agents (`product/capabilities/*`), plus `decisions/*` to raise a question and `operations/handoff/*` for progress and evidence on handoffs addressed to you.
+Writes: product cards (`product/*`), bugs (`product/bugs/*`) and capabilities with their owning agents (`product/capabilities/*`), plus `decisions/*` to raise a question and `operations/handoff/*` for progress and evidence on handoffs addressed to you.
 
 Reads: every record, the Product Anatomy inputs and answers (`product/anatomy`, `product/anatomy-answers`) included. No route writes those, so neither do you: the framework in `frameworks/product-anatomy/` produces them.
 
