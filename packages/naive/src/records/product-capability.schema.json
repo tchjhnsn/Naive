@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "product-capability.schema.json",
   "title": "Product capability",
-  "description": "One capability of a product, or a category that groups capabilities, at <venture>/product/capabilities/<id>.json (EE-224). Capabilities form a tree under the products function: a category's parent is another category or null (it sits directly under the products function), and a capability always has a category as its parent. Each names the agent role that owns it, the one that keeps its words and its site or docs containers current. A capability is live, building or retired, and nothing under a retired category is live or building (node packages/naive/src/checks/check-ventures.ts).",
+  "description": "One capability of a product, or a category that groups capabilities, at <venture>/product/capabilities/<id>.json (EE-224). Capabilities form a tree under the products function: a category's parent is another category or null (it sits directly under the products function), and a capability always has a category as its parent. Each names the agent role that owns it, the one that keeps its words and its site or docs containers current. A capability is live, building or retired, and nothing under a retired category is live or building (node packages/naive/src/checks/check-ventures.ts). A feature report (naive features, packages/naive/src/engine/feature-report.ts, EE-228) reads it with the records that name it.",
   "type": "object",
   "required": ["id", "name", "product", "kind", "parent", "owner", "status"],
   "additionalProperties": false,
@@ -17,7 +17,25 @@
     "status": { "enum": ["live", "building", "retired"] },
     "summary": { "type": "string", "description": "What it does, in one or two plain sentences" },
     "since": { "type": "string", "format": "date", "description": "When it reached its status" },
-    "note": { "type": "string" }
+    "note": { "type": "string" },
+    "goals": { "type": "array", "items": { "type": "string", "pattern": "^[a-z0-9-]+(/[a-z0-9-]+)?$" }, "description": "The goals it serves, each a goal id in foundation/goals or goal/measure for one measure of it (EE-228). The feature report reads each goal's status from its record" },
+    "requirements": { "type": "array", "items": { "type": "string", "pattern": "^[a-z0-9-]+$" }, "description": "The requirements it meets, each a requirement id in foundation/requirements (EE-228)" },
+    "rice": {
+      "type": "object",
+      "required": ["reach", "impact", "confidence", "effort", "set_by", "at"],
+      "additionalProperties": false,
+      "description": "A person's RICE inputs for it (Intercom's method): the score is reach times impact times confidence over effort, computed by the feature report and never stored (EE-228). Naive ships no value: each is the venture's own estimate",
+      "properties": {
+        "reach": { "type": "number", "minimum": 0, "description": "How many people or events it reaches in one period" },
+        "reach_unit": { "type": "string", "description": "What reach counts, for example customers per quarter" },
+        "impact": { "enum": [0.25, 0.5, 1, 2, 3], "description": "Intercom's scale: 3 massive, 2 high, 1 medium, 0.5 low, 0.25 minimal" },
+        "confidence": { "type": "number", "minimum": 0, "maximum": 1, "description": "How sure the estimates are, as a share: 1 is 100%" },
+        "effort": { "type": "number", "exclusiveMinimum": 0, "description": "Work to build it, in person-months" },
+        "set_by": { "type": "string", "minLength": 1, "description": "The person who set these inputs" },
+        "at": { "type": "string", "format": "date", "description": "When they were set" },
+        "note": { "type": "string" }
+      }
+    }
   },
   "allOf": [
     { "if": { "properties": { "kind": { "const": "capability" } } }, "then": { "properties": { "parent": { "type": "string" } } } }

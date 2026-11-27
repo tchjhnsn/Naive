@@ -23,6 +23,8 @@ import { readJson, VentureFs } from "../core/effect/fs.ts";
 import { runMain } from "../core/effect/run.ts";
 import { ventureFile } from "../core/venture-paths.ts";
 import { artifactPath, catalog, climbTo, kind, outputPath, prerequisites, rung, format as formatOf, renderMarkdown, type Requires } from "./documents.ts";
+import { decisionFiles } from "./decisions.ts";
+import { gatherFacts, judge, requirementsIn } from "./prerequisites.ts";
 import type { Artifact, DocumentCatalog } from "../records/types/records.d.ts";
 
 /** What a render produced, or what stands in its way. */
@@ -51,7 +53,7 @@ const readSection = (venture: string, from: string) => Effect.gen(function* () {
  * The requirements of a rung that this venture does not meet yet, each as one line. `below` is the artifact record of
  * the rung below, which must exist and carry a person's approved_by; every other required record need only be there.
  */
-const unmet = (venture: string, below: string | null, needs: Requires) => Effect.gen(function* () {
+const unmet = (venture: string, kindId: string, below: string | null, needs: Requires) => Effect.gen(function* () {
   const fs = yield* VentureFs;
   const out: string[] = [];
   for (const path of needs.records) {
@@ -64,8 +66,24 @@ const unmet = (venture: string, below: string | null, needs: Requires) => Effect
     if (typeof (body as Artifact | null)?.approved_by !== "string")
       out.push(`${path} has no approved_by: a person approves the rung below before this one is built`);
   }
-  for (const m of needs.meetings) out.push(`the meeting ${m} has not happened (prerequisites read it, EE-217)`);
-  for (const d of needs.decisions) out.push(`a decision of class ${d}, decided by a person, is needed first`);
+  // Meetings are judged as every workflow's are (EE-217): closed with the goal reached, or it blocks.
+  if (needs.meetings.length) {
+    const reqs = requirementsIn({ meetings: needs.meetings });
+    for (const m of judge(reqs, yield* gatherFacts(venture, reqs)).missing) out.push(m.why);
+  }
+  // A decision is required by class: a decided decision of that class that names one of this document's artifacts.
+  // A decision about another document unlocks nothing here, and a file that cannot be read counts as not decided.
+  if (needs.decisions.length) {
+    const mine = `artifacts/${kindId}-`;
+    const decided = new Set<string>();
+    const files = yield* Effect.orElseSucceed(Effect.try(() => decisionFiles(venture)), () => [] as string[]);
+    for (const f of files) {
+      const d = (yield* readJson(ventureFile(venture, f)).pipe(Effect.orElseSucceed(() => null))) as { status?: string; class?: string; applies_to?: { file?: string }[] } | null;
+      if (d?.status === "decided" && typeof d.class === "string" && (d.applies_to ?? []).some((t) => t?.file?.startsWith(mine))) decided.add(d.class);
+    }
+    for (const d of needs.decisions) if (!decided.has(d))
+      out.push(`no decided decision of class ${d} names an artifact of ${kindId} (applies_to ${mine}...): raise it, and a person decides it`);
+  }
   return out;
 });
 
@@ -84,7 +102,7 @@ export const render = (venture: string, kindId: string, want: string, { now = ne
       return yield* Effect.fail(new Refused({ rule: "rung-above-kind", message: `${k.title} does not climb to ${r.id}`, hint: `${k.id} stops at ${k.highest_rung}` }));
 
     const below = climbTo(c, r.id).at(-2);
-    const blocked = yield* unmet(venture, below ? artifactPath(k.id, below.id) : null, prerequisites(c, k.id, r.id));
+    const blocked = yield* unmet(venture, k.id, below ? artifactPath(k.id, below.id) : null, prerequisites(c, k.id, r.id));
     if (blocked.length) return yield* Effect.fail(new Refused({ rule: "ladder-order", message: `${k.title} cannot be built as ${want} yet: ${blocked.join("; ")}`, hint: `${c.ladder.note} Render the rung below first with naive render ${k.id}.` }));
 
     // Only the reading copy is rendered here. Every other format is the harness's, so this prints its instructions.
