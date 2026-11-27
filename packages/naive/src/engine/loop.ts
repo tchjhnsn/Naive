@@ -20,7 +20,8 @@
 // A workflow whose last run failed is not started again on the loop's own word, in any mode but manual: the loop
 // asks first. A tick holds a lock file, so two loops do not start the same workflow.
 //
-//   node packages/naive/src/engine/loop.ts <venture dir> [plan] [--at <iso>] [--json]   what a tick would do; writes nothing
+//   node packages/naive/src/engine/loop.ts <venture dir> [plan] [--at <iso>] [--json]   what a tick would do, ending with
+//                                                                                       how much skipped work waits; writes nothing
 //   node packages/naive/src/engine/loop.ts <venture dir> tick [--max <n>] [--at <iso>] [--json]
 //   node packages/naive/src/engine/loop.ts <venture dir> watch [--every <duration>] [--max <n>]
 //   node packages/naive/src/engine/loop.ts <venture dir> mode [<manual|ask|auto> [--function <id> | --workflow <function>/<workflow>] --by <person>]
@@ -43,6 +44,7 @@ import { dueFor, recordRun, workflowsOf } from "./due.ts";
 import type { CoveringBox, DueEntry } from "./due.ts";
 import { CONFIG, readConfig, writeConfig } from "./naive-config.ts";
 import { functionsOf } from "./research-programs.ts";
+import { skippedFor } from "./skipped.ts";
 
 export const MODES = ["manual", "ask", "auto"] as const;
 export type LoopMode = typeof MODES[number];
@@ -253,9 +255,14 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     const now = new Date(at).toISOString();
     if (cmd === "plan") {
       const steps = yield* planFor(dir, now);
-      if (json) console.log(JSON.stringify({ at: now, steps }, null, 2));
-      else if (!steps.length) console.log("Nothing is due.");
-      else for (const s of steps) console.log(line(s));
+      // Work the loop passed over is not due, so plan ends by naming it (EE-213): the loop never acts on it.
+      const left = yield* skippedFor(dir, now);
+      if (json) console.log(JSON.stringify({ at: now, steps, skipped: left.length }, null, 2));
+      else {
+        if (!steps.length) console.log("Nothing is due.");
+        else for (const s of steps) console.log(line(s));
+        if (left.length) console.log(`${"skipped".padEnd(15)} ${String(left.length).padEnd(44)} ${left.length === 1 ? "one item" : `${left.length} items`} of skipped work waiting: naive skipped lists them in hierarchical order.`);
+      }
     } else if (cmd === "tick") {
       const done = yield* tick(dir, now, { max });
       if (json) console.log(JSON.stringify({ at: now, results: done }, null, 2));

@@ -210,6 +210,13 @@ export type Adapter = {
   verify?: string[];
   /** Where the harness documents what it reads */
   sources: string[];
+  /** Which of this harness's own tools renders each document format the catalog leaves to the harness (EE-218). The catalog (packages/naive/src/functions/documents.json) names no vendor, so the mapping lives here, one entry per format, and a format with no entry is left to whatever the agent has. Naive renders Markdown itself and never delegates it. */
+  documents?: { [K in "pdf" | "docx" | "pptx" | "xlsx" | "html"]?: {
+      /** The skill, tool or command the agent loads for this format in this harness. */
+      use: string;
+      /** What to watch for, in one plain sentence. */
+      how?: string;
+    } };
   note?: string;
 };
 
@@ -320,6 +327,12 @@ export type Artifact = {
   action?: string;
   /** Who it is for: the founder, the team, investors, the public */
   audience?: string;
+  /** The document kind in packages/naive/src/functions/documents.json this was rendered as (EE-218). It ties the artifact to its catalog entry, so packages/naive/src/checks/check-documents.ts can tell which rung of the ladder it sits on. */
+  document_kind?: string;
+  /** The format it was rendered in (EE-218). The catalog gives each format a rung, and the ladder is fail closed: a rung is built only once the rung below it is a live artifact a person approved. */
+  format?: "md" | "pdf" | "docx" | "pptx" | "html" | "site";
+  /** The person who read this rung and approved building the one above it (EE-218). Never an agent. Publishing has its own approver, in governance/publications.json. */
+  approved_by?: string;
   /** It has gone out to its audience; a person decides that */
   published?: boolean;
   /**
@@ -1497,6 +1510,93 @@ export type DetectorLine = {
   set_by: string;
   /** The decision that set or accepted it, if any. */
   decision?: string;
+};
+
+/** Which documents a venture makes, in which format, from which records, and in what order (EE-218), at packages/naive/src/functions/documents.json. A record is the source of truth and a document is an artifact rendered from records, never the record. The catalog is opinionated: each format says what it is for and the rules say when slides beat a printed document, so an agent does not guess. The ladder is the order every document climbs, a printable reading copy a person approved before any interactive page and the page before the live site; each rung names the extra records and decision classes it needs, in the shape packages/naive/src/engine/prerequisites.ts reads (EE-217). packages/naive/src/checks/check-documents.ts checks what this schema cannot: one root rung, no cycle, every kind's rungs reachable, every format and function known, every section's record path in the data model, and a venture's own document artifacts climbing in order. */
+export type DocumentCatalog = {
+  version: string;
+  note?: string;
+  /** The formats a document may be rendered in. A format is a way of reading, not a tool: the tool that writes it is the renderer. */
+  formats: {
+    id: "md" | "pdf" | "docx" | "pptx" | "html" | "site";
+    name: string;
+    /** The ladder rung this format sits on. */
+    rung: string;
+    /** How a person takes it in: alone and in order, on a screen, or in a room with a speaker. */
+    reads: string;
+    /** True when a person can print it and carry it into a meeting. */
+    prints?: boolean;
+    /** naive: naive render writes it in house, so the framework carries no heavy dependency. harness: the agent's own harness writes it from the reading copy, and the harness adapter (packages/naive/src/interfaces/adapters/) names the skill, so the catalog names no vendor. site-build: the venture's site build and the publishing gate (EE-025). */
+    renderer: "naive" | "harness" | "site-build";
+    /** Why this format exists in the catalog, in one plain sentence. */
+    why: string;
+  }[];
+  /** The opinionated part: how to choose a format. Each rule asks one question about the reader and names the format it points to. A rule never decides alone; a person may override it, and the override is a decision. */
+  rules: {
+    id: string;
+    /** The reader's situation, in one plain sentence. */
+    when: string;
+    then: ("md" | "pdf" | "docx" | "pptx" | "html" | "site")[];
+    /** Formats this situation rules out. */
+    not?: ("md" | "pdf" | "docx" | "pptx" | "html" | "site")[];
+    why: string;
+  }[];
+  /** The order a document climbs. Fail closed: a rung is built only once the rung it comes after exists as a live artifact a person approved. */
+  ladder: {
+    note: string;
+    rungs: {
+      id: string;
+      /** The rung below this one, or null for the first rung. Exactly one rung has null. */
+      after: string | null;
+      what: string;
+      formats: ("md" | "pdf" | "docx" | "pptx" | "html" | "site")[];
+      /** Only a person approves a rung. An agent drafts and renders. */
+      approved_by: "person";
+      /** What this rung needs beyond the rung below it, in the shape packages/naive/src/engine/prerequisites.ts reads (EE-217). The rung below is the ladder's own requirement and is not repeated here. */
+      requires: {
+        /** Logical record paths or route patterns that must be live. */
+        records?: string[];
+        /** Meeting kinds that must have happened. */
+        meetings?: string[];
+        /** Decision classes that must be decided by a person. */
+        decisions?: string[];
+      };
+    }[];
+  };
+  /** The documents this framework is opinionated about. A kind a venture wants and the catalog lacks is a pull request, not a local invention. */
+  kinds: {
+    id: string;
+    title: string;
+    /** The function in packages/naive/src/functions/departments.json whose agent drafts it. */
+    function: string;
+    /** What the reader can do once they have read it. */
+    purpose: string;
+    audience: ("founder" | "team" | "board" | "investor" | "customer" | "partner" | "counsel" | "public")[];
+    /** The artifact kind the rendered document is, as artifact.schema.json names it. */
+    artifact_kind: "document" | "deck" | "dashboard" | "design" | "page" | "file" | "site";
+    /** The top rung this kind climbs to. Most kinds stop at the reading copy. */
+    highest_rung: string;
+    formats: ("md" | "pdf" | "docx" | "pptx" | "html" | "site")[];
+    /** Why these formats and not the others, in one plain sentence. */
+    why_format: string;
+    /** The role that approves it, when it is not the founder. A person either way. */
+    approves?: string;
+    /** An unvalidated prior: about how many words belong on one page or one slide of this kind. A venture overrides it in naive.config.json. */
+    words_per_page?: number;
+    /** An unvalidated prior: about how many pages or slides this kind runs to. */
+    pages?: number;
+    /** The reading copy's sections, in order. Each names the record it reads, so every claim in the rendered document cites a record. */
+    sections: {
+      id: string;
+      title: string;
+      /** The logical path of the record it reads, such as foundation/problem.json. A path with * reads every record it matches, one block each. */
+      from: string;
+      /** A dotted path to a string or a list of strings in that record. Without it the section names the record and leaves the words to the writer. */
+      field?: string;
+      /** True when a hole is left out instead of shown: a missing record, or a record with nothing in the field, leaves the section out rather than printing what is not recorded. */
+      optional?: boolean;
+    }[];
+  }[];
 };
 
 /** The accountable owner a venture names for an element of APQC's Process Classification Framework (EE-187): a category, process group, process, activity or task in packages/naive/src/functions/pcf.json. An element with no entry takes its parent's owner, and a category with none is owned by its function's agent. The owner is accountable, the one who answers for the element; who performs an activity is in operations/activity-assignments.json. The file is operations/element-owners.json, and packages/naive/src/engine/element-owners.ts resolves it. */
@@ -3493,6 +3593,44 @@ export type MarketingDesignSystem = {
 /** The inputs the choice rests on, by key from marketing/design-system/inputs: mission, problem, icp:<id>, alignment:<id>, market:<product>, founder:<id>, competitor:<name> */
 export type MarketingDesignSystemFrom = string[];
 
+/** One element of the words a public page shows, at marketing/message/<id>.json (EE-216): the tagline, a headline, a subhead, the value proposition, a call to action with where it leads, a proof point, an objection answered, the contact line. The hierarchy is the standard one, positioning first and proof last, after April Dunford: positioning says what the venture is and whom it is for, the value propositions say what each audience gets, and the proof points stand behind them. Each element is its own record, so a person approves the words one element at a time, and each names the records its words come from (cites), including the ones still missing, so no page claims what no record holds. The page is built from these records and the sitemap, never the other way round (naive copy gaps). Version 0.x, unevaluated. */
+export type MarketingMessage = {
+  version: string;
+  venture?: string;
+  /** The file's name without .json. The element of a sitemap section is <page>-<item>, as the gap report names it (home-what, about-team); an element of the site's chrome keeps the chrome item's id (tagline). */
+  id: string;
+  /** Where the element sits in the messaging hierarchy. positioning is the one statement the rest agree with; a cta and the contact line carry a destination. */
+  kind: "positioning" | "tagline" | "headline" | "subhead" | "value-proposition" | "cta-primary" | "cta-secondary" | "proof-point" | "objection" | "body" | "footer" | "contact";
+  /** The words themselves, as a reader sees them. One element holds one piece of text, so a person approves or rejects it on its own. */
+  text: string;
+  /** What to call this element when a person is asked about it (Name and tagline, What to do next). */
+  label?: string;
+  /** The sitemap page this fills: a path in marketing/sitemap pages[].path, such as / or /about. Absent for the site's chrome, which every page shows. */
+  page?: string;
+  /** The sitemap section this fills (pages[].sections[].item, such as what or next-step), or a chrome item of the marketing matrix (tagline). */
+  item?: string;
+  /** Where a call to action or the contact line leads. none says plainly that there is nowhere to go yet, which is an answer a person may choose instead of inventing one. */
+  destination?: {
+    kind: "email" | "url" | "path" | "none";
+    /** The address, the link, or the path on the site. Absent when the kind is none. */
+    value?: string;
+    note?: string;
+  };
+  /** Where these words come from: at least one record, named even when it is missing, so the gap report can say what is still owed before the words are trusted. */
+  cites: {
+    /** A route or a venture-relative file: foundation/problem, foundation/icp.json, decisions/<id>.decision.json. */
+    record: string;
+    /** The field of that record these words rest on, such as statement. */
+    field?: string;
+    /** What this record contributes to the words, in one plain sentence. */
+    why?: string;
+  }[];
+  /** Whom the words are for: audiences of the marketing matrix, or ICP profile ids. */
+  audience?: string[];
+  /** Anything a person should know before approving these words, such as a claim that is not yet evidenced. */
+  note?: string;
+};
+
 /** The planned public site (EE-064): which information is shown where, how (the MDX component), when and for whom, with the reasons, planned from the venture's records by packages/naive/src/functions/marketing-and-sales/marketing/site/plan.ts. A marketing record, part of the marketing package handed to engineering (EE-065). Version 0.x, unevaluated. */
 export type MarketingSitemap = {
   version: string;
@@ -3531,6 +3669,17 @@ export type MarketingSitemap = {
     type: string;
     level: "home" | "nav" | "linked" | "anywhere";
     sections: {
+      /** The words for this section, drafted in the record the marketing function owns before they become the MDX variant named in `variant`, which is where published copy lives (EE-214). The publish lint reads text here as it reads a page (packages/naive/src/engine/record-copy.ts), so a leak, an uncited number or a private name is caught in the draft. */
+      draft_copy?: {
+        /** The copy itself, in the marketing agent's own words: this is the section's site text */
+        text: string;
+        /** draft while it is being written, ready once it is written and waiting for a person, published once the variant carries it */
+        status: "draft" | "ready" | "published";
+        /** The records or URLs behind any number or customer claim in the text; the claims rule fails without one */
+        sources?: string[];
+        by?: string;
+        at?: string;
+      };
       item: string;
       label?: string;
       component: string;
@@ -3543,7 +3692,6 @@ export type MarketingSitemap = {
         [key: string]: unknown;
       };
       variant: string;
-      [key: string]: unknown;
     }[];
     [key: string]: unknown;
   }[];
@@ -3737,6 +3885,11 @@ export type NaiveConfig = {
       [key: string]: number;
     };
   };
+  /** The venture's own lines for the temporary specialists a function agent spawns (EE-213, packages/naive/src/engine/agents/specialist.ts, naive agent spawn). Naive's defaults are unvalidated priors in packages/naive/src/engine/specialists.json. */
+  specialists?: {
+    /** How long a specialist's reach lasts when the spawn names no ttl, as a number and a unit such as "2 hours". A spawn's own --ttl still wins */
+    default_ttl?: string;
+  };
   /** The venture's own lines for the activity catalog's proposal rules (EE-170, packages/naive/src/engine/activity-proposals.ts, naive activities). A rule left out keeps the catalog's lines. packages/naive/src/checks/check-config.ts holds each rule id to the catalog and each line to its scale's range. */
   activity_proposals?: {
     /** Per rule id in packages/naive/src/functions/activities.json proposal_rules: off, so the rule proposes nothing in this venture, or the venture's lines */
@@ -3871,7 +4024,12 @@ export type NaiveConfig = {
   /** The publish lint (packages/naive/src/engine/publish-lint.ts): each rule off, warn or error, the marks to flag, and findings a person waived */
   publish_lint?: {
     rules?: { [K in "copy-distance" | "leaks" | "brand" | "claims" | "marks" | "personal-data" | "secrets"]?: "off" | "warn" | "error" };
-    marks?: string[];
+    /** The names the marks rule flags, each matched case-insensitively on whole words. A string is another company's mark; an object may say private, a name the venture never makes public, which is an error whatever level the marks rule has. The function that writes the words adds its own in marketing/publish-terms.json (EE-214). */
+    marks?: (string | {
+      name: string;
+      private?: boolean;
+      why?: string;
+    })[];
     waived?: {
       rule: string;
       file?: string;
@@ -5229,6 +5387,23 @@ export type Publications = {
   }[];
 };
 
+/** The names the publish lint flags in public copy, owned by the function that writes the words (EE-214): marketing-and-sales. It holds names only, never severities and never waivers, so the role that owns the copy can tighten the gate on itself without reaching naive.config.json, which can loosen it. A mark is another company's name, matched case-insensitively and on whole words; a mark marked private is a name the venture never makes public, and it is an error whatever level naive.config.json gives the marks rule. Severities and waivers stay a prior the venture sets under publish_lint in naive.config.json. */
+export type PublishTerms = {
+  note?: string;
+  updated?: string;
+  /** The role or person that last wrote the list */
+  by?: string;
+  marks: {
+    /** The name to flag, matched case-insensitively on whole words */
+    name: string;
+    /** The venture never makes this name public: a line that carries it is an error, not a warning */
+    private?: boolean;
+    why?: string;
+    /** For a private name: what lifts it, such as the announcement */
+    until?: string;
+  }[];
+};
+
 /** One purchase order to a supplier, at supply-chain/purchase-orders/<id>.json (route supply-chain/purchase-orders/[id]), following APQC PCF 4.2.3 (order materials and services). A cross-border order names one of the eleven Incoterms 2020 rules and its named place, which decide who pays and carries the risk of each leg. The supply-chain function owns it, and only the supply-chain agent (role supply-chain-agent) or a person writes it. A purchase order commits money, so its writes carry decision class spend-money: an agent's write is held as a draft until a person accepts it, and sending it to the supplier is a person's act. */
 export type PurchaseOrder = {
   /** The order's id, the file name without .json, such as po-2026-001 */
@@ -5921,6 +6096,41 @@ export type SitePresence = {
     [key: string]: unknown;
   }[];
   [key: string]: unknown;
+};
+
+/** One temporary specialist a function agent spawned for one task (EE-213), at operations/specialists/<role>.json (route operations/specialist/[id]): its parent function agent, the task, the skills it may load, the write reach it was given and when it expires. The record is the reach: the router gives the role the globs here that its parent's own reach still covers, and nothing else, so a specialist can never be wider than its parent whatever this file says (reachRefusal in packages/naive/src/engine/agents/reach.ts). Once status is not live, or expires has passed, the reach is gone and every write by the role is refused. Written by naive agent spawn as the parent agent, or by a person revoking it; reach is not a decision about the venture, only the agent dividing work it may already do. */
+export type Specialist = {
+  /** The role id and the file name without .json: <parent function>-specialist-<slug>. It is what MENTURA_ACTOR_ID is set to */
+  id: string;
+  /** The function agent that spawned it, <function>-agent. A lead, a researcher and another specialist cannot spawn one */
+  parent: string;
+  /** The parent's function, an id in packages/naive/src/functions/departments.json */
+  function: string;
+  /** The one task it was spawned for, in the parent's words. Its brief names this and the parent */
+  task: string;
+  /** Skills from the parent function's module to load, by name. A skill the parent does not have is refused at the spawn */
+  skills?: string[];
+  /** The write globs it was given, each inside one of the parent's (functionWrites). The router intersects them with the parent's reach again on every write */
+  writes: string[];
+  /**
+   * @format date-time
+   */
+  spawned_at: string;
+  /** The acting role or person that spawned it: the parent agent, or a person */
+  spawned_by: string;
+  /**
+   * When the reach is gone, spawned_at plus the ttl. The default ttl is an unvalidated prior in packages/naive/src/engine/specialists.json, overridden under specialists in naive.config.json
+   * @format date-time
+   */
+  expires: string;
+  /** live: the reach stands until expires. finished: its run ended, so the reach is gone. revoked: a person ended it early */
+  status: "live" | "finished" | "revoked";
+  /**
+   * When its run ended or a person revoked it
+   * @format date-time
+   */
+  finished_at?: string;
+  note?: string;
 };
 
 /** One line of the spend register (lead agents design, "The spend register and the access matrix"): one paid service or recurring charge per record, at finance/spend/<id>.json (route finance/spend/[id]). The finance function owns it, and only the finance agent (role finance-agent) or a person writes it (writer function in packages/naive/src/records/data-model.json). Where each field is mastered is the access matrix: the source map's rules for spend-register (packages/naive/template/knowledge/sources.json), where the bank statement sync is the system of record for amount, currency and dates, finance owns status, and IT's tool record is the system of record for approval. The paying account is named by reference to a money record, never by a card or account number. */

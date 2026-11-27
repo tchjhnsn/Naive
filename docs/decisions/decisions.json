@@ -3063,6 +3063,176 @@
       ]
     },
     {
+      "id": "EE-213",
+      "date": "2026-11-26",
+      "status": "in-force",
+      "decision": "Work a venture passed over is kept, and a function agent may spawn a temporary specialist of itself. Skipped work is derived, never a record: `naive skipped` reads the run log and the shipped workflows and lists each occurrence a person skipped and each step the latest finished run that reported its steps left out, in the order APQC's framework gives, with what the item's element feeds downstream when the element graph can tell. A run reports what it finished with `naive due record --steps`, and a run that reports none says nothing about its steps. Nothing judges a step's `when`: it stays a sentence a person or the function's agent reads, so a consider step is listed with its block and is not required. `naive skipped handback` files one open decision asking the owning function agent to recommend do-now, defer or drop, and a person decides; the loop only names how many items wait and never acts on one. A specialist is a record at `operations/specialists/<role>.json` that `naive agent spawn` writes and runs through NAIVE_AGENT_CMD, and its reach is the globs of its record intersected with its parent's own reach, read fresh on every write, so a finished, revoked or expired specialist, or one whose record was widened by hand, is refused before the schema. A spawn needs no person, because the agent is dividing work it may already do and every write still meets the gate as the specialist's own role. The default ttl is an unvalidated prior in `packages/naive/src/engine/specialists.json` that a venture overrides with `specialists.default_ttl` in `naive.config.json`.",
+      "why": "Torian decided this on 2026-11-26: work should be walked in hierarchical order with a loop back to what was skipped, and an agent should be able to spawn a temporary specialist for a task its own skills do not cover. Keeping the ledger derived means nothing has to be kept in step with the run log, and intersecting a specialist's globs with its parent's at every write makes a wider reach structurally impossible rather than a rule someone must enforce.",
+      "related": [
+        "EE-124",
+        "EE-181",
+        "EE-182",
+        "EE-183",
+        "EE-188"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/skipped.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/agents/specialist.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/records/specialist.schema.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/specialists.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "record",
+          "target": "specialist",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
+      "id": "EE-216",
+      "date": "2026-11-26",
+      "status": "in-force",
+      "decision": "A public page's words are records before the page exists. Each element a page shows is its own marketing-message record at marketing/message/<id>.json (route marketing/message/[id], function marketing-and-sales, writer function, decision class public-commitment): the tagline, a headline, a subhead, a value proposition, a call to action with its destination, a proof point, an objection answered, the footer and the contact line, each with the words themselves and cites, the records they come from, so a call to action and a contact address finally have a record of their own, destination kind none saying honestly that a button leads nowhere yet. The element catalogue is data, not code: the chrome and the kind of each section's words sit in the marketing matrix's copy block, and the sitemap plans the sections. Need-now suggests the record type from Discovery, so a venture that shows itself to anyone can write its text before it has a brand or a validated solution. naive copy gaps names, element by element, which record holds the words and the state of every record upstream of it, missing, held, undecided or live, the ones only a person writes included, such as foundation/core. naive copy draft --propose files one open decision per missing or undecided element with two or three EE-211 candidates, each a whole record citing its sources and saying which are unsettled, drafted by the marketing and sales agent through the harness in NAIVE_AGENT_CMD, or the prompt is printed and the decision filed with the gap alone. Only a person chooses, and merge writes the record. The order is fixed by the site-copy workflow: gap report, the two paths, options, the founder's choice, the handoff to the builder, then design and the publish check. The copy gate (naive copy check, and stage 0 of the publish build) refuses a build while any element the sitemap plans has no record a person stands behind, and names each one. The founder may skip approval with naive copy one-shot --by <person>, recorded as a decided decision with their name, the time, their reason and the elements skipped, after which every build is marked unapproved; mentura reopen site-copy-one-shot takes it back. No agent ever chooses that path.",
+      "why": "Torian decided this on 2026-11-26, building Mentura's own marketing site: he wants the slogan and every other line of a page held as a record, options presented from the records they come from with the specific record named, and his pick asked for before anything is designed, because an agent that writes a page's words has made a public commitment on his behalf. The real run showed the gaps the framework had: foundation/core was empty and only he writes it, foundation/problem was missing, the ICP drafts were stale, and there was no record type for a call to action's label and destination or for a contact address. Brand voice and the validated solution start at Validation, too late for a Discovery page, so what a page needs is routable from Discovery. One-shot exists because it is his venture and his time, and it is named up front with what it costs so the choice is informed, never an agent's.",
+      "related": [
+        "EE-044",
+        "EE-211",
+        "EE-025",
+        "EE-099"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/records/marketing-message.schema.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/functions/marketing-and-sales/marketing/copy.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/functions/marketing-and-sales/workflows/site-copy.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/functions/marketing-and-sales/skills/site-copy/SKILL.md",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
+      "id": "EE-214",
+      "date": "2026-11-26",
+      "status": "in-force",
+      "decision": "Every word a venture publishes passes the publishing gate wherever it is held. The publish lint reads the copy a record holds as well as a page's prose: a marketing sitemap section's draft_copy, and every string under a field the visibility sidecar calls public. A sitemap section takes no field the schema does not name, so copy written into an invented field is refused by name instead of shipping unlinted. A mark is matched case-insensitively and on word boundaries, and a name the venture marks private is an error whatever its rule's severity; severities stay unvalidated priors the venture sets under publish_lint.rules in naive.config.json. The marketing and sales function writes its own marks in marketing/publish-terms.json, which holds names only and never severities or waivers, so the role that owns the words can tighten the gate and never loosen it. Code that reads a venture's config as a file resolves it through configFile in packages/naive/src/core/venture-paths.ts, so a structured venture's meta/naive.config.json is the copy that counts. A decision's unlock still holds an agent's edit of a live record: the lock fails closed, and a stale card is corrected by a person or by deciding. A handoff's inputs are looked for in the venture first, its roles are the one register in packages/naive/src/engine/agents/roles.ts (function agents and researchers included), and the check action of an item route gives a check in ID_CHECKS the item's id.",
+      "why": "Torian decided on 2026-11-26 that every word on the site must come from records and pass Naive's publishing gates and lint. A session publishing Mentura's marketing copy through Naive found each of these gaps open: copy in a record was never linted, a private name scored zero errors, a config written through the route was ignored, the role that owns the words could not set its own terms, and a writer-to-builder handoff could not pass its ready check.",
+      "related": [
+        "EE-058",
+        "EE-062",
+        "EE-064",
+        "EE-086",
+        "EE-124"
+      ],
+      "affects": [
+        {
+          "kind": "record",
+          "target": "publish-terms",
+          "expect": "exists"
+        },
+        {
+          "kind": "record",
+          "target": "marketing-sitemap.draft_copy",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/record-copy.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/agents/roles.ts",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
+      "id": "EE-218",
+      "date": "2026-11-26",
+      "status": "in-force",
+      "decision": "Documents are catalogued as data and built in a fail-closed order. packages/naive/src/functions/documents.json, record type document-catalog, holds the formats (md, pdf, docx, pptx, html, site) with how a person takes each one in and who renders it, the rules for choosing one (a person reading alone and in order takes a document and not slides; a person speaking to a room takes slides, one point a slide; Word only when the reader must edit the words; an interactive page only once the words are settled; public is a one-way door), the ladder, and the document kinds a venture makes: one-pager, memo, brief, meeting-pack, board-update, pitch-deck, spec and site-copy, each naming its function, purpose, audience, artifact kind, the highest rung it climbs, its formats with why those and not the others, and the sections it renders from, each section naming the record it reads. The ladder is one chain, each rung naming the rung it comes after: reading-copy (md, pdf, docx) first, then slides (pptx) or interactive (html), then live (site). A rung is built only once the rung below it exists as a live artifact a person approved, which is the ladder's own requirement, so a rung's requires holds only what it adds; live adds the publication policy and a decided public-commitment decision. requires is written in the shape EE-217's prerequisitesOf reads, records, meetings and decisions, and this decision adds the data and the step order, not the gating mechanism. Approval is a person writing approved_by on the artifact record (artifacts/<kind>-<rung>.json), with document_kind and format added to artifact.schema.json so a check can tell which rung an artifact sits on; there is no new decision class and no new approval mechanism. naive render <kind> writes the Markdown reading copy and its artifact record, every section citing the record and field it came from and every fact no record holds shown as a hole, never written in. Every other format prints what the harness must do instead of rendering, so Naive carries no document dependency; the catalog names no vendor and the harness adapter does, with claude-code.json naming Anthropic's pdf, docx, pptx and xlsx skills (Apache 2.0, adapted and not copied) and artifact-design for a page. check-documents.ts checks the catalog across files and refuses a venture's document that sits on a rung whose rung below is missing or unapproved. The writing-documents skill carries the ladder, the per-format table and the Claude Code section, and marketplace plugins that render through an outside service are skipped because a venture's records would leave the tenant.",
+      "why": "Torian decided this on 2026-11-26: before the website gets built, build HTML he can view and interact with, and before that an internal record a human would sit down and read and could print for a meeting. He asked the framework to be opinionated about which documents can be printed and presented, which records become decks and PDFs, when a PowerPoint beats a PDF, which tools make them, and which instructions each agent gets, with Claude Code instructions specifically, and to learn from the plugins that already exist rather than reinvent them. His standing rule decides the shape: a record is the source of truth and a document is a view rendered from records, never the record. The format rules and the word and page counts are unvalidated priors a venture overrides, and only a person approves a rung.",
+      "related": [
+        "EE-025",
+        "EE-030",
+        "EE-217"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/functions/documents.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/render-document.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/checks/check-documents.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/interfaces/skills/writing-documents/SKILL.md",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "record",
+          "target": "artifact.document_kind",
+          "expect": "exists"
+        },
+        {
+          "kind": "record",
+          "target": "artifact.approved_by",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
       "id": "EE-223",
       "date": "2026-11-26",
       "status": "in-force",

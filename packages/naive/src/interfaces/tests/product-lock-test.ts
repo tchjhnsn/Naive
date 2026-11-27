@@ -40,6 +40,16 @@ try {
   const after = await writeCard("lock", "kettle");
   expect("once it is decided, the card is no longer locked by it", after.locked_by !== "product-exists", after);
 
+  // An open unlock holds every agent write it names, a correction of a live card included: the lock fails closed, and
+  // a person corrects the card or decides (EE-058).
+  const edit = init("edit");
+  const person = await call({ venture: "edit", route: "product/kettle", action: "write", input: { id: "kettle", name: "Kettle", description: "A kettle, as first described" }, workspace: ws, actor: "person", actor_id: "Founder" }) as Answer;
+  expect("a person writes the first card while product-exists is open", person.ok, person);
+  const held2 = await writeCard("edit", "teapot");
+  expect("an agent's first card for another product still waits", !held2.ok && held2.locked_by === "product-exists", held2);
+  const corrected = await writeCard("edit", "kettle");
+  expect("an agent's correction of a live card waits too, until a person decides", !corrected.ok && corrected.locked_by === "product-exists", corrected);
+
   // A venture made before the fix: its decision still names the old route and folder, and still locks.
   const old = init("legacy");
   const f = ventureFile(old, "products/decisions/product.exists.decision.json");

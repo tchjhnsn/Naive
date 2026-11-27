@@ -1,0 +1,305 @@
+{
+  "version": "0.1.0",
+  "note": "The documents a venture makes (EE-218). A record is the source of truth; a document is an artifact rendered from records and never the record. The catalog is opinionated on purpose: the formats say what each one is for, the rules say when slides beat a printed document, the ladder says a printable reading copy a person approved comes before any interactive page and the page before the live site, and each kind names the records its sections read, so every claim in a rendered document cites a record. Checked by packages/naive/src/checks/check-documents.ts; rendered by packages/naive/src/engine/render-document.ts.",
+  "formats": [
+    {
+      "id": "md",
+      "name": "Markdown",
+      "rung": "reading-copy",
+      "reads": "alone and in order, on a screen or in a terminal",
+      "prints": true,
+      "renderer": "naive",
+      "why": "The reading copy every document starts as: plain text a person reads end to end, that diffs in git and that Naive renders in house with no dependency."
+    },
+    {
+      "id": "pdf",
+      "name": "PDF",
+      "rung": "reading-copy",
+      "reads": "alone and in order, on paper or on a screen, laid out the same everywhere",
+      "prints": true,
+      "renderer": "harness",
+      "why": "The reading copy a person prints and carries into a meeting, or sends to someone who must not change it."
+    },
+    {
+      "id": "docx",
+      "name": "Word document",
+      "rung": "reading-copy",
+      "reads": "alone and in order, with the reader editing as they go",
+      "prints": true,
+      "renderer": "harness",
+      "why": "Only when the reader must edit the words or the file goes into someone else's process, such as counsel marking up terms."
+    },
+    {
+      "id": "pptx",
+      "name": "Slide deck",
+      "rung": "slides",
+      "reads": "in a room, with a person speaking over it",
+      "prints": true,
+      "renderer": "harness",
+      "why": "A live talk, where the speaker carries the argument and each slide holds one point. Never a document with the words made smaller."
+    },
+    {
+      "id": "html",
+      "name": "Interactive page",
+      "rung": "interactive",
+      "reads": "on a screen, in whatever order the reader clicks",
+      "prints": false,
+      "renderer": "harness",
+      "why": "Only once the reading copy is approved: a page a person can click through, to try the layout and the interaction before anything is built."
+    },
+    {
+      "id": "site",
+      "name": "Live site",
+      "rung": "live",
+      "reads": "by anyone who finds it",
+      "prints": false,
+      "renderer": "site-build",
+      "why": "The published site. It is a one-way door in public, so it comes last and through the publishing gate (EE-025)."
+    }
+  ],
+  "rules": [
+    {
+      "id": "reading-before-looking",
+      "when": "Nothing has been written down yet and the work is about what the document says",
+      "then": ["md"],
+      "not": ["html", "site", "pptx"],
+      "why": "Words are the thing being decided. A page or a deck hides a weak argument behind layout, and a person cannot mark up a layout."
+    },
+    {
+      "id": "printed-for-a-meeting",
+      "when": "A person will read it before or during a meeting, alone and in order",
+      "then": ["md", "pdf"],
+      "not": ["pptx"],
+      "why": "A reader sets their own pace and goes back a paragraph. Slides read alone lose the speaker, which is most of their content."
+    },
+    {
+      "id": "spoken-in-a-room",
+      "when": "A person will speak over it to an audience, and the audience cannot read and listen at once",
+      "then": ["pptx"],
+      "why": "The speaker carries the argument; the slide holds the one point the room should be looking at while they say it."
+    },
+    {
+      "id": "deck-needs-a-reading-copy",
+      "when": "A deck is wanted",
+      "then": ["md", "pptx"],
+      "why": "Write the narrative as a reading copy first and have a person approve it. A deck built before the argument is settled is design work done twice."
+    },
+    {
+      "id": "editable-by-the-reader",
+      "when": "The reader must change the words, or their own process needs the file",
+      "then": ["docx"],
+      "why": "The only reason to leave Markdown and PDF. Counsel marking up terms is the usual case."
+    },
+    {
+      "id": "interaction-is-the-question",
+      "when": "The question is how a person moves through it, not what it says, and the reading copy is approved",
+      "then": ["html"],
+      "why": "Clicking is the only way to answer a question about clicking. Until then an interactive page is a slower way to review prose."
+    },
+    {
+      "id": "public-is-a-one-way-door",
+      "when": "People outside the venture will find it",
+      "then": ["site"],
+      "why": "Published words cannot be unpublished. The publishing gate and a person's approval come before the deploy, never after."
+    }
+  ],
+  "ladder": {
+    "note": "Fail closed. A rung is built only once the rung it comes after exists as a live artifact a person approved, which is the ladder's own requirement and is why no rung repeats it under requires. The founder's rule: build the printable reading copy first, read it, approve it, and only then let anyone open an editor.",
+    "rungs": [
+      {
+        "id": "reading-copy",
+        "after": null,
+        "what": "A printable copy a person reads end to end and could hand round a table",
+        "formats": ["md", "pdf", "docx"],
+        "approved_by": "person",
+        "requires": { "records": [], "meetings": [], "decisions": [] }
+      },
+      {
+        "id": "slides",
+        "after": "reading-copy",
+        "what": "Slides for a live talk, one point a slide, built from the approved narrative",
+        "formats": ["pptx"],
+        "approved_by": "person",
+        "requires": { "records": [], "meetings": [], "decisions": [] }
+      },
+      {
+        "id": "interactive",
+        "after": "reading-copy",
+        "what": "A page a person clicks through, to settle layout and interaction before anything is built",
+        "formats": ["html"],
+        "approved_by": "person",
+        "requires": { "records": [], "meetings": [], "decisions": [] }
+      },
+      {
+        "id": "live",
+        "after": "interactive",
+        "what": "The published site, through the publishing gate",
+        "formats": ["site"],
+        "approved_by": "person",
+        "requires": {
+          "records": ["governance/publication-policy.json"],
+          "meetings": [],
+          "decisions": ["public-commitment"]
+        }
+      }
+    ]
+  },
+  "kinds": [
+    {
+      "id": "one-pager",
+      "title": "One-pager",
+      "function": "strategy",
+      "purpose": "Let someone who has never heard of the venture say what it is, who it is for and why now, after one page",
+      "audience": ["investor", "partner"],
+      "artifact_kind": "document",
+      "highest_rung": "reading-copy",
+      "formats": ["md", "pdf"],
+      "why_format": "It is read alone, and printed for a meeting, so it is a document and never slides.",
+      "words_per_page": 400,
+      "pages": 1,
+      "sections": [
+        { "id": "promise", "title": "What it is", "from": "venture.json", "field": "core.promise" },
+        { "id": "for-whom", "title": "Who it is for", "from": "venture.json", "field": "core.promised_to" },
+        { "id": "problem", "title": "The problem", "from": "foundation/problem.json", "field": "statement" },
+        { "id": "cost", "title": "What it costs them today", "from": "foundation/problem.json", "field": "cost" },
+        { "id": "why-now", "title": "Why now", "from": "foundation/problem.json", "field": "why_now" },
+        { "id": "competence", "title": "Why us", "from": "venture.json", "field": "core.competence" }
+      ]
+    },
+    {
+      "id": "memo",
+      "title": "Decision memo",
+      "function": "strategy",
+      "purpose": "Put one open question, its live ideas and the evidence behind each in front of the person who decides",
+      "audience": ["founder", "team"],
+      "artifact_kind": "document",
+      "highest_rung": "reading-copy",
+      "formats": ["md", "pdf"],
+      "why_format": "A reader weighs ideas against each other, going back and forth. Slides force one order and hide the comparison.",
+      "words_per_page": 500,
+      "pages": 2,
+      "sections": [
+        { "id": "question", "title": "The question", "from": "decisions/*.decision.json", "field": "question" },
+        { "id": "statement", "title": "What it settles", "from": "decisions/*.decision.json", "field": "statement", "optional": true },
+        { "id": "ideas", "title": "The ideas on the table", "from": "decisions/*.decision.json", "field": "options", "optional": true },
+        { "id": "principles", "title": "What the venture has already committed to", "from": "foundation/alignment.json", "optional": true }
+      ]
+    },
+    {
+      "id": "brief",
+      "title": "Work brief",
+      "function": "capabilities",
+      "purpose": "Let whoever picks up a handoff start without asking anything first",
+      "audience": ["team"],
+      "artifact_kind": "document",
+      "highest_rung": "reading-copy",
+      "formats": ["md"],
+      "why_format": "It is read on a screen beside the work and changes as the work moves, so it stays Markdown and is never printed or laid out.",
+      "words_per_page": 500,
+      "pages": 1,
+      "sections": [
+        { "id": "what", "title": "The work", "from": "operations/handoffs/*.json", "field": "title" },
+        { "id": "who", "title": "Who holds it", "from": "operations/handoffs/*.json", "field": "role", "optional": true },
+        { "id": "done", "title": "What done means", "from": "operations/handoffs/*.json" }
+      ]
+    },
+    {
+      "id": "meeting-pack",
+      "title": "Meeting pack",
+      "function": "capabilities",
+      "purpose": "Let everyone at a meeting arrive having read the same thing, so the meeting is spent deciding",
+      "audience": ["founder", "team", "board"],
+      "artifact_kind": "document",
+      "highest_rung": "reading-copy",
+      "formats": ["md", "pdf"],
+      "why_format": "It is printed and read before the meeting, in order, by people who will not all be in the room when it is explained.",
+      "words_per_page": 500,
+      "pages": 6,
+      "sections": [
+        { "id": "where-we-are", "title": "Where the venture is", "from": "venture.json", "field": "phase" },
+        { "id": "promise", "title": "The promise we are held to", "from": "venture.json", "field": "core.promise" },
+        { "id": "open-questions", "title": "Open questions for this meeting", "from": "decisions/*.decision.json", "field": "question" },
+        { "id": "goals", "title": "The goals in force", "from": "foundation/goals/*.json", "field": "statement", "optional": true }
+      ]
+    },
+    {
+      "id": "board-update",
+      "title": "Board and investor update",
+      "function": "external-relationships",
+      "purpose": "Tell the people who backed the venture what moved, what did not, and what is being asked of them",
+      "audience": ["board", "investor"],
+      "artifact_kind": "document",
+      "highest_rung": "reading-copy",
+      "formats": ["md", "pdf"],
+      "why_format": "It is read alone, kept, and often forwarded, so the layout must not change under the reader. That is a PDF, not a deck and not a live page.",
+      "words_per_page": 500,
+      "pages": 3,
+      "sections": [
+        { "id": "phase", "title": "Where the venture is", "from": "venture.json", "field": "phase" },
+        { "id": "goals", "title": "The goals in force", "from": "foundation/goals/*.json", "field": "statement" },
+        { "id": "evidence", "title": "What the evidence says", "from": "evidence/results/*.json", "optional": true },
+        { "id": "asks", "title": "What we are asking for", "from": "decisions/*.decision.json", "field": "question", "optional": true }
+      ]
+    },
+    {
+      "id": "pitch-deck",
+      "title": "Pitch deck",
+      "function": "external-relationships",
+      "purpose": "Carry one argument for the venture through a meeting a person is speaking in",
+      "audience": ["investor", "partner"],
+      "artifact_kind": "deck",
+      "highest_rung": "slides",
+      "formats": ["md", "pptx", "pdf"],
+      "why_format": "Slides because a person speaks over it, and a reading copy first because the argument is settled in words, not in layout. The PDF is the handout, not the talk.",
+      "words_per_page": 40,
+      "pages": 12,
+      "sections": [
+        { "id": "problem", "title": "The problem", "from": "foundation/problem.json", "field": "statement" },
+        { "id": "who", "title": "Who has it", "from": "foundation/icp/*.json", "field": "who" },
+        { "id": "cost", "title": "What it costs them", "from": "foundation/problem.json", "field": "cost" },
+        { "id": "promise", "title": "What we do about it", "from": "venture.json", "field": "core.promise" },
+        { "id": "why-now", "title": "Why now", "from": "foundation/problem.json", "field": "why_now" },
+        { "id": "why-us", "title": "Why us", "from": "venture.json", "field": "core.competence" }
+      ]
+    },
+    {
+      "id": "spec",
+      "title": "Product spec",
+      "function": "products",
+      "purpose": "Say what a product does and does not do, closely enough that someone can build it and someone else can check it",
+      "audience": ["team"],
+      "artifact_kind": "document",
+      "highest_rung": "reading-copy",
+      "formats": ["md"],
+      "why_format": "It lives beside the code, is read in parts and changes often, so it stays Markdown in the repository.",
+      "words_per_page": 500,
+      "pages": 8,
+      "sections": [
+        { "id": "what", "title": "What it is", "from": "products/*.json", "field": "description" },
+        { "id": "job", "title": "The job it does", "from": "products/*.json", "field": "job" },
+        { "id": "must-not", "title": "What it must not do", "from": "venture.json", "field": "core.must_not" },
+        { "id": "principles", "title": "The principles it is held to", "from": "foundation/alignment.json", "optional": true }
+      ]
+    },
+    {
+      "id": "site-copy",
+      "title": "Site copy",
+      "function": "marketing-and-sales",
+      "purpose": "Settle what the site says to a stranger, in the order they will read it, before anyone builds a page",
+      "audience": ["public"],
+      "artifact_kind": "site",
+      "highest_rung": "live",
+      "formats": ["md", "html", "site"],
+      "why_format": "The only kind that climbs the whole ladder: the words as a reading copy a person approves, then one page to click through, then the live site through the publishing gate.",
+      "words_per_page": 300,
+      "pages": 2,
+      "sections": [
+        { "id": "promise", "title": "The first thing a stranger reads", "from": "venture.json", "field": "core.promise" },
+        { "id": "for-whom", "title": "Who it is for", "from": "foundation/icp/*.json", "field": "who" },
+        { "id": "problem", "title": "The problem, in their words", "from": "foundation/problem.json", "field": "statement" },
+        { "id": "jobs", "title": "What they are trying to do", "from": "foundation/icp/*.json", "field": "jobs" },
+        { "id": "must-not", "title": "What we will not claim", "from": "venture.json", "field": "core.must_not" }
+      ]
+    }
+  ]
+}

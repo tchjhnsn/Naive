@@ -1087,6 +1087,22 @@
       "note": "The tools a business needs: each function's APQC level 2 process groups, and each tool's function, process groups and the record types it reads, writes or proposes. A tool with no function is universal. Consoles build their navigation from it (venture console spec, phase 3)"
     },
     {
+      "id": "document-catalog",
+      "layer": "interface",
+      "function": null,
+      "level": "method",
+      "schema": "packages/naive/src/records/document-catalog.schema.json",
+      "generator": "packages/naive/src/engine/generators/document-catalog.ts",
+      "paths": [
+        "packages/naive/src/functions/documents.json"
+      ],
+      "refs": [
+        { "field": "kinds[].function", "to": "department-catalog", "checked_by": "packages/naive/src/checks/check-documents.ts" },
+        { "field": "ladder.rungs[].requires.decisions", "to": "function-decisions", "checked_by": "packages/naive/src/checks/check-documents.ts" }
+      ],
+      "note": "Which documents a venture makes, in which format, from which records, and in what order (EE-218): the formats and what each is for, the rules for choosing one (slides for a live talk, a printed document for reading), the ladder a document climbs (a reading copy a person approved, then an interactive page, then the live site) and each kind's sections, so every claim in a rendered document cites a record. packages/naive/src/engine/render-document.ts writes the reading copy; the heavier formats are the harness's"
+    },
+    {
       "id": "operating-rules",
       "layer": "operations",
       "function": null,
@@ -1380,6 +1396,20 @@
         "packages/naive/src/records/examples/**/operations/meetings/*.json"
       ],
       "note": "One meeting (EE-200): a goal and the outcome that shows it was reached, stated before it opens; people and agents attending; an agenda worked in order, which may walk a function workflow step by step; minutes; the outcome; and what each attendee takes away. Closed meetings are an app's shared memory for its agents. A meeting spans functions, so the type names none (function null); the gate and the team plan decide who writes it. Route operations/meeting/[id]"
+    },
+    {
+      "id": "specialist",
+      "layer": "operations",
+      "function": null,
+      "level": "venture",
+      "data": "transactional",
+      "schema": "packages/naive/src/records/specialist.schema.json",
+      "generator": "packages/naive/src/engine/generators/specialist.ts",
+      "paths": [
+        "instance/**/operations/specialists/*.json",
+        "packages/naive/src/records/examples/**/operations/specialists/*.json"
+      ],
+      "note": "One temporary specialist a function agent spawned for one task (EE-213): its parent, the task, the skills it may load, the write reach it was given and when it expires. The record is the reach, and the router intersects it with the parent's own on every write, so a specialist is never wider than its parent (reachRefusal in packages/naive/src/engine/agents/reach.ts). Any function can spawn one, so the type names none (function null). Written by naive agent spawn as the parent agent, or by a person revoking it. Route operations/specialist/[id]"
     },
     {
       "id": "activity",
@@ -1825,6 +1855,22 @@
       "note": "How present the venture's public records are on its marketing site, item by item, with a score weighed by who the site must speak to now (EE-062)"
     },
     {
+      "id": "marketing-message",
+      "layer": "operations",
+      "function": "marketing-and-sales",
+      "level": "venture",
+      "data": "master",
+      "schema": "packages/naive/src/records/marketing-message.schema.json",
+      "generator": "packages/naive/src/engine/generators/marketing-message.ts",
+      "writer": "function",
+      "decision_class": "public-commitment",
+      "paths": [
+        "instance/**/marketing/message/*.json",
+        "packages/naive/src/records/examples/**/marketing/message/*.json"
+      ],
+      "note": "One element of the words a public page shows (EE-216): the tagline, a headline, the value proposition, a call to action with where it leads, a proof point, an objection answered, the contact line. Each element is its own record and cites the records its words come from, so a person approves the text element by element before any page is built, and the gap report says which element is missing and which upstream record a draft would come from (naive copy gaps). Owned by the marketing and sales function; the agent's write is held as a draft under public-commitment until a person accepts it. Route marketing/message/[id]"
+    },
+    {
       "id": "marketing-sitemap",
       "layer": "operations",
       "function": "marketing-and-sales",
@@ -1837,7 +1883,21 @@
         "instance/**/operations/marketing/sitemap.json",
         "packages/naive/src/records/examples/**/operations/marketing/sitemap.json"
       ],
-      "note": "The planned public site: each page's sections in order, with the MDX component, the need, the audience and why, when it shows, the internal record it draws on and the public variant to write; part of the marketing package handed to engineering (EE-064, EE-065)"
+      "note": "The planned public site: each page's sections in order, with the MDX component, the need, the audience and why, when it shows, the internal record it draws on, the public variant to write and the copy drafted for it (EE-064, EE-065, EE-214); part of the marketing package handed to engineering"
+    },
+    {
+      "id": "publish-terms",
+      "layer": "operations",
+      "function": "marketing-and-sales",
+      "level": "venture",
+      "data": "master",
+      "schema": "packages/naive/src/records/publish-terms.schema.json",
+      "generator": "packages/naive/src/engine/generators/publish-terms.ts",
+      "paths": [
+        "instance/**/marketing/publish-terms.json",
+        "packages/naive/src/records/examples/**/marketing/publish-terms.json"
+      ],
+      "note": "The names the publish lint flags in public copy, owned by the function that writes the words (EE-214): other companies' marks, and the names this venture never makes public, which are errors. It holds names only, never severities and never waivers, so the marketing agent can tighten the gate on itself without reaching naive.config.json"
     },
     {
       "id": "marketing-content",
@@ -3625,6 +3685,10 @@
     {
       "path": "packages/naive/src/engine/internal-terms.json",
       "reason": "The framework's default patterns for internal text, read by packages/naive/src/engine/check-leaks.ts (the publishing gate); configuration, not a record"
+    },
+    {
+      "path": "packages/naive/src/engine/specialists.json",
+      "reason": "EE-213: how long a temporary specialist's reach lasts when its spawn names no ttl, an unvalidated prior read by packages/naive/src/engine/agents/specialist.ts and overridden under specialists in a venture's naive.config.json; configuration, not a record"
     },
     {
       "path": "packages/naive/src/engine/generators/gaps.json",

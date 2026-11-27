@@ -19,6 +19,10 @@
       "path": "packages/naive/src/interfaces/skills/choosing-artifacts/SKILL.md"
     },
     {
+      "id": "writing-documents",
+      "path": "packages/naive/src/interfaces/skills/writing-documents/SKILL.md"
+    },
+    {
       "id": "run-playbook",
       "path": "packages/naive/src/interfaces/skills/run-playbook/SKILL.md"
     },
@@ -35,6 +39,7 @@
     "route-aliases",
     "adapter",
     "artifact",
+    "document-catalog",
     "beta-capabilities"
   ],
   "reads": [
