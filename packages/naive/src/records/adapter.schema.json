@@ -28,6 +28,20 @@
     "skills": { "type": ["string", "null"], "description": "The folder the harness loads skills from; each open package's skill is copied to <folder>/<skill id>/SKILL.md. null when the harness reaches skills through AGENTS.md" },
     "verify": { "type": "array", "items": { "type": "string" }, "description": "A platform adapter: the test programs it must pass, each run as node <path> and ending with all passing or exit 0" },
     "sources": { "type": "array", "items": { "type": "string", "format": "uri" }, "description": "Where the harness documents what it reads" },
+    "documents": {
+      "type": "object",
+      "description": "Which of this harness's own tools renders each document format the catalog leaves to the harness (EE-218). The catalog (packages/naive/src/functions/documents.json) names no vendor, so the mapping lives here, one entry per format, and a format with no entry is left to whatever the agent has. Naive renders Markdown itself and never delegates it.",
+      "propertyNames": { "enum": ["pdf", "docx", "pptx", "xlsx", "html"] },
+      "additionalProperties": {
+        "type": "object",
+        "required": ["use"],
+        "additionalProperties": false,
+        "properties": {
+          "use": { "type": "string", "minLength": 1, "description": "The skill, tool or command the agent loads for this format in this harness." },
+          "how": { "type": "string", "description": "What to watch for, in one plain sentence." }
+        }
+      }
+    },
     "note": { "type": "string" }
   }
 }

@@ -3185,6 +3185,54 @@
       ]
     },
     {
+      "id": "EE-218",
+      "date": "2026-11-26",
+      "status": "in-force",
+      "decision": "Documents are catalogued as data and built in a fail-closed order. packages/naive/src/functions/documents.json, record type document-catalog, holds the formats (md, pdf, docx, pptx, html, site) with how a person takes each one in and who renders it, the rules for choosing one (a person reading alone and in order takes a document and not slides; a person speaking to a room takes slides, one point a slide; Word only when the reader must edit the words; an interactive page only once the words are settled; public is a one-way door), the ladder, and the document kinds a venture makes: one-pager, memo, brief, meeting-pack, board-update, pitch-deck, spec and site-copy, each naming its function, purpose, audience, artifact kind, the highest rung it climbs, its formats with why those and not the others, and the sections it renders from, each section naming the record it reads. The ladder is one chain, each rung naming the rung it comes after: reading-copy (md, pdf, docx) first, then slides (pptx) or interactive (html), then live (site). A rung is built only once the rung below it exists as a live artifact a person approved, which is the ladder's own requirement, so a rung's requires holds only what it adds; live adds the publication policy and a decided public-commitment decision. requires is written in the shape EE-217's prerequisitesOf reads, records, meetings and decisions, and this decision adds the data and the step order, not the gating mechanism. Approval is a person writing approved_by on the artifact record (artifacts/<kind>-<rung>.json), with document_kind and format added to artifact.schema.json so a check can tell which rung an artifact sits on; there is no new decision class and no new approval mechanism. naive render <kind> writes the Markdown reading copy and its artifact record, every section citing the record and field it came from and every fact no record holds shown as a hole, never written in. Every other format prints what the harness must do instead of rendering, so Naive carries no document dependency; the catalog names no vendor and the harness adapter does, with claude-code.json naming Anthropic's pdf, docx, pptx and xlsx skills (Apache 2.0, adapted and not copied) and artifact-design for a page. check-documents.ts checks the catalog across files and refuses a venture's document that sits on a rung whose rung below is missing or unapproved. The writing-documents skill carries the ladder, the per-format table and the Claude Code section, and marketplace plugins that render through an outside service are skipped because a venture's records would leave the tenant.",
+      "why": "Torian decided this on 2026-11-26: before the website gets built, build HTML he can view and interact with, and before that an internal record a human would sit down and read and could print for a meeting. He asked the framework to be opinionated about which documents can be printed and presented, which records become decks and PDFs, when a PowerPoint beats a PDF, which tools make them, and which instructions each agent gets, with Claude Code instructions specifically, and to learn from the plugins that already exist rather than reinvent them. His standing rule decides the shape: a record is the source of truth and a document is a view rendered from records, never the record. The format rules and the word and page counts are unvalidated priors a venture overrides, and only a person approves a rung.",
+      "related": [
+        "EE-025",
+        "EE-030",
+        "EE-217"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/functions/documents.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/render-document.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/checks/check-documents.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/interfaces/skills/writing-documents/SKILL.md",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "record",
+          "target": "artifact.document_kind",
+          "expect": "exists"
+        },
+        {
+          "kind": "record",
+          "target": "artifact.approved_by",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
       "id": "EE-223",
       "date": "2026-11-26",
       "status": "in-force",

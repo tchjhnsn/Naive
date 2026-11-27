@@ -1,0 +1,46 @@
+{
+  "id": "site-documents",
+  "function": "marketing-and-sales",
+  "title": "Read the settled site copy as one document before anyone builds a page",
+  "goal": "The copy records the site-copy workflow settled are gathered into one document a person has read and approved, before any page is built and before the site goes live.",
+  "measures": ["usage_or_adoption"],
+  "trigger": { "kind": "request" },
+  "reads": ["marketing/sitemap", "marketing/message/*", "purpose/foundation", "foundation/icp", "foundation/problem", "governance/publication-policy", "identity/lean-canvas"],
+  "steps": [
+    {
+      "id": "reading-copy",
+      "do": "This workflow runs after site-copy, which settles the copy records element by element; those records are what it reads. Follow the writing-documents skill and render the site-copy document kind, the catalog's name for the site's words as one reading copy (naive render site-copy), then read it for holes: a fact with no record is a record to write, never a sentence to invent."
+    },
+    {
+      "id": "fill-the-holes",
+      "do": "For each hole the reading copy shows, write the record it names or raise the question, then render again, so the copy is a view of records and not a draft of its own.",
+      "raises": ["domain-fact"]
+    },
+    {
+      "id": "hand-it-over",
+      "do": "Give the printed reading copy to the person who decides and say plainly that nothing above this rung is built until they have approved it."
+    },
+    {
+      "id": "interactive",
+      "do": "Once a person has approved the reading copy, build the one interactive page from it, changing no fact, with the harness skill the adapter names for html.",
+      "consider": {
+        "why": "A question about how a reader moves through the page can only be answered by clicking it.",
+        "when": "A person approved the reading copy and the open question is layout or interaction, not what the words say."
+      }
+    },
+    {
+      "id": "publish",
+      "do": "Once a person has approved the page, publish it through the publishing gate (naive publish), which is a one-way door in public and the founder's to approve.",
+      "raises": ["public-commitment"],
+      "consider": {
+        "why": "Published words cannot be unpublished, so the live site is the last rung and never the first.",
+        "when": "A person approved the interactive page and the venture's publication policy names the channel."
+      }
+    }
+  ],
+  "done_criteria": [
+    { "id": "documents-climb-in-order", "kind": "conformance", "check": "node packages/naive/src/checks/check-documents.ts \"$NAIVE_VENTURE\"" },
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "every-claim-cited", "kind": "review", "check": "Does every sentence in the reading copy trace to a record it cites, with no fact the records do not hold?", "reviewer": "growth-lead" }
+  ]
+}
