@@ -409,7 +409,10 @@ export function undecidedFor(dir: string, file: string, venture?: string): Undec
 // Routes an unlock names are globs over routes, as in the team plan's robots.
 const routeGlob = (g: string) => new RegExp("^" + g.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*\*/g, "\0").replace(/\*/g, "[^/]*").replace(/\0/g, ".*") + "$");
 
-/** The decision that keeps a route closed to an actor (EE-058): an undecided decision that unlocks it. */
+/**
+ * The decision that keeps a route closed to an actor (EE-058): an undecided decision that unlocks it. It holds every
+ * write it names, an edit of a live record included, so the lock fails closed; a person corrects the record or decides.
+ */
 export function locked(dir: string, route: string, actorId?: string | null): { id: string; question: string } | null {
   if (!existsSync(join(dir, "venture.json"))) return null;
   const files = decisionFiles(dir).map((f): DecisionRecord => load(ventureFile(dir, f)));

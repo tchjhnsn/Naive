@@ -1,0 +1,135 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "document-catalog.schema.json",
+  "title": "Document catalog",
+  "description": "Which documents a venture makes, in which format, from which records, and in what order (EE-218), at packages/naive/src/functions/documents.json. A record is the source of truth and a document is an artifact rendered from records, never the record. The catalog is opinionated: each format says what it is for and the rules say when slides beat a printed document, so an agent does not guess. The ladder is the order every document climbs, a printable reading copy a person approved before any interactive page and the page before the live site; each rung names the extra records and decision classes it needs, in the shape packages/naive/src/engine/prerequisites.ts reads (EE-217). packages/naive/src/checks/check-documents.ts checks what this schema cannot: one root rung, no cycle, every kind's rungs reachable, every format and function known, every section's record path in the data model, and a venture's own document artifacts climbing in order.",
+  "type": "object",
+  "required": ["version", "formats", "rules", "ladder", "kinds"],
+  "additionalProperties": false,
+  "properties": {
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "note": { "type": "string" },
+    "formats": {
+      "type": "array",
+      "minItems": 1,
+      "description": "The formats a document may be rendered in. A format is a way of reading, not a tool: the tool that writes it is the renderer.",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "rung", "reads", "renderer", "why"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "enum": ["md", "pdf", "docx", "pptx", "html", "site"] },
+          "name": { "type": "string", "minLength": 1 },
+          "rung": { "type": "string", "pattern": "^[a-z0-9-]+$", "description": "The ladder rung this format sits on." },
+          "reads": { "type": "string", "minLength": 1, "description": "How a person takes it in: alone and in order, on a screen, or in a room with a speaker." },
+          "prints": { "type": "boolean", "description": "True when a person can print it and carry it into a meeting." },
+          "renderer": {
+            "enum": ["naive", "harness", "site-build"],
+            "description": "naive: naive render writes it in house, so the framework carries no heavy dependency. harness: the agent's own harness writes it from the reading copy, and the harness adapter (packages/naive/src/interfaces/adapters/) names the skill, so the catalog names no vendor. site-build: the venture's site build and the publishing gate (EE-025)."
+          },
+          "why": { "type": "string", "minLength": 1, "description": "Why this format exists in the catalog, in one plain sentence." }
+        }
+      }
+    },
+    "rules": {
+      "type": "array",
+      "minItems": 1,
+      "description": "The opinionated part: how to choose a format. Each rule asks one question about the reader and names the format it points to. A rule never decides alone; a person may override it, and the override is a decision.",
+      "items": {
+        "type": "object",
+        "required": ["id", "when", "then", "why"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+          "when": { "type": "string", "minLength": 1, "description": "The reader's situation, in one plain sentence." },
+          "then": { "type": "array", "minItems": 1, "items": { "enum": ["md", "pdf", "docx", "pptx", "html", "site"] } },
+          "not": { "type": "array", "items": { "enum": ["md", "pdf", "docx", "pptx", "html", "site"] }, "description": "Formats this situation rules out." },
+          "why": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "ladder": {
+      "type": "object",
+      "required": ["note", "rungs"],
+      "additionalProperties": false,
+      "description": "The order a document climbs. Fail closed: a rung is built only once the rung it comes after exists as a live artifact a person approved.",
+      "properties": {
+        "note": { "type": "string", "minLength": 1 },
+        "rungs": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "object",
+            "required": ["id", "after", "what", "formats", "approved_by", "requires"],
+            "additionalProperties": false,
+            "properties": {
+              "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+              "after": { "type": ["string", "null"], "description": "The rung below this one, or null for the first rung. Exactly one rung has null." },
+              "what": { "type": "string", "minLength": 1 },
+              "formats": { "type": "array", "minItems": 1, "items": { "enum": ["md", "pdf", "docx", "pptx", "html", "site"] } },
+              "approved_by": { "enum": ["person"], "description": "Only a person approves a rung. An agent drafts and renders." },
+              "requires": {
+                "type": "object",
+                "additionalProperties": false,
+                "description": "What this rung needs beyond the rung below it, in the shape packages/naive/src/engine/prerequisites.ts reads (EE-217). The rung below is the ladder's own requirement and is not repeated here.",
+                "properties": {
+                  "records": { "type": "array", "items": { "type": "string" }, "description": "Logical record paths or route patterns that must be live." },
+                  "meetings": { "type": "array", "items": { "type": "string" }, "description": "Meeting kinds that must have happened." },
+                  "decisions": { "type": "array", "items": { "type": "string" }, "description": "Decision classes that must be decided by a person." }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "kinds": {
+      "type": "array",
+      "minItems": 1,
+      "description": "The documents this framework is opinionated about. A kind a venture wants and the catalog lacks is a pull request, not a local invention.",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "function", "purpose", "audience", "artifact_kind", "highest_rung", "formats", "why_format", "sections"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+          "title": { "type": "string", "minLength": 1 },
+          "function": { "type": "string", "pattern": "^[a-z][a-z-]*$", "description": "The function in packages/naive/src/functions/departments.json whose agent drafts it." },
+          "purpose": { "type": "string", "minLength": 1, "description": "What the reader can do once they have read it." },
+          "audience": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "enum": ["founder", "team", "board", "investor", "customer", "partner", "counsel", "public"] }
+          },
+          "artifact_kind": {
+            "enum": ["document", "deck", "dashboard", "design", "page", "file", "site"],
+            "description": "The artifact kind the rendered document is, as artifact.schema.json names it."
+          },
+          "highest_rung": { "type": "string", "pattern": "^[a-z0-9-]+$", "description": "The top rung this kind climbs to. Most kinds stop at the reading copy." },
+          "formats": { "type": "array", "minItems": 1, "items": { "enum": ["md", "pdf", "docx", "pptx", "html", "site"] } },
+          "why_format": { "type": "string", "minLength": 1, "description": "Why these formats and not the others, in one plain sentence." },
+          "approves": { "type": "string", "description": "The role that approves it, when it is not the founder. A person either way." },
+          "words_per_page": { "type": "integer", "minimum": 1, "description": "An unvalidated prior: about how many words belong on one page or one slide of this kind. A venture overrides it in naive.config.json." },
+          "pages": { "type": "integer", "minimum": 1, "description": "An unvalidated prior: about how many pages or slides this kind runs to." },
+          "sections": {
+            "type": "array",
+            "minItems": 1,
+            "description": "The reading copy's sections, in order. Each names the record it reads, so every claim in the rendered document cites a record.",
+            "items": {
+              "type": "object",
+              "required": ["id", "title", "from"],
+              "additionalProperties": false,
+              "properties": {
+                "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+                "title": { "type": "string", "minLength": 1 },
+                "from": { "type": "string", "minLength": 1, "description": "The logical path of the record it reads, such as foundation/problem.json. A path with * reads every record it matches, one block each." },
+                "field": { "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*$", "description": "A dotted path to a string or a list of strings in that record. Without it the section names the record and leaves the words to the writer." },
+                "optional": { "type": "boolean", "description": "True when a hole is left out instead of shown: a missing record, or a record with nothing in the field, leaves the section out rather than printing what is not recorded." }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -18,6 +18,25 @@ Every layer has a tooling record (`<layer>/tooling/integrations.json`). This ski
 - **Offer once** (one line, easy to decline) when a choice looks hard to reverse: data would move into a proprietary format, many people or agents would depend on it, or it holds sensitive material.
 - **Do not run** when the person names their tools. Record them as `in-use` and move on. If they name a tool and ask for nothing else, do not second-guess it.
 
+## What to be opinionated about
+
+Two things are not neutral preferences, and an agent says so before the questions start.
+
+- **A tool that leaves the activity unrecorded is a blind spot.** An agent's work is visible by construction, because every write goes through the router and appends to the provenance log (EE-031). A person's work is visible only as far as a tool captures it, so a tool with no record of the activity itself means nothing in the venture can tell whether the work happened, who did it or what was said. Say which activities a candidate would leave invisible, by name, before anything is scored.
+- **Owning the tooling is the default.** The record of what the venture did is the venture's asset. A tool that holds it in a store the venture cannot read out, or cannot leave, makes every later choice the vendor's. The runner-up to a tool the venture runs itself has to beat it on something the venture needs now, not on convenience.
+
+Neither is a veto. Recording needs a lawful basis the other party was told about, a retention period and a way to erase it, and some records can only live on a rail the venture cannot be (`capability-clusters.json`). Those are the trade-offs to put in front of the person, not to settle for them.
+
+## Visibility and ownership for a goal or an activity
+
+Use the visibility rubric (`packages/naive/src/functions/it/visibility-rubric.json`, EE-222) when someone asks which tool should cover a goal or an activity, or when a candidate tool would hold a record of work people do. It scores five criteria: a record of the activity itself (0.3), who holds the record (0.25), getting the record out (0.2), telling the system as it happens (0.15) and consent, retention and deletion (0.1, a gate). The weights are unvalidated priors a venture replaces under `visibility` in `naive.config.json`. It does not score what a tool costs or what it costs to leave; those are the questions below.
+
+1. Start from what the venture already knows: `naive tools recommend [--goal <id>] [--activity <id>] [--function <id>]` says which activities the goal needs to be visible, which of them nothing records today, the channel each one is performed on and the tool kinds that could cover it, scored. Read its blind spots out loud.
+2. Ask the person for the must-haves (a criterion and the lowest score it needs, such as 3 on `activity-record` for every meeting that sets a goal) and for any weight that differs from the rubric's. A weight of 0 leaves a criterion out of the score and never out of the blind spot.
+3. Score each serious candidate against the criterion's described levels, with a reason that cites a reference, a decision or a file for every score. The rubric's tool kinds carry prior scores for the kind; a real product is scored on its own.
+4. Rank with `scoreTools(rubric, candidates, { weights, must })` in `packages/naive/src/engine/visibility-rubric.ts`. A 0 on the consent gate or a score below a must-have rules a candidate out whatever its other scores. Totals within the tie band are a tie.
+5. Give the person the ranking, the blind spots, the runner-up and what would change it. A score never decides. `naive tools recommend --propose` files the question as one open decision per function, drafted by that function's agent, with every candidate as an option so the choice stays open; a person decides it, or withdraws it (`mentura withdraw`). To keep a choice as a worked example, add it with the generator (`node packages/naive/src/engine/generators/visibility-rubric.ts`) and check it with `node packages/naive/src/checks/check-visibility-rubric.ts`.
+
 ## Principles for the questions
 
 The questions are for the person, to help them decide. They are not a form. Each layer's `tooling/questions.md` gives the dimensions that matter for that layer and example questions. The examples show the kind of question to ask; they are not a script, and the agent should ask others when the situation calls for it.

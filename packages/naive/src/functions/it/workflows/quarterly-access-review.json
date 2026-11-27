@@ -2,6 +2,8 @@
   "id": "quarterly-access-review",
   "function": "it",
   "title": "Review access and tools each quarter",
+  "goal": "No person or agent role holds a scope its work did not use this quarter, every leaver's access is revoked, and every widening, paid plan or new term is open as a decision.",
+  "measures": ["compliance_met", "cost_or_time_saved"],
   "trigger": { "kind": "schedule", "cadence": "quarterly" },
   "reads": ["it/connections", "finance/spend", "people/team-plan", "governance/delegation", "knowledge/knowledge-sources"],
   "steps": [

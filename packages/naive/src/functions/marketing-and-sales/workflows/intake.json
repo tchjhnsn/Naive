@@ -2,6 +2,8 @@
   "id": "intake",
   "function": "marketing-and-sales",
   "title": "Learn who the venture sells to and where each sale stands",
+  "goal": "Every buyer and customer the founder named is a record with a stage, a source and a next step, and the channels to test first are proposed to the growth lead.",
+  "measures": ["revenue"],
   "trigger": { "kind": "intake" },
   "reads": ["venture", "foundation/telos", "foundation/icp", "customers", "sales/opportunities", "marketing/brand", "governance/publication-policy"],
   "steps": [

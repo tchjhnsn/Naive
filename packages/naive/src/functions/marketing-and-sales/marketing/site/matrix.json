@@ -454,6 +454,46 @@
       "component": "Trust"
     }
   },
+  "copy": {
+    "note": "The words each page shows, as records (EE-216): one message element per section the sitemap plans, plus the chrome every page shows, which no section covers. kinds says where a section's words sit in the messaging hierarchy, so a draft knows the shape to write; chrome names the elements a site needs whatever its sections, with the records their words come from. Ours and unevaluated: the gap report (naive copy gaps) reads it as it stands.",
+    "chrome": [
+      {
+        "item": "tagline",
+        "kind": "tagline",
+        "label": "Name and tagline",
+        "from": [
+          "foundation/core#brand.tagline"
+        ],
+        "why": "The tagline sits beside the name in the header, the browser tab and the footer, and no page section covers it. Only a person writes the core statement it comes from."
+      },
+      {
+        "item": "footer",
+        "kind": "footer",
+        "label": "Footer line",
+        "from": [
+          "foundation/core#core.promise"
+        ],
+        "why": "The line under every page: the name, what the venture is, and nothing a record does not hold."
+      }
+    ],
+    "kinds": {
+      "what": "headline",
+      "who-for": "value-proposition",
+      "problem": "body",
+      "how": "body",
+      "proof": "proof-point",
+      "pricing": "body",
+      "next-step": "cta-primary",
+      "team": "body",
+      "mission": "body",
+      "contact": "contact",
+      "hiring": "body",
+      "raising": "body",
+      "contribute": "body",
+      "press": "body",
+      "trust": "body"
+    }
+  },
   "customer_types": {
     "note": "What a customer looks for on a site depends on who the customer is. Jev places the venture's ICP into one or more of these types; each type says how much each item matters to it and why. The reasons are ours, version 0.x and unevaluated: each is a claim to test with the venture's own customers, not a finding. Jev answers conservatively, so a type counts when its probability is at least 0.25 and at least 0.6 of the strongest type's.",
     "default": {

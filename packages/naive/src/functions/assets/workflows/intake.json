@@ -2,6 +2,8 @@
   "id": "intake",
   "function": "assets",
   "title": "Learn the venture's equipment and space",
+  "goal": "Every lease and every device that holds data is a record with its dates, its holder and any personal guarantee, and every lease date in the next twelve months is named.",
+  "measures": ["compliance_met"],
   "trigger": { "kind": "intake" },
   "reads": ["venture", "assets/register", "assets/leases", "finance/spend", "people"],
   "steps": [
