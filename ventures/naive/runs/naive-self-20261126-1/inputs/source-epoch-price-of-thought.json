@@ -1,0 +1,15 @@
+{
+  "source": {
+    "id": "epoch-price-of-thought",
+    "origin": "web",
+    "title": "Epoch AI, The plunging price of thought",
+    "fetched": "2026-11-26",
+    "url": "https://epoch.ai/publications/the-plunging-price-of-thought",
+    "self_reported": false,
+    "fetched_at": "2026-11-26T10:50:05-06:00",
+    "http_status": 200,
+    "sha256": "4390f639a8cfc4d0afcc40e655a23d9ff8d7aff235dcea2d3ff46e74ec543791",
+    "text_omitted": "Fetched page text not republished (third-party content); see url and sha256"
+  },
+  "text": null
+}

@@ -1,0 +1,36 @@
+{
+  "id": "scale-ambition",
+  "question": "Does venture:naive have a scale target? The earlier recorded end said 'no scale target, by choice'; t23u speaks of a platform for all small businesses.",
+  "status": "open",
+  "needed_in": "discovery",
+  "options": [
+    "No scale target; work the most immediate issues",
+    "Platform scale as the stated vision, with phase-by-phase targets"
+  ],
+  "answer": null,
+  "decided_by": null,
+  "decided_at": null,
+  "proposed": {
+    "answer": "State platform scale as the vision, and keep targets per phase only, so the immediate-issues rule still holds.",
+    "options": [
+      "No scale target; work the most immediate issues",
+      "Platform scale as the stated vision, with phase-by-phase targets"
+    ],
+    "drafted_by": {
+      "kind": "agent",
+      "id": "chief-of-staff"
+    },
+    "proposed_at": "2026-11-26T12:00:00-06:00"
+  },
+  "reasons": [
+    {
+      "claim": "Earlier ends record: no scale target, by choice.",
+      "kind": "context",
+      "citations": [
+        {
+          "ref": "/workspace/preserve/sources-bundle/artifacts/RrM6rsuXAGjk8Wvh9Lv33i.md (box)"
+        }
+      ]
+    }
+  ]
+}

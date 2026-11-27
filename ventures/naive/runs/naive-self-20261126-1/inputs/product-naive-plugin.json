@@ -1,0 +1,17 @@
+{
+  "id": "naive-plugin",
+  "name": "Naive for Claude Code",
+  "description": "The same repository as a Claude Code plugin: naive-create and naive-setup skills and the MCP server.",
+  "job": "Start and run a venture from inside Claude Code",
+  "ai": "agent-harness",
+  "offering": "product",
+  "status": "live",
+  "software": true,
+  "repo": "https://github.com/tchjhnsn/naive-plugins",
+  "offered_to": [
+    "ai-native-solo-founder"
+  ],
+  "part_of": [
+    "naive-framework"
+  ]
+}

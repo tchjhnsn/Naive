@@ -1,0 +1,337 @@
+{
+  "version": "0.1.0",
+  "venture": "naive",
+  "name": "naive",
+  "phase": "discovery",
+  "planned_at": "2026-11-26T16:51:59Z",
+  "planned_by": "conventions",
+  "facts": {
+    "raising": false,
+    "hiring": false,
+    "contributors": false
+  },
+  "offerings": [],
+  "audience": {
+    "offered_to": [],
+    "partner_led": false,
+    "types": [],
+    "weights": {
+      "customers": 1,
+      "investors": 0.15,
+      "talent": 0.15,
+      "contributors": 0.1,
+      "partners": 0.3,
+      "press": 0.2
+    },
+    "note": "The site's customers are the profiles the products are offered to."
+  },
+  "pages": [
+    {
+      "path": "/",
+      "parent": null,
+      "label": "Home",
+      "type": "home",
+      "level": "home",
+      "sections": [
+        {
+          "item": "what",
+          "label": "What it is, in one line",
+          "component": "Hero",
+          "need": 1,
+          "required": "home",
+          "for": [
+            "customers"
+          ],
+          "why": [
+            "Customers: Customers in general (1): every visitor has to learn what it is before anything else"
+          ],
+          "source": {
+            "record": "venture",
+            "file": "venture.json",
+            "exists": true
+          },
+          "variant": "operations/marketing/content/home/what.mdx"
+        },
+        {
+          "item": "who-for",
+          "label": "Who it is for",
+          "component": "ForWhom",
+          "need": 1,
+          "required": "home",
+          "for": [
+            "customers"
+          ],
+          "why": [
+            "Customers: Customers in general (1): visitors decide in seconds whether it is for them"
+          ],
+          "source": {
+            "record": "icp",
+            "file": "purpose/icp.json",
+            "exists": false
+          },
+          "variant": "operations/marketing/content/home/who-for.mdx"
+        },
+        {
+          "item": "next-step",
+          "label": "A clear next step",
+          "component": "CallToAction",
+          "need": 1,
+          "required": "home",
+          "for": [
+            "customers"
+          ],
+          "why": [
+            "Customers: Customers in general (1): a visitor who is convinced needs one obvious thing to do"
+          ],
+          "source": {
+            "record": "validation-go-to-market",
+            "file": "purpose/validation/go-to-market.json",
+            "exists": false
+          },
+          "variant": "operations/marketing/content/home/next-step.mdx"
+        },
+        {
+          "item": "problem",
+          "label": "The problem it solves",
+          "component": "Problem",
+          "need": 0.8,
+          "required": "home",
+          "for": [
+            "customers"
+          ],
+          "why": [
+            "Customers: Customers in general (0.8): buyers recognise themselves in the problem before the product"
+          ],
+          "source": {
+            "record": "validation-problem",
+            "file": "purpose/validation/problem.json",
+            "exists": false
+          },
+          "variant": "operations/marketing/content/home/problem.mdx"
+        },
+        {
+          "item": "how",
+          "label": "How it works",
+          "component": "HowItWorks",
+          "need": 0.8,
+          "required": "home",
+          "for": [
+            "customers"
+          ],
+          "why": [
+            "Customers: Customers in general (0.8): buyers want to see how it would work for them"
+          ],
+          "source": {
+            "record": "validation-solution",
+            "file": "purpose/validation/solution.json",
+            "exists": false
+          },
+          "variant": "operations/marketing/content/home/how.mdx"
+        },
+        {
+          "item": "proof",
+          "label": "Proof",
+          "component": "Proof",
+          "need": 0.7,
+          "required": "home",
+          "for": [
+            "customers"
+          ],
+          "why": [
+            "Customers: Customers in general (0.7): buyers look for others like them who use it"
+          ],
+          "source": {
+            "record": "evidence",
+            "file": "evidence/",
+            "exists": false
+          },
+          "variant": "operations/marketing/content/home/proof.mdx"
+        }
+      ]
+    },
+    {
+      "path": "/pricing",
+      "parent": "/",
+      "label": "Pricing",
+      "type": "pricing",
+      "level": "nav",
+      "sections": [
+        {
+          "item": "pricing",
+          "label": "Pricing",
+          "component": "Pricing",
+          "need": 0.8,
+          "required": "nav",
+          "for": [
+            "customers"
+          ],
+          "why": [
+            "Customers: Customers in general (0.8): most buyers check the price before they talk to anyone"
+          ],
+          "source": {
+            "record": "validation-pricing",
+            "file": "purpose/validation/pricing.json",
+            "exists": false
+          },
+          "variant": "operations/marketing/content/pricing/pricing.mdx"
+        }
+      ]
+    },
+    {
+      "path": "/contact",
+      "parent": "/",
+      "label": "Contact",
+      "type": "contact",
+      "level": "nav",
+      "sections": [
+        {
+          "item": "contact",
+          "label": "How to reach them",
+          "component": "Contact",
+          "need": 0.5,
+          "required": "nav",
+          "for": [
+            "customers"
+          ],
+          "why": [
+            "Customers: Customers in general (0.5): some buyers want a person to ask",
+            "Partners: partners need a person to start a conversation with"
+          ],
+          "source": {
+            "record": "venture",
+            "file": "venture.json",
+            "exists": true
+          },
+          "variant": "operations/marketing/content/contact/contact.mdx"
+        }
+      ]
+    },
+    {
+      "path": "/trust",
+      "parent": "/",
+      "label": "Security and privacy",
+      "type": "trust",
+      "level": "nav",
+      "sections": [
+        {
+          "item": "trust",
+          "label": "Trust and privacy",
+          "component": "Trust",
+          "need": 0.4,
+          "required": "nav",
+          "for": [
+            "customers"
+          ],
+          "why": [
+            "Customers: Customers in general (0.4): buyers handing over data look for how it is protected"
+          ],
+          "source": {
+            "record": "alignment",
+            "file": "purpose/alignment.json",
+            "exists": false
+          },
+          "variant": "operations/marketing/content/trust/trust.mdx"
+        }
+      ]
+    },
+    {
+      "path": "/about",
+      "parent": "/",
+      "label": "About",
+      "type": "about",
+      "level": "linked",
+      "sections": [
+        {
+          "item": "team",
+          "label": "Who is behind it",
+          "component": "Team",
+          "need": 0.3,
+          "required": "linked",
+          "for": [
+            "customers"
+          ],
+          "why": [
+            "Customers: Customers in general (0.3): most buyers judge the product, not the people behind it"
+          ],
+          "source": {
+            "record": "validation-team",
+            "file": "purpose/validation/team.json",
+            "exists": false
+          },
+          "variant": "operations/marketing/content/about/team.mdx"
+        }
+      ]
+    },
+    {
+      "path": "/press",
+      "parent": "/",
+      "label": "Press",
+      "type": "press",
+      "level": "linked",
+      "sections": [
+        {
+          "item": "press",
+          "label": "News and press",
+          "component": "Press",
+          "need": 0.2,
+          "required": "linked",
+          "for": [
+            "press"
+          ],
+          "why": [
+            "Press: journalists look for news and a press kit"
+          ],
+          "source": {
+            "record": "publication-policy",
+            "file": "governance/publication-policy.json",
+            "exists": false
+          },
+          "variant": "operations/marketing/content/press/press.mdx"
+        }
+      ]
+    }
+  ],
+  "omitted": [
+    {
+      "item": "mission",
+      "label": "Mission and vision",
+      "why": "Candidates are not a priority now (need 0.12)",
+      "when": "show it while the venture is hiring"
+    },
+    {
+      "item": "hiring",
+      "label": "Whether they are hiring",
+      "why": "Candidates are not a priority now (need 0.15)",
+      "when": "show it while the venture is hiring"
+    },
+    {
+      "item": "raising",
+      "label": "Information for investors",
+      "why": "Investors are not a priority now (need 0.15)",
+      "when": "show it while the venture is raising"
+    },
+    {
+      "item": "contribute",
+      "label": "How to contribute",
+      "why": "Contributors and community are not a priority now (need 0.1)",
+      "when": "show it while the venture invites contributors"
+    }
+  ],
+  "handoff": {
+    "to": "engineering",
+    "note": "Part of the marketing package: engineering builds the site from this plan, the content variants and the brand; it does not decide what goes where (EE-065).",
+    "variants": [
+      "operations/marketing/content/home/what.mdx",
+      "operations/marketing/content/home/who-for.mdx",
+      "operations/marketing/content/home/next-step.mdx",
+      "operations/marketing/content/home/problem.mdx",
+      "operations/marketing/content/home/how.mdx",
+      "operations/marketing/content/home/proof.mdx",
+      "operations/marketing/content/pricing/pricing.mdx",
+      "operations/marketing/content/contact/contact.mdx",
+      "operations/marketing/content/trust/trust.mdx",
+      "operations/marketing/content/about/team.mdx",
+      "operations/marketing/content/press/press.mdx"
+    ]
+  }
+}

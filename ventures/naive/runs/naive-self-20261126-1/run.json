@@ -1,0 +1,133 @@
+{
+  "run_id": "naive-self-20261126-1",
+  "venture": "naive",
+  "naive_repo": "https://github.com/tchjhnsn/Naive",
+  "naive_sha": "134d2d35063b8b232389b0fb254d152ae40639a1",
+  "prompt": {
+    "file": "prompt.md",
+    "sha256": "adeeaca97b35c6cb880e986833a6e801afabf3380f0edc33d2bd9ae96c4b9b6a"
+  },
+  "env": {
+    "MENTURA_ACTOR": "agent",
+    "MENTURA_ACTOR_ID": "chief-of-staff (service-delivery-agent, risk-and-compliance-agent, marketing-agent where Naive requires a function agent)",
+    "MENTURA_MODEL": "unknown",
+    "MENTURA_SESSION": "naive-self-20261126-1",
+    "MENTURA_HARNESS": "grok-bot-executor",
+    "TZ": "America/Chicago"
+  },
+  "rules": {
+    "phase_override": false,
+    "as_person": false,
+    "naive_code_modified": false
+  },
+  "date": "2026-11-26",
+  "timezone": "America/Chicago",
+  "record_counts": {
+    "strategy": {
+      "records": 24,
+      "written": 11,
+      "draft": 11,
+      "interim": 2,
+      "null_fields": 19
+    },
+    "products": {
+      "records": 8,
+      "written": 4,
+      "draft": 0,
+      "interim": 4,
+      "null_fields": 0
+    },
+    "marketing-and-sales": {
+      "records": 9,
+      "written": 8,
+      "draft": 1,
+      "interim": 0,
+      "null_fields": 7
+    },
+    "supply-chain": {
+      "records": 0,
+      "written": 0,
+      "draft": 0,
+      "interim": 0,
+      "null_fields": 0
+    },
+    "service-delivery": {
+      "records": 1,
+      "written": 1,
+      "draft": 0,
+      "interim": 0,
+      "null_fields": 1
+    },
+    "customer-service": {
+      "records": 0,
+      "written": 0,
+      "draft": 0,
+      "interim": 0,
+      "null_fields": 0
+    },
+    "human-capital": {
+      "records": 5,
+      "written": 5,
+      "draft": 0,
+      "interim": 0,
+      "null_fields": 3
+    },
+    "it": {
+      "records": 0,
+      "written": 0,
+      "draft": 0,
+      "interim": 0,
+      "null_fields": 0
+    },
+    "finance": {
+      "records": 1,
+      "written": 0,
+      "draft": 0,
+      "interim": 1,
+      "null_fields": 0
+    },
+    "assets": {
+      "records": 0,
+      "written": 0,
+      "draft": 0,
+      "interim": 0,
+      "null_fields": 0
+    },
+    "risk-and-compliance": {
+      "records": 7,
+      "written": 1,
+      "draft": 0,
+      "interim": 6,
+      "null_fields": 15
+    },
+    "external-relationships": {
+      "records": 0,
+      "written": 0,
+      "draft": 0,
+      "interim": 0,
+      "null_fields": 0
+    },
+    "capabilities": {
+      "records": 0,
+      "written": 0,
+      "draft": 0,
+      "interim": 0,
+      "null_fields": 0
+    },
+    "knowledge (cross-function)": {
+      "records": 30,
+      "written": 30,
+      "draft": 0,
+      "interim": 0,
+      "null_fields": 31
+    },
+    "unmapped": {
+      "records": 0,
+      "written": 0,
+      "draft": 0,
+      "interim": 0,
+      "null_fields": 0
+    }
+  },
+  "tests": "node test.ts: 3 failing groups (see GAPS.md G-21)"
+}

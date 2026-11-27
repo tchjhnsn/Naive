@@ -1,0 +1,15 @@
+node_modules/
+.naive/
+.DS_Store
+# Founder conversations and what is caught in them stay local, in case a redaction misses something.
+**/raw/sources/conversations-*/
+**/raw/sources/diagnosis-*/
+# Founder-supplied originals stay out of git (EE-070).
+**/raw/**/original.*
+# A data stream's activity (bank transactions, CRM events) stays out of git; only its stream.json and summary.md are versioned.
+/*/_streams/*/*
+!/*/_streams/*/stream.json
+!/*/_streams/*/summary.md
+/k-base/*/_streams/*/*
+!/k-base/*/_streams/*/stream.json
+!/k-base/*/_streams/*/summary.md

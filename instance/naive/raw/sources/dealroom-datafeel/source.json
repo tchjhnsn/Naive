@@ -1,0 +1,12 @@
+{
+  "id": "dealroom-datafeel",
+  "origin": "web",
+  "title": "Dealroom: DataFeel company profile (third-party)",
+  "fetched": "2026-11-26",
+  "fetched_at": "2026-11-26T10:58:13-06:00",
+  "url": "https://app.dealroom.co/companies/datafeel",
+  "archive_of": null,
+  "http_status": 403,
+  "sha256": "48d426e9d2f1b7e4a475e71d07326f09f973f24700c8b55effe0927ab1651e1f",
+  "self_reported": false
+}

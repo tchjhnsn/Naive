@@ -1,0 +1,540 @@
+{
+  "venture": "naive",
+  "phase": "discovery",
+  "kernel": {
+    "owner": "strategy",
+    "standard": {
+      "name": "Lean Canvas",
+      "source": "Ash Maurya, Running Lean: Iterate from Plan A to a Plan That Works, O'Reilly, 2012",
+      "adapted_from": "Alexander Osterwalder and Yves Pigneur, Business Model Generation, Wiley, 2010"
+    },
+    "note": "Each box references a record its owner writes; the canvas copies nothing"
+  },
+  "gate": {
+    "phase": "discovery",
+    "name": "Problem-solution fit",
+    "records": [
+      "validation-problem",
+      "icp",
+      "validation-interview"
+    ]
+  },
+  "next": "problem",
+  "roadmap": [
+    {
+      "box": "problem",
+      "why": "the current phase's gate asks for it",
+      "status": "draft"
+    },
+    {
+      "box": "customer-segments",
+      "why": "the current phase's gate asks for it",
+      "status": "draft"
+    },
+    {
+      "box": "unique-value-proposition",
+      "why": "the next phase's gate asks for it",
+      "status": "agent"
+    },
+    {
+      "box": "solution",
+      "why": "the next phase's gate asks for it",
+      "status": "agent"
+    },
+    {
+      "box": "revenue-streams",
+      "why": "the next phase's gate asks for it",
+      "status": "agent"
+    },
+    {
+      "box": "channels",
+      "why": "the canvas needs it; no gate asks for it yet",
+      "status": "agent"
+    },
+    {
+      "box": "cost-structure",
+      "why": "the canvas needs it; no gate asks for it yet",
+      "status": "missing"
+    },
+    {
+      "box": "key-metrics",
+      "why": "the canvas needs it; no gate asks for it yet",
+      "status": "draft"
+    },
+    {
+      "box": "unfair-advantage",
+      "why": "the canvas needs it; no gate asks for it yet",
+      "status": "missing"
+    }
+  ],
+  "boxes": [
+    {
+      "id": "problem",
+      "label": "Problem",
+      "ask": "What are the top problems your customers have, and how do they solve them today?",
+      "owner": "strategy",
+      "record": "validation-problem",
+      "attribute": "statement",
+      "refs": [
+        "foundation/problem.json"
+      ],
+      "routes": [
+        "foundation/problem",
+        "purpose/validation/problem"
+      ],
+      "status": "draft",
+      "gate": true,
+      "unlocks": [
+        {
+          "kind": "gate",
+          "phase": "discovery",
+          "gate": "Problem-solution fit",
+          "next": "validation"
+        },
+        {
+          "kind": "workflow",
+          "function": "strategy",
+          "workflow": "competitor-review",
+          "title": "Review competitors and the customer's alternatives"
+        },
+        {
+          "kind": "workflow",
+          "function": "strategy",
+          "workflow": "intake",
+          "title": "Learn the venture's strategy"
+        },
+        {
+          "kind": "record",
+          "record": "icp",
+          "field": "problem_forms"
+        },
+        {
+          "kind": "record",
+          "record": "marketing-design-system",
+          "field": "choices[].from"
+        }
+      ]
+    },
+    {
+      "id": "customer-segments",
+      "label": "Customer segments",
+      "ask": "Who has the problem, and who are the early adopters?",
+      "owner": "strategy",
+      "record": "icp",
+      "attribute": ".",
+      "refs": [
+        "foundation/icp/ai-native-solo-founder.json",
+        "foundation/icp/main-street-operator.json",
+        "foundation/icp/small-business-data-owner.json",
+        "foundation/icp/venture-studio.json"
+      ],
+      "routes": [
+        "foundation/icp"
+      ],
+      "status": "draft",
+      "gate": true,
+      "unlocks": [
+        {
+          "kind": "gate",
+          "phase": "discovery",
+          "gate": "Problem-solution fit",
+          "next": "validation"
+        },
+        {
+          "kind": "workflow",
+          "function": "marketing-and-sales",
+          "workflow": "campaign-daily-review",
+          "title": "Review an open campaign each day"
+        },
+        {
+          "kind": "workflow",
+          "function": "marketing-and-sales",
+          "workflow": "intake",
+          "title": "Learn who the venture sells to and where each sale stands"
+        },
+        {
+          "kind": "workflow",
+          "function": "marketing-and-sales",
+          "workflow": "weekly-pipeline-review",
+          "title": "Review the sales pipeline each week"
+        },
+        {
+          "kind": "workflow",
+          "function": "products",
+          "workflow": "intake",
+          "title": "Learn the venture's products"
+        },
+        {
+          "kind": "workflow",
+          "function": "strategy",
+          "workflow": "competitor-review",
+          "title": "Review competitors and the customer's alternatives"
+        },
+        {
+          "kind": "workflow",
+          "function": "strategy",
+          "workflow": "intake",
+          "title": "Learn the venture's strategy"
+        },
+        {
+          "kind": "record",
+          "record": "validation-interview",
+          "field": "icp"
+        },
+        {
+          "kind": "record",
+          "record": "market-anatomy",
+          "field": "icp"
+        },
+        {
+          "kind": "record",
+          "record": "marketing-design-system",
+          "field": "audiences"
+        },
+        {
+          "kind": "record",
+          "record": "opportunity",
+          "field": "icp"
+        }
+      ]
+    },
+    {
+      "id": "unique-value-proposition",
+      "label": "Unique value proposition",
+      "ask": "What single, clear message says why you are different and worth buying?",
+      "owner": "strategy",
+      "record": "validation-solution",
+      "attribute": "difference",
+      "refs": [
+        "validation/solution.json"
+      ],
+      "routes": [
+        "validation/solution",
+        "purpose/validation/solution"
+      ],
+      "status": "agent",
+      "value": "People decide by default; every record has provenance and a gate; definitions are checked by a term engine and Lean. Competitors sell autonomy; Naive sells judgment kept on record. (Positioning is a proposal.)",
+      "gate": false,
+      "unlocks": [
+        {
+          "kind": "gate",
+          "phase": "validation",
+          "gate": "Product-market fit: retention holds",
+          "next": "beachhead"
+        },
+        {
+          "kind": "workflow",
+          "function": "products",
+          "workflow": "intake",
+          "title": "Learn the venture's products"
+        }
+      ]
+    },
+    {
+      "id": "solution",
+      "label": "Solution",
+      "ask": "What is the smallest thing that solves each problem?",
+      "owner": "strategy",
+      "record": "validation-solution",
+      "attribute": "statement",
+      "refs": [
+        "validation/solution.json"
+      ],
+      "routes": [
+        "validation/solution",
+        "purpose/validation/solution"
+      ],
+      "status": "agent",
+      "value": "A venture kept as one set of plain, checked records, with a ranked docket of the decisions a person owes and agents that may only propose, so one founder can run what used to need a team.",
+      "gate": false,
+      "unlocks": [
+        {
+          "kind": "gate",
+          "phase": "validation",
+          "gate": "Product-market fit: retention holds",
+          "next": "beachhead"
+        },
+        {
+          "kind": "workflow",
+          "function": "products",
+          "workflow": "intake",
+          "title": "Learn the venture's products"
+        }
+      ]
+    },
+    {
+      "id": "channels",
+      "label": "Channels",
+      "ask": "How do you reach your customers?",
+      "owner": "strategy",
+      "record": "validation-go-to-market",
+      "attribute": "channels",
+      "refs": [
+        "validation/go-to-market.json"
+      ],
+      "routes": [
+        "validation/go-to-market",
+        "purpose/validation/go-to-market"
+      ],
+      "status": "agent",
+      "value": [
+        {
+          "id": "plugin-marketplace",
+          "kind": "Claude Code plugin marketplace (tchjhnsn/naive-plugins)"
+        },
+        {
+          "id": "founder-network",
+          "kind": "Torian's network and friends' businesses (direct, founder-led)"
+        },
+        {
+          "id": "open-source",
+          "kind": "Public repository and npm package"
+        },
+        {
+          "id": "public-site-signup",
+          "kind": "Public site with one sign-up call to action into Mentura"
+        }
+      ],
+      "gate": false,
+      "unlocks": [
+        {
+          "kind": "gate",
+          "phase": "beachhead",
+          "gate": "Repeatability",
+          "next": "scale"
+        }
+      ]
+    },
+    {
+      "id": "revenue-streams",
+      "label": "Revenue streams",
+      "ask": "How do you make money, and at what price?",
+      "owner": "strategy",
+      "record": "validation-pricing",
+      "attribute": "model",
+      "refs": [
+        "validation/pricing.json"
+      ],
+      "routes": [
+        "validation/pricing",
+        "purpose/validation/pricing"
+      ],
+      "status": "agent",
+      "value": "freemium",
+      "gate": false,
+      "unlocks": [
+        {
+          "kind": "gate",
+          "phase": "validation",
+          "gate": "Product-market fit: retention holds",
+          "next": "beachhead"
+        },
+        {
+          "kind": "workflow",
+          "function": "service-delivery",
+          "workflow": "intake",
+          "title": "Learn the venture's services and engagements"
+        }
+      ]
+    },
+    {
+      "id": "cost-structure",
+      "label": "Cost structure",
+      "ask": "What does it cost to acquire customers, build and run the product?",
+      "owner": "finance",
+      "record": "budget",
+      "attribute": ".",
+      "refs": [
+        "finance/budget/*.json"
+      ],
+      "routes": [
+        "finance/budget"
+      ],
+      "status": "missing",
+      "gate": false,
+      "unlocks": [
+        {
+          "kind": "gate",
+          "phase": "scale",
+          "gate": "Market leadership with healthy margins",
+          "next": "platform"
+        },
+        {
+          "kind": "workflow",
+          "function": "assets",
+          "workflow": "monthly-asset-review",
+          "title": "Review equipment custody and lease dates each month"
+        },
+        {
+          "kind": "workflow",
+          "function": "finance",
+          "workflow": "intake",
+          "title": "Learn the venture's money"
+        },
+        {
+          "kind": "workflow",
+          "function": "finance",
+          "workflow": "monthly-spend-review",
+          "title": "Review spend and runway each month"
+        },
+        {
+          "kind": "workflow",
+          "function": "risk-and-compliance",
+          "workflow": "quarterly-risk-review",
+          "title": "Review the risk register each quarter"
+        }
+      ]
+    },
+    {
+      "id": "key-metrics",
+      "label": "Key metrics",
+      "ask": "Which numbers tell you the venture is working?",
+      "owner": "strategy",
+      "record": "goal",
+      "attribute": "measures",
+      "refs": [
+        "foundation/goals/dogfood-naive.json",
+        "foundation/goals/first-accounts.json",
+        "foundation/goals/public-signup.json",
+        "foundation/goals/settle-bets.json"
+      ],
+      "routes": [
+        "foundation/goals"
+      ],
+      "status": "draft",
+      "gate": false,
+      "unlocks": [
+        {
+          "kind": "workflow",
+          "function": "external-relationships",
+          "workflow": "monthly-investor-update",
+          "title": "Draft the monthly investor update"
+        },
+        {
+          "kind": "workflow",
+          "function": "human-capital",
+          "workflow": "quarterly-team-review",
+          "title": "Review the team plan each quarter"
+        },
+        {
+          "kind": "workflow",
+          "function": "strategy",
+          "workflow": "intake",
+          "title": "Learn the venture's strategy"
+        },
+        {
+          "kind": "workflow",
+          "function": "strategy",
+          "workflow": "strategy-review",
+          "title": "Review the strategy against the evidence"
+        },
+        {
+          "kind": "record",
+          "record": "requirement",
+          "field": "derives_from"
+        },
+        {
+          "kind": "record",
+          "record": "exit-criteria",
+          "field": "criteria.serves"
+        }
+      ]
+    },
+    {
+      "id": "unfair-advantage",
+      "label": "Unfair advantage",
+      "ask": "What do you have that cannot be easily copied or bought?",
+      "owner": "venture",
+      "record": "venture",
+      "attribute": "core.unfair_advantage",
+      "refs": [
+        "venture.json"
+      ],
+      "routes": [
+        "venture"
+      ],
+      "status": "missing",
+      "gate": false,
+      "unlocks": [
+        {
+          "kind": "workflow",
+          "function": "assets",
+          "workflow": "intake",
+          "title": "Learn the venture's equipment and space"
+        },
+        {
+          "kind": "workflow",
+          "function": "capabilities",
+          "workflow": "intake",
+          "title": "Learn how the venture works"
+        },
+        {
+          "kind": "workflow",
+          "function": "customer-service",
+          "workflow": "intake",
+          "title": "Learn how the venture supports its customers"
+        },
+        {
+          "kind": "workflow",
+          "function": "external-relationships",
+          "workflow": "intake",
+          "title": "Learn the venture's investors and raise"
+        },
+        {
+          "kind": "workflow",
+          "function": "finance",
+          "workflow": "intake",
+          "title": "Learn the venture's money"
+        },
+        {
+          "kind": "workflow",
+          "function": "human-capital",
+          "workflow": "intake",
+          "title": "Learn who works on the venture"
+        },
+        {
+          "kind": "workflow",
+          "function": "it",
+          "workflow": "intake",
+          "title": "Learn the venture's systems and access"
+        },
+        {
+          "kind": "workflow",
+          "function": "marketing-and-sales",
+          "workflow": "intake",
+          "title": "Learn who the venture sells to and where each sale stands"
+        },
+        {
+          "kind": "workflow",
+          "function": "products",
+          "workflow": "intake",
+          "title": "Learn the venture's products"
+        },
+        {
+          "kind": "workflow",
+          "function": "risk-and-compliance",
+          "workflow": "intake",
+          "title": "Learn the venture's legal duties and risks"
+        },
+        {
+          "kind": "workflow",
+          "function": "service-delivery",
+          "workflow": "intake",
+          "title": "Learn the venture's services and engagements"
+        },
+        {
+          "kind": "workflow",
+          "function": "strategy",
+          "workflow": "intake",
+          "title": "Learn the venture's strategy"
+        },
+        {
+          "kind": "workflow",
+          "function": "supply-chain",
+          "workflow": "intake",
+          "title": "Learn the venture's suppliers and orders"
+        }
+      ]
+    }
+  ]
+}

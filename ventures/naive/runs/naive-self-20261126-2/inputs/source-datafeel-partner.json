@@ -1,0 +1,15 @@
+{
+  "source": {
+    "id": "datafeel-partner",
+    "origin": "web",
+    "title": "DataFeel Partner With Us",
+    "fetched": "2026-11-26",
+    "url": "https://www.datafeel.com/partner-with-us",
+    "self_reported": true,
+    "fetched_at": "2026-11-26T10:58:13-06:00",
+    "http_status": 200,
+    "sha256": "bd243c1574a43ac787a7e962dcccaefd0c868e127972a174b52a0cc28a0b79d7",
+    "text_omitted": "Fetched page text not republished (third-party content); see url and sha256"
+  },
+  "text": null
+}

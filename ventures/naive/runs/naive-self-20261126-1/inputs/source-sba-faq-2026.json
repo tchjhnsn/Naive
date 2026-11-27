@@ -1,0 +1,15 @@
+{
+  "source": {
+    "id": "sba-faq-2026",
+    "origin": "web",
+    "title": "SBA Office of Advocacy, Frequently Asked Questions About Small Business 2026",
+    "fetched": "2026-11-26",
+    "url": "https://advocacy.sba.gov/2026/02/03/advocacy-releases-frequently-asked-questions-about-small-businesses-2026/",
+    "self_reported": false,
+    "fetched_at": "2026-11-26T10:50:08-06:00",
+    "http_status": 403,
+    "sha256": "b3bf2dd46f2648fec012792debf7ea851902c25040de3273745b46618a245303",
+    "text_omitted": "Fetched page text not republished (third-party content); see url and sha256"
+  },
+  "text": null
+}

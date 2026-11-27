@@ -1,0 +1,25 @@
+{
+  "venture": "naive",
+  "updated": "2026-11-26",
+  "id": "main-street-operator",
+  "who": "Owners of small service businesses run online, such as online fitness coaching",
+  "short": "Main Street operator",
+  "primary": false,
+  "customer": "b2c",
+  "phases": [
+    "discovery"
+  ],
+  "traits": [
+    "non-technical",
+    "runs the business alone or with a few people"
+  ],
+  "jobs": [
+    "know which decision matters this week",
+    "keep customers, offers and money in one place"
+  ],
+  "where_to_find": [
+    "Torian's friends running businesses (placeholders: names TBD by Torian)"
+  ],
+  "not": [],
+  "customer_type": "Torian named online fitness coaching as a friend's business (t23u). These people have no terminal, which is what Mentura's web console is for (docs/design/HOSTED_WORKING_COPY_2026-11-07.md)."
+}

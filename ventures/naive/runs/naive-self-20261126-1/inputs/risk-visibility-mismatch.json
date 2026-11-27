@@ -1,0 +1,14 @@
+{
+  "id": "visibility-mismatch",
+  "title": "Repository visibility does not match the docs",
+  "cause": "README says 'Private for now (G-035)', yet the repository clones without sign-in and is MIT",
+  "consequence": "Unintended disclosure of internal designs",
+  "category": "strategic",
+  "owner": "founder",
+  "likelihood": null,
+  "impact": null,
+  "treatment": "reduce",
+  "status": "open",
+  "review_date": "2026-12-31",
+  "note": "Likelihood and impact unknown; not estimated."
+}

@@ -1,0 +1,23 @@
+{
+  "id": "name-clash-naive-dev",
+  "title": "Name clash with nAIVE Engine (naive.dev)",
+  "cause": "An AI-native game engine uses the name and holds naive.dev",
+  "consequence": "Search confusion and domain unavailability",
+  "category": "reputational",
+  "owner": "founder",
+  "likelihood": null,
+  "impact": null,
+  "treatment": "reduce",
+  "status": "open",
+  "review_date": "2026-12-31",
+  "note": "Likelihood and impact unknown; not estimated.",
+  "_interim": {
+    "why": "Naive refused this write; see GAPS.md",
+    "schema_route": "legal/risks/name-clash-naive-dev",
+    "written_by": {
+      "kind": "agent",
+      "id": "chief-of-staff"
+    },
+    "status": "proposed"
+  }
+}

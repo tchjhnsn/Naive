@@ -1,0 +1,65 @@
+{
+  "venture": "naive",
+  "updated": "2026-11-26",
+  "product": "naive-framework",
+  "model": "freemium",
+  "buyer": "The founder (self-serve)",
+  "points": [
+    {
+      "name": "Naive framework and Claude Code plugin (MIT; the founder's own AI subscription pays for model use)",
+      "amount": 0,
+      "currency": "USD",
+      "period": "month"
+    }
+  ],
+  "evidence": [
+    {
+      "id": "mit-public",
+      "kind": "desk-research",
+      "summary": "The repository is public under the MIT licence and naive-framework 0.6.0 is on npm.",
+      "source": {
+        "url": "https://registry.npmjs.org/naive-framework",
+        "checked": "2026-11-26"
+      },
+      "audience": "wrong",
+      "specificity": "specific",
+      "collected": "2026-11-26"
+    },
+    {
+      "id": "usenaive-credits",
+      "kind": "desk-research",
+      "summary": "usenaive.ai charged $20 a month per company (Standard) or $200 (Pro), each returning its price as usage credits, with a 7-day trial and $10 credit (capture of 2026-11-10).",
+      "source": {
+        "url": "https://web.archive.org/web/20261110181531/https://usenaive.ai/pricing",
+        "checked": "2026-11-26"
+      },
+      "audience": "adjacent",
+      "specificity": "specific",
+      "collected": "2026-11-26"
+    },
+    {
+      "id": "hybrid-shift",
+      "kind": "desk-research",
+      "summary": "Of 71 AI apps, hybrid pricing (subscription plus usage) went from 1% (Oct 2024) to 20% (Oct 2026); 9 of 15 coding tools are now hybrid.",
+      "source": {
+        "url": "https://host0.ai/blog/ai-pricing-2026",
+        "checked": "2026-11-26"
+      },
+      "audience": "adjacent",
+      "specificity": "specific",
+      "collected": "2026-11-26"
+    },
+    {
+      "id": "founder-subscription",
+      "kind": "desk-research",
+      "summary": "Claude Pro is $20 a month, Max $100, Ultra $200; Claude Code is included and draws on the plan's usage limits.",
+      "source": {
+        "url": "https://claude.com/pricing",
+        "checked": "2026-11-26"
+      },
+      "audience": "adjacent",
+      "specificity": "specific",
+      "collected": "2026-11-26"
+    }
+  ]
+}

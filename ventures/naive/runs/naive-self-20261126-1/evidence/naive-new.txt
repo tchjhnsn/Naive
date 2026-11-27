@@ -1,0 +1,24 @@
+
+Creating a new software startup in /workspace/naive-self/workspace/naive, with Founder as its founder, wearing every hat.
+
+
+Success! Created naive at /workspace/naive-self/workspace/naive
+Workspace: Naive workspace at /workspace/naive-self/workspace (naive-workspace.json), clock in America/Chicago, calendar in calendar/
+Git: skipped (--no-git)
+Legal documents: none connected yet. Point Naive at them later with --source legal=google-drive:<folder> (or docusign, local-folder), and draft the founder agreement with the founding-agreement kit.
+
+Inside that directory, you can run:
+
+  npm run dev
+    Opens the board at http://127.0.0.1:4331 and checks each record as you save it.
+
+  npm run check
+    Runs every check that applies to the venture.
+
+  npm run build
+    Checks every package and writes a release.
+
+We suggest that you begin by typing:
+
+  cd naive
+  npm run dev

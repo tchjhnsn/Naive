@@ -1,0 +1,12 @@
+{
+  "id": "claude-pricing",
+  "origin": "web",
+  "title": "Anthropic, Claude plans and pricing",
+  "fetched": "2026-11-26",
+  "fetched_at": "2026-11-26T10:50:01-06:00",
+  "url": "https://claude.com/pricing",
+  "archive_of": null,
+  "http_status": 200,
+  "sha256": "a67bfa39a623aa330b0bb4422d93d6be863d878a00d2cd59aa168f6678e141c9",
+  "self_reported": true
+}

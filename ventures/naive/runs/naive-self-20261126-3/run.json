@@ -1,0 +1,140 @@
+{
+  "run_id": "naive-self-20261126-3",
+  "follows": "naive-self-20261126-2",
+  "venture": "naive",
+  "naive_sha": "134d2d35063b8b232389b0fb254d152ae40639a1",
+  "prompt": {
+    "file": "prompt.md",
+    "sha256": "24a83f5a6868b9302f8240e18b8ad4267fcd31a6ae9979761d3ee94c9c192fad"
+  },
+  "env": {
+    "MENTURA_ACTOR": "agent",
+    "MENTURA_ACTOR_ID": "chief-of-staff",
+    "MENTURA_MODEL": "unknown",
+    "MENTURA_SESSION": "naive-self-20261126-3",
+    "MENTURA_HARNESS": "grok-bot-executor",
+    "TZ": "America/Chicago"
+  },
+  "rules": {
+    "phase_override": false,
+    "as_person": false,
+    "naive_code_modified": false
+  },
+  "writes": [
+    {
+      "route": "purpose/account/datafeel",
+      "exit": 0
+    },
+    {
+      "route": "decisions/datafeel-role",
+      "exit": 0
+    }
+  ],
+  "record_counts": {
+    "strategy": {
+      "records": 25,
+      "written": 12,
+      "draft": 11,
+      "interim": 2,
+      "null_fields": 22
+    },
+    "products": {
+      "records": 8,
+      "written": 4,
+      "draft": 0,
+      "interim": 4,
+      "null_fields": 0
+    },
+    "marketing-and-sales": {
+      "records": 11,
+      "written": 9,
+      "draft": 1,
+      "interim": 1,
+      "null_fields": 10
+    },
+    "supply-chain": {
+      "records": 0,
+      "written": 0,
+      "draft": 0,
+      "interim": 0,
+      "null_fields": 0
+    },
+    "service-delivery": {
+      "records": 1,
+      "written": 1,
+      "draft": 0,
+      "interim": 0,
+      "null_fields": 1
+    },
+    "customer-service": {
+      "records": 0,
+      "written": 0,
+      "draft": 0,
+      "interim": 0,
+      "null_fields": 0
+    },
+    "human-capital": {
+      "records": 5,
+      "written": 5,
+      "draft": 0,
+      "interim": 0,
+      "null_fields": 3
+    },
+    "it": {
+      "records": 0,
+      "written": 0,
+      "draft": 0,
+      "interim": 0,
+      "null_fields": 0
+    },
+    "finance": {
+      "records": 1,
+      "written": 0,
+      "draft": 0,
+      "interim": 1,
+      "null_fields": 0
+    },
+    "assets": {
+      "records": 0,
+      "written": 0,
+      "draft": 0,
+      "interim": 0,
+      "null_fields": 0
+    },
+    "risk-and-compliance": {
+      "records": 7,
+      "written": 1,
+      "draft": 0,
+      "interim": 6,
+      "null_fields": 15
+    },
+    "external-relationships": {
+      "records": 0,
+      "written": 0,
+      "draft": 0,
+      "interim": 0,
+      "null_fields": 0
+    },
+    "capabilities": {
+      "records": 0,
+      "written": 0,
+      "draft": 0,
+      "interim": 0,
+      "null_fields": 0
+    },
+    "knowledge (cross-function)": {
+      "records": 38,
+      "written": 38,
+      "draft": 0,
+      "interim": 0,
+      "null_fields": 39
+    },
+    "unmapped": {
+      "records": 0,
+      "written": 0,
+      "draft": 0,
+      "interim": 0,
+      "null_fields": 0
+    }
+  }
+}

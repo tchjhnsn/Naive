@@ -1,0 +1,15 @@
+{
+  "source": {
+    "id": "nngroup-homepage",
+    "origin": "web",
+    "title": "NN/g, Homepage Design: 5 Fundamental Principles",
+    "fetched": "2026-11-26",
+    "url": "https://www.nngroup.com/articles/homepage-design-principles/",
+    "self_reported": false,
+    "fetched_at": "2026-11-26T10:50:07-06:00",
+    "http_status": 200,
+    "sha256": "22f0c83f314b1836086a2e4c7aae36a3b5148bef242fb73ee33fabaac65b461b",
+    "text_omitted": "Fetched page text not republished (third-party content); see url and sha256"
+  },
+  "text": null
+}

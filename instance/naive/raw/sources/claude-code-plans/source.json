@@ -1,0 +1,12 @@
+{
+  "id": "claude-code-plans",
+  "origin": "web",
+  "title": "Anthropic Help, Claude Code with Pro, Max or Ultra",
+  "fetched": "2026-11-26",
+  "fetched_at": "2026-11-26T10:50:01-06:00",
+  "url": "https://support.claude.com/en/articles/11145838-use-claude-code-with-your-pro-max-or-ultra-plan",
+  "archive_of": null,
+  "http_status": 200,
+  "sha256": "e13abd6eac4421c77aca19ace01414d82e5d5a29931efde1c37ed30301d3fc77",
+  "self_reported": true
+}

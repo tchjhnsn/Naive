@@ -1,0 +1,23 @@
+{
+  "id": "data-broker",
+  "title": "Becoming a data broker without meaning to",
+  "cause": "Observed ventures hold facts about people who are not customers",
+  "consequence": "Licensing them out may require California data-broker registration",
+  "category": "regulatory",
+  "owner": "founder",
+  "likelihood": null,
+  "impact": null,
+  "treatment": "reduce",
+  "status": "open",
+  "review_date": "2026-12-31",
+  "note": "Likelihood and impact unknown; not estimated.",
+  "_interim": {
+    "why": "Naive refused this write; see GAPS.md",
+    "schema_route": "legal/risks/data-broker",
+    "written_by": {
+      "kind": "agent",
+      "id": "chief-of-staff"
+    },
+    "status": "proposed"
+  }
+}

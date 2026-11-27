@@ -1,0 +1,24 @@
+{
+  "venture": "naive",
+  "updated": "2026-11-26",
+  "id": "venture-studio",
+  "who": "Venture studios and operators who start several ventures and want one method across them",
+  "short": "Venture studio",
+  "primary": false,
+  "customer": "b2b",
+  "phases": [
+    "discovery"
+  ],
+  "traits": [
+    "runs a portfolio of ventures"
+  ],
+  "jobs": [
+    "compare ventures by phase",
+    "reuse playbooks"
+  ],
+  "where_to_find": [
+    "introductions from potential partners (TBD by Torian)"
+  ],
+  "not": [],
+  "customer_type": "Ventures can hold ventures (EE-011) and Mentura has teams that own several businesses (tchjhnsn/reflect README)."
+}

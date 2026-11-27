@@ -1,0 +1,2 @@
+Decision from Torian (t27u), relayed by the parent agent on 2026-11-26 11:04 AM CT:
+Datafeel's role is customer, as a target customer, still a prospect since nothing has been sold. Record this via the Naive CLI. If the decision can be recorded as a person decision, don't use --as person; record it as agent-proposed with Torian's stated choice cited (t27u), and note it in GAPS.md if Naive can't record a relayed human decision. Update the account's role field (or interim/ if none). Regenerate site content, re-run naive check, log as run naive-self-20261126-3.

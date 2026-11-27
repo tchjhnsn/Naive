@@ -1,0 +1,12 @@
+{
+  "id": "naive-dev",
+  "origin": "web",
+  "title": "nAIVE Engine (naive.dev), an AI-native game engine",
+  "fetched": "2026-11-26",
+  "fetched_at": "2026-11-26T10:50:07-06:00",
+  "url": "https://naive.dev",
+  "archive_of": null,
+  "http_status": 200,
+  "sha256": "9f3006ca4ce63039814d32623c53104ffcae5673b617d49d68e9720cc9e280ec",
+  "self_reported": true
+}

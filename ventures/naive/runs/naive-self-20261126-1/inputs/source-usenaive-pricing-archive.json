@@ -1,0 +1,15 @@
+{
+  "source": {
+    "id": "usenaive-pricing-archive",
+    "origin": "web",
+    "title": "usenaive.ai pricing, Internet Archive capture 2026-11-10",
+    "fetched": "2026-11-26",
+    "url": "https://web.archive.org/web/20261110181531/https://usenaive.ai/pricing",
+    "self_reported": true,
+    "fetched_at": "2026-11-26T10:50:09-06:00",
+    "http_status": null,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "text_omitted": "Fetched page text not republished (third-party content); see url and sha256"
+  },
+  "text": null
+}

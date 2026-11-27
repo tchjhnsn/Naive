@@ -1,0 +1,12 @@
+{
+  "id": "finray-agent-payments",
+  "origin": "web",
+  "title": "Finray, Agent payment protocols tracker (AP2, x402, ACP)",
+  "fetched": "2026-11-26",
+  "fetched_at": "2026-11-26T10:50:05-06:00",
+  "url": "https://finray.tech/intelligence/agent-payment-protocols-tracker/",
+  "archive_of": null,
+  "http_status": 200,
+  "sha256": "30a71e9c3537f2ee33e238f3ea599a68d0796978941cc1c003c9f0426b7ef98d",
+  "self_reported": false
+}

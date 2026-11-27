@@ -1,0 +1,15 @@
+{
+  "source": {
+    "id": "npm-naive-framework",
+    "origin": "web",
+    "title": "npm registry: naive-framework",
+    "fetched": "2026-11-26",
+    "url": "https://registry.npmjs.org/naive-framework",
+    "self_reported": false,
+    "fetched_at": "2026-11-26T10:50:08-06:00",
+    "http_status": 200,
+    "sha256": "e652c29e9658ac690d69877a639e4f3e5fdf93b5ae26e7a4e5e139b8f31b0645",
+    "text_omitted": "Fetched page text not republished (third-party content); see url and sha256"
+  },
+  "text": null
+}

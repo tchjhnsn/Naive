@@ -1,0 +1,50 @@
+{
+  "venture": "naive",
+  "updated": "2026-11-26",
+  "path": "build-first",
+  "motion": "product-led",
+  "channels": [
+    {
+      "id": "plugin-marketplace",
+      "kind": "Claude Code plugin marketplace (tchjhnsn/naive-plugins)"
+    },
+    {
+      "id": "founder-network",
+      "kind": "Torian's network and friends' businesses (direct, founder-led)"
+    },
+    {
+      "id": "open-source",
+      "kind": "Public repository and npm package"
+    },
+    {
+      "id": "public-site-signup",
+      "kind": "Public site with one sign-up call to action into Mentura"
+    }
+  ],
+  "evidence": [
+    {
+      "id": "built-first",
+      "kind": "behavior",
+      "summary": "The framework was built before any customer: 125+ pages of commits on main and no account or interview records.",
+      "source": {
+        "url": "https://github.com/tchjhnsn/Naive/blob/134d2d35063b8b232389b0fb254d152ae40639a1/docs/decisions/decisions.json",
+        "checked": "2026-11-26"
+      },
+      "audience": "wrong",
+      "specificity": "specific",
+      "collected": "2026-11-26"
+    },
+    {
+      "id": "plg-practice",
+      "kind": "desk-research",
+      "summary": "Homepage guidance: say who you are, what you do and what visitors can do there, in plain words.",
+      "source": {
+        "url": "https://www.nngroup.com/articles/homepage-design-principles/",
+        "checked": "2026-11-26"
+      },
+      "audience": "adjacent",
+      "specificity": "general",
+      "collected": "2026-11-26"
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "id": "name-clash-usenaive",
+  "title": "Name clash with usenaive.ai ('na\u00efve, Inc')",
+  "cause": "A funded company uses the same name, and its CLI installs a command named naive",
+  "consequence": "Search confusion, trademark exposure, and a CLI command collision",
+  "category": "legal",
+  "owner": "founder",
+  "likelihood": null,
+  "impact": null,
+  "treatment": "reduce",
+  "status": "open",
+  "review_date": "2026-12-31",
+  "note": "Likelihood and impact unknown; not estimated.",
+  "_interim": {
+    "why": "Naive refused this write; see GAPS.md",
+    "schema_route": "legal/risks/name-clash-usenaive",
+    "written_by": {
+      "kind": "agent",
+      "id": "chief-of-staff"
+    },
+    "status": "proposed"
+  }
+}

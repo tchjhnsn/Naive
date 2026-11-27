@@ -1,0 +1,9 @@
+{
+  "id": "dogfood-naive",
+  "venture": "naive",
+  "statement": "Run venture:naive on Naive, so its strategy, offers and site come from its own records.",
+  "kind": "venture",
+  "why": "Torian, t25u: build Naive's own venture as Naive records",
+  "updated": "2026-11-26",
+  "measures": []
+}

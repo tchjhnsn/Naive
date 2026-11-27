@@ -1,0 +1,155 @@
+{
+  "venture": "naive",
+  "phase": "discovery",
+  "preset": "standard",
+  "enforce": false,
+  "strictness": {
+    "score": 41,
+    "label": "standard"
+  },
+  "items": [
+    {
+      "id": "customer",
+      "label": "A named customer",
+      "record": "icp",
+      "file": "foundation/icp/<id>.json",
+      "level": "very low",
+      "min": "moderate",
+      "boundary": "fail-closed",
+      "passed": false,
+      "missing": [
+        "who",
+        "where_to_find"
+      ],
+      "why": [
+        "no icp record at foundation/icp/<id>.json"
+      ],
+      "next": "write foundation/icp/<id>.json with who, where_to_find"
+    },
+    {
+      "id": "problem",
+      "label": "A real problem",
+      "record": "validation-problem",
+      "file": "foundation/problem.json",
+      "level": "very low",
+      "min": "moderate",
+      "boundary": "fail-closed",
+      "passed": false,
+      "missing": [
+        "statement",
+        "segment"
+      ],
+      "why": [
+        "no validation-problem record at foundation/problem.json"
+      ],
+      "next": "write foundation/problem.json with statement, segment"
+    },
+    {
+      "id": "alternatives",
+      "label": "Current alternatives",
+      "record": "validation-solution",
+      "file": "validation/solution.json",
+      "level": "very low",
+      "min": "low",
+      "boundary": "fail-closed",
+      "passed": false,
+      "missing": [],
+      "why": [
+        "0 consenting interviews that record how the person copes today (current_solutions) (very low)"
+      ],
+      "next": "low: 1 more consenting interviews that record how the person copes today (current_solutions), or add desk research about the target audience, or specific stated answers from 5 or more of the target audience (one such source reaches low) on the record"
+    },
+    {
+      "id": "solution-fit",
+      "label": "A solution that fits",
+      "record": "validation-solution",
+      "file": "validation/solution.json",
+      "level": "very low",
+      "min": "low",
+      "boundary": "fail-open",
+      "passed": false,
+      "missing": [],
+      "why": [
+        "evidence grades very low",
+        "contradicted by evidence as strong"
+      ],
+      "next": "low: add desk research about the target audience, or specific stated answers from 5 or more of the target audience (one such source reaches low)"
+    },
+    {
+      "id": "channel",
+      "label": "A way to reach them",
+      "record": "validation-go-to-market",
+      "file": "validation/go-to-market.json",
+      "level": "very low",
+      "min": "low",
+      "boundary": "fail-open",
+      "passed": false,
+      "missing": [],
+      "why": [
+        "evidence grades very low"
+      ],
+      "next": "low: add desk research about the target audience, or specific stated answers from 5 or more of the target audience (one such source reaches low)"
+    },
+    {
+      "id": "economic-signal",
+      "label": "An economic signal",
+      "record": "validation-pricing",
+      "file": "validation/pricing.json",
+      "level": "very low",
+      "min": "low",
+      "boundary": "fail-open",
+      "passed": false,
+      "missing": [],
+      "why": [
+        "evidence grades very low"
+      ],
+      "next": "low: add desk research about the target audience, or specific stated answers from 5 or more of the target audience (one such source reaches low)"
+    },
+    {
+      "id": "validation-plan",
+      "label": "A validation plan",
+      "record": "validation-plan",
+      "file": "validation/plan.json",
+      "level": "very low",
+      "min": "low",
+      "boundary": "fail-closed",
+      "passed": false,
+      "missing": [],
+      "why": [
+        "0 of 6 items below high have an open or passed assumption"
+      ],
+      "next": "add an assumption for customer, problem, alternatives, solution-fit, channel, economic-signal"
+    },
+    {
+      "id": "decision",
+      "label": "A decision",
+      "record": null,
+      "file": null,
+      "level": "very low",
+      "min": "high",
+      "boundary": "fail-closed",
+      "passed": false,
+      "missing": [],
+      "why": [
+        "pending: no person has decided yet"
+      ],
+      "next": "a person weighs the evidence and decides (naive phase advance)"
+    }
+  ],
+  "ready": false,
+  "passed": false,
+  "blocking": [
+    "customer (A named customer) is very low; the standard policy needs moderate, fail-closed. Next: write foundation/icp/<id>.json with who, where_to_find",
+    "problem (A real problem) is very low; the standard policy needs moderate, fail-closed. Next: write foundation/problem.json with statement, segment",
+    "alternatives (Current alternatives) is very low; the standard policy needs low, fail-closed. Next: low: 1 more consenting interviews that record how the person copes today (current_solutions), or add desk research about the target audience, or specific stated answers from 5 or more of the target audience (one such source reaches low) on the record",
+    "validation-plan (A validation plan) is very low; the standard policy needs low, fail-closed. Next: add an assumption for customer, problem, alternatives, solution-fit, channel, economic-signal"
+  ],
+  "risks": [
+    "solution-fit (A solution that fits) is very low; the standard policy needs low, fail-open. Next: low: add desk research about the target audience, or specific stated answers from 5 or more of the target audience (one such source reaches low)",
+    "channel (A way to reach them) is very low; the standard policy needs low, fail-open. Next: low: add desk research about the target audience, or specific stated answers from 5 or more of the target audience (one such source reaches low)",
+    "economic-signal (An economic signal) is very low; the standard policy needs low, fail-open. Next: low: add desk research about the target audience, or specific stated answers from 5 or more of the target audience (one such source reaches low)"
+  ],
+  "pending": [
+    "decision (A decision): pending: no person has decided yet"
+  ]
+}

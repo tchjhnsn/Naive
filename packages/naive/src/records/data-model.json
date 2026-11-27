@@ -3786,6 +3786,10 @@
       "reason": "The create-venture generator's npm manifest (I-1); not a record"
     },
     {
+      "path": "instance/naive/package.json",
+      "reason": "The npm manifest create-venture wrote for the dogfood venture at instance/naive. Not a record, as the other package.json entries are not"
+    },
+    {
       "path": "package-lock.json",
       "reason": "The framework's npm lockfile for its dev tools (ESLint), installed by npm ci in CI; not a record"
     },
@@ -3848,6 +3852,10 @@
     {
       "path": "packages/naive/evals/**/*.json",
       "reason": "An eval file (EE-198): a canary and items, some held out. Not a venture record"
+    },
+    {
+      "path": "ventures/naive/**/*.json",
+      "reason": "The dogfood run's logs, the inputs it proposed, its record counts, and interim copies of records Naive refused. Not live records. The live records are under instance/"
     }
   ],
   "files": [

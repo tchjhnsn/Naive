@@ -1,0 +1,12 @@
+{
+  "id": "datafield-co",
+  "origin": "web",
+  "title": "Datafield (datafield.co) home page",
+  "fetched": "2026-11-26",
+  "fetched_at": "2026-11-26T10:50:04-06:00",
+  "url": "https://datafield.co/",
+  "archive_of": null,
+  "http_status": 200,
+  "sha256": "70ff6b38ba75c04eab771b531125756c6737637cf8c5309793fe5adfb6a803c1",
+  "self_reported": true
+}

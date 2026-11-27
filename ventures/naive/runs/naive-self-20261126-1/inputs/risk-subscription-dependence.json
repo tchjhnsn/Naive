@@ -1,0 +1,14 @@
+{
+  "id": "subscription-dependence",
+  "title": "Dependence on founders' AI subscriptions",
+  "cause": "Today agents run on the founder's own plan, whose limits the provider sets",
+  "consequence": "Usage limits or terms changes cap what Naive can do",
+  "category": "strategic",
+  "owner": "founder",
+  "likelihood": null,
+  "impact": null,
+  "treatment": "reduce",
+  "status": "open",
+  "review_date": "2026-12-31",
+  "note": "Likelihood and impact unknown; not estimated."
+}

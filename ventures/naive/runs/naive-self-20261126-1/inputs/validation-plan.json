@@ -1,0 +1,150 @@
+{
+  "venture": "naive",
+  "updated": "2026-11-26",
+  "assumptions": [
+    {
+      "id": "h-term-engine-marketed",
+      "statement": "Founders value checked definitions (the term engine and Lean) enough that it should be marketed, not only used inside.",
+      "item": "solution",
+      "test": "Show 5 target founders the docket with and without term-checked labels; ask them to explain a decision record back.",
+      "pass": "3 of 5 name the checked terms unprompted as a reason to trust the record",
+      "by": "2026-12-31",
+      "status": "open"
+    },
+    {
+      "id": "h-term-engine-needed",
+      "statement": "The term engine is needed at all: without it, definition drift would cause wrong agent writes that tests would not catch.",
+      "item": "solution",
+      "test": "Count, over one month of dogfooding, writes the term engine refused that schema checks alone would have let through.",
+      "pass": "At least one refused write a person agrees was wrong",
+      "by": "2026-12-31",
+      "status": "open"
+    },
+    {
+      "id": "h-byo-subscription",
+      "statement": "Early users will run agents on their own AI subscription (Claude Code, MCP) rather than buy credits from us.",
+      "item": "pricing",
+      "test": "Of the first 10 sign-ups, record which door they use and whether they ask for hosted agents.",
+      "pass": "7 of 10 run through their own subscription",
+      "by": "2026-12-31",
+      "status": "open"
+    },
+    {
+      "id": "h-hybrid-credits",
+      "statement": "Mentura users without an AI subscription will pay a monthly plan that includes model credits.",
+      "item": "pricing",
+      "test": "Offer a priced plan with included credits to 10 Main Street operators.",
+      "pass": "3 of 10 pay or pre-pay",
+      "by": "2026-12-31",
+      "status": "open"
+    },
+    {
+      "id": "h-main-street",
+      "statement": "Non-technical small business owners (e.g. online fitness coaching) will run their business's decisions in Mentura weekly.",
+      "item": "product-market-fit",
+      "test": "Onboard 5 such owners by hand; observe 4 weeks.",
+      "pass": "3 of 5 decide at least one decision a week for 4 weeks",
+      "by": "2026-12-31",
+      "status": "open"
+    },
+    {
+      "id": "h-solo-ai-founder",
+      "statement": "AI-native solo founders adopt the plugin and keep using it after the first week.",
+      "item": "product-market-fit",
+      "test": "Track plugin installs from Torian's network; ask at day 7 and day 30.",
+      "pass": "40% still active at day 30",
+      "by": "2026-12-31",
+      "status": "open"
+    },
+    {
+      "id": "h-studio",
+      "statement": "Venture studios will pay to run several ventures under one method.",
+      "item": "pricing",
+      "test": "Pitch 3 studios a paid pilot.",
+      "pass": "1 signed pilot",
+      "by": "2026-12-31",
+      "status": "open"
+    },
+    {
+      "id": "h-services",
+      "statement": "A done-with-you venture setup service is a faster first revenue than software.",
+      "item": "pricing",
+      "test": "Offer the setup service to 5 early accounts at a stated price.",
+      "pass": "2 accept",
+      "by": "2026-12-31",
+      "status": "open"
+    },
+    {
+      "id": "h-marketplace",
+      "statement": "Founders will buy or share templates, kits and playbooks built on Naive.",
+      "item": "go-to-market",
+      "test": "Publish 3 free templates; measure installs and requests for more.",
+      "pass": "TBD by Torian",
+      "by": "2026-12-31",
+      "status": "open"
+    },
+    {
+      "id": "h-data-benchmarks",
+      "statement": "Pooled, anonymised benchmarks from run ventures become a product investors want.",
+      "item": "pricing",
+      "test": "Not before data terms exist and a minimum group size is decided; then ask 5 investors.",
+      "pass": "TBD by Torian; blocked until data terms exist",
+      "by": "2026-12-31",
+      "status": "open"
+    },
+    {
+      "id": "h-data-broker",
+      "statement": "Licensing observed-venture profiles outward is a viable line (the PitchBook model).",
+      "item": "pricing",
+      "test": "Legal review first: it would likely make Naive a registered data broker in California.",
+      "pass": "Default: do not pursue unless counsel and Torian approve",
+      "by": "2026-12-31",
+      "status": "open"
+    },
+    {
+      "id": "h-platform",
+      "statement": "Others will build on Naive (kits, connectors, frameworks), the Platform phase gate.",
+      "item": "go-to-market",
+      "test": "Publish the kit and connector contract; count outside contributions.",
+      "pass": "First outside kit or connector",
+      "by": "2026-12-31",
+      "status": "open"
+    },
+    {
+      "id": "h-agentic-commerce",
+      "statement": "Agents that buy and sell for a venture (agent payment protocols) become a capability small businesses expect within the planning horizon.",
+      "item": "go-to-market",
+      "test": "Watch protocol adoption (ACP, AP2, MPP) and ask early accounts.",
+      "pass": "TBD by Torian",
+      "by": "2026-12-31",
+      "status": "open"
+    },
+    {
+      "id": "h-partner-led",
+      "statement": "Small business programs and partners (studios, accelerators, local business centres) are a cheaper channel than direct.",
+      "item": "go-to-market",
+      "test": "Approach 2 partners with a pilot cohort.",
+      "pass": "1 cohort of 5+ ventures",
+      "by": "2026-12-31",
+      "status": "open"
+    },
+    {
+      "id": "h-phase-per-premise",
+      "statement": "A phase belongs to each premise or function, not only to the whole venture, because real ventures loop back.",
+      "item": "operations-readiness",
+      "test": "Dogfood venture:naive for a month and log every time a single venture phase was wrong for part of it.",
+      "pass": "3+ logged mismatches means per-premise phases are needed",
+      "by": "2026-12-31",
+      "status": "open"
+    },
+    {
+      "id": "h-website-as-proof",
+      "statement": "A site generated from the venture's own records, with a working sign-up, persuades partners more than a deck.",
+      "item": "go-to-market",
+      "test": "Show the generated site and sign-up to Jon and Oleena and the first accounts; record their questions.",
+      "pass": "They sign up or ask to bring someone",
+      "by": "2026-12-31",
+      "status": "open"
+    }
+  ]
+}

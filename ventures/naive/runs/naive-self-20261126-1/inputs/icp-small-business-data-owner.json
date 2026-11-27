@@ -1,0 +1,24 @@
+{
+  "venture": "naive",
+  "updated": "2026-11-26",
+  "id": "small-business-data-owner",
+  "who": "Small businesses whose operating data has value, the segment Datafield (datafield.co) serves",
+  "short": "Data-owning small business",
+  "primary": false,
+  "customer": "b2b",
+  "phases": [
+    "discovery"
+  ],
+  "traits": [
+    "has years of operating records"
+  ],
+  "jobs": [
+    "know what their records are worth",
+    "keep control of who uses them"
+  ],
+  "where_to_find": [
+    "DataField (which DataField is TBD by Torian)"
+  ],
+  "not": [],
+  "customer_type": "Only relevant if Torian's DataField is datafield.co, which licenses de-identified small-business data to AI labs (datafield.co, self-reported)."
+}

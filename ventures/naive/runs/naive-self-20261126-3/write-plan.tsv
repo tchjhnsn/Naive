@@ -1,0 +1,2 @@
+purpose/account/[id]	inputs/account-datafeel.json	role customer (t27u)
+decisions/[id]	inputs/decision-datafeel-role.json	relayed decision t27u

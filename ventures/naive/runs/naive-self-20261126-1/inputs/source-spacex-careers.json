@@ -1,0 +1,15 @@
+{
+  "source": {
+    "id": "spacex-careers",
+    "origin": "web",
+    "title": "SpaceX careers",
+    "fetched": "2026-11-26",
+    "url": "https://www.spacex.com/Careers",
+    "self_reported": true,
+    "fetched_at": "2026-11-26T10:50:08-06:00",
+    "http_status": 200,
+    "sha256": "39f534f0033b9146d7123b2328b14e04cec069205e52f65d0acbab6dfbc1ad46",
+    "text_omitted": "Fetched page text not republished (third-party content); see url and sha256"
+  },
+  "text": null
+}

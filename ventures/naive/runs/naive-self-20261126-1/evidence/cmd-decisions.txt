@@ -1,0 +1,56 @@
+  57 now      product-exists
+       why: 1 decision wait on it; fails closed: the work behind it waits; unlocks Write product cards for what exists or is planned; settles the strategic foundation
+  35 now      foundation-problem
+       why: fails closed: the work behind it waits; settles the strategic foundation
+  35 now      foundation-vision
+       why: fails closed: the work behind it waits; settles the strategic foundation
+  35 now      foundation-mission
+       why: fails closed: the work behind it waits; settles the strategic foundation
+  35 now      foundation-icp
+       why: fails closed: the work behind it waits; settles the strategic foundation
+  35 now      foundation-competence
+       why: fails closed: the work behind it waits; settles the strategic foundation
+  35 now      foundation-business-models
+       why: fails closed: the work behind it waits; settles the strategic foundation
+  35 now      foundation-phase
+       why: fails closed: the work behind it waits; settles the strategic foundation
+  35 now      foundation-exit-criteria
+       why: fails closed: the work behind it waits; settles the strategic foundation
+  35 now      foundation-markets
+       why: fails closed: the work behind it waits; settles the strategic foundation
+  35 now      foundation-channels
+       why: fails closed: the work behind it waits; settles the strategic foundation
+  35 now      foundation-alignment
+       why: fails closed: the work behind it waits; settles the strategic foundation
+  35 now      foundation-tagline
+       why: fails closed: the work behind it waits; settles the strategic foundation
+  15 now      data-terms
+       why: fails closed: the work behind it waits; rests on 1 reason citing 1 source
+  15 now      first-hires
+       why: fails closed: the work behind it waits; rests on 2 reasons citing 2 sources
+  15 now      owner-outcome
+       why: fails closed: the work behind it waits
+  15 now      pricing-model
+       why: fails closed: the work behind it waits; rests on 5 reasons citing 5 sources
+  15 now      scale-ambition
+       why: fails closed: the work behind it waits; rests on 1 reason citing 1 source
+  15 now      signup-door
+       why: fails closed: the work behind it waits; rests on 3 reasons citing 3 sources
+  15 now      term-engine-position
+       why: fails closed: the work behind it waits; rests on 4 reasons citing 4 sources
+  15 now      draft-foundation-constraints
+       why: fails closed: the work behind it waits
+  15 now      draft-foundation-exit-criteria-discovery
+       why: fails closed: the work behind it waits
+  15 now      draft-foundation-goals-dogfood-naive
+       why: fails closed: the work behind it waits
+  15 now      draft-foundation-goals-first-accounts
+       why: fails closed: the work behind it waits
+  15 now      draft-foundation-goals-public-signup
+       why: fails closed: the work behind it waits
+  15 now      draft-foundation-goals-settle-bets
+       why: fails closed: the work behind it waits
+  15 now      draft-marketing-design-system
+       why: fails closed: the work behind it waits
+  10 now      founding-team
+       why: unlocks Draft the founder agreement with the founding-agreement kit

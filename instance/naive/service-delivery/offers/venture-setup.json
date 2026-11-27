@@ -1,0 +1,19 @@
+{
+  "id": "venture-setup",
+  "name": "Venture setup, done with you",
+  "outcome": "Your venture's foundation, docket and first decisions in Naive, and the next three tests written.",
+  "includes": [
+    "a working session to capture the idea",
+    "foundation records drafted by agents for you to accept",
+    "a validation plan with pass thresholds"
+  ],
+  "excludes": [
+    "deciding for you"
+  ],
+  "price_model": "fixed",
+  "price": null,
+  "currency": "USD",
+  "product": "naive-framework",
+  "status": "draft",
+  "note": "Hypothesis h-services. Price TBD by Torian."
+}

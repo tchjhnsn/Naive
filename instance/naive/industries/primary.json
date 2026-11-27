@@ -1,0 +1,38 @@
+{
+  "venture": "naive",
+  "id": "primary",
+  "name": "unknown",
+  "updated": "2026-11-26",
+  "cells": {
+    "regulation": {
+      "status": "unknown"
+    },
+    "cost_of_error": {
+      "status": "unknown"
+    },
+    "capital_intensity": {
+      "status": "unknown"
+    },
+    "time_to_revenue_days": {
+      "status": "unknown"
+    },
+    "clockspeed": {
+      "status": "unknown"
+    },
+    "supplier_power": {
+      "status": "unknown"
+    },
+    "buyer_power": {
+      "status": "unknown"
+    },
+    "threat_of_entrants": {
+      "status": "unknown"
+    },
+    "threat_of_substitutes": {
+      "status": "unknown"
+    },
+    "rivalry": {
+      "status": "unknown"
+    }
+  }
+}

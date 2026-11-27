@@ -1,0 +1,56 @@
+{
+  "id": "signup-door",
+  "question": "What is the one call to action on the public site?",
+  "status": "open",
+  "needed_in": "discovery",
+  "options": [
+    "Create a Mentura account (web)",
+    "Install the Claude Code plugin",
+    "Join the waitlist"
+  ],
+  "answer": null,
+  "decided_by": null,
+  "decided_at": null,
+  "proposed": {
+    "answer": "One primary action, 'Start your venture', into Mentura account creation, with the plugin install as the secondary link for terminal users. Retire the waitlist once sign-up works end to end.",
+    "options": [
+      "Create a Mentura account (web)",
+      "Install the Claude Code plugin",
+      "Join the waitlist"
+    ],
+    "drafted_by": {
+      "kind": "agent",
+      "id": "chief-of-staff"
+    },
+    "proposed_at": "2026-11-26T12:00:00-06:00"
+  },
+  "reasons": [
+    {
+      "claim": "mentura.xyz/sign-in already offers 'Create your account'.",
+      "kind": "for",
+      "citations": [
+        {
+          "ref": "https://mentura.xyz/sign-in"
+        }
+      ]
+    },
+    {
+      "claim": "The current marketing pages' only CTA is a waitlist that creates no account.",
+      "kind": "context",
+      "citations": [
+        {
+          "ref": "https://github.com/tchjhnsn/Naive/blob/134d2d35063b8b232389b0fb254d152ae40639a1/site/content/marketing/waitlist.mdx"
+        }
+      ]
+    },
+    {
+      "claim": "In Mentura, agent runs, turning a function on for a real business and most venture screens on real data are not built yet.",
+      "kind": "against",
+      "citations": [
+        {
+          "ref": "https://github.com/tchjhnsn/reflect (web/README.md 'Not built')"
+        }
+      ]
+    }
+  ]
+}
