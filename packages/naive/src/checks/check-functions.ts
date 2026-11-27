@@ -10,15 +10,25 @@
 //     delegation.json one_way_doors or never_redelegated is escalate (a function's matrix never loosens them); a
 //     recommend row names its approver, and that approver holds, in the default delegation, a live grant of the
 //     row's class that reaches the founder and whose scope is the venture or covers every folder the function's record
-//     types sit in (functionScopes below), so the matrix never names an approver without authority;
+//     types sit in (functionScopes below), so the matrix never names an approver without authority,
+//     and the approver is the founder, the chief of staff, the lead whose portfolio holds the function, or a role
+//     the delegation grants that class to (EE-215);
 //   - every capability cluster is in packages/naive/src/functions/it/capability-clusters.json;
 //   - the intake names a workflow the module has, and that workflow's trigger is intake;
-//   - every route a workflow or a step reads is one the router serves (readable below);
-//   - a step's skill is a folder in the module's skills/ with a SKILL.md; a step writes only routes in the function's
-//     write reach (WRITE_REACH below); a step raises only classes the module's decisions.json has a row for; a step's
-//     activity is a level 4 element of packages/naive/src/functions/pcf.json or an activity in
+//   - every route a workflow or a step reads is one the router serves (readable below), and an event trigger's route
+//     is one too, since a trigger on no route never fires;
+//   - every workflow's measures are its function's, from function.json (EE-215); its goal and done criteria are
+//     required by the schema;
+//   - a step's skill is a skill of the module (skills/ at any depth, as the agent spec derives it); a step writes only
+//     routes in the function's write reach (writeReach below, the same list the router enforces) and only routes the
+//     router serves with a write action; a step raises only classes the module's decisions.json has a row for; a
+//     step's activity is a level 4 element of packages/naive/src/functions/pcf.json or an activity in
 //     packages/naive/src/functions/activities.json, under the function's APQC category (EE-168);
-//   - agent.md has frontmatter naming role <id>-agent and its function;
+//   - every skill of the module is named by a step or by agent.md, so the agent is never handed a skill with no cue
+//     for when to load it (EE-215);
+//   - agent.md has frontmatter naming role <id>-agent, its function and the lead whose portfolio holds it; the six
+//     sections AGENT_SECTIONS in that order; and a Writes: line whose routes are exactly the function's write reach,
+//     so the prose an agent reads cannot drift from what the router allows (EE-215);
 //   - an intake workflow asks only for what Discovery allows. Intake runs when a function is added, and a business can
 //     add any function in Discovery, so a required step (one without `consider`) of a workflow whose trigger is intake
 //     writes only record types that need-now suggests to every venture in Discovery. A record type need-now suggests
@@ -91,13 +101,27 @@ export function functionScopes(records: typeof model.records, fn: string): { sco
 const ROLES = join(root, "packages/naive/template/governance/roles");
 
 // The team plan sets every agent's reach, so no agent writes it, whichever function owns its record type.
-// The routes each function may write: decisions, handoffs, and every record route whose record type the function owns.
+// The routes each function may write: decisions, handoffs, and every record route whose record type the function owns
+// and the router serves with a write action. This mirrors functionWrites in ../engine/agents/reach.ts, the list the
+// router enforces, and is derived here so --root can check a copy of the repository.
 const owner = new Map(model.records.map((r) => [r.id, r.function ?? null]));
-const SHARED = ["decisions/*", "decisions/[id]", "operations/handoff/[id]"];
-export const writeReach = (fn: string): Set<string> => new Set([...SHARED,
-  ...(routes() as { kind: string, record?: string, route: string, files?: string[] }[]).filter((r) => r.kind === "record" && r.record && owner.get(r.record) === fn
-    && !(r.files ?? []).some((f) => PLANS.includes(f))).map((r) => r.route)]);
-const reaches = (reach: Set<string>, route: string) => reach.has(route) || [...reach].some((r) => r.endsWith("/*") && route.startsWith(r.slice(0, -1)));
+const SHARED = ["decisions/*", "operations/handoff/*"];
+export const writeReach = (fn: string): string[] => [...new Set([...SHARED,
+  ...[...new Set((routes() as { kind: string, record?: string, route: string, actions?: string[], files?: string[] }[])
+    .filter((r) => r.kind === "record" && r.record && owner.get(r.record) === fn && (r.actions ?? []).includes("write")
+      && (r.files ?? []).length && !(r.files ?? []).some((f) => PLANS.includes(f)))
+    .map((r) => r.route.replace("[id]", "*")))].sort()])];
+const star = (route: string) => route.replace(/\[id\]/g, "*");
+const reaches = (reach: readonly string[], route: string) => reach.some((r) => r === star(route)
+  || (r.endsWith("/*") && star(route).startsWith(r.slice(0, -1))));
+
+/** The sections every agent.md carries, in this order (EE-215). Extra sections are allowed between them. */
+export const AGENT_SECTIONS = ["What you work toward", "What you own", "How you work", "When you do not know",
+  "What you decide, and what you bring up", "Skills"];
+
+/** Record routes the router serves without a write action, so a step that writes one is refused at run time. */
+const NO_WRITE = new Set((routes() as { kind: string, route: string, actions?: string[] }[])
+  .filter((r) => r.kind === "record" && !(r.actions ?? []).includes("write")).map((r) => r.route));
 
 // What a workflow or a step may read: venture.json ("venture", which no route claims), a route, or a glob ending in
 // /* that some route falls under. A read the router has no route for fails at run time, so it is a finding here.
@@ -157,9 +181,18 @@ export const checkFunctions = Effect.gen(function* () {
     const dir = join(FUNCTIONS, fn);
     const rel = (f: string) => `packages/naive/src/functions/${fn}/${f}`;
     if (!(yield* fs.exists(dir))) { fail(fn, rel(""), "the function has no module folder"); continue; }
+    // Every skills/ folder at any depth under the module, as functionAgent derives a spec's skills (skills/, kits/<kit>/skills/).
     const skills: string[] = [];
-    for (const s of yield* fs.list(join(dir, "skills"))) if (yield* fs.exists(join(dir, "skills", s, "SKILL.md"))) skills.push(s);
+    for (const at = [dir]; at.length;) {
+      const here = at.pop() as string;
+      for (const e of yield* fs.list(here)) {
+        if (e.startsWith(".") || e === "node_modules" || !(yield* fs.isDirectory(join(here, e)))) continue;
+        if (e === "skills") { for (const s of yield* fs.list(join(here, e))) if (yield* fs.exists(join(here, e, s, "SKILL.md"))) skills.push(s); }
+        else at.push(join(here, e));
+      }
+    }
     const reach = writeReach(fn);
+    const leadOf = leads.filter((l) => l.portfolio.includes(fn)).map((l) => l.id);
 
     // The decision matrix.
     const rows = new Set<string>();
@@ -183,12 +216,19 @@ export const checkFunctions = Effect.gen(function* () {
             if (!held.length) fail(fn, rel("decisions.json"), `class ${c} names approver ${who}, who holds no live grant of ${c} reaching ${del.root} in packages/naive/template/governance/delegation.json`);
             else if (uncovered.length) fail(fn, rel("decisions.json"), `class ${c} names approver ${who}, whose grants of ${c} do not cover ${uncovered.join(", ")}, where the function's records sit`);
           }
+          if (row.level === "recommend" && row.approver && !["founder", "chief-of-staff", ...leadOf].includes(String(row.approver))
+            && !(isObject(delegation) && (delegation as Delegation).grants.some((g) => g.to === row.approver && g.classes.includes(c) && liveGrant(g, today)))) {
+            fail(fn, rel("decisions.json"), `class ${c} recommends to ${String(row.approver)}, who is not in this function's line and holds no grant of ${c}: the approver is founder, chief-of-staff, ${leadOf.join(" or ") || "the lead whose portfolio holds the function"}, or a role delegation.json grants ${c}`);
+          }
         }
       }
     } else if (complete) fail(fn, rel("decisions.json"), "missing");
 
-    // Workflows.
+    // Workflows. The manifest is read first, because a workflow's measures must be its function's.
+    const manifest = (yield* fs.exists(join(dir, "function.json"))) ? yield* readJson(join(dir, "function.json")) : null;
+    const measures = new Set(isObject(manifest) ? strings(manifest.measures) : []);
     const workflows = new Map<string, Record<string, unknown>>();
+    const named = new Set<string>();
     const wdir = join(dir, "workflows");
     for (const f of (yield* fs.list(wdir)).filter((x) => x.endsWith(".json"))) {
       const w = yield* readJson(join(wdir, f));
@@ -200,11 +240,17 @@ export const checkFunctions = Effect.gen(function* () {
       if (w.function !== fn) fail(fn, file, `names function ${String(w.function)}, not ${fn}`);
       const steps = Array.isArray(w.steps) ? w.steps.filter(isObject) : [];
       for (const r of strings(w.reads)) if (!readable(r)) fail(fn, file, `reads ${r}, which no route serves`);
+      for (const m of strings(w.measures)) if (!measures.has(m)) fail(fn, file, `moves measure kind ${m}, which function.json does not list for ${fn}`);
+      if (isObject(w.trigger) && w.trigger.kind === "event" && typeof w.trigger.route === "string" && !readable(w.trigger.route)) {
+        fail(fn, file, `its event trigger watches ${w.trigger.route}, which no route serves, so it never fires`);
+      }
       if (steps.length && steps.every((s) => isObject(s.consider))) fail(fn, file, "every step is one to consider; a workflow has at least one required step");
       for (const s of Array.isArray(w.steps) ? w.steps.filter(isObject) : []) {
         if (s.skill && !skills.includes(String(s.skill))) fail(fn, file, `step ${String(s.id)} loads skill ${String(s.skill)}, which skills/ does not have`);
+        if (typeof s.skill === "string") named.add(s.skill);
         for (const r of strings(s.reads)) if (!readable(r)) fail(fn, file, `step ${String(s.id)} reads ${r}, which no route serves`);
         for (const r of strings(s.writes)) if (!reaches(reach, r)) fail(fn, file, `step ${String(s.id)} writes ${r}, outside the function's write reach`);
+        for (const r of strings(s.writes)) if (NO_WRITE.has(r)) fail(fn, file, `step ${String(s.id)} writes ${r}, which the router serves without a write action, so the write is refused`);
         for (const c of strings(s.raises)) if (!rows.has(c)) fail(fn, file, `step ${String(s.id)} raises ${c}, which decisions.json has no row for`);
         if (typeof s.activity === "string") { const e = activityError(fn, s.activity); if (e) fail(fn, file, `step ${String(s.id)} performs activity ${s.activity}, ${e}`); }
         if (!isObject(w.trigger) || w.trigger.kind !== "intake") continue;
@@ -220,15 +266,14 @@ export const checkFunctions = Effect.gen(function* () {
     if (complete && workflows.size < 2) fail(fn, rel("workflows/"), `has ${workflows.size} workflow${workflows.size === 1 ? "" : "s"}; a complete module has at least two`);
 
     // The manifest.
-    if (yield* fs.exists(join(dir, "function.json"))) {
-      const m = yield* readJson(join(dir, "function.json"));
-      for (const e of schemaErrors("function-module.schema.json", m)) fail(fn, rel("function.json"), e);
-      if (isObject(m)) {
-        if (m.id !== fn) fail(fn, rel("function.json"), `id ${String(m.id)} is not the folder's name`);
-        for (const c of strings(m.clusters)) if (!clusters.has(c)) fail(fn, rel("function.json"), `cluster ${c} is not in capability-clusters.json`);
-        const intake = workflows.get(String(m.intake));
-        if (!intake) fail(fn, rel("function.json"), `intake ${String(m.intake)} is not a workflow in workflows/`);
-        else if (!isObject(intake.trigger) || intake.trigger.kind !== "intake") fail(fn, rel("function.json"), `intake ${String(m.intake)} has a trigger other than intake`);
+    if (manifest !== null) {
+      for (const e of schemaErrors("function-module.schema.json", manifest)) fail(fn, rel("function.json"), e);
+      if (isObject(manifest)) {
+        if (manifest.id !== fn) fail(fn, rel("function.json"), `id ${String(manifest.id)} is not the folder's name`);
+        for (const c of strings(manifest.clusters)) if (!clusters.has(c)) fail(fn, rel("function.json"), `cluster ${c} is not in capability-clusters.json`);
+        const intake = workflows.get(String(manifest.intake));
+        if (!intake) fail(fn, rel("function.json"), `intake ${String(manifest.intake)} is not a workflow in workflows/`);
+        else if (!isObject(intake.trigger) || intake.trigger.kind !== "intake") fail(fn, rel("function.json"), `intake ${String(manifest.intake)} has a trigger other than intake`);
       }
     } else if (complete) fail(fn, rel("function.json"), "missing");
 
@@ -238,6 +283,33 @@ export const checkFunctions = Effect.gen(function* () {
       const front = /^---\n([\s\S]*?)\n---\n/.exec(text)?.[1] ?? "";
       if (!new RegExp(`^role: ${fn}-agent$`, "m").test(front)) fail(fn, rel("agent.md"), `frontmatter does not name role: ${fn}-agent`);
       if (!new RegExp(`^function: ${fn}$`, "m").test(front)) fail(fn, rel("agent.md"), `frontmatter does not name function: ${fn}`);
+      const lead = /^lead: (.+)$/m.exec(front)?.[1]?.trim();
+      if (leadOf.length === 1 && lead !== leadOf[0]) fail(fn, rel("agent.md"), `frontmatter names lead ${lead ?? "none"}, but ${leadOf[0]} is the lead whose portfolio holds ${fn}`);
+
+      // The sections an agent reads, in order: what it works toward, what it owns, how it works, what to do when it
+      // does not know, what it decides, and its skills (EE-215).
+      const headings = [...text.matchAll(/^## (.+)$/gm)].map((m) => m[1].trim());
+      const missing = AGENT_SECTIONS.filter((s) => !headings.includes(s));
+      if (missing.length) fail(fn, rel("agent.md"), `has no "## ${missing.join('" and no "## ')}" section`);
+      else {
+        const order = AGENT_SECTIONS.map((s) => headings.indexOf(s));
+        if (order.some((at, i) => i > 0 && at < order[i - 1])) fail(fn, rel("agent.md"), `its sections are out of order: they read ${headings.filter((h) => AGENT_SECTIONS.includes(h)).join(", ")}, and the order is ${AGENT_SECTIONS.join(", ")}`);
+      }
+
+      // The Writes line is the write reach in prose, so it must say exactly what the router allows.
+      const writesLine = text.split("\n").find((l) => l.startsWith("Writes: "));
+      if (!writesLine) fail(fn, rel("agent.md"), 'has no "Writes: " line under "## What you own", so the agent is not told what it may write');
+      else {
+        const claimed = new Set([...writesLine.matchAll(/`([^`]+)`/g)].map((m) => star(m[1])).filter((t) => !t.includes(".")));
+        const extra = [...claimed].filter((t) => !reach.includes(t));
+        const absent = reach.filter((t) => !claimed.has(t));
+        if (extra.length) fail(fn, rel("agent.md"), `its Writes line claims ${extra.join(", ")}, which is outside the function's write reach, so the router refuses it`);
+        if (absent.length) fail(fn, rel("agent.md"), `its Writes line leaves out ${absent.join(", ")}, which the function may write`);
+      }
+
+      // A skill the agent is never told to load is a skill it will not use.
+      const unnamed = skills.filter((s) => !named.has(s) && !text.includes(`\`${s}\``));
+      if (unnamed.length) fail(fn, rel("agent.md"), `never names skill${unnamed.length === 1 ? "" : "s"} ${unnamed.join(", ")}, which the module ships, so the agent has no cue for when to load ${unnamed.length === 1 ? "it" : "them"}`);
     } else if (complete) fail(fn, rel("agent.md"), "missing");
 
     if (complete) {

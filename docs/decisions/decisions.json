@@ -2994,6 +2994,120 @@
       ]
     },
     {
+      "id": "EE-222",
+      "date": "2026-11-26",
+      "status": "in-force",
+      "decision": "Naive recommends tools per goal and per activity, and the recommendation favours tools that give the system visibility of the activity and tools the venture owns. The visibility rubric is data (packages/naive/src/functions/it/visibility-rubric.json): five criteria, each with a question, why it matters, described levels on a 0 to 4 scale, its sources and a default weight that is an unvalidated prior a venture overrides under visibility in naive.config.json. The weights are activity-record 0.3, ownership 0.25, export-and-api 0.2, events 0.15 and consent-and-retention 0.1, so visibility carries 0.65 and ownership 0.25. consent-and-retention is a gate: a 0 rules a candidate out, because recording a person needs a lawful basis, a retention period and a way to erase (GDPR articles 5, 6, 7, 13 and 17). activity-record is not a gate: a 0 means the tool leaves the activity unrecorded, which is reported as a blind spot and still ranked, because only a person rules a tool out. The rubric also names the channel an activity is performed on, read from the words of its statement as an activity's kind is (EE-179), and the tool kinds that capture each channel, named as kinds and never as vendors. scoreTools in packages/naive/src/engine/visibility-rubric.ts is the pure scorer, and naive tools recommend [--goal <id>] [--activity <id>] [--function <id>] [--json] [--propose] reads a goal, says which activities it needs to be visible and which are blind spots, and with --propose files one open decision per goal and function as that function's agent. An agent never decides. The recommendation's home is that open decision, which holds every candidate as an option so the choice stays open and a person can withdraw it (EE-185); no record type is added, because a Discovery venture can write a decision and it/connections starts at Validation and describes a connection the venture already has.",
+      "why": "Torian's instruction of 2026-11-26: agents must be hyper-vigilant that tools give the agents and the system visibility over every activity, for example meeting software that records so every meeting has notes, and the venture should favour owning its own tooling. The asymmetry that makes it a rubric is that an agent's work is visible by construction through the router and provenance (EE-031), while a person's work is visible only as far as a tool captures it, so the activities at risk are the ones a person performs or approves and the ones no workflow step writes a record for.",
+      "related": [
+        "EE-031",
+        "EE-163",
+        "EE-179",
+        "EE-185",
+        "EE-187",
+        "EE-189"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/functions/it/visibility-rubric.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/visibility-rubric.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/tool-recommendations.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/checks/check-visibility-rubric.ts",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
+      "id": "EE-215",
+      "date": "2026-11-26",
+      "status": "in-force",
+      "decision": "An agent definition states its goal, not only its ownership, and every rule that binds the definitions together is a check, not prose. Every function workflow carries a goal, the state one run must make true, and measures, the telos measure kinds the run moves, which must be its function's in function.json; a run is done when its done criteria pass, not when its steps have been performed. A trigger's cadence is required for schedule and refused elsewhere, and its route is required for event and refused elsewhere, so no trigger can be written in a shape that is never due. Every agent.md carries six sections in order: What you work toward, What you own, How you work, When you do not know, What you decide, and what you bring up, Skills. What you work toward names the function's purpose and its measures and tells the agent to read foundation/telos and foundation/goals first and to name which goal each run serves. What you own opens with a Writes line whose routes are exactly the write reach functionWrites derives, so the prose an agent reads cannot drift from the rule the router applies. When you do not know says to ask the person what only they can know, else to record the gap as an assumption with what it rests on and what would show it wrong, and never to write a guess as a fact. Every skill a module ships is named by a workflow step or by agent.md, and the skill search walks skills/ at any depth, as the agent spec does. A recommend row's approver is the founder, the chief of staff or the lead whose portfolio holds the function, and agent.md's lead frontmatter is that same lead. A step writes only a route in its function's reach that the router serves with a write action. Every lead role template points its skill at Naive's one generic lead skill, packages/naive/src/interfaces/skills/lead/SKILL.md; a skill per lead is not built. What you own also names how a route is read and written, so no agent has to infer the call from a route name; that paragraph is prose with no derived referent, and it is checked only by check-docs-claims.ts, which fails on a command, flag, path or route the text names and the code lacks. check-functions.ts enforces the rest, and check-functions-test.ts breaks each rule on a copy.",
+      "why": "Torian, 2026-11-26: agents need skills and workflows that make clear what we hope to accomplish, agents must know the venture's goals and which of their work serves which goal, and a workflow is walked in order with nothing silently skipped. A review of the 13 function modules (docs/reviews/AGENT_DEFINITIONS_REVIEW_2026-11-26.md) found that 12 of 13 agents never named the telos or the goals, no workflow said what a run was for, none of the 13 said what to do when information is missing, 4 claimed a route the router refuses and 5 omitted routes they hold, and a lead's brief carried a function agent's skill. Prose that nothing checks drifts, so each finding is fixed in the definitions and held by a check.",
+      "related": [
+        "EE-123",
+        "EE-124",
+        "EE-181",
+        "EE-183",
+        "EE-065"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/interfaces/skills/lead/SKILL.md",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "docs/reviews/AGENT_DEFINITIONS_REVIEW_2026-11-26.md",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
+      "id": "EE-213",
+      "date": "2026-11-26",
+      "status": "in-force",
+      "decision": "Work a venture passed over is kept, and a function agent may spawn a temporary specialist of itself. Skipped work is derived, never a record: `naive skipped` reads the run log and the shipped workflows and lists each occurrence a person skipped and each step the latest finished run that reported its steps left out, in the order APQC's framework gives, with what the item's element feeds downstream when the element graph can tell. A run reports what it finished with `naive due record --steps`, and a run that reports none says nothing about its steps. Nothing judges a step's `when`: it stays a sentence a person or the function's agent reads, so a consider step is listed with its block and is not required. `naive skipped handback` files one open decision asking the owning function agent to recommend do-now, defer or drop, and a person decides; the loop only names how many items wait and never acts on one. A specialist is a record at `operations/specialists/<role>.json` that `naive agent spawn` writes and runs through NAIVE_AGENT_CMD, and its reach is the globs of its record intersected with its parent's own reach, read fresh on every write, so a finished, revoked or expired specialist, or one whose record was widened by hand, is refused before the schema. A spawn needs no person, because the agent is dividing work it may already do and every write still meets the gate as the specialist's own role. The default ttl is an unvalidated prior in `packages/naive/src/engine/specialists.json` that a venture overrides with `specialists.default_ttl` in `naive.config.json`.",
+      "why": "Torian decided this on 2026-11-26: work should be walked in hierarchical order with a loop back to what was skipped, and an agent should be able to spawn a temporary specialist for a task its own skills do not cover. Keeping the ledger derived means nothing has to be kept in step with the run log, and intersecting a specialist's globs with its parent's at every write makes a wider reach structurally impossible rather than a rule someone must enforce.",
+      "related": [
+        "EE-124",
+        "EE-181",
+        "EE-182",
+        "EE-183",
+        "EE-188"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/skipped.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/agents/specialist.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/records/specialist.schema.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/specialists.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "record",
+          "target": "specialist",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
       "id": "EE-223",
       "date": "2026-11-26",
       "status": "in-force",

@@ -21,8 +21,12 @@
 // finished run does. The phase module (packages/naive/src/phases/<id>/phase.json) lists the workflows active in the venture's
 // phase, and each entry says whether its workflow is one of them.
 //
+// A run may also name the steps it finished (`steps`, from --steps). A run that names none says nothing about its
+// steps, never that every step was done; the skipped ledger (packages/naive/src/engine/skipped.ts, EE-213) reads the
+// steps a reporting run left out.
+//
 //   node packages/naive/src/engine/due.ts <venture dir> [--at <iso>] [--function <id>] [--json]
-//   node packages/naive/src/engine/due.ts <venture dir> record <function>/<workflow> [--outcome done|failed|skipped] [--by <who>] [--at <iso>]
+//   node packages/naive/src/engine/due.ts <venture dir> record <function>/<workflow> [--outcome done|failed|skipped] [--by <who>] [--at <iso>] [--steps a,b]
 //   naive due [record ...]
 //
 // due() is pure. Reading and writing files is an Effect through VentureFs (EE-125).
@@ -38,7 +42,7 @@ import { ventureFile } from "../core/venture-paths.ts";
 import { loadPhase } from "../phases/phases.ts";
 import { functionAgent } from "./agents/function-spec.ts";
 import { functionsOf } from "./research-programs.ts";
-import type { TimeBox } from "../records/types/records.d.ts";
+import type { FunctionWorkflow, TimeBox } from "../records/types/records.d.ts";
 import { now as clockNow } from "../core/clock.ts";
 
 export const RUNS = ".naive/workflow-runs.jsonl";
@@ -47,10 +51,10 @@ export const LIVE = new Set(["write", "accept", "merge", "rollback"]);
 
 export type Cadence = "daily" | "weekly" | "monthly" | "quarterly";
 export type WorkflowTrigger = { kind: "intake" | "schedule" | "event" | "request"; cadence?: Cadence; route?: string; during?: "campaign" | "sprint" };
-/** The part of a function workflow this reads. */
-export type DueWorkflow = { id: string; function: string; title: string; trigger: WorkflowTrigger };
-/** One line of the run log. */
-export type WorkflowRun = { workflow: string; at: string; outcome: "done" | "failed" | "skipped"; by: string };
+/** The part of a function workflow this reads. `steps` comes along from the file for the skipped ledger. */
+export type DueWorkflow = { id: string; function: string; title: string; trigger: WorkflowTrigger; steps?: FunctionWorkflow["steps"] };
+/** One line of the run log. `steps` is the step ids the run finished, when it reported them. */
+export type WorkflowRun = { workflow: string; at: string; outcome: "done" | "failed" | "skipped"; by: string; steps?: readonly string[] };
 /** A write the provenance log holds: the route written and when. */
 export type Written = { route: string; at: string };
 export type DueStatus = "due" | "not-due" | "on-request";
@@ -209,18 +213,19 @@ export const dueFor = (dir: string, now: string, only?: string): Effect.Effect<D
 if (import.meta.url === `file://${process.argv[1]}`) {
   const args = process.argv.slice(2);
   const flag = (name: string): string | undefined => { const i = args.indexOf(name); return i < 0 ? undefined : args[i + 1]; };
-  const valued = ["--at", "--function", "--outcome", "--by"];
+  const valued = ["--at", "--function", "--outcome", "--by", "--steps"];
   const [dir, cmd, target] = args.filter((a, i) => !a.startsWith("--") && !valued.includes(args[i - 1]));
   const at = flag("--at") ?? clockNow().toISOString();
-  const usage = "usage: node packages/naive/src/engine/due.ts <venture dir> [--at <iso>] [--function <id>] [--json]\n       node packages/naive/src/engine/due.ts <venture dir> record <function>/<workflow> [--outcome done|failed|skipped] [--by <who>] [--at <iso>]";
+  const usage = "usage: node packages/naive/src/engine/due.ts <venture dir> [--at <iso>] [--function <id>] [--json]\n       node packages/naive/src/engine/due.ts <venture dir> record <function>/<workflow> [--outcome done|failed|skipped] [--by <who>] [--at <iso>] [--steps a,b]";
   const program: Effect.Effect<void, NaiveError, "naive/VentureFs"> = Effect.gen(function* () {
     if (!dir || Number.isNaN(Date.parse(at)) || (cmd !== undefined && cmd !== "record") || (cmd === "record" && !target)) return yield* new CannotRun({ message: usage });
     const now = new Date(at).toISOString();
     if (cmd === "record") {
       const outcome = flag("--outcome") ?? "done";
       if (outcome !== "done" && outcome !== "failed" && outcome !== "skipped") return yield* new CannotRun({ message: usage });
-      const run = yield* recordRun(dir, { workflow: target, at: now, outcome, by: flag("--by") ?? process.env.MENTURA_ACTOR_ID ?? "person" });
-      console.log(args.includes("--json") ? JSON.stringify(run) : `recorded ${run.workflow} ${run.outcome} at ${run.at} by ${run.by}`);
+      const steps = (flag("--steps") ?? "").split(",").map((s) => s.trim()).filter(Boolean);
+      const run = yield* recordRun(dir, { workflow: target, at: now, outcome, by: flag("--by") ?? process.env.MENTURA_ACTOR_ID ?? "person", ...(steps.length ? { steps } : {}) });
+      console.log(args.includes("--json") ? JSON.stringify(run) : `recorded ${run.workflow} ${run.outcome} at ${run.at} by ${run.by}${run.steps ? `, having finished ${run.steps.join(", ")}` : ""}`);
       return;
     }
     const found = yield* dueFor(dir, now, flag("--function"));
