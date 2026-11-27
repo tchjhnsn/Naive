@@ -1,0 +1,85 @@
+{
+  "id": "6-5-1-measure-customer-satisfaction-with-customer",
+  "function": "customer-service",
+  "process": "6.5.1",
+  "title": "Measure customer satisfaction with customer problems, requests, and inquiries handling",
+  "goal": "What customers say about being helped is collected against their cases, the period's handling is counted, and the changes that would remove the most contacts are with products.",
+  "measures": [
+    "usage_or_adoption",
+    "revenue"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "customer-service/intake"
+    ]
+  },
+  "reads": [
+    "support/policy",
+    "support/cases",
+    "customers",
+    "validation/feedback",
+    "product",
+    "product/bugs"
+  ],
+  "steps": [
+    {
+      "id": "solicit-feedback",
+      "activity": "6.5.1.1",
+      "do": "Draft one short question to ask a customer just after their case closes, name the customers to ask this period, hand both to the founder to send, and record each answer against its case.",
+      "writes": [
+        "support/cases/[id]"
+      ],
+      "raises": [
+        "public-commitment"
+      ],
+      "skill": "evaluate-customer-service-operations-and-customer"
+    },
+    {
+      "id": "analyze-service-data",
+      "activity": "6.5.1.2",
+      "do": "Count first response and resolution times, repeat contacts inside seven days and contacts per active customer by reason, and name the two changes that would remove the most contacts, each with its count.",
+      "raises": [
+        "set-priorities"
+      ],
+      "skill": "evaluate-customer-service-operations-and-customer"
+    },
+    {
+      "id": "feed-product",
+      "activity": "6.5.1.3",
+      "do": "Hand products the top contact reasons with their counts, the cases behind them and what customers said in their own words, as a handoff products can answer.",
+      "writes": [
+        "operations/handoff/[id]"
+      ],
+      "raises": [
+        "defer-or-route"
+      ],
+      "skill": "evaluate-customer-service-operations-and-customer"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Name the open decision the period's counts bear on and add them there as evidence, and recommend to the growth lead which reason to remove first.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "handling-measured",
+      "kind": "review",
+      "check": "Does the period have counts of response time, repeat contacts and contacts per customer that cite their cases, and have the top reasons gone to products?",
+      "reviewer": "growth-lead"
+    }
+  ]
+}

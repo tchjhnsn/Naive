@@ -1,0 +1,154 @@
+{
+  "id": "11-2-2-manage-regulatory-compliance",
+  "function": "risk-and-compliance",
+  "process": "11.2.2",
+  "title": "Manage regulatory compliance",
+  "goal": "Every rule that applies to the venture is on the register with a citation to the rule itself, its current position is known shortfall by shortfall, and each shortfall is closed with evidence or open as a decision for the founder.",
+  "measures": [
+    "compliance_met",
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "risk-and-compliance/intake"
+    ]
+  },
+  "reads": [
+    "legal/obligations",
+    "legal/risks",
+    "governance/ownership",
+    "governance/publication-policy",
+    "it/connections",
+    "people/team",
+    "customers",
+    "knowledge/knowledge-sources",
+    "evidence"
+  ],
+  "steps": [
+    {
+      "id": "regulatory-procedures",
+      "do": "For each rule already on the register, write the few steps the venture follows to meet it, who does each, with what form and what evidence, and attach the steps to the obligation they serve rather than to a document of their own.",
+      "skill": "manage-compliance",
+      "activity": "11.2.2.1",
+      "writes": [
+        "legal/obligations/[id]"
+      ]
+    },
+    {
+      "id": "identify-applicable-requirements",
+      "do": "From the venture's legal form, where it is registered, whether it collects personal data, employs anyone, has taken money and whether it works in a licensed field, list every rule that applies with a citation to the rule itself, ask the founder only what no record answers, and write one obligation per dated duty.",
+      "skill": "manage-compliance",
+      "activity": "11.2.2.2",
+      "ask": true,
+      "writes": [
+        "legal/obligations/[id]"
+      ]
+    },
+    {
+      "id": "monitor-the-regulatory-environment",
+      "do": "Read the regulator's own site and its rule-change notices for every rule on the register, record each change with the date you read it, and raise the changes that move a due date, raise a fee or add a duty.",
+      "skill": "manage-compliance",
+      "activity": "11.2.2.3",
+      "writes": [
+        "legal/obligations/[id]"
+      ],
+      "raises": [
+        "domain-fact"
+      ]
+    },
+    {
+      "id": "assess-compliance-position",
+      "do": "Compare each applicable rule with what the venture actually does today and write the shortfalls as one ranked list, each with the duty, what is missing, the deadline and what being late would cost, the ones that cannot be cured first.",
+      "skill": "manage-compliance",
+      "activity": "11.2.2.4",
+      "writes": [
+        "operations/handoff/[id]"
+      ]
+    },
+    {
+      "id": "implement-stronger-controls",
+      "do": "Close the shortfalls you may close yourself, such as adding the duty with its dates or tightening an access control, and prepare every one that needs a signature, a fee or a published notice as a decision carrying the form, the figures and your recommendation.",
+      "skill": "manage-compliance",
+      "activity": "11.2.2.5",
+      "writes": [
+        "legal/obligations/[id]"
+      ],
+      "raises": [
+        "security-tightening",
+        "legal-or-terms",
+        "spend-money"
+      ]
+    },
+    {
+      "id": "monitor-and-test-controls",
+      "do": "Test the controls that carry a duty by actually trying them, confirming two-factor sign-in is on, that a departed contractor's access is gone and that the notice a rule requires is where it should be, and record the result and date of each test as evidence on the handoff.",
+      "skill": "manage-compliance",
+      "activity": "11.2.2.6",
+      "writes": [
+        "operations/handoff/[id]"
+      ]
+    },
+    {
+      "id": "compliance-scorecard",
+      "do": "Count for the period the duties met on time, the duties met late and the duties open past their alert date, and give the founder and the finance lead those three figures with the obligation records behind each.",
+      "skill": "manage-compliance",
+      "activity": "11.2.2.7",
+      "writes": [
+        "operations/handoff/[id]"
+      ]
+    },
+    {
+      "id": "compliance-reports",
+      "do": "Draft the report a rule requires on the form that rule names, with every figure cited to the record it came from, and hand it to the founder to file, because you file nothing.",
+      "skill": "manage-compliance",
+      "activity": "11.2.2.8",
+      "raises": [
+        "legal-or-terms"
+      ],
+      "consider": {
+        "why": "Only a venture a rule actually obliges to report owes a report, and a report drafted for nobody is wasted work.",
+        "when": "A live obligation requires a report or a return."
+      }
+    },
+    {
+      "id": "regulator-relationships",
+      "do": "Prepare the founder for contact with a regulator: who they are, what they asked, the record that answers it and a draft answer in the founder's own words, and leave every call, letter and filing to the founder.",
+      "skill": "manage-compliance",
+      "activity": "11.2.2.9",
+      "ask": true,
+      "raises": [
+        "public-commitment"
+      ],
+      "consider": {
+        "why": "A regulator is a relationship, and only the founder speaks to one.",
+        "when": "A regulator has contacted the venture, or a licence it holds requires contact."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Add each shortfall to the decision it bears on with the deadline and the cost of being late, and raise to the finance lead which shortfalls to close first.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "shortfalls-closed-or-open",
+      "kind": "review",
+      "check": "Does every rule on the register cite the rule itself, and is every shortfall this run found either closed with evidence or open as a decision for the founder?",
+      "reviewer": "finance-lead"
+    }
+  ]
+}

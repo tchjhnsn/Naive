@@ -1,0 +1,21 @@
+{
+  "id": "12-2-4-manage-lobby-activities",
+  "function": "external-relationships",
+  "process": "12.2.4",
+  "title": "Manage lobby activities",
+  "goal": "Either the venture's position on a rule is written with the registration and reporting line it would cross and the founder's decision on whether to pursue it, or the record says plainly that the venture does not lobby.",
+  "measures": ["compliance_met","learning"],
+  "trigger": {"kind":"request"},
+  "requires": {"meetings":["external-relationships/intake"]},
+  "reads": ["venture","legal/obligations","legal/risks","industries","governance/publication-policy","foundation/goals","decisions/*"],
+  "steps": [
+    {"id":"name-the-position","do":"Ask the founder which rule, bill or agency decision the venture wants changed and why, in one sentence, and when the answer is none record that the venture does not lobby and stop the run there.","ask":true,"skill":"manage-government-and-industry-relationships","writes":["operations/handoff/[id]"]},
+    {"id":"read-the-registration-line","do":"Read the published registration and reporting thresholds for lobbying where the venture operates, say whether what the founder wants would cross them and on what count of hours or spend, cite each threshold with the date read, and mark the answer as one counsel confirms before anyone is contacted.","skill":"manage-government-and-industry-relationships","writes":["operations/handoff/[id]"],"consider":{"why":"Crossing a registration threshold without knowing it is the whole risk in this process.","when":"The founder has named a rule, bill or agency decision the venture wants changed."}},
+    {"id":"prepare-the-case","do":"Draft the one-page case for the venture's position from its own records and public sources, with every claim citing its source and the date read, and leave the sending, the meeting and any public statement to the founder.","skill":"manage-government-and-industry-relationships","writes":["operations/handoff/[id]"],"raises":["public-commitment"],"consider":{"why":"A written case is what a legislator's staff can act on, and it keeps the venture's claims checkable.","when":"The founder has decided to pursue the position."}},
+    {"id":"feed-decisions","do":"Name the open decision the position bears on and add the case and the registration answer there as evidence, and propose to the strategy lead whether this is worth the founder's hours against the venture's goals.","skill":"manage-government-and-industry-relationships","writes":["decisions/*"],"raises":["set-priorities"]}
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "position-and-line-written", "kind": "review", "check": "Does the record either say the venture does not lobby, or name the position, the registration and reporting line it would cross with its source, and the founder's decision?", "reviewer": "strategy-lead" }
+  ]
+}

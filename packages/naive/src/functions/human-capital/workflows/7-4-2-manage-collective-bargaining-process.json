@@ -1,0 +1,82 @@
+{
+  "id": "7-4-2-manage-collective-bargaining-process",
+  "function": "human-capital",
+  "process": "7.4.2",
+  "title": "Manage collective bargaining process",
+  "goal": "The venture has a recorded answer to whether any collective agreement or representation reaches it, and where one does, the venture's position, what was agreed and the obligations it carries are written down.",
+  "measures": [
+    "compliance_met"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "human-capital/intake"
+    ]
+  },
+  "reads": [
+    "people",
+    "people/team-plan",
+    "governance/internal-terms",
+    "legal/obligations",
+    "legal/risks",
+    "finance/budget",
+    "purpose/money/summary",
+    "operations/handoff",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "check-whether-it-applies",
+      "do": "Ask the founder and read `people` and `legal/obligations` to settle whether anyone who works on the venture is represented or covered by a collective agreement, and record the answer with its date even when the answer is no.",
+      "skill": "manage-employee-relations",
+      "ask": true
+    },
+    {
+      "id": "prepare-the-position",
+      "do": "Collect what the venture can and cannot give on pay, hours, notice and terms, with the yearly cost of each concession from `finance/budget`, so the founder bargains with numbers rather than impressions.",
+      "skill": "manage-employee-relations",
+      "consider": {
+        "why": "A position is only worth building once a counterparty exists.",
+        "when": "Someone who works on the venture is represented or covered by a collective agreement."
+      }
+    },
+    {
+      "id": "record-the-agreement",
+      "do": "Record what the founder and counsel agreed, clause by clause, with its term, its review date and the obligations each clause puts on the venture, and never speak for the venture at the table yourself.",
+      "skill": "manage-employee-relations",
+      "raises": [
+        "legal-or-terms"
+      ],
+      "consider": {
+        "why": "The agreement is what the venture will be held to, so it belongs in the records clause by clause.",
+        "when": "A collective agreement has been reached or renewed."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Open a decision for each obligation the agreement creates and each term the founder must settle with counsel, and tell the strategy lead when the next review date falls.",
+      "skill": "manage-employee-relations",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "applicability-recorded",
+      "kind": "review",
+      "check": "Is there a dated record of whether collective bargaining reaches this venture, and where it does, is every clause's obligation written down?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

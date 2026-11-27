@@ -1,0 +1,65 @@
+{
+  "id": "13-9-2-develop-ehs-program",
+  "function": "capabilities",
+  "process": "13.9.2",
+  "title": "Develop EHS program",
+  "goal": "What the venture must do about health, safety and the environment is written down with the source of each duty, the risks ahead are named, the policy the founder stands behind is recorded, and there is one place events are recorded.",
+  "measures": ["cost_or_time_saved"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["capabilities/intake"] },
+  "reads": [
+    "legal/obligations",
+    "legal/risks",
+    "capabilities/processes",
+    "people/team",
+    "assets/leases",
+    "supply-chain/suppliers"
+  ],
+  "steps": [
+    {
+      "id": "identify-regulatory-and-stakeholder-requirements",
+      "do": "List the duties that reach this venture from its obligations record, its lease and its customer contracts, cite each one, and name the ones that are only guessed at so the founder can take them to counsel.",
+      "skill": "manage-environmental-health-and-safety-ehs",
+      "activity": "13.9.2.1",
+      "writes": ["capabilities/processes/[id]"],
+      "raises": ["legal-or-terms"]
+    },
+    {
+      "id": "assess-future-risks-and-opportunities",
+      "do": "Name what would create a duty the venture does not have today, a first employee, a workplace, a shipped physical product, a supplier that handles materials, and write what each would require.",
+      "skill": "manage-environmental-health-and-safety-ehs",
+      "activity": "13.9.2.2",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "create-ehs-policy",
+      "do": "Draft the policy as what the venture will and will not do, keeping it to what it can actually keep, and bring it to the founder, since a policy is a public commitment only they make.",
+      "skill": "manage-environmental-health-and-safety-ehs",
+      "activity": "13.9.2.3",
+      "ask": true,
+      "writes": ["capabilities/processes/[id]"],
+      "raises": ["legal-or-terms"],
+      "consider": {
+        "why": "A written policy the venture cannot keep is worse than none, so it waits until there is something to govern.",
+        "when": "The venture has an employee, a workplace or a duty named in its obligations record."
+      }
+    },
+    {
+      "id": "record-and-manage-ehs-events",
+      "do": "Write the one way an injury, a near miss or a spill is recorded and who is told, and record each event as a postmortem with its timeline, its causes as conditions and its actions with owners.",
+      "skill": "manage-environmental-health-and-safety-ehs",
+      "activity": "13.9.2.4",
+      "writes": ["capabilities/processes/[id]", "capabilities/postmortems/[id]"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Raise to the founder every duty the venture may already be under and the policy for approval, and record the requirement list as evidence on the handoff.",
+      "writes": ["decisions/*"],
+      "raises": ["legal-or-terms", "set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "duties-cited-not-assumed", "kind": "review", "check": "Does every duty in the list cite the obligation, contract or lease it comes from, with the guessed ones marked as guesses for counsel?", "reviewer": "strategy-lead" }
+  ]
+}

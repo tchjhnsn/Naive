@@ -1,0 +1,111 @@
+{
+  "id": "8-6-4-implement-technology-solutions",
+  "function": "it",
+  "process": "8.6.4",
+  "title": "Implement technology solutions",
+  "goal": "The approved release is in place and proved working in the live system, or it was rolled back, and either way the log says which step did what and what the checks returned.",
+  "measures": ["cost_or_time_saved", "compliance_met"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["it/intake"] },
+  "reads": [
+    "product",
+    "it/connections",
+    "assets/register",
+    "operations/handoff",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "confirm-system-status",
+      "do": "Before touching anything, check that each machine, host and service the release lands on is up and at the version the plan expects, and stop and report if any one of them is not.",
+      "skill": "deploy-services-solutions",
+      "activity": "8.6.4.1",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "confirm-availability",
+      "do": "Check that every service the release depends on is reachable, inside its quota and its rate limit, that its credential is valid and not about to expire, and that a current backup of the records it touches exists.",
+      "skill": "deploy-services-solutions",
+      "activity": "8.6.4.2",
+      "writes": ["it/connections/[id]"]
+    },
+    {
+      "id": "execute-plan",
+      "do": "Work through the implementation plan step by step in the order it is written, doing nothing it does not name, and log the time, the command or screen and the result of each step as it goes.",
+      "skill": "deploy-services-solutions",
+      "activity": "8.6.4.3",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "confirm-prerequisites-complete",
+      "do": "Check off every prerequisite the plan listed as present, and stop before the release itself if any one is still missing, naming it and who can supply it.",
+      "skill": "deploy-services-solutions",
+      "activity": "8.6.4.4",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "implement-release",
+      "do": "Put the approved release in place: deploy the package, apply the configuration and run the migrations in the order the plan gives, keeping the previous version reachable until the checks pass.",
+      "skill": "deploy-services-solutions",
+      "activity": "8.6.4.5",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "post-installation-testing",
+      "do": "Run the checks the plan names against the live system, the real tasks a person would do, not only the health endpoint, and record each result with the time it was taken.",
+      "skill": "deploy-services-solutions",
+      "activity": "8.6.4.6",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "distribute-components",
+      "do": "Push the new version to every machine, device and edge location that needs its own copy, and list each one with the version it now reports.",
+      "skill": "deploy-services-solutions",
+      "activity": "8.6.4.7",
+      "writes": ["operations/handoff/[id]"],
+      "consider": {
+        "why": "A change is only in place on the machines that actually received it, and a stale copy is a silent defect.",
+        "when": "The venture runs software on more than one machine, device or region."
+      }
+    },
+    {
+      "id": "verify-success",
+      "do": "Compare what the live system now does with what the release was meant to change, in the records, the logs and whatever the customer sees, and say plainly whether the release succeeded, succeeded in part or failed.",
+      "skill": "deploy-services-solutions",
+      "activity": "8.6.4.8",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "execute-roll-back",
+      "do": "Run the roll-back procedure as written, stop at the point of no return and ask the founder before passing it, and record what was restored, what data written after the release was kept and what was lost.",
+      "skill": "deploy-services-solutions",
+      "activity": "8.6.4.9",
+      "ask": true,
+      "writes": ["operations/handoff/[id]"],
+      "raises": ["irreversible-data-change"],
+      "consider": {
+        "why": "A roll-back undoes a change customers may already have used, so it runs only when the release failed and only as far as a person allows.",
+        "when": "A post-installation check failed or the verification says the release failed."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Add the log, the check results and the verdict as evidence to the decision that approved the release, and raise to the product lead what must be fixed before the next attempt.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "proved-in-the-live-system",
+      "kind": "review",
+      "check": "Does the log name every step taken with its result, were the checks run against the live system on real tasks, and does the run end with a plain verdict of succeeded, succeeded in part, failed or rolled back?",
+      "reviewer": "product-lead"
+    }
+  ]
+}

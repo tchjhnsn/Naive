@@ -34,6 +34,7 @@ import { validateFile } from "../records/validate.ts";
 import { runSync } from "../core/effect/run.ts";
 import { loadPhases } from "../phases/phases.ts";
 import { meter, phaseGate } from "./phase-gate.ts";
+import { phaseProofSync } from "./phase-proof.ts";
 import type { ExitCriteria, LifecyclePlaybook, Telos } from "../records/types/records.d.ts";
 
 type Criterion = ExitCriteria["criteria"][number];
@@ -76,6 +77,10 @@ export function lifecycle(dir: string, { decidedBy }: { decidedBy?: string | nul
   ];
   const gate = phaseGate(dir, { decidedBy });
   if (gate.enforce) blocking.push(...gate.blocking.map((b) => `gate strength: ${b}`));
+  // Proof of work (EE-227): the gate's records are the ones the venture recorded, and the phase's runs check out.
+  // Always blocking: a person passes it only with --override and a reason.
+  const proof = phaseProofSync(dir, v.phase);
+  blocking.push(...proof.blocking.map((b) => `proof: ${b}`));
   const cur = PHASES[i] ? { ...PHASES[i], gate: ph?.gate ?? PHASES[i].gate } : null;
   return {
     venture: v.id, phase: v.phase, step: i + 1, of: PHASES.length,
@@ -86,6 +91,7 @@ export function lifecycle(dir: string, { decidedBy }: { decidedBy?: string | nul
     telos: ec.source === "telos" ? ec.file : null,
     exit_criteria: criteria,
     phase_gate: gate,
+    proof,
     ready: criteria.length > 0 && blocking.length === 0,
     blocking,
   };
@@ -145,6 +151,7 @@ const text = (l: ReturnType<typeof lifecycle>) => [
   ...(l.exit_criteria.length ? l.exit_criteria.map((c) => `  ${c.met ? "✓" : "○"} ${c.id}: ${c.statement}${c.met ? `  (met ${c.met.at.slice(0, 10)} by ${c.met.by})` : ""}`) : [`  ○ ${l.blocking[0]}`]),
   ...(l.phase_gate?.strictness ? [`  Gate strength (${l.phase_gate.preset} policy, ${l.phase_gate.enforce ? "enforced" : "reported only"}):`,
     ...l.phase_gate.items.map((r) => `    ${r.passed ? "✓" : "○"} ${meter(r.level)} ${r.label}: ${r.level} / needs ${r.min}, ${r.boundary}`)] : []),
+  ...(l.proof ? [`  Proof (${l.proof.proven ? "proven" : "not proven"}):`, ...l.proof.records.map((r) => `    ${r.state === "proven" || r.state === "adopted" ? "✓" : "○"} ${r.type}: ${r.why}`), ...l.proof.work.map((w) => `    ${w.ok ? "✓" : "○"} ${w.workflow}: ${w.why}`)] : []),
   l.next ? `Next: ${l.next.name}, ${l.next.question}${l.ready ? "  Ready: naive phase " + l.next.id : ""}` : "This is the last phase.",
 ].filter(Boolean).join("\n");
 

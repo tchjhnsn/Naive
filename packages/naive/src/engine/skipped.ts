@@ -7,7 +7,10 @@
 // Two kinds of item, both read from the run log (<venture>/.naive/workflow-runs.jsonl) and the shipped workflows:
 //
 //   workflow  a person skipped a whole occurrence (a run with outcome skipped), with how many times and when last.
-//   step      the latest finished run that reported its steps (naive due record --steps) left the step out. It is
+//   step      the latest finished run that reported its steps left the step out: a run with a package of step
+//             results (EE-227, run-proof.ts) leaves out every step its proof does not accept, so a step claimed done
+//             and not borne out by the provenance log is listed; a run that names step ids (naive due record --steps)
+//             leaves out the ones it does not name. It is
 //             required when the step has no `consider`, and otherwise carries the consider block, because nothing
 //             judges a step's `when`: it is a sentence (EE-181), and a person or the function's agent judges it.
 //
@@ -36,6 +39,7 @@ import { readCatalog } from "./activity-proposals.ts";
 import { decisionFile, propose } from "./decisions.ts";
 import type { DoorResult } from "./decisions.ts";
 import { readRuns, workflowsOf } from "./due.ts";
+import { verifyRuns } from "./run-proof.ts";
 import type { DueWorkflow, WorkflowRun } from "./due.ts";
 import { buildGraph, downstream, shippedInput } from "./element-graph.ts";
 import type { ElementGraph } from "./element-graph.ts";
@@ -102,15 +106,28 @@ const byElement = (a: string, b: string): number => {
 /** null first, then by element id: an item with no activity sits at its function, before its process groups. */
 const byNullable = (a: string | null, b: string | null): number => (a === b ? 0 : a === null ? -1 : b === null ? 1 : byElement(a, b));
 
-/** The latest run at or before `now` that finished and reported the steps it finished, or null. */
+/** Whether a run reports its steps: the step ids it finished, or a package of step results (EE-227). */
+const reports = (r: WorkflowRun): boolean => r.outcome === "done" && (r.steps !== undefined || r.results !== undefined);
+/** The latest run at or before `now` that finished and reported its steps, or null. */
 const reporting = (mine: readonly WorkflowRun[]): WorkflowRun | null =>
-  mine.filter((r) => r.outcome === "done" && r.steps !== undefined).reduce<WorkflowRun | null>((m, r) => (m === null || r.at > m.at ? r : m), null);
+  mine.filter(reports).reduce<WorkflowRun | null>((m, r) => (m === null || r.at > m.at ? r : m), null);
+
+/**
+ * The steps a run counts as finished. A run with a package counts only the steps its proof accepts (`settled`, from
+ * run-proof.ts: proven, considered or reasoned), so a step claimed done but unproven stays on the ledger; without the
+ * proof at hand, every result that is not skipped. A run that names only step ids counts what it names, as before.
+ */
+export const finishedSteps = (r: WorkflowRun, settled?: ReadonlyMap<string, ReadonlySet<string>>): ReadonlySet<string> => {
+  if (!r.results) return new Set(r.steps ?? []);
+  const known = r.run ? settled?.get(r.run) : undefined;
+  return known ?? new Set(r.results.filter((x) => x.status !== "skipped").map((x) => x.step));
+};
 
 /**
  * Every piece of work left behind at `now`, in hierarchical order. Pure: the same runs and workflows in any order
  * give the same list.
  */
-export function skipped(workflows: readonly SkippedWorkflow[], runs: readonly WorkflowRun[], now: string, h: Hierarchy): SkippedItem[] {
+export function skipped(workflows: readonly SkippedWorkflow[], runs: readonly WorkflowRun[], now: string, h: Hierarchy, settled?: ReadonlyMap<string, ReadonlySet<string>>): SkippedItem[] {
   const out: SkippedItem[] = [];
   const order = new Map<string, number>();
   for (const w of workflows) {
@@ -133,17 +150,17 @@ export function skipped(workflows: readonly SkippedWorkflow[], runs: readonly Wo
 
     const run = reporting(mine);
     if (!run) continue;
-    const finished = new Set(run.steps ?? []);
+    const finished = finishedSteps(run, settled);
     const steps: readonly WorkflowStep[] = w.steps ?? [];
     for (const [i, s] of steps.entries()) {
       if (finished.has(s.id)) continue;
       const id = `${key}#${s.id}`;
       const activity = s.activity ?? null;
       const required = s.consider === undefined;
-      const count = mine.filter((r) => r.outcome === "done" && r.steps !== undefined && !r.steps.includes(s.id)).length;
+      const count = mine.filter((r) => reports(r) && !finishedSteps(r, settled).has(s.id)).length;
       const consider: Consider | null = s.consider ? { why: s.consider.why, when: s.consider.when ?? null } : null;
       const why = required
-        ? `The run that finished on ${day(run.at)} did not finish this required step.`
+        ? `The run that finished on ${day(run.at)} did not ${run.results ? "finish or prove" : "finish"} this required step.`
         : `The run that finished on ${day(run.at)} did not run this step, which is one to consider: ${consider?.why ?? ""} ${consider?.when ? `It runs unasked when this holds: ${consider.when} A person or ${w.function}-agent judges whether it does now.` : "Only a person's ask runs it."}`;
       out.push({ ...common, id, kind: "step", step: s.id, title: s.do, required, consider, why, activity, process_group: groupOf(activity, h), element: activity ?? category, count, last: run.at });
       order.set(id, i + 1);
@@ -174,7 +191,13 @@ export const hierarchyOf = (functions: readonly string[]): Effect.Effect<Hierarc
 /** Everything left behind in a venture at `now`, with what each item blocks. */
 export const skippedFor = (dir: string, now: string, only?: string): Effect.Effect<SkippedItem[], NaiveError, "naive/VentureFs"> => Effect.gen(function* () {
   const workflows = yield* workflowsOf(dir, only);
-  const items = skipped(workflows, yield* readRuns(dir), now, yield* hierarchyOf([...new Set(workflows.map((w) => w.function))]));
+  const runs = yield* readRuns(dir);
+  // Each packaged run's settled steps, from its proof (EE-227): a claim the log does not bear out is left behind.
+  const settled = new Map<string, ReadonlySet<string>>();
+  if (runs.some((r) => r.results)) {
+    for (const c of yield* verifyRuns(dir)) settled.set(c.run, new Set(c.steps.filter((x) => x.verdict === "proven" || x.verdict === "considered" || x.verdict === "reasoned").map((x) => x.step)));
+  }
+  const items = skipped(workflows, runs, now, yield* hierarchyOf([...new Set(workflows.map((w) => w.function))]), settled);
   return items.length ? withBlocks(items, buildGraph(yield* shippedInput())) : items;
 });
 

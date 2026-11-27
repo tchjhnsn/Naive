@@ -1,0 +1,73 @@
+{
+  "id": "7-4-3-manage-labor-management-partnerships",
+  "function": "human-capital",
+  "process": "7.4.3",
+  "title": "Manage labor management partnerships",
+  "goal": "Every forum where the venture and the people who do its work decide something together is listed with what it may decide, checked against the delegation, and each meeting's date and agreement is recorded.",
+  "measures": [
+    "compliance_met"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "human-capital/intake"
+    ]
+  },
+  "reads": [
+    "people",
+    "people/founders",
+    "governance/decision-rights",
+    "governance/delegation",
+    "governance/board",
+    "operations/meeting",
+    "operations/lead",
+    "operations/handoff",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "list-the-forums",
+      "do": "List every forum where the venture and the people who do its work decide something together, a founders' meeting, a contractor check-in, a works council, with who sits in it, how often it meets and what it covers.",
+      "skill": "manage-employee-relations"
+    },
+    {
+      "id": "define-what-each-decides",
+      "do": "For each forum, write what it may decide and what it only advises on, against `governance/decision-rights` and `governance/delegation`, and flag every claim of authority the delegation does not back.",
+      "skill": "manage-employee-relations",
+      "raises": [
+        "legal-or-terms"
+      ]
+    },
+    {
+      "id": "keep-the-record",
+      "do": "After each meeting, record on the handoff its date, who was there, what was agreed and what was left open, reading `operations/meeting` for anything already recorded there so nothing is written twice.",
+      "skill": "manage-employee-relations"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Open a decision for every forum whose authority the delegation does not back and for every agreement that binds the venture, and tell the strategy lead which forum is deciding things nobody delegated to it.",
+      "skill": "manage-employee-relations",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "authority-backed-by-delegation",
+      "kind": "review",
+      "check": "Does every forum's stated authority trace to a live grant in the delegation, or stand as an open decision?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

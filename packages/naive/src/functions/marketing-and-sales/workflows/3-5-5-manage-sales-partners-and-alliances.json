@@ -1,0 +1,105 @@
+{
+  "id": "3-5-5-manage-sales-partners-and-alliances",
+  "function": "marketing-and-sales",
+  "process": "3.5.5",
+  "title": "Manage sales partners and alliances",
+  "goal": "Each partner selling for the venture has what it needs to sell correctly, its results are counted from the venture's own records, and its record says who it is and what it is allowed to say.",
+  "measures": [
+    "revenue"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "marketing-and-sales/intake"
+    ]
+  },
+  "reads": [
+    "venture",
+    "customers",
+    "sales/opportunities",
+    "product",
+    "marketing/message",
+    "marketing/brand",
+    "marketing/publish-terms",
+    "governance/publication-policy",
+    "legal/obligations",
+    "money",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "provide-sales-and-product-service-training-to-sales-partners-alliances",
+      "do": "Draft what a partner's people must know to sell correctly, the offering, the price, who it is for and what it does not do, the questions to pass back rather than answer, and record who has been through it and when.",
+      "skill": "develop-and-manage-sales-plans",
+      "raises": [
+        "public-commitment"
+      ],
+      "consider": {
+        "why": "A partner that sells the wrong thing creates customers the venture cannot keep.",
+        "when": "A signed partner's people sell or support the offering."
+      },
+      "activity": "3.5.5.1"
+    },
+    {
+      "id": "provide-marketing-materials-to-sales-partners-alliances",
+      "do": "Prepare from the approved message records the material a partner may use, say plainly what it may not change and what it may never claim, and hand it to the founder to release.",
+      "skill": "develop-and-manage-sales-plans",
+      "raises": [
+        "public-commitment"
+      ],
+      "consider": {
+        "why": "Anything a partner publishes is the venture speaking, whoever wrote it.",
+        "when": "A signed partner needs material to sell with."
+      },
+      "activity": "3.5.5.2"
+    },
+    {
+      "id": "evaluate-partner-alliance-results",
+      "do": "Count from the venture's own opportunity and money records what each partner actually brought, set it against the number the relationship is judged on, and recommend keeping, changing or ending it.",
+      "skill": "develop-and-manage-sales-plans",
+      "raises": [
+        "set-priorities"
+      ],
+      "consider": {
+        "why": "A partner's own report is not evidence, and a relationship nobody counts outlives its value.",
+        "when": "A signed partner has had a period long enough to produce opportunities."
+      },
+      "activity": "3.5.5.3"
+    },
+    {
+      "id": "manage-sales-partner-alliance-master-data",
+      "do": "Keep one record per partner with who it is, what it is allowed to sell and say, the agreement it signed and the accounts it holds, writing it on the customer record where the partner also buys, and record plainly when the venture has no partners.",
+      "skill": "develop-and-manage-sales-plans",
+      "writes": [
+        "customers/[id]"
+      ],
+      "activity": "3.5.5.4"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Add each partner's counted result to the decision or goal it bears on, and bring the founder as a decision anything a partner may now say in public.",
+      "skill": "develop-and-manage-sales-plans",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "public-commitment"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "partners-equipped-and-counted",
+      "kind": "review",
+      "check": "Does every live partner have one record saying what it may sell and say, and is its result counted from the venture's own records rather than the partner's report?",
+      "reviewer": "growth-lead"
+    }
+  ]
+}

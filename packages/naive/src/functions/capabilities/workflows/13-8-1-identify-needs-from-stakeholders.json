@@ -1,0 +1,47 @@
+{
+  "id": "13-8-1-identify-needs-from-stakeholders",
+  "function": "capabilities",
+  "process": "13.8.1",
+  "title": "Identify needs from stakeholders",
+  "goal": "The analysis has a question behind it: who needs the answer, the decision it would change, the date it is needed by, and what they would do differently under each possible answer.",
+  "measures": ["cost_or_time_saved"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["capabilities/intake"] },
+  "reads": [
+    "decisions/*",
+    "foundation/goals",
+    "operations/lead",
+    "capabilities/processes",
+    "system/decision-index"
+  ],
+  "steps": [
+    {
+      "id": "name-the-asker-and-the-decision",
+      "do": "Name who wants the answer and the open decision or goal it would serve, and when no decision is behind the question say so and stop rather than analyzing for interest.",
+      "skill": "develop-manage-and-deliver-analytics",
+      "ask": true
+    },
+    {
+      "id": "write-the-question-and-the-date",
+      "do": "Write the question in one sentence that an answer could be wrong about, with the date the answer is needed by, and record it on the handoff.",
+      "skill": "develop-manage-and-deliver-analytics",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "state-what-each-answer-would-change",
+      "do": "For each answer the question could have, write what the venture would do differently, and when the answers all lead to the same action say that the analysis is not worth running.",
+      "skill": "develop-manage-and-deliver-analytics",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Attach the question, its date and what each answer would change to the decision it serves, and raise to the strategy lead whether it is worth the hours.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "answer-would-change-something", "kind": "review", "check": "Does the question name an open decision, a date, and at least two answers that would lead the venture to act differently?", "reviewer": "strategy-lead" }
+  ]
+}

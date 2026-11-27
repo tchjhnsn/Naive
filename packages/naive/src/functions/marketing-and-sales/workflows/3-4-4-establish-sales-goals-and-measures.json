@@ -1,0 +1,72 @@
+{
+  "id": "3-4-4-establish-sales-goals-and-measures",
+  "function": "marketing-and-sales",
+  "process": "3.4.4",
+  "title": "Establish sales goals and measures",
+  "goal": "The venture's sales goals for the period are written as measures with a number now, a target and a date, each countable from the pipeline records and each on its way to a live goal record.",
+  "measures": [
+    "revenue"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "marketing-and-sales/intake"
+    ]
+  },
+  "reads": [
+    "venture",
+    "foundation/telos",
+    "foundation/goals",
+    "sales/opportunities",
+    "customers",
+    "product",
+    "markets",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "read-the-pipeline-and-the-goals",
+      "do": "Read the live goals that bind revenue and the opportunity records, and say which sales measures the records can already count, which they cannot and why.",
+      "skill": "develop-sales-strategy"
+    },
+    {
+      "id": "propose-the-sales-measures",
+      "do": "Propose the few measures that would show whether selling is working, such as qualified opportunities created, win rate, average value and days to close, each with the number it stands at now and how it is counted.",
+      "skill": "develop-sales-strategy"
+    },
+    {
+      "id": "ask-for-the-targets",
+      "do": "Ask the founder for the target and the date on each measure, say what the current number is before asking, and record each answer with the date it was given.",
+      "ask": true,
+      "skill": "develop-sales-strategy"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Open a handoff to the strategy function with the agreed measures, targets and dates so they land on the goal records, and tell the growth lead which measure the venture cannot yet count and what it would take.",
+      "skill": "develop-sales-strategy",
+      "writes": [
+        "operations/handoff/[id]",
+        "decisions/*"
+      ],
+      "raises": [
+        "defer-or-route",
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "measures-countable-and-targeted",
+      "kind": "review",
+      "check": "Does every sales measure say how it is counted from which records, carry the number it stands at now, and have a target and date the founder gave?",
+      "reviewer": "growth-lead"
+    }
+  ]
+}

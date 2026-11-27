@@ -1,0 +1,93 @@
+{
+  "id": "6-3-4-service-products",
+  "function": "customer-service",
+  "process": "6.3.4",
+  "title": "Service products",
+  "goal": "Each service a customer is owed has its agreed requirement, its schedule and its outcome recorded on the case, and what was delivered has been checked with the customer.",
+  "measures": [
+    "usage_or_adoption",
+    "revenue"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "customer-service/intake"
+    ]
+  },
+  "reads": [
+    "support/policy",
+    "support/cases",
+    "customers",
+    "product",
+    "service-delivery/offers",
+    "service-delivery/engagements",
+    "people/team"
+  ],
+  "steps": [
+    {
+      "id": "confirm-requirements",
+      "activity": "6.3.4.1",
+      "do": "Read the request on the case, ask the founder what can be promised this customer and by when, and record on the case the product, the fault, the agreed outcome and the date, which together are the service order.",
+      "ask": true,
+      "writes": [
+        "support/cases/[id]"
+      ],
+      "skill": "service-products-after-sales"
+    },
+    {
+      "id": "schedule-resources",
+      "activity": "6.3.4.2",
+      "do": "Say what each open service case needs, whose hours, which part, which access, and propose the order and the dates they should be worked in, naming every promise the schedule cannot meet.",
+      "raises": [
+        "set-priorities"
+      ],
+      "skill": "service-products-after-sales"
+    },
+    {
+      "id": "provide-service",
+      "activity": "6.3.4.3",
+      "do": "Keep the day's service cases in order, record on each what was done, when and what it used, and hand to the person every step that needs hands, a site visit or an account the agent does not hold.",
+      "writes": [
+        "support/cases/[id]"
+      ],
+      "skill": "service-products-after-sales"
+    },
+    {
+      "id": "ensure-quality",
+      "activity": "6.3.4.4",
+      "do": "List the service cases closed and the ones that failed or ran past the promised date, draft one short question to each served customer about what was delivered for the founder to send, and record their answers on the cases as reasons.",
+      "writes": [
+        "support/cases/[id]"
+      ],
+      "raises": [
+        "public-commitment"
+      ],
+      "skill": "service-products-after-sales"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Report how many services were delivered on the agreed date and what the failures had in common, name the decision they bear on, and recommend to the growth lead whether to change the promise, the schedule or the product.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "service-recorded",
+      "kind": "review",
+      "check": "Does every service case carry its agreed outcome and date, what was done, and either the customer's answer or the reason it failed?",
+      "reviewer": "growth-lead"
+    }
+  ]
+}

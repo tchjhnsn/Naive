@@ -1,0 +1,89 @@
+{
+  "id": "8-7-2-define-and-develop-service-support-strategy",
+  "function": "it",
+  "process": "8.7.2",
+  "title": "Define and develop service support strategy",
+  "goal": "Anyone who hits a problem with the venture's systems knows where to report it, what will be done about it and how fast, and the venture has the one tool and the written path that makes that true.",
+  "measures": ["compliance_met", "cost_or_time_saved"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["it/intake"] },
+  "reads": [
+    "venture",
+    "support/policy",
+    "support/cases",
+    "product",
+    "it/connections",
+    "people/team-plan",
+    "finance/spend",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "assess-support-objectives",
+      "do": "Read the venture's goals, its support policy and the cases it has already taken, and write what support has to achieve for the venture, keeping a customer, keeping the founder's hours free, or meeting an obligation, with the evidence for each.",
+      "skill": "create-and-manage-support-services-solutions",
+      "activity": "8.7.2.1",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "support-portfolio",
+      "do": "List the kinds of help the venture offers and to whom: who can ask, about what, through which channel, in what hours, and what is explicitly not supported.",
+      "skill": "create-and-manage-support-services-solutions",
+      "activity": "8.7.2.2",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "support-model",
+      "do": "Write the path a request takes from arrival to closure, who or which agent role touches it at each point, what an agent may answer on its own and what always reaches a person, and how the asker is kept informed.",
+      "skill": "create-and-manage-support-services-solutions",
+      "activity": "8.7.2.3",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "support-sourcing",
+      "do": "Say which parts of support the venture answers itself, which an agent drafts for a person to send, and which an outside provider would take, with the cost and the access each would need, and leave the choice to the founder.",
+      "skill": "create-and-manage-support-services-solutions",
+      "activity": "8.7.2.4",
+      "writes": ["operations/handoff/[id]"],
+      "raises": ["spend-money", "security-loosening"],
+      "consider": {
+        "why": "Handing support to someone outside the venture gives them access to customers and their data, which is the founder's call and not a convenience.",
+        "when": "Support takes more of the founder's hours than the venture can spare, or a customer contract promises hours the venture cannot cover."
+      }
+    },
+    {
+      "id": "support-framework",
+      "do": "Write the few rules that hold support together: how a request is rated by its effect on the asker, the time within which each rating gets a first answer, when it is escalated and when it may be closed, and keep the ratings to three.",
+      "skill": "create-and-manage-support-services-solutions",
+      "activity": "8.7.2.5",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "support-tools",
+      "do": "Choose the one place requests arrive and are tracked, scoring the candidates with the tool-selection skill and favouring the one that leaves the venture holding the record of its own cases, and record it as a connection with its scopes.",
+      "skill": "create-and-manage-support-services-solutions",
+      "activity": "8.7.2.6",
+      "writes": ["it/connections/[id]"],
+      "raises": ["new-dependency-free", "spend-money"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Add the support path and its rules as evidence to the decision they bear on, and raise to the product lead what to put in place first, counting the hours it would give the founder back.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "one-way-in",
+      "kind": "review",
+      "check": "Does the venture have one named place requests arrive, a written path from arrival to closure, a rating scheme with a first-answer time for each rating, and a clear line between what an agent answers and what reaches a person?",
+      "reviewer": "product-lead"
+    }
+  ]
+}

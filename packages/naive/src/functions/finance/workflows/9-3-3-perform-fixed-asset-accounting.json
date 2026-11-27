@@ -1,0 +1,140 @@
+{
+  "id": "9-3-3-perform-fixed-asset-accounting",
+  "function": "finance",
+  "process": "9.3.3",
+  "title": "Perform fixed-asset accounting",
+  "goal": "The capitalization rule is set, every asset above it is in the register with the document that bought it and its useful life, and depreciation, improvements and disposals are prepared for the books.",
+  "measures": [
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "finance/intake"
+    ]
+  },
+  "reads": [
+    "assets/register",
+    "assets/leases",
+    "finance/spend",
+    "finance/budget",
+    "money",
+    "purpose/money/summary",
+    "supply-chain/purchase-orders",
+    "legal/obligations"
+  ],
+  "steps": [
+    {
+      "id": "fixed-asset-policy",
+      "do": "Draft the rule for what counts as an asset rather than a cost of the month, the amount above which a purchase is capitalized, the useful life for each kind of thing the venture buys and the depreciation method, and ask the founder to confirm it with their accountant.",
+      "skill": "perform-general-accounting-and-reporting",
+      "ask": true,
+      "activity": "9.3.3.1"
+    },
+    {
+      "id": "asset-master-data",
+      "do": "Fill each asset's record from its invoice and order, what it is, when it was bought, what was paid, where it is, who uses it and its useful life, and list every asset with no document behind it.",
+      "skill": "perform-general-accounting-and-reporting",
+      "activity": "9.3.3.2",
+      "consider": {
+        "why": "An asset with no document behind it cannot be depreciated, insured or sold cleanly.",
+        "when": "The venture owns something recorded in the asset register."
+      }
+    },
+    {
+      "id": "additions-and-retires",
+      "do": "Record each asset bought and each one disposed of in the period with its amount, date and document, and prepare the entry that takes it onto or off the books.",
+      "skill": "perform-general-accounting-and-reporting",
+      "activity": "9.3.3.3",
+      "consider": {
+        "why": "An asset bought or scrapped and never recorded leaves the books overstating what the venture owns.",
+        "when": "The venture bought or disposed of an asset above the capitalization amount in the period."
+      }
+    },
+    {
+      "id": "adjustments-and-transfers",
+      "do": "Record each improvement, revaluation, move and reassignment with what changed, what it cost and the evidence for any new value, keeping the original cost visible beside it.",
+      "skill": "perform-general-accounting-and-reporting",
+      "activity": "9.3.3.4",
+      "consider": {
+        "why": "A revaluation with no evidence is a number someone preferred.",
+        "when": "An asset was improved, revalued, moved or reassigned in the period."
+      }
+    },
+    {
+      "id": "maintenance-and-repair",
+      "do": "Separate what was spent keeping an asset working, which is a cost of the period, from what was spent making it better or longer-lived, which is added to the asset, and say which test you applied to each.",
+      "skill": "perform-general-accounting-and-reporting",
+      "activity": "9.3.3.5",
+      "consider": {
+        "why": "Treating a repair as an improvement moves this month's cost into next year's books.",
+        "when": "The venture paid to maintain or repair an asset in the period."
+      }
+    },
+    {
+      "id": "depreciation",
+      "do": "Calculate the period's depreciation for each asset from its cost, its useful life and the method the policy sets, and prepare the entry with the working shown.",
+      "skill": "perform-general-accounting-and-reporting",
+      "activity": "9.3.3.6",
+      "consider": {
+        "why": "Depreciation is how an asset's cost reaches the period that used it.",
+        "when": "An asset in the register is in use and has a useful life set."
+      }
+    },
+    {
+      "id": "reconcile-asset-ledger",
+      "do": "Reconcile the asset register against the asset figures in the books and list every asset that appears in one and not the other.",
+      "skill": "perform-general-accounting-and-reporting",
+      "activity": "9.3.3.7",
+      "consider": {
+        "why": "The register and the books drift apart quietly, and only a comparison finds it.",
+        "when": "The venture keeps assets in both the asset register and a bookkeeping tool."
+      }
+    },
+    {
+      "id": "track-assets",
+      "do": "Check the assets in the register against what is physically there and who holds each one, and list every asset missing, idle or held by someone no longer with the venture.",
+      "skill": "perform-general-accounting-and-reporting",
+      "activity": "9.3.3.8",
+      "consider": {
+        "why": "An asset held by someone who has left is a loss nobody has written down.",
+        "when": "The venture owns assets held by someone other than the founder."
+      }
+    },
+    {
+      "id": "asset-data-for-reporting",
+      "do": "Assemble the asset figures a tax or regulatory return needs, cost, accumulated depreciation, additions and disposals, and hand them to the founder or their preparer with the records behind each.",
+      "skill": "perform-general-accounting-and-reporting",
+      "activity": "9.3.3.9",
+      "consider": {
+        "why": "A return that asks about assets asks for figures nobody assembles until it is due.",
+        "when": "The venture must file a tax or regulatory return that asks about its assets."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Raise each asset with no document and each idle or missing asset as a decision for the founder, and tell the finance lead which of them changes the venture's reported position most.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "assets-match-documents",
+      "kind": "review",
+      "check": "Does every asset in the register cite the invoice or order behind it, and is each depreciation figure traceable to the cost, the life and the method the policy sets?",
+      "reviewer": "finance-lead"
+    }
+  ]
+}

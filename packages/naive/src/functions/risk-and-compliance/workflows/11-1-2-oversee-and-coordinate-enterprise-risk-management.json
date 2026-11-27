@@ -1,0 +1,147 @@
+{
+  "id": "11-1-2-oversee-and-coordinate-enterprise-risk-management",
+  "function": "risk-and-compliance",
+  "process": "11.1.2",
+  "title": "Oversee and coordinate enterprise risk management activities",
+  "goal": "Every risk that could end the venture is in the register with 90% likelihood and impact ranges, an owner, a review date and a treatment, and the register is ranked by expected loss with the risks above tolerance named.",
+  "measures": [
+    "compliance_met",
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "risk-and-compliance/intake"
+    ]
+  },
+  "reads": [
+    "legal/risks",
+    "legal/obligations",
+    "foundation/constraints",
+    "foundation/goals",
+    "governance/ownership",
+    "assets/leases",
+    "it/connections",
+    "finance/spend",
+    "purpose/money/summary",
+    "evidence",
+    "operations/handoff"
+  ],
+  "steps": [
+    {
+      "id": "identify-enterprise-level-risks",
+      "do": "Read the constraints, the ownership record, the leases, the connections that hold personal data, the spend register and the money summary, and write one risk record for each event that could end the venture or cost it more than the tolerance, each written as a cause and a consequence rather than as a worry.",
+      "skill": "manage-enterprise-risk",
+      "activity": "11.1.2.1",
+      "writes": [
+        "legal/risks/[id]"
+      ]
+    },
+    {
+      "id": "assess-risks-to-mitigate",
+      "do": "Give each risk a 90% range for the chance it happens in the next twelve months and a 90% range for what it would cost, name the record or reference behind the impact or mark it an estimate with its basis and whose it is, and rank the register by expected loss.",
+      "skill": "manage-enterprise-risk",
+      "activity": "11.1.2.2",
+      "writes": [
+        "legal/risks/[id]"
+      ]
+    },
+    {
+      "id": "mitigation-strategy",
+      "do": "For every risk above tolerance propose one of the four treatments, name the goal and the measure it protects so the treatment is weighed against other work rather than beside it, and set an owner and a review date on the record.",
+      "skill": "manage-enterprise-risk",
+      "activity": "11.1.2.3",
+      "writes": [
+        "legal/risks/[id]"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    },
+    {
+      "id": "verify-plans-implemented",
+      "do": "Check each treatment named on the register against the evidence or the handoff that was meant to carry it out, and mark every treatment with no evidence behind it as still open on its risk record rather than as done.",
+      "skill": "manage-enterprise-risk",
+      "activity": "11.1.2.4",
+      "writes": [
+        "legal/risks/[id]"
+      ]
+    },
+    {
+      "id": "ensure-risks-monitored",
+      "do": "Give each live risk the one observable signal that would move its range and the date it is next read, and flag every risk whose review date has passed or whose owner no longer works on the venture.",
+      "skill": "manage-enterprise-risk",
+      "activity": "11.1.2.5",
+      "writes": [
+        "legal/risks/[id]"
+      ]
+    },
+    {
+      "id": "report-enterprise-risk-activities",
+      "do": "Write the risk summary for the founder and the finance lead on the handoff: the top risks by expected loss, what moved since the last run and the evidence that moved it, the treatments with no evidence, and the risks you closed with the reason.",
+      "skill": "manage-enterprise-risk",
+      "activity": "11.1.2.6",
+      "writes": [
+        "operations/handoff/[id]"
+      ]
+    },
+    {
+      "id": "coordinate-function-risk",
+      "do": "Ask each function's agent for the risks it holds on its own records and the treatment evidence it has, and fold the answers into the one register instead of leaving a second list beside it.",
+      "skill": "manage-enterprise-risk",
+      "activity": "11.1.2.7",
+      "writes": [
+        "operations/handoff/[id]"
+      ],
+      "consider": {
+        "why": "Coordination is work only when more than one function writes risks of its own.",
+        "when": "The venture runs more than one function and another function's records carry a live risk."
+      }
+    },
+    {
+      "id": "follow-the-risk-process",
+      "do": "Check that each function's risks were written through the risk register with ranges, an owner and a review date rather than left in notes or inside a decision, and list the ones that were not so they can be written properly.",
+      "skill": "manage-enterprise-risk",
+      "activity": "11.1.2.8",
+      "consider": {
+        "why": "A risk kept outside the register is invisible to the ranking and to every later run.",
+        "when": "The venture runs more than one function and a risk has been raised outside the register."
+      }
+    },
+    {
+      "id": "follow-the-reporting-process",
+      "do": "Say which functions reported their risks in the last cycle and name the ones that reported nothing, so a silent function is not read as a safe one.",
+      "skill": "manage-enterprise-risk",
+      "activity": "11.1.2.9",
+      "consider": {
+        "why": "Silence from a function looks the same as good news until someone counts who reported.",
+        "when": "The venture runs more than one function and a reporting cycle has closed."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "For each risk above tolerance with no treatment and each treatment with no evidence, add the finding to the decision it bears on, and raise to the finance lead which risks to treat this quarter.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "register-ranked-and-owned",
+      "kind": "review",
+      "check": "Does every live risk carry a 90% likelihood and impact range with a source or a stated basis, an owner, a review date, and either a treatment or a recorded reason to accept it?",
+      "reviewer": "finance-lead"
+    }
+  ]
+}

@@ -1,0 +1,78 @@
+{
+  "id": "3-3-8-develop-go-to-market-strategy",
+  "function": "marketing-and-sales",
+  "process": "3.3.8",
+  "title": "Develop go-to-market strategy",
+  "goal": "The venture has one written go-to-market plan the founder stands behind: who it sells to first, what it offers them, at what price, through which channel and with what motion, every part citing a record or marked an assumption with what would show it wrong.",
+  "measures": [
+    "revenue"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "marketing-and-sales/intake"
+    ]
+  },
+  "reads": [
+    "venture",
+    "foundation/core",
+    "foundation/icp",
+    "foundation/problem",
+    "foundation/telos",
+    "product",
+    "markets",
+    "validation/go-to-market",
+    "validation/pricing",
+    "validation/product-market-fit",
+    "purpose/competitor",
+    "sales/opportunities",
+    "customers",
+    "identity/lean-canvas",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "read-what-the-records-already-decide",
+      "do": "Read the foundation, ICP, problem, product, pricing and go-to-market records and say for each of the five parts, the segment, the offer, the price, the channel and the motion, whether a live record settles it or it is still a guess.",
+      "skill": "develop-and-manage-marketing-plans"
+    },
+    {
+      "id": "draft-the-plan",
+      "do": "Draft the plan as one page, each part citing the record it rests on, every gap written as an assumption with what would show it wrong, and the first test named with the date it would be judged on.",
+      "skill": "develop-and-manage-marketing-plans"
+    },
+    {
+      "id": "ask-the-founder-what-only-they-decide",
+      "do": "Ask the founder what the records cannot settle, what to sell first, what the venture will not sell, which buyer to go to before any other and the promise it will keep, one question at a time.",
+      "ask": true,
+      "skill": "develop-and-manage-marketing-plans"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Put the plan to the founder as one decision with its assumptions listed and the first test attached, and tell the growth lead which assumption carries the most of the plan.",
+      "skill": "develop-and-manage-marketing-plans",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "strategy-or-constitution",
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "plan-cited-or-assumed",
+      "kind": "review",
+      "check": "Does each of the five parts of the plan either cite a live record or stand written as an assumption with what would show it wrong, and did the founder decide the plan?",
+      "reviewer": "growth-lead"
+    }
+  ]
+}

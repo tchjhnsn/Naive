@@ -73,6 +73,42 @@
     {
       "id": "publication-policy",
       "path": "packages/naive/src/functions/marketing-and-sales/skills/publication-policy/SKILL.md"
+    },
+    {
+      "id": "build-investor-relationships",
+      "path": "packages/naive/src/functions/external-relationships/skills/build-investor-relationships/SKILL.md"
+    },
+    {
+      "id": "manage-government-and-industry-relationships",
+      "path": "packages/naive/src/functions/external-relationships/skills/manage-government-and-industry-relationships/SKILL.md"
+    },
+    {
+      "id": "manage-legal-and-ethical-issues",
+      "path": "packages/naive/src/functions/external-relationships/skills/manage-legal-and-ethical-issues/SKILL.md"
+    },
+    {
+      "id": "manage-public-relations-program",
+      "path": "packages/naive/src/functions/external-relationships/skills/manage-public-relations-program/SKILL.md"
+    },
+    {
+      "id": "manage-relations-with-board-of-directors",
+      "path": "packages/naive/src/functions/external-relationships/skills/manage-relations-with-board-of-directors/SKILL.md"
+    },
+    {
+      "id": "manage-business-resiliency",
+      "path": "packages/naive/src/functions/risk-and-compliance/skills/manage-business-resiliency/SKILL.md"
+    },
+    {
+      "id": "manage-compliance",
+      "path": "packages/naive/src/functions/risk-and-compliance/skills/manage-compliance/SKILL.md"
+    },
+    {
+      "id": "manage-enterprise-risk",
+      "path": "packages/naive/src/functions/risk-and-compliance/skills/manage-enterprise-risk/SKILL.md"
+    },
+    {
+      "id": "manage-remediation-efforts",
+      "path": "packages/naive/src/functions/risk-and-compliance/skills/manage-remediation-efforts/SKILL.md"
     }
   ],
   "records": [

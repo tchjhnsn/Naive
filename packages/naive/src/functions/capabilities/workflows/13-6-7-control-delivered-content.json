@@ -1,0 +1,57 @@
+{
+  "id": "13-6-7-control-delivered-content",
+  "function": "capabilities",
+  "process": "13.6.7",
+  "title": "Control delivered content",
+  "goal": "Live content is read against what is now true: each piece is kept, corrected, archived or proposed for deletion, nothing out of date is left where a customer can read it, and no deletion happens without the founder.",
+  "measures": ["cost_or_time_saved"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["capabilities/intake"] },
+  "reads": [
+    "marketing/content",
+    "marketing/sitemap",
+    "governance/publications",
+    "legal/obligations",
+    "capabilities/processes",
+    "product"
+  ],
+  "steps": [
+    {
+      "id": "evaluate-content",
+      "do": "Read each live piece against the records it cites and say whether it is still true, out of date or wrong, and open a handoff to correct every piece that a customer could act on wrongly today.",
+      "skill": "manage-content",
+      "activity": "13.6.7.1",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "archive-content",
+      "do": "For a piece that is no longer current but must be kept, move it out of the live place and leave a note of where it went and why, keeping it readable for as long as its retention period says.",
+      "skill": "manage-content",
+      "activity": "13.6.7.2",
+      "writes": ["operations/handoff/[id]"],
+      "raises": ["irreversible-data-change"]
+    },
+    {
+      "id": "delete-content",
+      "do": "Prepare the list of pieces whose retention period has passed and that nothing cites, with what each deletion would remove and what cites it, and put it to the founder, since deleting cannot be undone.",
+      "skill": "manage-content",
+      "activity": "13.6.7.3",
+      "ask": true,
+      "raises": ["irreversible-data-change"],
+      "consider": {
+        "why": "Deleting is the one content action that cannot be undone, so it waits until keeping the piece is itself a problem.",
+        "when": "A retention period has passed, or an obligation requires the piece to be removed."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Raise to the founder each archive or deletion with what it removes and what cites it, and to the strategy lead which out-of-date piece to correct first.",
+      "writes": ["decisions/*"],
+      "raises": ["irreversible-data-change", "set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "nothing-misleading-left-live", "kind": "review", "check": "Is every live piece either confirmed true against the records it cites or carried by an open handoff to correct it, with no deletion made without the founder?", "reviewer": "strategy-lead" }
+  ]
+}

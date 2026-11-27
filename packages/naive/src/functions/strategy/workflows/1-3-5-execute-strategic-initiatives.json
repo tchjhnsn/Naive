@@ -1,0 +1,58 @@
+{
+  "id": "1-3-5-execute-strategic-initiatives",
+  "function": "strategy",
+  "process": "1.3.5",
+  "title": "Execute strategic initiatives",
+  "goal": "Every selected initiative is running as claimed handoffs with done criteria and evidence, and anything that has stopped moving is named with what is blocking it.",
+  "measures": ["impact"],
+  "trigger": { "kind": "request" },
+  "requires": {
+    "meetings": ["strategy/intake"]
+  },
+  "reads": [
+    "foundation/goals",
+    "operations/handoff",
+    "operations/lead",
+    "operations/time-box",
+    "evidence",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "open-the-work",
+      "do": "For each selected initiative open one handoff per function that must act, naming the goal it serves, the measure, the owner role, the date and the done criteria that would prove it finished, and leave each one for its own role to claim.",
+      "skill": "develop-and-measure-strategic-initiatives",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "track-the-work",
+      "do": "Read each initiative's handoffs and write on the ones addressed to you what has been finished and the evidence for it, quoting the result record, and report for the rest only what their own evidence says rather than what you expect.",
+      "skill": "develop-and-measure-strategic-initiatives",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "name-what-is-blocked",
+      "do": "For every handoff that has not moved, name what blocks it, a decision nobody has made, a workflow still locked by its prerequisites, a role nobody holds or money not budgeted, and say which of those only the founder can clear.",
+      "skill": "develop-and-measure-strategic-initiatives"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Open one decision for each block the founder must clear, attach the handoff and its evidence, and recommend to the strategy lead whether to wait, reroute the work or stop the initiative.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities", "continue-or-stop"]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "every-initiative-is-a-handoff-or-a-block",
+      "kind": "review",
+      "check": "Does every selected initiative have either a claimed handoff with done criteria or a named block with what would clear it?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

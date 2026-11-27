@@ -1,0 +1,81 @@
+{
+  "id": "7-7-6-develop-and-manage-time-and-attendance-systems",
+  "function": "human-capital",
+  "process": "7.7.6",
+  "title": "Develop and manage time and attendance systems",
+  "goal": "Whose time must be recorded and in what detail is settled with the obligation behind it, time is entered in one place against a task and a period, and each period's gaps are reported before payroll reads it.",
+  "measures": [
+    "compliance_met",
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "human-capital/intake"
+    ]
+  },
+  "reads": [
+    "people",
+    "people/founders",
+    "governance/internal-terms",
+    "legal/obligations",
+    "it/connections",
+    "operations/activity-assignments",
+    "finance/spend",
+    "operations/handoff",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "decide-what-must-be-recorded",
+      "do": "Say whose time must be recorded and in what detail, separating what the engagement requires, what the law where the person works requires and what the venture wants for its own pricing, and cite the obligation behind each.",
+      "skill": "manage-employee-information-and-analytics",
+      "raises": [
+        "legal-or-terms"
+      ]
+    },
+    {
+      "id": "set-up-the-record",
+      "do": "Set up the one place time is entered, with the period it covers, the task or project it is entered against, who approves it and how it reaches payroll, and say where that place is a tool the founder must pay for.",
+      "skill": "manage-employee-information-and-analytics",
+      "raises": [
+        "spend-money"
+      ]
+    },
+    {
+      "id": "keep-it-current",
+      "do": "Each period, check that everyone who should have entered time did, ask the founder to chase the gaps, and report plainly what cannot now be reconstructed rather than estimating it.",
+      "skill": "manage-employee-information-and-analytics",
+      "consider": {
+        "why": "There is nothing to keep current until someone is recording time.",
+        "when": "At least one person records time for a period that has closed."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Open a decision for any tool the time record needs and for each obligation the venture is not meeting, attach the period's gap report as evidence, and tell the strategy lead whether payroll can rely on the record.",
+      "skill": "manage-employee-information-and-analytics",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "time-rules-cited",
+      "kind": "review",
+      "check": "Does the rule for whose time is recorded cite the engagement or the law behind it, and is each period's gap reported rather than estimated?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

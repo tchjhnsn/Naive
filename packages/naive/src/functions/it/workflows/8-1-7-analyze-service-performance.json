@@ -1,0 +1,22 @@
+{
+  "id": "8-1-7-analyze-service-performance",
+  "function": "it",
+  "process": "8.1.7",
+  "title": "Analyze service performance",
+  "goal": "Each agreed service level is measured against what actually happened, every miss has a cause and an owner, and the people who depend on the systems have been told in one message what held and what did not.",
+  "measures": ["compliance_met", "cost_or_time_saved"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["it/intake"] },
+  "reads": ["it/connections", "support/cases", "product/bugs", "system/provenance", "finance/spend", "operations/handoff", "decisions/*"],
+  "steps": [
+    { "id": "assess-sla-compliance", "do": "For each agreed level on the connection records, compare the number it promises with what happened since the last run, taking the evidence from the provider's status history, the connection's sync dates and the venture's own provenance log, and record held or missed with the dates.", "skill": "develop-and-manage-it-customer-relationships", "activity": "8.1.7.1", "writes": ["it/connections/[id]"] },
+    { "id": "triage-sla-compliance-issues", "do": "Sort the misses by what they cost the venture in hours, money or lost records, separate the ones the provider caused from the ones the venture's own setup caused, and name the single change that would prevent each.", "skill": "develop-and-manage-it-customer-relationships", "activity": "8.1.7.2" },
+    { "id": "collect-feedback-about-it-products-and-services", "do": "Collect what the people and agent roles that use each system actually hit (support cases, bugs filed against a connection, steps that stalled waiting for access) and write each one on the handoff with the system it belongs to, asking the founder only what no record shows.", "skill": "develop-and-manage-it-customer-relationships", "activity": "8.1.7.3", "ask": true },
+    { "id": "synthesize-and-distribute-it-performance-information", "do": "Write one message: which levels held, which were missed and at what cost, what feedback came in, and the one fix you recommend next, with every number traced to the record it came from.", "skill": "develop-and-manage-it-customer-relationships", "activity": "8.1.7.4" },
+    { "id": "feed-decisions", "do": "Record each miss and its cause as evidence on the decision it bears on, propose the order of fixes to the product lead, and raise a plan change, a cancellation or new terms for the founder when the provider is the cause.", "skill": "develop-and-manage-it-customer-relationships", "writes": ["decisions/*"], "raises": ["set-priorities", "spend-money", "cancel-or-downgrade", "domain-fact"] }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "misses-explained", "kind": "review", "check": "Does every agreed level say held or missed with its dates and its evidence, and does every miss name its cause, its cost and the one change that would prevent it?", "reviewer": "product-lead" }
+  ]
+}

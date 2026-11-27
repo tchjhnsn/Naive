@@ -1,0 +1,104 @@
+{
+  "id": "9-5-1-report-time",
+  "function": "finance",
+  "process": "9.5.1",
+  "title": "Report time",
+  "goal": "The hours the venture owes money for are collected from the people who worked them, leave and extra hours are reported with their entitlement, and nothing in the period's figures was filled from memory.",
+  "measures": [
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "finance/intake"
+    ]
+  },
+  "reads": [
+    "people/team",
+    "people/founders",
+    "service-delivery/engagements",
+    "finance/spend",
+    "finance/budget",
+    "money",
+    "purpose/money/summary",
+    "legal/obligations"
+  ],
+  "steps": [
+    {
+      "id": "time-policies",
+      "do": "Draft the rules for recording time, who records it, in what unit, by when each period, what counts as paid and unpaid leave and who approves a correction, and ask the founder to confirm them.",
+      "skill": "process-payroll",
+      "ask": true,
+      "activity": "9.5.1.1",
+      "consider": {
+        "why": "A rule for recording time settles the arguments before they happen, and it is also what makes a pay run checkable.",
+        "when": "The venture pays anyone for their time, an employee or a contractor paid by the hour."
+      }
+    },
+    {
+      "id": "collect-time",
+      "do": "Collect the period's hours from each person's own record or the tool that holds them, list whose hours are missing, and never fill an hour from memory.",
+      "skill": "process-payroll",
+      "activity": "9.5.1.2",
+      "consider": {
+        "why": "The hours are what the pay run and the cost of delivery both rest on.",
+        "when": "Someone the venture pays by time worked in the period."
+      }
+    },
+    {
+      "id": "leave",
+      "do": "Report paid and unpaid leave taken and still owed for the period against each person's entitlement, naming the agreement or rule the entitlement comes from.",
+      "skill": "process-payroll",
+      "activity": "9.5.1.3",
+      "consider": {
+        "why": "Leave already earned is money the venture owes whether or not anyone has asked for it.",
+        "when": "Anyone the venture pays has taken or accrued leave."
+      }
+    },
+    {
+      "id": "hours-watch",
+      "do": "Separate regular, overtime and other hours for each person, flag anything that looks like unpaid overtime or a breach of the hours rules, and say what the extra hours will cost.",
+      "skill": "process-payroll",
+      "activity": "9.5.1.4",
+      "consider": {
+        "why": "Overtime nobody counted is both a cost and a legal exposure.",
+        "when": "Someone the venture pays worked more than their normal hours in the period."
+      }
+    },
+    {
+      "id": "utilization",
+      "do": "Report for each person the share of paid hours that reached billable or goal-serving work, naming the engagements the hours were booked to.",
+      "skill": "process-payroll",
+      "activity": "9.5.1.5",
+      "consider": {
+        "why": "The share of paid hours that reached paying work is what says whether the delivery price holds.",
+        "when": "The venture bills a customer for someone's time."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Put the period's hours, leave and cost on the handoff for the pay run, raise every missing or disputed hour as a decision for the founder, and when the venture pays nobody for their time record that as the reason each step was considered and not run.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "hours-sourced",
+      "kind": "review",
+      "check": "Does every hour in the period's figures come from a record or from the person who worked it, and is every missing or disputed hour open as a decision?",
+      "reviewer": "finance-lead"
+    }
+  ]
+}

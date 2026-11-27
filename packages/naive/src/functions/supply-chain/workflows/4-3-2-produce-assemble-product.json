@@ -1,0 +1,83 @@
+{
+  "id": "4-3-2-produce-assemble-product",
+  "function": "supply-chain",
+  "process": "4.3.2",
+  "title": "Produce/Assemble product",
+  "goal": "Each production run has a record of what went in, what came out good, what failed and what one good unit cost, and every problem found during the run is either fixed or an open decision.",
+  "measures": ["cost_or_time_saved", "flow_and_lead_time"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["supply-chain/intake"] },
+  "reads": [
+    "product",
+    "supply-chain/purchase-orders",
+    "supply-chain/suppliers",
+    "assets/register",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "manage-raw-material-inventory",
+      "do": "Count what parts are on hand against what the released run needs, issue them to the run and record the quantity drawn, and flag any part that is short before the build starts rather than halfway through it.",
+      "skill": "produce-assemble-test-product",
+      "activity": "4.3.2.1"
+    },
+    {
+      "id": "execute-detailed-line-schedule",
+      "do": "Work the day's schedule build by build, recording for each one the start, the finish, who built it, the quantity completed and the quantity set aside, and report any deviation from the written procedure as it happens.",
+      "skill": "produce-assemble-test-product",
+      "activity": "4.3.2.2"
+    },
+    {
+      "id": "report-maintenance-issues",
+      "do": "Write up each fault in equipment, tooling or test gear found during the run, what it was, what it affected, the units it spoiled and whether the run continued, and pass it to the maintenance request in the scheduling workflow.",
+      "skill": "produce-assemble-test-product",
+      "activity": "4.3.2.3",
+      "consider": {
+        "why": "A fault recorded with the lot it spoiled is what makes the next failure predictable instead of surprising.",
+        "when": "The run uses equipment, tooling or test gear."
+      }
+    },
+    {
+      "id": "rerun-defective-items",
+      "do": "For each unit set aside, decide from the acceptance standard whether it is reworked, scrapped or sold as a second, record the labour and parts the rework took, and count the reworked units separately from the ones that passed first time.",
+      "skill": "produce-assemble-test-product",
+      "activity": "4.3.2.4"
+    },
+    {
+      "id": "monitor-and-optimize-production-process",
+      "do": "Watch the run's own numbers, cycle time per station, scrap by cause and the alarms or stoppages the equipment reports, and propose the one change that would raise good output most, with what it costs to make.",
+      "skill": "produce-assemble-test-product",
+      "activity": "4.3.2.5",
+      "consider": {
+        "why": "Tuning a process pays only once the same run has happened enough times to tell a real pattern from one bad day.",
+        "when": "The same product has been built more than twice and its cycle times and scrap are recorded."
+      }
+    },
+    {
+      "id": "assess-production-performance",
+      "do": "Close the run with the figures that matter, units planned against units good, first pass yield, hours per unit and the cost of one good unit including scrap and rework, and compare them with the manufacturing goals.",
+      "skill": "produce-assemble-test-product",
+      "activity": "4.3.2.6",
+      "raises": ["domain-fact"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Add a decision for each thing the run proved wrong, a part that does not fit, a yield too low to sell at the planned price or a step that needs a jig, with the cost per unit it carries and your recommendation, and hand the order of that work to the product lead.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "run-closed-with-yield-and-cost",
+      "kind": "review",
+      "check": "Does the closed run record the materials issued, the good and failed quantities, the first pass yield and the cost of one good unit, and is every failure either dispositioned or an open decision?",
+      "reviewer": "product-lead"
+    }
+  ]
+}

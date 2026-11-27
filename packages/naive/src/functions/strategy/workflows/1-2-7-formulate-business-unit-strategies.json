@@ -1,0 +1,76 @@
+{
+  "id": "1-2-7-formulate-business-unit-strategies",
+  "function": "strategy",
+  "process": "1.2.7",
+  "title": "Formulate business unit strategies",
+  "goal": "Each line the venture runs has its own written answer for whom it serves and what it is best at, every place two lines contradict each other is open as a decision, and a line that serves no venture goal is named.",
+  "measures": ["impact", "learning"],
+  "trigger": { "kind": "request" },
+  "requires": {
+    "meetings": ["strategy/intake"]
+  },
+  "reads": [
+    "venture",
+    "product",
+    "product/capabilities",
+    "foundation/telos",
+    "foundation/goals",
+    "foundation/icp",
+    "identity/lean-canvas",
+    "purpose/money/summary",
+    "validation/*",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "analyze-business-unit-strategies",
+      "do": "For each product line or nested venture write whom it serves, what it sells, how it is paid and which venture goal it moves, taking each from its own records, and name every line whose answer is missing rather than inferring one.",
+      "skill": "develop-business-strategy",
+      "activity": "1.2.7.1",
+      "consider": {
+        "why": "A second line quietly competes with the first for the same week and the same customer unless each one's answer is written.",
+        "when": "The venture has more than one product or one nested venture."
+      }
+    },
+    {
+      "id": "identify-core-competency-for-each-business-unit",
+      "do": "For each line name the one thing it does that the alternatives in the competitor records do not, with the evidence that customers chose it for that, and mark as a claim anything only the founder asserts.",
+      "skill": "develop-business-strategy",
+      "activity": "1.2.7.2",
+      "consider": {
+        "why": "A line with no distinct strength is being run out of habit, and saying so early frees the attention it takes.",
+        "when": "A line has been running long enough to have customers or interviews behind it."
+      }
+    },
+    {
+      "id": "refine-business-unit-strategies-in-support-of-organizational-strategy",
+      "do": "Write for each line the change that would bring it under the venture's telos and goals, including stopping it, with what that change would cost and release, and bring the set to the founder as one choice about the portfolio.",
+      "skill": "develop-business-strategy",
+      "activity": "1.2.7.3",
+      "raises": ["strategy-or-constitution", "continue-or-stop"],
+      "consider": {
+        "why": "Lines are best weighed against each other once rather than defended one at a time.",
+        "when": "A line serves no live venture goal or two lines want the same customer."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Open one decision over the portfolio carrying each line with its strength, its goal and its cost, say plainly which lines the records cannot describe, and recommend to the strategy lead which line to examine next.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "each-line-answered-or-named",
+      "kind": "review",
+      "check": "Does every line the venture runs either have a written answer for whom it serves and what it is best at, or stand named as a line the records cannot describe?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

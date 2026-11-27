@@ -1,0 +1,114 @@
+{
+  "id": "11-1-1-establish-the-enterprise-risk-framework-and",
+  "function": "risk-and-compliance",
+  "process": "11.1.1",
+  "title": "Establish the enterprise risk framework and policies",
+  "goal": "The venture has one risk tolerance the founder set as a money figure and a short written rule saying who may accept a risk and which risks must go to the founder, and every live risk has been read against both.",
+  "measures": [
+    "compliance_met"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "risk-and-compliance/intake"
+    ]
+  },
+  "reads": [
+    "legal/risks",
+    "legal/obligations",
+    "governance/decision-rights",
+    "governance/delegation",
+    "purpose/money/summary",
+    "finance/budget",
+    "it/connections",
+    "foundation/telos"
+  ],
+  "steps": [
+    {
+      "id": "determine-risk-tolerance",
+      "do": "Read the money summary, the budget and the spend register to work out what single loss the venture could absorb and still trade, propose a tolerance as two money figures (the most one risk may carry and the most the whole register may carry), and ask the founder to set them, recording the figures and the basis for each on the handoff.",
+      "skill": "manage-enterprise-risk",
+      "activity": "11.1.1.1",
+      "ask": true,
+      "writes": [
+        "operations/handoff/[id]"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    },
+    {
+      "id": "risk-policies",
+      "do": "Write the venture's risk rules on the handoff in under a page: who may accept a risk and up to what figure, which risks must go to the founder, the four treatments open to it (avoid, reduce, transfer, accept), that likelihood and impact are written as 90% ranges with a source or a stated basis, and how often the register is reviewed, each rule naming the decision rights record it follows.",
+      "skill": "manage-enterprise-risk",
+      "activity": "11.1.1.2",
+      "writes": [
+        "operations/handoff/[id]"
+      ]
+    },
+    {
+      "id": "risk-tools",
+      "do": "List from the connections record what the venture already uses to hold risk evidence, say which part of the register each one covers, and hand the gap to the IT function instead of buying anything yourself.",
+      "skill": "manage-enterprise-risk",
+      "activity": "11.1.1.3",
+      "writes": [
+        "operations/handoff/[id]"
+      ],
+      "consider": {
+        "why": "A venture with a dozen risks needs the register and nothing else, and tooling only earns its keep once several people write to it.",
+        "when": "More than one person writes risks, or a live risk's evidence sits in a tool no record names."
+      }
+    },
+    {
+      "id": "share-risk-knowledge",
+      "do": "Give each function that owns a record one of the venture's risks names a handoff carrying that risk, its cause, its owner and its review date, so the same risk is not tracked twice in two places with two different ranges.",
+      "skill": "manage-enterprise-risk",
+      "activity": "11.1.1.4",
+      "writes": [
+        "operations/handoff/[id]"
+      ],
+      "consider": {
+        "why": "Sharing a risk only helps when another function holds the record or the dependency behind it.",
+        "when": "A live risk names a record another function the venture runs owns."
+      }
+    },
+    {
+      "id": "report-enterprise-risk",
+      "do": "Draft the risk page a board or an investor reads: the top risks by expected loss, what changed since the last one, the treatments in flight and the risks with no owner, each line citing its risk record, and leave sending it to the founder.",
+      "skill": "manage-enterprise-risk",
+      "activity": "11.1.1.5",
+      "raises": [
+        "public-commitment"
+      ],
+      "consider": {
+        "why": "Only a venture with a board or outside investors owes anyone a risk report, and what it says about the venture is the founder's to say.",
+        "when": "The venture has a board record or has sent an investor update."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "For each gap this run found, name the open decision it bears on and add it there as evidence, and raise to the finance lead which risks the tolerance says must be treated first.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "tolerance-and-rule-set",
+      "kind": "review",
+      "check": "Has the founder set a risk tolerance as a money figure, and does the written rule say who may accept a risk and which risks must come to the founder?",
+      "reviewer": "finance-lead"
+    }
+  ]
+}

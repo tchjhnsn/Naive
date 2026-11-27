@@ -1,0 +1,78 @@
+{
+  "id": "2-2-3-define-product-service-development-requirements",
+  "function": "products",
+  "process": "2.2.3",
+  "title": "Define product/service development requirements",
+  "goal": "The concept the venture is about to build has its requirements written as testable statements, each traced to the job, interview or rule behind it, with the support the product assumes after launch and any bundle it belongs to named.",
+  "measures": ["learning", "flow_and_lead_time"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["products/intake"] },
+  "reads": [
+    "product",
+    "product/capabilities",
+    "foundation/icp",
+    "foundation/problem",
+    "foundation/requirements",
+    "foundation/constraints",
+    "validation/interviews",
+    "validation/pricing",
+    "legal/obligations",
+    "industries",
+    "support/policy",
+    "support/cases",
+    "deals",
+    "it/connections",
+    "decisions"
+  ],
+  "steps": [
+    {
+      "id": "define-requirements",
+      "do": "Write the concept's requirements as statements a test could pass or fail: what it must do for each job of the profiles it is offered to, what it must work with, what must never go wrong with a person's data or safety, the rules from the legal and industry records it must obey, what its industry's buyers expect as standard, how it must feel to use at the two or three moments that matter, and what is sold as service rather than software, each one traced to the job, interview or rule behind it, and hand the set to the founder for the limits only the founder can set, since the requirement records belong to the strategy function.",
+      "skill": "generate-and-define-new-product-service-ideas",
+      "activity": "2.2.3.1",
+      "ask": true,
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "post-launch-support-model",
+      "do": "Say who answers a customer who is stuck, through which channel, within what time and what happens outside those hours, read against the support policy and the people the venture actually has, and put the model on the handoff with each gap named as a gap rather than a promise.",
+      "skill": "generate-and-define-new-product-service-ideas",
+      "activity": "2.2.3.2",
+      "writes": ["operations/handoff/[id]"],
+      "consider": {
+        "why": "A product whose support nobody defined is supported by the founder at every hour, which is the first thing to break.",
+        "when": "The product will be used by people outside the venture."
+      }
+    },
+    {
+      "id": "bundling-opportunities",
+      "do": "From usage, the deal records and what customers asked for, say which products or capabilities are taken together often enough to be worth offering as one, what the bundle would include and leave out, and record the parts on the product cards with the evidence for the bundle.",
+      "skill": "generate-and-define-new-product-service-ideas",
+      "activity": "2.2.3.3",
+      "writes": ["product/[id]"],
+      "consider": {
+        "why": "A bundle can raise what a customer takes without new building, and the wrong bundle hides which part the customer actually wanted.",
+        "when": "The venture has more than one product or kit in the lineup."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Attach the requirement set to the decision it serves as evidence, list the requirements that are still assumptions with what would settle each, and raise to the product lead which requirements go into the next build and which wait.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "requirements-testable",
+      "kind": "review",
+      "check": "Is every requirement written so a test could pass or fail it, and does each one name the job, interview or rule it comes from rather than an opinion?",
+      "reviewer": "product-lead"
+    }
+  ]
+}

@@ -1,0 +1,124 @@
+{
+  "id": "9-9-2-process-taxes",
+  "function": "finance",
+  "process": "9.9.2",
+  "title": "Process taxes",
+  "goal": "Each return the venture owes is assembled from reconciled records in time to file with the record behind every figure, the tax recorded in the budget matches what is owed, and the founder or their licensed preparer filed and signed every one.",
+  "measures": [
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "finance/intake"
+    ]
+  },
+  "reads": [
+    "venture",
+    "finance/spend",
+    "finance/budget",
+    "money",
+    "money/[id]",
+    "purpose/money/summary",
+    "customers",
+    "deals",
+    "product",
+    "assets/register",
+    "legal/obligations",
+    "governance/ownership"
+  ],
+  "steps": [
+    {
+      "id": "tax-planning",
+      "do": "Before the year ends, list the choices still open that change what is owed, which costs fall in which year, what is capitalized and what is claimed, with what each would change in cash and when, and hand them to the founder for their accountant to decide.",
+      "skill": "manage-taxes",
+      "activity": "9.9.2.1"
+    },
+    {
+      "id": "prepare-returns",
+      "do": "Assemble each return from the reconciled records figure by figure with the record behind each one, list what is still missing to complete it, and hand it to the founder or their licensed preparer, who files and signs.",
+      "skill": "manage-taxes",
+      "ask": true,
+      "activity": "9.9.2.2"
+    },
+    {
+      "id": "foreign-taxes",
+      "do": "Assemble what each foreign filing asks for, say where the same income could be taxed twice and which treaty or credit the founder's accountant should check, and hand it over with the records behind it.",
+      "skill": "manage-taxes",
+      "activity": "9.9.2.3",
+      "consider": {
+        "why": "Income can be taxed in two countries at once, and the relief has to be claimed rather than applied automatically.",
+        "when": "The venture earns, sells or employs across a border."
+      }
+    },
+    {
+      "id": "deferred-taxes",
+      "do": "List each difference between the books and the return that reverses later, with its amount and the year it reverses, and prepare the note the accountant needs.",
+      "skill": "manage-taxes",
+      "activity": "9.9.2.4",
+      "consider": {
+        "why": "A difference between the books and the return is a liability or an asset that arrives in a later year.",
+        "when": "The venture's books and its tax returns treat a cost or a revenue in different years."
+      }
+    },
+    {
+      "id": "account-for-taxes",
+      "do": "Record the tax owed, paid and reclaimable for the period against the budget's tax lines, and reconcile what the returns say to what actually left the accounts.",
+      "skill": "manage-taxes",
+      "activity": "9.9.2.5",
+      "writes": [
+        "finance/budget/[id]"
+      ],
+      "raises": [
+        "domain-fact"
+      ]
+    },
+    {
+      "id": "monitor-tax-compliance",
+      "do": "Check each deadline, registration and filing against the tax calendar and the obligations record, and flag every one late, missing or unregistered with what it exposes the venture to.",
+      "skill": "manage-taxes",
+      "activity": "9.9.2.6"
+    },
+    {
+      "id": "tax-inquiries",
+      "do": "Assemble the facts and records the notice asks about and a dated timeline of what happened, and hand it to the founder and their accountant; only they reply to a tax authority.",
+      "skill": "manage-taxes",
+      "ask": true,
+      "activity": "9.9.2.7",
+      "raises": [
+        "legal-or-terms"
+      ],
+      "consider": {
+        "why": "A notice has its own deadline, and the first reply sets what the rest of the matter argues about.",
+        "when": "A tax authority has sent the venture a notice, a question or an assessment."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Raise each amount due and each late or missing filing as a decision for the founder with its deadline and its exposure, and tell the finance lead which one to clear first.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "spend-money",
+        "legal-or-terms",
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "returns-from-reconciled-records",
+      "kind": "review",
+      "check": "Does every figure in each return trace to a reconciled record, and was every return filed and signed by the founder or their licensed preparer?",
+      "reviewer": "finance-lead"
+    }
+  ]
+}
