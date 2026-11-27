@@ -9,6 +9,31 @@
     "A booking app, a spreadsheet for stock and a payroll service, reconciled by hand",
     "Paper diaries in the smallest shops"
   ],
+  "forms": [
+    {
+      "id": "reconciling-by-hand",
+      "statement": "The owner retypes the same numbers into three tools every week, and the totals still disagree.",
+      "status": "target"
+    },
+    {
+      "id": "three-tools-that-ignore-each-other",
+      "statement": "Bookings, stock and payroll each sit in a tool that knows nothing of the other two.",
+      "cause_of": [
+        "reconciling-by-hand"
+      ]
+    },
+    {
+      "id": "payroll-night",
+      "statement": "On payroll night the owner works past closing, because the hours come from the booking app and the till separately.",
+      "parent": "reconciling-by-hand"
+    },
+    {
+      "id": "paper-diary",
+      "statement": "The smallest shops keep a paper diary, so there is nothing to reconcile and nothing to report.",
+      "segment": "One-person shops with no staff",
+      "status": "parked"
+    }
+  ],
   "evidence": [
     {
       "id": "tool-spend",

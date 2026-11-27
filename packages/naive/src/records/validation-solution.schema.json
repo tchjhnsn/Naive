@@ -23,6 +23,11 @@
       "type": "string",
       "description": "How it solves the problem, in one or two sentences"
     },
+    "problem": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$",
+      "description": "The form of the problem tree this solution solves (EE-219), normally the venture's target problem: foundation/problem.json forms, by id"
+    },
     "product": {
       "type": "string",
       "description": "Product id, if one product carries the solution"

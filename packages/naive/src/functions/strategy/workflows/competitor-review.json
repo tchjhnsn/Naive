@@ -8,6 +8,12 @@
     "kind": "schedule",
     "cadence": "monthly"
   },
+  "requires": {
+    "records": [
+      "foundation/problem",
+      "foundation/icp"
+    ]
+  },
   "reads": [
     "decisions/*",
     "foundation/icp",

@@ -5,6 +5,7 @@
   "goal": "Every buyer and customer the founder named is a record with a stage, a source and a next step, and the channels to test first are proposed to the growth lead.",
   "measures": ["revenue"],
   "trigger": { "kind": "intake" },
+  "requires": { "records": ["foundation/icp", "product"] },
   "reads": ["venture", "foundation/telos", "foundation/icp", "customers", "sales/opportunities", "marketing/brand", "governance/publication-policy"],
   "steps": [
     { "id": "read-what-exists", "do": "Read the customer profiles, customers, opportunities, brand and publication policy, and list what is missing, most needed first." },
