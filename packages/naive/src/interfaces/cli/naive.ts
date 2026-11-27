@@ -13,7 +13,7 @@
 //                                                   record is checked against its schema as you go (I-17, I-24)
 //   naive build                                     check every package and write a release (I-17)
 //   naive start                                     serve the latest release read-only (I-17)
-//   naive check                                     run every check that applies to the venture (I-9)
+//   naive check                                     run every check that reads a venture, less the ones its config turns off (I-9)
 //   naive info                                      versions, the venture, and which agents are connected (I-6)
 //   naive mcp                                       serve the venture to an agent over MCP (stdio)
 //   naive types                                     the venture types, each with its roles, packages and first decisions (EE-082)
@@ -85,6 +85,11 @@
 //                                                   or a cause (cause_of) of another, the one target and each
 //                                                   profile's core problem; rank orders them by what the interviews
 //                                                   counted, labelled primary, secondary and tertiary (EE-219)
+//   naive features [list|report <id>] [--json] [--md]
+//                                                   feature reports from the venture's records (EE-228): list is the
+//                                                   portfolio by product and category; report is one capability's
+//                                                   place, status history, goals, RICE, bugs, feedback, adoption and
+//                                                   proof, with a hole for each fact no record holds
 //   naive blocked [--json]                          every workflow of the venture's functions, in hierarchical order,
 //                                                   met or blocked, and what unblocks it first (EE-217)
 //   naive bets [show [<id>]] [--json]               the venture's bets: each claim, the fixed form of it, what would
@@ -199,6 +204,7 @@ import { logical } from "../../core/venture-paths.ts";
 import { ventureFile } from "../../core/venture-paths.ts";
 import { checkWorkspace, ensureWorkspace, findWorkspace } from "../../engine/workspace.ts";
 import { checkCopies } from "../../engine/effect-pin.ts";
+import { checksFor, configFor } from "../../engine/naive-config.ts";
 import { schemaNameOf } from "../../records/index.ts";
 import { naiveScript, PACKAGE_ROOT } from "../../core/scripts.ts";
 import { validateFile } from "../../records/validate.ts";
@@ -284,16 +290,31 @@ async function dev(dir: string): Promise<void> {
   });
 }
 
-// The checks that read a workspace, run on this venture: it and the ventures nested in it, not its neighbours.
-const CHECKS = ["check-ventures", "check-people", "check-provenance", "check-sources", "check-data-packages", "check-governance", "check-telos", "check-goals", "check-runs", "check-publication", "check-private", "check-where-used", "check-citations", "lint-investors", "lint-product", "lint-money", "lint-customers", "lint-validation", "lint-finance", "lint-legal", "lint-people", "lint-foundation"];
+// The checks that read a venture, run on this venture: it and the ventures nested in it, not its neighbours.
+// Every checker that takes a venture folder is here. A checker of Naive's own files (the data model, nouns, the docs)
+// is not: node test.ts runs those. checks.off and checks.warn in naive.config.json are honoured, by the checker's
+// path in Naive (packages/naive/src/checks/check-telos.ts), as the router's check action honours them.
+const CHECKS = ["check-ventures", "check-config", "check-people", "check-owners", "check-departments", "check-team", "check-delegation", "check-governance",
+  "check-provenance", "check-traces", "check-sources", "check-records", "check-data-packages", "check-where-used", "check-private", "check-connections", "check-signals",
+  "check-telos", "check-goals", "check-runs", "check-problems", "check-validation", "check-pre-registration", "check-execution", "check-detectors", "check-documents",
+  "check-bets", "check-reasons", "check-validation-study", "check-recipes", "check-assets", "check-brand", "check-publication", "check-citations",
+  "lint-investors", "lint-product", "lint-money", "lint-customers", "lint-validation", "lint-finance", "lint-legal", "lint-people", "lint-foundation"];
 function check(dir: string): number {
   let failed = 0;
-  for (const c of CHECKS) {
+  let plan: { check: string; mode: string }[];
+  const short = (c: string) => c.replace(/^check-/, "");
+  // A config that cannot be read turns nothing off: every check runs, and check-config says what is wrong with it.
+  const path = (c: string) => `packages/naive/src/checks/${c}.ts`;
+  try { plan = checksFor(configFor(dir), CHECKS.map(path)); } catch { plan = CHECKS.map((c) => ({ check: path(c), mode: "run" })); }
+  for (const [i, c] of CHECKS.entries()) {
+    const mode = plan[i]?.mode ?? "run";
+    if (mode === "off") { console.log(`off   ${short(c)}: turned off in naive.config.json`); continue; }
     const r = spawnSync("node", [naiveScript(c), dir], { encoding: "utf8" });
     const last = (r.stdout + r.stderr).trim().split("\n").filter(Boolean).at(-1) ?? "";
-    if (r.status !== 0) failed++;
-    console.log(`${r.status === 0 ? "pass" : "FAIL"}  ${c.replace("check-", "")}: ${last}`);
-    if (r.status !== 0) console.log((r.stdout + r.stderr).trim().split("\n").slice(0, 12).map((l) => `      ${l}`).join("\n"));
+    const bad = r.status !== 0;
+    if (bad && mode !== "warn") failed++;
+    console.log(`${!bad ? "pass" : mode === "warn" ? "warn" : "FAIL"}  ${short(c)}: ${last}`);
+    if (bad) console.log((r.stdout + r.stderr).trim().split("\n").slice(0, 12).map((l) => `      ${l}`).join("\n"));
   }
   // One Effect, shared (EE-161): the venture pins Naive's exact effect version and loads the copy Naive loads.
   const effect = checkCopies(dir);
@@ -558,6 +579,13 @@ else if (cmd === "build" || cmd === "start") {
   // rank, and --json pass through. It reads only.
   const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
   process.exit(run("packages/naive/src/engine/problems.ts", [here(), ...args]));
+} else if (cmd === "features") {
+  // Feature reports (packages/naive/src/engine/feature-report.ts, EE-228). list or report <id>, --json and --md pass
+  // through. It reads only.
+  const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
+  const [what = "list"] = args.filter((a) => !a.startsWith("--"));
+  if (!["list", "report"].includes(what)) { console.error("usage: naive features [list|report <id>] [--json] [--md]"); process.exit(2); }
+  process.exit(run("packages/naive/src/engine/feature-report.ts", [here(), ...args]));
 } else if (cmd === "bets") {
   // The venture's strategic claims (EE-221, packages/naive/src/router/orchestration/bets.ts). register, confidence
   // and resolve are a person's; show and score read only.

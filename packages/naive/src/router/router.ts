@@ -40,10 +40,16 @@
 import { mayKnow, publicView } from "../engine/visibility.ts";
 import { execFileSync, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
+import { Effect } from "effect";
+import { VentureFs, readJson } from "../core/effect/fs.ts";
+import { recordProvenance } from "../core/effect/provenance.ts";
+import { runPromise } from "../core/effect/run.ts";
+import type { NaiveError } from "../core/effect/errors.ts";
+import type { VentureServices } from "../core/effect/runtime.ts";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { basename, dirname, join, relative } from "node:path";
 import { actingAgent, agentFromEnv, entries as provEntries } from "../core/provenance.ts";
-import { logWrite as prov, schemaFailure } from "./write-effects.ts";
+import { schemaFailureEffect, writeItem } from "./write-effects.ts";
 import type { Entry } from "../core/provenance.ts";
 import { address } from "../store/connectors/contract.ts";
 import { decisionFile, holding, locked, undecidedFor } from "../engine/decisions.ts";
@@ -58,13 +64,13 @@ import { readFlag as freshnessFlag } from "../engine/freshness.ts";
 // the gate's verdict, where held drafts wait, and check settings. The logic lives in these modules.
 import { PROJECTOR, actingCall, isProjector, itemId, mayReadItem, mayReadSome } from "./acting.ts";
 import { asOfStore, cutFor, inEval, observedBy, refusal as asOfRefusal } from "./reads-as-of.ts";
-import { checkPlan, gateWrite, heldDraft, ledgerHook, ownerOfWrite, prerequisiteOfWrite, reachOfWrite } from "./gate-hooks.ts";
+import { checkPlan, gateWriteEffect, heldDraft, ledgerHook, ownerOfWrite, prerequisiteOfWrite, reachOfWrite } from "./gate-hooks.ts";
 // Appends (packages/naive/src/router/appends.ts): one hash-chained line added to a log route, such as the detection ledger.
 import { appendLine } from "./appends.ts";
 import { commitRawSource } from "./raw-source.ts";
-import { claimHandoff, handoffWriteRule } from "./handoff-claim.ts";
-import { preRegistrationWriteRule } from "./pre-registration.ts";
-import { betWriteRule } from "./bets.ts";
+import { claimHandoff, handoffWriteRuleEffect } from "./handoff-claim.ts";
+import { preRegistrationWriteRuleEffect } from "./pre-registration.ts";
+import { betWriteRuleEffect } from "./bets.ts";
 import { briefPath, splitBrief } from "./handoff-brief.ts";
 import { LOCAL, attributeSources, connect, sourceFor } from "../store/connectors/index.ts";
 // Caching (packages/naive/src/engine/caching.ts): per-action memo, the record-level cache for command routes, and system/cache, system/judge, system/answer.
@@ -474,229 +480,248 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
   if (action === "write") {
     forget(dir); // Caching hook (H-3): a write never uses the cache, and what this action memoized for the venture is read again after it.
     if (!src || !writable(store)) return { ok: false, error: `${route} has no source to write` }; // a record route always has one by here
-    // Prose and Markdown (a research program, a public variant) are written whole as text, not as a JSON record.
-    const prose = r.form === "prose" || r.form === "markdown";
-    if (!prose && (!input || typeof input !== "object")) return { ok: false, error: "write needs the record as input" };
-    if (r.collection === "item" && !String(params.id).split(deepItem(r) ? "/" : "\0").every((x) => /^[a-z0-9][a-z0-9-]*$/.test(x))) return { ok: false, error: `${params.id} is not a valid id (lowercase letters, digits and hyphens${deepItem(r) ? ", in folders split by /" : ""})` };
-    const file = fileFor(r, params, dir);
-    if (isRecipeFile(file)) return { ...recipeRefusal(route, file), ...deprecated };
-    // Gate group hook: one writer per file. A projection record is the projector's alone, and the projector writes
-    // nothing a person owns once it exists; a person-only record (a research program) is a person's alone, so every
-    // agent is refused, a researcher included. Refused here, before the schema, the gate or any source is touched.
-    const owned = ownerOfWrite({ dir, r, route, file, projector, remote, actor, acting: !!actingAgent(provenance.agent?.id), role: actor_id });
-    if (owned) return { ...owned, ...deprecated };
-    // Handoff claim hook (packages/naive/src/router/handoff-claim.ts): a handoff that names its requester is edited by
-    // the requester before a claim; after one, the claimant writes progress and evidence and the requester the
-    // verification and acceptance. claimBase is the version that rule read, which the write below names; the
-    // pre-registration freeze below names it the same way.
-    let claimBase: string | null | undefined, claimed = false;
-    // Handoff brief hook (packages/naive/src/router/handoff-brief.ts): brief_text, the Markdown brief, rides beside the
-    // record's fields; it is taken out before the schema and written to the file the record's brief names, once the
-    // record is written.
-    let handoffInput = inp, briefText: string | null = null, briefFile: string | null = null;
-    if (r.record === "handoff" && inp) {
-      const split = splitBrief(inp);
-      if ("error" in split) return { ok: false, error: split.error, ...deprecated };
-      handoffInput = split.record;
-      briefText = split.text;
-      if (briefText !== null) {
-        if (remote) return { ok: false, error: `${route} lives in ${src.id}: its brief is kept beside it only in the venture's own folder, so write the brief there`, ...deprecated };
-        const at = briefPath(file, split.record.brief);
-        if ("error" in at) return { ok: false, error: at.error, ...deprecated };
-        briefFile = at.path;
-      }
-    }
-    if (r.record === "handoff" && handoffInput) {
-      const person = actor === "person" && !actingAgent(provenance.agent?.id);
-      const rule = await handoffWriteRule({ store, file, input: handoffInput, person, actorId: actor_id, agent: agentFromEnv(person ? "person" : "agent", via, { ...(actor_id && !person ? { id: actor_id } : {}), ...provenance.agent }) });
-      if (!rule.ok) return { ...rule, ...deprecated };
-      // The brief is the requester's outcome and work: once the handoff is claimed it stays as it was claimed.
-      if (briefText !== null && rule.stored?.claimed_by) return { ok: false, error: `${params.id} is claimed by ${rule.stored.claimed_by}, so its brief stays as it was claimed: write the record without brief_text`, ...deprecated };
-      claimBase = rule.base;
-      claimed = !!rule.stored?.requested_by && !!rule.stored?.claimed_by && rule.stored.role === actor_id;
-    }
-    // Function agent reach (reachOfWrite in packages/naive/src/router/gate-hooks.ts): <function>-agent writes only
-    // decisions and its function's record routes, and a temporary specialist only its spawn record's globs inside
-    // its parent's reach while it is live (EE-213), refused before the schema. A handoff addressed to its role that it
-    // has claimed is the exception: the claim rule above already limits the claimant to progress and evidence.
-    const outOfReach = claimed ? null : reachOfWrite({ dir, r, route, projector, actor, acting: !!actingAgent(provenance.agent?.id), role: actor_id });
-    if (outOfReach) return { ...outOfReach, ...deprecated };
-    // Goal ledger hook (packages/naive/src/engine/goals.ts, EE-210): a goal is a durable record. Nobody breaks its
-    // lifecycle (a mis-set status is corrected by reopening the goal to active), and an agent does not rewrite the
-    // wording a person adopted; it writes a new goal that supersedes the old one. Refused before the schema. The
-    // other half is below: a write that settles a goal is held as a draft whatever the gate says, as a write that
-    // settles a decision is, so only a person's acceptance puts it live.
-    const storedGoal = r.record === "goal" && !remote && inp && existsSync(ventureFile(dir, file)) ? load(ventureFile(dir, file)) as Goal : null;
-    if (r.record === "goal" && inp) {
-      const why = goalWriteRefusal({ stored: storedGoal, input: inp as Goal, person: actor === "person" && !actingAgent(provenance.agent?.id) });
-      if (why) return { ok: false, error: why, ...deprecated };
-    }
-    // Prerequisites hook (prerequisiteOfWrite in packages/naive/src/router/gate-hooks.ts, EE-217): a route that only
-    // blocked function workflows write is refused, for an agent and for a person alike, until the records and meetings
-    // those workflows wait on exist. A person's --override lets one write through and is kept on its provenance line.
-    const locked = remote ? null : prerequisiteOfWrite({ dir, r, route, actor, acting: !!actingAgent(provenance.agent?.id), projector, override: provenance.override });
-    if (locked?.refusal) return { ...locked.refusal, ...deprecated };
-    if (prose) return { ...(await writeProse({ dir, r, route, requested, file, input, actor, actor_id, via, provenance, store, remote, src, params, projector })), ...deprecated };
-    // A raw source is written with its text in one step (EE-192). Create-only, duplicate text and the allowed-source term are decided before either file is written.
-    if (r.record === "raw-source") {
-      if (!remote) {
-        const configured = gateWrite({ dir, r, route, requested, file, actor, actor_id, provenance, gate: gateOf(r, dir), projector });
-        if (configured?.then === "refuse") return { ok: false, error: configured.why, gate_rule: configured.rule, refused_by: configured.source, ...deprecated };
-      }
-      const agent = agentFromEnv(actor === "person" ? "person" : "agent", via, { ...(actor_id && actor !== "person" ? { id: actor_id } : {}), ...provenance.agent });
-      return { ...(await commitRawSource({ dir, id: String(params.id), route, input, store, sourceFile: file, agent, note: provenance.note, schemaName: schemaNameOf(String(r.schema)) })), ...deprecated };
-    }
-    // Not prose, so the input is the record, an object (checked above).
-    let rec: Obj = handoffInput ?? {};
-    // A migrated venture's telos is a view of its canonical records; a telos.json written now would be a second record the lifecycle never reads.
-    if (r.record === "telos" && !remote && migrated(dir)) return { ok: false, error: `${venture} keeps its goals and exit criteria as canonical records, so a telos.json is not written: write foundation/goals/telos (measures), foundation/goals/owner-outcome and foundation/exit-criteria/<phase> instead` };
-    if (["idea-dump", "raw-text", "raw-dump", "triage"].includes(r.record) && existsSync(ventureFile(dir, file))) return { ok: false, error: `${route} is raw and immutable: add a new capture, do not edit this one` };
-    // Agent drafts are refused here because accepting one moves the whole file into place, and this draft holds only a view of it.
-    if (r.view_of && (actor !== "person" || actingAgent(provenance.agent?.id) || remote || attrs.length)) return { ok: false, error: `only a person writes ${route}, in the venture's own folder; it holds part of ${file}` };
-    // A record that names its venture names the one it is written to (naive#71): a record carried over from another
-    // venture is refused, not filed under the wrong name.
-    if (typeof rec.venture === "string") {
-      let own = null;
-      try { own = JSON.parse(readFileSync(join(dir, "venture.json"), "utf8")).id ?? null; } catch { own = null; }
-      if (own && rec.venture !== own) return { ok: false, error: `the record names venture ${rec.venture}, but it is being written to ${own}: set its venture field to ${own}, or write it to ${rec.venture}`, fix: fix(r) };
-    }
-    const gate = gateOf(r, dir);
-    const text = JSON.stringify(rec, null, 2) + "\n";
-    // The schema first, through RecordValidator, so nothing reaches any source unless it matches.
-    const failed = schemaFailure(schemaNameOf(String(r.schema)), JSON.parse(text));
-    if (failed !== null) return { ok: false, error: `does not match ${r.schema}:\n${failed}`, fix: fix(r) };
-    // The schema describes ends as after starts. A start that is not a time, or an end that is not after it, never opens.
-    if (r.record === "time-box") { const span = timeBoxSpan(rec.starts, rec.ends); if (span) return { ok: false, error: span }; }
-    // Pre-registration freeze hook (packages/naive/src/router/pre-registration.ts, EE-220): once a person has
-    // registered a pre-registration, its thesis, assumptions, method, measures, thresholds, dates, exclusions and
-    // decision rules never change, for a person too; deviations and results are append-only. Refused here, before the
-    // gate, so it is a refusal and not a draft, and the message names the two ways on: a deviation or a new version.
-    if (r.record === "pre-registration") {
-      const frozen = await preRegistrationWriteRule({ store, file, input: rec as Partial<PreRegistration> });
-      if (!frozen.ok) return { ...frozen, ...deprecated };
-      claimBase = frozen.base;
-    }
-    // Bet freeze hook (packages/naive/src/router/bets.ts, EE-221): once a person has registered a bet, or has
-    // registered a pre-registration that tests it, its claim never changes, for a person too; its evidence,
-    // rivals and confidence entries are append-only and its outcome is written once. An agent's write that puts
-    // odds on a bet, resolves one or moves one on is refused here too, with the person's command named, because a
-    // probability nobody chose and an outcome an agent declared are what the register exists to prevent.
-    if (r.record === "bet") {
-      const frozen = await betWriteRule({ store, dir, file, input: rec as Partial<Bet>, person: actor === "person" && !actingAgent(provenance.agent?.id) });
-      if (!frozen.ok) return { ...frozen, ...deprecated };
-      claimBase = frozen.base;
-    }
-    const base = r.view_of ? readFileSync(ventureFile(dir, file), "utf8") : null;
-    const whole = base && JSON.stringify(withCore(JSON.parse(base), rec), null, 2) + "\n";
-    if (whole) {
-      const w = schemaFailure("venture.schema.json", JSON.parse(whole));
-      if (w !== null) return { ok: false, error: `${file} does not match packages/naive/src/records/venture.schema.json, so nothing was written:\n${w}`, fix: fix(r) };
-    }
-    const agent = agentFromEnv(actor === "person" ? "person" : "agent", via, { ...(actor_id && actor !== "person" ? { id: actor_id } : {}), ...provenance.agent });
-    // The person's override of the prerequisite lock, when they passed one, is kept on every line this write writes.
-    const log = (entity: string, activity: string, extra: Obj = {}) => prov(dir, { entity, route, activity, agent, derived_from: provenance.derived_from, decision: provenance.decision ?? gate?.class ?? undefined, note: provenance.note, override: locked?.override, ...extra });
-
-    // Attributes mastered elsewhere (EE-042) go to their own system of record, each as a JSON
-    // object holding only that attribute at the record's path, and leave the record's own file, so
-    // the fact lives in one place. The whole record was checked against its schema above. A gated
-    // agent write stays whole, as a draft, until a person accepts it.
-    // Attributes written to their own source; a write is never as of a cut, so each store is a connector.
-    const split = attrs.filter((a): a is Attr & { store: Store } => a.attribute in rec && writable(a.store));
-    // A decision record that is open and fails closed, or waits on one that is, holds the record
-    // (EE-054): an agent's write becomes a draft, as for a gated record.
-    const held = !remote && actor !== "person" ? holding(dir, file) : null;
-    // The venture's own fail-closed routes (naive.config.json, the gate, EE-073) hold an agent's write too.
-    // Gate group hook (X-1 to X-6, U-4): the venture's gate decides; a refusal stops the write here.
-    const configured = !remote ? gateWrite({ dir, r, route, requested, file, actor, actor_id, provenance, gate, projector }) : null;
-    if (configured?.then === "refuse") return { ok: false, error: configured.why, gate_rule: configured.rule, refused_by: configured.source };
-    // Only a person settles a decision (EE-058): an agent's write that marks one decided, or names who
-    // approved it, is a draft whatever the decision's class.
-    const isDecision = /^(decision|decision-record)$/.test(r.record);
-    // One id, one file: a new file's id is its name and an existing file keeps its id, or a sibling
-    // could answer for a decided decision and skip the draft below.
-    if (r.record === "decision-record" && !remote) {
-      const here = existsSync(ventureFile(dir, file)) ? (load(ventureFile(dir, file)) as DecisionRecord).id : basename(file, ".decision.json");
-      const holder = typeof rec.id === "string" ? decisionFile(dir, rec.id) : null;
-      if (rec.id !== here || (holder && holder !== file)) return { ok: false, error: `${file} holds decision ${here}, not ${rec.id}: a decision's id is its file name, and one id has one file` };
-    }
-    // Rewriting a decided record, to reopen it say, unsettles it, which is a person's act too (approve
-    // would otherwise freeze its reasons afresh and clear their staleness).
-    const unsettles = isDecision && !remote && existsSync(ventureFile(dir, file)) && (load(ventureFile(dir, file)) as DecisionRecord).status === "decided";
-    // Only a person settles a goal either (EE-210): an agent's write that changes where a goal stands (its status,
-    // who set it, its result or the goal that replaced it) is a draft whatever the goal's class, so a person
-    // accepting the draft is the person's act. An agent proposing a goal is not settling one.
-    const settles = (isDecision && (unsettles || rec.status === "decided" || rec.approved_by != null || (isObj(rec.provenance) && rec.provenance.approved_by != null)))
-      || (r.record === "goal" && !remote && goalSettles(storedGoal, rec as Goal));
-    // Known gap A: a decided decision names who decided it, whoever writes it; a person's write without one is refused.
-    if (isDecision && actor === "person" && rec.status === "decided" && !(isObj(rec.provenance) && rec.provenance.approved_by)) return { ok: false, error: `a decided decision names who decided it (provenance.approved_by); approve it with mentura decide ${rec.id ?? "<id>"} --by <name>` };
-    // The projector's write to a projection record is never a draft: no one but the projector could accept it.
-    const gatedDraft = !remote && (!!gate?.drafts || !!held || !!configured || settles) && actor !== "person" && !(projector && r.writer === "projection");
-    const attributeWrites: Obj[] = [];
-    if (split.length && !gatedDraft) {
-      for (const a of split) {
-        if (a.store.writes === "none") return { ok: false, error: `${r.record}.${a.attribute} is mastered in ${a.source.id}, which is read-only` };
-      }
-      for (const a of split) {
-        const part = JSON.stringify({ [a.attribute]: rec[a.attribute] }, null, 2) + "\n";
-        let w;
-        try { w = await a.store.write(file, part, { message: `${route}.${a.attribute}: ${provenance.note ?? "written through Mentura"}`, title: `Mentura: ${route}.${a.attribute} (${venture})` }); }
-        catch (e) { return { ok: false, error: `${a.source.id}: ${messageOf(e)}` }; }
-        const at = address(a.source.id, file);
-        log(`${at}#${a.attribute}`, a.store.writes === "pull-request" ? "draft" : provenance.activity ?? "write", { sha256: createHash("sha256").update(part).digest("hex"), content: part,
-          source: { id: a.source.id, connector: a.source.connector, version: w.version, ...(w.pull_request ? { pull_request: w.pull_request.url } : {}) } });
-        attributeWrites.push({ attribute: a.attribute, written: at, version: w.version, ...(w.pull_request ? { pull_request: w.pull_request.url } : {}) });
-      }
-      rec = Object.fromEntries(Object.entries(rec).filter(([k]) => !split.some((a) => a.attribute === k)));
-    }
-    const attributesOut = attributeWrites.length ? { attributes: attributeWrites } : {};
-    const recordText = whole ?? (attributeWrites.length ? JSON.stringify(rec, null, 2) + "\n" : text);
-
-    if (remote) {
-      // Another source: its connector decides how a write lands. A pull-request source opens a
-      // draft pull request, which a person accepts by merging, so it is a draft for anyone.
-      if (store.writes === "none") return { ok: false, error: `${route} lives in ${src.id}, which is read-only` };
-      let w;
-      try { w = await store.write(file, recordText, { message: `${route}: ${provenance.note ?? `written by ${actor === "person" ? "a person" : "an agent"} through Mentura`}`, title: `Mentura: ${route} (${venture})` }); }
-      catch (e) { return { ok: false, error: `${src.id}: ${messageOf(e)}` }; }
-      const draft = store.writes === "pull-request";
-      const at = address(src.id, file);
-      const entry = log(at, draft ? "draft" : provenance.activity ?? "write", { sha256: createHash("sha256").update(recordText).digest("hex"), content: recordText,
-        source: { id: src.id, connector: src.connector, version: w.version, ...(w.commit ? { commit: w.commit } : {}), ...(w.pull_request ? { pull_request: w.pull_request.url } : {}) } });
-      return { ok: true, result: { written: at, draft, gate: gate?.class ?? null, provenance: entry.hash, version: w.version, ...(w.pull_request ? { pull_request: w.pull_request.url } : {}),
-        note: draft ? `opened draft pull request ${w.pull_request?.url}; merging it accepts the write` : "written", ...attributesOut }, ...deprecated };
-    }
-
-    const draft = gatedDraft;
-    // A held handoff waits whole for a person; its brief has no draft of its own, so it is written after acceptance.
-    if (draft && briefFile) return { ok: false, error: `the gate holds this write of ${route} as a draft for a person to accept, and a brief cannot wait with it: write the handoff without brief_text, and write the brief once a person accepts it`, ...deprecated };
-    // Detection ledger hook (packages/naive/src/router/gate-hooks.ts): only when the venture keeps the gate detector, the gate's
-    // confidence call becomes a trial, a person accepting a held draft resolves it as a false alarm, and a person's
-    // revert of an accepted write resolves it as a miss. Without the detector file it is null and nothing changes.
-    const ledger = ledgerHook({ dir, venture, workspace, r, route, file, draftFile: draftPath(file), actor, actor_id, via, provenance, draft });
-    // Gate group hook (X-2): the held draft, the owner it was sent to and any variants kept side by side.
-    const held2 = draft ? heldDraft(dir, { draft: draftPath(file), file, text, verdict: configured, route, agent, trial: ledger?.held }) : null;
-    if (!held2) {
-      if (base !== null && readFileSync(ventureFile(dir, file), "utf8") !== base) return { ok: false, error: `${file} changed while this was being checked, so nothing was written: try again` };
-      if (claimBase === undefined) await store.write(file, recordText);
-      else {
-        try { await store.write(file, recordText, { base: claimBase }); }
-        catch (e) {
-          if (isObj(e) && e.code === "version-conflict") return { ok: false, error: `${file} changed while this was being checked, so nothing was written: read it again and retry` };
-          throw e;
-        }
-      }
-    }
-    const entry = log(held2 ? held2.written : file, draft ? "draft" : provenance.activity ?? "write", r.view_of ? { statements: statementsIn(rec) } : {});
-    const detector = ledger ? await ledger.after(entry.hash) : null;
-    let briefOut = {};
-    if (briefFile && briefText !== null) {
-      await store.write(briefFile, briefText);
-      briefOut = { brief: { written: briefFile, provenance: log(briefFile, provenance.activity ?? "write", { derived_from: [file] }).hash } };
-    }
-    return { ok: true, result: { ...briefOut, written: held2 ? held2.written : file, draft, gate: gate?.class ?? null, provenance: entry.hash, note: draft ? (gate?.drafts ? `${r.record} is a ${gate.class} decision (${gate.level}, owner ${gate.owner}): written as a draft for a person to accept` : held ? `decision ${held.id} ${held.why}: written as a draft for a person to accept` : configured ? configured.why : "only a person settles a decision: written as a draft for a person to accept") : "written", ...(held ? { held_by: held.id } : {}), ...(configured ? { gate_rule: configured.rule, ...(configured.owner ? { owner: configured.owner } : {}) } : {}), ...(held2?.variants ? { variant: held2.variant, variants: held2.variants, decision: held2.decision } : {}), ...attributesOut, ...(detector ? { detector } : {}) }, ...deprecated };
+    return runPromise(writeRecord({ dir, r, route, requested, params, input, actor, actor_id, via, provenance, venture, workspace, store, src, attrs, remote: !!remote, projector, deprecated }));
   }
   return { ok: false, error: `unhandled action ${action}` };
 }
+
+/** What the write path is given: the call, resolved to its route, venture and source by callInAction. */
+type WriteContext = {
+  dir: string; r: RecordRoute; route: string; requested: string; params: { id?: string }; input: unknown; actor: string; actor_id?: string; via: string;
+  provenance: CallProvenance; venture?: string; workspace?: string; store: Store; src: Source; attrs: Attr[]; remote: boolean; projector: boolean; deprecated: { deprecated?: string };
+};
+
+/**
+ * A write of one record, as one Effect program (EE-125): the writer, claim, reach, goal and prerequisite rules, the
+ * schema, the freezes, the gate, then the source, the held draft or the attribute sources, and every provenance line
+ * with its blob. It reaches the venture's files through VentureFs, a source through its connector (writeItem), the
+ * schema through RecordValidator, the gate through Gate and the log through Provenance. Each refusal is an answer, as
+ * before; a failure it cannot answer (a file it cannot read, a connector that throws) fails with Naive's tagged errors.
+ */
+const writeRecord = Effect.fnUntraced(function* ({ dir, r, route, requested, params, input, actor, actor_id, via, provenance, venture, workspace, store, src, attrs, remote, projector, deprecated }: WriteContext): Effect.fn.Return<Answer, NaiveError, VentureServices> {
+  const fs = yield* VentureFs;
+  const inp = isObj(input) ? input : undefined;
+  // Prose and Markdown (a research program, a public variant) are written whole as text, not as a JSON record.
+  const prose = r.form === "prose" || r.form === "markdown";
+  if (!prose && (!input || typeof input !== "object")) return { ok: false, error: "write needs the record as input" };
+  if (r.collection === "item" && !String(params.id).split(deepItem(r) ? "/" : "\0").every((x) => /^[a-z0-9][a-z0-9-]*$/.test(x))) return { ok: false, error: `${params.id} is not a valid id (lowercase letters, digits and hyphens${deepItem(r) ? ", in folders split by /" : ""})` };
+  const file = fileFor(r, params, dir);
+  if (isRecipeFile(file)) return { ...recipeRefusal(route, file), ...deprecated };
+  // Gate group hook: one writer per file. A projection record is the projector's alone, and the projector writes
+  // nothing a person owns once it exists; a person-only record (a research program) is a person's alone, so every
+  // agent is refused, a researcher included. Refused here, before the schema, the gate or any source is touched.
+  const owned = ownerOfWrite({ dir, r, route, file, projector, remote, actor, acting: !!actingAgent(provenance.agent?.id), role: actor_id });
+  if (owned) return { ...owned, ...deprecated };
+  // Handoff claim hook (packages/naive/src/router/handoff-claim.ts): a handoff that names its requester is edited by
+  // the requester before a claim; after one, the claimant writes progress and evidence and the requester the
+  // verification and acceptance. claimBase is the version that rule read, which the write below names; the
+  // pre-registration freeze below names it the same way.
+  let claimBase: string | null | undefined, claimed = false;
+  // Handoff brief hook (packages/naive/src/router/handoff-brief.ts): brief_text, the Markdown brief, rides beside the
+  // record's fields; it is taken out before the schema and written to the file the record's brief names, once the
+  // record is written.
+  let handoffInput = inp, briefText: string | null = null, briefFile: string | null = null;
+  if (r.record === "handoff" && inp) {
+    const split = splitBrief(inp);
+    if ("error" in split) return { ok: false, error: split.error, ...deprecated };
+    handoffInput = split.record;
+    briefText = split.text;
+    if (briefText !== null) {
+      if (remote) return { ok: false, error: `${route} lives in ${src.id}: its brief is kept beside it only in the venture's own folder, so write the brief there`, ...deprecated };
+      const at = briefPath(file, split.record.brief);
+      if ("error" in at) return { ok: false, error: at.error, ...deprecated };
+      briefFile = at.path;
+    }
+  }
+  if (r.record === "handoff" && handoffInput) {
+    const person = actor === "person" && !actingAgent(provenance.agent?.id);
+    const rule = yield* handoffWriteRuleEffect({ store, file, input: handoffInput, person, actorId: actor_id, agent: agentFromEnv(person ? "person" : "agent", via, { ...(actor_id && !person ? { id: actor_id } : {}), ...provenance.agent }) });
+    if (!rule.ok) return { ...rule, ...deprecated };
+    // The brief is the requester's outcome and work: once the handoff is claimed it stays as it was claimed.
+    if (briefText !== null && rule.stored?.claimed_by) return { ok: false, error: `${params.id} is claimed by ${rule.stored.claimed_by}, so its brief stays as it was claimed: write the record without brief_text`, ...deprecated };
+    claimBase = rule.base;
+    claimed = !!rule.stored?.requested_by && !!rule.stored?.claimed_by && rule.stored.role === actor_id;
+  }
+  // Function agent reach (reachOfWrite in packages/naive/src/router/gate-hooks.ts): <function>-agent writes only
+  // decisions and its function's record routes, and a temporary specialist only its spawn record's globs inside
+  // its parent's reach while it is live (EE-213), refused before the schema. A handoff addressed to its role that it
+  // has claimed is the exception: the claim rule above already limits the claimant to progress and evidence.
+  const outOfReach = claimed ? null : reachOfWrite({ dir, r, route, projector, actor, acting: !!actingAgent(provenance.agent?.id), role: actor_id });
+  if (outOfReach) return { ...outOfReach, ...deprecated };
+  // Goal ledger hook (packages/naive/src/engine/goals.ts, EE-210): a goal is a durable record. Nobody breaks its
+  // lifecycle (a mis-set status is corrected by reopening the goal to active), and an agent does not rewrite the
+  // wording a person adopted; it writes a new goal that supersedes the old one. Refused before the schema. The
+  // other half is below: a write that settles a goal is held as a draft whatever the gate says, as a write that
+  // settles a decision is, so only a person's acceptance puts it live.
+  const storedGoal = r.record === "goal" && !remote && inp && (yield* fs.exists(ventureFile(dir, file))) ? (yield* readJson(ventureFile(dir, file))) as Goal : null;
+  if (r.record === "goal" && inp) {
+    const why = goalWriteRefusal({ stored: storedGoal, input: inp as Goal, person: actor === "person" && !actingAgent(provenance.agent?.id) });
+    if (why) return { ok: false, error: why, ...deprecated };
+  }
+  // Prerequisites hook (prerequisiteOfWrite in packages/naive/src/router/gate-hooks.ts, EE-217): a route that only
+  // blocked function workflows write is refused, for an agent and for a person alike, until the records and meetings
+  // those workflows wait on exist. A person's --override lets one write through and is kept on its provenance line.
+  const locked = remote ? null : prerequisiteOfWrite({ dir, r, route, actor, acting: !!actingAgent(provenance.agent?.id), projector, override: provenance.override });
+  if (locked?.refusal) return { ...locked.refusal, ...deprecated };
+  if (prose) return { ...(yield* writeProseEffect({ dir, r, route, requested, file, input, actor, actor_id, via, provenance, store, remote, src, params, projector })), ...deprecated };
+  // A raw source is written with its text in one step (EE-192). Create-only, duplicate text and the allowed-source term are decided before either file is written.
+  if (r.record === "raw-source") {
+    if (!remote) {
+      const configured = yield* gateWriteEffect({ dir, r, route, requested, file, actor, actor_id, provenance, gate: gateOf(r, dir), projector });
+      if (configured?.then === "refuse") return { ok: false, error: configured.why, gate_rule: configured.rule, refused_by: configured.source, ...deprecated };
+    }
+    const agent = agentFromEnv(actor === "person" ? "person" : "agent", via, { ...(actor_id && actor !== "person" ? { id: actor_id } : {}), ...provenance.agent });
+    return { ...(yield* Effect.promise(() => commitRawSource({ dir, id: String(params.id), route, input, store, sourceFile: file, agent, note: provenance.note, schemaName: schemaNameOf(String(r.schema)) }))), ...deprecated };
+  }
+  // Not prose, so the input is the record, an object (checked above).
+  let rec: Obj = handoffInput ?? {};
+  // A migrated venture's telos is a view of its canonical records; a telos.json written now would be a second record the lifecycle never reads.
+  if (r.record === "telos" && !remote && migrated(dir)) return { ok: false, error: `${venture} keeps its goals and exit criteria as canonical records, so a telos.json is not written: write foundation/goals/telos (measures), foundation/goals/owner-outcome and foundation/exit-criteria/<phase> instead` };
+  if (["idea-dump", "raw-text", "raw-dump", "triage"].includes(r.record) && (yield* fs.exists(ventureFile(dir, file)))) return { ok: false, error: `${route} is raw and immutable: add a new capture, do not edit this one` };
+  // Agent drafts are refused here because accepting one moves the whole file into place, and this draft holds only a view of it.
+  if (r.view_of && (actor !== "person" || actingAgent(provenance.agent?.id) || remote || attrs.length)) return { ok: false, error: `only a person writes ${route}, in the venture's own folder; it holds part of ${file}` };
+  // A record that names its venture names the one it is written to (naive#71): a record carried over from another
+  // venture is refused, not filed under the wrong name.
+  if (typeof rec.venture === "string") {
+    const own: unknown = yield* fs.readText(join(dir, "venture.json")).pipe(
+      Effect.flatMap((t) => Effect.try({ try: (): unknown => JSON.parse(t).id ?? null, catch: () => null })), Effect.orElseSucceed(() => null));
+    if (own && rec.venture !== own) return { ok: false, error: `the record names venture ${rec.venture}, but it is being written to ${own}: set its venture field to ${own}, or write it to ${rec.venture}`, fix: fix(r) };
+  }
+  const gate = gateOf(r, dir);
+  const text = JSON.stringify(rec, null, 2) + "\n";
+  // The schema first, through RecordValidator, so nothing reaches any source unless it matches.
+  const failed = yield* schemaFailureEffect(schemaNameOf(String(r.schema)), JSON.parse(text));
+  if (failed !== null) return { ok: false, error: `does not match ${r.schema}:\n${failed}`, fix: fix(r) };
+  // The schema describes ends as after starts. A start that is not a time, or an end that is not after it, never opens.
+  if (r.record === "time-box") { const span = timeBoxSpan(rec.starts, rec.ends); if (span) return { ok: false, error: span }; }
+  // Pre-registration freeze hook (packages/naive/src/router/pre-registration.ts, EE-220): once a person has
+  // registered a pre-registration, its thesis, assumptions, method, measures, thresholds, dates, exclusions and
+  // decision rules never change, for a person too; deviations and results are append-only. Refused here, before the
+  // gate, so it is a refusal and not a draft, and the message names the two ways on: a deviation or a new version.
+  if (r.record === "pre-registration") {
+    const frozen = yield* preRegistrationWriteRuleEffect({ store, file, input: rec as Partial<PreRegistration> });
+    if (!frozen.ok) return { ...frozen, ...deprecated };
+    claimBase = frozen.base;
+  }
+  // Bet freeze hook (packages/naive/src/router/bets.ts, EE-221): once a person has registered a bet, or has
+  // registered a pre-registration that tests it, its claim never changes, for a person too; its evidence,
+  // rivals and confidence entries are append-only and its outcome is written once. An agent's write that puts
+  // odds on a bet, resolves one or moves one on is refused here too, with the person's command named, because a
+  // probability nobody chose and an outcome an agent declared are what the register exists to prevent.
+  if (r.record === "bet") {
+    const frozen = yield* betWriteRuleEffect({ store, dir, file, input: rec as Partial<Bet>, person: actor === "person" && !actingAgent(provenance.agent?.id) });
+    if (!frozen.ok) return { ...frozen, ...deprecated };
+    claimBase = frozen.base;
+  }
+  const base = r.view_of ? yield* fs.readText(ventureFile(dir, file)) : null;
+  const whole = base && JSON.stringify(withCore(JSON.parse(base), rec), null, 2) + "\n";
+  if (whole) {
+    const w = yield* schemaFailureEffect("venture.schema.json", JSON.parse(whole));
+    if (w !== null) return { ok: false, error: `${file} does not match packages/naive/src/records/venture.schema.json, so nothing was written:\n${w}`, fix: fix(r) };
+  }
+  const agent = agentFromEnv(actor === "person" ? "person" : "agent", via, { ...(actor_id && actor !== "person" ? { id: actor_id } : {}), ...provenance.agent });
+  // The person's override of the prerequisite lock, when they passed one, is kept on every line this write writes.
+  const log = (entity: string, activity: string, extra: Obj = {}) => recordProvenance(dir, { entity, route, activity, agent, derived_from: provenance.derived_from, decision: provenance.decision ?? gate?.class ?? undefined, note: provenance.note, override: locked?.override, ...extra });
+
+  // Attributes mastered elsewhere (EE-042) go to their own system of record, each as a JSON
+  // object holding only that attribute at the record's path, and leave the record's own file, so
+  // the fact lives in one place. The whole record was checked against its schema above. A gated
+  // agent write stays whole, as a draft, until a person accepts it.
+  // Attributes written to their own source; a write is never as of a cut, so each store is a connector.
+  const split = attrs.filter((a): a is Attr & { store: Store } => a.attribute in rec && writable(a.store));
+  // A decision record that is open and fails closed, or waits on one that is, holds the record
+  // (EE-054): an agent's write becomes a draft, as for a gated record.
+  const held = !remote && actor !== "person" ? holding(dir, file) : null;
+  // The venture's own fail-closed routes (naive.config.json, the gate, EE-073) hold an agent's write too.
+  // Gate group hook (X-1 to X-6, U-4): the venture's gate decides; a refusal stops the write here.
+  const configured = remote ? null : yield* gateWriteEffect({ dir, r, route, requested, file, actor, actor_id, provenance, gate, projector });
+  if (configured?.then === "refuse") return { ok: false, error: configured.why, gate_rule: configured.rule, refused_by: configured.source };
+  // Only a person settles a decision (EE-058): an agent's write that marks one decided, or names who
+  // approved it, is a draft whatever the decision's class.
+  const isDecision = /^(decision|decision-record)$/.test(r.record);
+  // One id, one file: a new file's id is its name and an existing file keeps its id, or a sibling
+  // could answer for a decided decision and skip the draft below.
+  if (r.record === "decision-record" && !remote) {
+    const here = (yield* fs.exists(ventureFile(dir, file))) ? ((yield* readJson(ventureFile(dir, file))) as DecisionRecord).id : basename(file, ".decision.json");
+    const holder = typeof rec.id === "string" ? decisionFile(dir, rec.id) : null;
+    if (rec.id !== here || (holder && holder !== file)) return { ok: false, error: `${file} holds decision ${here}, not ${rec.id}: a decision's id is its file name, and one id has one file` };
+  }
+  // Rewriting a decided record, to reopen it say, unsettles it, which is a person's act too (approve
+  // would otherwise freeze its reasons afresh and clear their staleness).
+  const unsettles = isDecision && !remote && (yield* fs.exists(ventureFile(dir, file))) && ((yield* readJson(ventureFile(dir, file))) as DecisionRecord).status === "decided";
+  // Only a person settles a goal either (EE-210): an agent's write that changes where a goal stands (its status,
+  // who set it, its result or the goal that replaced it) is a draft whatever the goal's class, so a person
+  // accepting the draft is the person's act. An agent proposing a goal is not settling one.
+  const settles = (isDecision && (unsettles || rec.status === "decided" || rec.approved_by != null || (isObj(rec.provenance) && rec.provenance.approved_by != null)))
+    || (r.record === "goal" && !remote && goalSettles(storedGoal, rec as Goal));
+  // Known gap A: a decided decision names who decided it, whoever writes it; a person's write without one is refused.
+  if (isDecision && actor === "person" && rec.status === "decided" && !(isObj(rec.provenance) && rec.provenance.approved_by)) return { ok: false, error: `a decided decision names who decided it (provenance.approved_by); approve it with mentura decide ${rec.id ?? "<id>"} --by <name>` };
+  // The projector's write to a projection record is never a draft: no one but the projector could accept it.
+  const gatedDraft = !remote && (!!gate?.drafts || !!held || !!configured || settles) && actor !== "person" && !(projector && r.writer === "projection");
+  const attributeWrites: Obj[] = [];
+  if (split.length && !gatedDraft) {
+    for (const a of split) {
+      if (a.store.writes === "none") return { ok: false, error: `${r.record}.${a.attribute} is mastered in ${a.source.id}, which is read-only` };
+    }
+    for (const a of split) {
+      const part = JSON.stringify({ [a.attribute]: rec[a.attribute] }, null, 2) + "\n";
+      const wrote = yield* Effect.result(writeItem(a.store, file, part, { message: `${route}.${a.attribute}: ${provenance.note ?? "written through Mentura"}`, title: `Mentura: ${route}.${a.attribute} (${venture})` }));
+      if (wrote._tag === "Failure") return { ok: false, error: `${a.source.id}: ${wrote.failure.message}` };
+      const w = wrote.success;
+      const at = address(a.source.id, file);
+      yield* log(`${at}#${a.attribute}`, a.store.writes === "pull-request" ? "draft" : provenance.activity ?? "write", { sha256: createHash("sha256").update(part).digest("hex"), content: part,
+        source: { id: a.source.id, connector: a.source.connector, version: w.version, ...(w.pull_request ? { pull_request: w.pull_request.url } : {}) } });
+      attributeWrites.push({ attribute: a.attribute, written: at, version: w.version, ...(w.pull_request ? { pull_request: w.pull_request.url } : {}) });
+    }
+    rec = Object.fromEntries(Object.entries(rec).filter(([k]) => !split.some((a) => a.attribute === k)));
+  }
+  const attributesOut = attributeWrites.length ? { attributes: attributeWrites } : {};
+  const recordText = whole ?? (attributeWrites.length ? JSON.stringify(rec, null, 2) + "\n" : text);
+
+  if (remote) {
+    // Another source: its connector decides how a write lands. A pull-request source opens a
+    // draft pull request, which a person accepts by merging, so it is a draft for anyone.
+    if (store.writes === "none") return { ok: false, error: `${route} lives in ${src.id}, which is read-only` };
+    const wrote = yield* Effect.result(writeItem(store, file, recordText, { message: `${route}: ${provenance.note ?? `written by ${actor === "person" ? "a person" : "an agent"} through Mentura`}`, title: `Mentura: ${route} (${venture})` }));
+    if (wrote._tag === "Failure") return { ok: false, error: `${src.id}: ${wrote.failure.message}` };
+    const w = wrote.success;
+    const draft = store.writes === "pull-request";
+    const at = address(src.id, file);
+    const entry = yield* log(at, draft ? "draft" : provenance.activity ?? "write", { sha256: createHash("sha256").update(recordText).digest("hex"), content: recordText,
+      source: { id: src.id, connector: src.connector, version: w.version, ...(w.commit ? { commit: w.commit } : {}), ...(w.pull_request ? { pull_request: w.pull_request.url } : {}) } });
+    return { ok: true, result: { written: at, draft, gate: gate?.class ?? null, provenance: entry.hash, version: w.version, ...(w.pull_request ? { pull_request: w.pull_request.url } : {}),
+      note: draft ? `opened draft pull request ${w.pull_request?.url}; merging it accepts the write` : "written", ...attributesOut }, ...deprecated };
+  }
+
+  const draft = gatedDraft;
+  // A held handoff waits whole for a person; its brief has no draft of its own, so it is written after acceptance.
+  if (draft && briefFile) return { ok: false, error: `the gate holds this write of ${route} as a draft for a person to accept, and a brief cannot wait with it: write the handoff without brief_text, and write the brief once a person accepts it`, ...deprecated };
+  // Detection ledger hook (packages/naive/src/router/gate-hooks.ts): only when the venture keeps the gate detector, the gate's
+  // confidence call becomes a trial, a person accepting a held draft resolves it as a false alarm, and a person's
+  // revert of an accepted write resolves it as a miss. Without the detector file it is null and nothing changes.
+  const ledger = ledgerHook({ dir, venture, workspace, r, route, file, draftFile: draftPath(file), actor, actor_id, via, provenance, draft });
+  // Gate group hook (X-2): the held draft, the owner it was sent to and any variants kept side by side.
+  const held2 = draft ? heldDraft(dir, { draft: draftPath(file), file, text, verdict: configured, route, agent, trial: ledger?.held }) : null;
+  if (!held2) {
+    if (base !== null && (yield* fs.readText(ventureFile(dir, file))) !== base) return { ok: false, error: `${file} changed while this was being checked, so nothing was written: try again` };
+    if (claimBase === undefined) yield* writeItem(store, file, recordText);
+    else {
+      const wrote = yield* Effect.result(writeItem(store, file, recordText, { base: claimBase }));
+      if (wrote._tag === "Failure") {
+        if (wrote.failure._tag === "VersionConflict") return { ok: false, error: `${file} changed while this was being checked, so nothing was written: read it again and retry` };
+        return yield* Effect.fail(wrote.failure);
+      }
+    }
+  }
+  const entry = yield* log(held2 ? held2.written : file, draft ? "draft" : provenance.activity ?? "write", r.view_of ? { statements: statementsIn(rec) } : {});
+  const detector = ledger ? yield* Effect.promise(() => ledger.after(entry.hash)) : null;
+  let briefOut = {};
+  if (briefFile && briefText !== null) {
+    yield* writeItem(store, briefFile, briefText);
+    briefOut = { brief: { written: briefFile, provenance: (yield* log(briefFile, provenance.activity ?? "write", { derived_from: [file] })).hash } };
+  }
+  return { ok: true, result: { ...briefOut, written: held2 ? held2.written : file, draft, gate: gate?.class ?? null, provenance: entry.hash, note: draft ? (gate?.drafts ? `${r.record} is a ${gate.class} decision (${gate.level}, owner ${gate.owner}): written as a draft for a person to accept` : held ? `decision ${held.id} ${held.why}: written as a draft for a person to accept` : configured ? configured.why : "only a person settles a decision: written as a draft for a person to accept") : "written", ...(held ? { held_by: held.id } : {}), ...(configured ? { gate_rule: configured.rule, ...(configured.owner ? { owner: configured.owner } : {}) } : {}), ...(held2?.variants ? { variant: held2.variant, variants: held2.variants, decision: held2.decision } : {}), ...attributesOut, ...(detector ? { detector } : {}) }, ...deprecated };
+});
 
 // A write of prose or Markdown, whole: a research program (writer person in the data model, programs/<function>.md;
 // autoresearch design, everything-ecosystem docs/design/AUTORESEARCH_RECORDS_2026-11-06.md), whose agents ownerOfWrite
@@ -705,29 +730,29 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
 // refusal stops it, and a person is never held. An agent's write is held as a draft for a person to accept when the
 // record's decision class drafts, the gate holds it, or its frontmatter names who approved it (approved_by), since only
 // a person approves (EE-025). Its provenance line keeps the bytes in the blob store, so an as-of read returns it as it was.
-async function writeProse({ dir, r, route, requested, file, input, actor, actor_id, via, provenance, store, remote, src, params, projector }: {
+const writeProseEffect = Effect.fnUntraced(function* ({ dir, r, route, requested, file, input, actor, actor_id, via, provenance, store, remote, src, params, projector }: {
   dir: string; r: RouteEntry; route: string; requested: string; file: string; input: unknown; actor: string; actor_id?: string; via: string; provenance: CallProvenance;
   store: Store; remote: boolean | undefined; src: Source; params: { id?: string }; projector: boolean;
-}): Promise<Answer> {
+}): Effect.fn.Return<Answer, NaiveError, VentureServices> {
   if (remote) return { ok: false, error: `${route} is kept in the venture's own folder, but the source map puts it in ${src.id}` };
   if (r.record === "research-program" && !isFunction(params.id ?? "")) return { ok: false, error: `${params.id} is not a function: a research program is programs/<function>.md for a function in packages/naive/src/functions/departments.json` };
   const raw = typeof input === "string" ? input : isObj(input) && typeof input.text === "string" ? input.text : null;
   if (raw === null || !raw.trim()) return { ok: false, error: `write ${route} with its whole text as input: { "text": "..." }` };
   const text = raw.endsWith("\n") ? raw : `${raw}\n`;
   const gate = gateOf(r, dir);
-  const configured = gateWrite({ dir, r, route, requested, file, actor, actor_id, provenance, gate, projector });
+  const configured = yield* gateWriteEffect({ dir, r, route, requested, file, actor, actor_id, provenance, gate, projector });
   if (configured?.then === "refuse") return { ok: false, error: configured.why, gate_rule: configured.rule, refused_by: configured.source };
   const person = actor === "person" && !actingAgent(provenance.agent?.id);
   const approves = frontmatter(text).meta.approved_by !== undefined;
   const draft = !person && (!!gate?.drafts || !!configured || approves);
   const agent = agentFromEnv(person ? "person" : "agent", via, { ...(actor_id && !person ? { id: actor_id } : {}), ...provenance.agent });
   const held = draft ? heldDraft(dir, { draft: draftPath(file), file, text, verdict: configured, route, agent }) : null;
-  if (!held) await store.write(file, text);
+  if (!held) yield* writeItem(store, file, text);
   const written = held ? held.written : file;
-  const entry = prov(dir, { entity: written, route, activity: draft ? "draft" : provenance.activity ?? "write", agent, derived_from: provenance.derived_from, decision: provenance.decision ?? gate?.class ?? undefined, note: provenance.note });
+  const entry = yield* recordProvenance(dir, { entity: written, route, activity: draft ? "draft" : provenance.activity ?? "write", agent, derived_from: provenance.derived_from, decision: provenance.decision ?? gate?.class ?? undefined, note: provenance.note });
   const why = configured ? configured.why : gate?.drafts ? `${r.record} is a ${gate.class} decision (${gate.level}, owner ${gate.owner}): written as a draft for a person to accept` : "only a person approves a public variant (approved_by): written as a draft for a person to accept";
   return { ok: true, result: { written, draft, gate: gate?.class ?? null, provenance: entry.hash, note: draft ? why : "written", ...(configured && draft ? { gate_rule: configured.rule } : {}) } };
-}
+});
 
 // Views (pages): Markdown for people. A generic renderer: objects become headings and lists,
 // arrays of flat objects become tables.
