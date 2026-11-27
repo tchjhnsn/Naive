@@ -42,7 +42,8 @@
     "customer-service/intake",
     "customer-service/weekly-contact-review",
     "finance/intake",
-    "strategy/strategy-review"
+    "strategy/strategy-review",
+    "strategy/bet-review"
   ],
   "weights": {
     "version": "0.1.0",

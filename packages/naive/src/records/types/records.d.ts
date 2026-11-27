@@ -353,6 +353,150 @@ export type Artifact = {
   };
 };
 
+/** One strategic claim the venture is betting on, at <venture>/foundation/bets/<id>.json (route foundation/bets/[id], EE-221). A bet is to strategy what a requirement is to a product: one claim, singular and unambiguous, with the observation that would show it wrong and the method that would check it (ISO/IEC/IEEE 29148:2018 characteristics; EARS, Mavin et al. 2009, for a fixed sentence form per kind). Its kind says what sort of claim it is, and what can be done with it: an empirical claim, a forecast, a causal claim, a premise another bet rests on, or a selection rule, which is a value and is never reported as supported by evidence. The claim's parts (population, measure, comparator, threshold, resolves_by) are fields, not prose, so a machine can check that the bet is verifiable without reading the sentence; packages/naive/src/engine/bets.ts statementForm renders the fixed form from them. Naive ships no threshold and no probability: a threshold is the venture's own, and only a person sets a probability or resolves a bet (Tetlock and Gardner 2015 for the probability and the score, Brier 1950 for the score itself). Once a person registers the bet, or a pre-registration that tests it is registered, the claim never changes: a real change is a new bet that supersedes it with a reason, so the old claim and its outcome stay readable (Nosek et al., The preregistration revolution, PNAS 2018). packages/naive/src/engine/bets.ts holds the freeze and the lifecycle, the router applies it to every write, packages/naive/src/checks/check-bets.ts checks the set at rest and naive lint premises attacks each bet's premises. */
+export type Bet = {
+  /** The file name without .json */
+  id: string;
+  /** The venture this belongs to, when the record names it */
+  venture?: string;
+  /** What sort of claim it is. empirical: true or false today, over a named population and measure. forecast: resolves at a date, and is scored by Brier against what happened. causal: a cause changes a measure against a comparison group. premise: a claim another bet rests on, listed in that bet's premises. selection-rule: whom or what the venture backs and does not back, which is a value and not true or false; it is tested by whether its tests are observable and whether the bets it rests on hold, and never by evidence for it */
+  kind: "empirical" | "forecast" | "causal" | "premise" | "selection-rule";
+  /** The claim in one sentence, singular: one claim per bet, so a sentence joining three claims is three bets. The sentence a person confirmed, in their words; statementForm renders the canonical form for the kind from the claim's parts, to read beside it */
+  statement: string;
+  /** Where the bet stands. proposed: an agent or a person wrote it and nobody has fixed it. registered: a person fixed the claim, and from then on it does not change. supported, weakened, refuted: a person's verdict after the evidence, which a selection rule never takes. superseded: a later bet replaced it. withdrawn: it was taken off the table, and a person may put it back by moving it to proposed. The transitions are in packages/naive/src/engine/bets.ts LIFECYCLE, and only a person moves a bet on (naive bets resolve, naive bets register): an agent's write of a lifecycle field is refused, with the decision to raise instead */
+  status?: "proposed" | "registered" | "supported" | "weakened" | "refuted" | "superseded" | "withdrawn";
+  /** The person who set the current status. Never an agent */
+  status_by?: string;
+  /**
+   * When the current status was set
+   * @format date-time
+   */
+  status_at?: string;
+  /** The parts the fixed sentence form is built from, for an empirical claim, a forecast, a causal claim or a premise. A claim with a population, a measure, a comparator, a threshold and a date is verifiable; one without is not, whatever its sentence says (ISO/IEC/IEEE 29148 verifiable; AsPredicted question 3 on the dependent variable and how it is measured) */
+  claim?: {
+    /** Who or what the claim is about, with what is left in and what is left out, as a population and not a list of names */
+    population?: string;
+    /** The observable quantity, in one phrase */
+    measure?: string;
+    /** How the observed value is compared with the threshold */
+    comparator?: ">=" | ">" | "<=" | "<" | "==" | "!=";
+    /** The line the measure must pass. The venture's own: Naive ships no value, and an agent proposes one as a decision a person settles */
+    threshold?: {
+      /** The line itself. A number is compared arithmetically; a string is compared only for equality */
+      value: number | string;
+      unit?: string;
+      /** The person who chose the line, or the decision that settled it. Never an agent */
+      set_by?: string;
+    };
+    /** For a causal claim: the comparison group the change is measured against. Without one a causal claim has no counterfactual */
+    compared_with?: string;
+    /**
+     * The date the claim is judged on, fixed before the evidence is read. A forecast with no date cannot fail, because its window can always be extended
+     * @format date
+     */
+    resolves_by?: string;
+    /** Where the observed value will be read from, named before the search: a kind of source, a named dataset or a record route */
+    source?: string;
+    /** What the count is out of, for a claim tested by counting cases. A list of companies that succeeded with small teams says nothing without the number that tried, so a bet counted this way states the denominator or says it is unknown */
+    denominator?: string;
+  };
+  /** For a selection rule: whom or what the venture backs and does not back, and the test that tells them apart. A rule is not true or false; what can be checked is whether the test is observable and whether the bets under it hold */
+  rule?: {
+    /** Whom or what the venture backs, defined by an observable test */
+    back?: string;
+    /** Whom or what it does not back, defined by an observable test */
+    do_not_back?: string;
+    /** What anyone could look at to say which side of the rule a case falls on. A rule whose test is a judgment of character is a stated value, and it says so here */
+    observable_test?: string;
+  };
+  /** The observation that would show the bet is wrong, and the date by which it would be looked for. A claim with no possible counter-observation is not a bet (Popper); a kill criterion pairs a state with a date, set in advance so the decision is not made in the moment (Duke, Quit, 2022) */
+  falsified_by?: string;
+  /** The bets this one rests on, by id. A reason given for a bet is not a bet of its own: it is a premise, usually of kind premise. No premise chain may cycle (packages/naive/src/checks/check-bets.ts), and a bet reported supported while a premise of it is refuted is an error there */
+  premises?: string[];
+  /** The competing claims or explanations considered, so the evidence is read against something (Platt, strong inference, 1964; Heuer, analysis of competing hypotheses). Appended after registration, never edited */
+  rivals?: {
+    /** The rival claim in one sentence */
+    statement: string;
+    /** The bet that holds the rival, when it is written as one */
+    bet?: string;
+    /** The observation that would tell this bet and the rival apart */
+    separates?: string;
+  }[];
+  /** The evidence read, for and against, by reference. Evidence against is first class: supports false is how it is recorded, and it is what decides (Heuer). Appended after registration, never edited or removed, so a search that found something inconvenient stays on the record */
+  evidence?: {
+    /** The evidence item: a validation evidence id, a record route, or a venture-relative path. The item itself carries its kind, source, audience, sample and the date it was collected (validation-evidence.schema.json), and check-validation.ts grades it */
+    ref: string;
+    /** True when the item supports the bet, false when it tells against it */
+    supports: boolean;
+    /** What it shows, in one sentence */
+    note?: string;
+    /**
+     * When it was found, which says whether it came before or after the bet was registered
+     * @format date
+     */
+    found?: string;
+  }[];
+  /** What a person thinks the odds are, appended and never rewritten. The first entry is the prior, set before the search, and it is the one scored by Brier (Tetlock and Gardner 2015). Only a person writes an entry: an agent's write of one is refused, because a probability nobody chose is a number nobody is bound by */
+  confidence?: {
+    /** The probability the bet holds, from 0 to 1 */
+    p: number;
+    /** The person who set it. Never an agent */
+    set_by: string;
+    /**
+     * @format date-time
+     */
+    at: string;
+    /** How much of the evidence had been seen when this probability was set, the five answers of the OSF preregistration template's existing-data item, in its order: before the data existed, before any human observation of it, before it was accessed, before it was analysed, or after it was analysed. A bet drawn from an example the founder already read is after-analysis for that evidence, and saying so is what makes the rest of the test readable (Nosek et al. 2018) */
+    data_seen: "before-data-exists" | "before-any-observation" | "before-access" | "before-analysis" | "after-analysis";
+    /** Why, in one line. An update with no reason cannot be learned from */
+    why?: string;
+  }[];
+  /** What happened, written once, by a person. It is separate from the status on purpose: the status says whether the bet stands, and this says what was observed, which is what a forecast is scored against. A forecast given a low probability that did not happen is a bet refuted and a forecast well made */
+  resolution?: {
+    /** What was observed against the registered claim. mixed and unresolvable are left out of the Brier score rather than guessed at */
+    outcome: "happened" | "did-not-happen" | "mixed" | "unresolvable";
+    /** The value the measure reached, when it has one */
+    observed?: number | string;
+    /** The evidence behind the outcome, by reference */
+    evidence?: string[];
+    /**
+     * @format date-time
+     */
+    at: string;
+    /** The person who resolved it. An agent never resolves a bet */
+    by: string;
+    /** Why this outcome, especially when the observation needed a judgment */
+    why?: string;
+  };
+  /** True when the venture is working to make the claim true. A founder building a product to make a forecast come true is not a neutral observer, and a bet of this kind is read apart from the others, never as foresight. Fixed at registration, because declaring the intent afterwards is the postdiction the register exists to prevent */
+  intends_to_cause?: boolean;
+  /** The records that rest on this bet, by route or id: a goal, a requirement, a mission or vision line. Traceability downward, as a requirement has it upward */
+  used_by?: string[];
+  /** The person who decides about this bet */
+  owner?: string;
+  /**
+   * When a person registered it. From then on the claim never changes
+   * @format date-time
+   */
+  registered_at?: string;
+  /** The person who registered it. Only a person registers a bet */
+  registered_by?: string;
+  /** The bet this one replaces. A registered claim is never edited: a narrowed or corrected claim is a new bet, and supersede_reason says why */
+  supersedes?: string;
+  /** Why the earlier bet was replaced, so the change stays visible */
+  supersede_reason?: string;
+  /** The bet that replaced this one. Set exactly when the status is superseded */
+  superseded_by?: string;
+  /** The framework for thinking the bet was written through (frameworks/<id>), if any */
+  framework?: string;
+  /** The decision that settled the claim, the threshold or the verdict */
+  decision?: string;
+  updated?: string;
+  note?: string;
+  /** The founder's messages this record was made from (naive diagnose catches), so a reader of the bet alone can read the words it came from */
+  conversation?: ConversationRef[];
+};
+
 /** The plugin beta's capabilities in the order they unlock, at beta/capabilities.json. Core capabilities start unlocked. Every other capability unlocks once the tester has given the checkpoint feedback of the one before it (packages/naive/src/engine/beta-gate.ts). */
 export type BetaCapabilities = {
   $schema?: string;
@@ -2354,6 +2498,8 @@ export type FunctionWorkflow = {
   id: string;
   function: string;
   title: string;
+  /** The APQC level 3 process this workflow performs, by hierarchy id in packages/naive/src/functions/pcf.json, such as 9.2.1. It must sit under the function's APQC category, one module names a process in one workflow, and every step's activity then sits under it (packages/naive/src/checks/check-pcf-coverage.ts, EE-226). */
+  process?: string;
   /** What one run is for, in one plain sentence: the state the venture's records are in when the run is done. The title names the work; the goal names the outcome, so an agent can tell a finished run from a performed one. */
   goal: string;
   /** The telos measure kinds this workflow moves (foundation/telos measures[].kind), each one of its function's measures in function.json. This is how an agent says which of the venture's goals its work serves: a goal binds a measure, and a lead weighs the workflow by it. */
@@ -4126,6 +4272,7 @@ export type NaiveConfig = {
       unmeasurable?: "off" | "warn" | "error";
       "no-owner"?: "off" | "warn" | "error";
       "unsupported-premise"?: "off" | "warn" | "error";
+      "no-counter-evidence"?: "off" | "warn" | "error";
       orphan?: "off" | "warn" | "error";
       conflict?: "off" | "warn" | "error";
       dependency?: "off" | "warn" | "error";
@@ -5016,6 +5163,155 @@ export type Postmortem = {
   status: "draft" | "reviewed" | "closed";
   reviewed_by?: string;
   note?: string;
+};
+
+/** A plan for one test, fixed before the test runs, at <venture>/foundation/pre-registration/<id>.json (route foundation/pre-registration/[id], EE-220). It is the first durable object of the strategy function: the mission, the vision and the other strategy documents are written after a pre-registration is registered, so the standard of proof is set before the evidence arrives. The practice is preregistration in science (Nosek et al., The preregistration revolution, PNAS 2018), discovery-driven planning's assumption checklist and milestones (McGrath and MacMillan, HBR 1995) and the Test Card's metric and success criterion (Bland and Osterwalder, Testing Business Ideas, 2019). Once a person registers it, the thesis, assumptions, method, measures, thresholds, judged-by dates, exclusions and the actions on a pass and a fail never change: a deviation is appended to deviations, and a real change is a new pre-registration that supersedes this one with a reason, so every deviation stays visible. packages/naive/src/engine/pre-registration.ts holds that rule, the router applies it to every write and packages/naive/src/checks/check-pre-registration.ts checks the registered fields against the version in the blob store. Naive ships no threshold: each one is the venture's own, proposed as a decision a person settles. */
+export type PreRegistration = {
+  /** The file name without .json */
+  id: string;
+  /** The venture this belongs to, when the record names it */
+  venture?: string;
+  /** A short name for the test, for a list */
+  title?: string;
+  /** draft: still being written, and every field may change. registered: a person fixed it, and the registered fields never change again. judged: its verdict is written. superseded: a later version replaces it. withdrawn: it was taken off the table before registration or before a verdict */
+  status: "draft" | "registered" | "judged" | "superseded" | "withdrawn";
+  /** The claim, written so it can fail */
+  thesis: {
+    /** The claim in one sentence, about the world and not about the venture's hopes */
+    statement: string;
+    /** What would show the claim is wrong. A claim with no such state is not a thesis */
+    falsified_if?: string;
+  };
+  /** The bets this plan tests, by id (foundation/bets/<id>.json, EE-221). It is one of the registered fields, so a registered plan cannot be pointed at a different claim afterwards, and registering the plan fixes each named bet's claim as the plan was written against it. A plan may name none, for a thesis the venture has not written as a bet */
+  tests?: string[];
+  /** What the thesis rests on, after discovery-driven planning's assumption checklist. The ones that are critical and uncertain are the ones to test first */
+  assumptions?: {
+    id: string;
+    statement: string;
+    /** How much the thesis rests on it: high means the thesis fails if it is false */
+    criticality: "high" | "medium" | "low";
+    /** How little is known about it: high means nothing here settles it */
+    uncertainty: "high" | "medium" | "low";
+    /** The measures below that bear on this assumption */
+    measures?: string[];
+    /** What the assumption is drawn from, when anything is */
+    source?: string;
+  }[];
+  /** How the test runs, fixed before it runs */
+  method?: {
+    /** Whom the test is run with, as a population and not as a list of names */
+    who?: string;
+    /** How many, as a number or the rule that decides it */
+    how_many?: number | string;
+    /** How they are found and approached. Warm intros and friends are a recruitment method, and saying so is what makes the result readable */
+    recruitment?: string;
+    /** What is asked or observed, concretely enough that someone else could run it the same way */
+    asked_or_observed?: string;
+    /** How the answers become a number, when that is not obvious */
+    analysis?: string;
+  };
+  /** What is measured, each with the line it must pass and the date it is judged by */
+  measures?: {
+    id: string;
+    /** What is counted, in one sentence */
+    statement: string;
+    /** The line the measure must pass. The venture's own: Naive ships no value, and an agent proposes one as a decision a person settles */
+    threshold?: {
+      /** How the observed value is compared with the value */
+      operator: ">=" | ">" | "<=" | "<" | "==" | "!=";
+      /** The line itself. A number is compared arithmetically; a string is compared only for equality */
+      value: number | string;
+      unit?: string;
+      /** The person who chose it, or the decision that settled it */
+      set_by?: string;
+    };
+    /**
+     * The date the measure is judged on, fixed before the test runs so the window cannot be extended to reach the line
+     * @format date
+     */
+    judged_by?: string;
+    /** Where the observed value will be read from */
+    source?: string;
+  }[];
+  /** What does not count as evidence here, fixed in advance: compliments, friends' opinions, sign-ups without payment, anything the venture would be tempted to read as a yes. A standard of proof decided after the evidence arrives admits whatever arrived (Kerr 1998 on HARKing) */
+  exclusions?: {
+    statement: string;
+    /** Why it does not count */
+    why?: string;
+  }[];
+  /** What the venture does if the measures pass their thresholds */
+  on_pass?: PreRegistrationAction;
+  /** What the venture does if they do not */
+  on_fail?: PreRegistrationAction;
+  /**
+   * When a person registered it. From then on the registered fields never change
+   * @format date-time
+   */
+  registered_at?: string;
+  /** The person who registered it. Only a person registers a pre-registration */
+  registered_by?: string;
+  /** Every departure from the registered plan, appended beside it and never edited into it, so the record of what was promised and the record of what happened are both readable. An entry already written never changes */
+  deviations?: {
+    /**
+     * @format date-time
+     */
+    at: string;
+    /** What was done differently from the registered plan */
+    what: string;
+    why: string;
+    /** Who departed from the plan, a person's id or a role */
+    by: string;
+    /** The measures or assumptions it bears on */
+    affects?: string[];
+  }[];
+  /** What was observed, per measure, written after registration. The pass or fail of one measure is its observed value against its registered threshold; the verdict over the whole test is a person's */
+  results?: {
+    /** The measure above this result is for */
+    measure: string;
+    /** What was observed */
+    observed: number | string;
+    /** The records or sources behind it (validation/interviews/<id>, a raw source) */
+    evidence?: string[];
+    /** The observed value against the registered threshold */
+    verdict: "pass" | "fail";
+    /**
+     * @format date-time
+     */
+    at: string;
+    /** Who recorded it */
+    by?: string;
+    note?: string;
+  }[];
+  /** The verdict over the whole test, which is a person's and is written once */
+  verdict?: {
+    outcome: "pass" | "fail" | "mixed" | "inconclusive";
+    /** What the venture did, which the registered on_pass or on_fail said it would */
+    action_taken: "persevere" | "pivot" | "stop";
+    /** Why, especially when the action taken is not the registered one */
+    why?: string;
+    /**
+     * @format date-time
+     */
+    at: string;
+    /** The person who judged it */
+    by: string;
+  };
+  /** The pre-registration this one replaces. A registered plan is never edited: a real change is a new version, and supersede_reason says why */
+  supersedes?: string;
+  /** Why the earlier version was replaced, so the change stays visible */
+  supersede_reason?: string;
+  /** The later version that replaced this one */
+  superseded_by?: string;
+  /** The decision that settled the thresholds and the actions */
+  decision?: string;
+  note?: string;
+};
+
+/** A decision rule fixed before the answer is known: persevere, pivot or stop, and what that means here (Ries, The Lean Startup, 2011) */
+export type PreRegistrationAction = {
+  action: "persevere" | "pivot" | "stop";
+  /** What the venture does, concretely */
+  what: string;
 };
 
 /** How the framework ranks a venture's customer problems and what holds its problem tree together (EE-219), at packages/naive/src/functions/strategy/problem-priority.json. The weights are unvalidated priors a venture replaces under problems in naive.config.json; the labels are a view of the computed order and are never stored on a problem. */
