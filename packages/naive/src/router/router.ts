@@ -63,6 +63,8 @@ import { checkPlan, gateWrite, heldDraft, ledgerHook, ownerOfWrite, prerequisite
 import { appendLine } from "./appends.ts";
 import { commitRawSource } from "./raw-source.ts";
 import { claimHandoff, handoffWriteRule } from "./handoff-claim.ts";
+import { preRegistrationWriteRule } from "./pre-registration.ts";
+import { betWriteRule } from "./bets.ts";
 import { briefPath, splitBrief } from "./handoff-brief.ts";
 import { LOCAL, attributeSources, connect, sourceFor } from "../store/connectors/index.ts";
 // Caching (packages/naive/src/engine/caching.ts): per-action memo, the record-level cache for command routes, and system/cache, system/judge, system/answer.
@@ -90,7 +92,7 @@ import { coreOf, statementsIn, withCore } from "../engine/venture-core.ts";
 import { telosView } from "../../../../frameworks/telos/adapter.ts";
 import { migrated, scale } from "../engine/canonical.ts";
 import { schemaNameOf } from "../records/index.ts";
-import type { DecisionRecord, Goal, TeamPlan, Venture } from "../records/types/records.d.ts";
+import type { Bet, DecisionRecord, Goal, PreRegistration, TeamPlan, Venture } from "../records/types/records.d.ts";
 import type { RecordRoute, Route } from "../records/routes/routes.ts";
 import {
   ID_CHECKS, PHASES, allowed, deepItem, defaultWorkspace, files, gateOf, glob, groups, kits, load, repo, resolve, routes, skillsOf, ventureDir, ventures,
@@ -485,8 +487,9 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
     if (owned) return { ...owned, ...deprecated };
     // Handoff claim hook (packages/naive/src/router/handoff-claim.ts): a handoff that names its requester is edited by
     // the requester before a claim; after one, the claimant writes progress and evidence and the requester the
-    // verification and acceptance. claimBase is the version that rule read, which the write below names.
-    let claimBase, claimed = false;
+    // verification and acceptance. claimBase is the version that rule read, which the write below names; the
+    // pre-registration freeze below names it the same way.
+    let claimBase: string | null | undefined, claimed = false;
     // Handoff brief hook (packages/naive/src/router/handoff-brief.ts): brief_text, the Markdown brief, rides beside the
     // record's fields; it is taken out before the schema and written to the file the record's brief names, once the
     // record is written.
@@ -564,6 +567,25 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
     if (failed !== null) return { ok: false, error: `does not match ${r.schema}:\n${failed}`, fix: fix(r) };
     // The schema describes ends as after starts. A start that is not a time, or an end that is not after it, never opens.
     if (r.record === "time-box") { const span = timeBoxSpan(rec.starts, rec.ends); if (span) return { ok: false, error: span }; }
+    // Pre-registration freeze hook (packages/naive/src/router/pre-registration.ts, EE-220): once a person has
+    // registered a pre-registration, its thesis, assumptions, method, measures, thresholds, dates, exclusions and
+    // decision rules never change, for a person too; deviations and results are append-only. Refused here, before the
+    // gate, so it is a refusal and not a draft, and the message names the two ways on: a deviation or a new version.
+    if (r.record === "pre-registration") {
+      const frozen = await preRegistrationWriteRule({ store, file, input: rec as Partial<PreRegistration> });
+      if (!frozen.ok) return { ...frozen, ...deprecated };
+      claimBase = frozen.base;
+    }
+    // Bet freeze hook (packages/naive/src/router/bets.ts, EE-221): once a person has registered a bet, or has
+    // registered a pre-registration that tests it, its claim never changes, for a person too; its evidence,
+    // rivals and confidence entries are append-only and its outcome is written once. An agent's write that puts
+    // odds on a bet, resolves one or moves one on is refused here too, with the person's command named, because a
+    // probability nobody chose and an outcome an agent declared are what the register exists to prevent.
+    if (r.record === "bet") {
+      const frozen = await betWriteRule({ store, dir, file, input: rec as Partial<Bet>, person: actor === "person" && !actingAgent(provenance.agent?.id) });
+      if (!frozen.ok) return { ...frozen, ...deprecated };
+      claimBase = frozen.base;
+    }
     const base = r.view_of ? readFileSync(ventureFile(dir, file), "utf8") : null;
     const whole = base && JSON.stringify(withCore(JSON.parse(base), rec), null, 2) + "\n";
     if (whole) {

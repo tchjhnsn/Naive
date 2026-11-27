@@ -1,0 +1,105 @@
+{
+  "id": "bet-review",
+  "function": "strategy",
+  "title": "Register a bet, look for evidence against it, and bring the founder the resolution",
+  "goal": "Every live bet is written in the fixed form for its kind, registered before the search with the founder's own line, date and odds, tested by a pre-registration that names it, attacked by an agent that did not run the search, and either resolved by the founder or open as a decision with the evidence for and against.",
+  "measures": [
+    "learning"
+  ],
+  "trigger": {
+    "kind": "event",
+    "route": "foundation/bets"
+  },
+  "requires": {
+    "records": [
+      "foundation/pre-registration"
+    ]
+  },
+  "reads": [
+    "foundation/bets",
+    "foundation/pre-registration",
+    "foundation/goals",
+    "foundation/requirements",
+    "validation/*",
+    "evidence",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "read-the-register",
+      "do": "Read every bet with its status, the bets it rests on, the evidence for and against it, the odds on it and the pre-registrations that test it, and list the ones with a hole in them, the ones whose date has arrived and the ones nothing tests."
+    },
+    {
+      "id": "write-the-claim",
+      "do": "Rewrite each bet as one claim in the fixed form for its kind, naming the population, the measure, the comparator, the date and the source, and ask the founder for the line and the date rather than offering either. Leave what they have not given as a gap, split a sentence that joins several claims into several bets, and return a reason given for a bet as a premise of it, not a bet of its own.",
+      "skill": "bet-writing",
+      "ask": true,
+      "writes": [
+        "foundation/bets/[id]"
+      ],
+      "raises": [
+        "strategy-or-constitution"
+      ]
+    },
+    {
+      "id": "pre-register-the-test",
+      "do": "For each bet about to be tested, name the pre-registration that will test it and the bet's place in that plan's tests, so registering the plan fixes the claim the search was written against. The plan itself is written by strategy/intake's pre-register-the-first-test step or by the founder with naive prereg, and only the founder registers either; nothing an agent writes registers anything. A bet with no plan behind it stops here and is raised rather than searched.",
+      "skill": "pre-registration",
+      "ask": true,
+      "raises": [
+        "strategy-or-constitution"
+      ]
+    },
+    {
+      "id": "search-for-and-against",
+      "do": "Run the registered plan's method as it was written, with a set of queries aimed at evidence against, and record every item screened in or out as evidence on the bet with supports true or false, the source and the date it was read, with the counts found, screened and excluded. Append a deviation to the plan for anything done differently, and state the denominator or say it is unknown.",
+      "writes": [
+        "foundation/bets/[id]"
+      ]
+    },
+    {
+      "id": "attack-the-premises",
+      "do": "Attack each bet rather than defend it: run naive lint premises over the register, write the rival claim beside each bet and the observation that would tell them apart, write a pre-mortem that assumes the bet was wrong and says why, and answer each generated question or raise it as a decision. The agent that ran the search does not run this step, because the builder is not the verifier.",
+      "writes": [
+        "foundation/bets/[id]",
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    },
+    {
+      "id": "bring-the-resolution",
+      "do": "For each bet whose date has arrived, bring the founder the registered claim unchanged, the evidence for and against with its grade, the premise findings still standing, the deviations, and what the record would be resolved as, with the registered claim's outcome and the verdict kept apart. Only the founder resolves a bet (naive bets resolve) and only the founder puts odds on one; a selection rule is never resolved by evidence.",
+      "raises": [
+        "continue-or-stop"
+      ]
+    },
+    {
+      "id": "score-the-odds",
+      "do": "Once bets have resolved, report the Brier score of each prior and the mean (naive bets score), with the bets the venture worked to make true reported apart and never as foresight, and say plainly what the score does and does not say about the next bet.",
+      "consider": {
+        "why": "A score over several resolved bets is the only check on whether the odds the founder puts on a bet mean anything.",
+        "when": "At least one bet has both a prior and a resolved outcome."
+      }
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "register-holds",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-bets.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "evidence-against-was-looked-for",
+      "kind": "review",
+      "check": "Does every bet reviewed in this run name a rival and carry the queries aimed at evidence against it, and is every number in it one the founder set?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}
