@@ -279,3 +279,7 @@ The function and lead agent specs live in [`agents/`](./agents/README.md) (EE-12
 - `publish-lint.ts check <path>` reports a path that does not exist as a `missing-path` error and exits 1. A mistyped path never reads as a clean pass.
 - `render-document.ts` judges the live rung's requirements. A required meeting is judged as a workflow's is (`prerequisites.ts`). A required decision class is met only by a decided decision of that class whose `applies_to` names one of the document's own artifacts (`artifacts/<kind>-...`). A decision about another document, or one still open, unlocks nothing.
 - `init-venture.ts --layout src` makes each layer folder's README where the folder's path resolves, so a venture can start on the src layout at any phase.
+
+## What a proposal may not change
+
+`propose()` in `decisions.ts` lets an agent open a decision or reword an open one. It refuses two things. An agent that proposes the id of a withdrawn decision is refused: only a person reopens it (`naive reopen`). On a decision an agent did not draft, an agent may reword the question, the answer, the options and the reasons, and may not change who decides it or what it writes to: `class`, `door`, `boundary`, `unlocks`, `blocks`, `applies_to`, `decides`, `parent`, `candidates`, `assigned_to`, `publish` and the fields a person's action writes. On a draft an agent wrote, an agent may still correct them. `interfaces/tests/decision-withdraw-test.ts` tests each case.
