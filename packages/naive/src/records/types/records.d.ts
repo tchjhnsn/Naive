@@ -5066,6 +5066,31 @@ export type Process = {
   note?: string;
 };
 
+/** One capability of a product, or a category that groups capabilities, at <venture>/product/capabilities/<id>.json (EE-224). Capabilities form a tree under the products function: a category's parent is another category or null (it sits directly under the products function), and a capability always has a category as its parent. Each names the agent role that owns it, the one that keeps its words and its site or docs containers current. A capability is live, building or retired, and nothing under a retired category is live or building (node packages/naive/src/checks/check-ventures.ts). */
+export type ProductCapability = {
+  id: string;
+  venture?: string;
+  /** The capability as a customer would name it, for example Time travel */
+  name: string;
+  /** The product it belongs to: a product card's id in product/ or products/ */
+  product: string;
+  /** A category groups capabilities and other categories; a capability is one thing the product does */
+  kind: "category" | "capability";
+  /** The category it sits under, or null for a category directly under the products function */
+  parent: string | null;
+  /** The agent role that owns it: <capability>-agent for a capability, the category agent for a category. A container in a site's containers.json names the same role as its owner */
+  owner: string;
+  status: "live" | "building" | "retired";
+  /** What it does, in one or two plain sentences */
+  summary?: string;
+  /**
+   * When it reached its status
+   * @format date
+   */
+  since?: string;
+  note?: string;
+};
+
 /** One product of a venture, stored as a card at products/<id>.json (EE-011). It holds the product's own market, job, technology, offering and business model; Product Anatomy judges it against the venture's core and assigns its portfolio role per phase. */
 export type Product = {
   id: string;
