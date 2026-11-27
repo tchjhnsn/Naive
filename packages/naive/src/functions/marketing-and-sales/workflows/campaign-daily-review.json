@@ -2,6 +2,8 @@
   "id": "campaign-daily-review",
   "function": "marketing-and-sales",
   "title": "Review an open campaign each day",
+  "goal": "Every lead the open campaign brought in has an opportunity and a reply sent or drafted, and the campaign is compared with the pace its goal needs.",
+  "measures": ["revenue", "usage_or_adoption"],
   "trigger": { "kind": "schedule", "cadence": "daily", "during": "campaign" },
   "reads": ["operations/time-box/[id]", "sales/opportunities", "foundation/icp", "governance/publication-policy"],
   "steps": [

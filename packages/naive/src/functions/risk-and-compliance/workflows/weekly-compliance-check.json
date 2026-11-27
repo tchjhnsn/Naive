@@ -2,6 +2,8 @@
   "id": "weekly-compliance-check",
   "function": "risk-and-compliance",
   "title": "Check the compliance calendar each week",
+  "goal": "Every obligation past its alert date is either met with its evidence or open as a decision for the founder, and every new grant or lease has the duties it creates recorded.",
+  "measures": ["compliance_met"],
   "trigger": { "kind": "schedule", "cadence": "weekly" },
   "reads": ["legal/obligations", "governance/ownership", "assets/leases", "evidence"],
   "steps": [

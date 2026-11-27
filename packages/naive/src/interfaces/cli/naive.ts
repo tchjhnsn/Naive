@@ -4,7 +4,9 @@
 // alias, so `mentura typegen` and `mentura upgrade` run these same commands.
 //
 //   naive new [dir] [--yes] [--type <type>] [...]    start a venture: create-venture's questions and scaffold (EE-082)
-//   naive agent [list] | brief <role> | run <role> "<task>"   Naive's agents from the terminal: run uses NAIVE_AGENT_CMD (such as claude -p), else prints the prompt
+//   naive agent [list] | brief <role> | run <role> "<task>" | spawn <function>-agent --task "<text>"
+//                                                   Naive's agents from the terminal: run uses NAIVE_AGENT_CMD (such as claude -p), else prints
+//                                                   the prompt, and spawn records a temporary specialist of that agent and runs it (EE-213)
 //   naive <route> <action> | decide | decisions | accept | ...
 //                                                   every record command of mentura runs here too: see naive help
 //   naive dev [--port 4331]                         the setup page at /setup and the board, live: edit a record and it updates; each saved
@@ -73,9 +75,20 @@
 //                                                   trigger, the run log and the provenance log (EE-182)
 //   naive due record <function>/<workflow> [--outcome done|failed|skipped] [--by <who>]
 //                                                   record that a workflow ran
+//   naive skipped [--function <id>] [--at <iso>] [--json]
+//                                                   the work left behind, in hierarchical order: occurrences a person
+//                                                   skipped and the steps a reporting run left out, each with what it
+//                                                   blocks downstream (EE-213)
+//   naive skipped handback <item> [--to <role>]     hand one item to the owning function agent as an open decision:
+//                                                   it recommends do-now, defer or drop, and a person decides
 //   naive owners [--function <id>] [--level <n>] [--json]
 //                                                   the accountable owner of each APQC element the venture runs, a
 //                                                   person or an agent, and where it came from (EE-187)
+//   naive tools recommend [--goal <id>] [--activity <id>] [--function <id>] [--json] [--propose]
+//                                                   which activities a goal needs to be visible, the tool kinds that
+//                                                   cover each, how they score on visibility and ownership, and the
+//                                                   blind spots; --propose files one open decision per function for a
+//                                                   person (EE-222)
 //   naive graph [--function <id>] [--element <id>] [--json] [--mermaid]
 //                                                   the element graph: which APQC elements feed which through the
 //                                                   routes the function workflows write and read, and the routes
@@ -128,6 +141,16 @@
 //   naive sync push [--json]                        what this working copy changed, each record with its base
 //                                                   version; a store that moved is pulled, merged and tried again
 //   naive sync status [--json]                      where this working copy stands, with no network
+//   naive copy gaps [--page <id>] [--json]        what each page shows, the record that holds it, or what is missing
+//                                                   and which upstream record a draft would come from (EE-216)
+//   naive copy draft [--element <id>] [--propose] [--print]
+//                                                   one open decision per missing or undecided element, with two or
+//                                                   three options a person picks between, drafted through NAIVE_AGENT_CMD;
+//                                                   with no harness it prints the prompt and files the gap alone
+//   naive copy check [--json]                       the copy gate: it refuses while any element the sitemap plans has
+//                                                   no record a person stands behind, and names each one
+//   naive copy one-shot --by <person> [--why <text>]  a person skips approving the text: recorded as a decision, and
+//                                                   every page built from then on is marked unapproved
 //   naive lint premises [<route>] [--drafts] [--json] [--propose]
 //                                                   attack the premises of the venture's goals, requirements, exit criteria,
 //                                                   constraints and decisions; --propose writes findings as open decisions
@@ -444,6 +467,7 @@ else if (cmd === "build" || cmd === "start") {
   process.exit(run("packages/naive/src/engine/goals.ts", [here(), ...args]));
 } else if (cmd === "due") {
   // Which function workflows are due, and recording a run (packages/naive/src/engine/due.ts, EE-182).
+  // --at, --function and --json pass through, and --outcome, --by and --steps for record.
   const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
   process.exit(run("packages/naive/src/engine/due.ts", [here(), ...args]));
 } else if (cmd === "graph") {
@@ -459,6 +483,20 @@ else if (cmd === "build" || cmd === "start") {
   // The loop that starts due workflows as far as the venture's mode allows (packages/naive/src/engine/loop.ts, EE-183).
   const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
   process.exit(run("packages/naive/src/engine/loop.ts", [here(), ...args]));
+} else if (cmd === "tools") {
+  // Tool recommendations for a goal or an activity, scored on the visibility rubric
+  // (packages/naive/src/engine/tool-recommendations.ts, EE-222). --goal, --activity, --function, --json and --propose
+  // pass through.
+  const given = rest.filter((a, i) => !(a === "--venture" || rest[i - 1] === "--venture"));
+  const args = given[0] && !given[0].startsWith("--") ? given : ["recommend", ...given];
+  const [what, ...more] = args;
+  if (what !== "recommend") { console.error("usage: naive tools recommend [--goal <id>] [--activity <id>] [--function <id>] [--json] [--propose] [--venture <dir>]"); process.exit(2); }
+  process.exit(run("packages/naive/src/engine/tool-recommendations.ts", [here(), ...more]));
+} else if (cmd === "skipped") {
+  // The work left behind, and handing one item to its function agent (packages/naive/src/engine/skipped.ts, EE-213).
+  // --function, --at and --json pass through, and --to for handback.
+  const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
+  process.exit(run("packages/naive/src/engine/skipped.ts", [here(), ...args]));
 } else if (cmd === "owners") {
   // Who is accountable for each element of APQC's framework (packages/naive/src/engine/element-owners.ts, EE-187).
   const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
@@ -494,6 +532,12 @@ else if (cmd === "build" || cmd === "start") {
   const [what, ...args] = rest.filter((a, i) => !(a === "--venture" || rest[i - 1] === "--venture"));
   if (what !== "premises") { console.error("usage: naive lint premises [<route>] [--drafts] [--json] [--propose]"); process.exit(2); }
   process.exit(run("packages/naive/src/checks/premise-lint.ts", [here(), ...args]));
+} else if (cmd === "copy") {
+  // The site's words before the site (EE-216): packages/naive/src/functions/marketing-and-sales/marketing/copy.ts.
+  const args = rest.filter((a, i) => !(a === "--venture" || rest[i - 1] === "--venture"));
+  const [what = "gaps"] = args;
+  if (!["gaps", "check", "draft", "one-shot"].includes(what)) { console.error("usage: naive copy gaps [--page <id>] | check | draft [--element <id>] [--propose] [--print] | one-shot --by <person> [--why <text>]   [--venture <dir>] [--json]"); process.exit(2); }
+  process.exit(run("packages/naive/src/functions/marketing-and-sales/marketing/copy.ts", [here(), ...args]));
 } else if (cmd === "typegen") {
   const { TOOLS } = await import("../mcp/server.ts");
   const { routes } = await import("../../router/router.ts");

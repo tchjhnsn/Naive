@@ -2,6 +2,8 @@
   "id": "monthly-spend-review",
   "function": "finance",
   "title": "Review spend and runway each month",
+  "goal": "Every balance is current, every unused, duplicated or renewing cost is kept with a reason or open as a decision, and the money summary carries this month's burn and runway.",
+  "measures": ["cost_or_time_saved", "revenue"],
   "trigger": { "kind": "schedule", "cadence": "monthly" },
   "reads": ["finance/spend", "finance/budget", "money", "purpose/money/summary", "it/connections/[id]"],
   "steps": [

@@ -2,6 +2,8 @@
   "id": "monthly-investor-update",
   "function": "external-relationships",
   "title": "Draft the monthly investor update",
+  "goal": "The update is drafted with the same metrics as last month, each citing its source, bad news first and at most three asks, and it is recorded sent only after the founder sends it.",
+  "measures": ["compliance_met", "learning"],
   "trigger": {
     "kind": "schedule",
     "cadence": "monthly"
