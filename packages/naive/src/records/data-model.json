@@ -3746,6 +3746,10 @@
       "reason": "TypeScript config for type-checking the repository (packages/naive/src/checks/check-types.ts); not a record"
     },
     {
+      "path": "doc-claims.lock.json",
+      "reason": "doc-claims' lock file: the hash of the lines each pinned doc claim cites, written by the doc-claims tool (https://github.com/tchjhnsn/doc-claims); repository tooling, not a record"
+    },
+    {
       "path": "site/tsconfig.json",
       "reason": "TypeScript config for the Nextra site (EE-088); not a record"
     },

@@ -1,0 +1,5 @@
+[
+{"doc":"AGENTS.md","claim":"72497efeed52","target":"packages/naive/src/checks/check-docs-claims.ts","lines":[2,12],"sha256":"a399aed75a37d92fa591aa02eb622bff83672ffa4e80db180795c7b91704e44a","confirmed":{"by":"Claude","at":"2026-11-27T19:06:40Z","commit":"1973d09"}},
+{"doc":"AGENTS.md","claim":"b70f51971b1e","target":"packages/naive/src/core/effect/errors.ts","lines":[10,41],"sha256":"7f94bf6e1e18d23871b8d60c4aa0a7bf0cc65acc7426eb3f0a2672464b89edf5","confirmed":{"by":"Claude","at":"2026-11-27T19:06:40Z","commit":"1973d09"}},
+{"doc":"AGENTS.md","claim":"9ea97598e06d","target":"packages/naive/src/core/runtime.ts","lines":[23,24],"sha256":"56c726f65e5537aa64f623fa332ef54f62f29b42033779203054594c4194d262","confirmed":{"by":"Claude","at":"2026-11-27T19:06:40Z","commit":"1973d09"}}
+]

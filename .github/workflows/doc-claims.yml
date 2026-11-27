@@ -1,0 +1,10 @@
+name: doc-claims
+on:
+  pull_request:
+  push:
+    branches: [main]
+jobs:
+  doc-claims:
+    uses: tchjhnsn/doc-claims/.github/workflows/check.yml@e19cc2225b9f5241b773b20eae6c6a27109678cf
+    with:
+      ref: e19cc2225b9f5241b773b20eae6c6a27109678cf
