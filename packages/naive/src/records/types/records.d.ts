@@ -2248,18 +2248,22 @@ export type FunctionModule = {
   note?: string;
 };
 
-/** One recurring piece of a function's work, at packages/naive/src/functions/<id>/workflows/<workflow id>.json: what starts it, the steps the function's agent takes, the records each step writes through the router, the decision classes a step may raise, the activity a step performs, whether a step is required or one to consider, and the done criteria in the handoff's form (handoff.schema.json done_criteria), so a workflow run can be handed off and verified like any other work. Every route a step writes must be in the function's write reach, and every class it raises must have a row in the function's decisions.json and every activity a step names must be an APQC activity or a catalog activity under the function's APQC category, and every workflow has at least one required step (packages/naive/src/checks/check-functions.ts). */
+/** One recurring piece of a function's work, at packages/naive/src/functions/<id>/workflows/<workflow id>.json: what the run is for (goal) and which telos measure kinds it moves (measures), what starts it, the steps the function's agent takes, the records each step writes through the router, the decision classes a step may raise, the activity a step performs, whether a step is required or one to consider, and the done criteria in the handoff's form (handoff.schema.json done_criteria), so a workflow run can be handed off and verified like any other work. Every route a step writes must be in the function's write reach, and every class it raises must have a row in the function's decisions.json and every activity a step names must be an APQC activity or a catalog activity under the function's APQC category, every measure must be one of the function's in function.json, and every workflow has a goal, a done criterion and at least one required step (packages/naive/src/checks/check-functions.ts). */
 export type FunctionWorkflow = {
   /** The file's name without .json. */
   id: string;
   function: string;
   title: string;
+  /** What one run is for, in one plain sentence: the state the venture's records are in when the run is done. The title names the work; the goal names the outcome, so an agent can tell a finished run from a performed one. */
+  goal: string;
+  /** The telos measure kinds this workflow moves (foundation/telos measures[].kind), each one of its function's measures in function.json. This is how an agent says which of the venture's goals its work serves: a goal binds a measure, and a lead weighs the workflow by it. */
+  measures: string[];
   trigger: {
     /** intake: once, when the function joins a venture, and again when its records are missing. schedule: on a cadence. event: when a route is written. request: when a lead or person hands it off. */
     kind: "intake" | "schedule" | "event" | "request";
-    /** For schedule. */
+    /** For schedule, and only for schedule: without it a schedule is never due. */
     cadence?: "daily" | "weekly" | "monthly" | "quarterly";
-    /** For event: the route pattern whose write starts it. */
+    /** For event, and only for event: the route pattern whose write starts it. Without it an event trigger is never due. */
     route?: string;
     /** Only while a time box of this kind is open that lists the workflow or its function (operations/time-boxes/<id>.json, EE-186). Outside one the workflow is not due, whatever its kind says. */
     during?: "campaign" | "sprint";
@@ -3732,6 +3736,11 @@ export type NaiveConfig = {
     must?: {
       [key: string]: number;
     };
+  };
+  /** The venture's own lines for the temporary specialists a function agent spawns (EE-213, packages/naive/src/engine/agents/specialist.ts, naive agent spawn). Naive's defaults are unvalidated priors in packages/naive/src/engine/specialists.json. */
+  specialists?: {
+    /** How long a specialist's reach lasts when the spawn names no ttl, as a number and a unit such as "2 hours". A spawn's own --ttl still wins */
+    default_ttl?: string;
   };
   /** The venture's own lines for the activity catalog's proposal rules (EE-170, packages/naive/src/engine/activity-proposals.ts, naive activities). A rule left out keeps the catalog's lines. packages/naive/src/checks/check-config.ts holds each rule id to the catalog and each line to its scale's range. */
   activity_proposals?: {
@@ -5942,6 +5951,41 @@ export type SitePresence = {
     [key: string]: unknown;
   }[];
   [key: string]: unknown;
+};
+
+/** One temporary specialist a function agent spawned for one task (EE-213), at operations/specialists/<role>.json (route operations/specialist/[id]): its parent function agent, the task, the skills it may load, the write reach it was given and when it expires. The record is the reach: the router gives the role the globs here that its parent's own reach still covers, and nothing else, so a specialist can never be wider than its parent whatever this file says (reachRefusal in packages/naive/src/engine/agents/reach.ts). Once status is not live, or expires has passed, the reach is gone and every write by the role is refused. Written by naive agent spawn as the parent agent, or by a person revoking it; reach is not a decision about the venture, only the agent dividing work it may already do. */
+export type Specialist = {
+  /** The role id and the file name without .json: <parent function>-specialist-<slug>. It is what MENTURA_ACTOR_ID is set to */
+  id: string;
+  /** The function agent that spawned it, <function>-agent. A lead, a researcher and another specialist cannot spawn one */
+  parent: string;
+  /** The parent's function, an id in packages/naive/src/functions/departments.json */
+  function: string;
+  /** The one task it was spawned for, in the parent's words. Its brief names this and the parent */
+  task: string;
+  /** Skills from the parent function's module to load, by name. A skill the parent does not have is refused at the spawn */
+  skills?: string[];
+  /** The write globs it was given, each inside one of the parent's (functionWrites). The router intersects them with the parent's reach again on every write */
+  writes: string[];
+  /**
+   * @format date-time
+   */
+  spawned_at: string;
+  /** The acting role or person that spawned it: the parent agent, or a person */
+  spawned_by: string;
+  /**
+   * When the reach is gone, spawned_at plus the ttl. The default ttl is an unvalidated prior in packages/naive/src/engine/specialists.json, overridden under specialists in naive.config.json
+   * @format date-time
+   */
+  expires: string;
+  /** live: the reach stands until expires. finished: its run ended, so the reach is gone. revoked: a person ended it early */
+  status: "live" | "finished" | "revoked";
+  /**
+   * When its run ended or a person revoked it
+   * @format date-time
+   */
+  finished_at?: string;
+  note?: string;
 };
 
 /** One line of the spend register (lead agents design, "The spend register and the access matrix"): one paid service or recurring charge per record, at finance/spend/<id>.json (route finance/spend/[id]). The finance function owns it, and only the finance agent (role finance-agent) or a person writes it (writer function in packages/naive/src/records/data-model.json). Where each field is mastered is the access matrix: the source map's rules for spend-register (packages/naive/template/knowledge/sources.json), where the bank statement sync is the system of record for amount, currency and dates, finance owns status, and IT's tool record is the system of record for approval. The paying account is named by reference to a money record, never by a card or account number. */

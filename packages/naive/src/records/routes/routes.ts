@@ -366,6 +366,7 @@ const PACKAGE_ROUTE: Readonly<Record<string, string>> = {
   "validation-interview": "validation/interviews", "validation-feedback": "validation/feedback", bug: "product/bugs", "product-capability": "product/capabilities",
   customer: "customers", investor: "investors", "money-account": "money", "raw-source": "raw/sources", triage: "raw/triage",
   "spend-register": "finance/spend", budget: "finance/budget", "lead-plan": "operations/lead", "time-box": "operations/time-box", meeting: "operations/meeting",
+  specialist: "operations/specialist",
   "fixed-asset": "assets/register", lease: "assets/leases", risk: "legal/risks", obligation: "legal/obligations",
   people: "people", founder: "people/founders", "fund-thesis": "fund/thesis", "fund-terms": "fund/terms", deal: "deals",
   connection: "it/connections",

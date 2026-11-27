@@ -4,7 +4,9 @@
 // alias, so `mentura typegen` and `mentura upgrade` run these same commands.
 //
 //   naive new [dir] [--yes] [--type <type>] [...]    start a venture: create-venture's questions and scaffold (EE-082)
-//   naive agent [list] | brief <role> | run <role> "<task>"   Naive's agents from the terminal: run uses NAIVE_AGENT_CMD (such as claude -p), else prints the prompt
+//   naive agent [list] | brief <role> | run <role> "<task>" | spawn <function>-agent --task "<text>"
+//                                                   Naive's agents from the terminal: run uses NAIVE_AGENT_CMD (such as claude -p), else prints
+//                                                   the prompt, and spawn records a temporary specialist of that agent and runs it (EE-213)
 //   naive <route> <action> | decide | decisions | accept | ...
 //                                                   every record command of mentura runs here too: see naive help
 //   naive dev [--port 4331]                         the setup page at /setup and the board, live: edit a record and it updates; each saved
@@ -73,6 +75,12 @@
 //                                                   trigger, the run log and the provenance log (EE-182)
 //   naive due record <function>/<workflow> [--outcome done|failed|skipped] [--by <who>]
 //                                                   record that a workflow ran
+//   naive skipped [--function <id>] [--at <iso>] [--json]
+//                                                   the work left behind, in hierarchical order: occurrences a person
+//                                                   skipped and the steps a reporting run left out, each with what it
+//                                                   blocks downstream (EE-213)
+//   naive skipped handback <item> [--to <role>]     hand one item to the owning function agent as an open decision:
+//                                                   it recommends do-now, defer or drop, and a person decides
 //   naive owners [--function <id>] [--level <n>] [--json]
 //                                                   the accountable owner of each APQC element the venture runs, a
 //                                                   person or an agent, and where it came from (EE-187)
@@ -449,6 +457,7 @@ else if (cmd === "build" || cmd === "start") {
   process.exit(run("packages/naive/src/engine/goals.ts", [here(), ...args]));
 } else if (cmd === "due") {
   // Which function workflows are due, and recording a run (packages/naive/src/engine/due.ts, EE-182).
+  // --at, --function and --json pass through, and --outcome, --by and --steps for record.
   const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
   process.exit(run("packages/naive/src/engine/due.ts", [here(), ...args]));
 } else if (cmd === "graph") {
@@ -473,6 +482,11 @@ else if (cmd === "build" || cmd === "start") {
   const [what, ...more] = args;
   if (what !== "recommend") { console.error("usage: naive tools recommend [--goal <id>] [--activity <id>] [--function <id>] [--json] [--propose] [--venture <dir>]"); process.exit(2); }
   process.exit(run("packages/naive/src/engine/tool-recommendations.ts", [here(), ...more]));
+} else if (cmd === "skipped") {
+  // The work left behind, and handing one item to its function agent (packages/naive/src/engine/skipped.ts, EE-213).
+  // --function, --at and --json pass through, and --to for handback.
+  const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
+  process.exit(run("packages/naive/src/engine/skipped.ts", [here(), ...args]));
 } else if (cmd === "owners") {
   // Who is accountable for each element of APQC's framework (packages/naive/src/engine/element-owners.ts, EE-187).
   const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");

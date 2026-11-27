@@ -2,6 +2,8 @@
   "id": "intake",
   "function": "capabilities",
   "title": "Learn how the venture works",
+  "goal": "Every kind of work the venture has done three or more times has a process record with exactly one owner, and the bottleneck to work first is named.",
+  "measures": ["flow_and_lead_time"],
   "trigger": {
     "kind": "intake"
   },
