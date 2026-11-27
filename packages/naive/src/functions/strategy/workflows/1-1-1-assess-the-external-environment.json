@@ -1,0 +1,146 @@
+{
+  "id": "1-1-1-assess-the-external-environment",
+  "function": "strategy",
+  "process": "1.1.1",
+  "title": "Assess the external environment",
+  "goal": "The venture has a current, cited picture of who else serves its customer, what the customer does instead, and the industry conditions it is betting on, and every finding is attached to the decision it bears on.",
+  "measures": [
+    "learning"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "strategy/intake"
+    ]
+  },
+  "reads": [
+    "venture",
+    "decisions/*",
+    "foundation/problem",
+    "foundation/icp",
+    "industries",
+    "markets",
+    "product",
+    "purpose/competitor",
+    "purpose/competitor-signals",
+    "identity/venture-anatomy/industry",
+    "validation/interviews"
+  ],
+  "steps": [
+    {
+      "id": "identify-competitors",
+      "do": "Read the problem record and each customer profile, then list every company that serves the same customer with an offering that could replace the venture's, and write one competitor record each with its domain, offering, who it is for, its published price and every public source with the date you read it.",
+      "skill": "define-the-business-concept-and-long-term-vision",
+      "activity": "1.1.1.1",
+      "writes": [
+        "purpose/competitor/[id]"
+      ]
+    },
+    {
+      "id": "analyze-and-evaluate-competition",
+      "do": "For each competitor that bears on an open decision, fill its record's does and does_not against the venture's product as `product` describes it today, mark every claim that rests only on the competitor's own words, and write the industry record's rivalry cell from how many of them chase the same customer.",
+      "skill": "define-the-business-concept-and-long-term-vision",
+      "activity": "1.1.1.2",
+      "writes": [
+        "purpose/competitor/[id]"
+      ]
+    },
+    {
+      "id": "identify-alternatives",
+      "do": "List what the customer does today in place of the venture's offering, a spreadsheet, a person hired and doing nothing included, from the interview records, write each as a competitor record of kind alternative, and mark as a guess every one no interview names.",
+      "skill": "define-the-business-concept-and-long-term-vision",
+      "activity": "1.1.1.3",
+      "writes": [
+        "purpose/competitor/[id]"
+      ]
+    },
+    {
+      "id": "identify-economic-trends",
+      "do": "Read public figures for what this customer spends and what it costs a new entrant to reach them, and write the industry record's buyer_power, capital_intensity and time_to_revenue_days cells with the status known or estimated, the source and the date each value was true.",
+      "skill": "define-the-business-concept-and-long-term-vision",
+      "activity": "1.1.1.4"
+    },
+    {
+      "id": "identify-political-and-regulatory-factors",
+      "do": "List the laws, licences, filings and standards that bear on selling this offering to this customer in this place, write the industry record's regulation cell as none, light, licensed or heavy with the source behind it, and open a handoff to risk and compliance for anything that reads as an obligation the venture has not met rather than a fact about the industry.",
+      "skill": "define-the-business-concept-and-long-term-vision",
+      "activity": "1.1.1.5",
+      "writes": [
+        "operations/handoff/[id]"
+      ]
+    },
+    {
+      "id": "identify-environmental-factors",
+      "do": "Write what the venture's and its customers' operations do to energy, materials and waste where a buyer, a lender, a supplier or a regulator asks about it, cite the source for each claim, and put the result on the handoff as evidence, because no record type holds it.",
+      "skill": "define-the-business-concept-and-long-term-vision",
+      "activity": "1.1.1.6",
+      "consider": {
+        "why": "A buyer, a lender or a regulator can make an environmental answer a condition of sale, and inventing one later is worse than writing it now.",
+        "when": "A customer, a channel, a lender or a regulator has asked the venture about it."
+      }
+    },
+    {
+      "id": "identify-social-and-cultural-changes",
+      "do": "Name the changes in how this customer works, buys and talks about the problem that would make the venture's offering more or less wanted, cite an interview or a public source for each, and put them on the handoff as evidence with the ones that only repeat the founder's hunch marked as such.",
+      "skill": "define-the-business-concept-and-long-term-vision",
+      "activity": "1.1.1.7",
+      "consider": {
+        "why": "A shift in how the customer works can end a product that still works, and it shows up in interviews before it shows up in revenue.",
+        "when": "An interview or a competitor signal since the last run names a change in how the customer works or buys."
+      }
+    },
+    {
+      "id": "assess-new-technologies",
+      "do": "List the technologies that could build this offering more cheaply, replace it outright or become a dependency, and write the industry record's clockspeed and threat_of_substitutes cells with the evidence and date behind each.",
+      "skill": "define-the-business-concept-and-long-term-vision",
+      "activity": "1.1.1.8"
+    },
+    {
+      "id": "analyze-demographics",
+      "do": "Count how many of the chosen customer profile exist, where they are and how fast that number is changing, from public figures only, and put the count and its source on the handoff, raising a decision when the number cannot support the goals the venture has written.",
+      "skill": "define-the-business-concept-and-long-term-vision",
+      "activity": "1.1.1.9",
+      "raises": [
+        "strategy-or-constitution"
+      ]
+    },
+    {
+      "id": "evaluate-intellectual-property",
+      "do": "List the patents, marks and licences the venture holds or would infringe and the ones competitors hold, write the industry record's threat_of_entrants cell from how far that keeps a new entrant out, and hand anything that looks like infringement to risk and compliance without judging it yourself.",
+      "skill": "define-the-business-concept-and-long-term-vision",
+      "activity": "1.1.1.10",
+      "writes": [
+        "operations/handoff/[id]"
+      ],
+      "consider": {
+        "why": "A name or a method the venture cannot use is cheap to find now and expensive to find after launch.",
+        "when": "The venture is about to commit to a name, a method or a market where a competitor holds registered rights."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "For each finding, name the open decision or goal it confirms or changes, add it there as evidence with its source, and recommend to the strategy lead which part of the environment to look at next.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "environment-cited-and-dated",
+      "kind": "review",
+      "check": "Does every competitor record and every industry cell written in this run carry a public source, the date it was read and a status of known or estimated, with nothing written from memory?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

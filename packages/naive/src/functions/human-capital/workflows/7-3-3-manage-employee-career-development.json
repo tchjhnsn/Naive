@@ -1,0 +1,91 @@
+{
+  "id": "7-3-3-manage-employee-career-development",
+  "function": "human-capital",
+  "process": "7.3.3",
+  "title": "Manage employee career development",
+  "goal": "Each person has one named next competency to gain with how it will be practised on real work, the venture's limits on paying for learning are written down, and the roles the venture cannot run without have a named successor or say they have none.",
+  "measures": [
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "human-capital/intake"
+    ]
+  },
+  "reads": [
+    "people",
+    "people/founders",
+    "people/team-plan",
+    "foundation/goals",
+    "capabilities/processes",
+    "finance/budget",
+    "governance/delegation",
+    "operations/handoff",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "define-development-guidelines",
+      "do": "Write what the venture will and will not pay for in learning, how much working time a person may spend on it, who approves each, and put the money and time limits to the founder.",
+      "activity": "7.3.3.1",
+      "skill": "manage-employee-onboarding-training-and",
+      "raises": [
+        "spend-money"
+      ]
+    },
+    {
+      "id": "develop-career-plans-and-paths",
+      "do": "For each person, write where the work could lead in this venture, the competencies and decision rights each step adds, and say plainly where the venture is too small to offer a next step rather than inventing one.",
+      "activity": "7.3.3.2",
+      "skill": "manage-employee-onboarding-training-and",
+      "consider": {
+        "why": "A path the venture cannot honour is worse than saying there is none yet.",
+        "when": "The person asked, or the plan holds a role above the one they hold."
+      }
+    },
+    {
+      "id": "manage-skill-and-competency-development",
+      "do": "Compare each person's competencies with what their role and the workforce plan need, and propose the single thing to learn next, with the real task it will be practised on and how it will be seen to have worked.",
+      "activity": "7.3.3.3",
+      "skill": "manage-employee-onboarding-training-and"
+    },
+    {
+      "id": "establish-succession-plans",
+      "do": "Name the roles the venture cannot run without, the person or agent who would take each one over, what handing it over would take in access, records and time, and review the list each time the team plan changes.",
+      "activity": "7.3.3.4",
+      "skill": "manage-employee-onboarding-training-and",
+      "consider": {
+        "why": "Succession matters most where one person holds work nobody else could pick up.",
+        "when": "Someone other than the founders holds work nobody else can do, or the founder asks."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Open a decision for each learning cost and each unfilled successor, attach the competency comparison as evidence, and recommend to the strategy lead which gap to close before the next quarter.",
+      "skill": "manage-employee-onboarding-training-and",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities",
+        "spend-money"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "next-competency-practised-on-real-work",
+      "kind": "review",
+      "check": "Does every person's next competency name the real task it will be practised on and how the venture will see whether it worked?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

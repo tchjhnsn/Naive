@@ -1,0 +1,77 @@
+{
+  "id": "1-1-5-conduct-organization-restructuring-opportunities",
+  "function": "strategy",
+  "process": "1.1.5",
+  "title": "Conduct organization restructuring opportunities",
+  "goal": "Every restructuring option on the table is written up with what it would cost, what it would give up and what the records cannot say, so the founder has one decision to make rather than a pile of options.",
+  "measures": ["learning"],
+  "trigger": { "kind": "request" },
+  "requires": {
+    "meetings": ["strategy/intake"]
+  },
+  "reads": [
+    "venture",
+    "foundation/telos",
+    "foundation/goals",
+    "foundation/constraints",
+    "governance/ownership",
+    "governance/exit",
+    "governance/founder-agreement",
+    "purpose/money/summary",
+    "purpose/competitor",
+    "product",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "identify-restructuring-opportunities",
+      "do": "List the ways the venture's shape could change to serve the telos better, a line bought, a line sold, two ventures merged or one split out, with the owner outcome in the telos and the ownership record each option would touch, and write nothing as recommended yet.",
+      "skill": "define-the-business-concept-and-long-term-vision",
+      "activity": "1.1.5.1",
+      "consider": {
+        "why": "A venture can reach its end faster by buying or shedding a line than by building, and the option is invisible unless someone writes it down.",
+        "when": "The founder has raised buying, selling, merging or splitting a line, or a competitor record shows a line for sale."
+      }
+    },
+    {
+      "id": "perform-due-diligence",
+      "do": "For the option the founder is weighing, gather only what is public about the other party, its filings, its product, its prices and its public obligations, write what each source does and does not show, and never contact the party or ask anyone for confidential material.",
+      "skill": "define-the-business-concept-and-long-term-vision",
+      "activity": "1.1.5.2",
+      "consider": {
+        "why": "What is public is usually enough to rule an option out, and ruling one out early is the cheapest work here.",
+        "when": "The founder is weighing a named party rather than the idea of a deal."
+      }
+    },
+    {
+      "id": "analyze-deal-options",
+      "do": "Write each option, acquiring, merging, demerging or divesting, as one row with what it costs in money and attention, what the venture would give up, who would own what afterwards and what would have to be true for it to pay off, and bring the founder the rows with the gaps named, never a price or a term.",
+      "skill": "define-the-business-concept-and-long-term-vision",
+      "activity": "1.1.5.3",
+      "raises": ["strategy-or-constitution"],
+      "consider": {
+        "why": "A deal is a one-way door, and the comparison is worth writing only once a real option exists.",
+        "when": "At least two options survived the public due diligence."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Open one decision carrying every surviving option with its evidence, say plainly what the records cannot answer and who would have to be asked, and hand any question of terms, tax or title to counsel through a handoff.",
+      "writes": ["decisions/*", "operations/handoff/[id]"],
+      "raises": ["strategy-or-constitution", "defer-or-route"]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "no-contact-and-no-terms",
+      "kind": "review",
+      "check": "Was every fact about another party taken from a public source with its date, with no contact made and no price or term proposed by the agent?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

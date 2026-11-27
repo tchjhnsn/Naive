@@ -1,0 +1,87 @@
+{
+  "id": "3-5-8-perform-digital-sales",
+  "function": "marketing-and-sales",
+  "process": "3.5.8",
+  "title": "Perform digital sales",
+  "goal": "The venture's digital path to a sale works end to end and is written down: the page a buyer lands on, the words it shows, the step that takes their money, and the record each sale leaves.",
+  "measures": [
+    "revenue",
+    "usage_or_adoption"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "marketing-and-sales/intake"
+    ]
+  },
+  "reads": [
+    "venture",
+    "marketing/sitemap",
+    "marketing/message",
+    "marketing/content",
+    "product",
+    "validation/pricing",
+    "sales/opportunities",
+    "customers",
+    "money",
+    "governance/analytics",
+    "operations/site-presence",
+    "support/cases",
+    "governance/publication-policy",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "map-the-path",
+      "do": "Write the steps a buyer takes from arriving to paying, naming the page or screen at each step, the message record holding its words and the record that would show someone reached it.",
+      "skill": "develop-and-manage-sales-plans"
+    },
+    {
+      "id": "check-each-step",
+      "do": "Walk the path as a buyer would, record where it breaks, where a price or a term is not shown, where the next step is unclear and where the records cannot tell how many got that far, and propose the one fix that would lose the fewest buyers.",
+      "skill": "develop-and-manage-sales-plans",
+      "raises": [
+        "experience-design"
+      ]
+    },
+    {
+      "id": "record-each-digital-sale",
+      "do": "For every sale taken through the digital path write the opportunity closed won with its page and source, write or update the customer record, and reconcile the count and the amounts with the money records.",
+      "skill": "develop-and-manage-sales-plans",
+      "writes": [
+        "sales/opportunities/[id]",
+        "customers/[id]"
+      ],
+      "raises": [
+        "domain-fact"
+      ]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Add the counts and the breaks to the decision or goal they bear on, bring the founder any change to a page's layout or navigation as a decision, and tell the growth lead which step loses the most buyers.",
+      "skill": "develop-and-manage-sales-plans",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "experience-design",
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "digital-path-walked-and-counted",
+      "kind": "review",
+      "check": "Was the whole path from arrival to payment walked this run with each break recorded, and does every digital sale since the last run exist as a record reconciled with the money records?",
+      "reviewer": "growth-lead"
+    }
+  ]
+}

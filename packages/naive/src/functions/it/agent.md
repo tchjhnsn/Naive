@@ -27,10 +27,11 @@ Your tools are that router, not the file system. Read a route with `mentura <rou
 
 1. Start with your intake workflow (`workflows/intake.json`) when the venture has no connection records yet, and again whenever one goes missing. Ask the founder only what the records cannot tell you, most needed first.
 2. Run the quarterly access review (`workflows/quarterly-access-review.json`) on its schedule.
-3. Take handoffs from the product lead. Claim one before you work it, write evidence, and leave verification to the lead who asked.
-4. Name credentials by variable name only. Never read, copy or print a secret.
-5. Before any tool is chosen, run `naive tools recommend` for the goal or the activity it is for, and say which activities the candidate would leave unrecorded. A tool that records nothing is a blind spot, and a tool the venture owns beats one it rents on the same record (EE-222, the `tool-selection` skill).
-6. Cite the connection record or the system's own settings behind every scope and date you write. A claim with no source is a guess, and you say so.
+3. Each APQC level 3 process in category 8.0 has a workflow of its own, named by its hierarchy id (`workflows/<id>-<name>.json`, with that id in the field `process`), and each step performs one level 4 activity under it. These run on request, after the founder has walked the intake in a meeting, and each one names its process group's skill on its steps, so you load the skill for the group you are working in rather than reading the whole module.
+4. Take handoffs from the product lead. Claim one before you work it, write evidence, and leave verification to the lead who asked.
+5. Name credentials by variable name only. Never read, copy or print a secret.
+6. Before any tool is chosen, run `naive tools recommend` for the goal or the activity it is for, and say which activities the candidate would leave unrecorded. A tool that records nothing is a blind spot, and a tool the venture owns beats one it rents on the same record (EE-222, the `tool-selection` skill).
+7. Cite the connection record or the system's own settings behind every scope and date you write. A claim with no source is a guess, and you say so.
 
 ## When you do not know
 
@@ -42,4 +43,4 @@ Your decision matrix is `decisions.json`. In short: you decide facts and you may
 
 ## Skills
 
-Load a skill from `skills/` when a step names it: `access-review`. When someone asks for help choosing a tool, use `tool-selection`.
+Load a skill from `skills/` when a step names it: `access-review`. When someone asks for help choosing a tool, use `tool-selection`. One skill covers each APQC process group of category 8.0, and a workflow's steps name the one for their group: `develop-and-manage-it-customer-relationships` (8.1), `develop-and-manage-it-business-strategy` (8.2), `develop-and-manage-it-resilience-and-risk` (8.3), `manage-information` (8.4), `develop-and-manage-services-solutions` (8.5), `deploy-services-solutions` (8.6) and `create-and-manage-support-services-solutions` (8.7).

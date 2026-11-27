@@ -1,0 +1,106 @@
+{
+  "id": "9-2-5-manage-and-process-adjustments-deductions",
+  "function": "finance",
+  "process": "9.2.5",
+  "title": "Manage and process adjustments/deductions",
+  "goal": "The rule for refunds, credits and discounts is written and approved, every adjustment is recorded against the invoice it changes with the promise it rests on, and nothing is given away without the founder.",
+  "measures": [
+    "revenue"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "finance/intake"
+    ]
+  },
+  "reads": [
+    "customers",
+    "customers/[id]",
+    "deals",
+    "validation/pricing",
+    "service-delivery/offers",
+    "support/cases",
+    "money",
+    "finance/budget",
+    "purpose/money/summary",
+    "legal/obligations"
+  ],
+  "steps": [
+    {
+      "id": "adjustment-policy",
+      "do": "Draft the rule for refunds, credits, discounts and goodwill, what qualifies, how much, how long after delivery and who may approve it, and bring it to the founder.",
+      "skill": "perform-revenue-accounting",
+      "ask": true,
+      "activity": "9.2.5.1",
+      "raises": [
+        "legal-or-terms"
+      ]
+    },
+    {
+      "id": "analyze-adjustments",
+      "do": "For each adjustment asked for, set what was promised against what was delivered from the offer, the deal and the support records, and say what the rule allows and what the amount would be.",
+      "skill": "perform-revenue-accounting",
+      "activity": "9.2.5.2"
+    },
+    {
+      "id": "correspond-with-customer",
+      "do": "Draft the answer to the customer, the amount and the reason it is that amount, for the founder to send; you never agree a refund or a discount with a customer.",
+      "skill": "perform-revenue-accounting",
+      "activity": "9.2.5.3"
+    },
+    {
+      "id": "internal-resolution",
+      "do": "Brief the person who did the work on what the customer claims and what the records show, so the venture gives one answer.",
+      "skill": "perform-revenue-accounting",
+      "activity": "9.2.5.4",
+      "consider": {
+        "why": "The person who did the work knows what was promised, and the answer has to match it.",
+        "when": "Someone other than the founder delivered the work the adjustment is about."
+      }
+    },
+    {
+      "id": "chargeback-invoices",
+      "do": "Draft the invoice that passes the cost back to the supplier or partner responsible, with the evidence for the fault, for the founder to send.",
+      "skill": "perform-revenue-accounting",
+      "activity": "9.2.5.5",
+      "consider": {
+        "why": "A fault that came from a supplier should cost the supplier, not the venture.",
+        "when": "A supplier or partner is responsible for the fault behind the adjustment."
+      }
+    },
+    {
+      "id": "related-entries",
+      "do": "Record each approved adjustment against the invoice it changes, reduce the expected receipt in the budget's revenue line by that amount, and note the reason and the approval on the entry.",
+      "skill": "perform-revenue-accounting",
+      "activity": "9.2.5.6",
+      "writes": [
+        "finance/budget/[id]"
+      ]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Raise every adjustment the rule does not cover as a decision for the founder, and attach the pattern of adjustments to the open decision about price, promise or delivery that it bears on.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "domain-fact"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "adjustments-within-policy",
+      "kind": "review",
+      "check": "Does every adjustment cite the promise it rests on and the founder's approval, and is the budget's revenue line corrected for each one?",
+      "reviewer": "finance-lead"
+    }
+  ]
+}

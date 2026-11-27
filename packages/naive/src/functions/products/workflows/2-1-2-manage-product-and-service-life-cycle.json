@@ -1,0 +1,112 @@
+{
+  "id": "2-1-2-manage-product-and-service-life-cycle",
+  "function": "products",
+  "process": "2.1.2",
+  "title": "Manage product and service life cycle",
+  "goal": "The product being introduced has a written plan from first build to launch with the indicators that will say whether it worked, every release and retirement is a decision the founder made, and the last launch has a post launch review on record with one lesson for the next.",
+  "measures": [
+    "usage_or_adoption",
+    "flow_and_lead_time",
+    "learning"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "products/intake"
+    ]
+  },
+  "reads": [
+    "product",
+    "product/bugs",
+    "product/capabilities",
+    "foundation/telos",
+    "foundation/goals",
+    "validation/product-market-fit",
+    "validation/feedback",
+    "support/cases",
+    "finance/spend",
+    "operations/handoff",
+    "system/release",
+    "decisions"
+  ],
+  "steps": [
+    {
+      "id": "plan-introduction",
+      "do": "Draft the plan for the product being built: the stages from first build to a customer using it, what each stage must produce before the next begins, who or which agent does it, and the date the founder named, and put the plan on the handoff for the founder to approve.",
+      "skill": "govern-and-manage-product-service-development",
+      "activity": "2.1.2.1",
+      "writes": [
+        "operations/handoff/[id]"
+      ]
+    },
+    {
+      "id": "introduce-the-product",
+      "do": "Prepare the release: list what is in it, which capabilities become live, which bugs ship with it and which of them are P0 or P1, and what a user has to do differently, then bring it to the founder as a decision, and once the founder releases it set each capability's status to live.",
+      "skill": "govern-and-manage-product-service-development",
+      "activity": "2.1.2.2",
+      "raises": [
+        "production-ship"
+      ]
+    },
+    {
+      "id": "retire-outdated",
+      "do": "For each product or capability with no active users, no revenue and no live goal behind it, prepare the case to retire it with the usage and money records behind it and what retiring it would cost the customers who are left, and once the founder decides set the product card and its capabilities to retired.",
+      "skill": "govern-and-manage-product-service-development",
+      "activity": "2.1.2.3",
+      "writes": [
+        "product/[id]"
+      ],
+      "raises": [
+        "continue-or-stop"
+      ],
+      "consider": {
+        "why": "A product nobody uses still takes support, maintenance and attention from the one that is working.",
+        "when": "A product or capability has had no active user for two review cycles."
+      }
+    },
+    {
+      "id": "performance-indicators",
+      "do": "Name the few indicators that will say whether this product is working (the customer reaching the job's end, coming back, the open P0 count, the cost to serve), bind each to a telos measure kind, say where each number is read from today, and record them on the product card; an indicator no record can produce is written as a hole, not a number.",
+      "skill": "govern-and-manage-product-service-development",
+      "activity": "2.1.2.4",
+      "writes": [
+        "product/[id]"
+      ]
+    },
+    {
+      "id": "post-launch-review",
+      "do": "After a launch, review what actually happened: usage and retention since the release against the indicators, the support cases and bugs it caused, what it cost against the spend records, how the real dates compared with the planned ones, how the path the product reaches the customer by held up, and what the venture would do differently, and write the review on the handoff with one lesson and the evidence for it.",
+      "skill": "govern-and-manage-product-service-development",
+      "activity": "2.1.2.5",
+      "writes": [
+        "operations/handoff/[id]"
+      ]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Attach each review finding to the open decision it confirms or changes, raise anything that argues for stopping or changing direction to the founder with the evidence, and give the product lead the next cycle's product order.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities",
+        "continue-or-stop"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "launch-accounted-for",
+      "kind": "review",
+      "check": "Does the product being introduced name the indicators that will say whether it worked, and does the last launch have a post launch review citing usage, support and cost records?",
+      "reviewer": "product-lead"
+    }
+  ]
+}

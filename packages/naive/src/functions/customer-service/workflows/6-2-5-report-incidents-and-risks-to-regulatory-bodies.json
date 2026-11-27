@@ -1,0 +1,77 @@
+{
+  "id": "6-2-5-report-incidents-and-risks-to-regulatory-bodies",
+  "function": "customer-service",
+  "process": "6.2.5",
+  "title": "Report incidents and risks to regulatory bodies",
+  "goal": "Whether anything in the venture's contacts must be reported to a regulator is answered in writing against the obligations, and any report that is owed is drafted with its facts and held for the founder and counsel.",
+  "measures": [
+    "usage_or_adoption"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "customer-service/intake"
+    ]
+  },
+  "reads": [
+    "legal/obligations",
+    "legal/risks",
+    "support/cases",
+    "support/policy",
+    "customers",
+    "product/bugs"
+  ],
+  "steps": [
+    {
+      "id": "check-the-duties",
+      "do": "Read the obligation and risk records and say plainly which of them would require reporting an incident, to which body and inside how many days, or that none of them does.",
+      "skill": "plan-and-manage-customer-service-contacts"
+    },
+    {
+      "id": "find-reportable-contacts",
+      "do": "Read the period's cases against those duties and list every contact that may be reportable, a breach of personal data, a safety risk or a regulated claim, with the case and the date the venture first knew.",
+      "consider": {
+        "why": "A reporting clock usually starts when the venture first knew, not when it noticed.",
+        "when": "An obligation or risk record names a reporting duty."
+      },
+      "skill": "plan-and-manage-customer-service-contacts"
+    },
+    {
+      "id": "draft-the-report",
+      "do": "Draft the report the duty asks for, with the timeline from the cases, the number of customers affected and no personal detail the duty does not require, and hand it to the founder and counsel to file; never file it.",
+      "raises": [
+        "legal-or-terms"
+      ],
+      "consider": {
+        "why": "A regulator reads a filing as the venture's own words, so only the founder and counsel may send one.",
+        "when": "A contact was found that one of the duties may cover."
+      },
+      "skill": "plan-and-manage-customer-service-contacts"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Record the verdict, reportable or not, with the duty it was read against and the cases behind it, and name the decision it bears on.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "domain-fact"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "reportable-answered",
+      "kind": "review",
+      "check": "Is there a written verdict naming the duty each contact was read against, and is any report that is owed drafted and held for the founder and counsel rather than sent?",
+      "reviewer": "growth-lead"
+    }
+  ]
+}

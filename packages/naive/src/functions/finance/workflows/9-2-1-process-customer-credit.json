@@ -1,0 +1,121 @@
+{
+  "id": "9-2-1-process-customer-credit",
+  "function": "finance",
+  "process": "9.2.1",
+  "title": "Process customer credit",
+  "goal": "The terms on which a customer may pay after delivery are written and approved by the founder, every account allowed to owe money has a limit and a review date, and what is owed and overdue is reported with the invoices behind it.",
+  "measures": [
+    "revenue"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "finance/intake"
+    ]
+  },
+  "reads": [
+    "customers",
+    "customers/[id]",
+    "deals",
+    "deals/[id]",
+    "sales/opportunities",
+    "validation/pricing",
+    "service-delivery/offers",
+    "finance/budget",
+    "money",
+    "purpose/money/summary",
+    "legal/obligations",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "credit-policy",
+      "do": "Draft the terms on which the venture will let a customer pay after delivery, the days to pay, the deposit, the late fee and the most it is willing to be owed by one customer, and bring them to the founder, since offering credit is a promise only they can make.",
+      "skill": "perform-revenue-accounting",
+      "ask": true,
+      "activity": "9.2.1.1",
+      "raises": [
+        "legal-or-terms"
+      ]
+    },
+    {
+      "id": "assess-applications",
+      "do": "For each customer asking to pay later, gather what is public about whether they pay, the size of the deal and what the venture would lose if they did not, and hand the founder a recommended limit to approve or refuse.",
+      "skill": "perform-revenue-accounting",
+      "activity": "9.2.1.2",
+      "raises": [
+        "legal-or-terms"
+      ]
+    },
+    {
+      "id": "payment-history",
+      "do": "Read the venture's own record of how each existing customer has paid, invoice by invoice, and summarize the days taken against the terms that were agreed.",
+      "skill": "perform-revenue-accounting",
+      "activity": "9.2.1.3",
+      "consider": {
+        "why": "How a customer has paid before predicts how they will pay next better than anything public.",
+        "when": "The venture has invoiced the same customer more than once."
+      }
+    },
+    {
+      "id": "forecast-credit-need",
+      "do": "Project how much the venture will be owed at any one time from the deals in the pipeline and the terms on offer, and say whether the runway can carry that gap.",
+      "skill": "perform-revenue-accounting",
+      "activity": "9.2.1.4",
+      "consider": {
+        "why": "Money owed is money the venture has spent and not yet received, and it sets how much cash the terms tie up.",
+        "when": "The venture offers terms longer than payment on delivery."
+      }
+    },
+    {
+      "id": "review-accounts",
+      "do": "Review each account that may owe money against its limit and the way it has paid, and list the ones whose limit should rise, fall or end, with the reason for each.",
+      "skill": "perform-revenue-accounting",
+      "activity": "9.2.1.5"
+    },
+    {
+      "id": "credit-reports",
+      "do": "Write the credit and collection report, total owed, owed by customer, how much is past due and by how many days, each figure citing the invoices behind it, and put it on the handoff as evidence.",
+      "skill": "perform-revenue-accounting",
+      "activity": "9.2.1.6"
+    },
+    {
+      "id": "suspend-or-reinstate",
+      "do": "Prepare the case for suspending or reinstating an account against the written terms, with what is owed and for how long, and leave both the choice and the conversation to the founder.",
+      "skill": "perform-revenue-accounting",
+      "activity": "9.2.1.7",
+      "raises": [
+        "legal-or-terms"
+      ],
+      "consider": {
+        "why": "Stopping work for an unpaid account protects cash but can end the relationship.",
+        "when": "An account is past due beyond the days the credit terms allow."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Attach the credit report to the open decision it bears on and raise to the finance lead which accounts to chase first when what is owed is holding more cash than the runway can spare.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "credit-terms-approved",
+      "kind": "review",
+      "check": "Are the credit terms approved by the founder, and does every limit, suspension and reinstatement cite what is owed and the terms it rests on?",
+      "reviewer": "finance-lead"
+    }
+  ]
+}

@@ -1,0 +1,84 @@
+{
+  "id": "7-2-5-manage-applicant-information",
+  "function": "human-capital",
+  "process": "7.2.5",
+  "title": "Manage applicant information",
+  "goal": "Every applicant has one record holding only what they shared and what the work needs, each one's stage and classification are current, non-hires are archived with a removal date, and nothing personal is deleted without the founder's decision.",
+  "measures": [
+    "compliance_met"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "human-capital/intake"
+    ]
+  },
+  "reads": [
+    "people",
+    "people/team-plan",
+    "legal/obligations",
+    "legal/risks",
+    "it/connections",
+    "operations/handoff",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "obtain-candidate-background",
+      "do": "Collect only what the candidate gave you and what the role's work requires, ask the candidate directly for anything else rather than inferring it, and leave any check that needs a third party or the candidate's consent to the founder.",
+      "activity": "7.2.5.1",
+      "skill": "recruit-source-and-select-employees",
+      "raises": [
+        "legal-or-terms"
+      ]
+    },
+    {
+      "id": "create-applicant-record",
+      "do": "Write one entry per applicant on the handoff, since Naive has no applicant record route: name, the role applied for, where they came from, the date of each step and the scores, and nothing about the person beyond that.",
+      "activity": "7.2.5.2",
+      "skill": "recruit-source-and-select-employees"
+    },
+    {
+      "id": "track-applicant-data",
+      "do": "Keep each applicant's stage current, record the role's classification and the level of experience the work calls for, and never carry a note from one search into another unless the applicant said it again.",
+      "activity": "7.2.5.3",
+      "skill": "recruit-source-and-select-employees"
+    },
+    {
+      "id": "archive-non-hires",
+      "do": "Archive each non-hire with the date the search closed and the date their record may be removed, taken from the obligation that sets it, and put every removal of a person's data to the founder.",
+      "activity": "7.2.5.4",
+      "skill": "recruit-source-and-select-employees",
+      "raises": [
+        "irreversible-data-change",
+        "legal-or-terms"
+      ]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Open a decision for each removal of personal data that is now due and for any field the venture holds but the work does not need, and tell the strategy lead what the retention dates oblige next.",
+      "skill": "recruit-source-and-select-employees",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "only-what-was-shared",
+      "kind": "review",
+      "check": "Does every applicant entry hold only what the applicant shared or the work requires, and does every non-hire carry a close date and a removal date?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

@@ -1,0 +1,78 @@
+{
+  "id": "6-1-6-identify-and-define-customer-service-strategy",
+  "function": "customer-service",
+  "process": "6.1.6",
+  "title": "Identify and define customer service strategy integrations",
+  "goal": "The support policy names every function and tool support depends on, the handoff that carries work to each and the role that answers it, and every dependency with no owner is in front of the founder.",
+  "measures": [
+    "usage_or_adoption"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "customer-service/intake"
+    ]
+  },
+  "reads": [
+    "support/policy",
+    "support/cases",
+    "it/connections",
+    "product/bugs",
+    "operations/handoff",
+    "people/team",
+    "decisions"
+  ],
+  "steps": [
+    {
+      "id": "map-dependencies",
+      "do": "List what support must hand to another function to finish a contact, a defect to products, buying interest to marketing and sales, a refund to finance, a complaint with legal exposure to risk and compliance, and name the handoff route and the role that answers each.",
+      "skill": "develop-customer-service-strategy"
+    },
+    {
+      "id": "check-the-tools",
+      "do": "Read the connected tools and say which of them carries cases, which record the venture treats as the source of truth, and what breaks when the tool and the case records disagree.",
+      "consider": {
+        "why": "A second place that holds cases quietly becomes the real record, and the venture stops trusting its own.",
+        "when": "The venture has a helpdesk, inbox or chat tool connected."
+      },
+      "skill": "develop-customer-service-strategy"
+    },
+    {
+      "id": "write-the-integration-rules",
+      "do": "Draft into the support policy, for each dependency, what support sends, what it waits for and how long it waits before chasing, and open as a handoff anything another function must agree to first.",
+      "writes": [
+        "support/policy",
+        "operations/handoff/[id]"
+      ],
+      "raises": [
+        "defer-or-route"
+      ],
+      "skill": "develop-customer-service-strategy"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Record each dependency with its owner, name the decision an unowned dependency bears on, and recommend to the growth lead which one to settle first.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "dependencies-owned",
+      "kind": "review",
+      "check": "Does every dependency in the policy name the handoff route and the role that answers it, and is each dependency with no owner open as a decision?",
+      "reviewer": "growth-lead"
+    }
+  ]
+}

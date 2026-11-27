@@ -1,0 +1,154 @@
+{
+  "id": "3-2-4-define-and-manage-channel-strategy",
+  "function": "marketing-and-sales",
+  "process": "3.2.4",
+  "title": "Define and manage channel strategy",
+  "goal": "The channels the venture uses to reach each target segment are chosen by the founder, each with its objective, its role in the buyer's path and the capability it needs, and the order to build them in is written down.",
+  "measures": [
+    "revenue",
+    "usage_or_adoption"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "marketing-and-sales/intake"
+    ]
+  },
+  "reads": [
+    "venture",
+    "foundation/icp",
+    "foundation/constraints",
+    "markets",
+    "customers",
+    "sales/opportunities",
+    "validation/go-to-market",
+    "marketing/sitemap",
+    "marketing/message",
+    "governance/publication-policy",
+    "finance/budget",
+    "people/team-plan",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "determine-channels-to-be-supported",
+      "do": "List the channels that could reach each target segment, drop the ones the records show the venture cannot staff or pay for and say why, and record the shortlist with the segment each channel reaches and where the venture's existing opportunities came from.",
+      "skill": "develop-marketing-strategy",
+      "writes": [
+        "operations/handoff/[id]"
+      ],
+      "activity": "3.2.4.1"
+    },
+    {
+      "id": "establish-channel-objectives",
+      "do": "Write for each shortlisted channel the one number it must deliver, such as replies, qualified opportunities or signups per month, the cost per unit that would make it worth keeping, and the date the result is judged.",
+      "skill": "develop-marketing-strategy",
+      "writes": [
+        "operations/handoff/[id]"
+      ],
+      "activity": "3.2.4.2"
+    },
+    {
+      "id": "determine-channel-role-and-fit-with-target-segments",
+      "do": "Say for each channel which step of the buyer's path it serves, becoming aware, evaluating, buying or staying, and which segment it fits, citing the source field of the opportunities that actually arrived through it.",
+      "skill": "develop-marketing-strategy",
+      "writes": [
+        "operations/handoff/[id]"
+      ],
+      "activity": "3.2.4.3"
+    },
+    {
+      "id": "select-channels-for-target-segments",
+      "do": "Bring the founder and the growth lead the shortlist with each channel's objective, cost and fit, ask which three to test now and which to leave, and record their choice; you never pick a channel.",
+      "ask": true,
+      "skill": "develop-marketing-strategy",
+      "raises": [
+        "set-priorities"
+      ],
+      "activity": "3.2.4.4"
+    },
+    {
+      "id": "identify-required-channel-capabilities",
+      "do": "List what each chosen channel needs before it can run, such as a page, a list, a tool, a credential or a budget line, and open a handoff to the function that owns each missing piece.",
+      "skill": "develop-marketing-strategy",
+      "writes": [
+        "operations/handoff/[id]"
+      ],
+      "raises": [
+        "defer-or-route"
+      ],
+      "activity": "3.2.4.5"
+    },
+    {
+      "id": "evaluate-channel-attributes-and-potential-partners",
+      "do": "For a channel that runs through another company, compare the candidates on reach into the segment, cost, terms and who ends up owning the customer relationship, from public sources only, and never contact one yourself.",
+      "skill": "develop-marketing-strategy",
+      "writes": [
+        "operations/handoff/[id]"
+      ],
+      "consider": {
+        "why": "A channel owned by someone else can take the customer relationship with it, and that is hard to undo.",
+        "when": "A chosen channel runs through another company, a marketplace or a reseller."
+      },
+      "activity": "3.2.4.6"
+    },
+    {
+      "id": "orchestrate-seamless-customer-experience-across-supported-channels",
+      "do": "Write how the same buyer is recognised across the chosen channels: which record holds them, which channel answers first and how fast, what each channel may promise, where a handover happens and what must never be asked twice, and plan the site's part of it in the sitemap.",
+      "skill": "develop-marketing-strategy",
+      "consider": {
+        "why": "A buyer who tells the venture the same thing twice, or hears two different promises, stops trusting it.",
+        "when": "The venture reaches buyers through more than one channel."
+      },
+      "activity": "3.2.4.7"
+    },
+    {
+      "id": "develop-and-manage-execution-roadmap",
+      "do": "Put the chosen channels in the order they will be built, with what each needs first, who does it, the date it starts and the test that decides whether it continues, and recommend the order to the growth lead.",
+      "skill": "develop-marketing-strategy",
+      "writes": [
+        "operations/handoff/[id]"
+      ],
+      "raises": [
+        "set-priorities"
+      ],
+      "activity": "3.2.4.8"
+    },
+    {
+      "id": "define-and-manage-channel-store-format-strategy",
+      "do": "Describe each place the venture appears as a storefront, such as an app store listing, a marketplace page or a physical outlet, say what it shows and what it may not, and record the listing or page in the sitemap.",
+      "skill": "develop-marketing-strategy",
+      "consider": {
+        "why": "A storefront is a page the venture does not control, and what it shows there is a public commitment.",
+        "when": "The venture sells through a physical outlet, a marketplace or an app store."
+      },
+      "activity": "3.2.4.9"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Add each channel's objective, cost and result to the decision it bears on as evidence, and tell the growth lead which channel to stop and which to keep, cheapest qualified opportunity first.",
+      "skill": "develop-marketing-strategy",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "channels-chosen-and-bounded",
+      "kind": "review",
+      "check": "Does every channel the venture is testing have one number it must deliver, a date it is judged on and a named segment, and did the founder choose it?",
+      "reviewer": "growth-lead"
+    }
+  ]
+}

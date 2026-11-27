@@ -1,0 +1,50 @@
+{
+  "id": "13-4-4-sustain-improvement",
+  "function": "capabilities",
+  "process": "13.4.4",
+  "title": "Sustain improvement",
+  "goal": "The improved process is still being run the new way weeks later: its measures are read against the targets the change named, the lessons are written where another process can use them, and each slip has a correction with an owner.",
+  "measures": ["flow_and_lead_time", "cost_or_time_saved"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["capabilities/intake"] },
+  "reads": [
+    "capabilities/processes",
+    "capabilities/postmortems",
+    "operations/handoff",
+    "evidence"
+  ],
+  "steps": [
+    {
+      "id": "monitor-improved-process-performance",
+      "do": "Read the improved process's cycle time, rework rate and first-pass yield against the targets the change named, over enough runs to tell a change from noise, and write them with the as-of date.",
+      "skill": "manage-change",
+      "activity": "13.4.4.1",
+      "writes": ["capabilities/processes/[id]"],
+      "raises": ["domain-fact"]
+    },
+    {
+      "id": "capture-and-reuse-lessons-learned",
+      "do": "Write what this change taught about changing this venture, what made it stick or slip, and name the other process records where the same lesson applies so the next change starts from it.",
+      "skill": "manage-change",
+      "activity": "13.4.4.2",
+      "writes": ["capabilities/postmortems/[id]", "capabilities/processes/[id]"]
+    },
+    {
+      "id": "take-corrective-action",
+      "do": "For each measure that slipped back toward where it was, name the step where runs now fall back, propose the one correction, and open a handoff for it with the measure that will judge it.",
+      "skill": "manage-change",
+      "activity": "13.4.4.3",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Raise to the strategy lead whether the improvement has held, needs one more correction or should be reverted to the old way on the record.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "held-or-slipped-stated", "kind": "review", "check": "Does the run say plainly whether the improvement held, over how many runs, and does every slip have one named correction with an owner?", "reviewer": "strategy-lead" }
+  ]
+}

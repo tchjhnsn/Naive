@@ -1,0 +1,69 @@
+{
+  "id": "4-2-5-manage-suppliers",
+  "function": "supply-chain",
+  "process": "4.2.5",
+  "title": "Manage suppliers",
+  "goal": "Every supplier record is current, each supplier has a delivery and quality score computed from what actually arrived, and any supplier whose performance has slipped has a keep, condition or suspend decision prepared for the founder.",
+  "measures": ["cost_or_time_saved", "flow_and_lead_time"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["supply-chain/intake"] },
+  "reads": [
+    "supply-chain/suppliers",
+    "supply-chain/purchase-orders",
+    "product",
+    "product/bugs",
+    "support/cases",
+    "finance/spend",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "monitor-manage-supplier-information",
+      "do": "Bring each supplier record up to date, the contact who answers, the bank and invoicing details the founder confirmed, the certifications and their expiry, the current quoted lead time and minimum order, and the date each field was last confirmed.",
+      "skill": "procure-materials-and-services",
+      "activity": "4.2.5.1",
+      "writes": ["supply-chain/suppliers/[id]"]
+    },
+    {
+      "id": "prepare-analyze-procurement-and-supplier-performance",
+      "do": "Score each supplier from the closed orders, the share delivered on time and in full, the days late on average, the defect rate of what arrived and the difference between the price quoted and the price invoiced, and write the score and the orders it was computed from on the record.",
+      "skill": "procure-materials-and-services",
+      "activity": "4.2.5.2",
+      "writes": ["supply-chain/suppliers/[id]"],
+      "raises": ["domain-fact"]
+    },
+    {
+      "id": "support-inventory-and-production-processes",
+      "do": "Tell production and inventory what the supplier side now means for them, which parts will arrive late, which quantities changed and which planned build must move, and put that list on the handoff for the schedule to be reworked against.",
+      "skill": "procure-materials-and-services",
+      "activity": "4.2.5.3"
+    },
+    {
+      "id": "monitor-quality-of-product-delivered",
+      "do": "Count the defects found at receipt, in the build and in the field from `product/bugs` and `support/cases`, attribute each one to the supplier and lot it came from where that can be traced, and record the rate on the supplier's record.",
+      "skill": "procure-materials-and-services",
+      "activity": "4.2.5.4",
+      "writes": ["supply-chain/suppliers/[id]"],
+      "raises": ["domain-fact"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "For each supplier that is due for re-evaluation or has slipped, add a keep, condition or suspend decision with its score, the orders behind it and what switching would cost in weeks and money, and hand the order of that work to the product lead.",
+      "writes": ["decisions/*"],
+      "raises": ["legal-or-terms", "set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "scores-traceable-to-orders",
+      "kind": "review",
+      "check": "Does every supplier score name the closed orders it was computed from, and does every slipped or due supplier have a keep, condition or suspend decision open?",
+      "reviewer": "product-lead"
+    }
+  ]
+}

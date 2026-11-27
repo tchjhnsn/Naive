@@ -1,0 +1,71 @@
+{
+  "id": "2-3-5-develop-recall-strategy",
+  "function": "products",
+  "process": "2.3.5",
+  "title": "Develop recall strategy",
+  "goal": "Before it is needed, the venture has on record what it would have to pull back and from whom, how it would stop the thing spreading, who it would tell in what order, and the notice the founder has already approved.",
+  "measures": ["learning", "usage_or_adoption"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["products/intake"] },
+  "reads": [
+    "product",
+    "product/capabilities",
+    "product/bugs",
+    "customers",
+    "support/policy",
+    "support/cases",
+    "legal/obligations",
+    "legal/risks",
+    "it/connections",
+    "supply-chain/suppliers",
+    "governance/publication-policy",
+    "decisions"
+  ],
+  "steps": [
+    {
+      "id": "name-what-could-be-recalled",
+      "do": "List what the venture would have to pull back if this product harmed someone, lost their data or gave a wrong answer that mattered (a release or version, a batch of units, a published file, a model output already acted on), and say for each where the record of who has it lives and whether the venture can produce that list today.",
+      "skill": "develop-products-and-services",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "draft-the-recall-steps",
+      "do": "For each case, write the steps in order: how the venture would learn of it, how it stops it spreading within the first hour (turning a release off, revoking a key, halting a shipment), how affected customers are identified, what is recorded while it happens, and who does each step when the founder is asleep or away.",
+      "skill": "develop-products-and-services",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "name-who-must-be-told",
+      "do": "Say who has to be told in what order and within what time (the customers affected, the ones not affected who will hear anyway, a supplier, a platform, a regulator the legal records name, an insurer) and what each one needs to hear, reading the publication policy for what the venture may say publicly.",
+      "skill": "develop-products-and-services",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "approve-the-notice-and-the-promise",
+      "do": "Ask the founder what the venture would promise in a recall and what it would not, draft the notice it would send in the venture's own voice with the facts left as blanks to fill at the time, and put it to the founder for approval now, since only the founder speaks to customers and the public.",
+      "skill": "develop-products-and-services",
+      "ask": true,
+      "writes": ["decisions/*"],
+      "raises": ["public-commitment"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Attach the strategy to the decision it serves, list what the venture cannot do today that the strategy assumes (knowing who has which version first among them), and raise to the product lead what to build so the strategy would actually work.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "recall-runnable",
+      "kind": "review",
+      "check": "For each thing that could be recalled, can the venture say today who has it and how it would be stopped within the first hour, and has the founder approved the notice that would be sent?",
+      "reviewer": "product-lead"
+    }
+  ]
+}

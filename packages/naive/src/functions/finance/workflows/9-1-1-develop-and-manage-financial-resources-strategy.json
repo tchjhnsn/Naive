@@ -1,0 +1,84 @@
+{
+  "id": "9-1-1-develop-and-manage-financial-resources-strategy",
+  "function": "finance",
+  "process": "9.1.1",
+  "title": "Develop and manage financial resources strategy",
+  "goal": "The venture has a written money plan for the next four quarters: what the money must pay for, where it stands today, which funding routes are open, and the founder's chosen route recorded as a decision.",
+  "measures": [
+    "revenue",
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "finance/intake"
+    ]
+  },
+  "reads": [
+    "venture",
+    "foundation/telos",
+    "foundation/goals",
+    "foundation/constraints",
+    "purpose/money/summary",
+    "money",
+    "finance/budget",
+    "finance/spend",
+    "governance/ownership",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "name-what-money-must-do",
+      "do": "Read the telos, the goals and the constraints and write one line per goal saying what the money has to pay for over the next four quarters, the date the goal needs it by and the measure it moves.",
+      "skill": "perform-planning-and-management-accounting"
+    },
+    {
+      "id": "state-the-position",
+      "do": "Rewrite the money summary from the accounts, the spend register and the budget so cash, monthly burn, revenue booked and months of runway are current, each figure citing the record it came from.",
+      "skill": "perform-planning-and-management-accounting",
+      "writes": [
+        "purpose/money/summary"
+      ]
+    },
+    {
+      "id": "lay-out-the-routes",
+      "do": "Set out each way the venture could fund that plan, revenue from customers, cutting recurring spend, grants, debt and outside equity, with what each would cost, what it would commit the founder to, how long it takes to land and what it does to runway.",
+      "skill": "perform-planning-and-management-accounting"
+    },
+    {
+      "id": "recommend-a-route",
+      "do": "Recommend one route with the evidence for it and the point at which it would have to change, ask the founder what they will and will not accept, and leave taking money or giving up ownership to them as a decision.",
+      "skill": "perform-planning-and-management-accounting",
+      "ask": true,
+      "raises": [
+        "ownership-or-control",
+        "legal-or-terms"
+      ]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Attach the plan and the position to the open decision each one bears on as evidence, and raise to the finance lead which part of the plan to fund first if the routes cannot cover all of it.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "strategy-cites-records",
+      "kind": "review",
+      "check": "Does the money plan name the goals it funds, cite the account, spend and budget records behind every figure, and leave the funding route to the founder?",
+      "reviewer": "finance-lead"
+    }
+  ]
+}

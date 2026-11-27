@@ -1,0 +1,104 @@
+{
+  "id": "7-5-2-manage-and-administer-benefits",
+  "function": "human-capital",
+  "process": "7.5.2",
+  "title": "Manage and administer benefits",
+  "goal": "Each benefit the founder decided on is set up with its provider, who is covered from when, every person's enrolment choice is recorded, each claim is tracked to an answer, and every provider invoice matches who was actually covered.",
+  "measures": [
+    "compliance_met",
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "human-capital/intake"
+    ]
+  },
+  "reads": [
+    "people",
+    "people/founders",
+    "finance/budget",
+    "finance/spend",
+    "purpose/money/summary",
+    "legal/obligations",
+    "it/connections",
+    "operations/handoff",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "deliver-benefits-program",
+      "do": "Set up each decided benefit with the provider the founder chose: who is covered, from which date, what it costs the venture each month, where the policy document is kept and who at the provider the venture deals with.",
+      "activity": "7.5.2.1",
+      "skill": "reward-and-retain-employees",
+      "raises": [
+        "spend-money"
+      ],
+      "consider": {
+        "why": "Nothing is delivered until the founder has chosen a benefit and a provider.",
+        "when": "The founder has decided on a benefit and chosen a provider."
+      }
+    },
+    {
+      "id": "administer-benefit-enrollment",
+      "do": "Collect each person's enrolment choices from the person themselves, record what they chose and the date, keep the choice itself out of any record that does not need it, and ask the founder for anything that needs a signature.",
+      "activity": "7.5.2.2",
+      "skill": "reward-and-retain-employees",
+      "ask": true,
+      "consider": {
+        "why": "Enrolment exists only where a benefit is running.",
+        "when": "A benefit is set up and someone is eligible for it."
+      }
+    },
+    {
+      "id": "process-benefits-claims",
+      "do": "Record each claim a person makes with its date and what it concerns, pass it into the provider's own process, track it to an answer, and never judge a claim yourself or look at more of it than the handover needs.",
+      "activity": "7.5.2.3",
+      "skill": "reward-and-retain-employees",
+      "consider": {
+        "why": "Claims arise only under a running benefit, and the provider decides them.",
+        "when": "A person has made a claim under a benefit the venture provides."
+      }
+    },
+    {
+      "id": "reconcile-benefits",
+      "do": "Set each provider's invoice against who was actually covered that month from `people`, and raise every difference with the amount, the month and the person it concerns, for the founder to settle with the provider.",
+      "activity": "7.5.2.4",
+      "skill": "reward-and-retain-employees",
+      "raises": [
+        "spend-money"
+      ],
+      "consider": {
+        "why": "Providers bill for people who have left, which only a month-by-month check catches.",
+        "when": "A provider has invoiced the venture for a benefit."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Open a decision for every provider invoice difference and every benefit change the founder must make, attach the reconciliation as evidence, and tell the strategy lead what the benefits cost the venture this period.",
+      "skill": "reward-and-retain-employees",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities",
+        "spend-money"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "coverage-matches-invoices",
+      "kind": "review",
+      "check": "Does every provider invoice in this run match the people the records show were covered that month, with each difference raised?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

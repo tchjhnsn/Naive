@@ -1,0 +1,96 @@
+{
+  "id": "4-1-2-manage-demand-for-products",
+  "function": "supply-chain",
+  "process": "4.1.2",
+  "title": "Manage demand for products",
+  "goal": "Each product has one demand forecast the venture plans against, with its basis, the quantity it can promise a customer today, and every revision recorded with what caused it.",
+  "measures": ["cost_or_time_saved", "flow_and_lead_time"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["supply-chain/intake"] },
+  "reads": [
+    "product",
+    "deals",
+    "sales/opportunities",
+    "customers",
+    "foundation/icp",
+    "supply-chain/purchase-orders",
+    "supply-chain/suppliers",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "develop-baseline-demand-forecasts",
+      "do": "Build a baseline forecast of units per product per month from the orders and pre-orders in `deals` and the pipeline in `sales/opportunities`, and where there is no sales history say so and carry the founder's stated plan instead, marked unproven.",
+      "skill": "plan-for-and-align-supply-chain-resources",
+      "activity": "4.1.2.1"
+    },
+    {
+      "id": "collaborate-demand-with-customers",
+      "do": "Draft the few questions that would turn a guess into a commitment, how many units by when and under what condition, for the founder to ask the named buyers, and record each answer on the handoff with the date and who said it.",
+      "skill": "plan-for-and-align-supply-chain-resources",
+      "activity": "4.1.2.2",
+      "consider": {
+        "why": "A buyer who will commit to a quantity and a date removes most of the forecast error for a venture with few accounts.",
+        "when": "The venture sells to named accounts rather than to anonymous buyers."
+      }
+    },
+    {
+      "id": "develop-demand-consensus-forecast",
+      "do": "Put your baseline next to the founder's plan and any customer commitment, ask the founder to settle the one number per product per month the venture will buy and build against, and record which of the three it came from.",
+      "skill": "plan-for-and-align-supply-chain-resources",
+      "activity": "4.1.2.3",
+      "ask": true
+    },
+    {
+      "id": "determine-available-to-promise",
+      "do": "Work out how many units the venture can promise for each of the next few weeks from stock on hand plus the quantities on open purchase orders with their confirmed dates, minus what is already sold, and give the founder the date beyond which nothing can be promised.",
+      "skill": "plan-for-and-align-supply-chain-resources",
+      "activity": "4.1.2.4"
+    },
+    {
+      "id": "monitor-activity-against-demand-forecast",
+      "do": "Compare what actually sold with the consensus forecast for the period that closed, revise the forecast where the gap is not noise, and record each revision with the reason and the date.",
+      "skill": "plan-for-and-align-supply-chain-resources",
+      "activity": "4.1.2.5"
+    },
+    {
+      "id": "evaluate-and-revise-demand-forecasting-approach",
+      "do": "Judge whether the way the forecast is made is worth keeping, comparing it with a plain rule such as repeating last month, and propose the simpler method where it is no worse.",
+      "skill": "plan-for-and-align-supply-chain-resources",
+      "activity": "4.1.2.6",
+      "consider": {
+        "why": "A forecasting method that does no better than last month's sales costs time and gives false confidence.",
+        "when": "At least three months of sales have closed against a recorded forecast."
+      }
+    },
+    {
+      "id": "measure-demand-forecast-accuracy",
+      "do": "Compute the forecast error per product for each closed month as the absolute difference over actual sales, show the run of errors rather than one number, and say in which direction the forecast is biased.",
+      "skill": "plan-for-and-align-supply-chain-resources",
+      "activity": "4.1.2.7",
+      "consider": {
+        "why": "Safety stock and reorder points are only as good as the known error of the forecast behind them.",
+        "when": "At least three months of sales have closed against a recorded forecast."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Record the consensus forecast and its measured error as a fact, name the decisions that move with it, how much to order and what to promise a customer, and hand the order of that work to the product lead.",
+      "writes": ["decisions/*"],
+      "raises": ["domain-fact", "set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "one-forecast-with-a-basis",
+      "kind": "review",
+      "check": "Is there exactly one forecast per product per month that the venture plans against, does it say whether it came from orders, a customer commitment or the founder's plan, and is the quantity that can be promised today stated with a date?",
+      "reviewer": "product-lead"
+    }
+  ]
+}

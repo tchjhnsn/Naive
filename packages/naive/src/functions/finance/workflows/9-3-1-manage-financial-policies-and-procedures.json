@@ -1,0 +1,104 @@
+{
+  "id": "9-3-1-manage-financial-policies-and-procedures",
+  "function": "finance",
+  "process": "9.3.1",
+  "title": "Manage financial policies and procedures",
+  "goal": "Every accounting policy the venture's figures depend on is written and chosen by the founder, the approval limit for spending is set, and each policy names the figure and the records it governs.",
+  "measures": [
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "finance/intake"
+    ]
+  },
+  "reads": [
+    "venture",
+    "governance/decision-rights",
+    "governance/delegation",
+    "foundation/constraints",
+    "finance/spend",
+    "finance/budget",
+    "money",
+    "it/connections",
+    "legal/obligations",
+    "purpose/money/summary"
+  ],
+  "steps": [
+    {
+      "id": "negotiate-service-levels",
+      "do": "Prepare the comparison and the questions for a bookkeeper, accountant, payroll provider or bank, what each would do, by when, for how much and what happens when they are late, and hand it to the founder, who negotiates and signs.",
+      "skill": "perform-general-accounting-and-reporting",
+      "ask": true,
+      "activity": "9.3.1.1",
+      "raises": [
+        "legal-or-terms"
+      ],
+      "consider": {
+        "why": "What a bookkeeper or accountant owes the venture, and by when, is worth agreeing before the first close.",
+        "when": "The venture is about to engage a bookkeeper, accountant, payroll provider or bank on agreed service levels."
+      }
+    },
+    {
+      "id": "accounting-policies",
+      "do": "Draft the policies the figures rest on, cash or accrual, the fiscal year end, when revenue is recognized, the currency the books are kept in and the amount above which a purchase is capitalized, with the trade-off in each, and ask the founder to choose.",
+      "skill": "perform-general-accounting-and-reporting",
+      "ask": true,
+      "activity": "9.3.1.2",
+      "raises": [
+        "legal-or-terms"
+      ]
+    },
+    {
+      "id": "publish-policies",
+      "do": "Write the chosen policies on one page naming the figure each governs and the date it took effect, put the page on the handoff, and say which records and which other functions' agents must follow it.",
+      "skill": "perform-general-accounting-and-reporting",
+      "activity": "9.3.1.3"
+    },
+    {
+      "id": "approval-limits",
+      "do": "Read the venture's decision rights and delegation, propose the amount above which a spend, a payment or a commitment needs the founder's own approval and who may approve below it, and leave the setting of it to them, because it is their authority being handed out.",
+      "skill": "perform-general-accounting-and-reporting",
+      "ask": true,
+      "activity": "9.3.1.4",
+      "raises": [
+        "spend-money"
+      ]
+    },
+    {
+      "id": "financial-systems",
+      "do": "Compare the bank, bookkeeping, invoicing and payment tools the venture uses or could use against what the policies and the records need, with the cost, the lock-in and the records each one would make visible, and bring the founder the choice.",
+      "skill": "perform-general-accounting-and-reporting",
+      "activity": "9.3.1.5",
+      "raises": [
+        "spend-money"
+      ]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "File each unchosen policy and the approval limit as open decisions with the options and the recommendation, and raise to the finance lead which of them blocks other work first.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "policies-chosen-by-founder",
+      "kind": "review",
+      "check": "Has the founder chosen each accounting policy and the approval limit, and does the published page name the figure and the records each policy governs?",
+      "reviewer": "finance-lead"
+    }
+  ]
+}

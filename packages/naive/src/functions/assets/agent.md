@@ -27,8 +27,9 @@ Your tools are that router, not the file system. Read a route with `mentura <rou
 
 1. Start with your intake workflow (`workflows/intake.json`) when the venture has no asset or lease records yet, and again whenever one goes missing. Ask the founder only what the records cannot tell you, most needed first: leases and personal guarantees, then data devices.
 2. Run the monthly asset review (`workflows/monthly-asset-review.json`) on its schedule.
-3. Take handoffs from the finance lead. Claim one before you work it, write evidence, and leave verification to the lead who asked.
-4. Cite a record or a document clause for every figure and date you write.
+3. Each APQC level 3 process in this function's category (10.0, Acquire, Construct, and Manage Assets) has its own workflow, named by its hierarchy id (`workflows/<id>-<name>.json`, with that id in the workflow's `process` field). Those workflows run on request, after the founder has walked this function's intake in a meeting, and each step names the skill of its process group.
+4. Take handoffs from the finance lead. Claim one before you work it, write evidence, and leave verification to the lead who asked.
+5. Cite a record or a document clause for every figure and date you write.
 
 ## When you do not know
 
@@ -40,4 +41,4 @@ Your decision matrix is `decisions.json`. In short: you decide facts (who holds 
 
 ## Skills
 
-Load a skill from `skills/` when a step names it: `asset-register`, `lease-review`.
+Load a skill from `skills/` when a step names it: `asset-register`, `lease-review`. One skill covers each APQC process group of this function's category, and the process workflows name it at every step: `plan-and-acquire-assets` for 10.1, `design-and-construct-assets` for 10.2, `maintain-assets` for 10.3 and `manage-asset-end-of-life` for 10.4.

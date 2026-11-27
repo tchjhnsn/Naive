@@ -1,0 +1,49 @@
+{
+  "id": "13-9-1-determine-environmental-health-and-safety-impacts",
+  "function": "capabilities",
+  "process": "13.9.1",
+  "title": "Determine environmental health and safety impacts",
+  "goal": "The venture has a dated finding on what its operations physically do to people and the environment: either the list of real impacts with how they were judged, or a written finding that it has none yet and the condition that would change that.",
+  "measures": ["cost_or_time_saved"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["capabilities/intake"] },
+  "reads": [
+    "venture",
+    "capabilities/processes",
+    "assets/register",
+    "assets/leases",
+    "supply-chain/suppliers",
+    "legal/obligations",
+    "legal/risks"
+  ],
+  "steps": [
+    {
+      "id": "evaluate-environmental-impact",
+      "do": "Read what the venture actually does, its products, its services and its operations, and list every physical impact it has, a place people work in, goods shipped, hardware made, waste or energy bought at scale, and when there is none write that finding with its date and the condition that would create one.",
+      "skill": "manage-environmental-health-and-safety-ehs",
+      "activity": "13.9.1.1",
+      "writes": ["capabilities/processes/[id]"]
+    },
+    {
+      "id": "conduct-ehs-audits",
+      "do": "Walk the place where work is done against the requirements that bind it, record each finding with the requirement it fails and a photograph or note as evidence, and hand anything that needs a qualified inspector to the founder to arrange.",
+      "skill": "manage-environmental-health-and-safety-ehs",
+      "activity": "13.9.1.2",
+      "writes": ["operations/handoff/[id]"],
+      "consider": {
+        "why": "An audit is only worth running once the venture has a place, equipment or materials that could hurt someone.",
+        "when": "The venture has a workplace others enter, handles physical goods or operates equipment."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Record the finding as evidence on the handoff, and raise to the founder anything that looks like a legal duty, since whether a duty applies is for the founder and counsel.",
+      "writes": ["decisions/*"],
+      "raises": ["legal-or-terms"]
+    }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "finding-dated-either-way", "kind": "review", "check": "Is there a dated finding on the venture's physical impacts, including a plain statement of none where that is the truth, with the condition that would change it?", "reviewer": "strategy-lead" }
+  ]
+}

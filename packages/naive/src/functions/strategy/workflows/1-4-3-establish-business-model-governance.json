@@ -1,0 +1,60 @@
+{
+  "id": "1-4-3-establish-business-model-governance",
+  "function": "strategy",
+  "process": "1.4.3",
+  "title": "Establish business model governance",
+  "goal": "Every box of the business model has a named owner, a decision class for changing it and a review cadence the founder set, and every gap between that and the venture's decision rights is open as a decision.",
+  "measures": ["learning"],
+  "trigger": { "kind": "request" },
+  "requires": {
+    "meetings": ["strategy/intake"]
+  },
+  "reads": [
+    "identity/lean-canvas",
+    "governance/decision-rights",
+    "governance/delegation",
+    "governance/pillar",
+    "operations/element-owners",
+    "operations/lead",
+    "validation/plan",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "name-the-owner-of-each-box",
+      "do": "Read the lean canvas and the element owners and write, for each box, the function that owns its record and the role accountable for it, naming every box whose owner is an agent where the work is a commitment a person must make.",
+      "skill": "develop-and-maintain-business-models"
+    },
+    {
+      "id": "name-the-class-for-each-change",
+      "do": "For each box write which decision class a change to it falls under, checked against the venture's decision rights and this function's matrix, and name every change that would be a one-way door and so is never an agent's.",
+      "skill": "develop-and-maintain-business-models"
+    },
+    {
+      "id": "propose-the-review-cadence",
+      "do": "Propose how often the model is reviewed and what event forces a review early, a price change, a lost channel or a competitor signal, and ask the founder to set it, because no record holds a cadence and only they can commit the time.",
+      "skill": "develop-and-maintain-business-models",
+      "ask": true,
+      "raises": ["set-priorities"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Open one decision for each box whose owner, class or cadence the founder must settle, attach the gap between the model and the decision rights as its evidence, and hand any change to the delegation itself to governance.",
+      "writes": ["decisions/*", "operations/handoff/[id]"],
+      "raises": ["strategy-or-constitution", "defer-or-route"]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "every-box-owned-and-classed",
+      "kind": "review",
+      "check": "Does every box of the model name an accountable role and the decision class a change to it falls under, with every gap against the venture's decision rights open as a decision?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

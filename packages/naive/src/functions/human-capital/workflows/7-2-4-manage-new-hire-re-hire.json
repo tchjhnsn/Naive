@@ -1,0 +1,97 @@
+{
+  "id": "7-2-4-manage-new-hire-re-hire",
+  "function": "human-capital",
+  "process": "7.2.4",
+  "title": "Manage new hire/re-hire",
+  "goal": "The selected person has a written offer the founder sent and they accepted, and the venture's records show who they are, their role, their terms, their classification and their start date.",
+  "measures": [
+    "cost_or_time_saved",
+    "compliance_met"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "human-capital/intake"
+    ]
+  },
+  "reads": [
+    "people",
+    "people/founders",
+    "people/team-plan",
+    "governance/ownership",
+    "governance/founder-agreement",
+    "governance/internal-terms",
+    "finance/budget",
+    "purpose/money/summary",
+    "legal/obligations",
+    "operations/handoff",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "draw-up-and-make-offer",
+      "do": "Draft the offer from the approved requisition: role, start date, cash, any equity with its vesting, assignment of what the person makes, the classification and the notice period, mark every number the founder must confirm, and hand it to the founder to send, because you never send an offer.",
+      "activity": "7.2.4.1",
+      "skill": "recruit-source-and-select-employees",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "legal-or-terms",
+        "ownership-or-control",
+        "spend-money"
+      ]
+    },
+    {
+      "id": "negotiate-offer",
+      "do": "Give the founder the room the venture has on each term, what each concession costs over a year, and the point past which the offer is worse than leaving the role empty, then ask the founder what was agreed; the founder does all the talking.",
+      "activity": "7.2.4.2",
+      "skill": "recruit-source-and-select-employees",
+      "ask": true,
+      "raises": [
+        "spend-money",
+        "ownership-or-control"
+      ]
+    },
+    {
+      "id": "hire-candidate",
+      "do": "Once the founder confirms the agreement is signed, record the person in `people` with their role, terms, classification, start date and the date of the agreement, and hand onboarding to the onboarding workflow.",
+      "activity": "7.2.4.3",
+      "skill": "recruit-source-and-select-employees",
+      "ask": true,
+      "writes": [
+        "people",
+        "decisions/*"
+      ],
+      "raises": [
+        "legal-or-terms"
+      ]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Close the requisition's decision with what was agreed, open a decision for anything the founder left open such as an equity grant or a classification, and tell the strategy lead what the hire changes about the team plan.",
+      "skill": "recruit-source-and-select-employees",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "offer-sent-by-the-founder",
+      "kind": "review",
+      "check": "Was every offer sent by the founder, and does the people record show the person's role, terms, classification, start date and the agreement's date?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

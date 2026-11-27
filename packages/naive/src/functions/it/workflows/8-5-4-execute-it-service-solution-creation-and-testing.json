@@ -1,0 +1,47 @@
+{
+  "id": "8-5-4-execute-it-service-solution-creation-and-testing",
+  "function": "it",
+  "process": "8.5.4",
+  "title": "Execute IT service/solution creation and testing",
+  "goal": "The solution is built, integrated, tested against the requirements it was asked for and packaged so it can be deployed and rolled back, with the test evidence and every exception on the handoff.",
+  "measures": ["cost_or_time_saved", "compliance_met"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["it/intake"] },
+  "reads": [
+    "product",
+    "product/capabilities",
+    "product/bugs",
+    "foundation/requirements",
+    "it/connections",
+    "operations/handoff",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "development-lifecycle",
+      "do": "Run the build end to end for this solution: restate each requirement as something that can be checked and get the founder's yes where a requirement is ambiguous, write the design against the architecture, build and unit-test each component, integrate it with the systems the design names, validate the whole against the requirements with the checks written down and run, package it with its configuration and a way back to the previous version, and record every departure from the standards as an exception with its reason, putting the test output and the package on the handoff as evidence.",
+      "skill": "develop-and-manage-services-solutions",
+      "activity": "8.5.4.1",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Add the test evidence and each exception to the decision the build serves, name any requirement the build could not meet, and raise to the product lead what should be built next and what is left unfinished.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "tested-against-requirements",
+      "kind": "review",
+      "check": "Does every requirement the build was asked for name a check that was run with its output on the handoff, is the package deployable with a way back, and is every departure from the standards recorded as an exception?",
+      "reviewer": "product-lead"
+    }
+  ]
+}

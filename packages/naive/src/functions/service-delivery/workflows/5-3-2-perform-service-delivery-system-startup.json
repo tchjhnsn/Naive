@@ -1,0 +1,79 @@
+{
+  "id": "5-3-2-perform-service-delivery-system-startup",
+  "function": "service-delivery",
+  "process": "5.3.2",
+  "title": "Perform service delivery system startup",
+  "goal": "Before an engagement's first deliverable is worked, every part its offer needs is in place and reachable, the procedure has been run once on something that is not the client's work, and the founder has confirmed the start date on the engagement.",
+  "measures": [
+    "flow_and_lead_time",
+    "revenue"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "service-delivery/intake"
+    ]
+  },
+  "reads": [
+    "service-delivery/engagements",
+    "service-delivery/offers",
+    "it/connections",
+    "operations/handoff",
+    "customers",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "provision-and-check",
+      "do": "For the engagement about to start, check that each part its offer's prerequisites name exists and the venture can reach it, set up what the venture owns itself, and list what is missing with who must provide it; ask nobody outside the venture for anything.",
+      "skill": "manage-and-operate-service-delivery-system",
+      "writes": [
+        "operations/handoff/[id]"
+      ]
+    },
+    {
+      "id": "dry-run",
+      "do": "Run the first steps of the offer's procedure once on test data or an internal case, record what broke, what was missing and how long it took, and correct the procedure before any of the client's work is touched.",
+      "skill": "manage-and-operate-service-delivery-system",
+      "writes": [
+        "service-delivery/offers/[id]",
+        "operations/handoff/[id]"
+      ]
+    },
+    {
+      "id": "confirm-start",
+      "do": "Put the readiness list and the dry run's result in front of the founder, and once the founder confirms, write the start date on the engagement and open the handoff for its first deliverable.",
+      "skill": "manage-and-operate-service-delivery-system",
+      "ask": true,
+      "writes": [
+        "service-delivery/engagements/[id]",
+        "operations/handoff/[id]"
+      ]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Record what is still missing on the decision that bears on the start, and recommend to the product lead whether this engagement starts now or waits for the missing part.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "ready-before-the-client-work",
+      "kind": "review",
+      "check": "Was every prerequisite checked and the procedure run once on something that is not the client's work before the first deliverable was opened, and did the founder confirm the start?",
+      "reviewer": "product-lead"
+    }
+  ]
+}

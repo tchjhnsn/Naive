@@ -1,0 +1,136 @@
+{
+  "id": "5-1-2-develop-service-delivery-strategies",
+  "function": "service-delivery",
+  "process": "5.1.2",
+  "title": "Develop service delivery strategies",
+  "goal": "Every service the venture sells is an offer whose outcome, inclusions, exclusions, price model, duration and prerequisites a person approved, each live offer has a written delivery procedure, and the hours and parts delivery depends on are named with the limit the venture will not pass.",
+  "measures": [
+    "revenue",
+    "flow_and_lead_time",
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "service-delivery/intake"
+    ]
+  },
+  "reads": [
+    "service-delivery/offers",
+    "service-delivery/engagements",
+    "foundation/telos",
+    "foundation/goals",
+    "validation/pricing",
+    "product",
+    "customers",
+    "it/connections",
+    "supply-chain/suppliers",
+    "assets/register",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "delivery-goals",
+      "do": "Read the venture's telos and goals and propose the delivery targets for the next period (the on-time share, the days from signature to the first deliverable, the forecast margin and the cap on the founder's weekly delivery hours), each tied to one named goal, and ask the founder to set the numbers.",
+      "skill": "establish-service-delivery-governance-and",
+      "activity": "5.1.2.1",
+      "ask": true,
+      "raises": [
+        "set-priorities"
+      ]
+    },
+    {
+      "id": "labor-policies",
+      "do": "Draft the rules for who may do delivery work and on what terms (which work agents do, which the founder keeps, the weekly hours cap, the response time promised to clients, what a supplier may see of a client's data) and bring any payment for delivery work to the founder as a decision.",
+      "skill": "establish-service-delivery-governance-and",
+      "activity": "5.1.2.2",
+      "raises": [
+        "spend-money"
+      ],
+      "consider": {
+        "why": "Delivery work done by anyone other than the founder needs its terms settled before it is handed over.",
+        "when": "The venture pays someone other than the founder to deliver, or has promised a client a response time."
+      }
+    },
+    {
+      "id": "resource-availability",
+      "do": "Add up the hours every committed deliverable still needs from the engagements, compare them week by week with the hours the founder and the agents actually have for the next eight weeks, and put the week-by-week figure and its sources on the handoff.",
+      "skill": "establish-service-delivery-governance-and",
+      "activity": "5.1.2.3",
+      "writes": [
+        "operations/handoff/[id]"
+      ]
+    },
+    {
+      "id": "network-and-supply-constraints",
+      "do": "List, for each live offer, the tools, licences, accounts, client inputs and suppliers its delivery depends on with the notice each one needs, write them as that offer's prerequisites, and name on the handoff every part only one supplier provides.",
+      "skill": "establish-service-delivery-governance-and",
+      "activity": "5.1.2.4",
+      "writes": [
+        "service-delivery/offers/[id]",
+        "operations/handoff/[id]"
+      ]
+    },
+    {
+      "id": "delivery-process",
+      "do": "Write each live offer's delivery procedure as ordered steps from signature to acceptance, with the check that ends each step and the days it usually takes, and set the offer's runbook and duration_days from it.",
+      "skill": "establish-service-delivery-governance-and",
+      "activity": "5.1.2.5",
+      "writes": [
+        "service-delivery/offers/[id]"
+      ]
+    },
+    {
+      "id": "review-procedures",
+      "do": "Replay each live offer's procedure against the last two closed engagements, mark every step that was skipped, added or ran long, and either correct the procedure or record on the handoff why the exception stands.",
+      "skill": "establish-service-delivery-governance-and",
+      "activity": "5.1.2.6",
+      "writes": [
+        "service-delivery/offers/[id]",
+        "operations/handoff/[id]"
+      ],
+      "consider": {
+        "why": "A procedure nobody followed describes a hope, not the delivery.",
+        "when": "Two or more engagements have closed since the procedure was last reviewed."
+      }
+    },
+    {
+      "id": "workplace-and-infrastructure",
+      "do": "Say where each offer is delivered and what it needs there (the client site, the room, the equipment, the network, the licences on the machine that does the work), name what is missing, and bring any purchase or lease to the founder as a decision.",
+      "skill": "establish-service-delivery-governance-and",
+      "activity": "5.1.2.7",
+      "raises": [
+        "spend-money"
+      ],
+      "consider": {
+        "why": "Work done on a client site, or with equipment the venture does not have, cannot be promised a date until the place and the kit are settled.",
+        "when": "An offer is delivered on a client site, or needs equipment, space or a licence the venture does not already hold."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Write each proposed offer, price model, duration or procedure change as a decision for the founder with the evidence behind it, and say which one to settle first.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "strategy-or-constitution"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "offers-deliverable-as-written",
+      "kind": "review",
+      "check": "Could someone other than the founder deliver each live offer from its procedure and prerequisites alone, and is every price, inclusion and exclusion one a person approved?",
+      "reviewer": "product-lead"
+    }
+  ]
+}

@@ -1,0 +1,83 @@
+{
+  "id": "5-3-3-operate-service-delivery-system",
+  "function": "service-delivery",
+  "process": "5.3.3",
+  "title": "Operate service delivery system",
+  "goal": "Delivery work is moving: every open delivery handoff carries its current status and its evidence, every interruption since the last run is recorded with the days it cost, and every deliverable waiting on the client is listed with the message for the founder to send.",
+  "measures": [
+    "flow_and_lead_time",
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "service-delivery/intake"
+    ]
+  },
+  "reads": [
+    "service-delivery/engagements",
+    "service-delivery/offers",
+    "operations/handoff",
+    "evidence",
+    "support/cases",
+    "customers",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "work-the-queue",
+      "do": "Take the open delivery handoffs in due-date order, do or advance the part of each one an agent may do, and set each deliverable's status on its engagement from that handoff's evidence and never from memory.",
+      "skill": "manage-and-operate-service-delivery-system",
+      "writes": [
+        "operations/handoff/[id]",
+        "service-delivery/engagements/[id]"
+      ]
+    },
+    {
+      "id": "record-exceptions",
+      "do": "Write every interruption since the last run (a tool down, a missing client input, rework after a failed acceptance test, an unanswered scope question) with the deliverable it hit and the days it cost, on the handoff.",
+      "skill": "manage-and-operate-service-delivery-system",
+      "writes": [
+        "operations/handoff/[id]"
+      ]
+    },
+    {
+      "id": "chase-client-inputs",
+      "do": "List every deliverable waiting on something the client must provide, draft the short message that asks for it with the date it is needed by and what slips without it, and leave the sending to the founder.",
+      "skill": "manage-and-operate-service-delivery-system",
+      "ask": true,
+      "raises": [
+        "public-commitment"
+      ],
+      "consider": {
+        "why": "Work stalled on a missing client input is the commonest reason a date slips, and only the founder writes to the client.",
+        "when": "A deliverable is waiting on something the client has not provided."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Record each exception's cost against the decision it bears on, and recommend to the product lead what to reorder when a date can no longer be met.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "status-from-evidence",
+      "kind": "review",
+      "check": "Does every open delivery handoff have a current status drawn from its evidence, and is every interruption since the last run recorded with the days it cost?",
+      "reviewer": "product-lead"
+    }
+  ]
+}

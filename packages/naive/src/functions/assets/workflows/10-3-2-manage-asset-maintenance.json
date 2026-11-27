@@ -1,0 +1,72 @@
+{
+  "id": "10-3-2-manage-asset-maintenance",
+  "function": "assets",
+  "process": "10.3.2",
+  "title": "Manage asset maintenance",
+  "goal": "Every due maintenance job has a date, the resources booked, a check when it is finished and an updated asset record, and maintenance is reported against the targets the founder set and against what any service contract promised.",
+  "measures": ["cost_or_time_saved", "compliance_met"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["assets/intake"] },
+  "reads": ["venture", "assets/register", "assets/leases", "finance/spend", "finance/budget", "people", "supply-chain/suppliers", "decisions"],
+  "steps": [
+    {
+      "id": "schedule-maintenance-work",
+      "do": "Put the due jobs on dates, grouping what one visit or one trip can cover, and tell each custodian when their item will be away, for how long and what they will use while it is gone.",
+      "skill": "maintain-assets",
+      "activity": "10.3.2.1"
+    },
+    {
+      "id": "obtain-required-resources",
+      "do": "Book the person or supplier for each job, check first whether a warranty, lease or service plan already covers it so the venture does not pay twice, order the parts as a handoff to supply chain, and bring the cost to the founder before it is committed.",
+      "skill": "maintain-assets",
+      "activity": "10.3.2.2",
+      "raises": ["spend-money"]
+    },
+    {
+      "id": "undertake-quality-control",
+      "do": "Check each finished job against its work plan, record what was done, what was found and what was not done, and send the job back to whoever did it when the check fails rather than closing it.",
+      "skill": "maintain-assets",
+      "activity": "10.3.2.3"
+    },
+    {
+      "id": "update-work-and-asset-records",
+      "do": "Update each serviced item's record: status back to in-use when it returns, the date, the cost, what was done, the parts fitted and the next due date in its note, with the invoice or service report named as evidence on the handoff.",
+      "skill": "maintain-assets",
+      "activity": "10.3.2.4",
+      "writes": ["assets/register/[id]"]
+    },
+    {
+      "id": "manage-maintenance-work-safety",
+      "do": "Name the jobs that are not safe for an untrained person (mains electrical work, lithium batteries, pressure or gas, work above head height, anything needing a licence), say which must go to a qualified supplier, and record who actually did each job.",
+      "skill": "maintain-assets",
+      "activity": "10.3.2.5"
+    },
+    {
+      "id": "define-maintenance-performance-targets",
+      "do": "Propose the few targets worth measuring (days an item is out of use, repeat failures on one item, maintenance cost per item per year), each with its current figure taken from the records, and ask the founder which ones to set and at what level.",
+      "skill": "maintain-assets",
+      "activity": "10.3.2.6",
+      "ask": true
+    },
+    {
+      "id": "monitor-maintenance-performance",
+      "do": "Report each set target against its figure since the last run, and where a supplier holds a service contract, report what the contract promised (response time, included parts, uptime) against what it delivered, with the evidence for each.",
+      "skill": "maintain-assets",
+      "activity": "10.3.2.7",
+      "consider": {
+        "why": "A service contract is only worth its price if someone checks what it actually delivered before it renews.",
+        "when": "The founder has set a maintenance target, or a supplier holds a service contract or warranty the venture relies on."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Attach the job history and the target figures to the decisions they bear on (a supplier worth replacing, an item worth replacing instead of repairing, a service plan worth cancelling) and raise the order of the remaining jobs to the finance lead.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities", "cancel-or-downgrade"]
+    }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "every-job-closed-on-a-record", "kind": "review", "check": "Does every job finished in this run leave its item's record updated with the date, the cost and the next due date, and was each one checked against its work plan before it was closed?", "reviewer": "finance-lead" }
+  ]
+}

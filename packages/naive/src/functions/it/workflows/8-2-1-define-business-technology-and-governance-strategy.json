@@ -1,0 +1,24 @@
+{
+  "id": "8-2-1-define-business-technology-and-governance-strategy",
+  "function": "it",
+  "process": "8.2.1",
+  "title": "Define business technology and governance strategy",
+  "goal": "The venture has written, in one page the founder has approved, which technologies it builds on and why, which it watches, and the principles that settle a technology question without a new decision each time.",
+  "measures": ["cost_or_time_saved", "compliance_met"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["it/intake"] },
+  "reads": ["venture", "foundation/telos", "foundation/goals", "foundation/constraints", "it/connections", "markets", "industries", "knowledge/knowledge-sources", "decisions/*"],
+  "steps": [
+    { "id": "build-and-maintain-it-strategic-intelligence", "do": "Gather from public sources what matters to the venture's own stack (the runtimes, languages and services it depends on): release and deprecation notices, licence changes, pricing changes and ownership changes, each cited with the page and the date you read it.", "skill": "develop-and-manage-it-business-strategy", "activity": "8.2.1.1" },
+    { "id": "monitor-and-map-current-and-emerging-technologies", "do": "Map each dependency the venture already has against what it would be replaced by, and mark each one adopt, hold, watch or leave with the evidence, keeping anything unproven out of the adopt column.", "skill": "develop-and-manage-it-business-strategy", "activity": "8.2.1.2" },
+    { "id": "define-and-communicate-digital-transformation-strategy", "do": "Draft on the handoff what the venture will change about how its work is recorded over the next year, which activities would become visible to the system and which would stay invisible, and hand it to the founder for approval before it is used as a plan.", "skill": "develop-and-manage-it-business-strategy", "activity": "8.2.1.3", "consider": { "why": "A plan to change how the work is recorded is worth writing once the venture has more than a couple of systems.", "when": "The business is past Validation, or more than three outside systems hold its records." } },
+    { "id": "develop-it-strategic-alignment", "do": "For each live goal, name the technology choice it depends on and say whether the present stack serves it, works against it or has nothing to do with it, so a choice with no goal behind it is visible.", "skill": "develop-and-manage-it-business-strategy", "activity": "8.2.1.4" },
+    { "id": "articulate-it-alignment-principles", "do": "Offer the founder three to six candidate principles in plain sentences (for example own the record of the work, prefer one system that is owned to two that are rented, no shared credentials) with what each one would forbid, and let the founder state the venture's own; a principle is a value and only the founder sets it.", "skill": "develop-and-manage-it-business-strategy", "activity": "8.2.1.5", "ask": true, "writes": ["decisions/*"], "raises": ["set-priorities"] },
+    { "id": "maintain-it-strategic-alignment", "do": "Check every live connection against the principles the founder stated and list each one that breaks a principle with what it would take to bring it into line, changing nothing yourself beyond narrowing access.", "skill": "develop-and-manage-it-business-strategy", "activity": "8.2.1.6", "writes": ["it/connections/[id]"], "raises": ["security-tightening"] },
+    { "id": "feed-decisions", "do": "Record the principles and the adopt, hold, watch and leave calls as evidence on the decisions they settle, and raise for the founder any change that would cost money, accept new terms or widen access.", "skill": "develop-and-manage-it-business-strategy", "writes": ["decisions/*"], "raises": ["spend-money", "legal-or-terms", "security-loosening", "new-dependency-free"] }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "principles-are-the-founders", "kind": "review", "check": "Did the founder state the alignment principles, and does every technology marked adopt cite a source and a live goal it serves?", "reviewer": "product-lead" }
+  ]
+}

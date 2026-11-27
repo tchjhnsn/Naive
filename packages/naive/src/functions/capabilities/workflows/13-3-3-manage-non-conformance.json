@@ -1,0 +1,67 @@
+{
+  "id": "13-3-3-manage-non-conformance",
+  "function": "capabilities",
+  "process": "13.3.3",
+  "title": "Manage non-conformance",
+  "goal": "The failure has a postmortem record: its impact, what was done at once to contain it, its contributing causes as conditions of the process, corrective and preventive actions each with an owner, and a closed status once those actions are done or dropped.",
+  "measures": ["cost_or_time_saved"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["capabilities/intake"] },
+  "reads": [
+    "capabilities/postmortems",
+    "capabilities/processes",
+    "operations/handoff",
+    "support/cases",
+    "product/bugs",
+    "evidence"
+  ],
+  "steps": [
+    {
+      "id": "assess-potential-impact",
+      "do": "Write who and what the failure reached, how many customers or records it touched, whether money, data or a promise was lost, and whether it is still happening, and open the postmortem record with that impact and a timeline.",
+      "skill": "manage-enterprise-quality",
+      "activity": "13.3.3.1",
+      "writes": ["capabilities/postmortems/[id]"]
+    },
+    {
+      "id": "determine-immediate-actions",
+      "do": "Name what stops the bleeding now, pausing the process, reverting the change or telling the affected customer, record each as a mitigation action with an owner, and leave anything that reaches a customer or a regulator to the founder to say.",
+      "skill": "manage-enterprise-quality",
+      "activity": "13.3.3.2",
+      "writes": ["capabilities/postmortems/[id]"],
+      "raises": ["legal-or-terms"]
+    },
+    {
+      "id": "identify-root-causes",
+      "do": "Work back from the timeline to the conditions of the process or system that let the failure happen, name each as a condition the venture controls and never as a person, and stop at the condition whose removal would have prevented it.",
+      "skill": "postmortem",
+      "activity": "13.3.3.3",
+      "writes": ["capabilities/postmortems/[id]"]
+    },
+    {
+      "id": "take-corrective-or-preventative-action",
+      "do": "Write one corrective action per contributing cause and one preventive action that keeps the class of failure from returning, each with an owner and a due date, open a handoff for each, and add the matching control point to the process record.",
+      "skill": "manage-enterprise-quality",
+      "activity": "13.3.3.4",
+      "writes": ["capabilities/postmortems/[id]", "capabilities/processes/[id]", "operations/handoff/[id]"],
+      "raises": ["contradicts-ledger"]
+    },
+    {
+      "id": "close-non-conformance",
+      "do": "Close the postmortem only when every action is done or dropped with a reason, after a person has reviewed it, and record the lessons another process can reuse.",
+      "skill": "manage-enterprise-quality",
+      "activity": "13.3.3.5",
+      "writes": ["capabilities/postmortems/[id]"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Record the postmortem as evidence on the handoff that failed, and raise to the strategy lead which preventive action to do first when several are open.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "blameless-and-owned", "kind": "review", "check": "Is every contributing cause a condition of the process or system rather than a person, and does every action name one owner and a due date?", "reviewer": "strategy-lead" }
+  ]
+}

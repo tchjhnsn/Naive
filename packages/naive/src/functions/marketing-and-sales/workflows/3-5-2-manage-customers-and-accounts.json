@@ -1,0 +1,120 @@
+{
+  "id": "3-5-2-manage-customers-and-accounts",
+  "function": "marketing-and-sales",
+  "process": "3.5.2",
+  "title": "Manage customers and accounts",
+  "goal": "Every customer the venture serves is one record, free of duplicates, carrying the plan for the account and the last thing that happened on it, and the few accounts that matter most are named by the founder.",
+  "measures": [
+    "revenue",
+    "usage_or_adoption"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "marketing-and-sales/intake"
+    ]
+  },
+  "reads": [
+    "venture",
+    "customers",
+    "customers/lint",
+    "sales/opportunities",
+    "purpose/account",
+    "support/cases",
+    "money",
+    "product",
+    "service-delivery/engagements",
+    "foundation/icp",
+    "knowledge/where-used",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "select-key-customers-accounts",
+      "do": "Rank the customers by revenue, by what they could become and by what the venture would lose if they left, bring the founder the few that would get the most attention, and record the ones they name as key.",
+      "ask": true,
+      "skill": "develop-and-manage-sales-plans",
+      "writes": [
+        "customers/[id]"
+      ],
+      "raises": [
+        "set-priorities"
+      ],
+      "activity": "3.5.2.1"
+    },
+    {
+      "id": "develop-sales-key-account-plan",
+      "do": "For each key account write what it buys now, what else it could buy, who inside it decides, what it needs next from the venture and the dated steps to get there, and keep the plan on the customer record.",
+      "skill": "develop-and-manage-sales-plans",
+      "writes": [
+        "customers/[id]"
+      ],
+      "activity": "3.5.2.2"
+    },
+    {
+      "id": "manage-sales-key-account-plan",
+      "do": "Each run check every key account's plan against what actually happened, mark the steps done, overdue or dropped, create an opportunity for each step that became a real chance to sell, and route to the owning function anything the account is waiting on.",
+      "skill": "develop-and-manage-sales-plans",
+      "writes": [
+        "customers/[id]",
+        "sales/opportunities/[id]",
+        "operations/handoff/[id]"
+      ],
+      "raises": [
+        "defer-or-route"
+      ],
+      "activity": "3.5.2.3"
+    },
+    {
+      "id": "manage-customer-relationships",
+      "do": "Prepare each customer conversation for the founder, what they bought, what they asked for, what is still open and what has gone quiet, then ask what was said and write it on the customer record; you never contact a customer.",
+      "ask": true,
+      "skill": "develop-and-manage-sales-plans",
+      "writes": [
+        "customers/[id]"
+      ],
+      "raises": [
+        "public-commitment"
+      ],
+      "activity": "3.5.2.4"
+    },
+    {
+      "id": "manage-customer-master-data",
+      "do": "Run the customer lint, bring every customer record up to date from the opportunity, support and money records, list the records that look like the same customer twice with the evidence, and ask the founder before merging or deleting anything.",
+      "skill": "develop-and-manage-sales-plans",
+      "writes": [
+        "customers/[id]"
+      ],
+      "raises": [
+        "irreversible-data-change"
+      ],
+      "activity": "3.5.2.5"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Add each account's position and risk to the decision or goal it bears on, and tell the growth lead which customer to speak to first and which account plan is going nowhere.",
+      "skill": "develop-and-manage-sales-plans",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "customers-single-and-current",
+      "kind": "review",
+      "check": "Is each customer one record with no known duplicate left unflagged, and does every key account carry a plan with its steps marked as of this run?",
+      "reviewer": "growth-lead"
+    }
+  ]
+}

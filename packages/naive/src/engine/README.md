@@ -267,6 +267,7 @@ flowchart TD
 ```
 
 `node packages/naive/src/engine/prerequisites-test.ts` tests the pure rules, the shipped chain, the checks, and one venture end to end: nothing live, the foundation records settling the record entries, a meeting open then closed partly then closed with its goal reached, a person's line in `naive.config.json` opening one lock, `naive blocked`, due, loop, `naive agent run` and the router refusing an agent and a person, an agent's override rejected and a person's override written and kept in provenance. Not built: a `requires` entry on a handoff, and a lock on an activity assignment.
+Since EE-226 the shipped modules hold one process workflow per APQC process, so the tests that read the shipped graph assert membership rather than an exact list: the product card's writers are the products intake and products process workflows that wait on its meeting, and `element-effects-test.ts` runs its rule cases on the hand-written workflows and checks `naive effects` against the whole graph.
 
 ## Agents
 

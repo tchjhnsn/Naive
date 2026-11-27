@@ -1,0 +1,22 @@
+{
+  "id": "12-4-9-negotiate-and-document-agreements-contracts",
+  "function": "external-relationships",
+  "process": "12.4.9",
+  "title": "Negotiate and document agreements/contracts",
+  "goal": "Every term of the proposed agreement that disagrees with a record the venture holds is named with that record, the few terms worth arguing carry the venture's position and the least it would accept, and once the founder signs, every obligation it creates is handed to the function that must meet it.",
+  "measures": ["compliance_met","learning"],
+  "trigger": {"kind":"request"},
+  "requires": {"meetings":["external-relationships/intake"]},
+  "reads": ["deals","service-delivery/offers","legal/obligations","legal/risks","foundation/constraints","foundation/icp","governance/publication-policy","governance/decision-rights","customers","decisions/*"],
+  "steps": [
+    {"id":"read-the-draft-against-the-records","do":"Read the proposed agreement and list every term that disagrees with a record the venture already holds, a price in the offers, an exclusivity the ideal customer profile contradicts, a data term the publication policy forbids, naming the record each one conflicts with.","skill":"manage-legal-and-ethical-issues","writes":["operations/handoff/[id]"]},
+    {"id":"rank-the-terms-worth-arguing","do":"Rank the open terms by what each would cost the venture if it went the other way, and write for each the venture's position, the reason and the least it would accept, so the founder negotiates from one page.","skill":"manage-legal-and-ethical-issues","writes":["operations/handoff/[id]"]},
+    {"id":"draft-the-redline","do":"Draft the changed wording for each term as a proposal only, and leave the negotiating, the initialling and the signing to the founder, who alone commits the venture.","skill":"manage-legal-and-ethical-issues","writes":["decisions/*"],"raises":["legal-or-terms"]},
+    {"id":"record-what-was-agreed","do":"Once the founder has signed, record the parties, the dates, the fee, the term and how it ends with where the signed file sits, and hand each obligation it creates to the function that must meet it with its due date.","skill":"manage-legal-and-ethical-issues","writes":["operations/handoff/[id]"]},
+    {"id":"feed-decisions","do":"Name the open decision the agreement settles and add the signed terms there as evidence, and propose to the strategy lead which term to change at the next renewal.","skill":"manage-legal-and-ethical-issues","writes":["decisions/*"],"raises":["set-priorities"]}
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "terms-traced-and-handed-on", "kind": "review", "check": "Does every conflicting term name the record it conflicts with, and after signing is every obligation the agreement creates handed to the function that must meet it?", "reviewer": "strategy-lead" }
+  ]
+}

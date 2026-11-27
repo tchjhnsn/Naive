@@ -1,0 +1,90 @@
+{
+  "id": "3-1-2-evaluate-and-prioritize-market-opportunities",
+  "function": "marketing-and-sales",
+  "process": "3.1.2",
+  "title": "Evaluate and prioritize market opportunities",
+  "goal": "Each market opportunity the venture could take is quantified on the market record with its arithmetic and sources, the target segment is named, and the founder has decided which one to pursue first and what would show the choice wrong.",
+  "measures": [
+    "revenue"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "marketing-and-sales/intake"
+    ]
+  },
+  "reads": [
+    "venture",
+    "foundation/icp",
+    "foundation/telos",
+    "foundation/goals",
+    "markets",
+    "industries",
+    "product",
+    "product/capabilities",
+    "people/team-plan",
+    "validation/interviews",
+    "validation/go-to-market",
+    "sales/opportunities",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "quantify-market-opportunities",
+      "do": "Work out for each candidate segment the yearly serviceable market in dollars, the expected deal size and the purchase frequency, write them on the market record's cells with the arithmetic and the source of every input, and mark a cell estimated rather than known whenever any input is a guess.",
+      "skill": "understand-markets-customers-and-capabilities",
+      "activity": "3.1.2.1"
+    },
+    {
+      "id": "determine-target-segments",
+      "do": "Rank the segments by reachable buyers, deal size and sales cycle days, say which are under-served and which are already saturated with the evidence for each, and write the ranking and the ICP profile each segment belongs to on the market record.",
+      "skill": "understand-markets-customers-and-capabilities",
+      "activity": "3.1.2.2"
+    },
+    {
+      "id": "prioritize-opportunities",
+      "do": "Bring the founder two or three opportunities in ranked order, each with the capability it needs from the product and team records, the evidence behind its numbers and what the venture would give up by taking it, and record the choice they make as the decision.",
+      "ask": true,
+      "skill": "understand-markets-customers-and-capabilities",
+      "raises": [
+        "strategy-or-constitution"
+      ],
+      "activity": "3.1.2.3"
+    },
+    {
+      "id": "validate-opportunities",
+      "do": "Write the questions that would show the chosen opportunity false and hand them to the founder to put to real buyers, check the capabilities it needs against the product capabilities and the team plan, and record on the handoff which assumption each answer confirmed and which it broke.",
+      "skill": "understand-markets-customers-and-capabilities",
+      "raises": [
+        "public-commitment"
+      ],
+      "activity": "3.1.2.4"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Name the open decision or goal each number and answer bears on and add it there as evidence, and propose to the growth lead the next test for the opportunity the founder chose.",
+      "skill": "understand-markets-customers-and-capabilities",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "opportunity-chosen-with-evidence",
+      "kind": "review",
+      "check": "Does the chosen opportunity carry its market numbers with the arithmetic behind them, and did the founder, not the agent, choose it?",
+      "reviewer": "growth-lead"
+    }
+  ]
+}

@@ -1,0 +1,113 @@
+{
+  "id": "4-1-1-develop-production-and-materials-strategies",
+  "function": "supply-chain",
+  "process": "4.1.1",
+  "title": "Develop production and materials strategies",
+  "goal": "The venture has written down how each product will be made or bought, the policies that choice rests on, and the capacity and constraints it is planning against, with every figure sourced or marked a guess.",
+  "measures": ["cost_or_time_saved", "flow_and_lead_time"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["supply-chain/intake"] },
+  "reads": [
+    "venture",
+    "foundation/telos",
+    "foundation/goals",
+    "foundation/constraints",
+    "product",
+    "supply-chain/suppliers",
+    "supply-chain/purchase-orders",
+    "finance/budget",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "define-manufacturing-goals",
+      "do": "Read the product cards, the telos and the goals, then draft the numbers production is being built to meet, units per month, landed cost per unit, defect rate and lead time from order to the customer's hands, ask the founder for the ones only they know and put the agreed set on the handoff as the target every later step is measured against.",
+      "skill": "plan-for-and-align-supply-chain-resources",
+      "activity": "4.1.1.1",
+      "ask": true
+    },
+    {
+      "id": "define-labor-and-materials-policies",
+      "do": "Write the rules the venture buys and staffs under, which materials are acceptable and which are barred, what certification or origin a part must carry, and whether assembly is done by the founder, by hired hands or by a supplier, and record on the handoff each rule the founder has stated and each one you inferred.",
+      "skill": "plan-for-and-align-supply-chain-resources",
+      "activity": "4.1.1.2"
+    },
+    {
+      "id": "define-outsourcing-policies",
+      "do": "For each step of making the product, say whether the venture does it or buys it, with the cost per unit and the lead time of each way and what the venture gives up by not learning the step itself, and bring the make-or-buy choice to the founder as a decision.",
+      "skill": "plan-for-and-align-supply-chain-resources",
+      "activity": "4.1.1.3",
+      "raises": ["set-priorities"]
+    },
+    {
+      "id": "define-capital-expense-policies",
+      "do": "Write what the venture will and will not buy outright, tooling, moulds, jigs and test rigs, with the threshold above which a purchase is the founder's decision and whether tooling is owned by the venture or by the supplier, and name on the handoff every piece of tooling whose ownership is unclear.",
+      "skill": "plan-for-and-align-supply-chain-resources",
+      "activity": "4.1.1.4",
+      "raises": ["spend-money"],
+      "consider": {
+        "why": "Tooling a supplier owns can hold a venture to that supplier, and a deposit on it is often the first large commitment.",
+        "when": "A product needs tooling, a mould or a test rig that someone must pay for."
+      }
+    },
+    {
+      "id": "define-capacities",
+      "do": "State how many units a month the venture can actually get made at each supplier and in its own hands, from quoted capacity, minimum order quantities and the hours the founder has, and mark which figure is a supplier's claim and which is observed.",
+      "skill": "plan-for-and-align-supply-chain-resources",
+      "activity": "4.1.1.5",
+      "raises": ["domain-fact"]
+    },
+    {
+      "id": "define-production-network-and-supply-constraints",
+      "do": "Draw the path each product takes from part to finished unit, naming every supplier, assembler and shipper in it, and list the constraints that bind it, the longest lead time, the smallest minimum order, the single sources and the cash tied up before the first sale.",
+      "skill": "plan-for-and-align-supply-chain-resources",
+      "activity": "4.1.1.6",
+      "writes": ["supply-chain/suppliers/[id]"]
+    },
+    {
+      "id": "define-production-process",
+      "do": "Write the production process as an ordered list of steps with who does each one, what it takes in, what it hands on and how long it takes, and mark the step that sets the pace of the whole run.",
+      "skill": "plan-for-and-align-supply-chain-resources",
+      "activity": "4.1.1.7"
+    },
+    {
+      "id": "define-standard-operating-procedures",
+      "do": "Turn the production process into a procedure someone other than the founder can follow, one page per step with the tools, the settings and the check at the end, and put it on the handoff for the founder to approve before anyone is asked to work from it.",
+      "skill": "plan-for-and-align-supply-chain-resources",
+      "activity": "4.1.1.8",
+      "consider": {
+        "why": "A written procedure is what lets a second pair of hands or a supplier build the same thing twice.",
+        "when": "Someone other than the founder will assemble, pack or test the product."
+      }
+    },
+    {
+      "id": "define-production-workplace-layout",
+      "do": "Lay out the space the venture assembles in, where parts wait, where work happens, where finished units and rejects go, and what power, bench, light and storage each step needs, and say what the space cannot hold at the planned monthly volume.",
+      "skill": "plan-for-and-align-supply-chain-resources",
+      "activity": "4.1.1.9",
+      "consider": {
+        "why": "A bench that cannot hold a month of parts caps output long before any supplier does.",
+        "when": "The venture assembles, packs or tests in a space of its own."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Name every choice this strategy leaves open, make or buy, own tooling or not, one source or two, and add it as a decision with the cost and lead time of each option and your recommendation, then hand the order of that work to the product lead.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "strategy-states-its-constraints",
+      "kind": "review",
+      "check": "Does the written strategy name the monthly capacity, the longest lead time and the binding constraint for each product, and is every figure either sourced or marked a guess?",
+      "reviewer": "product-lead"
+    }
+  ]
+}

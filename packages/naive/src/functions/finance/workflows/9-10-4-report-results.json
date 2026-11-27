@@ -1,0 +1,85 @@
+{
+  "id": "9-10-4-report-results",
+  "function": "finance",
+  "process": "9.10.4",
+  "title": "Report results",
+  "goal": "The venture's results are reported in one currency with the rate used stated on each line, the effect of rate movement shown separately from the trading result, and each entity's own figures visible beside the total.",
+  "measures": [
+    "cost_or_time_saved",
+    "revenue"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "finance/intake"
+    ]
+  },
+  "reads": [
+    "money",
+    "money/[id]",
+    "finance/spend",
+    "finance/budget",
+    "purpose/money/summary",
+    "governance/ownership",
+    "venture",
+    "investor-relations/updates"
+  ],
+  "steps": [
+    {
+      "id": "translate-the-figures",
+      "do": "Translate each figure into the currency the books are kept in using the rate the policy names for that purpose, and state the rate used next to each line.",
+      "skill": "manage-international-funds-consolidation",
+      "consider": {
+        "why": "A translated figure with no rate beside it cannot be reconciled by anyone later.",
+        "when": "The venture keeps records or entities in more than one currency."
+      }
+    },
+    {
+      "id": "separate-the-currency-effect",
+      "do": "Show how much of the change since last period came from trading and how much came from the rates moving, so the two are never read as one number.",
+      "skill": "manage-international-funds-consolidation",
+      "consider": {
+        "why": "A result that improved only because a rate moved is not a result the venture produced.",
+        "when": "The venture reports in a currency other than one it earns or spends in."
+      }
+    },
+    {
+      "id": "report-the-combined-result",
+      "do": "Report the combined result with each entity's and each currency's own figures beside it, and put the cash position in the reporting currency into the money summary.",
+      "skill": "manage-international-funds-consolidation",
+      "writes": [
+        "purpose/money/summary"
+      ],
+      "consider": {
+        "why": "An owner needs both the whole picture and each entity's own figures.",
+        "when": "The venture reports results across more than one currency or entity."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Raise any translation the policy does not cover as a decision for the founder, and record on the handoff that this process does not apply when the venture reports in one currency from one entity.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "domain-fact",
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "currency-effect-separated",
+      "kind": "review",
+      "check": "Does every translated line state the rate used, and is the effect of rate movement shown separately from the trading result?",
+      "reviewer": "finance-lead"
+    }
+  ]
+}

@@ -1,0 +1,87 @@
+{
+  "id": "9-11-2-control-exports-and-imports",
+  "function": "finance",
+  "process": "9.11.2",
+  "title": "Control exports and imports",
+  "goal": "The venture knows which of its goods, software or technical data is controlled, where each may and may not go and under what licence, and nothing crossed a border without that check.",
+  "measures": [
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "finance/intake"
+    ]
+  },
+  "reads": [
+    "venture",
+    "product",
+    "product/[id]",
+    "customers",
+    "customers/[id]",
+    "supply-chain/suppliers",
+    "legal/obligations",
+    "legal/risks",
+    "markets",
+    "industries"
+  ],
+  "steps": [
+    {
+      "id": "find-the-controls",
+      "do": "Find which of the venture's goods, software or technical data is subject to export or import control in the countries it operates in and sells into, and write down for each what the control is and which authority sets it.",
+      "skill": "perform-global-trade-services",
+      "consider": {
+        "why": "Software and technical data can be controlled exports even when nothing physical moves.",
+        "when": "The venture ships goods across a border, or makes software or technical data available outside its own country."
+      }
+    },
+    {
+      "id": "map-the-destinations",
+      "do": "List for each controlled item the countries, end uses and kinds of customer it may and may not go to, and name the licence or exemption each permitted route relies on.",
+      "skill": "perform-global-trade-services",
+      "consider": {
+        "why": "A control is a rule about where something may go, to whom and for what use, not a label on the product.",
+        "when": "A controlled good, software or technology has been identified."
+      }
+    },
+    {
+      "id": "check-before-release",
+      "do": "Check the destination, the end use and the party against the control list and the sanctions screening before anything moves, and hand the founder anything that needs a licence; the agent never releases a shipment or a download.",
+      "skill": "perform-global-trade-services",
+      "ask": true,
+      "raises": [
+        "legal-or-terms"
+      ],
+      "consider": {
+        "why": "A release that needed a licence cannot be undone once it has happened.",
+        "when": "A shipment or a release of controlled software or technology is about to happen."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Raise each item whose control status nobody has established and each route needing a licence as a decision for the founder, and record on the handoff when nothing the venture makes crosses a border.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "legal-or-terms",
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "controls-identified-before-release",
+      "kind": "review",
+      "check": "Is every controlled item identified with its authority and its permitted destinations, and was every release checked before it moved?",
+      "reviewer": "finance-lead"
+    }
+  ]
+}

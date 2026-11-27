@@ -1,0 +1,87 @@
+{
+  "id": "1-3-4-establish-high-level-measures",
+  "function": "strategy",
+  "process": "1.3.4",
+  "title": "Establish high-level measures",
+  "goal": "The few measures the venture is actually steered by are named in the telos with the record each is read from, each has a baseline with its date, and the current reading against every baseline is written down.",
+  "measures": [
+    "impact",
+    "learning"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "records": [
+      "foundation/pre-registration"
+    ],
+    "meetings": [
+      "strategy/intake"
+    ]
+  },
+  "reads": [
+    "foundation/telos",
+    "foundation/goals",
+    "foundation/exit-criteria",
+    "purpose/money/summary",
+    "purpose/validation/score",
+    "validation/product-market-fit",
+    "validation/pricing",
+    "product/bugs",
+    "system/vitals",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "identify-business-value-drivers",
+      "do": "Name the few quantities that actually move whether this venture reaches its end state, keep them to the ones a record can be read for, draft them into the telos measures with the route each is read from, and leave the set itself for the founder to accept.",
+      "skill": "develop-and-measure-strategic-initiatives",
+      "activity": "1.3.4.1",
+      "raises": [
+        "strategy-or-constitution"
+      ]
+    },
+    {
+      "id": "establish-baselines-for-business-value-drivers",
+      "do": "For each driver read its source route and write the value it stands at now, the date it was true and how it was counted, onto the goal that binds it, and where no record holds it say so and name what would have to be recorded first.",
+      "skill": "develop-and-measure-strategic-initiatives",
+      "activity": "1.3.4.2",
+      "writes": [
+        "foundation/goals/[id]"
+      ]
+    },
+    {
+      "id": "monitor-performance-against-baselines",
+      "do": "Read each driver again, write the new value and the date beside the baseline, say which way it moved and whether the move is larger than the noise in how it is counted, and never explain a move you cannot cite a cause for.",
+      "skill": "develop-and-measure-strategic-initiatives",
+      "activity": "1.3.4.3",
+      "writes": [
+        "foundation/goals/[id]"
+      ]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Attach every reading to the goal, bet or decision it bears on, raise to the founder any driver that cannot be read from a record and any measure that no longer tells the venture anything, and recommend to the strategy lead which reading to put a source behind first.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "strategy-or-constitution",
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "every-measure-has-a-source",
+      "kind": "review",
+      "check": "Does every measure name the route it is read from and a baseline with its date, or stand named as a measure no record can supply yet?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

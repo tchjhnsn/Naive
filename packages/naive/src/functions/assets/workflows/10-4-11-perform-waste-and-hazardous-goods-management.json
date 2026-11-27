@@ -1,0 +1,104 @@
+{
+  "id": "10-4-11-perform-waste-and-hazardous-goods-management",
+  "function": "assets",
+  "process": "10.4.11",
+  "title": "Perform waste and hazardous goods management",
+  "goal": "Every hazardous material the venture holds has a current safety data sheet, a written rule it must follow, a way it is stored, handled and disposed of, and a dated record of each disposal with its paperwork.",
+  "measures": ["compliance_met", "cost_or_time_saved"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["assets/intake"] },
+  "reads": ["venture", "assets/register", "assets/leases", "legal/risks", "people", "supply-chain/suppliers", "finance/spend", "decisions"],
+  "steps": [
+    {
+      "id": "maintain-material-safety-data-sheets",
+      "do": "Keep the current safety data sheet for every hazardous material the venture holds, with the date it was obtained and where it is kept, and replace any sheet the supplier has since revised.",
+      "skill": "manage-asset-end-of-life",
+      "activity": "10.4.11.1",
+      "consider": {
+        "why": "The safety data sheet is the one document that says how a material must be stored, handled and disposed of, and an insurer or inspector asks for it first.",
+        "when": "The venture holds, uses or disposes of batteries, chemicals, solvents, paints or other material a rule treats as hazardous."
+      }
+    },
+    {
+      "id": "maintain-awareness-of-requirements",
+      "do": "Read the rules that apply to the materials the venture holds and the places it works, write in plain words what each one requires with its source and the date read, and tell everyone who handles the material what changed.",
+      "skill": "manage-asset-end-of-life",
+      "activity": "10.4.11.2",
+      "consider": {
+        "why": "These rules are local and they change, and the venture is held to the current one, not the one it read two years ago.",
+        "when": "The venture holds hazardous material, or a lease, insurer or permit places a waste requirement on it."
+      }
+    },
+    {
+      "id": "maintain-handling-and-disposal",
+      "do": "Write how each material is stored, labelled, handled and disposed of, what protective equipment and spill kit the venture must keep, and check that what the rule and the safety data sheet require is actually on hand rather than on the list.",
+      "skill": "manage-asset-end-of-life",
+      "activity": "10.4.11.3",
+      "consider": {
+        "why": "A storage and handling rule that nobody has checked against the shelf is how a small spill becomes a reportable one.",
+        "when": "The venture stores or handles hazardous material on its own premises."
+      }
+    },
+    {
+      "id": "manage-compliance-audits",
+      "do": "Prepare for an inspection, audit or permit review: assemble the material list, the safety data sheets, the training records and the disposal receipts, name every gap against the written requirements, and close what can be closed before the date.",
+      "skill": "manage-asset-end-of-life",
+      "activity": "10.4.11.4",
+      "consider": {
+        "why": "An audit found gap costs more than the same gap found a month earlier.",
+        "when": "An inspection, audit or permit review is scheduled, or a landlord, insurer or customer has asked for evidence."
+      }
+    },
+    {
+      "id": "recognize-need-to-disposition",
+      "do": "Flag the material that must now leave (expired, contaminated, no longer used, or held longer than a rule allows) with the reason, the quantity and the date the clock started.",
+      "skill": "manage-asset-end-of-life",
+      "activity": "10.4.11.5",
+      "consider": {
+        "why": "Most waste problems are material that quietly stayed past the time it was allowed to be stored.",
+        "when": "The venture holds hazardous material that is expired, unused or beyond the storage time a rule allows."
+      }
+    },
+    {
+      "id": "determine-disposition",
+      "do": "For each flagged material put the lawful routes side by side (return to the supplier, licensed disposal, treatment, recycling, a household or small-quantity collection where it is allowed) with what each costs and what each requires of the venture, recommend one and raise it to the founder.",
+      "skill": "manage-asset-end-of-life",
+      "activity": "10.4.11.6",
+      "raises": ["spend-money", "legal-or-terms"],
+      "consider": {
+        "why": "The cheapest route and the lawful route are not always the same one, and only a person may accept that difference.",
+        "when": "A material has been flagged to leave."
+      }
+    },
+    {
+      "id": "manage-disposition-and-disposal",
+      "do": "Arrange the chosen route, confirm that the handler is licensed for that material before anything moves, and record what left, when, how much, to whom and under which paperwork.",
+      "skill": "manage-asset-end-of-life",
+      "activity": "10.4.11.7",
+      "consider": {
+        "why": "The venture stays answerable for its waste after it has left the door, so who took it has to be recorded.",
+        "when": "The founder has chosen a disposition route for a flagged material."
+      }
+    },
+    {
+      "id": "manage-documentation-and-reporting",
+      "do": "Keep the disposal paperwork (manifests, receipts, certificates, weights) with its dates in one place named on the handoff, and draft any return a rule requires for a person to check and sign.",
+      "skill": "manage-asset-end-of-life",
+      "activity": "10.4.11.8",
+      "consider": {
+        "why": "The paperwork is the only proof the venture disposed of a material properly, and it is asked for years later.",
+        "when": "The venture has disposed of hazardous material or holds a permit that requires a return."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Attach the material list, the written requirements and the costed disposal routes to the decisions they settle, and hand to risk and compliance as a handoff anything that is a duty of the venture rather than a fact about an asset.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "sheet-rule-and-receipt", "kind": "review", "check": "Does every hazardous material the venture holds have a current safety data sheet, a written requirement with its source and date, and a dated disposal record with its paperwork where it has left?", "reviewer": "finance-lead" }
+  ]
+}

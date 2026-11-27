@@ -1,0 +1,83 @@
+{
+  "id": "7-4-4-manage-employee-grievances",
+  "function": "human-capital",
+  "process": "7.4.4",
+  "title": "Manage employee grievances",
+  "goal": "The venture has one written route for raising a complaint, including about a founder, and every complaint raised has a dated record of what was said, what was done and what the founder decided.",
+  "measures": [
+    "compliance_met"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "human-capital/intake"
+    ]
+  },
+  "reads": [
+    "people",
+    "people/founders",
+    "governance/decision-rights",
+    "governance/delegation",
+    "legal/obligations",
+    "legal/risks",
+    "operations/handoff",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "write-the-route",
+      "do": "Write the one page that says how someone raises a complaint, to whom, what happens next and within how many days, including what to do when the complaint concerns a founder, and hand it to the founder to adopt.",
+      "skill": "manage-employee-relations",
+      "raises": [
+        "legal-or-terms"
+      ]
+    },
+    {
+      "id": "take-the-complaint",
+      "do": "When a complaint is raised, record what was said, when and by whom, in the person's own words, keep it where only the people who must see it can, and tell the founder the same day unless the complaint is about the founder, in which case follow the route's named alternative.",
+      "skill": "manage-employee-relations",
+      "consider": {
+        "why": "There may be no complaint to take, and a template file invites guesswork.",
+        "when": "Someone has raised a complaint about how they are treated."
+      }
+    },
+    {
+      "id": "gather-the-facts",
+      "do": "Gather the dated facts the complaint turns on from records and from what each person says, keep conclusions and characterisations out of the file, and give the founder the facts, the options and the point at which counsel should be involved.",
+      "skill": "manage-employee-relations",
+      "raises": [
+        "legal-or-terms"
+      ],
+      "consider": {
+        "why": "Facts gathered after a conclusion has been drawn are worth little, and gathering them at all presumes a complaint.",
+        "when": "A complaint has been taken and the founder has asked for the facts."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Open a decision for every outcome the founder must choose and for any obligation the complaint triggers, record what was decided against the complaint, and tell the strategy lead nothing that identifies the complainant.",
+      "skill": "manage-employee-relations",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "route-written-and-followed",
+      "kind": "review",
+      "check": "Is the complaint route written, adopted by the founder, and does every complaint raised have a dated record of what was said and what was decided?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

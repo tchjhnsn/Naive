@@ -1,0 +1,42 @@
+{
+  "id": "10-4-2-decommission-productive-assets",
+  "function": "assets",
+  "process": "10.4.2",
+  "title": "Decommission productive assets",
+  "goal": "Each asset taken out of service has nothing still depending on it, its data destroyed with evidence, every cost that ran with it stopped, and a record that says when and why it left service.",
+  "measures": ["compliance_met", "cost_or_time_saved"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["assets/intake"] },
+  "reads": ["venture", "assets/register", "assets/leases", "finance/spend", "people", "it/connections", "decisions"],
+  "steps": [
+    {
+      "id": "plan-the-decommission",
+      "do": "For each item leaving service, list what must happen first: who or what still depends on it, what replaces it, what must be returned under a lease or loan, what is connected to it, and what data it holds.",
+      "skill": "manage-asset-end-of-life"
+    },
+    {
+      "id": "destroy-the-data-first",
+      "do": "For any item that holds venture or customer data, prepare the wipe or physical destruction with the method and where the proof will be kept, and bring it to the founder before it happens, because the data cannot be brought back.",
+      "skill": "manage-asset-end-of-life",
+      "writes": ["assets/register/[id]"],
+      "raises": ["irreversible-data-change"]
+    },
+    {
+      "id": "take-it-out-of-service",
+      "do": "Set the item to in-storage once it is out of use, or to disposed with its disposal date, method and wipe evidence when it has already left, and list every recurring cost that ran with it (a licence, a plan, insurance, a connection) for the founder to stop.",
+      "skill": "manage-asset-end-of-life",
+      "writes": ["assets/register/[id]"],
+      "raises": ["cancel-or-downgrade"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Attach the decommissioning evidence to the decision that approved it, and raise to the founder anything left undone (a lease return date, a subscription still billing, a device nobody can find).",
+      "writes": ["decisions/*"],
+      "raises": ["cancel-or-downgrade"]
+    }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "nothing-still-depends-on-it", "kind": "review", "check": "For every asset taken out of service in this run, is its data destroyed with evidence, is each recurring cost that ran with it either stopped or in front of the founder, and does its record say when and why it left service?", "reviewer": "finance-lead" }
+  ]
+}
