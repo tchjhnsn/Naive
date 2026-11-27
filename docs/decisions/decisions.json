@@ -3108,6 +3108,45 @@
       ]
     },
     {
+      "id": "EE-216",
+      "date": "2026-11-26",
+      "status": "in-force",
+      "decision": "A public page's words are records before the page exists. Each element a page shows is its own marketing-message record at marketing/message/<id>.json (route marketing/message/[id], function marketing-and-sales, writer function, decision class public-commitment): the tagline, a headline, a subhead, a value proposition, a call to action with its destination, a proof point, an objection answered, the footer and the contact line, each with the words themselves and cites, the records they come from, so a call to action and a contact address finally have a record of their own, destination kind none saying honestly that a button leads nowhere yet. The element catalogue is data, not code: the chrome and the kind of each section's words sit in the marketing matrix's copy block, and the sitemap plans the sections. Need-now suggests the record type from Discovery, so a venture that shows itself to anyone can write its text before it has a brand or a validated solution. naive copy gaps names, element by element, which record holds the words and the state of every record upstream of it, missing, held, undecided or live, the ones only a person writes included, such as foundation/core. naive copy draft --propose files one open decision per missing or undecided element with two or three EE-211 candidates, each a whole record citing its sources and saying which are unsettled, drafted by the marketing and sales agent through the harness in NAIVE_AGENT_CMD, or the prompt is printed and the decision filed with the gap alone. Only a person chooses, and merge writes the record. The order is fixed by the site-copy workflow: gap report, the two paths, options, the founder's choice, the handoff to the builder, then design and the publish check. The copy gate (naive copy check, and stage 0 of the publish build) refuses a build while any element the sitemap plans has no record a person stands behind, and names each one. The founder may skip approval with naive copy one-shot --by <person>, recorded as a decided decision with their name, the time, their reason and the elements skipped, after which every build is marked unapproved; mentura reopen site-copy-one-shot takes it back. No agent ever chooses that path.",
+      "why": "Torian decided this on 2026-11-26, building Mentura's own marketing site: he wants the slogan and every other line of a page held as a record, options presented from the records they come from with the specific record named, and his pick asked for before anything is designed, because an agent that writes a page's words has made a public commitment on his behalf. The real run showed the gaps the framework had: foundation/core was empty and only he writes it, foundation/problem was missing, the ICP drafts were stale, and there was no record type for a call to action's label and destination or for a contact address. Brand voice and the validated solution start at Validation, too late for a Discovery page, so what a page needs is routable from Discovery. One-shot exists because it is his venture and his time, and it is named up front with what it costs so the choice is informed, never an agent's.",
+      "related": [
+        "EE-044",
+        "EE-211",
+        "EE-025",
+        "EE-099"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/records/marketing-message.schema.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/functions/marketing-and-sales/marketing/copy.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/functions/marketing-and-sales/workflows/site-copy.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/functions/marketing-and-sales/skills/site-copy/SKILL.md",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
       "id": "EE-223",
       "date": "2026-11-26",
       "status": "in-force",

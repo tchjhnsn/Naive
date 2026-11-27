@@ -39,6 +39,8 @@ export type Matrix = {
   threshold: number;
   pages: Record<string, string>;
   items: Record<string, { label: string; question: string; record: string; audiences: Record<string, number>; belongs: string[]; keywords: string[]; why?: Record<string, string>; component: string }>;
+  /** The words each page shows, as records (EE-216): the kind of each item's words, and the chrome no section covers. */
+  copy: { note: string; chrome: { item: string; kind: string; label: string; from: string[]; why: string }[]; kinds: Record<string, string | undefined> };
   customer_types: { note: string; floor: number; default: CustomerType; types: Record<string, CustomerType & { about: string; match: string }> };
   page_labels: Record<string, string>;
   when: Record<string, string>;
