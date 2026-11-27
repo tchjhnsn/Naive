@@ -29,6 +29,11 @@ const ran = (workflow: string, day: number, outcome = "done") => appendFileSync(
 try {
   writeFileSync(join(dir, "venture.json"), JSON.stringify({ id: "v", name: "V", phase: "discovery", departments: ["strategy", "marketing-and-sales"] }));
   mkdirSync(join(dir, ".naive"));
+  // The marketing and sales workflows wait on a live ICP (EE-217), and a workflow blocked on its prerequisites is
+  // never due, so it could never be overdue either. The record goes in with no provenance line, because this file
+  // derives every element's state from the log and an extra write would be extra evidence.
+  mkdirSync(join(dir, "foundation/icp"), { recursive: true });
+  writeFileSync(join(dir, "foundation/icp/primary.json"), JSON.stringify({ venture: "v", id: "primary", name: "Solo founder" }));
   const empty = await by(at(2));
   expect("with no records every element is absent at level 0", Object.values(empty).every((r) => r.effective.state.tag === "absent" && r.effective.level === 0) && Object.keys(empty).length === 25);
 

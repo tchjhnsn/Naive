@@ -24,6 +24,8 @@
 //     router serves with a write action; a step raises only classes the module's decisions.json has a row for; a
 //     step's activity is a level 4 element of packages/naive/src/functions/pcf.json or an activity in
 //     packages/naive/src/functions/activities.json, under the function's APQC category (EE-168);
+//   - every entry of a workflow's or a step's `requires` resolves: a record route, a workflow some module has, and
+//     no decision, since a venture's decision ids are its own (EE-217); and no cycle between the workflows' requires;
 //   - every skill of the module is named by a step or by agent.md, so the agent is never handed a skill with no cue
 //     for when to load it (EE-215);
 //   - agent.md has frontmatter naming role <id>-agent, its function and the lead whose portfolio holds it; the six
@@ -54,6 +56,8 @@ import type { Delegation } from "../records/types/records.d.ts";
 import { recordsIn, venturePaths } from "../records/index.ts";
 import { PHASES, resolve, routes } from "../records/routes/routes.ts";
 import { startOf, type Prior } from "../engine/need-now.ts";
+import { requireProblems } from "../engine/prerequisites.ts";
+import type { Flow } from "../engine/prerequisites.ts";
 import { validateValue } from "../records/validate.ts";
 
 const args = process.argv.slice(2);
@@ -175,6 +179,8 @@ export const checkFunctions = Effect.gen(function* () {
 
   const findings: Finding[] = [];
   const fail = (fn: string, file: string, error: string) => { findings.push({ fn, file, error }); };
+  /** Every workflow of every module, for the prerequisites check below, which reads across functions. */
+  const everyFlow = new Map<string, Flow>();
 
   for (const fn of departments) {
     const dir = join(FUNCTIONS, fn);
@@ -235,6 +241,7 @@ export const checkFunctions = Effect.gen(function* () {
       for (const e of schemaErrors("function-workflow.schema.json", w)) fail(fn, file, e);
       if (!isObject(w)) continue;
       workflows.set(String(w.id), w);
+      everyFlow.set(`${fn}/${String(w.id)}`, w as Flow);
       if (`${String(w.id)}.json` !== f) fail(fn, file, `id ${String(w.id)} is not the file's name`);
       if (w.function !== fn) fail(fn, file, `names function ${String(w.function)}, not ${fn}`);
       const steps = Array.isArray(w.steps) ? w.steps.filter(isObject) : [];
@@ -318,6 +325,15 @@ export const checkFunctions = Effect.gen(function* () {
       if (in_.length !== 1) fail(fn, "packages/naive/template/governance/roles/", `sits in ${in_.length} lead portfolios; it must sit in exactly one`);
     }
   }
+
+  // Prerequisites (EE-217): every entry of a `requires` resolves, no shipped workflow names a venture's decision, and
+  // no workflow waits, through the records written and the meetings held, on a workflow that waits on it. The rules are
+  // packages/naive/src/engine/prerequisites.ts requireProblems, so the lock and its check read the same field once.
+  for (const p of requireProblems(everyFlow, {
+    recordRoute: (ref) => resolve(ref).r?.kind === "record",
+    hasWorkflow: (id) => everyFlow.has(id),
+  })) fail(p.workflow.split("/")[0], `packages/naive/src/functions/${p.workflow.split("/")[0]}/workflows/${p.workflow.split("/")[1]}.json`, p.error);
+
   return { departments, findings };
 });
 

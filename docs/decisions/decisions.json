@@ -3233,6 +3233,100 @@
       ]
     },
     {
+      "id": "EE-219",
+      "date": "2026-11-26",
+      "status": "in-force",
+      "decision": "A venture's customer problems are a hierarchy, held in the forms of its problem record and ranked on every read. Two relations hold the tree, and they are different claims: parent, which says a problem is a narrower case of another, after Teresa Torres's opportunity solution tree, and cause_of, which says a problem is a cause of another, after problem tree analysis in the Logical Framework Approach. One problem per ICP profile is its core problem, named by a single field on the profile, and one form at a time carries the status target, the problem being worked on now; both records are gated, so only a person settles either. The evidence is counted, never scored: each validation interview codes the problems it bears on with raised unprompted, ranked first and pays for a workaround, and a problem's priority is the weighted sum of those counts, with the weights unvalidated priors in packages/naive/src/functions/strategy/problem-priority.json that a venture replaces under problems in naive.config.json with the person who set them. Primary, secondary and tertiary are labels on the computed order and are never stored; before any interview has coded a problem the order is the founder's own, the order the forms are listed in, and the output labels that basis a hypothesis. A fail-closed rule holds the venture to the problem it says it is solving: no solution, offer or public content while the venture has no problem tree, no form is the target, or the primary profile names no core problem. The customer's problems live here and the business's own do not: those are decisions, seams and handoffs. Every new field is optional, so a record written before this decision is a one-problem tree and stays valid with no migration.",
+      "why": "Torian decided this on 2026-11-26: add all of the problems and a hierarchy over them, a primary, a secondary and tertiary problems or some other method, by the best practices and the standards, and cover his blind spots. He accepted the design the same day with the record it had to hold: a core problem, doesn't know what to do next, with one cause and one narrower case under it. Two standards already answer the shape, so Naive uses both rather than coining one (EE-014), and keeping cause apart from narrower case is what makes the tree say anything. Priority is computed because a stored rank drifts from the evidence, and the weights are data because what counts as evidence of a problem is a judgment a venture owns. The fail-closed rule is a check today; the refusal at the write belongs on the general requires mechanism rather than a second bespoke gate hook.",
+      "related": [
+        "EE-026",
+        "EE-050",
+        "EE-051",
+        "EE-014",
+        "EE-155",
+        "EE-217"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/problems.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/checks/check-problems.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/functions/strategy/problem-priority.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "record",
+          "target": "validation-problem.forms",
+          "expect": "exists"
+        },
+        {
+          "kind": "record",
+          "target": "icp.core_problem",
+          "expect": "exists"
+        },
+        {
+          "kind": "record",
+          "target": "validation-interview.problems",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
+      "id": "EE-217",
+      "date": "2026-11-26",
+      "status": "in-force",
+      "decision": "The work has an order, and the order is enforced. Each function workflow says in requires what must exist before anyone may run it, in three kinds and no others: records, routes whose record is live in the venture; meetings, a function workflow a meeting walked and closed with its goal reached (EE-200); and decisions, ids a person has decided. A step may add entries of its own. It fails closed: an entry that cannot be resolved, for any reason, counts as missing, so a workflow whose ground is unknown does not run, and a draft the gate holds is not live, so an agent cannot settle its own prerequisite. prerequisitesOf(dir, \"<function>/<workflow>\", step) in packages/naive/src/engine/prerequisites.ts is the one verdict every caller reads, { met, missing }, each missing entry with its kind, ref, why and state. The lock holds people as well as agents: naive due marks a blocked workflow blocked, naive loop starts nothing whatever the mode, naive agent run --workflow refuses it, and the router refuses a write to a route that only blocked workflows write, for an agent and a person alike, naming what unblocks it first. decisions/* and operations/handoff are never locked, so the answer to a lock is always reachable, and the rule is scoped to the functions the venture lists. A person may pass mentura <route> write --override --by <person> --why <text>, and the provenance line keeps the rule, the person, the reason and the missing list; an agent never may. The chain Naive ships is data in the workflow files, not code: the strategy foundation before products, products before what is sold, and strategy/intake the root that waits on nothing. A venture loosens or tightens an entry under prerequisites in naive.config.json, which the schema holds to set_by a person, so only a person ever opens a lock. naive blocked lists the venture's workflows in phase, function and workflow order with what unblocks each first.",
+      "why": "Torian, 2026-11-26: a fail-closed system on many activities, a hierarchical workflow that is highly opinionated and actually locks you out from doing certain things until others are done, such as the strategy and the foundational records that must exist first, blocking people as well as agents from starting or completing work until they have held certain meetings, each meeting drafting durable objects. The order of the work was already implicit in the function modules, read by need-now and the phase gates as advice, so nothing stopped a product card being written before anyone knew who it was for. Making the chain data in the workflows keeps it contextual: it is read, checked and overridden, never hard-coded, and the override is a person's alone because a lock an agent can open is no lock.",
+      "related": [
+        "EE-168",
+        "EE-181",
+        "EE-182",
+        "EE-183",
+        "EE-200",
+        "EE-220"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/prerequisites.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/prerequisites-test.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "record",
+          "target": "function-workflow.requires",
+          "expect": "exists"
+        },
+        {
+          "kind": "record",
+          "target": "naive-config.prerequisites",
+          "expect": "exists"
+        },
+        {
+          "kind": "record",
+          "target": "provenance-entry.override",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
       "id": "EE-223",
       "date": "2026-11-26",
       "status": "in-force",
@@ -3273,6 +3367,25 @@
         {
           "kind": "path",
           "target": "packages/naive/src/engine/generators/product-capability.ts",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
+      "id": "EE-225",
+      "date": "2026-11-27",
+      "status": "in-force",
+      "decision": "Every instruction file Naive writes says that existing code wins over stale documentation. The sentence is CODE_OVER_DOCS in packages/naive/src/core/code-over-docs.ts, word for word from Xu and Wu (2026): when a repository's documentation and its existing code disagree, follow the conventions used in the existing code and name each inconsistency in the final reply. init-venture and naive dev write it into a venture's AGENTS.md, workspace.ts into the workspace's, and the Claude Code and Cursor adapters into their entry files; Codex reads it in AGENTS.md. A venture created before this gets it only when someone adds the line (no migration, not built).",
+      "why": "Xu and Wu (2026, arXiv 2610.30571) found that coding agents followed a stale AGENTS.md or CLAUDE.md over the existing code in 90% of choices, even when they named the conflict, because the file reaches the model as an instruction and the code only as tool output; Codex rewrote working code to match the file and broke its tests. The one sentence, given as an instruction, moved 91% of choices to the code and stopped the rewrites. Torian on 2026-11-27: \"This is the fix I've been trying to make for so long. The documentations are always wrong and never being properly updated.\"",
+      "related": [
+        "EE-072",
+        "EE-085"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/core/code-over-docs.ts",
           "root": "repo",
           "expect": "exists"
         }

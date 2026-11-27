@@ -131,6 +131,18 @@
     "note": {
       "type": "string"
     },
+    "override": {
+      "type": "object",
+      "required": ["rule", "by", "why", "missing"],
+      "additionalProperties": false,
+      "description": "A person's explicit override of a fail-closed rule on this write (EE-217): the rule, the person, their reason, and what was missing when they passed it. An agent never writes one.",
+      "properties": {
+        "rule": { "type": "string", "minLength": 1 },
+        "by": { "type": "string", "minLength": 1 },
+        "why": { "type": "string", "minLength": 1 },
+        "missing": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+      }
+    },
     "source": {
       "type": "object",
       "required": [

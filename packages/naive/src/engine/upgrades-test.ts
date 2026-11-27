@@ -11,6 +11,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { entries } from "../core/provenance.ts";
+import { CODE_OVER_DOCS } from "../core/code-over-docs.ts";
 import { cmp, registry, snapshot, updateFramework } from "./upgrades.ts";
 import type { upgrade } from "./upgrades.ts";
 import { rewriteRoute } from "./migrations/kit-to-package.ts";
@@ -261,7 +262,7 @@ expect("Mentura is listed as the platform adapter beside the harness adapters", 
 const h = make("harnessed");
 naive(["upgrade", h]);
 const ad = mentura(["adapt", "claude-code", "--venture", "harnessed"]);
-expect("mentura adapt writes Claude Code's entry file and copies the open packages' skills", ad.status === 0 && readFileSync(join(h, "CLAUDE.md"), "utf8") === "@AGENTS.md\n" && existsSync(join(h, ".claude/skills/problem-validation/SKILL.md")), ad.stdout + ad.stderr);
+expect("mentura adapt writes Claude Code's entry file and copies the open packages' skills", ad.status === 0 && readFileSync(join(h, "CLAUDE.md"), "utf8") === `${CODE_OVER_DOCS}\n\n@AGENTS.md\n` && existsSync(join(h, ".claude/skills/problem-validation/SKILL.md")), ad.stdout + ad.stderr);
 expect("adapting the platform adapter into a venture is refused", mentura(["adapt", "mentura", "--venture", "harnessed"], withPlatform).status === 1);
 expect("without NAIVE_PLATFORM_ADAPTER only the harness adapters are listed", JSON.parse(mentura(["adapters", "--json"]).stdout).every((l: { kind: string }) => l.kind === "harness"));
 for (const name of ["claude-code", "codex", "cursor"]) {

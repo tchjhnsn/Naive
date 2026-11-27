@@ -19,6 +19,7 @@ import { spawnSync } from "node:child_process";
 import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
+import { CODE_OVER_DOCS } from "../core/code-over-docs.ts";
 import { KBASE, ventureFile } from "../core/venture-paths.ts";
 import { primaryAnatomy } from "./generators/anatomy-cells.ts";
 import type { Venture, VentureLayer, VentureTypes } from "../records/types/records.d.ts";
@@ -116,6 +117,7 @@ The map of this venture for agents. Read it, then a route's layout, before writi
 
 ## How to work here
 
+- ${CODE_OVER_DOCS}
 - List the routes with \`mentura routes\`. Read a route's \`layout\` and \`template\` before you write to it.
 - Write through the router (the CLI or the MCP server), not by editing files. Every write is checked against its schema and recorded in provenance.jsonl.
 - A write that fails closed comes back as a draft in \`_drafts/\`. A person accepts it with \`mentura accept\`.

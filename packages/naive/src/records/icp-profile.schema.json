@@ -80,6 +80,11 @@
       },
       "description": "Ids of the problem record's forms they have"
     },
+    "core_problem": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$",
+      "description": "The one problem of this profile's that the venture exists to solve (EE-219): the core problem of its problem tree, after the Logical Framework Approach. One per profile, so this field is single, and it names a form in problem_forms. Only a person sets it, since the profile is gated like the telos"
+    },
     "where_to_find": {
       "type": "array",
       "items": {

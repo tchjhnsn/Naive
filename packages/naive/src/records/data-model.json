@@ -490,9 +490,19 @@
           "field": "evidence.source.path",
           "to": "(venture files)",
           "checked_by": "packages/naive/src/checks/check-validation.ts"
+        },
+        {
+          "field": "forms.parent",
+          "to": "validation-problem",
+          "checked_by": "packages/naive/src/checks/check-problems.ts"
+        },
+        {
+          "field": "forms.cause_of",
+          "to": "validation-problem",
+          "checked_by": "packages/naive/src/checks/check-problems.ts"
         }
       ],
-      "note": "The problem sub-score of validation: the claim and its cited evidence, each item graded (EE-026). Shares packages/naive/src/records/validation-evidence.schema.json with every sub-score Gated like the telos (EE-050): the problem statement is a founder-critical record, so an agent's write is a draft the founder accepts.",
+      "note": "The problem sub-score of validation: the claim and its cited evidence, each item graded (EE-026). Shares packages/naive/src/records/validation-evidence.schema.json with every sub-score Gated like the telos (EE-050): the problem statement is a founder-critical record, so an agent's write is a draft the founder accepts. Its forms are the customer problem tree (EE-219): a narrower case by parent, a cause by cause_of, one target at a time.",
       "decision_class": "strategy-or-constitution"
     },
     {
@@ -511,6 +521,11 @@
           "field": "icp",
           "to": "icp",
           "checked_by": "packages/naive/src/checks/check-validation-study.ts"
+        },
+        {
+          "field": "problems.problem",
+          "to": "validation-problem",
+          "checked_by": "packages/naive/src/checks/check-problems.ts"
         },
         {
           "field": "transcript.source",
@@ -563,6 +578,11 @@
           "field": "evidence.source.path",
           "to": "(venture files)",
           "checked_by": "packages/naive/src/checks/check-validation.ts"
+        },
+        {
+          "field": "problem",
+          "to": "validation-problem",
+          "checked_by": "packages/naive/src/checks/check-problems.ts"
         }
       ],
       "note": "Validation sub-score: how it solves the problem and the evidence people choose it (EE-026)"
@@ -2219,6 +2239,11 @@
           "field": "problem_forms",
           "to": "validation-problem",
           "checked_by": "packages/naive/src/engine/foundation.ts"
+        },
+        {
+          "field": "core_problem",
+          "to": "validation-problem",
+          "checked_by": "packages/naive/src/checks/check-problems.ts"
         }
       ],
       "note": "Who the venture serves: one record per ideal customer profile, each with its own id, exactly one primary (EE-051); a foundation statement, gated. The older single foundation/icp.json is split by the icp-profiles migration",
@@ -2257,6 +2282,25 @@
         }
       ],
       "note": "The map of strategic foundation by the Five Ws and How plus whether (EE-051)"
+    },
+    {
+      "id": "problem-priority",
+      "layer": "purpose",
+      "function": "strategy",
+      "level": "method",
+      "schema": "packages/naive/src/records/problem-priority.schema.json",
+      "generator": "packages/naive/src/engine/generators/problem-priority.ts",
+      "paths": [
+        "packages/naive/src/functions/strategy/problem-priority.json"
+      ],
+      "refs": [
+        {
+          "field": "requires_target.records",
+          "to": "(record types)",
+          "checked_by": "packages/naive/src/checks/check-problems.ts"
+        }
+      ],
+      "note": "How a venture's customer problems are ranked and what holds its problem tree together (EE-219): the weight on each evidence count from the interviews, the statuses that are ranked, the labels primary, secondary and tertiary for the computed order, and the routes that wait for a core problem and a target. Every weight is an unvalidated prior a venture overrides under problems in naive.config.json"
     },
     {
       "id": "lean-canvas",

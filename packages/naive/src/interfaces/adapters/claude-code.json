@@ -5,7 +5,7 @@
   "integration": "claude-code",
   "reads": ["CLAUDE.md", ".claude/skills/*/SKILL.md"],
   "files": [
-    { "path": "CLAUDE.md", "text": "@AGENTS.md\n" }
+    { "path": "CLAUDE.md", "text": "When a repository's documentation and its existing code disagree, follow the conventions used in the existing code, and in your final reply point out each inconsistency you found between the documentation and the code.\n\n@AGENTS.md\n" }
   ],
   "skills": ".claude/skills",
   "documents": {
