@@ -48,6 +48,19 @@
       "type": "string",
       "description": "Who it is for: the founder, the team, investors, the public"
     },
+    "document_kind": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$",
+      "description": "The document kind in packages/naive/src/functions/documents.json this was rendered as (EE-218). It ties the artifact to its catalog entry, so packages/naive/src/checks/check-documents.ts can tell which rung of the ladder it sits on."
+    },
+    "format": {
+      "enum": ["md", "pdf", "docx", "pptx", "html", "site"],
+      "description": "The format it was rendered in (EE-218). The catalog gives each format a rung, and the ladder is fail closed: a rung is built only once the rung below it is a live artifact a person approved."
+    },
+    "approved_by": {
+      "type": "string",
+      "description": "The person who read this rung and approved building the one above it (EE-218). Never an agent. Publishing has its own approver, in governance/publications.json."
+    },
     "published": {
       "type": "boolean",
       "description": "It has gone out to its audience; a person decides that"

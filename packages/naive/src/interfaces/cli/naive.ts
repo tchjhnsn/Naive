@@ -151,6 +151,11 @@
 //                                                   no record a person stands behind, and names each one
 //   naive copy one-shot --by <person> [--why <text>]  a person skips approving the text: recorded as a decision, and
 //                                                   every page built from then on is marked unapproved
+//   naive render [<document kind>] [--format md|pdf|docx|pptx|html|site] [--json]
+//                                                   the document catalog, or one document's reading copy written from
+//                                                   the records it cites. Markdown is rendered here; a heavier format
+//                                                   is the harness's, and a rung above the reading copy is refused
+//                                                   until a person approved the one below (EE-218)
 //   naive lint premises [<route>] [--drafts] [--json] [--propose]
 //                                                   attack the premises of the venture's goals, requirements, exit criteria,
 //                                                   constraints and decisions; --propose writes findings as open decisions
@@ -497,6 +502,12 @@ else if (cmd === "build" || cmd === "start") {
   // --function, --at and --json pass through, and --to for handback.
   const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
   process.exit(run("packages/naive/src/engine/skipped.ts", [here(), ...args]));
+} else if (cmd === "render") {
+  // A document's reading copy from the records the catalog says it is made of (packages/naive/src/engine/render-document.ts,
+  // EE-218). With no kind it prints the catalog. --format and --json pass through; a rung above the reading copy is
+  // refused until a person approved the one below, and the heavier formats are the harness's, not Naive's.
+  const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
+  process.exit(run("packages/naive/src/engine/render-document.ts", [here(), ...args]));
 } else if (cmd === "owners") {
   // Who is accountable for each element of APQC's framework (packages/naive/src/engine/element-owners.ts, EE-187).
   const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");

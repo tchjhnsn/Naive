@@ -210,6 +210,13 @@ export type Adapter = {
   verify?: string[];
   /** Where the harness documents what it reads */
   sources: string[];
+  /** Which of this harness's own tools renders each document format the catalog leaves to the harness (EE-218). The catalog (packages/naive/src/functions/documents.json) names no vendor, so the mapping lives here, one entry per format, and a format with no entry is left to whatever the agent has. Naive renders Markdown itself and never delegates it. */
+  documents?: { [K in "pdf" | "docx" | "pptx" | "xlsx" | "html"]?: {
+      /** The skill, tool or command the agent loads for this format in this harness. */
+      use: string;
+      /** What to watch for, in one plain sentence. */
+      how?: string;
+    } };
   note?: string;
 };
 
@@ -320,6 +327,12 @@ export type Artifact = {
   action?: string;
   /** Who it is for: the founder, the team, investors, the public */
   audience?: string;
+  /** The document kind in packages/naive/src/functions/documents.json this was rendered as (EE-218). It ties the artifact to its catalog entry, so packages/naive/src/checks/check-documents.ts can tell which rung of the ladder it sits on. */
+  document_kind?: string;
+  /** The format it was rendered in (EE-218). The catalog gives each format a rung, and the ladder is fail closed: a rung is built only once the rung below it is a live artifact a person approved. */
+  format?: "md" | "pdf" | "docx" | "pptx" | "html" | "site";
+  /** The person who read this rung and approved building the one above it (EE-218). Never an agent. Publishing has its own approver, in governance/publications.json. */
+  approved_by?: string;
   /** It has gone out to its audience; a person decides that */
   published?: boolean;
   /**
@@ -1497,6 +1510,93 @@ export type DetectorLine = {
   set_by: string;
   /** The decision that set or accepted it, if any. */
   decision?: string;
+};
+
+/** Which documents a venture makes, in which format, from which records, and in what order (EE-218), at packages/naive/src/functions/documents.json. A record is the source of truth and a document is an artifact rendered from records, never the record. The catalog is opinionated: each format says what it is for and the rules say when slides beat a printed document, so an agent does not guess. The ladder is the order every document climbs, a printable reading copy a person approved before any interactive page and the page before the live site; each rung names the extra records and decision classes it needs, in the shape packages/naive/src/engine/prerequisites.ts reads (EE-217). packages/naive/src/checks/check-documents.ts checks what this schema cannot: one root rung, no cycle, every kind's rungs reachable, every format and function known, every section's record path in the data model, and a venture's own document artifacts climbing in order. */
+export type DocumentCatalog = {
+  version: string;
+  note?: string;
+  /** The formats a document may be rendered in. A format is a way of reading, not a tool: the tool that writes it is the renderer. */
+  formats: {
+    id: "md" | "pdf" | "docx" | "pptx" | "html" | "site";
+    name: string;
+    /** The ladder rung this format sits on. */
+    rung: string;
+    /** How a person takes it in: alone and in order, on a screen, or in a room with a speaker. */
+    reads: string;
+    /** True when a person can print it and carry it into a meeting. */
+    prints?: boolean;
+    /** naive: naive render writes it in house, so the framework carries no heavy dependency. harness: the agent's own harness writes it from the reading copy, and the harness adapter (packages/naive/src/interfaces/adapters/) names the skill, so the catalog names no vendor. site-build: the venture's site build and the publishing gate (EE-025). */
+    renderer: "naive" | "harness" | "site-build";
+    /** Why this format exists in the catalog, in one plain sentence. */
+    why: string;
+  }[];
+  /** The opinionated part: how to choose a format. Each rule asks one question about the reader and names the format it points to. A rule never decides alone; a person may override it, and the override is a decision. */
+  rules: {
+    id: string;
+    /** The reader's situation, in one plain sentence. */
+    when: string;
+    then: ("md" | "pdf" | "docx" | "pptx" | "html" | "site")[];
+    /** Formats this situation rules out. */
+    not?: ("md" | "pdf" | "docx" | "pptx" | "html" | "site")[];
+    why: string;
+  }[];
+  /** The order a document climbs. Fail closed: a rung is built only once the rung it comes after exists as a live artifact a person approved. */
+  ladder: {
+    note: string;
+    rungs: {
+      id: string;
+      /** The rung below this one, or null for the first rung. Exactly one rung has null. */
+      after: string | null;
+      what: string;
+      formats: ("md" | "pdf" | "docx" | "pptx" | "html" | "site")[];
+      /** Only a person approves a rung. An agent drafts and renders. */
+      approved_by: "person";
+      /** What this rung needs beyond the rung below it, in the shape packages/naive/src/engine/prerequisites.ts reads (EE-217). The rung below is the ladder's own requirement and is not repeated here. */
+      requires: {
+        /** Logical record paths or route patterns that must be live. */
+        records?: string[];
+        /** Meeting kinds that must have happened. */
+        meetings?: string[];
+        /** Decision classes that must be decided by a person. */
+        decisions?: string[];
+      };
+    }[];
+  };
+  /** The documents this framework is opinionated about. A kind a venture wants and the catalog lacks is a pull request, not a local invention. */
+  kinds: {
+    id: string;
+    title: string;
+    /** The function in packages/naive/src/functions/departments.json whose agent drafts it. */
+    function: string;
+    /** What the reader can do once they have read it. */
+    purpose: string;
+    audience: ("founder" | "team" | "board" | "investor" | "customer" | "partner" | "counsel" | "public")[];
+    /** The artifact kind the rendered document is, as artifact.schema.json names it. */
+    artifact_kind: "document" | "deck" | "dashboard" | "design" | "page" | "file" | "site";
+    /** The top rung this kind climbs to. Most kinds stop at the reading copy. */
+    highest_rung: string;
+    formats: ("md" | "pdf" | "docx" | "pptx" | "html" | "site")[];
+    /** Why these formats and not the others, in one plain sentence. */
+    why_format: string;
+    /** The role that approves it, when it is not the founder. A person either way. */
+    approves?: string;
+    /** An unvalidated prior: about how many words belong on one page or one slide of this kind. A venture overrides it in naive.config.json. */
+    words_per_page?: number;
+    /** An unvalidated prior: about how many pages or slides this kind runs to. */
+    pages?: number;
+    /** The reading copy's sections, in order. Each names the record it reads, so every claim in the rendered document cites a record. */
+    sections: {
+      id: string;
+      title: string;
+      /** The logical path of the record it reads, such as foundation/problem.json. A path with * reads every record it matches, one block each. */
+      from: string;
+      /** A dotted path to a string or a list of strings in that record. Without it the section names the record and leaves the words to the writer. */
+      field?: string;
+      /** True when a hole is left out instead of shown: a missing record, or a record with nothing in the field, leaves the section out rather than printing what is not recorded. */
+      optional?: boolean;
+    }[];
+  }[];
 };
 
 /** The accountable owner a venture names for an element of APQC's Process Classification Framework (EE-187): a category, process group, process, activity or task in packages/naive/src/functions/pcf.json. An element with no entry takes its parent's owner, and a category with none is owned by its function's agent. The owner is accountable, the one who answers for the element; who performs an activity is in operations/activity-assignments.json. The file is operations/element-owners.json, and packages/naive/src/engine/element-owners.ts resolves it. */
@@ -4930,6 +5030,31 @@ export type Process = {
    * @format date
    */
   last_reviewed?: string | null;
+  note?: string;
+};
+
+/** One capability of a product, or a category that groups capabilities, at <venture>/product/capabilities/<id>.json (EE-224). Capabilities form a tree under the products function: a category's parent is another category or null (it sits directly under the products function), and a capability always has a category as its parent. Each names the agent role that owns it, the one that keeps its words and its site or docs containers current. A capability is live, building or retired, and nothing under a retired category is live or building (node packages/naive/src/checks/check-ventures.ts). */
+export type ProductCapability = {
+  id: string;
+  venture?: string;
+  /** The capability as a customer would name it, for example Time travel */
+  name: string;
+  /** The product it belongs to: a product card's id in product/ or products/ */
+  product: string;
+  /** A category groups capabilities and other categories; a capability is one thing the product does */
+  kind: "category" | "capability";
+  /** The category it sits under, or null for a category directly under the products function */
+  parent: string | null;
+  /** The agent role that owns it: <capability>-agent for a capability, the category agent for a category. A container in a site's containers.json names the same role as its owner */
+  owner: string;
+  status: "live" | "building" | "retired";
+  /** What it does, in one or two plain sentences */
+  summary?: string;
+  /**
+   * When it reached its status
+   * @format date
+   */
+  since?: string;
   note?: string;
 };
 

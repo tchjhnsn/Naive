@@ -18,7 +18,7 @@ const expect = (name: string, ok: boolean, detail: unknown = "") => { console.lo
 const g = buildGraph(runSync(shippedInput()));
 const att = attachments(g);
 expect("an activity's workflows and record types are those of the steps that perform it", JSON.stringify(att.get("1.1.1.1")) === JSON.stringify({ workflows: ["strategy/competitor-review"], records: ["competitor"] }) && JSON.stringify(att.get("3.5.1.6")) === JSON.stringify({ workflows: ["marketing-and-sales/weekly-pipeline-review"], records: ["opportunity"] }), [att.get("1.1.1.1"), att.get("3.5.1.6")]);
-expect("a function holds all its workflows and every record type they write", att.get("3.0")!.workflows.length === 4 && att.get("3.0")!.workflows.includes("marketing-and-sales/campaign-daily-review") && att.get("1.0")!.records.includes("competitor") && att.get("1.0")!.records.includes("goal") && !att.get("1.0")!.records.includes("telos"), att.get("1.0"));
+expect("a function holds all its workflows and every record type they write", att.get("3.0")!.workflows.length === 5 && att.get("3.0")!.workflows.includes("marketing-and-sales/campaign-daily-review") && att.get("1.0")!.records.includes("competitor") && att.get("1.0")!.records.includes("goal") && !att.get("1.0")!.records.includes("telos"), att.get("1.0"));
 
 const keys = (s: ElementState): string[] => (s.tag === "degraded" ? s.causes.map(causeKey) : []);
 const dir = mkdtempSync(join(tmpdir(), "naive-effects-"));
