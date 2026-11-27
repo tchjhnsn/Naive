@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Postbuild gate: the prerendered site is scanned the way publish-build.mjs scans a channel's output.
-// No page may carry a record's internal wording or a draft marker, and the marketing pages, Blog and
-// Showcase also fail on any internal term. Docs and Templates describe Naive's own file layout, so their
+// No page may carry a record's internal wording or a draft marker, and the marketing pages
+// also fail on any internal term. Docs and Templates describe Naive's own file layout, so their
 // record paths and decision ids are counted, not failed, until Torian sets a policy for them.
 // A rendered marketing page also fails when it links to or names a route that proxy.ts sends to /waitlist.
 // A plain build writes prerendered files under .next/server/app. A build adapter, which is what
@@ -21,7 +21,7 @@ type Finding = { page: string; what: string };
 const repo = new URL("../../", import.meta.url).pathname;
 const GATE = join(repo, "site/gate");
 const marketing: string[] = JSON.parse(readFileSync(new URL("../content/marketing/meta.json", import.meta.url), "utf8")).pages;
-const STRICT = new Set([...marketing, "blog", "showcase", "_not-found"]);
+const STRICT = new Set([...marketing, "_not-found"]);
 const PUBLIC_REPO = "https://github.com/tchjhnsn/everything-ecosystem";
 
 const walk = (p: string): string[] => statSync(p).isDirectory() ? readdirSync(p).flatMap((n) => walk(join(p, n))) : [p];

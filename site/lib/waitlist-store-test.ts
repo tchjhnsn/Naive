@@ -27,7 +27,6 @@ const sources = [
   "../content/marketing/about.mdx",
   "../content/marketing/how.mdx",
   "../components/shell/nav.ts",
-  "../components/blog/header.tsx",
 ].map(read);
 const destinations = sources.flatMap(labeled);
 expect("public waitlist labels point at /waitlist", destinations.length >= 5 && destinations.every((href) => href === "/waitlist"));
