@@ -3327,6 +3327,25 @@
           "expect": "exists"
         }
       ]
+    },
+    {
+      "id": "EE-225",
+      "date": "2026-11-27",
+      "status": "in-force",
+      "decision": "Every instruction file Naive writes says that existing code wins over stale documentation. The sentence is CODE_OVER_DOCS in packages/naive/src/core/code-over-docs.ts, word for word from Xu and Wu (2026): when a repository's documentation and its existing code disagree, follow the conventions used in the existing code and name each inconsistency in the final reply. init-venture and naive dev write it into a venture's AGENTS.md, workspace.ts into the workspace's, and the Claude Code and Cursor adapters into their entry files; Codex reads it in AGENTS.md. A venture created before this gets it only when someone adds the line (no migration, not built).",
+      "why": "Xu and Wu (2026, arXiv 2610.30571) found that coding agents followed a stale AGENTS.md or CLAUDE.md over the existing code in 90% of choices, even when they named the conflict, because the file reaches the model as an instruction and the code only as tool output; Codex rewrote working code to match the file and broke its tests. The one sentence, given as an instruction, moved 91% of choices to the code and stopped the rewrites. Torian on 2026-11-27: \"This is the fix I've been trying to make for so long. The documentations are always wrong and never being properly updated.\"",
+      "related": [
+        "EE-072",
+        "EE-085"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/core/code-over-docs.ts",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
     }
   ]
 }
