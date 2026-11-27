@@ -1,0 +1,131 @@
+{
+  "id": "5-2-3-enable-service-delivery-resources",
+  "function": "service-delivery",
+  "process": "5.2.3",
+  "title": "Enable service delivery resources",
+  "goal": "Whoever delivers can run a live offer's procedure without the founder beside them: the plan says who must learn what, the materials sit beside the runbook, and nobody works a client's deliverable before passing the test for its skills.",
+  "measures": [
+    "flow_and_lead_time",
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "service-delivery/intake"
+    ]
+  },
+  "reads": [
+    "service-delivery/offers",
+    "service-delivery/engagements",
+    "operations/handoff",
+    "people/team",
+    "people/team-plan",
+    "capabilities/processes",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "training-plan",
+      "do": "Write, for each live offer, who must be able to run its procedure (the founder, a named agent, a named supplier), what each of them must be able to do unaided, and in what order it is learned, on the handoff.",
+      "skill": "manage-service-delivery-resources",
+      "activity": "5.2.3.1",
+      "writes": [
+        "operations/handoff/[id]"
+      ]
+    },
+    {
+      "id": "training-materials",
+      "do": "Turn each offer's procedure into what someone can learn from (the runbook with its checks, one worked example from a closed engagement with the client's identifying details removed, and the list of mistakes already made) and point the offer's runbook at it.",
+      "skill": "manage-service-delivery-resources",
+      "activity": "5.2.3.2",
+      "writes": [
+        "service-delivery/offers/[id]"
+      ]
+    },
+    {
+      "id": "training-schedule",
+      "do": "Put each performer's learning into dated slots that collide with no committed deliverable, and open one handoff per session with what it must leave the person able to do.",
+      "skill": "manage-service-delivery-resources",
+      "activity": "5.2.3.3",
+      "writes": [
+        "operations/handoff/[id]"
+      ],
+      "consider": {
+        "why": "Dates stop learning from being pushed behind client work for ever.",
+        "when": "Someone other than the founder is to work a client's deliverable."
+      }
+    },
+    {
+      "id": "operations-training",
+      "do": "Prepare the session on how the work runs (opening an engagement, recording status and evidence, raising a change request, who may speak to the client) with its exercises, and leave giving the session to the founder.",
+      "skill": "manage-service-delivery-resources",
+      "activity": "5.2.3.4",
+      "ask": true,
+      "consider": {
+        "why": "Teaching a person is the founder's, and the agent can only prepare what is taught.",
+        "when": "A new performer is to work a client's deliverable."
+      }
+    },
+    {
+      "id": "technical-training",
+      "do": "Prepare the session on the craft of one offer, with its tools, its data and two exercises taken from a closed engagement whose answer is already known, and leave giving it to the founder or to the agent that holds the skill.",
+      "skill": "manage-service-delivery-resources",
+      "activity": "5.2.3.5",
+      "consider": {
+        "why": "The craft of an offer is the part a runbook cannot carry on its own.",
+        "when": "A new performer is to work a deliverable of an offer they have not delivered before."
+      }
+    },
+    {
+      "id": "skill-testing",
+      "do": "Set the test for each skill as a task from a closed engagement judged by its own acceptance test, record who attempted it, the result and the date on the handoff, and name who may not yet take a client's deliverable.",
+      "skill": "manage-service-delivery-resources",
+      "activity": "5.2.3.6",
+      "writes": [
+        "operations/handoff/[id]"
+      ],
+      "consider": {
+        "why": "A test on work whose answer is known is how the venture finds out before a client does.",
+        "when": "Someone other than the founder is to work a client's deliverable."
+      }
+    },
+    {
+      "id": "training-effectiveness",
+      "do": "After the next delivery by a trained performer, compare its rework, hours and on-time result with earlier deliveries of the same offer and say plainly whether the training changed anything.",
+      "skill": "manage-service-delivery-resources",
+      "activity": "5.2.3.7",
+      "writes": [
+        "operations/handoff/[id]"
+      ],
+      "consider": {
+        "why": "Training that changes no delivery figure is cost without a result.",
+        "when": "A trained performer has delivered at least one deliverable of the offer they were trained on."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Add what the plan and the tests showed to the decisions they bear on, and recommend to the product lead which skill to build, buy or stop offering.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "nobody-untested-on-client-work",
+      "kind": "review",
+      "check": "Does every live offer have materials someone could learn it from, and has every performer other than the founder passed the test for the skills their assigned deliverables need?",
+      "reviewer": "product-lead"
+    }
+  ]
+}

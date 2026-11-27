@@ -1,0 +1,23 @@
+{
+  "id": "8-3-2-develop-it-resilience-strategy",
+  "function": "it",
+  "process": "8.3.2",
+  "title": "Develop IT resilience strategy",
+  "goal": "The venture knows which of its systems it could not work without and for how long, the founder has ordered the risks to those systems, and each one at the top has a written mitigation with an owner and a date.",
+  "measures": ["compliance_met", "cost_or_time_saved"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["it/intake"] },
+  "reads": ["venture", "it/connections", "legal/risks", "finance/spend", "operations/handoff", "foundation/goals", "decisions/*"],
+  "steps": [
+    { "id": "determine-it-delivery-resiliency", "do": "For each system, write what the venture could still do without it, for how long, and what it would lose for good, and record on the connection the longest outage the work could absorb.", "skill": "develop-and-manage-it-resilience-and-risk", "activity": "8.3.2.1", "writes": ["it/connections/[id]"] },
+    { "id": "determine-critical-it-risks", "do": "Pick out the risks that would stop the venture or lose records it cannot recreate (the single credential holder, the account without MFA, the system with no export, the provider with no notice period), each with the evidence that it is real here.", "skill": "develop-and-manage-it-resilience-and-risk", "activity": "8.3.2.2" },
+    { "id": "prioritize-it-risks", "do": "Put the critical risks to the founder as one decision, ordered by what would be lost against what the fix costs, with your recommendation, and let the founder set the order and say which risks the venture accepts as they are.", "skill": "develop-and-manage-it-resilience-and-risk", "activity": "8.3.2.3", "ask": true, "writes": ["decisions/*"], "raises": ["set-priorities"] },
+    { "id": "establish-mitigation-approaches-for-it-risks", "do": "For each risk the founder put at the top, write the mitigation, its owner, its date and how anyone would know it is in place, carry out the part that only narrows access or adds a backup, and leave every widening, purchase or new term to the founder.", "skill": "develop-and-manage-it-resilience-and-risk", "activity": "8.3.2.4", "writes": ["it/connections/[id]"], "raises": ["security-tightening", "spend-money", "security-loosening"] },
+    { "id": "feed-decisions", "do": "Record the order the founder set and each mitigation as evidence on the decision it settles, and name on the handoff every accepted risk with the date it was accepted so it is revisited rather than forgotten.", "skill": "develop-and-manage-it-resilience-and-risk", "writes": ["decisions/*"], "raises": ["domain-fact"] }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "connections-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-connections.ts \"$NAIVE_VENTURE\"" },
+    { "id": "critical-risks-ordered", "kind": "review", "check": "Does every system say how long the venture could work without it, did the founder order the critical risks and name the ones it accepts, and does every top risk have a mitigation with an owner and a date?", "reviewer": "product-lead" }
+  ]
+}

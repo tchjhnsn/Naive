@@ -51,6 +51,41 @@ The strategy function (APQC 1.0, Develop Vision and Strategy). Its governance si
 | [templates/pre-registration.md](./templates/pre-registration.md) | Template: a pre-registration, with every number in it labelled an example, because Naive ships no threshold and no sample size (EE-220) |
 | [templates/telos-based-smart.md](./templates/telos-based-smart.md) | Template: telos, BASED then SMART |
 
+## APQC processes
+
+Every level 3 process of APQC category 1.0, Develop Vision and Strategy, has one workflow here, named by its hierarchy id and naming it in its `process` field, and every level 2 process group has one skill (EE-226). The APQC names are APQC's own. Each workflow's trigger is `request`: it runs when the strategy lead or the founder hands it off, and it waits on a meeting that walked [workflows/intake.json](./workflows/intake.json) and closed with its goal reached, so process work stays locked until the founder has been through the function's intake. A workflow that writes a foundation record also waits on a live `foundation/pre-registration` record (EE-220).
+
+| Process | APQC name | Workflow | Skill |
+|---|---|---|---|
+| **1.1** | **Define the business concept and long-term vision** | | [skills/define-the-business-concept-and-long-term-vision](./skills/define-the-business-concept-and-long-term-vision) |
+| 1.1.1 | Assess the external environment | [workflows/1-1-1-assess-the-external-environment.json](./workflows/1-1-1-assess-the-external-environment.json) | `define-the-business-concept-and-long-term-vision` |
+| 1.1.2 | Survey market and determine customer needs and wants | [workflows/1-1-2-survey-market-and-determine-customer-needs-and.json](./workflows/1-1-2-survey-market-and-determine-customer-needs-and.json) | `define-the-business-concept-and-long-term-vision` |
+| 1.1.3 | Assess the internal environment | [workflows/1-1-3-assess-the-internal-environment.json](./workflows/1-1-3-assess-the-internal-environment.json) | `define-the-business-concept-and-long-term-vision` |
+| 1.1.4 | Establish strategic vision | [workflows/1-1-4-establish-strategic-vision.json](./workflows/1-1-4-establish-strategic-vision.json) | `define-the-business-concept-and-long-term-vision` |
+| 1.1.5 | Conduct organization restructuring opportunities | [workflows/1-1-5-conduct-organization-restructuring-opportunities.json](./workflows/1-1-5-conduct-organization-restructuring-opportunities.json) | `define-the-business-concept-and-long-term-vision` |
+| **1.2** | **Develop business strategy** | | [skills/develop-business-strategy](./skills/develop-business-strategy) |
+| 1.2.1 | Develop overall mission statement | [workflows/1-2-1-develop-overall-mission-statement.json](./workflows/1-2-1-develop-overall-mission-statement.json) | `develop-business-strategy` |
+| 1.2.2 | Define and evaluate strategic options to achieve the mission | [workflows/1-2-2-define-and-evaluate-strategic-options-to-achieve.json](./workflows/1-2-2-define-and-evaluate-strategic-options-to-achieve.json) | `develop-business-strategy` |
+| 1.2.3 | Set/Develop long-term enterprise strategy | [workflows/1-2-3-set-develop-long-term-enterprise-strategy.json](./workflows/1-2-3-set-develop-long-term-enterprise-strategy.json) | `develop-business-strategy` |
+| 1.2.4 | Coordinate and align cross-functional and process strategies | [workflows/1-2-4-coordinate-and-align-cross-functional-and-process.json](./workflows/1-2-4-coordinate-and-align-cross-functional-and-process.json) | `develop-business-strategy` |
+| 1.2.5 | Create organizational design | [workflows/1-2-5-create-organizational-design.json](./workflows/1-2-5-create-organizational-design.json) | `develop-business-strategy` |
+| 1.2.6 | Develop and set organizational objectives | [workflows/1-2-6-develop-and-set-organizational-objectives.json](./workflows/1-2-6-develop-and-set-organizational-objectives.json) | `develop-business-strategy` |
+| 1.2.7 | Formulate business unit strategies | [workflows/1-2-7-formulate-business-unit-strategies.json](./workflows/1-2-7-formulate-business-unit-strategies.json) | `develop-business-strategy` |
+| 1.2.8 | Develop customer experience strategy | [workflows/1-2-8-develop-customer-experience-strategy.json](./workflows/1-2-8-develop-customer-experience-strategy.json) | `develop-business-strategy` |
+| 1.2.9 | Communicate strategies internally and externally | [workflows/1-2-9-communicate-strategies-internally-and-externally.json](./workflows/1-2-9-communicate-strategies-internally-and-externally.json) | `develop-business-strategy` |
+| **1.3** | **Develop and measure strategic initiatives** | | [skills/develop-and-measure-strategic-initiatives](./skills/develop-and-measure-strategic-initiatives) |
+| 1.3.1 | Develop strategic initiatives | [workflows/1-3-1-develop-strategic-initiatives.json](./workflows/1-3-1-develop-strategic-initiatives.json) | `develop-and-measure-strategic-initiatives` |
+| 1.3.2 | Evaluate strategic initiatives | [workflows/1-3-2-evaluate-strategic-initiatives.json](./workflows/1-3-2-evaluate-strategic-initiatives.json) | `develop-and-measure-strategic-initiatives` |
+| 1.3.3 | Select strategic initiatives | [workflows/1-3-3-select-strategic-initiatives.json](./workflows/1-3-3-select-strategic-initiatives.json) | `develop-and-measure-strategic-initiatives` |
+| 1.3.4 | Establish high-level measures | [workflows/1-3-4-establish-high-level-measures.json](./workflows/1-3-4-establish-high-level-measures.json) | `develop-and-measure-strategic-initiatives` |
+| 1.3.5 | Execute strategic initiatives | [workflows/1-3-5-execute-strategic-initiatives.json](./workflows/1-3-5-execute-strategic-initiatives.json) | `develop-and-measure-strategic-initiatives` |
+| 1.3.6 | Review execution of strategic initiatives | [workflows/1-3-6-review-execution-of-strategic-initiatives.json](./workflows/1-3-6-review-execution-of-strategic-initiatives.json) | `develop-and-measure-strategic-initiatives` |
+| 1.3.7 | Refine strategic initiatives and project plans as needed | [workflows/1-3-7-refine-strategic-initiatives-and-project-plans-as.json](./workflows/1-3-7-refine-strategic-initiatives-and-project-plans-as.json) | `develop-and-measure-strategic-initiatives` |
+| **1.4** | **Develop and maintain business models** | | [skills/develop-and-maintain-business-models](./skills/develop-and-maintain-business-models) |
+| 1.4.1 | Develop business models | [workflows/1-4-1-develop-business-models.json](./workflows/1-4-1-develop-business-models.json) | `develop-and-maintain-business-models` |
+| 1.4.2 | Maintain business models | [workflows/1-4-2-maintain-business-models.json](./workflows/1-4-2-maintain-business-models.json) | `develop-and-maintain-business-models` |
+| 1.4.3 | Establish business model governance | [workflows/1-4-3-establish-business-model-governance.json](./workflows/1-4-3-establish-business-model-governance.json) | `develop-and-maintain-business-models` |
+
 Each workflow names its `goal`, what one run must make true, and the telos measure kinds it moves, which are a subset of this function's in `function.json`; `agent.md` names what the agent works toward, the routes it writes, what to do when it does not know, and when to load each skill in this module (EE-215). `node packages/naive/src/checks/check-functions.ts` fails on any drift between the three.
 
 Each workflow's done criterion `records-valid` runs `node packages/naive/src/checks/check-records.ts "$NAIVE_VENTURE"`: it validates the business's records, the folder the handoff runner names in `NAIVE_VENTURE`, not Naive's own.

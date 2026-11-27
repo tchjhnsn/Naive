@@ -1,0 +1,81 @@
+{
+  "id": "6-1-1-define-customer-service-requirements-across-the",
+  "function": "customer-service",
+  "process": "6.1.1",
+  "title": "Define customer service requirements across the enterprise",
+  "goal": "Every promise the venture has already made about helping customers, and every demand its contacts place on support, is written in the support policy as a requirement that cites the record it came from.",
+  "measures": [
+    "usage_or_adoption"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "customer-service/intake"
+    ]
+  },
+  "reads": [
+    "support/policy",
+    "support/cases",
+    "customers",
+    "product/bugs",
+    "foundation/icp",
+    "foundation/telos",
+    "service-delivery/offers",
+    "marketing/message",
+    "legal/obligations"
+  ],
+  "steps": [
+    {
+      "id": "collect-promises",
+      "do": "Read the published messages, the offers and the legal obligations and list every promise the venture has already made about help, response time, uptime, refunds or returns, each quoted with the record it sits in.",
+      "skill": "develop-customer-service-strategy"
+    },
+    {
+      "id": "count-what-customers-need",
+      "do": "Count the open and closed cases by reason and by channel and name the requirement each cluster implies, such as a reason that needs published help or a channel nobody answers at the weekend, with the case counts behind it.",
+      "skill": "develop-customer-service-strategy"
+    },
+    {
+      "id": "ask-the-limits",
+      "do": "Ask the founder how many hours a week support may take, who besides the founder may answer a customer, and what must never be promised, because no record says any of it.",
+      "ask": true,
+      "skill": "develop-customer-service-strategy"
+    },
+    {
+      "id": "draft-requirements",
+      "do": "Draft the requirements into the support policy, each one citing the promise, the case count or the obligation behind it, and raise the draft for the founder, because the policy is what the venture tells its customers.",
+      "writes": [
+        "support/policy"
+      ],
+      "raises": [
+        "public-commitment"
+      ],
+      "skill": "develop-customer-service-strategy"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Name the open decision each requirement bears on and add the requirement there as evidence, and recommend to the growth lead which requirement to meet first.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "requirements-traced",
+      "kind": "review",
+      "check": "Does every requirement in the support policy cite the promise, case count or obligation it came from, and is the draft waiting on the founder rather than already published?",
+      "reviewer": "growth-lead"
+    }
+  ]
+}

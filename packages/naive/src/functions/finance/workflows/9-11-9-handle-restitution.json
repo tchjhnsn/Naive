@@ -1,0 +1,88 @@
+{
+  "id": "9-11-9-handle-restitution",
+  "function": "finance",
+  "process": "9.11.9",
+  "title": "Handle restitution",
+  "goal": "Every duty, import tax or fee the venture overpaid or could reclaim is identified with its ground, its evidence and its deadline, and each claim was filed by the founder or their broker with what was recovered recorded.",
+  "measures": [
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "finance/intake"
+    ]
+  },
+  "reads": [
+    "finance/spend",
+    "finance/spend/[id]",
+    "money",
+    "money/[id]",
+    "purpose/money/summary",
+    "product",
+    "supply-chain/purchase-orders",
+    "customers",
+    "legal/obligations"
+  ],
+  "steps": [
+    {
+      "id": "find-the-claims",
+      "do": "Review the period's customs payments against the shipments and returns and list every amount that could be reclaimed, with the ground for each and the deadline it must be claimed by.",
+      "skill": "perform-global-trade-services",
+      "consider": {
+        "why": "Overpaid duty is reclaimable only inside a window that nobody is reminded of.",
+        "when": "The venture has paid duty, import tax or a fee on goods later returned, re-exported, misclassified or overvalued."
+      }
+    },
+    {
+      "id": "assemble-the-evidence",
+      "do": "Assemble what each claim needs, the original declaration, the payment, the proof of return or re-export and the corrected classification or value, and list what cannot be produced.",
+      "skill": "perform-global-trade-services",
+      "consider": {
+        "why": "A reclaim is only as good as the original declaration and the proof of what happened next.",
+        "when": "A reclaimable amount has been identified."
+      }
+    },
+    {
+      "id": "file-the-claim",
+      "do": "Hand the founder or the broker the assembled claim with its amount and deadline, and once the money arrives record the receipt and the new balance from the statement; the agent never files with an authority.",
+      "skill": "perform-global-trade-services",
+      "ask": true,
+      "writes": [
+        "money/[id]"
+      ],
+      "raises": [
+        "legal-or-terms"
+      ],
+      "consider": {
+        "why": "Filing with an authority and receiving money back are both acts only a person can do.",
+        "when": "A claim is assembled and still inside its deadline."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Raise each claim whose evidence is incomplete as a decision for the founder, and tell the finance lead which deadline is nearest and worth the most.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "claims-have-deadlines",
+      "kind": "review",
+      "check": "Does every reclaim carry its ground, its evidence and the deadline it must be filed by, and was each one filed by the founder or their broker?",
+      "reviewer": "finance-lead"
+    }
+  ]
+}

@@ -1,0 +1,71 @@
+{
+  "id": "13-7-2-benchmark-performance",
+  "function": "capabilities",
+  "process": "13.7.2",
+  "title": "Benchmark performance",
+  "goal": "The venture knows where it stands: its own processes compared against each other and against public figures for the same work, every comparison matched like for like with its source and date, and the gaps that are worth closing named.",
+  "measures": ["cost_or_time_saved", "flow_and_lead_time"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["capabilities/intake"] },
+  "reads": [
+    "capabilities/processes",
+    "evidence",
+    "operations/handoff",
+    "knowledge/knowledge-sources",
+    "raw/sources",
+    "industries/[id]",
+    "markets/[id]"
+  ],
+  "steps": [
+    {
+      "id": "conduct-performance-assessments",
+      "do": "Read each active process's own measures over the last windows and say where this venture stands against itself, naming the processes that are getting slower and the ones with no measurement at all.",
+      "skill": "measure-and-benchmark",
+      "activity": "13.7.2.1",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "develop-benchmarking-capabilities",
+      "do": "Write how a comparison is made here so two of them can be trusted together: the measure's definition, the unit, the window, what counts as the same work, and what must be said about a source before it is used.",
+      "skill": "measure-and-benchmark",
+      "activity": "13.7.2.2",
+      "writes": ["capabilities/processes/[id]"],
+      "consider": {
+        "why": "A comparison made differently each time cannot be read twice, so the method is written once.",
+        "when": "The venture has compared itself with an outside figure before, or intends to do so more than once."
+      }
+    },
+    {
+      "id": "conduct-internal-and-external-benchmarking",
+      "do": "Compare the process against the venture's own best run of the same work and against published figures for the same work from public sources only, cite each source with the date it was read, and mark a figure as not comparable rather than adjusting it.",
+      "skill": "industry-awareness",
+      "activity": "13.7.2.3",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "conduct-gap-analysis",
+      "do": "For each comparison, write the size of the gap, what the better performer does differently as far as public sources say, and what of that this venture could actually do at its size.",
+      "skill": "measure-and-benchmark",
+      "activity": "13.7.2.4",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "establish-need-for-change",
+      "do": "Say for each gap what it costs the venture per month in hours or money and what closing it would take, and bring the founder the one or two where the cost is worth the work.",
+      "skill": "measure-and-benchmark",
+      "activity": "13.7.2.5",
+      "writes": ["operations/handoff/[id]"],
+      "raises": ["set-priorities"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Raise to the strategy lead which gap to work on this cycle, with the comparison and its source behind it, and record every comparison as evidence on the handoff.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "like-for-like-and-sourced", "kind": "review", "check": "Does every outside figure cite a public source with the date it was read, and is every comparison on the same measure, unit and window, or marked as not comparable?", "reviewer": "strategy-lead" }
+  ]
+}

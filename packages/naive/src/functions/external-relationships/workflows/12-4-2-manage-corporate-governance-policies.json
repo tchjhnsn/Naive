@@ -1,0 +1,21 @@
+{
+  "id": "12-4-2-manage-corporate-governance-policies",
+  "function": "external-relationships",
+  "process": "12.4.2",
+  "title": "Manage corporate governance policies",
+  "goal": "Every governance record the venture holds is listed with what it settles, every place two of them disagree is named by what breaks if nobody fixes it, and each conflict has a proposed change waiting on the founder.",
+  "measures": ["compliance_met","learning"],
+  "trigger": {"kind":"request"},
+  "requires": {"meetings":["external-relationships/intake"]},
+  "reads": ["governance/decision-rights","governance/delegation","governance/board","governance/founder-agreement","governance/ownership","governance/internal-terms","governance/exit","people/founders","decisions/*"],
+  "steps": [
+    {"id":"read-the-governance-records","do":"Read the decision rights, the delegation, the board record, the founder agreement, the cap table and the exit record and list what each one settles and every policy they name but do not contain.","skill":"manage-legal-and-ethical-issues"},
+    {"id":"find-where-they-disagree","do":"Name every place two of them disagree, a class delegated to a role the board reserves, a signing right nobody holds, a vesting term the founder agreement and the cap table state differently, and order them by what breaks if nobody fixes them.","skill":"manage-legal-and-ethical-issues","writes":["operations/handoff/[id]"]},
+    {"id":"propose-the-smallest-change","do":"For each conflict propose the smallest change that settles it, in the words the record would carry, as a decision for the founder, and edit no governance record yourself.","skill":"manage-legal-and-ethical-issues","writes":["decisions/*"],"raises":["strategy-or-constitution","ownership-or-control"]},
+    {"id":"feed-decisions","do":"Name the open decision each conflict blocks and add it there as evidence, and propose to the strategy lead which governance gap to close first, the one holding up work.","skill":"manage-legal-and-ethical-issues","writes":["decisions/*"],"raises":["set-priorities"]}
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "conflicts-named-and-answered", "kind": "review", "check": "Is every conflict between two governance records named with what breaks if nobody fixes it, and does each one carry a proposed change the founder can decide?", "reviewer": "strategy-lead" }
+  ]
+}

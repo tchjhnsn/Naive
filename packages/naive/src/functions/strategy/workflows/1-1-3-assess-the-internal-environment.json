@@ -1,0 +1,92 @@
+{
+  "id": "1-1-3-assess-the-internal-environment",
+  "function": "strategy",
+  "process": "1.1.3",
+  "title": "Assess the internal environment",
+  "goal": "What the venture can actually do today, what it costs to run and where it is weakest is written down with the records behind it, and the limits that follow are drafted in the constraints for the founder to accept.",
+  "measures": ["learning"],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "records": ["foundation/pre-registration"],
+    "meetings": ["strategy/intake"]
+  },
+  "reads": [
+    "venture",
+    "foundation/constraints",
+    "foundation/goals",
+    "operations/department",
+    "operations/activity-briefing/strategy",
+    "operations/lead",
+    "people/team-plan",
+    "governance/delegation",
+    "it/connections",
+    "finance/spend",
+    "finance/budget",
+    "purpose/money/summary",
+    "product",
+    "system/phase-gate"
+  ],
+  "steps": [
+    {
+      "id": "analyze-organizational-characteristics",
+      "do": "Write who the venture is made of today from `venture`, `people/team-plan` and `operations/department`: which functions it runs, which work is a person's and which an agent's, and who holds which decision class under the delegation, and put the account on the handoff as evidence.",
+      "skill": "define-the-business-concept-and-long-term-vision",
+      "activity": "1.1.3.1"
+    },
+    {
+      "id": "analyze-internal-operations",
+      "do": "Read the function briefing and the workflow runs to list which workflows actually ran, which are overdue and which steps were skipped, and name the two or three places where the venture's own work stalls, with the run that shows it.",
+      "skill": "define-the-business-concept-and-long-term-vision",
+      "activity": "1.1.3.2"
+    },
+    {
+      "id": "create-baselines-for-current-processes",
+      "do": "For each function the venture runs, write the baseline it stands at now, the finished runs behind it and the records it keeps, so a later run can say whether anything improved, and put the baseline table on the handoff as evidence because no record type holds it.",
+      "skill": "define-the-business-concept-and-long-term-vision",
+      "activity": "1.1.3.3"
+    },
+    {
+      "id": "analyze-systems-and-technology",
+      "do": "List the tools and services the venture depends on from `it/connections`, say for each one what it would cost to lose it and whether the venture owns the record it holds, and open a handoff to the IT function for every dependency with no owner.",
+      "skill": "define-the-business-concept-and-long-term-vision",
+      "activity": "1.1.3.4",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "analyze-financial-health",
+      "do": "Read the money summary, the spend and the budget and write what the venture takes in, what it spends each month and how long it can run at that rate, quoting the figures rather than estimating them, and ask the founder for any commitment the records do not hold.",
+      "skill": "define-the-business-concept-and-long-term-vision",
+      "activity": "1.1.3.5",
+      "ask": true
+    },
+    {
+      "id": "identify-core-competencies",
+      "do": "Name the few things this venture can do that its competitors cannot, each with the evidence that it is true and not merely hoped, and draft into the constraints record what the venture must not take on because it has neither the competency nor the money to buy it, leaving the founder to accept the limit.",
+      "skill": "define-the-business-concept-and-long-term-vision",
+      "activity": "1.1.3.6",
+      "writes": ["foundation/constraints"],
+      "raises": ["strategy-or-constitution"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Attach each internal finding to the open decision or goal it bears on, raise as a decision any goal the venture plainly cannot staff or fund, and recommend to the strategy lead which weakness to work first.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities", "contradicts-ledger"]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "capacity-stated-from-records",
+      "kind": "review",
+      "check": "Is every claim about what the venture can do, spend or run quoted from a record or marked as an assumption with what would show it wrong?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

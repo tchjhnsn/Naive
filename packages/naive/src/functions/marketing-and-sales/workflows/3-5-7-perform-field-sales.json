@@ -1,0 +1,83 @@
+{
+  "id": "3-5-7-perform-field-sales",
+  "function": "marketing-and-sales",
+  "process": "3.5.7",
+  "title": "Perform field sales",
+  "goal": "Every visit a person makes to a buyer is prepared from the records and written back into the opportunity the same day, with what the buyer did and the next step.",
+  "measures": [
+    "revenue"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "marketing-and-sales/intake"
+    ]
+  },
+  "reads": [
+    "venture",
+    "sales/opportunities",
+    "customers",
+    "purpose/account",
+    "foundation/icp",
+    "product",
+    "markets",
+    "purpose/competitor",
+    "governance/publication-policy",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "plan-the-visits",
+      "do": "Propose which buyers are worth visiting in the period and in what order, from the open opportunities, the key accounts and where they are, with the reason each visit is worth the travel.",
+      "skill": "develop-and-manage-sales-plans",
+      "raises": [
+        "set-priorities"
+      ]
+    },
+    {
+      "id": "prepare-each-visit",
+      "do": "For each planned visit assemble the brief, the buyer's record, what is known and unknown of their buyer and pain, the questions to ask, what to leave behind from the approved material and the next step to propose.",
+      "skill": "develop-and-manage-sales-plans"
+    },
+    {
+      "id": "record-what-happened",
+      "do": "Ask the person what the buyer actually said and did, write it on the opportunity with the commitment made, the stage it now supports and a dated next step, and route to the owning function anything the buyer asked for.",
+      "ask": true,
+      "skill": "develop-and-manage-sales-plans",
+      "writes": [
+        "sales/opportunities/[id]",
+        "operations/handoff/[id]"
+      ],
+      "raises": [
+        "domain-fact",
+        "defer-or-route"
+      ]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Add what the visits showed to the decision or goal it bears on, and tell the growth lead whether visiting buyers earns its time against the other channels.",
+      "skill": "develop-and-manage-sales-plans",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "visits-written-back",
+      "kind": "review",
+      "check": "Does every visit made since the last run have the buyer's own words, the commitment made and a dated next step on its opportunity record?",
+      "reviewer": "growth-lead"
+    }
+  ]
+}

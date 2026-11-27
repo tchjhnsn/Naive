@@ -1,0 +1,21 @@
+{
+  "id": "12-4-8-provide-legal-advice-counseling",
+  "function": "external-relationships",
+  "process": "12.4.8",
+  "title": "Provide legal advice/counseling",
+  "goal": "The question that blocks a decision is answered from the venture's records and public primary sources with every clause quoted and dated, and the part that needs legal judgment is marked and handed to the founder for counsel.",
+  "measures": ["learning","compliance_met"],
+  "trigger": {"kind":"request"},
+  "requires": {"meetings":["external-relationships/intake"]},
+  "reads": ["legal/obligations","legal/risks","deals","governance/decision-rights","governance/internal-terms","governance/publication-policy","service-delivery/offers","decisions/*"],
+  "steps": [
+    {"id":"name-the-question","do":"Write the question in one sentence with the decision it blocks and the date it is needed by, and when no decision waits on it say so and stop the run there.","skill":"manage-legal-and-ethical-issues"},
+    {"id":"answer-from-what-is-written","do":"Answer only from the venture's own records and public primary sources, quoting the clause, statute or rule and the date you read it, and mark every part the sources do not answer.","skill":"manage-legal-and-ethical-issues","writes":["operations/handoff/[id]"]},
+    {"id":"mark-what-needs-counsel","do":"Say plainly which part of the answer is legal judgment the venture should not take from an agent, and hand that part to the founder with the page already written, so counsel starts from it rather than from nothing.","skill":"manage-legal-and-ethical-issues","writes":["decisions/*"],"raises":["spend-money"]},
+    {"id":"feed-decisions","do":"Add the answer to the decision it unblocks as evidence, and propose to the strategy lead which open legal question is worth paying to settle.","skill":"manage-legal-and-ethical-issues","writes":["decisions/*"],"raises":["set-priorities"]}
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "every-answer-quoted", "kind": "review", "check": "Does every part of the answer quote the clause or rule it rests on with the date read, and is the part that needs legal judgment marked and handed to the founder?", "reviewer": "strategy-lead" }
+  ]
+}

@@ -1,0 +1,133 @@
+{
+  "id": "9-3-4-perform-financial-reporting",
+  "function": "finance",
+  "process": "9.3.4",
+  "title": "Perform financial reporting",
+  "goal": "The period's statements and the one-page money report are written from the reconciled records with every figure citing its source, and anything that must leave the venture is prepared for the founder to send.",
+  "measures": [
+    "cost_or_time_saved",
+    "revenue"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "finance/intake"
+    ]
+  },
+  "reads": [
+    "finance/spend",
+    "finance/budget",
+    "money",
+    "purpose/money/summary",
+    "governance/ownership",
+    "governance/board",
+    "investors",
+    "investor-relations/updates",
+    "foundation/goals",
+    "product",
+    "customers",
+    "legal/obligations"
+  ],
+  "steps": [
+    {
+      "id": "unit-statements",
+      "do": "Draft the period's income statement, balance sheet and cash flow from the reconciled accounts, the spend register and the budget, each line citing the records behind it and each estimate marked as an estimate.",
+      "skill": "perform-general-accounting-and-reporting",
+      "activity": "9.3.4.1"
+    },
+    {
+      "id": "consolidated-statements",
+      "do": "Draft the combined statements across the entities with the transactions between them removed, and show each entity's own figures beside the combined ones.",
+      "skill": "perform-general-accounting-and-reporting",
+      "activity": "9.3.4.2",
+      "consider": {
+        "why": "Combined statements are the only view that shows what the whole venture earned and owes.",
+        "when": "The venture has more than one legal entity whose results are reported together."
+      }
+    },
+    {
+      "id": "management-reporting",
+      "do": "Write the one-page money report for the founder and the finance lead, cash, burn, runway, revenue and margin with what changed since last period, the reason for each move and the goal it bears on, and put its figures into the money summary.",
+      "skill": "perform-general-accounting-and-reporting",
+      "activity": "9.3.4.3",
+      "writes": [
+        "purpose/money/summary"
+      ]
+    },
+    {
+      "id": "cost-management-reporting",
+      "do": "Report cost by category and by product across the whole venture, each figure set against its budget line with the variance named and explained.",
+      "skill": "perform-general-accounting-and-reporting",
+      "activity": "9.3.4.4",
+      "consider": {
+        "why": "Cost by product against its budget line is where an overrun shows up before the bank balance does.",
+        "when": "The venture reports costs for more than one product, line of business or entity."
+      }
+    },
+    {
+      "id": "board-statements",
+      "do": "Prepare the statements and notes a board meeting needs from the period's reports, say plainly which figures are unaudited, and hand them to the founder to circulate.",
+      "skill": "perform-general-accounting-and-reporting",
+      "activity": "9.3.4.5",
+      "consider": {
+        "why": "A board reads statements, and unaudited figures must say so.",
+        "when": "The venture has a board recorded in its board record."
+      }
+    },
+    {
+      "id": "filings-and-shareholder-reports",
+      "do": "Assemble the figures a quarterly or annual filing or a shareholder report needs with the records behind each, and hand them to the founder and their accountant, who file and sign.",
+      "skill": "perform-general-accounting-and-reporting",
+      "activity": "9.3.4.6",
+      "consider": {
+        "why": "A filing deadline is one of the few dates the venture cannot renegotiate.",
+        "when": "The venture has outside shareholders or a filing obligation recorded in its legal obligations."
+      }
+    },
+    {
+      "id": "regulatory-reports",
+      "do": "Assemble each regulatory return the venture owes from the reconciled records, list what is still missing to complete it, and hand it to the founder to submit.",
+      "skill": "perform-general-accounting-and-reporting",
+      "activity": "9.3.4.7",
+      "consider": {
+        "why": "A regulator's return asks for figures in its own shape, not the venture's.",
+        "when": "A regulator requires a financial return from the venture."
+      }
+    },
+    {
+      "id": "legal-and-management-consolidation",
+      "do": "Show the same period on both bases, by legal entity and by the way the venture is actually run, and reconcile the two so the difference is a stated list.",
+      "skill": "perform-general-accounting-and-reporting",
+      "activity": "9.3.4.8",
+      "consider": {
+        "why": "When the legal entities and the way the venture is run differ, two sets of figures exist and both get quoted.",
+        "when": "The venture's legal entities and the way it manages itself do not line up."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Attach the period's report to the open decision each finding bears on, and raise to the finance lead the one thing in the figures that most needs a decision this period.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "statements-cite-records",
+      "kind": "review",
+      "check": "Does every figure in the period's statements and the one-page report cite the reconciled record it came from, and is everything that leaves the venture sent by the founder?",
+      "reviewer": "finance-lead"
+    }
+  ]
+}

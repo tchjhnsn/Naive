@@ -1,0 +1,93 @@
+{
+  "id": "9-2-3-process-accounts-receivable-ar",
+  "function": "finance",
+  "process": "9.2.3",
+  "title": "Process accounts receivable (AR)",
+  "goal": "Every customer payment received is matched to the invoice it pays, the account balances match their statements, and the money summary carries what is still owed and how overdue it is.",
+  "measures": [
+    "revenue"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "finance/intake"
+    ]
+  },
+  "reads": [
+    "money",
+    "money/[id]",
+    "finance/budget",
+    "customers",
+    "deals",
+    "purpose/money/summary",
+    "it/connections",
+    "service-delivery/engagements"
+  ],
+  "steps": [
+    {
+      "id": "ar-policy",
+      "do": "Draft the receivable rules, how long a customer has to pay, when a reminder goes out, when work stops and what happens to a deposit, and bring them to the founder to approve before any of them is applied.",
+      "skill": "perform-revenue-accounting",
+      "ask": true,
+      "activity": "9.2.3.1",
+      "raises": [
+        "legal-or-terms"
+      ]
+    },
+    {
+      "id": "receive-deposits",
+      "do": "Read each account's statement or connection, list the customer receipts since the last run, and set the account balance to what the statement says; you never move money yourself.",
+      "skill": "perform-revenue-accounting",
+      "activity": "9.2.3.2",
+      "writes": [
+        "money/[id]"
+      ]
+    },
+    {
+      "id": "apply-remittances",
+      "do": "Match each receipt to the invoice it pays, part payments and fees deducted included, and list every receipt that matches no invoice and every invoice no receipt covers.",
+      "skill": "perform-revenue-accounting",
+      "activity": "9.2.3.3"
+    },
+    {
+      "id": "ar-reports",
+      "do": "Write what is owed, by whom and how many days past due into the money summary, citing the invoices and receipts behind each figure.",
+      "skill": "perform-revenue-accounting",
+      "activity": "9.2.3.4",
+      "writes": [
+        "purpose/money/summary"
+      ]
+    },
+    {
+      "id": "post-ar-entries",
+      "do": "Prepare the entries the venture's bookkeeping needs for each receipt and each amount still owed and put them on the handoff for the founder or the bookkeeper to post, because Naive keeps no ledger of its own.",
+      "skill": "perform-revenue-accounting",
+      "activity": "9.2.3.5"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Raise every unmatched receipt and every invoice no receipt covers as a decision for the founder to settle, and attach the receivable report to the open decision it bears on.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "domain-fact"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "receipts-matched",
+      "kind": "review",
+      "check": "Is every customer receipt matched to an invoice or listed as unmatched, and does the money summary's figure for what is owed tie back to those invoices?",
+      "reviewer": "finance-lead"
+    }
+  ]
+}

@@ -1,0 +1,80 @@
+{
+  "id": "8-4-2-define-and-maintain-business-information",
+  "function": "it",
+  "process": "8.4.2",
+  "title": "Define and maintain business information architecture",
+  "goal": "The venture knows which records it keeps, which fields of each one it actually fills, which outside source is authoritative for each field, and which role the founder has named as owner.",
+  "measures": ["compliance_met", "cost_or_time_saved"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["it/intake"] },
+  "reads": [
+    "venture",
+    "it/connections",
+    "knowledge/knowledge-sources",
+    "knowledge/where-used",
+    "operations/element-owners",
+    "people/team-plan",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "information-requirements",
+      "do": "List the kinds of information the venture has to hold to run (customers, money, interviews, the product's own data, credentials), and for each one name the route or the outside system it sits in today and the questions from the information strategy that it answers.",
+      "skill": "manage-information",
+      "activity": "8.4.2.1",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "data-models",
+      "do": "Read the route table and, for each record type the venture writes, list the fields it fills, the fields it leaves empty and any fact it keeps outside a record in a note or a spreadsheet, so a field nobody fills is dropped from the venture's templates and a fact with no field is named as a gap.",
+      "skill": "manage-information",
+      "activity": "8.4.2.2",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "external-sources",
+      "do": "For each outside system or feed the venture reads, record on its connection what it is authoritative for, which fields it supplies, how it is reached, how often it changes and what breaks when it is unreachable, reading the source map first so two systems are not left authoritative for the same field.",
+      "skill": "manage-information",
+      "activity": "8.4.2.3",
+      "writes": ["it/connections/[id]"]
+    },
+    {
+      "id": "data-ownership",
+      "do": "Record on each connection which person and which agent role holds it today, and propose to the founder one owner per kind of record, since the owner list is written outside this function's reach and only the founder assigns it.",
+      "skill": "manage-information",
+      "activity": "8.4.2.4",
+      "writes": ["it/connections/[id]"],
+      "raises": ["domain-fact"]
+    },
+    {
+      "id": "maintain-architecture",
+      "do": "Compare the list of records, fields and authoritative sources with the last run, and write what changed, what a new system displaced and which connection is now stale.",
+      "skill": "manage-information",
+      "activity": "8.4.2.5",
+      "writes": ["operations/handoff/[id]"],
+      "consider": {
+        "why": "An information architecture written once and never compared drifts from the systems the venture actually uses.",
+        "when": "This process has run before, or a connection was added or removed since the last run."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Name the open decision each gap bears on and add it there as evidence, and raise to the product lead the order in which the missing records and duplicated sources should be fixed.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "one-authority-per-field",
+      "kind": "review",
+      "check": "Does every kind of information the venture holds name exactly one authoritative source and one proposed owner, and is every fact kept outside a record named as a gap?",
+      "reviewer": "product-lead"
+    }
+  ]
+}

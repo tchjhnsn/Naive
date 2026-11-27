@@ -1,0 +1,128 @@
+{
+  "id": "5-4-3-complete-service-delivery",
+  "function": "service-delivery",
+  "process": "5.4.3",
+  "title": "Complete service delivery",
+  "goal": "The engagement is closed: every deliverable accepted with its evidence, the final amount to bill handed to finance, the handoffs closed and the hours freed, the close review on the record, and what repeats moved into the offer.",
+  "measures": [
+    "revenue",
+    "flow_and_lead_time",
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "service-delivery/intake"
+    ]
+  },
+  "reads": [
+    "service-delivery/engagements",
+    "service-delivery/offers",
+    "operations/handoff",
+    "evidence",
+    "customers",
+    "finance/budget",
+    "finance/spend",
+    "supply-chain/suppliers",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "project-review-and-success",
+      "do": "Write the close review on the engagement: what went well, which deliverable overran and why, what the client said, and what the venture would do differently, each line pointing at the handoff or evidence it comes from.",
+      "skill": "deliver-service-to-customer",
+      "activity": "5.4.3.1",
+      "writes": [
+        "service-delivery/engagements/[id]"
+      ]
+    },
+    {
+      "id": "finalize-financials",
+      "do": "List the work done and not yet billed, the final amount against the budget, any write-off and any expense to pass on, and hand it to the finance function as a handoff, because the money records are not this function's to write.",
+      "skill": "deliver-service-to-customer",
+      "activity": "5.4.3.2",
+      "writes": [
+        "operations/handoff/[id]"
+      ]
+    },
+    {
+      "id": "confirm-delivery-per-contract",
+      "do": "Check each deliverable against the contract (acceptance evidence present, due date met or missed, every inclusion delivered) and record the delivered and late facts on the engagement with the dates they happened.",
+      "skill": "deliver-service-to-customer",
+      "activity": "5.4.3.3",
+      "writes": [
+        "service-delivery/engagements/[id]"
+      ],
+      "raises": [
+        "domain-fact"
+      ]
+    },
+    {
+      "id": "release-resources",
+      "do": "Close every handoff this engagement owns with its result, free the hours it held in the resource plan, end any supplier's work and access, and list what was released.",
+      "skill": "deliver-service-to-customer",
+      "activity": "5.4.3.4",
+      "writes": [
+        "operations/handoff/[id]"
+      ]
+    },
+    {
+      "id": "manage-completion",
+      "do": "Set the engagement's status to closed once every deliverable is accepted, the final amount is with finance and the resources are released, and prepare the closing message and the next step for the founder to send.",
+      "skill": "deliver-service-to-customer",
+      "activity": "5.4.3.5",
+      "writes": [
+        "service-delivery/engagements/[id]"
+      ],
+      "raises": [
+        "public-commitment"
+      ]
+    },
+    {
+      "id": "harvest-knowledge",
+      "do": "Move what repeats into the offer: correct the procedure where the work differed, set duration_days from the hours actually spent, add to inclusions and exclusions whatever this engagement showed was unclear, and on the third delivery of the same request propose a fixed-scope offer to the founder.",
+      "skill": "deliver-service-to-customer",
+      "activity": "5.4.3.6",
+      "writes": [
+        "service-delivery/offers/[id]"
+      ],
+      "raises": [
+        "strategy-or-constitution"
+      ]
+    },
+    {
+      "id": "archive-records",
+      "do": "Check that every deliverable's evidence id is on the engagement, every handoff is closed with its result and nothing of the client's that the venture agreed not to keep remains in its records, and list what was removed.",
+      "skill": "deliver-service-to-customer",
+      "activity": "5.4.3.7",
+      "writes": [
+        "service-delivery/engagements/[id]"
+      ]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Add the close review's findings to the decisions they bear on, and recommend to the product lead what the venture should sell or stop selling on the strength of this engagement.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "closed-with-nothing-open",
+      "kind": "review",
+      "check": "Is every deliverable accepted with its evidence, the final amount with finance, every handoff closed and the close review written before the engagement was marked closed?",
+      "reviewer": "product-lead"
+    }
+  ]
+}

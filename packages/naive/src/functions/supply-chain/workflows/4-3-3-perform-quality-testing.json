@@ -1,0 +1,81 @@
+{
+  "id": "4-3-3-perform-quality-testing",
+  "function": "supply-chain",
+  "process": "4.3.3",
+  "title": "Perform quality testing",
+  "goal": "Every lot has a recorded test result against the written standard, every failure has a cause and a fix, and the trend across lots is visible before the next order is placed.",
+  "measures": ["cost_or_time_saved", "flow_and_lead_time"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["supply-chain/intake"] },
+  "reads": [
+    "product",
+    "product/bugs",
+    "supply-chain/suppliers",
+    "supply-chain/purchase-orders",
+    "support/cases",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "calibrate-test-equipment",
+      "do": "Check each instrument the test depends on against a known reference before the lot is tested, record the date, the reference and the result, and refuse to report a measurement from an instrument whose calibration is out of date.",
+      "skill": "produce-assemble-test-product",
+      "activity": "4.3.3.1",
+      "consider": {
+        "why": "A measurement from an uncalibrated instrument can reject a good lot or pass a bad one, and neither is found until later.",
+        "when": "The acceptance standard turns on a measured value rather than a pass or fail function."
+      }
+    },
+    {
+      "id": "perform-testing-using-the-standard-testing-procedure",
+      "do": "Test the lot exactly as the standard testing procedure says, taking the sample size it names rather than the units that look suspect, and note any step you could not follow and why.",
+      "skill": "produce-assemble-test-product",
+      "activity": "4.3.3.2"
+    },
+    {
+      "id": "manage-quality-samples",
+      "do": "Keep the retained sample from each lot, labelled with its lot number and date and stored as the storage rules require, so a later field failure can be compared with what left the bench.",
+      "skill": "produce-assemble-test-product",
+      "activity": "4.3.3.3"
+    },
+    {
+      "id": "record-test-results",
+      "do": "Write the result per lot, the sample tested, each measurement, the pass or fail against the standard, who tested it and the date, and attach it to the lot and to the purchase order the materials came on.",
+      "skill": "produce-assemble-test-product",
+      "activity": "4.3.3.4",
+      "writes": ["supply-chain/purchase-orders/[id]"],
+      "raises": ["domain-fact"]
+    },
+    {
+      "id": "track-and-analyze-non-conformance-trends",
+      "do": "Count failures by type, by lot and by supplier across every lot tested so far, show whether the rate is rising or steady and say which single failure type carries most of the loss.",
+      "skill": "produce-assemble-test-product",
+      "activity": "4.3.3.5"
+    },
+    {
+      "id": "perform-root-cause-analysis",
+      "do": "For the failure type that carries most of the loss, work back from the evidence to the cause in the design, the part, the process or the handling, state what the cause predicts and what would show the cause wrong, and propose the fix with its cost.",
+      "skill": "produce-assemble-test-product",
+      "activity": "4.3.3.6"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Add a decision for each failing lot and each proposed fix, with the options, accept with a concession, rework, return to the supplier or scrap, each costed, and record the accept or reject verdict as a fact once the founder has decided.",
+      "writes": ["decisions/*"],
+      "raises": ["domain-fact", "legal-or-terms"]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "every-lot-has-a-verdict",
+      "kind": "review",
+      "check": "Does every lot tested carry its sample, its measurements and a pass or fail against the written standard, and does the largest failure type have a cause and a costed fix?",
+      "reviewer": "product-lead"
+    }
+  ]
+}

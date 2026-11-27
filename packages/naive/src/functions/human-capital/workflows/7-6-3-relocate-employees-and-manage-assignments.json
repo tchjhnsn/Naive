@@ -1,0 +1,70 @@
+{
+  "id": "7-6-3-relocate-employees-and-manage-assignments",
+  "function": "human-capital",
+  "process": "7.6.3",
+  "title": "Relocate employees and manage assignments",
+  "goal": "Every person working from somewhere other than where they were engaged has a recorded assignment with its dates, its terms, where they are paid and the tax, immigration and employment questions that place raises, all put to the founder before it starts.",
+  "measures": [
+    "compliance_met"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "human-capital/intake"
+    ]
+  },
+  "reads": [
+    "people",
+    "people/founders",
+    "governance/internal-terms",
+    "legal/obligations",
+    "legal/risks",
+    "finance/budget",
+    "purpose/money/summary",
+    "operations/handoff",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "manage-expatriates",
+      "do": "For each person working in a country other than the one they were engaged in, record the assignment's dates, where they are paid from, which law their engagement names, and the tax, immigration, social security and employment questions that place raises, and hand every one of them to the founder and counsel before the assignment starts.",
+      "activity": "7.6.3.1",
+      "skill": "redeploy-and-retire-employees",
+      "raises": [
+        "legal-or-terms",
+        "spend-money"
+      ],
+      "consider": {
+        "why": "A person working in another country can create an employer obligation and a tax presence for the venture there.",
+        "when": "Someone works, or asks to work, from a country other than the one their engagement names."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Open a decision for each assignment and each obligation the place creates, attach the citations as evidence, and tell the strategy lead whether any assignment is running before its questions were answered.",
+      "skill": "redeploy-and-retire-employees",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities",
+        "legal-or-terms"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "assignment-questions-answered-first",
+      "kind": "review",
+      "check": "Does every running assignment have its tax, immigration and employment questions recorded and put to the founder before it started?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

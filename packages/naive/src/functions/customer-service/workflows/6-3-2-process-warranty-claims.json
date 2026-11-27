@@ -1,0 +1,161 @@
+{
+  "id": "6-3-2-process-warranty-claims",
+  "function": "customer-service",
+  "process": "6.3.2",
+  "title": "Process warranty claims",
+  "goal": "Each warranty claim is validated against the published terms, its cause investigated, its approval and any payment authorized by the founder, and the claim closed with its outcome and its cost recorded.",
+  "measures": [
+    "usage_or_adoption",
+    "revenue"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "customer-service/intake"
+    ]
+  },
+  "reads": [
+    "support/policy",
+    "support/cases",
+    "customers",
+    "deals",
+    "product",
+    "product/bugs",
+    "legal/obligations",
+    "supply-chain/suppliers",
+    "finance/spend"
+  ],
+  "steps": [
+    {
+      "id": "receive-claim",
+      "activity": "6.3.2.1",
+      "do": "Write the claim as a case of kind request with what failed, when it was bought, how it was used and what the customer asks for, a repair, a replacement or money back.",
+      "writes": [
+        "support/cases/[id]"
+      ],
+      "skill": "service-products-after-sales"
+    },
+    {
+      "id": "validate-claim",
+      "activity": "6.3.2.2",
+      "do": "Check the purchase date, the product and version and the published terms, and record on the case whether the claim falls inside the warranty, naming the term and the date that decide it.",
+      "writes": [
+        "support/cases/[id]"
+      ],
+      "raises": [
+        "domain-fact"
+      ],
+      "skill": "service-products-after-sales"
+    },
+    {
+      "id": "investigate-issue",
+      "activity": "6.3.2.3",
+      "do": "State the fault in one line, draft the steps or the part the customer must send for it to be reproduced, put any site visit or part return to the founder to arrange, and record the cause found and the corrective action recommended, linking the open bug when the fault is in the product.",
+      "skill": "service-products-after-sales"
+    },
+    {
+      "id": "determine-responsible-party",
+      "activity": "6.3.2.4",
+      "do": "Say from the evidence whether the fault lies with the venture, with a supplier or with how the product was used, citing the investigation, the supplier record and the bug, and mark it a guess where the evidence does not reach.",
+      "raises": [
+        "domain-fact"
+      ],
+      "skill": "service-products-after-sales"
+    },
+    {
+      "id": "manage-pre-authorizations",
+      "activity": "6.3.2.5",
+      "do": "Prepare for the founder the cost of the part, the inspection or the repair the investigation needs before the claim is decided, with the amount, who would be paid and what the claim itself is worth.",
+      "raises": [
+        "spend-money"
+      ],
+      "consider": {
+        "why": "A repair or a replacement part often costs money before anyone has approved the claim.",
+        "when": "The investigation needs a part, an inspection or a repair that costs money."
+      },
+      "skill": "service-products-after-sales"
+    },
+    {
+      "id": "approve-or-reject",
+      "activity": "6.3.2.6",
+      "do": "Put the claim in front of the founder with the coverage verdict, the cause, the responsible party, the cost of each outcome, what was done on the nearest earlier claim and a recommendation, and leave the approval or rejection to the founder.",
+      "raises": [
+        "spend-money",
+        "legal-or-terms"
+      ],
+      "skill": "service-products-after-sales"
+    },
+    {
+      "id": "notify-originator",
+      "activity": "6.3.2.7",
+      "do": "Draft the message telling the customer the decision, the reason in plain words and what happens next and by when, and record on the case when the founder sent it.",
+      "writes": [
+        "support/cases/[id]"
+      ],
+      "raises": [
+        "public-commitment"
+      ],
+      "skill": "service-products-after-sales"
+    },
+    {
+      "id": "authorize-payment",
+      "activity": "6.3.2.8",
+      "do": "Prepare the payment for the founder to authorize: the amount, the payee, the claim it settles and the approval it follows, and leave the paying to the founder.",
+      "raises": [
+        "spend-money"
+      ],
+      "consider": {
+        "why": "Money leaves the venture only on the founder's word, and the record must say which decision it followed.",
+        "when": "An approved claim is settled with a refund, a credit or a payment to a repairer."
+      },
+      "skill": "service-products-after-sales"
+    },
+    {
+      "id": "close-claim",
+      "activity": "6.3.2.9",
+      "do": "Mark the case resolved once the customer confirms the outcome arrived, recording the outcome, the money given and the days from claim to close.",
+      "writes": [
+        "support/cases/[id]"
+      ],
+      "raises": [
+        "domain-fact"
+      ],
+      "skill": "service-products-after-sales"
+    },
+    {
+      "id": "reconcile-disposition",
+      "activity": "6.3.2.10",
+      "do": "Check each closed claim's recorded outcome against the spend records and the unit or part it concerned, and list every claim where the two disagree.",
+      "consider": {
+        "why": "A claim closed as paid with no spend record behind it hides what the warranty actually costs.",
+        "when": "The venture records its spending."
+      },
+      "skill": "service-products-after-sales"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Report the open and closed claims with their causes and costs, name the decision the top cause bears on, and recommend to the growth lead whether to fix the product, change the terms or keep paying claims.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "claims-decided",
+      "kind": "review",
+      "check": "Does every claim carry a coverage verdict naming its term, the founder's decision, a sent notice and a recorded outcome on its case?",
+      "reviewer": "growth-lead"
+    }
+  ]
+}

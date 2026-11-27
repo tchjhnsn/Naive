@@ -1,0 +1,89 @@
+{
+  "id": "13-9-3-monitor-and-manage-ehs-program",
+  "function": "capabilities",
+  "process": "13.9.3",
+  "title": "Monitor and manage EHS program",
+  "goal": "The program is kept rather than written once: its cost and what it prevents are known, its measures are read on a stated frequency, and the response, prevention and training the venture's own impacts call for are in place or recorded as not needed.",
+  "measures": ["cost_or_time_saved"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["capabilities/intake"] },
+  "reads": [
+    "capabilities/processes",
+    "capabilities/postmortems",
+    "finance/spend",
+    "people/team",
+    "legal/obligations",
+    "operations/handoff"
+  ],
+  "steps": [
+    {
+      "id": "manage-ehs-costs-and-benefits",
+      "do": "Total what the program costs from the spend register, against what it prevents as the events recorded before and after it, and say plainly where the benefit cannot be measured.",
+      "skill": "manage-environmental-health-and-safety-ehs",
+      "activity": "13.9.3.1",
+      "writes": ["operations/handoff/[id]"],
+      "consider": {
+        "why": "A program with a cost and no measured benefit should be known as such rather than assumed to be working.",
+        "when": "The venture spends money on health, safety or environmental work."
+      }
+    },
+    {
+      "id": "measure-and-report-ehs-performance",
+      "do": "Count the events, the near misses and the open actions past their due date since the last reading, write them with the as-of date, and report the figure as zero events out of how many weeks rather than as an absence.",
+      "skill": "manage-environmental-health-and-safety-ehs",
+      "activity": "13.9.3.2",
+      "writes": ["capabilities/processes/[id]"],
+      "raises": ["domain-fact"]
+    },
+    {
+      "id": "implement-emergency-response-program",
+      "do": "Write what is done in the first hour of a fire, an injury or a serious outage, who is called in what order, and where the list is kept so it can be read without the system that failed.",
+      "skill": "manage-environmental-health-and-safety-ehs",
+      "activity": "13.9.3.3",
+      "writes": ["capabilities/processes/[id]"],
+      "consider": {
+        "why": "A response written in advance is the difference between an hour and a day, and it is cheap to write.",
+        "when": "The venture has a workplace, equipment, or a service customers depend on being available."
+      }
+    },
+    {
+      "id": "implement-pollution-prevention-program",
+      "do": "Name what the venture puts into the world that it could put less of, waste, packaging or energy bought, and write the one step that reduces it with how it is measured.",
+      "skill": "manage-environmental-health-and-safety-ehs",
+      "activity": "13.9.3.4",
+      "writes": ["capabilities/processes/[id]"],
+      "consider": {
+        "why": "Prevention is only worth a process where the venture's own operations produce something measurable.",
+        "when": "The impact finding named waste, emissions or materials the venture controls."
+      }
+    },
+    {
+      "id": "train-and-educate-functional-employees",
+      "do": "Write what each person must know before doing the work that carries the risk, walk them through it, and record who was walked through what and when.",
+      "skill": "manage-environmental-health-and-safety-ehs",
+      "activity": "13.9.3.5",
+      "writes": ["capabilities/processes/[id]"],
+      "consider": {
+        "why": "Training is the control that matters where people do the risky work, and it is pointless where nobody does.",
+        "when": "The venture has an employee or contractor doing work the impact finding named."
+      }
+    },
+    {
+      "id": "provide-ehs-support",
+      "do": "Answer the questions the work raises from the program's own records, keep a list of the questions the program does not answer, and send anything that needs a professional to the founder rather than answering it here.",
+      "skill": "manage-environmental-health-and-safety-ehs",
+      "activity": "13.9.3.6",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Raise to the founder anything the venture is not doing that a cited duty requires, and to the strategy lead what to put in place first.",
+      "writes": ["decisions/*"],
+      "raises": ["legal-or-terms", "set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "read-and-not-assumed", "kind": "review", "check": "Are the EHS measures read with their window and as-of date, and is every part of the program either in place or recorded as not needed with the reason?", "reviewer": "strategy-lead" }
+  ]
+}

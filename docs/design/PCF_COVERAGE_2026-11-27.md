@@ -1,6 +1,6 @@
 # A workflow for every APQC process, a skill for every process group
 
-Date: 2026-11-27. Decision: EE-226. Status: the coverage check is built (`packages/naive/src/checks/check-pcf-coverage.ts`). The process workflows and process group skills follow in their own pull request; until it merges, the check reports the gap.
+Date: 2026-11-27. Decision: EE-226. Status: built. The coverage check (`packages/naive/src/checks/check-pcf-coverage.ts`) reads 74 of 74 process groups, 363 of 363 processes and 1,352 of 1,352 activities covered, and `test.ts` runs it with `--complete`.
 
 ## The ask
 
@@ -40,6 +40,10 @@ flowchart TD
 - A workflow's optional `process` field names the level 3 process it performs (`packages/naive/src/records/function-workflow.schema.json`). A skill's frontmatter names its level 2 process group as `process_group`.
 - A process workflow is triggered on request and requires its function's intake meeting (EE-217), so process work stays locked until a person has walked the intake.
 - `check-pcf-coverage.ts` reads the modules and reports, per level and per category, what is covered. It fails on a claim with the wrong structure: a process or process group outside the function's category, two workflows of one module on one process, a step whose activity sits under another process than its workflow's. With `--complete` it also fails on every gap. Without it a gap is reported and never fails, so the gap is visible while the work is under way.
+
+## Locks
+
+A process workflow requires its function's intake meeting. The router locks a route when every workflow that writes it is blocked (EE-217), so a process workflow that declared a write to a route no other shipped workflow writes would lock that route behind the meeting. For the telos that would be a deadlock, because the strategy intake meeting itself drafts it. So a process workflow names a route in `writes` only when another shipped workflow writes it too, and a step that works on such a record (the telos, the validation records, markets, industries, the sitemap, product capabilities) describes that work in its sentence without declaring the write. Whether those routes should wait on a meeting is a decision for a person, not made here.
 
 ## What this does not do
 

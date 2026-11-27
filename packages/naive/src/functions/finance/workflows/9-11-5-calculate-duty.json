@@ -1,0 +1,85 @@
+{
+  "id": "9-11-5-calculate-duty",
+  "function": "finance",
+  "process": "9.11.5",
+  "title": "Calculate duty",
+  "goal": "The duty, import tax and fees on each cross-border shipment are calculated before it moves from the classification, the customs value and the origin, with the rate's published source recorded, and the result is in the product's landed cost.",
+  "measures": [
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "finance/intake"
+    ]
+  },
+  "reads": [
+    "product",
+    "product/[id]",
+    "supply-chain/purchase-orders",
+    "supply-chain/suppliers",
+    "finance/spend",
+    "finance/budget",
+    "money",
+    "purpose/money/summary",
+    "legal/obligations"
+  ],
+  "steps": [
+    {
+      "id": "assemble-the-basis",
+      "do": "Assemble what the calculation needs, the classification, the customs value, the country of origin, the delivery term and the freight and insurance cost, naming the document each came from.",
+      "skill": "perform-global-trade-services",
+      "consider": {
+        "why": "Duty is calculated on a value basis that includes more than the purchase price.",
+        "when": "The venture is about to move a physical product across a border."
+      }
+    },
+    {
+      "id": "calculate-the-duty",
+      "do": "Calculate the duty, import tax and fees owed from the published tariff for that classification, origin and destination, record the rate and where it was published, and show the working.",
+      "skill": "perform-global-trade-services",
+      "consider": {
+        "why": "A duty found out at the border is a cost nobody priced.",
+        "when": "The basis for a shipment's duty is assembled."
+      }
+    },
+    {
+      "id": "check-the-landed-cost",
+      "do": "Add the duty, import tax, freight and fees into the product's cost so the landed cost is what margin is calculated from, and flag every product whose margin goes negative once they are counted.",
+      "skill": "perform-global-trade-services",
+      "writes": [
+        "finance/spend/[id]"
+      ],
+      "consider": {
+        "why": "Margin calculated before duty and freight is margin the venture does not have.",
+        "when": "A duty calculation changes what a product costs to land or what it must sell for."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Raise each shipment whose duty changes the decision to send it as a decision for the founder, and tell the finance lead which product's margin the landed cost breaks.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "spend-money",
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "duty-shown-with-source",
+      "kind": "review",
+      "check": "Does each duty calculation name the classification, the value basis and where the rate was published, and is the duty counted in the product's landed cost?",
+      "reviewer": "finance-lead"
+    }
+  ]
+}

@@ -1,0 +1,135 @@
+{
+  "id": "5-4-2-execute-service-delivery",
+  "function": "service-delivery",
+  "process": "5.4.2",
+  "title": "Execute service delivery",
+  "goal": "Each deliverable is built, run against its own acceptance test with the evidence recorded, and handed over inside the window the client agreed, with every change request priced, approved and only then worked.",
+  "measures": [
+    "revenue",
+    "flow_and_lead_time",
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "service-delivery/intake"
+    ]
+  },
+  "reads": [
+    "service-delivery/engagements",
+    "service-delivery/offers",
+    "operations/handoff",
+    "evidence",
+    "customers",
+    "product",
+    "it/connections",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "analyze-environment-and-needs",
+      "do": "Before building, read the client's materials and environment as the engagement and its handoffs record them, write what the deliverable has to fit (the systems, the data, the constraints, who will use it), and list what must still be seen or asked.",
+      "skill": "deliver-service-to-customer",
+      "activity": "5.4.2.1",
+      "writes": [
+        "operations/handoff/[id]"
+      ]
+    },
+    {
+      "id": "define-solution",
+      "do": "Write what will be built for the deliverable and how, say which part of the acceptance test each piece satisfies, and where the choice changes price or date give the founder at most two options with the hours and the risk of each.",
+      "skill": "deliver-service-to-customer",
+      "activity": "5.4.2.2",
+      "writes": [
+        "operations/handoff/[id]"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    },
+    {
+      "id": "validate-solution",
+      "do": "Run the deliverable against its acceptance test exactly as written, record the result and the evidence id on the deliverable, and leave its status at in progress until it passes.",
+      "skill": "deliver-service-to-customer",
+      "activity": "5.4.2.3",
+      "writes": [
+        "service-delivery/engagements/[id]"
+      ]
+    },
+    {
+      "id": "identify-changes",
+      "do": "Write every request that falls outside the offer's inclusions, or inside its exclusions, as a change request on the engagement with its effect on price and days and the status requested, and start no work on it.",
+      "skill": "deliver-service-to-customer",
+      "activity": "5.4.2.4",
+      "writes": [
+        "service-delivery/engagements/[id]"
+      ]
+    },
+    {
+      "id": "obtain-approval-to-proceed",
+      "do": "Put each requested change in front of the founder with its price and date effect, what it costs the deliverables already promised and what happens if it is refused, and record the founder's answer on the change before any work on it begins.",
+      "skill": "deliver-service-to-customer",
+      "activity": "5.4.2.5",
+      "ask": true,
+      "writes": [
+        "service-delivery/engagements/[id]"
+      ],
+      "raises": [
+        "legal-or-terms"
+      ]
+    },
+    {
+      "id": "make-build-buy-solution",
+      "do": "For each piece of the solution, compare building it with buying or reusing something, with the hours, the price, what the venture is then left maintaining and what the client is tied to, recommend one, and leave any purchase to the founder.",
+      "skill": "deliver-service-to-customer",
+      "activity": "5.4.2.6",
+      "writes": [
+        "operations/handoff/[id]"
+      ],
+      "raises": [
+        "spend-money"
+      ],
+      "consider": {
+        "why": "A piece that can be bought or reused is hours the venture does not spend, and a dependency it must then live with.",
+        "when": "A piece of the solution could be bought or reused instead of built."
+      }
+    },
+    {
+      "id": "deploy-solution",
+      "do": "Hand over or deploy each passed deliverable by the offer's procedure inside the window the client agreed, record what was deployed, when and against which acceptance test, and leave anything sent to the client to the founder.",
+      "skill": "deliver-service-to-customer",
+      "activity": "5.4.2.7",
+      "writes": [
+        "service-delivery/engagements/[id]"
+      ],
+      "raises": [
+        "public-commitment"
+      ]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Add each failed acceptance test, each change request and each build-or-buy recommendation to the decision it bears on, and recommend to the product lead what is worked next.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "accepted-and-unchanged-scope",
+      "kind": "review",
+      "check": "Did every deliverable marked accepted pass its own acceptance test with an evidence record, and was no change request worked before the founder approved it?",
+      "reviewer": "product-lead"
+    }
+  ]
+}

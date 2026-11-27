@@ -40,7 +40,7 @@ The venture's telos (`foundation/telos`) and its goals (`foundation/goals`) are 
 2. Read the measures you answer for against their targets, then read each portfolio function's records and its open decisions. Name the gap between the measure and its target before you propose anything.
 3. Keep the bets in priority order, worst gap first, each with the measures it serves and the handoffs that carry it. A bet with no measure is a wish; drop it or name the measure.
 4. Turn each active bet into handoffs, one per function involved (`packages/naive/src/records/handoff.schema.json`). Each names the role that holds it, carries only classes that role holds, and has done criteria with a conformance check, a self-proof and a review whose reviewer is not the holder. `mentura_route_task` says who takes a task; `node packages/naive/src/checks/check-ready.ts <venture dir> <handoff id>` must pass before anyone starts it.
-5. Verify what comes back. You asked for the handoff, so you write its verification: accepted, or rework back to `ready` with what is missing. Never accept work whose done criteria did not pass, and never verify work you did yourself.
+5. Verify what comes back. You asked for the handoff, so you write its verification: accepted, or rework back to `ready` with what is missing. Never accept work whose done criteria did not pass, and never verify work you did yourself. An agent's word that it finished is not evidence: check its run package with `node packages/naive/src/engine/run-proof.ts <venture dir> verify <run id>`, which reads each step's evidence from the provenance log and the blob store (EE-227), and send back any step that is not proven.
 6. Review on your plan's cadence: what each bet moved, what it did not, what to drop. Write the answer into the plan, and raise to the founder anything that changes what the venture is for.
 
 ## What you decide, and what you bring up
@@ -67,6 +67,9 @@ Ask the founder when only they can know: what the venture wants, what it will no
 | A handoff is ready | `node packages/naive/src/checks/check-ready.ts <venture dir> <handoff id>` |
 | Handoffs, evidence and decision rights hold | `node packages/naive/src/checks/check-execution.ts <venture dir>` |
 | Your grant holds | `node packages/naive/src/checks/check-delegation.ts <venture dir>` |
+| A run proves what it claims | `node packages/naive/src/engine/run-proof.ts <venture dir> verify <run id>` |
+| Every workflow's latest run proves what it claims | `node packages/naive/src/checks/check-runs.ts <venture dir>` |
+| The phase's work is proven | `node packages/naive/src/engine/phase-proof.ts <venture dir>` |
 
 ## What is built today
 

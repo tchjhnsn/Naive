@@ -1,0 +1,86 @@
+{
+  "id": "6-2-1-plan-and-manage-customer-service-work-force",
+  "function": "customer-service",
+  "process": "6.2.1",
+  "title": "Plan and manage customer service work force",
+  "goal": "The next period's contact volume is forecast from the cases, the hours each channel is answered are proposed against that forecast, and whatever the hours cannot absorb is in front of the growth lead.",
+  "measures": [
+    "usage_or_adoption"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "customer-service/intake"
+    ]
+  },
+  "reads": [
+    "support/policy",
+    "support/cases",
+    "customers",
+    "people/team",
+    "operations/time-box",
+    "product"
+  ],
+  "steps": [
+    {
+      "id": "forecast-volume",
+      "activity": "6.2.1.1",
+      "do": "Count cases per week and per active customer over the last periods and forecast the next period's volume from that trend plus what is planned, a launch, a campaign or a price change, stating the assumption behind each addition and recording the forecast on the handoff.",
+      "skill": "plan-and-manage-customer-service-contacts"
+    },
+    {
+      "id": "schedule-the-week",
+      "activity": "6.2.1.2",
+      "do": "Propose which hours of the week each open channel is answered, and by whom, so the forecast volume can be answered inside the policy's targets, and say plainly where the hours fall short.",
+      "raises": [
+        "set-priorities"
+      ],
+      "skill": "plan-and-manage-customer-service-contacts"
+    },
+    {
+      "id": "track-utilization",
+      "activity": "6.2.1.3",
+      "do": "Count from the cases alone how many contacts were answered per hour of support time, the share of that time spent on the top reason, and the days the queue was never emptied.",
+      "consider": {
+        "why": "Hours spent on support that nobody counted are the first thing a founder loses to.",
+        "when": "The venture answers more than a handful of contacts a week."
+      },
+      "skill": "plan-and-manage-customer-service-contacts"
+    },
+    {
+      "id": "review-interaction-quality",
+      "activity": "6.2.1.4",
+      "do": "Read a sample of closed cases against the policy's experience and voice and report which replies missed the target, resolved nothing or went off voice, naming the case and the line.",
+      "consider": {
+        "why": "A reply that does not resolve brings the same customer back and doubles the work.",
+        "when": "Someone other than the founder answers customers, or repeat contacts are rising."
+      },
+      "skill": "plan-and-manage-customer-service-contacts"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Name what the forecast and the proposed hours change for the period, open the shortfall as a decision for the growth lead, and leave the forecast with its assumptions as evidence on the handoff.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "forecast-and-hours",
+      "kind": "review",
+      "check": "Is the next period's forecast on the handoff with its assumptions, and are the proposed hours enough to meet the policy's targets or the shortfall open as a decision?",
+      "reviewer": "growth-lead"
+    }
+  ]
+}

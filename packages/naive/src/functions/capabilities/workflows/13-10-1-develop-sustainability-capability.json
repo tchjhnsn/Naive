@@ -1,0 +1,74 @@
+{
+  "id": "13-10-1-develop-sustainability-capability",
+  "function": "capabilities",
+  "process": "13.10.1",
+  "title": "Develop sustainability capability",
+  "goal": "The venture knows what it is actually asked to disclose and by whom, has the goals the founder stands behind rather than borrowed language, and has measures and a plan small enough that the next reading can be made from its own records.",
+  "measures": ["cost_or_time_saved"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["capabilities/intake"] },
+  "reads": [
+    "legal/obligations",
+    "customers",
+    "investors",
+    "capabilities/processes",
+    "finance/spend",
+    "supply-chain/suppliers",
+    "governance/publication-policy"
+  ],
+  "steps": [
+    {
+      "id": "identify-sustainability-requirements",
+      "do": "List who actually asks this venture for anything on sustainability, a customer contract, an investor, a regulation in its obligations record, with what each asks for, who must be able to answer it and what the answer must contain, and write plainly where nobody asks.",
+      "skill": "manage-sustainability",
+      "activity": "13.10.1.1",
+      "writes": ["capabilities/processes/[id]"],
+      "raises": ["legal-or-terms"]
+    },
+    {
+      "id": "establish-sustainability-goals",
+      "do": "Bring the founder the few goals the venture could actually keep, each with what it would cost and how it would be measured, and record only the ones the founder states in their own words, since a goal of this kind is a value and a public commitment.",
+      "skill": "manage-sustainability",
+      "activity": "13.10.1.2",
+      "ask": true,
+      "writes": ["capabilities/processes/[id]"],
+      "raises": ["set-priorities"]
+    },
+    {
+      "id": "create-sustainability-policies",
+      "do": "Draft the policy as what the venture will and will not do, with nothing in it the records cannot show, and leave its approval and publication to the founder.",
+      "skill": "manage-sustainability",
+      "activity": "13.10.1.3",
+      "ask": true,
+      "writes": ["capabilities/processes/[id]"],
+      "consider": {
+        "why": "A published policy is a commitment that will be read back to the venture, so it waits until there is something behind it.",
+        "when": "A customer, investor or regulation asks the venture for a written policy."
+      }
+    },
+    {
+      "id": "define-sustainability-measures",
+      "do": "Define each measure once, from a record the venture already keeps, naming the unit, the window and how it is computed, and leave out any measure that would need data the venture does not have.",
+      "skill": "manage-sustainability",
+      "activity": "13.10.1.4",
+      "writes": ["capabilities/processes/[id]"]
+    },
+    {
+      "id": "create-sustainability-plans",
+      "do": "Write the plan as the next two or three things to be done with an owner and a date each, the smallest first, and say what the venture is deliberately not doing yet.",
+      "skill": "manage-sustainability",
+      "activity": "13.10.1.5",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Raise the goals and the policy to the founder for approval, and record who asks the venture for what as evidence on the handoff.",
+      "writes": ["decisions/*"],
+      "raises": ["legal-or-terms", "set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "asked-for-and-measurable", "kind": "review", "check": "Does every requirement name who asks for it, and can every measure be computed from a record the venture already keeps?", "reviewer": "strategy-lead" }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "id": "12-4-6-protect-intellectual-property",
+  "function": "external-relationships",
+  "process": "12.4.6",
+  "title": "Protect intellectual property",
+  "goal": "Every asset the venture relies on is listed with who owns it on paper, whether it is registered, its next renewal date and what the venture may and may not do with it, and every missing assignment is named by what it would cost.",
+  "measures": ["compliance_met","learning"],
+  "trigger": {"kind":"request"},
+  "requires": {"meetings":["external-relationships/intake"]},
+  "reads": ["venture","marketing/brand","product","product/capabilities","governance/ownership","governance/founder-agreement","people/founders","people/team","legal/obligations","deals","decisions/*"],
+  "steps": [
+    {"id":"manage-copyrights-patents-and-trademarks","do":"List every asset worth protecting, the venture's name and marks from the brand record, the product's code and written work, any invention, and for each say whether it is registered, in which places, who holds it on paper and its next renewal or filing date.","skill":"manage-legal-and-ethical-issues","activity":"12.4.6.1","writes":["operations/handoff/[id]"]},
+    {"id":"maintain-intellectual-property-rights-and-restrictions","do":"For each asset write what the venture may and may not do with it, the licence of everything it ships that it did not write, the assignment from each founder and contractor, and anything it cannot use publicly, and name every missing assignment by what it would cost.","skill":"manage-legal-and-ethical-issues","activity":"12.4.6.2","writes":["operations/handoff/[id]"]},
+    {"id":"administer-licensing-terms","do":"For every licence the venture grants or takes, record the scope, the field of use, the term, the fee and how it ends, and name each one that renews or lapses in the next ninety days, leaving any agreement to those terms to the founder.","skill":"manage-legal-and-ethical-issues","activity":"12.4.6.3","writes":["operations/handoff/[id]"],"raises":["legal-or-terms"],"consider":{"why":"A licence that renews on its own is the one nobody reads again.","when":"The venture grants or takes at least one licence."}},
+    {"id":"administer-options","do":"For each option an intellectual property or licensing agreement carries, record who holds it, what it covers, the window in which it can be exercised and the date it lapses, and name the ones lapsing in the next ninety days.","skill":"manage-legal-and-ethical-issues","activity":"12.4.6.4","writes":["operations/handoff/[id]"],"consider":{"why":"An option nobody tracks is exercised against the venture or quietly lost.","when":"An agreement the venture has signed carries an option, a right of first refusal or a renewal right."}},
+    {"id":"feed-decisions","do":"Name the open decision each gap in ownership bears on and add it there as evidence, and propose to the strategy lead which asset to register or assign first, worst loss first.","skill":"manage-legal-and-ethical-issues","writes":["decisions/*"],"raises":["set-priorities"]}
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "ownership-on-paper", "kind": "review", "check": "Does every asset the venture relies on name who owns it on paper and what the venture may not do with it, and is every missing assignment named?", "reviewer": "strategy-lead" }
+  ]
+}

@@ -1,0 +1,105 @@
+{
+  "id": "9-1-3-perform-cost-accounting-and-control",
+  "function": "finance",
+  "process": "9.1.3",
+  "title": "Perform cost accounting and control",
+  "goal": "The venture knows what it costs to serve one customer and to deliver each product, every figure traces to entries in the spend register, and the margin per product and per customer is in the money summary.",
+  "measures": [
+    "cost_or_time_saved",
+    "revenue"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "finance/intake"
+    ]
+  },
+  "reads": [
+    "finance/spend",
+    "finance/budget",
+    "money",
+    "product",
+    "product/[id]",
+    "validation/pricing",
+    "customers",
+    "deals",
+    "service-delivery/offers",
+    "purpose/money/summary",
+    "assets/register",
+    "supply-chain/purchase-orders"
+  ],
+  "steps": [
+    {
+      "id": "inventory",
+      "do": "Count the physical stock and prepaid units the venture holds, value them at what was paid for them, and record what was consumed in the period against the spend entries that bought it.",
+      "skill": "perform-planning-and-management-accounting",
+      "activity": "9.1.3.1",
+      "consider": {
+        "why": "Stock and prepaid units already paid for are cash the runway figure would otherwise count twice.",
+        "when": "The venture holds physical stock or prepaid units it resells."
+      }
+    },
+    {
+      "id": "profit-centres",
+      "do": "Split revenue and cost by line of business so each one's own result stands alone, and state which costs had to be shared and on what basis they were split.",
+      "skill": "perform-planning-and-management-accounting",
+      "activity": "9.1.3.2",
+      "consider": {
+        "why": "One line of business can be carrying another without anyone seeing it.",
+        "when": "The venture sells more than one product or runs more than one line of business."
+      }
+    },
+    {
+      "id": "cost-of-sales",
+      "do": "Work out what it costs to serve one paying customer for a month from the spend register, hosting, per-seat fees, payment processing and support time included, and record the figure with the entries behind it.",
+      "skill": "perform-planning-and-management-accounting",
+      "activity": "9.1.3.3"
+    },
+    {
+      "id": "product-costing",
+      "do": "Give each product its own cost: the costs that exist only because of it plus its share of the shared ones on a basis you state, and mark every figure that rests on an estimate.",
+      "skill": "perform-planning-and-management-accounting",
+      "activity": "9.1.3.4"
+    },
+    {
+      "id": "variance",
+      "do": "Compare this period's cost per customer and cost per product with the last period's and explain each move of more than 10% by the spend entries that caused it.",
+      "skill": "perform-planning-and-management-accounting",
+      "activity": "9.1.3.5"
+    },
+    {
+      "id": "profitability",
+      "do": "Write margin per product and per customer into the money summary with the cost and revenue figures behind each, and say plainly which of them are negative.",
+      "skill": "perform-planning-and-management-accounting",
+      "activity": "9.1.3.6",
+      "writes": [
+        "purpose/money/summary"
+      ]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Attach each negative margin and each cost that grew faster than the revenue it serves to the open decision it bears on, and raise to the finance lead which of them to act on first.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "unit-cost-sourced",
+      "kind": "review",
+      "check": "Is the cost to serve one customer and to deliver each product traced to entries in the spend register, with every estimate marked as one?",
+      "reviewer": "finance-lead"
+    }
+  ]
+}

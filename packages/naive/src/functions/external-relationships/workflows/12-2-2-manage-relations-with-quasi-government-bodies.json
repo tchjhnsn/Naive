@@ -1,0 +1,22 @@
+{
+  "id": "12-2-2-manage-relations-with-quasi-government-bodies",
+  "function": "external-relationships",
+  "process": "12.2.2",
+  "title": "Manage relations with quasi-government bodies",
+  "goal": "Every standards, accreditation or self-regulatory body that can certify, admit or audit the venture is named with what it grants and what it costs, every inquiry it sends has an answer assembled from the records, and every contact with it sits in a dated log.",
+  "measures": ["compliance_met","learning"],
+  "trigger": {"kind":"request"},
+  "requires": {"meetings":["external-relationships/intake"]},
+  "reads": ["venture","industries","markets","legal/obligations","finance/spend","evidence","operations/meeting","operations/handoff","decisions/*"],
+  "steps": [
+    {"id":"establish-relationships-with-agencies","do":"List the standards, accreditation and self-regulatory bodies in the venture's industry with what each grants, a certification a buyer asks for, a register the venture must be on, an audit it must pass, and what each costs in fees and hours, and leave the approach and the joining to the founder.","skill":"manage-government-and-industry-relationships","activity":"12.2.2.1","writes":["operations/handoff/[id]"],"raises":["spend-money"]},
+    {"id":"respond-to-audit-inquiries","do":"For each inquiry such a body sends, answer every question from the records, naming the record behind each fact, list plainly what the records cannot answer, and hand the draft to the founder to send.","skill":"manage-government-and-industry-relationships","activity":"12.2.2.2","writes":["operations/handoff/[id]"],"raises":["public-commitment"],"consider":{"why":"An inquiry answered from the records costs an hour, and one answered from memory costs the certification.","when":"Such a body has sent an inquiry, an audit request or a renewal questionnaire."}},
+    {"id":"maintain-documentation-of-contacts","do":"Keep one dated line per contact with such a body, who was spoken to, what was asked, what was said and what the venture promised with its date, and never record a promise the founder did not make.","skill":"manage-government-and-industry-relationships","activity":"12.2.2.3","writes":["operations/handoff/[id]"]},
+    {"id":"plan-and-manage-meetings","do":"Before each meeting write the agenda, the one question it must settle and the records that answer it, and after it write the follow-up with its owner and due date, taking nothing as agreed that the founder did not say.","skill":"manage-government-and-industry-relationships","activity":"12.2.2.4","writes":["operations/handoff/[id]"],"consider":{"why":"A meeting with a body that can certify or audit the venture is short, and what was said in it is remembered against the venture.","when":"A meeting with such a body is scheduled."}},
+    {"id":"feed-decisions","do":"Name the open decision each inquiry and each certification bears on and add it there as evidence, and propose to the strategy lead which body is worth joining or answering first.","skill":"manage-government-and-industry-relationships","writes":["decisions/*"],"raises":["set-priorities"]}
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "contacts-logged", "kind": "review", "check": "Does the log hold a dated line for every contact with such a body, and does every answer to an inquiry name the record behind each fact?", "reviewer": "strategy-lead" }
+  ]
+}

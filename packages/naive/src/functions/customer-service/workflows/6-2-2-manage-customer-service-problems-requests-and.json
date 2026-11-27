@@ -1,0 +1,126 @@
+{
+  "id": "6-2-2-manage-customer-service-problems-requests-and",
+  "function": "customer-service",
+  "process": "6.2.2",
+  "title": "Manage customer service problems, requests, and inquiries",
+  "goal": "Every contact the venture received is a case with a kind and a reason, its answer found or its fix handed on, and its reply sent or waiting on the founder inside the policy's first response target.",
+  "measures": [
+    "usage_or_adoption",
+    "revenue"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "customer-service/intake"
+    ]
+  },
+  "reads": [
+    "support/policy",
+    "support/cases",
+    "customers",
+    "product",
+    "product/bugs",
+    "it/connections",
+    "marketing/content"
+  ],
+  "steps": [
+    {
+      "id": "receive-contacts",
+      "activity": "6.2.2.1",
+      "do": "Write one case per contact that arrived on any open channel, with the channel, the time it arrived, the helpdesk id and a one-sentence summary of what the customer needs, and no names, addresses or payment details.",
+      "writes": [
+        "support/cases/[id]"
+      ],
+      "skill": "plan-and-manage-customer-service-contacts"
+    },
+    {
+      "id": "analyze-contacts",
+      "activity": "6.2.2.2",
+      "do": "Set each case's kind and reason from the policy's list, link the earlier case when the same customer wrote about the same issue inside seven days, and name the open bug or published article that already covers it.",
+      "writes": [
+        "support/cases/[id]"
+      ],
+      "raises": [
+        "domain-fact"
+      ],
+      "skill": "plan-and-manage-customer-service-contacts"
+    },
+    {
+      "id": "resolve-contacts",
+      "activity": "6.2.2.3",
+      "do": "Find the answer in the records and the published help, record on the case what resolves it, and when only a change resolves it open a handoff to the function that owns the change with the case as evidence.",
+      "writes": [
+        "support/cases/[id]",
+        "operations/handoff/[id]"
+      ],
+      "skill": "plan-and-manage-customer-service-contacts"
+    },
+    {
+      "id": "respond-to-contacts",
+      "activity": "6.2.2.4",
+      "do": "Draft the reply so it answers both the question asked and the next one the customer would ask, raise it for the founder to send, and record the first response time on the case once it has gone.",
+      "writes": [
+        "support/cases/[id]"
+      ],
+      "raises": [
+        "public-commitment"
+      ],
+      "skill": "plan-and-manage-customer-service-contacts"
+    },
+    {
+      "id": "capture-opportunity",
+      "activity": "6.2.2.5",
+      "do": "Note on a resolved case when a satisfied customer asked for something a larger plan or another offer already covers, quoting their own words, and never inside a complaint or a failure.",
+      "writes": [
+        "support/cases/[id]"
+      ],
+      "consider": {
+        "why": "A customer who asks for more while they are happy is the cheapest sale the venture will get.",
+        "when": "A case closed well and the customer named a need an existing offer covers."
+      },
+      "skill": "plan-and-manage-customer-service-contacts"
+    },
+    {
+      "id": "deliver-opportunity",
+      "activity": "6.2.2.6",
+      "do": "Open a handoff to marketing and sales carrying the customer record, the case and the customer's own words, and link it from the case so the same interest is not passed on twice.",
+      "writes": [
+        "operations/handoff/[id]",
+        "support/cases/[id]"
+      ],
+      "raises": [
+        "defer-or-route"
+      ],
+      "consider": {
+        "why": "An interest noted on a case and never passed on is a sale the venture loses quietly.",
+        "when": "A case carries a noted opportunity."
+      },
+      "skill": "plan-and-manage-customer-service-contacts"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Report the period's contacts by reason with the cases behind each count, name the open decision the counts bear on, and recommend to the growth lead which reason to remove next.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "contacts-answered",
+      "kind": "review",
+      "check": "Does every contact received have a case with a kind, a reason, and either a recorded first response or an open escalation, inside the policy's target?",
+      "reviewer": "growth-lead"
+    }
+  ]
+}

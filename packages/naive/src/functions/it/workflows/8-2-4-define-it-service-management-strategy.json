@@ -1,0 +1,25 @@
+{
+  "id": "8-2-4-define-it-service-management-strategy",
+  "function": "it",
+  "process": "8.2.4",
+  "title": "Define IT service management strategy",
+  "goal": "The venture has written how its IT work is run: the services it offers its own functions, the few practices it will keep (request, change, incident), who does each, and the one place performance is reported.",
+  "measures": ["cost_or_time_saved", "compliance_met"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["it/intake"] },
+  "reads": ["venture", "it/connections", "capabilities/processes", "operations/handoff", "operations/activity-assignments", "support/policy", "foundation/goals", "decisions/*"],
+  "steps": [
+    { "id": "establish-it-service-management-strategy-and-goals", "do": "Write in a few sentences what IT in this venture is for and the two or three things it must get right this phase, each tied to a live goal's measure, and say what it will deliberately not do yet.", "skill": "develop-and-manage-it-business-strategy", "activity": "8.2.4.1" },
+    { "id": "identify-it-service-operating-and-process-requirements", "do": "List what running those services actually requires (a way to take a request, a way to approve a change, a way to record an incident, a place access is reviewed) and name for each the record or route it would live in today.", "skill": "develop-and-manage-it-business-strategy", "activity": "8.2.4.2" },
+    { "id": "define-it-service-catalog", "do": "Write the catalog of services IT offers the venture's own functions, one line each with what it is, who may ask for it, what it needs from the asker and how long it takes, and keep it to the services that actually exist.", "skill": "develop-and-manage-it-business-strategy", "activity": "8.2.4.3" },
+    { "id": "establish-it-service-management-framework", "do": "Choose, from ITIL 4's practices, only the few this venture will keep (service request management, change enablement, incident management) and write for each the smallest version a solo founder can run, saying plainly which practices the venture is not adopting.", "skill": "develop-and-manage-it-business-strategy", "activity": "8.2.4.4" },
+    { "id": "define-and-implement-it-service-management", "do": "Put each kept practice into the venture's own records: the request as a handoff to the IT agent, the change as a decision of the class that fits it, the incident as a note on the connection with its dates, and say which step of which workflow performs it.", "skill": "develop-and-manage-it-business-strategy", "activity": "8.2.4.5", "writes": ["it/connections/[id]"] },
+    { "id": "define-and-deploy-support-service-management-process-tools-and-methods", "do": "Say which tool, if any, each practice needs beyond what the venture already owns, run `naive tools recommend` for the activity it would record, and name the activities a candidate would leave unrecorded before anyone pays for it.", "skill": "tool-selection", "activity": "8.2.4.6", "consider": { "why": "A practice can usually run on records the venture already owns, and a tool bought too early becomes the record nobody can export.", "when": "A kept practice cannot be run on the venture's own records." } },
+    { "id": "monitor-and-report-it-performance", "do": "Write the one short report that says how IT did against those two or three things, with each number traced to the record it came from, and name where a number does not exist yet.", "skill": "develop-and-manage-it-business-strategy", "activity": "8.2.4.7" },
+    { "id": "feed-decisions", "do": "Record the kept practices and the catalog as evidence on the decision they settle, and raise for the product lead which practice to make real first and for the founder anything that would cost money or need new terms.", "skill": "develop-and-manage-it-business-strategy", "writes": ["decisions/*"], "raises": ["set-priorities", "new-dependency-free", "spend-money", "legal-or-terms"] }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "practices-runnable", "kind": "review", "check": "Does every kept practice name the record or route it runs in and the workflow step that performs it, and does the catalog list only services that exist today?", "reviewer": "product-lead" }
+  ]
+}

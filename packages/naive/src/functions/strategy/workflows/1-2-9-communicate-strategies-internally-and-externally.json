@@ -1,0 +1,63 @@
+{
+  "id": "1-2-9-communicate-strategies-internally-and-externally",
+  "function": "strategy",
+  "process": "1.2.9",
+  "title": "Communicate strategies internally and externally",
+  "goal": "One current statement of the strategy as the records hold it exists for the people and agents inside the venture, the part that may be said outside is drafted and handed to marketing and sales, and nothing was published from here.",
+  "measures": ["impact"],
+  "trigger": { "kind": "request" },
+  "requires": {
+    "meetings": ["strategy/intake"]
+  },
+  "reads": [
+    "foundation/telos",
+    "foundation/goals",
+    "foundation/problem",
+    "foundation/icp",
+    "foundation/constraints",
+    "foundation/bets",
+    "governance/publication-policy",
+    "marketing/message",
+    "marketing/voice",
+    "operations/lead",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "assemble-the-current-strategy",
+      "do": "Write the strategy as the records now state it, the end state, the problem, the customer, the live goals and the limits, each clause citing its route and the date that record was last updated, and name every part that is still a draft the founder has not accepted.",
+      "skill": "develop-business-strategy"
+    },
+    {
+      "id": "draft-the-internal-statement",
+      "do": "Turn that into the version the venture's people and function agents read, short enough to be read before work and saying for each function which goal measure its work moves, and put it on the handoff for the leads.",
+      "skill": "develop-business-strategy",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "draft-what-may-be-said-outside",
+      "do": "Draft only the sentences the publication policy allows outside, mark every number, name and date in them with the record it comes from, leave out anything unregistered or unevidenced, and hand the draft to marketing and sales, because publishing is a commitment the founder makes and this function never publishes.",
+      "skill": "develop-business-strategy",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Open a decision for every sentence the founder must approve before it is said outside, attach the records each cites, and recommend to the strategy lead when the statement is next refreshed.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "nothing-published-from-here",
+      "kind": "review",
+      "check": "Does every sentence meant for outside cite the record it rests on and sit on a handoff to marketing and sales awaiting the founder's approval, with nothing published by this function?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

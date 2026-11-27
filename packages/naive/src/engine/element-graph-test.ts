@@ -70,7 +70,7 @@ expect("strategy feeds marketing and sales, and finance feeds it through spend",
 expect("venture.json is read by every intake and written by no workflow", unfed(shipped).find((r) => r.route === "venture")?.by.filter((w) => String(w).endsWith("/intake")).length === 13);
 
 // The command.
-const naive = (...args: string[]) => spawnSync("node", ["packages/naive/src/interfaces/cli/naive.ts", "graph", ...args], { encoding: "utf8" });
+const naive = (...args: string[]) => spawnSync("node", ["packages/naive/src/interfaces/cli/naive.ts", "graph", ...args], { encoding: "utf8", maxBuffer: 256 * 1024 * 1024 });
 const out = naive("--element", "3.5.1.6", "--json");
 expect("naive graph --element --json gives the element with its upstream and downstream", out.status === 0 && JSON.parse(out.stdout).element.id === "3.5.1.6" && JSON.parse(out.stdout).upstream.length > 0, out.stderr);
 const fnOut = naive("--function", "it", "--json");

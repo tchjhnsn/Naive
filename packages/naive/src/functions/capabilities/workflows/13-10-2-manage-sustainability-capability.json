@@ -1,0 +1,59 @@
+{
+  "id": "13-10-2-manage-sustainability-capability",
+  "function": "capabilities",
+  "process": "13.10.2",
+  "title": "Manage sustainability capability",
+  "goal": "The commitments the venture made are kept and reported: whoever does the affected work knows what is asked of them, the questions that come in are answered from records, and each statement is computed from named records and approved by the founder before it leaves.",
+  "measures": ["cost_or_time_saved"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["capabilities/intake"] },
+  "reads": [
+    "capabilities/processes",
+    "finance/spend",
+    "supply-chain/suppliers",
+    "customers",
+    "investor-relations/updates",
+    "governance/publication-policy",
+    "operations/handoff"
+  ],
+  "steps": [
+    {
+      "id": "provide-sustainability-training",
+      "do": "Write what each person doing the affected work must do differently because of the commitments, as steps in the process they already run, and record who was walked through it and when.",
+      "skill": "manage-sustainability",
+      "activity": "13.10.2.1",
+      "writes": ["capabilities/processes/[id]"],
+      "consider": {
+        "why": "A commitment that changes nobody's steps is not kept, whatever the policy says.",
+        "when": "A commitment changes how a person or a supplier does the work."
+      }
+    },
+    {
+      "id": "provide-sustainability-support",
+      "do": "Answer each question that comes in from a customer, an investor or a supplier from the venture's own records, list the questions the records cannot answer, and hand every reply to the founder to send.",
+      "skill": "manage-sustainability",
+      "activity": "13.10.2.2",
+      "writes": ["operations/handoff/[id]"],
+      "raises": ["legal-or-terms"]
+    },
+    {
+      "id": "perform-sustainability-reporting",
+      "do": "Compute each measure for the window from the records its definition names, draft the statement with the figure, the window and the method beside it and every gap shown as a gap, and hand it to the founder, since publishing it commits the venture.",
+      "skill": "manage-sustainability",
+      "activity": "13.10.2.3",
+      "ask": true,
+      "writes": ["capabilities/processes/[id]", "operations/handoff/[id]"],
+      "raises": ["domain-fact"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Raise every statement to the founder for approval before it leaves the venture, and to the strategy lead which unanswerable question is worth starting to record.",
+      "writes": ["decisions/*"],
+      "raises": ["legal-or-terms", "set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "computed-and-approved", "kind": "review", "check": "Is every reported figure computed from the records its definition names, with its gaps shown, and approved by the founder before it left the venture?", "reviewer": "strategy-lead" }
+  ]
+}

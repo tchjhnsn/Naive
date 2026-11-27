@@ -1,0 +1,53 @@
+{
+  "id": "4-3-4-maintain-production-records-and-manage-lot",
+  "function": "supply-chain",
+  "process": "4.3.4",
+  "title": "Maintain production records and manage lot traceability",
+  "goal": "Every unit the venture ships can be traced to its lot, each lot to the materials and test results behind it, and the rule for reading a lot number is written down where anyone can apply it.",
+  "measures": ["cost_or_time_saved", "flow_and_lead_time"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["supply-chain/intake"] },
+  "reads": [
+    "product",
+    "supply-chain/purchase-orders",
+    "supply-chain/suppliers",
+    "support/cases",
+    "legal/obligations",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "determine-lot-numbering-system",
+      "do": "Write the lot numbering rule, what each part of the number means and where it is marked on the unit and the carton, choose a form that stays unique as volume grows, and record the rule and the first number issued under it.",
+      "skill": "produce-assemble-test-product",
+      "activity": "4.3.4.1"
+    },
+    {
+      "id": "determine-lot-use",
+      "do": "Record for each lot what went into it, which purchase orders and supplier lots supplied its materials, its test results, how many units it yielded and where those units went, so a field failure can be traced back and a recall could name the units affected.",
+      "skill": "produce-assemble-test-product",
+      "activity": "4.3.4.2",
+      "writes": ["supply-chain/purchase-orders/[id]"],
+      "raises": ["domain-fact"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Name every break in the chain, a lot whose materials cannot be traced or units shipped without a lot recorded, add it as a decision with what it would cost to close the gap and what it would cost in a recall, and hand the order of that work to the product lead.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "chain-unbroken",
+      "kind": "review",
+      "check": "Can a shipped unit be traced to its lot, and that lot to its supplier lots and test results, and is every break in that chain an open decision?",
+      "reviewer": "product-lead"
+    }
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "id": "2-2-1-perform-discovery-research",
+  "function": "products",
+  "process": "2.2.1",
+  "title": "Perform discovery research",
+  "goal": "The technologies that could change what this product does or what it costs to run are named with their sources and dates, the one or two that would matter most have a recorded trial or the reason none was run, and every concept that depends on a technology has a feasibility verdict with the open question named.",
+  "measures": ["learning"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["products/intake"] },
+  "reads": [
+    "product",
+    "product/capabilities",
+    "foundation/problem",
+    "foundation/icp",
+    "foundation/constraints",
+    "foundation/bets",
+    "purpose/competitor",
+    "purpose/competitor-signals",
+    "it/connections",
+    "knowledge/knowledge-sources",
+    "finance/spend",
+    "decisions"
+  ],
+  "steps": [
+    {
+      "id": "identify-new-technologies",
+      "do": "List the technologies, models, interfaces and libraries that could change what this product does, what it costs to run or who could use it, each from a public source with the date it was read, and say for each what it would make possible that is not possible today and what it would make cheaper.",
+      "skill": "generate-and-define-new-product-service-ideas",
+      "activity": "2.2.1.1",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "develop-new-technologies",
+      "do": "For the one or two that would matter most, build the smallest thing that shows whether they work for this product's job, and record what the trial did, the input it ran on, what it cost in time and money, what it showed and what it did not settle.",
+      "skill": "generate-and-define-new-product-service-ideas",
+      "activity": "2.2.1.2",
+      "writes": ["operations/handoff/[id]"],
+      "consider": {
+        "why": "A vendor's page says what a technology claims, and a small trial is the only thing that shows whether it works for this product's job.",
+        "when": "A concept the founder is weighing depends on a technology the venture has never run."
+      }
+    },
+    {
+      "id": "assess-feasibility",
+      "do": "For each concept that depends on one of these technologies, say whether it can be built with the venture's time, skills, money and the limits in the constraints record, name the one open question that would sink it and the test that would settle it, and record the verdict as the feasibility risk on the product card.",
+      "skill": "generate-and-define-new-product-service-ideas",
+      "activity": "2.2.1.3",
+      "writes": ["product/[id]"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Attach each verdict to the decision it bears on, say plainly which concepts are not feasible today and why, and raise to the product lead which trial to run next and what it would cost.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "feasibility-answered",
+      "kind": "review",
+      "check": "Does every technology named cite a public source with the date it was read, and does every concept that depends on one carry a feasibility verdict naming the open question and the test that would settle it?",
+      "reviewer": "product-lead"
+    }
+  ]
+}

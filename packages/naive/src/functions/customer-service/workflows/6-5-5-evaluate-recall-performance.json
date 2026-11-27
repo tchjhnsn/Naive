@@ -1,0 +1,69 @@
+{
+  "id": "6-5-5-evaluate-recall-performance",
+  "function": "customer-service",
+  "process": "6.5.5",
+  "title": "Evaluate recall performance",
+  "goal": "The recall's reach, cost and timing are written up against what it was meant to achieve, with the one change that would make the next one faster.",
+  "measures": [
+    "usage_or_adoption"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "customer-service/intake"
+    ]
+  },
+  "reads": [
+    "support/cases",
+    "customers",
+    "product",
+    "legal/obligations",
+    "finance/spend",
+    "operations/handoff"
+  ],
+  "steps": [
+    {
+      "id": "gather-the-numbers",
+      "do": "Gather the recall's final numbers from the cases, the customer records and the spend records: customers affected, reached and acting, units returned, days from decision to first message and to close, and what it cost.",
+      "skill": "evaluate-customer-service-operations-and-customer"
+    },
+    {
+      "id": "compare-with-the-aim",
+      "do": "Compare each number with the recall's exit test and with anything the obligations required, and say plainly where it fell short and what the records cannot say at all.",
+      "skill": "evaluate-customer-service-operations-and-customer"
+    },
+    {
+      "id": "name-the-change",
+      "do": "Name the one change in how the venture records, reaches or supports its customers that would most shorten the next recall, with the number from this one that justifies it.",
+      "raises": [
+        "set-priorities"
+      ],
+      "skill": "evaluate-customer-service-operations-and-customer"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Record the recall's result against its aim, name the decision the proposed change bears on, and leave the numbers and their sources as evidence on the handoff.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "recall-evaluated",
+      "kind": "review",
+      "check": "Is every recall number compared with the recall's aim and its source cited, and is one change proposed with a number behind it?",
+      "reviewer": "growth-lead"
+    }
+  ]
+}

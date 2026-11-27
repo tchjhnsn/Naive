@@ -1,0 +1,95 @@
+{
+  "id": "3-2-3-define-pricing-strategy",
+  "function": "marketing-and-sales",
+  "process": "3.2.3",
+  "title": "Define pricing strategy",
+  "goal": "The venture's price model, its price points and the discounting it allows are one decision the founder made, with the willingness-to-pay evidence and the cost floor behind every number.",
+  "measures": [
+    "revenue"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "marketing-and-sales/intake"
+    ]
+  },
+  "reads": [
+    "venture",
+    "foundation/icp",
+    "product",
+    "markets",
+    "validation/pricing",
+    "purpose/competitor",
+    "customers",
+    "sales/opportunities",
+    "finance/budget",
+    "finance/spend",
+    "money",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "conduct-pricing-analysis",
+      "do": "Gather what buyers in each segment pay today for the alternative, every competitor's published price with the page and the date read, what interview records say buyers would pay, and what the venture's own closed deals went out at, and write the range with the arithmetic on the handoff.",
+      "skill": "develop-marketing-strategy",
+      "writes": [
+        "operations/handoff/[id]"
+      ],
+      "activity": "3.2.3.1"
+    },
+    {
+      "id": "establish-guidelines-for-pricing-and-discounting",
+      "do": "Draft the rules that bound every future quote: the floor no price goes under, the largest discount allowed without the founder, what a discount must be traded for, and which terms always go to the founder, and put them to the founder as one decision.",
+      "skill": "develop-marketing-strategy",
+      "raises": [
+        "strategy-or-constitution"
+      ],
+      "activity": "3.2.3.2"
+    },
+    {
+      "id": "establish-pricing-targets",
+      "do": "Propose a price point for each plan and segment with the revenue it implies at the forecast volume, the margin it leaves against the cost records and the evidence for buyer willingness, and recommend one with the reason.",
+      "skill": "develop-marketing-strategy",
+      "raises": [
+        "strategy-or-constitution"
+      ],
+      "activity": "3.2.3.3"
+    },
+    {
+      "id": "approve-pricing-strategies-policies-and-targets",
+      "do": "Put the price points, the discount guidelines and the targets to the founder together, say plainly which numbers rest on evidence and which on assumption, and write only the numbers they approve; publish nothing.",
+      "ask": true,
+      "skill": "develop-marketing-strategy",
+      "raises": [
+        "strategy-or-constitution"
+      ],
+      "activity": "3.2.3.4"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Record the approved prices and guidelines on the decision that settles them with every source cited, and tell the growth lead which pricing assumption is now the weakest and what would test it.",
+      "skill": "develop-marketing-strategy",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "prices-approved-with-evidence",
+      "kind": "review",
+      "check": "Does every approved price point name the evidence for what a buyer will pay and the cost floor under it, and did the founder approve it rather than the agent?",
+      "reviewer": "growth-lead"
+    }
+  ]
+}
