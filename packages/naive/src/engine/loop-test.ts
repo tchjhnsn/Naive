@@ -1,6 +1,6 @@
 // Tests the loop (EE-183): the mode for a workflow, the plan for each mode, and ticks over one venture folder made
 // here, with a stand-in starter in place of an agent harness.
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
@@ -18,7 +18,7 @@ for (const k of ["NAIVE_AGENT_CMD", "MENTURA_ACTOR", "MENTURA_ACTOR_ID", "MENTUR
 const cfg: LoopConfig = { mode: "ask", functions: { f: "auto" }, workflows: { "f/slow": "manual" } };
 expect("the workflow's mode wins, then the function's, then the venture's, then manual", modeFor(cfg, "f/slow").mode === "manual" && modeFor(cfg, "f/slow").from === "workflow" && modeFor(cfg, "f/fast").mode === "auto" && modeFor(cfg, "f/fast").from === "function" && modeFor(cfg, "g/any").mode === "ask" && modeFor(cfg, "g/any").from === "venture" && modeFor(undefined, "g/any").mode === "manual" && modeFor(undefined, "g/any").from === "default");
 
-const entry = (id: string, over: Partial<DueEntry> = {}): DueEntry => ({ workflow: `f/${id}`, function: "f", title: id, role: "f-agent", trigger: { kind: "schedule", cadence: "weekly" }, status: "due", why: "It runs weekly and has never run.", last_done: null, last_failed: null, next_due: null, in_phase: true, time_box: null, ...over });
+const entry = (id: string, over: Partial<DueEntry> = {}): DueEntry => ({ workflow: `f/${id}`, function: "f", title: id, role: "f-agent", trigger: { kind: "schedule", cadence: "weekly" }, status: "due", why: "It runs weekly and has never run.", last_done: null, last_failed: null, next_due: null, in_phase: true, time_box: null, missing: [], ...over });
 expect("the question about an occurrence is named by the workflow and its last run", askId(entry("w")) === "run-f-w-first" && askId(entry("w", { last_done: "2026-06-08T09:30:00.000Z" })) === "run-f-w-20260608t0930" && askId(entry("w", { last_done: "2026-06-08T09:30:00.000Z", last_failed: "2026-06-14T10:00:00.000Z" })) === "run-f-w-20260614t1000");
 
 const none = new Map<string, Asked>();
@@ -45,10 +45,20 @@ expect("a sprint still asks before it restarts a failed workflow", one({ ...brok
 
 expect("a config check finds a mode outside the three, an unknown function or workflow, and a mode past manual with no person", loopProblems({ mode: "bypass" as "auto" }, [], []).length === 1 && loopProblems({ functions: { g: "manual" } }, ["f"], []).length === 1 && loopProblems({ workflows: { "f/x": "manual" } }, ["f"], ["f/w"]).length === 1 && loopProblems({ mode: "auto" }, [], []).length === 1 && loopProblems({ mode: "auto", set_by: { person: "Ada", at: "2026-06-01" } }, [], []).length === 0 && loopProblems({ mode: "manual" }, [], []).length === 0);
 
-// One venture folder: two functions in Discovery, read from the shipped function modules.
+// One venture folder: two functions in Discovery, read from the shipped function modules. Its strategy foundation and
+// its founding strategy meeting are there, so no workflow is blocked on its prerequisites (EE-217) and the modes alone
+// decide what starts; packages/naive/src/engine/prerequisites-test.ts tests the lock itself.
 const dir = mkdtempSync(join(tmpdir(), "naive-loop-"));
 try {
   writeFileSync(join(dir, "venture.json"), JSON.stringify({ id: "v", name: "V", phase: "discovery", departments: ["strategy", "customer-service"] }));
+  const put = (rel: string, body: unknown) => { mkdirSync(join(dir, rel.split("/").slice(0, -1).join("/")), { recursive: true }); writeFileSync(join(dir, rel), JSON.stringify(body, null, 2) + "\n"); };
+  put("foundation/problem.json", { venture: "v", problem: "Nothing says what is blocked." });
+  put("foundation/icp/primary.json", { venture: "v", id: "primary", name: "Solo founder" });
+  put("foundation/goals/telos.json", { venture: "v", id: "telos", goal: "Know what is blocked." });
+  put("operations/meetings/founding-strategy.json", { venture: "v", id: "founding-strategy", title: "Founding strategy", goal: "Settle what V is for.",
+    outcome_expected: ["a problem record"], workflow: "strategy/intake", called_by: "Ada", attendees: [{ id: "Ada", kind: "person" }], status: "closed",
+    opened_at: "2026-06-01T09:00:00Z", closed_at: "2026-06-01T10:00:00Z", agenda: [{ id: "telos", title: "What is V for?", status: "done" }],
+    outcome: { reached: "yes", summary: "Settled and drafted." } });
   const t1 = "2026-06-15T00:00:00.000Z", t2 = "2026-06-15T01:00:00.000Z", t3 = "2026-06-15T02:00:00.000Z", t4 = "2026-06-15T03:00:00.000Z";
   const started: string[] = [];
   const ok = (_d: string, s: LoopStep) => { started.push(s.workflow); return 0; };

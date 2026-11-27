@@ -20,6 +20,7 @@ import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, isAbsolute, join } from "node:path";
+import { CODE_OVER_DOCS } from "../core/code-over-docs.ts";
 import { ventureFile } from "../core/venture-paths.ts";
 import { adapt, adapters, byName, refresh, skillsFor } from "../engine/adapters.ts";
 import type { Adapter } from "../records/types/records.d.ts";
@@ -45,6 +46,8 @@ async function harnessSuite(a: Listed): Promise<Result[]> {
     const first = await adapt(dir, a.name);
     t("every entry file is written with the adapter's text", a.files.every((f) => existsSync(ventureFile(dir, f.path)) && readFileSync(ventureFile(dir, f.path), "utf8") === f.text), JSON.stringify(first.written));
     t("the harness reaches the venture's AGENTS.md (it reads it, or an entry file imports or names it)", a.reads.includes("AGENTS.md") || a.files.some((f) => /(^|\s)@AGENTS\.md\b|AGENTS\.md/.test(f.text)));
+    const root = readFileSync(join(dir, "AGENTS.md"), "utf8");
+    t("the harness gets the rule that existing code wins over stale docs (EE-225), from an entry file or the venture's AGENTS.md", root.includes(CODE_OVER_DOCS) && (a.files.some((f) => f.text.includes(CODE_OVER_DOCS)) || a.reads.includes("AGENTS.md")));
     t("no entry file is private or outside the venture", a.files.every((f) => !f.path.startsWith("_private/") && !f.path.includes("..") && !f.path.startsWith("/")));
     const { call } = await import("../router/router.ts");
     const lay = await call({ venture: "adapted", workspace: ws, route: "foundation/problem", action: "layout" });
