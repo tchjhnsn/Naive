@@ -64,6 +64,7 @@ import { appendLine } from "./appends.ts";
 import { commitRawSource } from "./raw-source.ts";
 import { claimHandoff, handoffWriteRule } from "./handoff-claim.ts";
 import { preRegistrationWriteRule } from "./pre-registration.ts";
+import { betWriteRule } from "./bets.ts";
 import { briefPath, splitBrief } from "./handoff-brief.ts";
 import { LOCAL, attributeSources, connect, sourceFor } from "../store/connectors/index.ts";
 // Caching (packages/naive/src/engine/caching.ts): per-action memo, the record-level cache for command routes, and system/cache, system/judge, system/answer.
@@ -91,7 +92,7 @@ import { coreOf, statementsIn, withCore } from "../engine/venture-core.ts";
 import { telosView } from "../../../../frameworks/telos/adapter.ts";
 import { migrated, scale } from "../engine/canonical.ts";
 import { schemaNameOf } from "../records/index.ts";
-import type { DecisionRecord, Goal, PreRegistration, TeamPlan, Venture } from "../records/types/records.d.ts";
+import type { Bet, DecisionRecord, Goal, PreRegistration, TeamPlan, Venture } from "../records/types/records.d.ts";
 import type { RecordRoute, Route } from "../records/routes/routes.ts";
 import {
   ID_CHECKS, PHASES, allowed, deepItem, defaultWorkspace, files, gateOf, glob, groups, kits, load, repo, resolve, routes, skillsOf, ventureDir, ventures,
@@ -572,6 +573,16 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
     // gate, so it is a refusal and not a draft, and the message names the two ways on: a deviation or a new version.
     if (r.record === "pre-registration") {
       const frozen = await preRegistrationWriteRule({ store, file, input: rec as Partial<PreRegistration> });
+      if (!frozen.ok) return { ...frozen, ...deprecated };
+      claimBase = frozen.base;
+    }
+    // Bet freeze hook (packages/naive/src/router/bets.ts, EE-221): once a person has registered a bet, or has
+    // registered a pre-registration that tests it, its claim never changes, for a person too; its evidence,
+    // rivals and confidence entries are append-only and its outcome is written once. An agent's write that puts
+    // odds on a bet, resolves one or moves one on is refused here too, with the person's command named, because a
+    // probability nobody chose and an outcome an agent declared are what the register exists to prevent.
+    if (r.record === "bet") {
+      const frozen = await betWriteRule({ store, dir, file, input: rec as Partial<Bet>, person: actor === "person" && !actingAgent(provenance.agent?.id) });
       if (!frozen.ok) return { ...frozen, ...deprecated };
       claimBase = frozen.base;
     }

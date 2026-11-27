@@ -24,11 +24,12 @@ export type Threshold = Measure["threshold"];
 /** The statuses from which the registered fields are fixed. */
 export const REGISTERED: readonly PreRegStatus[] = Object.freeze(["registered", "judged", "superseded"]);
 /**
- * The fields a registration fixes: the claim, what it rests on, how it is tested, the measures with their thresholds
- * and the dates they are judged by, what does not count, the two decision rules, and who registered it when.
+ * The fields a registration fixes: the claim, the bets it tests, what it rests on, how it is tested, the measures
+ * with their thresholds and the dates they are judged by, what does not count, the two decision rules, and who
+ * registered it when.
  */
 export const FROZEN: readonly (keyof PreRegistration)[] = Object.freeze([
-  "id", "venture", "thesis", "assumptions", "method", "measures", "exclusions", "on_pass", "on_fail",
+  "id", "venture", "thesis", "tests", "assumptions", "method", "measures", "exclusions", "on_pass", "on_fail",
   "registered_at", "registered_by", "supersedes", "supersede_reason",
 ]);
 /** The fields a write may only add to after registration: an entry already written never changes. */

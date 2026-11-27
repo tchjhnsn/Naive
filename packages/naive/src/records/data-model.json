@@ -397,6 +397,38 @@
       "decision_class": "strategy-or-constitution"
     },
     {
+      "id": "bet",
+      "layer": "purpose",
+      "function": "strategy",
+      "level": "venture",
+      "data": "master",
+      "schema": "packages/naive/src/records/bet.schema.json",
+      "generator": "packages/naive/src/engine/generators/bet.ts",
+      "paths": [
+        "instance/**/foundation/bets/*.json",
+        "packages/naive/src/records/examples/**/foundation/bets/*.json"
+      ],
+      "refs": [
+        {
+          "field": "premises",
+          "to": "bet",
+          "checked_by": "packages/naive/src/checks/check-bets.ts"
+        },
+        {
+          "field": "supersedes",
+          "to": "bet",
+          "checked_by": "packages/naive/src/checks/check-bets.ts"
+        },
+        {
+          "field": "superseded_by",
+          "to": "bet",
+          "checked_by": "packages/naive/src/checks/check-bets.ts"
+        }
+      ],
+      "note": "One strategic claim the venture is betting on (EE-221): a requirement for strategy. Its kind says what sort of claim it is (empirical, forecast, causal, premise, selection-rule) and the claim's parts (population, measure, comparator, threshold, resolves_by) are fields, so a machine can check that the bet is verifiable without reading the sentence. A person registers it, or a pre-registration that tests it is registered, and from then on the claim never changes: a narrowed claim is a new bet that supersedes it. Only a person sets a probability or resolves one, and a forecast's prior is scored by Brier. Route foundation/bets/[id]",
+      "decision_class": "strategy-or-constitution"
+    },
+    {
       "id": "exit-criteria",
       "layer": "purpose",
       "function": "strategy",

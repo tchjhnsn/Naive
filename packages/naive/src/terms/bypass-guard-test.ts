@@ -59,6 +59,7 @@ export const REGISTRY: Registry = {
   "packages/naive/src/checks/check-problems-test.ts": plain("breaks each rule of check-problems.ts on copies and temp ventures"),
   "packages/naive/src/checks/check-pre-registration.ts": plain("a registered pre-registration against its version in the blob store (EE-220): a frozen field that differs fails; it compares bytes and field values, not a term"),
   "packages/naive/src/checks/check-pre-registration-test.ts": plain("breaks each rule of check-pre-registration.ts on copies and temp ventures"),
+  "packages/naive/src/checks/check-bets.ts": plain("bets across records (EE-221): ids, frozen fields against the blob store, premises that resolve without a cycle, and two registered lines compared by interval arithmetic; it compares ids, bytes and numbers, not a term"),
   "packages/naive/src/checks/check-assets.ts": plain("each public asset has a source, a license, a credit and alt text"),
   "packages/naive/src/checks/check-boundary.ts": plain("path text: no code names a module of an app that uses Naive, and registered connectors work offline"),
   "packages/naive/src/checks/check-brand.ts": plain("brand records: colors, licensed typefaces, marks and voice rules against fixed lists"),

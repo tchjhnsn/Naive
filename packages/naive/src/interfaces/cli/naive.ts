@@ -87,6 +87,18 @@
 //                                                   counted, labelled primary, secondary and tertiary (EE-219)
 //   naive blocked [--json]                          every workflow of the venture's functions, in hierarchical order,
 //                                                   met or blocked, and what unblocks it first (EE-217)
+//   naive bets [show [<id>]] [--json]               the venture's bets: each claim, the fixed form of it, what would
+//                                                   show it wrong, the bets it rests on, the evidence for and
+//                                                   against, the odds a person put on it and the outcome (EE-221)
+//   naive bets register <id> --by <person>          a person fixes the claim: from then on its kind, statement,
+//                                                   claim, rule, premises and falsified_by never change
+//   naive bets confidence <id> --p <0..1> --by <person> --data-seen <answer> [--why <text>]
+//                                                   a person puts odds on it, saying how much of the evidence they
+//                                                   had seen. The first entry is the prior, and it is what is scored
+//   naive bets resolve <id> <happened|did-not-happen|mixed|unresolvable> --by <person> [--observed <value>]
+//                                                   a person records what happened, once. Only a person resolves
+//   naive bets score [--json]                       the Brier score of each resolved bet and the mean, with the ones
+//                                                   the venture worked to make true reported apart
 //   naive prereg [show [<id>]] [--json]             the venture's pre-registrations: the thesis, the measures with the
 //                                                   thresholds and dates they are judged by, what does not count as
 //                                                   evidence, and what it said it would do on a pass and a fail (EE-220)
@@ -534,6 +546,13 @@ else if (cmd === "build" || cmd === "start") {
   // rank, and --json pass through. It reads only.
   const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
   process.exit(run("packages/naive/src/engine/problems.ts", [here(), ...args]));
+} else if (cmd === "bets") {
+  // The venture's strategic claims (EE-221, packages/naive/src/router/orchestration/bets.ts). register, confidence
+  // and resolve are a person's; show and score read only.
+  const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
+  const [what = "show"] = args.filter((a) => !a.startsWith("--"));
+  if (!["show", "register", "confidence", "resolve", "score"].includes(what)) { console.error("usage: naive bets [show [<id>]] | register <id> --by <person> | confidence <id> --p <0..1> --by <person> --data-seen <answer> | resolve <id> <happened|did-not-happen|mixed|unresolvable> --by <person> | score [--venture <dir>] [--json]"); process.exit(2); }
+  process.exit(run("packages/naive/src/router/orchestration/bets.ts", [here(), ...args]));
 } else if (cmd === "prereg") {
   // Pre-registrations: the plan for a test, fixed before it runs (EE-220,
   // packages/naive/src/router/orchestration/pre-registration.ts). register is a person's.
