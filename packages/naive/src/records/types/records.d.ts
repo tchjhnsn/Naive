@@ -5018,6 +5018,153 @@ export type Postmortem = {
   note?: string;
 };
 
+/** A plan for one test, fixed before the test runs, at <venture>/foundation/pre-registration/<id>.json (route foundation/pre-registration/[id], EE-220). It is the first durable object of the strategy function: the mission, the vision and the other strategy documents are written after a pre-registration is registered, so the standard of proof is set before the evidence arrives. The practice is preregistration in science (Nosek et al., The preregistration revolution, PNAS 2018), discovery-driven planning's assumption checklist and milestones (McGrath and MacMillan, HBR 1995) and the Test Card's metric and success criterion (Bland and Osterwalder, Testing Business Ideas, 2019). Once a person registers it, the thesis, assumptions, method, measures, thresholds, judged-by dates, exclusions and the actions on a pass and a fail never change: a deviation is appended to deviations, and a real change is a new pre-registration that supersedes this one with a reason, so every deviation stays visible. packages/naive/src/engine/pre-registration.ts holds that rule, the router applies it to every write and packages/naive/src/checks/check-pre-registration.ts checks the registered fields against the version in the blob store. Naive ships no threshold: each one is the venture's own, proposed as a decision a person settles. */
+export type PreRegistration = {
+  /** The file name without .json */
+  id: string;
+  /** The venture this belongs to, when the record names it */
+  venture?: string;
+  /** A short name for the test, for a list */
+  title?: string;
+  /** draft: still being written, and every field may change. registered: a person fixed it, and the registered fields never change again. judged: its verdict is written. superseded: a later version replaces it. withdrawn: it was taken off the table before registration or before a verdict */
+  status: "draft" | "registered" | "judged" | "superseded" | "withdrawn";
+  /** The claim, written so it can fail */
+  thesis: {
+    /** The claim in one sentence, about the world and not about the venture's hopes */
+    statement: string;
+    /** What would show the claim is wrong. A claim with no such state is not a thesis */
+    falsified_if?: string;
+  };
+  /** What the thesis rests on, after discovery-driven planning's assumption checklist. The ones that are critical and uncertain are the ones to test first */
+  assumptions?: {
+    id: string;
+    statement: string;
+    /** How much the thesis rests on it: high means the thesis fails if it is false */
+    criticality: "high" | "medium" | "low";
+    /** How little is known about it: high means nothing here settles it */
+    uncertainty: "high" | "medium" | "low";
+    /** The measures below that bear on this assumption */
+    measures?: string[];
+    /** What the assumption is drawn from, when anything is */
+    source?: string;
+  }[];
+  /** How the test runs, fixed before it runs */
+  method?: {
+    /** Whom the test is run with, as a population and not as a list of names */
+    who?: string;
+    /** How many, as a number or the rule that decides it */
+    how_many?: number | string;
+    /** How they are found and approached. Warm intros and friends are a recruitment method, and saying so is what makes the result readable */
+    recruitment?: string;
+    /** What is asked or observed, concretely enough that someone else could run it the same way */
+    asked_or_observed?: string;
+    /** How the answers become a number, when that is not obvious */
+    analysis?: string;
+  };
+  /** What is measured, each with the line it must pass and the date it is judged by */
+  measures?: {
+    id: string;
+    /** What is counted, in one sentence */
+    statement: string;
+    /** The line the measure must pass. The venture's own: Naive ships no value, and an agent proposes one as a decision a person settles */
+    threshold?: {
+      /** How the observed value is compared with the value */
+      operator: ">=" | ">" | "<=" | "<" | "==" | "!=";
+      /** The line itself. A number is compared arithmetically; a string is compared only for equality */
+      value: number | string;
+      unit?: string;
+      /** The person who chose it, or the decision that settled it */
+      set_by?: string;
+    };
+    /**
+     * The date the measure is judged on, fixed before the test runs so the window cannot be extended to reach the line
+     * @format date
+     */
+    judged_by?: string;
+    /** Where the observed value will be read from */
+    source?: string;
+  }[];
+  /** What does not count as evidence here, fixed in advance: compliments, friends' opinions, sign-ups without payment, anything the venture would be tempted to read as a yes. A standard of proof decided after the evidence arrives admits whatever arrived (Kerr 1998 on HARKing) */
+  exclusions?: {
+    statement: string;
+    /** Why it does not count */
+    why?: string;
+  }[];
+  /** What the venture does if the measures pass their thresholds */
+  on_pass?: PreRegistrationAction;
+  /** What the venture does if they do not */
+  on_fail?: PreRegistrationAction;
+  /**
+   * When a person registered it. From then on the registered fields never change
+   * @format date-time
+   */
+  registered_at?: string;
+  /** The person who registered it. Only a person registers a pre-registration */
+  registered_by?: string;
+  /** Every departure from the registered plan, appended beside it and never edited into it, so the record of what was promised and the record of what happened are both readable. An entry already written never changes */
+  deviations?: {
+    /**
+     * @format date-time
+     */
+    at: string;
+    /** What was done differently from the registered plan */
+    what: string;
+    why: string;
+    /** Who departed from the plan, a person's id or a role */
+    by: string;
+    /** The measures or assumptions it bears on */
+    affects?: string[];
+  }[];
+  /** What was observed, per measure, written after registration. The pass or fail of one measure is its observed value against its registered threshold; the verdict over the whole test is a person's */
+  results?: {
+    /** The measure above this result is for */
+    measure: string;
+    /** What was observed */
+    observed: number | string;
+    /** The records or sources behind it (validation/interviews/<id>, a raw source) */
+    evidence?: string[];
+    /** The observed value against the registered threshold */
+    verdict: "pass" | "fail";
+    /**
+     * @format date-time
+     */
+    at: string;
+    /** Who recorded it */
+    by?: string;
+    note?: string;
+  }[];
+  /** The verdict over the whole test, which is a person's and is written once */
+  verdict?: {
+    outcome: "pass" | "fail" | "mixed" | "inconclusive";
+    /** What the venture did, which the registered on_pass or on_fail said it would */
+    action_taken: "persevere" | "pivot" | "stop";
+    /** Why, especially when the action taken is not the registered one */
+    why?: string;
+    /**
+     * @format date-time
+     */
+    at: string;
+    /** The person who judged it */
+    by: string;
+  };
+  /** The pre-registration this one replaces. A registered plan is never edited: a real change is a new version, and supersede_reason says why */
+  supersedes?: string;
+  /** Why the earlier version was replaced, so the change stays visible */
+  supersede_reason?: string;
+  /** The later version that replaced this one */
+  superseded_by?: string;
+  /** The decision that settled the thresholds and the actions */
+  decision?: string;
+  note?: string;
+};
+
+/** A decision rule fixed before the answer is known: persevere, pivot or stop, and what that means here (Ries, The Lean Startup, 2011) */
+export type PreRegistrationAction = {
+  action: "persevere" | "pivot" | "stop";
+  /** What the venture does, concretely */
+  what: string;
+};
+
 /** How the framework ranks a venture's customer problems and what holds its problem tree together (EE-219), at packages/naive/src/functions/strategy/problem-priority.json. The weights are unvalidated priors a venture replaces under problems in naive.config.json; the labels are a view of the computed order and are never stored on a problem. */
 export type ProblemPriority = {
   version: string;

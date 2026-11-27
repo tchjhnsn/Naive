@@ -323,6 +323,28 @@
       "decision_class": "strategy-or-constitution"
     },
     {
+      "id": "pre-registration",
+      "layer": "purpose",
+      "function": "strategy",
+      "level": "venture",
+      "data": "master",
+      "schema": "packages/naive/src/records/pre-registration.schema.json",
+      "generator": "packages/naive/src/engine/generators/pre-registration.ts",
+      "paths": [
+        "instance/**/foundation/pre-registration/*.json",
+        "packages/naive/src/records/examples/**/foundation/pre-registration/*.json"
+      ],
+      "refs": [
+        {
+          "field": "supersedes",
+          "to": "pre-registration",
+          "checked_by": "packages/naive/src/checks/check-pre-registration.ts"
+        }
+      ],
+      "note": "The plan for one test, fixed before the test runs (EE-220): a thesis written so it can fail, the assumptions under it, the method, the measures with their thresholds and the dates they are judged by, what does not count as evidence, and the action on a pass and on a fail. The first durable object of the strategy function: the mission, vision and other strategy documents come after it. Once a person registers it those fields never change; a deviation is appended and a real change is a new version that supersedes it. Route foundation/pre-registration/[id]",
+      "decision_class": "strategy-or-constitution"
+    },
+    {
       "id": "goal",
       "layer": "purpose",
       "function": "strategy",

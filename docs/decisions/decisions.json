@@ -3327,6 +3327,57 @@
       ]
     },
     {
+      "id": "EE-220",
+      "date": "2026-11-26",
+      "status": "in-force",
+      "decision": "A pre-registration is a durable object of the strategy function, and it comes before the mission, the vision and the other strategy documents. The record type pre-registration (route foundation/pre-registration/[id], owned by strategy, suggested from Discovery) holds a thesis written so it can fail, the assumptions under it with how critical and how uncertain each is, the method (who, how many, how recruited, what is asked or observed), the measures each with a threshold and the date it is judged by, what does not count as evidence, and the action on a pass and on a fail. A person registers it. From registration on the thesis, assumptions, method, measures, thresholds, judged-by dates, exclusions, decision rules and who registered it when never change, for a person either: a departure is appended to deviations with the date, what changed, why and who, and a real change is a new pre-registration that supersedes the old one with a reason, so both what was promised and what happened stay readable. A verdict is written once and is a person's; a measure's pass or fail is its observed value against its registered threshold, which is arithmetic. Naive ships no threshold and no sample size: each is the venture's own, asked for or raised as a strategy-or-constitution decision, and the shipped template labels every number in it an example. Two layers hold the freeze: packages/naive/src/engine/pre-registration.ts is the pure rule the router applies to every write, and packages/naive/src/checks/check-pre-registration.ts compares each registered field with the version in the venture's blob store, which catches a hand edit that never went through the router. Blobs are not backfilled, so a record registered before the blob store existed is reported unverifiable and does not fail.",
+      "why": "Torian decided this on 2026-11-26: add pre-registration into the workflow as one of the durable objects that comes before another set of durable objects such as mission statement, vision and other strategy docs, with the record frozen once a person approves it (claim, assumptions, measures, thresholds, dates and decision rules), deviations appended beside it rather than edited into it, and a full supersede to a new version allowed with a reason. A mission and a vision written before anything has been tested are claims nobody can lose an argument with, because the standard of proof is then set after the evidence arrives. The practice and its words are standard: preregistration in science (Nosek et al. 2018), discovery-driven planning's assumption checklist and milestones (McGrath and MacMillan 1995), the Test Card's metric and criterion (Bland and Osterwalder 2019), and HARKing (Kerr 1998) for why the exclusions are fixed in advance.",
+      "related": [
+        "EE-023",
+        "EE-050",
+        "EE-051",
+        "EE-058",
+        "EE-156"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/records/pre-registration.schema.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/pre-registration.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/router/pre-registration.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/checks/check-pre-registration.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/functions/strategy/skills/pre-registration/SKILL.md",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "record",
+          "target": "pre-registration",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
       "id": "EE-223",
       "date": "2026-11-26",
       "status": "in-force",

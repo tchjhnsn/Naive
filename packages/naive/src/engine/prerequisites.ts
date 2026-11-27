@@ -370,10 +370,9 @@ export const blockedList = (dir: string): Effect.Effect<BlockedRow[], NaiveError
 
 /**
  * The tier above the strategy foundation (EE-220): a pre-registration comes before the mission, the vision and the
- * rest of the strategy documents. Its record type is being built elsewhere, so the entry is deliberately not in the
- * workflow files yet. An entry naming a route this install has no record type for is unresolved, and unresolved fails
- * closed, which would lock every foundation record with nothing able to open it. The rule below turns itself on the
- * moment the route lands, so the entry cannot be forgotten: check-functions then fails until it is written in.
+ * rest of the strategy documents. The rule below is on whenever the route exists: check-functions fails any workflow
+ * that writes a foundation record without requiring a pre-registration, on the workflow or on the writing step, so
+ * the entry cannot be forgotten when a new workflow is added.
  */
 export const PRE_REGISTRATION = "foundation/pre-registration";
 /** Whether a workflow writes a foundation record, which is what must come after a pre-registration. */
