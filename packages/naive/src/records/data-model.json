@@ -255,7 +255,7 @@
         "instance/**/product/capabilities/*.json",
         "packages/naive/src/records/examples/**/product/capabilities/*.json"
       ],
-      "note": "One capability of a product, or a category of them (EE-224): its name, the product it belongs to, the category above it (a chain that ends under the products function), the agent role that owns it and its status (live, building or retired). An app reads it to staff a capability agent and to give a site container its owner. Route product/capabilities/[id]",
+      "note": "One capability of a product, or a category of them (EE-224): its name, the product it belongs to, the category above it (a chain that ends under the products function), the agent role that owns it and its status (live, building or retired). An app reads it to staff a capability agent and to give a site container its owner. The feature report (naive features, EE-228) reads it with the goals and requirements it names, the bugs that name it, the support cases through those bugs, feedback and telemetry for its id, and its provenance. Route product/capabilities/[id]",
       "refs": [
         {
           "field": "product",
@@ -265,6 +265,16 @@
         {
           "field": "parent",
           "to": "product-capability",
+          "checked_by": "packages/naive/src/checks/check-ventures.ts"
+        },
+        {
+          "field": "goals",
+          "to": "goal",
+          "checked_by": "packages/naive/src/checks/check-ventures.ts"
+        },
+        {
+          "field": "requirements",
+          "to": "requirement",
           "checked_by": "packages/naive/src/checks/check-ventures.ts"
         }
       ]
@@ -3337,6 +3347,11 @@
           "field": "fixed_in",
           "to": "(release)",
           "checked_by": "packages/naive/src/checks/check-validation-study.ts"
+        },
+        {
+          "field": "capability",
+          "to": "product-capability",
+          "checked_by": "packages/naive/src/checks/check-ventures.ts"
         }
       ]
     },
