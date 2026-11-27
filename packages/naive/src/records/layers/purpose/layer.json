@@ -15,6 +15,14 @@
       "path": "packages/naive/src/functions/strategy/skills/ambition-tier/SKILL.md"
     },
     {
+      "id": "bet-writing",
+      "path": "packages/naive/src/functions/strategy/skills/bet-writing/SKILL.md"
+    },
+    {
+      "id": "pre-registration",
+      "path": "packages/naive/src/functions/strategy/skills/pre-registration/SKILL.md"
+    },
+    {
       "id": "telos",
       "path": "packages/naive/src/functions/strategy/skills/telos/SKILL.md"
     },
@@ -55,6 +63,8 @@
     "playbook",
     "profile-attributes",
     "framework",
+    "pre-registration",
+    "bet",
     "goal",
     "requirement",
     "exit-criteria",

@@ -89,8 +89,9 @@ function flagsOf(cmd: string) {
   if (flagCache[cmd]) return flagCache[cmd];
   const branch = branchOf(cmd);
   let src = branch + [...branch.matchAll(/\b([a-zA-Z]+)\(here\(\)\)|\b(dev|check|info)\(/g)].map((m) => fnSrc(m[1] ?? m[2])).join("\n") + fnSrc("here");
-  for (const [, s] of branch.matchAll(/"((?:schema|interface|packages\/naive\/src\/[a-z]+)\/[^"]+\.mjs)"/g)) if (existsSync(join(repo, s))) src += read(s);
-  for (const [, s] of branch.matchAll(/`((?:schema|packages\/naive\/src\/[a-z]+)\/[^`]+\.mjs)`/g)) if (existsSync(join(repo, s))) src += read(s);
+  // A branch names the script it runs, which since EE-087 may be .ts or .mjs, and a script's own flag readers count.
+  for (const [, s] of branch.matchAll(/"((?:schema|interface|packages\/naive\/src\/[a-z]+)\/[^"]+\.(?:mjs|ts))"/g)) if (existsSync(join(repo, s))) src += read(s);
+  for (const [, s] of branch.matchAll(/`((?:schema|packages\/naive\/src\/[a-z]+)\/[^`]+\.(?:mjs|ts))`/g)) if (existsSync(join(repo, s))) src += read(s);
   return (flagCache[cmd] = flagWords(src));
 }
 

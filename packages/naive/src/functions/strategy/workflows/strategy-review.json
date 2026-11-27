@@ -3,13 +3,17 @@
   "function": "strategy",
   "title": "Review the strategy against the evidence",
   "goal": "Every strategic choice the evidence put in question is either confirmed by the founder or open as a decision with options and evidence, and the next assumption to test is named.",
-  "measures": ["learning", "impact"],
+  "measures": [
+    "learning",
+    "impact"
+  ],
   "trigger": {
     "kind": "schedule",
     "cadence": "monthly"
   },
   "requires": {
     "records": [
+      "foundation/pre-registration",
       "foundation/problem",
       "foundation/icp",
       "foundation/goals"

@@ -1,0 +1,194 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "pre-registration.schema.json",
+  "title": "PreRegistration",
+  "description": "A plan for one test, fixed before the test runs, at <venture>/foundation/pre-registration/<id>.json (route foundation/pre-registration/[id], EE-220). It is the first durable object of the strategy function: the mission, the vision and the other strategy documents are written after a pre-registration is registered, so the standard of proof is set before the evidence arrives. The practice is preregistration in science (Nosek et al., The preregistration revolution, PNAS 2018), discovery-driven planning's assumption checklist and milestones (McGrath and MacMillan, HBR 1995) and the Test Card's metric and success criterion (Bland and Osterwalder, Testing Business Ideas, 2019). Once a person registers it, the thesis, assumptions, method, measures, thresholds, judged-by dates, exclusions and the actions on a pass and a fail never change: a deviation is appended to deviations, and a real change is a new pre-registration that supersedes this one with a reason, so every deviation stays visible. packages/naive/src/engine/pre-registration.ts holds that rule, the router applies it to every write and packages/naive/src/checks/check-pre-registration.ts checks the registered fields against the version in the blob store. Naive ships no threshold: each one is the venture's own, proposed as a decision a person settles.",
+  "type": "object",
+  "required": ["id", "status", "thesis"],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "description": "A draft is written as the founder thinks, so only the thesis is asked for; registering it is what fixes the rest, and an agent is never pushed into inventing a threshold to satisfy the schema. packages/naive/src/engine/pre-registration.ts registrationGaps says the same thing as a list a person can read before registering.",
+      "if": { "properties": { "status": { "enum": ["registered", "judged", "superseded"] } }, "required": ["status"] },
+      "then": {
+        "required": ["thesis", "assumptions", "method", "measures", "exclusions", "on_pass", "on_fail", "registered_at", "registered_by"],
+        "properties": {
+          "thesis": { "required": ["statement", "falsified_if"] },
+          "assumptions": { "minItems": 1 },
+          "method": { "required": ["who", "recruitment", "asked_or_observed"] },
+          "measures": { "minItems": 1, "items": { "required": ["id", "statement", "threshold", "judged_by"] } },
+          "exclusions": { "minItems": 1 }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "status": { "const": "judged" } }, "required": ["status"] },
+      "then": { "required": ["verdict"] }
+    },
+    {
+      "if": { "required": ["supersedes"] },
+      "then": { "required": ["supersede_reason"] }
+    }
+  ],
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9-]+$", "description": "The file name without .json" },
+    "venture": { "type": "string", "description": "The venture this belongs to, when the record names it" },
+    "title": { "type": "string", "minLength": 1, "description": "A short name for the test, for a list" },
+    "status": {
+      "enum": ["draft", "registered", "judged", "superseded", "withdrawn"],
+      "description": "draft: still being written, and every field may change. registered: a person fixed it, and the registered fields never change again. judged: its verdict is written. superseded: a later version replaces it. withdrawn: it was taken off the table before registration or before a verdict"
+    },
+    "thesis": {
+      "type": "object",
+      "required": ["statement"],
+      "additionalProperties": false,
+      "description": "The claim, written so it can fail",
+      "properties": {
+        "statement": { "type": "string", "minLength": 1, "description": "The claim in one sentence, about the world and not about the venture's hopes" },
+        "falsified_if": { "type": "string", "minLength": 1, "description": "What would show the claim is wrong. A claim with no such state is not a thesis" }
+      }
+    },
+    "tests": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+      "description": "The bets this plan tests, by id (foundation/bets/<id>.json, EE-221). It is one of the registered fields, so a registered plan cannot be pointed at a different claim afterwards, and registering the plan fixes each named bet's claim as the plan was written against it. A plan may name none, for a thesis the venture has not written as a bet"
+    },
+    "assumptions": {
+      "type": "array",
+      "description": "What the thesis rests on, after discovery-driven planning's assumption checklist. The ones that are critical and uncertain are the ones to test first",
+      "items": {
+        "type": "object",
+        "required": ["id", "statement", "criticality", "uncertainty"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+          "statement": { "type": "string", "minLength": 1 },
+          "criticality": { "enum": ["high", "medium", "low"], "description": "How much the thesis rests on it: high means the thesis fails if it is false" },
+          "uncertainty": { "enum": ["high", "medium", "low"], "description": "How little is known about it: high means nothing here settles it" },
+          "measures": { "type": "array", "items": { "type": "string", "pattern": "^[a-z0-9-]+$" }, "description": "The measures below that bear on this assumption" },
+          "source": { "type": "string", "description": "What the assumption is drawn from, when anything is" }
+        }
+      }
+    },
+    "method": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "How the test runs, fixed before it runs",
+      "properties": {
+        "who": { "type": "string", "minLength": 1, "description": "Whom the test is run with, as a population and not as a list of names" },
+        "how_many": { "type": ["integer", "string"], "description": "How many, as a number or the rule that decides it" },
+        "recruitment": { "type": "string", "minLength": 1, "description": "How they are found and approached. Warm intros and friends are a recruitment method, and saying so is what makes the result readable" },
+        "asked_or_observed": { "type": "string", "minLength": 1, "description": "What is asked or observed, concretely enough that someone else could run it the same way" },
+        "analysis": { "type": "string", "description": "How the answers become a number, when that is not obvious" }
+      }
+    },
+    "measures": {
+      "type": "array",
+      "description": "What is measured, each with the line it must pass and the date it is judged by",
+      "items": {
+        "type": "object",
+        "required": ["id", "statement"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+          "statement": { "type": "string", "minLength": 1, "description": "What is counted, in one sentence" },
+          "threshold": {
+            "type": "object",
+            "required": ["operator", "value"],
+            "additionalProperties": false,
+            "description": "The line the measure must pass. The venture's own: Naive ships no value, and an agent proposes one as a decision a person settles",
+            "properties": {
+              "operator": { "enum": [">=", ">", "<=", "<", "==", "!="], "description": "How the observed value is compared with the value" },
+              "value": { "type": ["number", "string"], "description": "The line itself. A number is compared arithmetically; a string is compared only for equality" },
+              "unit": { "type": "string" },
+              "set_by": { "type": "string", "description": "The person who chose it, or the decision that settled it" }
+            }
+          },
+          "judged_by": { "type": "string", "format": "date", "description": "The date the measure is judged on, fixed before the test runs so the window cannot be extended to reach the line" },
+          "source": { "type": "string", "description": "Where the observed value will be read from" }
+        }
+      }
+    },
+    "exclusions": {
+      "type": "array",
+      "description": "What does not count as evidence here, fixed in advance: compliments, friends' opinions, sign-ups without payment, anything the venture would be tempted to read as a yes. A standard of proof decided after the evidence arrives admits whatever arrived (Kerr 1998 on HARKing)",
+      "items": {
+        "type": "object",
+        "required": ["statement"],
+        "additionalProperties": false,
+        "properties": {
+          "statement": { "type": "string", "minLength": 1 },
+          "why": { "type": "string", "description": "Why it does not count" }
+        }
+      }
+    },
+    "on_pass": { "$ref": "#/$defs/action", "description": "What the venture does if the measures pass their thresholds" },
+    "on_fail": { "$ref": "#/$defs/action", "description": "What the venture does if they do not" },
+    "registered_at": { "type": "string", "format": "date-time", "description": "When a person registered it. From then on the registered fields never change" },
+    "registered_by": { "type": "string", "minLength": 1, "description": "The person who registered it. Only a person registers a pre-registration" },
+    "deviations": {
+      "type": "array",
+      "description": "Every departure from the registered plan, appended beside it and never edited into it, so the record of what was promised and the record of what happened are both readable. An entry already written never changes",
+      "items": {
+        "type": "object",
+        "required": ["at", "what", "why", "by"],
+        "additionalProperties": false,
+        "properties": {
+          "at": { "type": "string", "format": "date-time" },
+          "what": { "type": "string", "minLength": 1, "description": "What was done differently from the registered plan" },
+          "why": { "type": "string", "minLength": 1 },
+          "by": { "type": "string", "minLength": 1, "description": "Who departed from the plan, a person's id or a role" },
+          "affects": { "type": "array", "items": { "type": "string" }, "description": "The measures or assumptions it bears on" }
+        }
+      }
+    },
+    "results": {
+      "type": "array",
+      "description": "What was observed, per measure, written after registration. The pass or fail of one measure is its observed value against its registered threshold; the verdict over the whole test is a person's",
+      "items": {
+        "type": "object",
+        "required": ["measure", "observed", "verdict", "at"],
+        "additionalProperties": false,
+        "properties": {
+          "measure": { "type": "string", "pattern": "^[a-z0-9-]+$", "description": "The measure above this result is for" },
+          "observed": { "type": ["number", "string"], "description": "What was observed" },
+          "evidence": { "type": "array", "items": { "type": "string" }, "description": "The records or sources behind it (validation/interviews/<id>, a raw source)" },
+          "verdict": { "enum": ["pass", "fail"], "description": "The observed value against the registered threshold" },
+          "at": { "type": "string", "format": "date-time" },
+          "by": { "type": "string", "description": "Who recorded it" },
+          "note": { "type": "string" }
+        }
+      }
+    },
+    "verdict": {
+      "type": "object",
+      "required": ["outcome", "action_taken", "at", "by"],
+      "additionalProperties": false,
+      "description": "The verdict over the whole test, which is a person's and is written once",
+      "properties": {
+        "outcome": { "enum": ["pass", "fail", "mixed", "inconclusive"] },
+        "action_taken": { "enum": ["persevere", "pivot", "stop"], "description": "What the venture did, which the registered on_pass or on_fail said it would" },
+        "why": { "type": "string", "description": "Why, especially when the action taken is not the registered one" },
+        "at": { "type": "string", "format": "date-time" },
+        "by": { "type": "string", "minLength": 1, "description": "The person who judged it" }
+      }
+    },
+    "supersedes": { "type": "string", "pattern": "^[a-z0-9-]+$", "description": "The pre-registration this one replaces. A registered plan is never edited: a real change is a new version, and supersede_reason says why" },
+    "supersede_reason": { "type": "string", "minLength": 1, "description": "Why the earlier version was replaced, so the change stays visible" },
+    "superseded_by": { "type": "string", "pattern": "^[a-z0-9-]+$", "description": "The later version that replaced this one" },
+    "decision": { "type": "string", "description": "The decision that settled the thresholds and the actions" },
+    "note": { "type": "string" }
+  },
+  "$defs": {
+    "action": {
+      "type": "object",
+      "required": ["action", "what"],
+      "additionalProperties": false,
+      "description": "A decision rule fixed before the answer is known: persevere, pivot or stop, and what that means here (Ries, The Lean Startup, 2011)",
+      "properties": {
+        "action": { "enum": ["persevere", "pivot", "stop"] },
+        "what": { "type": "string", "minLength": 1, "description": "What the venture does, concretely" }
+      }
+    }
+  }
+}
