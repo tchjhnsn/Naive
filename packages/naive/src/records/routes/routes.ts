@@ -130,6 +130,9 @@ const TEXT_ITEMS = new Set(["marketing-content"]);
 const DEEP = /\/\*\*\/\*\.[a-z]+$/;
 /** Whether an item route's id may hold slashes: its files sit under a folder of any depth. */
 export const deepItem = (r: { collection?: string; files?: string[] }): boolean => r.collection === "item" && !!r.files?.length && r.files.every((f) => DEEP.test(f));
+/** The checks that take one record's id after the venture dir, so the check action of an item route names the item it
+ *  is checking (EE-214). Every other check takes the venture dir alone and is given nothing more. */
+export const ID_CHECKS = new Set(["packages/naive/src/checks/check-ready.ts"]);
 
 /** The route table, generated from packages/naive/src/records/data-model.json, the kit manifests and packages/naive/src/engine/need-now.json. */
 // Caching hook (F-12): built once per action and shared.
@@ -359,13 +362,15 @@ const PACKAGE_ROUTE: Readonly<Record<string, string>> = {
   goal: "foundation/goals", requirement: "foundation/requirements", "exit-criteria": "foundation/exit-criteria", constraints: "foundation/constraints", "venture-core": "foundation/core",
   "validation-solution": "validation/solution", "validation-pricing": "validation/pricing", "validation-plan": "validation/plan", "validation-go-to-market": "validation/go-to-market",
   "validation-product-market-fit": "validation/product-market-fit", "validation-operations-readiness": "validation/operations-readiness",
-  "validation-team": "people/team", "team-plan": "people/team-plan", "marketing-sitemap": "marketing/sitemap", "marketing-content": "marketing/content",
+  "validation-team": "people/team", "team-plan": "people/team-plan", "marketing-sitemap": "marketing/sitemap", "marketing-content": "marketing/content", "marketing-message": "marketing/message",
+  "publish-terms": "marketing/publish-terms",
   "idea-dump": "raw/dump", "idea-map": "ideas/map", "idea-graph": "ideas/graph", product: "product", evidence: "evidence",
   "anatomy-answers": "product/anatomy-answers", "anatomy-input": "product/anatomy", "venture-package": ".release/venture-package",
   "decision-record": "decisions",
   "validation-interview": "validation/interviews", "validation-feedback": "validation/feedback", bug: "product/bugs",
   customer: "customers", investor: "investors", "money-account": "money", "raw-source": "raw/sources", triage: "raw/triage",
   "spend-register": "finance/spend", budget: "finance/budget", "lead-plan": "operations/lead", "time-box": "operations/time-box", meeting: "operations/meeting",
+  specialist: "operations/specialist",
   "fixed-asset": "assets/register", lease: "assets/leases", risk: "legal/risks", obligation: "legal/obligations",
   people: "people", founder: "people/founders", "fund-thesis": "fund/thesis", "fund-terms": "fund/terms", deal: "deals",
   connection: "it/connections",

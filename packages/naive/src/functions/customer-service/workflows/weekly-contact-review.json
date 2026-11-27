@@ -2,6 +2,8 @@
   "id": "weekly-contact-review",
   "function": "customer-service",
   "title": "Review contact reasons and response times each week",
+  "goal": "The week's contact reasons, response times and repeat contacts are counted from the cases, and the top reason has a proposal open or decided.",
+  "measures": ["usage_or_adoption", "revenue"],
   "trigger": { "kind": "schedule", "cadence": "weekly" },
   "reads": ["support/policy", "support/cases", "customers", "product/bugs"],
   "steps": [

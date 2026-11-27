@@ -2,6 +2,8 @@
   "id": "competitor-review",
   "function": "strategy",
   "title": "Review competitors and the customer's alternatives",
+  "goal": "Each competitor and alternative that bears on an open decision has a current record with its sources, and every finding is attached to the decision it confirms or changes.",
+  "measures": ["learning"],
   "trigger": {
     "kind": "schedule",
     "cadence": "monthly"

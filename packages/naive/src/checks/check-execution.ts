@@ -15,6 +15,7 @@
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { ventureFile } from "../core/venture-paths.ts";
+import { knownRoles } from "../engine/agents/roles.ts";
 import { independent, reviewIsIndependent } from "./verify.ts";
 import type { DecisionRights, Evidence, Handoff, Venture } from "../records/types/records.d.ts";
 
@@ -26,7 +27,7 @@ const jsonIn = (d: string) => existsSync(d) ? readdirSync(d).filter((f) => f.end
 const RANK: Record<string, number> = { decide: 0, "decide-inform": 1, "recommend-approve": 2, escalate: 3 };
 
 const venture = load<Venture>(join(dir, "venture.json"));
-const roles = new Set(load<{ roles: { id: string }[] }>(join(root, "packages/naive/template/governance/roles/agent-roles.json")).roles.map((r) => r.id));
+const roles = knownRoles(dir);
 const template = load<DecisionRights>(join(root, "packages/naive/template/governance/decision-rights.json"));
 const errors: string[] = [];
 

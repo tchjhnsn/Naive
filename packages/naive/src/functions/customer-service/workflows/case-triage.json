@@ -2,6 +2,8 @@
   "id": "case-triage",
   "function": "customer-service",
   "title": "Triage each new support case",
+  "goal": "The case has a kind and a contact reason, and its reply is drafted or its escalation open as a decision, inside the policy's first response target.",
+  "measures": ["usage_or_adoption"],
   "trigger": { "kind": "event", "route": "support/cases/[id]" },
   "reads": ["support/policy", "support/cases", "customers", "product/bugs"],
   "steps": [

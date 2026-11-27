@@ -1,0 +1,22 @@
+{
+  "id": "site-copy",
+  "function": "marketing-and-sales",
+  "title": "Write a page's words as records, and have the founder approve them, before anything is designed",
+  "goal": "Every element a page shows has a record the founder approved, citing the records its words come from, before anyone designs the page.",
+  "measures": ["usage_or_adoption"],
+  "trigger": { "kind": "request" },
+  "reads": ["venture", "marketing/sitemap", "marketing/message/*", "marketing/brand", "foundation/core", "foundation/problem", "foundation/icp", "foundation/telos", "foundation/goals", "purpose/competitor", "governance/publication-policy", "decisions/*"],
+  "steps": [
+    { "id": "gap-report", "do": "Run naive copy gaps and name, element by element, which record holds the words and which record upstream of it is missing, held as a draft or undecided, including the ones only a person writes.", "skill": "site-copy" },
+    { "id": "offer-the-two-paths", "do": "Tell the founder the order of work (text first, then the page) and that they may skip approving the text with naive copy one-shot, what that costs, and that you will never choose it for them.", "ask": true, "skill": "site-copy" },
+    { "id": "draft-options", "do": "Run naive copy draft --propose so each missing or undecided element becomes one open decision with two or three options, each a whole record citing the records its words come from and saying which of those are not settled.", "skill": "site-copy", "writes": ["marketing/message/[id]"], "raises": ["public-commitment"] },
+    { "id": "ask-which", "do": "Bring the founder each element's decision in turn with the state of the records under it, and write the words they dictate as that element's record when they word their own; they decide and merge, and you never pick.", "ask": true, "writes": ["marketing/message/[id]"], "raises": ["public-commitment"] },
+    { "id": "handoff-to-builder", "do": "Once every element has a record the founder stands behind, hand the page to whoever builds it with the approved records and the sitemap alone, and nothing of your own.", "writes": ["operations/handoff/[id]"] },
+    { "id": "publish-check", "do": "Run the publish build for the channel and bring the founder its result: the copy gate refuses while any element is unapproved, and marks the pages unapproved when they chose the one-shot path.", "raises": ["public-commitment"] }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "text-approved", "kind": "conformance", "check": "node packages/naive/src/functions/marketing-and-sales/marketing/copy.ts \"$NAIVE_VENTURE\" check" },
+    { "id": "words-trace", "kind": "review", "check": "Does every element of every page have a record the founder approved, with the records its words come from named on it, or did the founder choose the one-shot path knowing what it costs?", "reviewer": "growth-lead" }
+  ]
+}

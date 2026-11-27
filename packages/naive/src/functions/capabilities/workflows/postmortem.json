@@ -2,6 +2,8 @@
   "id": "postmortem",
   "function": "capabilities",
   "title": "Write a postmortem when work fails",
+  "goal": "The failure has a blameless postmortem that names no person as a cause, every action has one owner and a due date, and the process record it touches carries the lesson.",
+  "measures": ["flow_and_lead_time", "cost_or_time_saved"],
   "trigger": {
     "kind": "event",
     "route": "operations/handoff/[id]"

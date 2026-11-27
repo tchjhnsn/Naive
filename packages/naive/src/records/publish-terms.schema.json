@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "publish-terms.schema.json",
+  "title": "Publish terms",
+  "description": "The names the publish lint flags in public copy, owned by the function that writes the words (EE-214): marketing-and-sales. It holds names only, never severities and never waivers, so the role that owns the copy can tighten the gate on itself without reaching naive.config.json, which can loosen it. A mark is another company's name, matched case-insensitively and on whole words; a mark marked private is a name the venture never makes public, and it is an error whatever level naive.config.json gives the marks rule. Severities and waivers stay a prior the venture sets under publish_lint in naive.config.json.",
+  "type": "object",
+  "required": ["marks"],
+  "properties": {
+    "note": { "type": "string" },
+    "updated": { "type": "string" },
+    "by": { "type": "string", "description": "The role or person that last wrote the list" },
+    "marks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1, "description": "The name to flag, matched case-insensitively on whole words" },
+          "private": { "type": "boolean", "default": false, "description": "The venture never makes this name public: a line that carries it is an error, not a warning" },
+          "why": { "type": "string" },
+          "until": { "type": "string", "description": "For a private name: what lifts it, such as the announcement" }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

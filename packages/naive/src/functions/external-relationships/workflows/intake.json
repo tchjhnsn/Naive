@@ -2,6 +2,8 @@
   "id": "intake",
   "function": "external-relationships",
   "title": "Learn the venture's investors and raise",
+  "goal": "Everyone who holds equity or has talked about investing is a record, the raise is drafted or declared absent, and every metric investors will see names the record it comes from.",
+  "measures": ["learning"],
   "trigger": {
     "kind": "intake"
   },
