@@ -510,9 +510,10 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
       claimed = !!rule.stored?.requested_by && !!rule.stored?.claimed_by && rule.stored.role === actor_id;
     }
     // Function agent reach (reachOfWrite in packages/naive/src/router/gate-hooks.ts): <function>-agent writes only
-    // decisions and its function's record routes, refused before the schema. A handoff addressed to its role that it
+    // decisions and its function's record routes, and a temporary specialist only its spawn record's globs inside
+    // its parent's reach while it is live (EE-213), refused before the schema. A handoff addressed to its role that it
     // has claimed is the exception: the claim rule above already limits the claimant to progress and evidence.
-    const outOfReach = claimed ? null : reachOfWrite({ r, route, projector, actor, acting: !!actingAgent(provenance.agent?.id), role: actor_id });
+    const outOfReach = claimed ? null : reachOfWrite({ dir, r, route, projector, actor, acting: !!actingAgent(provenance.agent?.id), role: actor_id });
     if (outOfReach) return { ...outOfReach, ...deprecated };
     // Goal ledger hook (packages/naive/src/engine/goals.ts, EE-210): a goal is a durable record. Nobody breaks its
     // lifecycle (a mis-set status is corrected by reopening the goal to active), and an agent does not rewrite the

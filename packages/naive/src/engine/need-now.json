@@ -251,6 +251,17 @@
       "when": [],
       "why": "A meeting with a goal and a recorded outcome is how a founder works through a workflow with agents and how agents remember what was decided, from the first week"
     },
+    "specialist": {
+      "base": {
+        "discovery": 0.05,
+        "validation": 0.05,
+        "beachhead": 0.05,
+        "scale": 0.05,
+        "platform": 0.05
+      },
+      "when": [],
+      "why": "A function agent records a temporary specialist when it divides its own work; a person never needs to start one, so it is barely suggested"
+    },
     "time-box": {
       "base": {
         "discovery": 0.05,

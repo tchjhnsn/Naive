@@ -3737,6 +3737,11 @@ export type NaiveConfig = {
       [key: string]: number;
     };
   };
+  /** The venture's own lines for the temporary specialists a function agent spawns (EE-213, packages/naive/src/engine/agents/specialist.ts, naive agent spawn). Naive's defaults are unvalidated priors in packages/naive/src/engine/specialists.json. */
+  specialists?: {
+    /** How long a specialist's reach lasts when the spawn names no ttl, as a number and a unit such as "2 hours". A spawn's own --ttl still wins */
+    default_ttl?: string;
+  };
   /** The venture's own lines for the activity catalog's proposal rules (EE-170, packages/naive/src/engine/activity-proposals.ts, naive activities). A rule left out keeps the catalog's lines. packages/naive/src/checks/check-config.ts holds each rule id to the catalog and each line to its scale's range. */
   activity_proposals?: {
     /** Per rule id in packages/naive/src/functions/activities.json proposal_rules: off, so the rule proposes nothing in this venture, or the venture's lines */
@@ -5921,6 +5926,41 @@ export type SitePresence = {
     [key: string]: unknown;
   }[];
   [key: string]: unknown;
+};
+
+/** One temporary specialist a function agent spawned for one task (EE-213), at operations/specialists/<role>.json (route operations/specialist/[id]): its parent function agent, the task, the skills it may load, the write reach it was given and when it expires. The record is the reach: the router gives the role the globs here that its parent's own reach still covers, and nothing else, so a specialist can never be wider than its parent whatever this file says (reachRefusal in packages/naive/src/engine/agents/reach.ts). Once status is not live, or expires has passed, the reach is gone and every write by the role is refused. Written by naive agent spawn as the parent agent, or by a person revoking it; reach is not a decision about the venture, only the agent dividing work it may already do. */
+export type Specialist = {
+  /** The role id and the file name without .json: <parent function>-specialist-<slug>. It is what MENTURA_ACTOR_ID is set to */
+  id: string;
+  /** The function agent that spawned it, <function>-agent. A lead, a researcher and another specialist cannot spawn one */
+  parent: string;
+  /** The parent's function, an id in packages/naive/src/functions/departments.json */
+  function: string;
+  /** The one task it was spawned for, in the parent's words. Its brief names this and the parent */
+  task: string;
+  /** Skills from the parent function's module to load, by name. A skill the parent does not have is refused at the spawn */
+  skills?: string[];
+  /** The write globs it was given, each inside one of the parent's (functionWrites). The router intersects them with the parent's reach again on every write */
+  writes: string[];
+  /**
+   * @format date-time
+   */
+  spawned_at: string;
+  /** The acting role or person that spawned it: the parent agent, or a person */
+  spawned_by: string;
+  /**
+   * When the reach is gone, spawned_at plus the ttl. The default ttl is an unvalidated prior in packages/naive/src/engine/specialists.json, overridden under specialists in naive.config.json
+   * @format date-time
+   */
+  expires: string;
+  /** live: the reach stands until expires. finished: its run ended, so the reach is gone. revoked: a person ended it early */
+  status: "live" | "finished" | "revoked";
+  /**
+   * When its run ended or a person revoked it
+   * @format date-time
+   */
+  finished_at?: string;
+  note?: string;
 };
 
 /** One line of the spend register (lead agents design, "The spend register and the access matrix"): one paid service or recurring charge per record, at finance/spend/<id>.json (route finance/spend/[id]). The finance function owns it, and only the finance agent (role finance-agent) or a person writes it (writer function in packages/naive/src/records/data-model.json). Where each field is mastered is the access matrix: the source map's rules for spend-register (packages/naive/template/knowledge/sources.json), where the bank statement sync is the system of record for amount, currency and dates, finance owns status, and IT's tool record is the system of record for approval. The paying account is named by reference to a money record, never by a card or account number. */
