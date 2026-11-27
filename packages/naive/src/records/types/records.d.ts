@@ -3569,6 +3569,17 @@ export type MarketingSitemap = {
     type: string;
     level: "home" | "nav" | "linked" | "anywhere";
     sections: {
+      /** The words for this section, drafted in the record the marketing function owns before they become the MDX variant named in `variant`, which is where published copy lives (EE-214). The publish lint reads text here as it reads a page (packages/naive/src/engine/record-copy.ts), so a leak, an uncited number or a private name is caught in the draft. */
+      draft_copy?: {
+        /** The copy itself, in the marketing agent's own words: this is the section's site text */
+        text: string;
+        /** draft while it is being written, ready once it is written and waiting for a person, published once the variant carries it */
+        status: "draft" | "ready" | "published";
+        /** The records or URLs behind any number or customer claim in the text; the claims rule fails without one */
+        sources?: string[];
+        by?: string;
+        at?: string;
+      };
       item: string;
       label?: string;
       component: string;
@@ -3581,7 +3592,6 @@ export type MarketingSitemap = {
         [key: string]: unknown;
       };
       variant: string;
-      [key: string]: unknown;
     }[];
     [key: string]: unknown;
   }[];
@@ -3914,7 +3924,12 @@ export type NaiveConfig = {
   /** The publish lint (packages/naive/src/engine/publish-lint.ts): each rule off, warn or error, the marks to flag, and findings a person waived */
   publish_lint?: {
     rules?: { [K in "copy-distance" | "leaks" | "brand" | "claims" | "marks" | "personal-data" | "secrets"]?: "off" | "warn" | "error" };
-    marks?: string[];
+    /** The names the marks rule flags, each matched case-insensitively on whole words. A string is another company's mark; an object may say private, a name the venture never makes public, which is an error whatever level the marks rule has. The function that writes the words adds its own in marketing/publish-terms.json (EE-214). */
+    marks?: (string | {
+      name: string;
+      private?: boolean;
+      why?: string;
+    })[];
     waived?: {
       rule: string;
       file?: string;
@@ -5269,6 +5284,23 @@ export type Publications = {
       at?: string;
       decision?: string;
     }[];
+  }[];
+};
+
+/** The names the publish lint flags in public copy, owned by the function that writes the words (EE-214): marketing-and-sales. It holds names only, never severities and never waivers, so the role that owns the copy can tighten the gate on itself without reaching naive.config.json, which can loosen it. A mark is another company's name, matched case-insensitively and on whole words; a mark marked private is a name the venture never makes public, and it is an error whatever level naive.config.json gives the marks rule. Severities and waivers stay a prior the venture sets under publish_lint in naive.config.json. */
+export type PublishTerms = {
+  note?: string;
+  updated?: string;
+  /** The role or person that last wrote the list */
+  by?: string;
+  marks: {
+    /** The name to flag, matched case-insensitively on whole words */
+    name: string;
+    /** The venture never makes this name public: a line that carries it is an error, not a warning */
+    private?: boolean;
+    why?: string;
+    /** For a private name: what lifts it, such as the announcement */
+    until?: string;
   }[];
 };
 

@@ -5,20 +5,38 @@
 // holder's first act, recorded with --record.
 //
 //   node packages/naive/src/checks/check-ready.ts <venture dir> <handoff id>
+//   node packages/naive/src/checks/check-ready.ts <venture dir>                 every handoff the venture has
 //   node packages/naive/src/checks/check-ready.ts <venture dir> <handoff id> --record --by <role or session>
 //
 // --record writes `ready_check` into the handoff (and moves a draft to ready) only when
 // every item passes. check-execution.ts refuses an in-progress handoff without one.
 
-import { execSync } from "node:child_process";
+import { execSync, spawnSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { ventureFile } from "../core/venture-paths.ts";
+import { knownRoles } from "../engine/agents/roles.ts";
 import { reviewIsIndependent } from "./verify.ts";
 import type { Decision, DecisionRights, Handoff } from "../records/types/records.d.ts";
 
-const [dir, id] = process.argv.slice(2);
-if (!dir || !id) { console.error("usage: node packages/naive/src/checks/check-ready.ts <venture dir> <handoff id> [--record --by <who>]"); process.exit(2); }
+const args = process.argv.slice(2).filter((a, i) => !a.startsWith("--") && process.argv.slice(2)[i - 1] !== "--by");
+const [dir, id] = args;
+if (!dir) { console.error("usage: node packages/naive/src/checks/check-ready.ts <venture dir> [<handoff id>] [--record --by <who>]"); process.exit(2); }
+// With no id, every handoff the venture has: the route's check action names the venture, not one handoff.
+if (!id) {
+  const hdir = ventureFile(dir, "operations/handoffs");
+  const all = existsSync(hdir) ? readdirSync(hdir).filter((f) => f.endsWith(".json")).map((f) => f.slice(0, -5)).sort() : [];
+  if (process.argv.includes("--record")) { console.error("--record needs one handoff id"); process.exit(2); }
+  let bad = 0;
+  for (const h of all) {
+    const r = spawnSync(process.execPath, [import.meta.filename, dir, h], { encoding: "utf8" });
+    process.stdout.write(r.stdout);
+    process.stderr.write(r.stderr);
+    if (r.status !== 0) bad++;
+  }
+  console.log(all.length ? `${all.length - bad} of ${all.length} handoff(s) ready to execute.` : "no handoffs yet: nothing to be ready.");
+  process.exit(bad ? 1 : 0);
+}
 const opt = (k: string): string | undefined => process.argv.includes(k) ? process.argv[process.argv.indexOf(k) + 1] : undefined;
 const root = new URL("../../../..", import.meta.url).pathname;
 const load = <T>(p: string): T => JSON.parse(readFileSync(p, "utf8")) as T;
@@ -46,11 +64,14 @@ const badDecisions = (h.governed_by ?? []).filter((d) => !decisions.has(d) || ([
 item("every governing decision exists and is in force or proposed", !badDecisions.length, badDecisions.join(", "));
 // A method assignment (such as a MAD A-NNN) belongs to the build method a venture uses, which is
 // not part of Mentura (EE-038); a handoff may cite one, and this does not check it.
-const missingInputs = (h.inputs ?? []).filter((p) => !existsSync(join(root, p)));
+// An input is a file the work needs: a record of this venture by its logical path, an absolute path,
+// else a file of the framework checkout. The venture comes first, because a handoff in a venture names
+// the venture's own records (EE-214).
+const missingInputs = (h.inputs ?? []).filter((p) => ![ventureFile(dir, p), p, join(root, p)].some(existsSync));
 item("every input it needs exists", !missingInputs.length, missingInputs.join(", "));
 
 // 3. The holder can act inside its rights.
-const roles = new Set(load<{ roles: { id: string }[] }>(join(root, "packages/naive/template/governance/roles/agent-roles.json")).roles.map((r) => r.id));
+const roles = knownRoles(dir);
 const classes = new Map(load<DecisionRights>(join(root, "packages/naive/template/governance/decision-rights.json")).classes.map((c) => [c.id, c]));
 const own = join(ventureFile(dir, "governance/decision-rights.json"));
 if (existsSync(own)) for (const c of load<DecisionRights>(own).classes) classes.set(c.id, { ...classes.get(c.id), ...c });
