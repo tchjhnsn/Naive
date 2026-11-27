@@ -8,6 +8,16 @@
     "kind": "schedule",
     "cadence": "monthly"
   },
+  "requires": {
+    "records": [
+      "foundation/problem",
+      "foundation/icp",
+      "foundation/goals"
+    ],
+    "meetings": [
+      "strategy/intake"
+    ]
+  },
   "reads": [
     "foundation/telos",
     "foundation/goals",

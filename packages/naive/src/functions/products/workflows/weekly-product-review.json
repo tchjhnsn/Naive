@@ -5,6 +5,7 @@
   "goal": "Every open bug has a priority, every proposed build cites evidence for all four risks, and next week's product order is proposed with the bug or evidence behind each item.",
   "measures": ["usage_or_adoption", "flow_and_lead_time"],
   "trigger": { "kind": "schedule", "cadence": "weekly" },
+  "requires": { "records": ["product"] },
   "reads": ["product", "product/bugs", "validation/interviews", "validation/feedback", "validation/product-market-fit", "operations/handoff", "foundation/telos"],
   "steps": [
     { "id": "triage-bugs", "do": "Give every new bug a priority from P0 to P3 with its steps to reproduce, and list open P0 and P1 bugs.", "writes": ["product/bugs/[id]"] },

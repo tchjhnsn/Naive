@@ -85,6 +85,8 @@
 //                                                   or a cause (cause_of) of another, the one target and each
 //                                                   profile's core problem; rank orders them by what the interviews
 //                                                   counted, labelled primary, secondary and tertiary (EE-219)
+//   naive blocked [--json]                          every workflow of the venture's functions, in hierarchical order,
+//                                                   met or blocked, and what unblocks it first (EE-217)
 //   naive owners [--function <id>] [--level <n>] [--json]
 //                                                   the accountable owner of each APQC element the venture runs, a
 //                                                   person or an agent, and where it came from (EE-187)
@@ -480,6 +482,11 @@ else if (cmd === "build" || cmd === "start") {
   // --at, --function and --json pass through, and --outcome, --by and --steps for record.
   const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
   process.exit(run("packages/naive/src/engine/due.ts", [here(), ...args]));
+} else if (cmd === "blocked") {
+  // Which workflows may run and which are locked, in hierarchical order (packages/naive/src/engine/prerequisites.ts,
+  // EE-217). --json passes through.
+  const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
+  process.exit(run("packages/naive/src/engine/prerequisites.ts", [here(), ...args]));
 } else if (cmd === "graph") {
   // The element graph over the shipped function modules (packages/naive/src/engine/element-graph.ts, EE-188), with
   // --function <id>, --element <id>, --json and --mermaid passed through. It needs no venture.
@@ -568,6 +575,8 @@ else if (cmd === "build" || cmd === "start") {
   writeFileSync(join(out, "routes.json"), JSON.stringify(routes().map((r: { route: string, actions: string[], kind: string }) => ({ route: r.route, actions: r.actions, kind: r.kind })), null, 2) + "\n");
   console.log(`wrote ${out}`);
 } else if (cmd === "agent") {
+  // list, brief and run for the function and lead agents (packages/naive/src/engine/agents/run.ts, EE-124).
+  // --json, --print and --workflow pass through; a run whose --workflow is blocked is refused (EE-217).
   process.exit(run("packages/naive/src/engine/agents/run.ts", rest));
 } else if (cmd === "new") {
   // A new venture: create-venture's questions and scaffold, so the whole lifecycle starts from this one command.

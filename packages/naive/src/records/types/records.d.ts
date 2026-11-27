@@ -2370,10 +2370,12 @@ export type FunctionWorkflow = {
   };
   /** Route patterns the agent reads first. */
   reads?: string[];
+  requires?: FunctionWorkflowRequires;
   steps: {
     id: string;
     /** What the agent does, in one plain sentence. */
     do: string;
+    requires?: FunctionWorkflowRequires;
     /** A skill in the function's skills/ folder to load for this step. */
     skill?: string;
     /** True when the step asks the person, because only they know the answer. */
@@ -2398,6 +2400,16 @@ export type FunctionWorkflow = {
     check: string;
     reviewer?: string;
   }[];
+};
+
+/** What must exist before this runs (EE-217, packages/naive/src/engine/prerequisites.ts). It fails closed: an entry that cannot be resolved blocks, `naive due` and `naive loop` never start a blocked workflow, `naive agent run --workflow` refuses one, and the router refuses a write to a route only blocked workflows write, for an agent and for a person alike. A step inherits its workflow's entries and may add its own. A venture loosens or tightens an entry under `prerequisites` in naive.config.json, which names the person who set it. */
+export type FunctionWorkflowRequires = {
+  /** Record routes whose record must be live in the venture, such as foundation/problem. A draft the gate holds is not live until a person accepts it. */
+  records?: string[];
+  /** Function workflows, `<function>/<workflow>`, that a meeting must have walked and closed with its goal reached (meeting.schema.json, EE-200). This is how a person's meeting, and the records drafted in it, come before the work. */
+  meetings?: string[];
+  /** Decisions a person must have decided. A shipped workflow names none, because a venture's decision ids are its own; only its naive.config.json does. */
+  decisions?: string[];
 };
 
 /** The fund's economics and structure (fund/terms.json): target size, vintage, fees, carry and term, and the closes so far. */
@@ -3858,6 +3870,27 @@ export type MoneySummary = {
 
 /** A venture's overrides to Naive's defaults, at the venture root (P-2, like next.config.js): the gate (fail-closed routes, rules over the router's path patterns, which package rules it imports), function owners, check settings (P-7, like eslint.config.mjs), thresholds, which System 1 questions run, pinned package versions (U-4) and how strictly the acting role is checked (M-18). Every field is optional; a missing one keeps the default in packages/naive/src/engine/naive-config.ts. node packages/naive/src/checks/check-config.ts <venture dir> checks it. */
 export type NaiveConfig = {
+  /** What this venture adds to, or takes off, the prerequisites its workflows ship with (EE-217, packages/naive/src/engine/prerequisites.ts, naive blocked). The lock fails closed, so only a person opens it: `set_by` is required, and a block whose person is empty is ignored. packages/naive/src/checks/check-config.ts holds each workflow and entry to the venture's own. */
+  prerequisites?: {
+    /** The person who last changed a prerequisite, and when. */
+    set_by: {
+      person: string;
+      at: string;
+    };
+    /** Per workflow, named <function>/<workflow>. */
+    workflows?: {
+      [key: string]: {
+        /** Entries that do not block this workflow here: the ref as the workflow names it, or `<kind> <ref>` to name one kind of it. */
+        off?: string[];
+        /** Record routes this venture adds. */
+        records?: string[];
+        /** Workflows a meeting must have walked and closed, that this venture adds. */
+        meetings?: string[];
+        /** Decisions a person must have decided, that this venture adds. */
+        decisions?: string[];
+      };
+    };
+  };
   /** How far the loop goes on its own when a function workflow is due (EE-183, packages/naive/src/engine/loop.ts, naive loop): manual, the default, starts nothing; ask files a decision per due occurrence and starts on the answer start; auto starts the workflow as its function agent. The most specific mode wins: workflow, then function, then mode. No mode goes past the gate. packages/naive/src/checks/check-config.ts holds each name to the venture's functions and workflows. */
   loops?: {
     /** The mode for every workflow that has none of its own */
@@ -5213,6 +5246,13 @@ export type ProvenanceEntry = {
   /** The decision or decision class the activity acted under, such as EE-026 or ownership-or-control */
   decision?: string;
   note?: string;
+  /** A person's explicit override of a fail-closed rule on this write (EE-217): the rule, the person, their reason, and what was missing when they passed it. An agent never writes one. */
+  override?: {
+    rule: string;
+    by: string;
+    why: string;
+    missing: string[];
+  };
   /** For a record kept outside the venture folder (EE-037): the source it was written to, its version there, and the commit or pull request that holds it */
   source?: {
     /** The source id from the venture's knowledge/sources.json */
