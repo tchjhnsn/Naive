@@ -2,6 +2,8 @@
   "id": "intake",
   "function": "human-capital",
   "title": "Learn who works on the venture",
+  "goal": "Everyone who works on the venture, person or agent, is recorded with their role and terms, and a team plan is proposed in which every person role says why an agent cannot do the work.",
+  "measures": ["cost_or_time_saved"],
   "trigger": {
     "kind": "intake"
   },

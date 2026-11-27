@@ -304,6 +304,23 @@
         "is": "adopted",
         "why": "The licence criterion names licences by SPDX identifier, and its top level is a permissive OSI-approved licence."
       }
+    },
+    {
+      "id": "gdpr-2016-679",
+      "title": "Regulation (EU) 2016/679 on the protection of natural persons with regard to the processing of personal data and on the free movement of such data (General Data Protection Regulation)",
+      "authors": [
+        "European Parliament and Council of the European Union"
+      ],
+      "year": 2016,
+      "kind": "law",
+      "summary": "Article 5 holds personal data to purpose limitation, data minimisation and storage limitation; article 6 requires a lawful basis for processing; article 7 sets the conditions for consent and the right to withdraw it; article 13 requires that the person be told, including how long the data is kept; article 17 gives the right to erasure.",
+      "informs": [
+        "rule:visibility-rubric-consent"
+      ],
+      "stance": {
+        "is": "adopted",
+        "why": "The visibility rubric's consent-and-retention criterion is a gate because recording a person needs a lawful basis they were told about, a retention period and a way to erase. No URL is recorded here because none was checked in this change."
+      }
     }
   ]
 }

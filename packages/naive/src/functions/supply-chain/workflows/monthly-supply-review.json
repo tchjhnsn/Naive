@@ -2,6 +2,8 @@
   "id": "monthly-supply-review",
   "function": "supply-chain",
   "title": "Review suppliers, orders and supply risk each month",
+  "goal": "Every purchase order's status and date are current, every supplier due for re-evaluation has a decision prepared, and every single-sourced item has a proposed response.",
+  "measures": ["cost_or_time_saved", "flow_and_lead_time"],
   "trigger": { "kind": "schedule", "cadence": "monthly" },
   "reads": ["supply-chain/suppliers", "supply-chain/purchase-orders", "product", "finance/spend", "money"],
   "steps": [

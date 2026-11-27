@@ -162,7 +162,44 @@
                 "source",
                 "variant"
               ],
+              "additionalProperties": false,
               "properties": {
+                "draft_copy": {
+                  "type": "object",
+                  "description": "The words for this section, drafted in the record the marketing function owns before they become the MDX variant named in `variant`, which is where published copy lives (EE-214). The publish lint reads text here as it reads a page (packages/naive/src/engine/record-copy.ts), so a leak, an uncited number or a private name is caught in the draft.",
+                  "required": [
+                    "text",
+                    "status"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "text": {
+                      "type": "string",
+                      "description": "The copy itself, in the marketing agent's own words: this is the section's site text"
+                    },
+                    "status": {
+                      "enum": [
+                        "draft",
+                        "ready",
+                        "published"
+                      ],
+                      "description": "draft while it is being written, ready once it is written and waiting for a person, published once the variant carries it"
+                    },
+                    "sources": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "description": "The records or URLs behind any number or customer claim in the text; the claims rule fails without one"
+                    },
+                    "by": {
+                      "type": "string"
+                    },
+                    "at": {
+                      "type": "string"
+                    }
+                  }
+                },
                 "item": {
                   "type": "string"
                 },

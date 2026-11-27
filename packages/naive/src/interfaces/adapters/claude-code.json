@@ -8,9 +8,17 @@
     { "path": "CLAUDE.md", "text": "@AGENTS.md\n" }
   ],
   "skills": ".claude/skills",
+  "documents": {
+    "pdf": { "use": "the pdf skill", "how": "Build it from the approved Markdown reading copy, changing no fact." },
+    "docx": { "use": "the docx skill", "how": "Only when the reader must edit the words, such as counsel marking up terms." },
+    "pptx": { "use": "the pptx skill", "how": "A structured deck: a theme, layouts and placeholders, built from the approved reading copy, one point a slide." },
+    "xlsx": { "use": "the xlsx skill", "how": "A model or a budget, only when a person asked for a spreadsheet." },
+    "html": { "use": "the artifact-design skill, then the Artifact tool", "how": "One page from the approved reading copy, published privately, and the link given to the person." }
+  },
   "sources": [
     "https://docs.claude.com/en/docs/claude-code/memory",
-    "https://docs.claude.com/en/docs/claude-code/skills"
+    "https://docs.claude.com/en/docs/claude-code/skills",
+    "https://github.com/anthropics/skills"
   ],
-  "note": "Claude Code reads CLAUDE.md, which imports the venture's AGENTS.md with @AGENTS.md, and loads project skills from .claude/skills/<name>/SKILL.md. The adapter copies the skill of each package open now, so the agent has the installed version's skill."
+  "note": "Claude Code reads CLAUDE.md, which imports the venture's AGENTS.md with @AGENTS.md, and loads project skills from .claude/skills/<name>/SKILL.md. The adapter copies the skill of each package open now, so the agent has the installed version's skill. The documents map names Anthropic's own document skills (Apache 2.0) for the formats Naive does not render itself (EE-218); the writing-documents skill is where the ladder and the order are written."
 }

@@ -9,7 +9,7 @@
 //   node packages/naive/src/interfaces/tests/handoff-claim-test.ts
 
 import { spawn, spawnSync } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { call } from "../../router/router.ts";
@@ -187,6 +187,31 @@ process.stdout.write(JSON.stringify({ i: ${i}, ok: r.ok, by: r.result?.claimed_b
   const exec = spawnSync(process.execPath, [join(repo, "packages/naive/src/checks/check-execution.ts"), dir], { encoding: "utf8", env });
   expect("check-execution refuses a review not judged by the requester", exec.status !== 0 && /handoff\/mismatch\/fit: review is judged by the requester finance-lead, not architect/.test(exec.stderr), exec.stdout + exec.stderr);
   expect("check-execution takes the requester's own verification", !/handoff\/work: verified by/.test(exec.stderr), exec.stderr);
+}
+
+// The ready check reads the venture (EE-214): a function agent is a role, an input is a record of this venture, and
+// the route's check action names the handoff it is checking.
+{
+  const id = "site-copy";
+  writeFileSync(ventureFile(dir, "operations/handoffs/site-copy.md"), "# Site copy\n\n## Outcome\nThe home page reads in the venture's own words.\n\n## Work\nWrite the hero copy from the sitemap's drafted copy.\n");
+  writeFileSync(ventureFile(dir, "marketing/sitemap.json"), JSON.stringify({ version: "1", venture: V, facts: {}, offerings: [], audience: { offered_to: [], partner_led: false, types: [] }, pages: [], omitted: [], handoff: { to: "engineering" } }, null, 2));
+  const h = handoff(id, { role: "builder", requested_by: "marketing-and-sales-agent", inputs: ["marketing/sitemap.json"], decision_classes: ["implementation-detail"],
+    done_criteria: [
+      { id: "holds", kind: "conformance", check: "node packages/naive/src/checks/check-execution.ts ." },
+      { id: "proof", kind: "self-proof", check: "node packages/naive/src/checks/check-ready.ts ." },
+      { id: "fit", kind: "review", reviewer: "marketing-and-sales-agent", check: "Does the copy say what the plan says?" },
+    ] });
+  const set = await asPerson(id, h);
+  expect("a person writes a handoff from the marketing agent to a builder", set.ok, show(set));
+  const ready = spawnSync(process.execPath, [join(repo, "packages/naive/src/checks/check-ready.ts"), dir, id], { encoding: "utf8", env });
+  expect("the ready check finds an input that is a record of this venture", /pass {2}every input it needs exists/.test(ready.stdout), ready.stdout + ready.stderr);
+  expect("a function agent is a role the ready check knows", /pass {2}every review names a reviewer other than the holder/.test(ready.stdout) && /pass {2}every review is judged by its requester marketing-and-sales-agent/.test(ready.stdout), ready.stdout + ready.stderr);
+  expect("the handoff is ready to execute", ready.status === 0, ready.stdout + ready.stderr);
+  const checked = await call({ venture: V, workspace: ws, route: route(id), action: "check" }) as { result?: { check: string, output: string }[] };
+  const out = (checked.result ?? []).find((c) => c.check.endsWith("check-ready.ts"));
+  expect("the route's check action gives the ready check the handoff's id", !!out && new RegExp(`${id} is ready to execute`).test(out.output), show(out));
+  const all = spawnSync(process.execPath, [join(repo, "packages/naive/src/checks/check-ready.ts"), dir], { encoding: "utf8", env });
+  expect("with no id the ready check reads every handoff", /handoff\(s\) ready to execute/.test(all.stdout), all.stdout.slice(-300) + all.stderr);
 }
 
 rmSync(ws, { recursive: true, force: true });

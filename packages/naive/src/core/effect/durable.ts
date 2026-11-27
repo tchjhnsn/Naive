@@ -19,6 +19,7 @@ import type { WorkflowEngine, WorkflowInstance } from "effect/workflow/WorkflowE
 import { NodeSqlite } from "./node-sqlite.ts";
 import { crashSeam } from "../crash-seam.ts";
 import { hostHook, missingHook } from "../runtime.ts";
+import { configFile } from "../venture-paths.ts";
 
 /** The durable engines naive.config.json may name. */
 export type DurableEngine = "memory" | "sqlite" | "postgres";
@@ -26,7 +27,7 @@ export type DurableEngine = "memory" | "sqlite" | "postgres";
 /** The engine naive.config.json's durable.engine names: memory unless it says sqlite or postgres. */
 export function durableEngine(dir: string): DurableEngine {
   try {
-    const e = (JSON.parse(readFileSync(join(dir, "naive.config.json"), "utf8")) as { durable?: { engine?: unknown } }).durable?.engine;
+    const e = (JSON.parse(readFileSync(configFile(dir), "utf8")) as { durable?: { engine?: unknown } }).durable?.engine;
     return e === "sqlite" || e === "postgres" ? e : "memory";
   } catch { return "memory"; }
 }
