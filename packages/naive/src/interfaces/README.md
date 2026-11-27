@@ -41,4 +41,8 @@ The ways a person, or an agent, works with a venture: the `naive` and `mentura` 
 
 `naive copy gaps|draft|check|one-shot` (EE-216) is dispatched from `cli/naive.ts` to [`copy.ts`](../functions/marketing-and-sales/marketing/copy.ts): a public page's words are `marketing-message` records a person approves before any design is built.
 
+## naive check
+
+`naive check` runs every checker in [`../checks/`](../checks/README.md) that reads a venture folder, on the venture you are in. A checker of Naive's own files (the data model, the nouns, the docs) is not run here: `node test.ts` runs those. A checker a venture names under `checks.off` in `naive.config.json`, by its path (`packages/naive/src/checks/check-telos.ts`), is skipped and shown as off. One under `checks.warn` is run and reported and does not fail the command. `tests/naive-cli-test.ts` fails when a checker that reads a venture is added to the folder and left out of the command.
+
 `naive runs [verify <run>]` and `naive workflow run <function>/<workflow>` (EE-227) are dispatched from `cli/naive.ts` to [`run-proof.ts`](../engine/run-proof.ts) and [`workflow-run.ts`](../engine/workflow-run.ts): every run's package checked against the provenance log and the blob store, and a workflow run step by step with each step's evidence gathered by its session. `naive check` runs `check-runs`. The lead skill ([`skills/lead/SKILL.md`](./skills/lead/SKILL.md)) verifies run packages, never an agent's say-so.
