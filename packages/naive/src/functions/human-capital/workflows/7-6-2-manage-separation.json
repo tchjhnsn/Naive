@@ -1,0 +1,112 @@
+{
+  "id": "7-6-2-manage-separation",
+  "function": "human-capital",
+  "process": "7.6.2",
+  "title": "Manage separation",
+  "goal": "Every ending or pause of someone's work on the venture has a recorded reason and date, access closed and handover done with dates, final pay and notice settled, and the obligations that survive written down.",
+  "measures": [
+    "compliance_met",
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "human-capital/intake"
+    ]
+  },
+  "reads": [
+    "people",
+    "people/founders",
+    "people/team-plan",
+    "governance/internal-terms",
+    "governance/ownership",
+    "governance/delegation",
+    "legal/obligations",
+    "legal/risks",
+    "finance/budget",
+    "purpose/money/summary",
+    "it/connections",
+    "operations/handoff",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "manage-retirement",
+      "do": "Record a planned end of working life: the date, what the person's work and records transfer to, what the venture still owes them afterwards, and the question for the founder and counsel about any pension or continuing benefit.",
+      "activity": "7.6.2.1",
+      "skill": "redeploy-and-retire-employees",
+      "raises": [
+        "legal-or-terms"
+      ],
+      "consider": {
+        "why": "Retirement arises only where the venture has someone near the end of their working life.",
+        "when": "Someone has told the founder they intend to retire."
+      }
+    },
+    {
+      "id": "manage-leave-of-absence",
+      "do": "Record each leave taken or asked for: its kind, its dates, whether it is paid, what the law where the person works requires, who covers the work while they are away, and put the agreement itself to the founder.",
+      "activity": "7.6.2.2",
+      "skill": "redeploy-and-retire-employees",
+      "raises": [
+        "legal-or-terms"
+      ],
+      "consider": {
+        "why": "Leave is recorded as it is asked for, and an empty register is of no use.",
+        "when": "Someone has asked for leave or is on it."
+      }
+    },
+    {
+      "id": "manage-offboarding",
+      "do": "Run the leaving list: the accounts and access to close with who closes each from `it/connections` and `governance/delegation`, the work and records to hand over, the final pay and notice owed, the venture's property to return and the agreements that survive, recording each item done with its date; the founder speaks to the person.",
+      "activity": "7.6.2.3",
+      "skill": "redeploy-and-retire-employees",
+      "writes": [
+        "people"
+      ],
+      "raises": [
+        "legal-or-terms"
+      ]
+    },
+    {
+      "id": "implement-outplacement",
+      "do": "List what the venture can honestly do to help someone leaving find other work, with its cost and its limit, and leave every reference, introduction and public word to the founder.",
+      "activity": "7.6.2.4",
+      "skill": "redeploy-and-retire-employees",
+      "raises": [
+        "spend-money"
+      ],
+      "consider": {
+        "why": "Outplacement costs money the venture may not have, and a reference is the founder's word to give.",
+        "when": "The venture is ending someone's engagement and the founder asks what it can offer."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Open a decision for the final pay, the notice and any obligation that survives, record each closed access against the separation, and tell the strategy lead what work the departure leaves unowned.",
+      "skill": "redeploy-and-retire-employees",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities",
+        "spend-money"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "access-closed-and-obligations-named",
+      "kind": "review",
+      "check": "Does every separation in this run show each access closed with its date, the final pay settled, and the obligations that survive written down?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

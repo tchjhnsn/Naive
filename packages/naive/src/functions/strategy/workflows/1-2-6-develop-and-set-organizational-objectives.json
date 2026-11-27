@@ -1,0 +1,66 @@
+{
+  "id": "1-2-6-develop-and-set-organizational-objectives",
+  "function": "strategy",
+  "process": "1.2.6",
+  "title": "Develop and set organizational objectives",
+  "goal": "Each objective the venture is working toward stands as a goal record with an owner, a measure, a baseline and a date, and the observed value against each measure is written for the founder to settle the goal on.",
+  "measures": ["impact", "learning"],
+  "trigger": { "kind": "request" },
+  "requires": {
+    "records": ["foundation/pre-registration"],
+    "meetings": ["strategy/intake"]
+  },
+  "reads": [
+    "foundation/telos",
+    "foundation/goals",
+    "foundation/requirements",
+    "foundation/exit-criteria",
+    "purpose/money/summary",
+    "validation/*",
+    "system/phase-gate",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "identify-organizational-objectives",
+      "do": "Derive from the telos measures and the current phase's exit criteria the few objectives the venture must reach next, and write each as a goal record with its statement, the goal it serves, why it matters and the founder as owner unless they name someone else, leaving the status for them to set.",
+      "skill": "develop-business-strategy",
+      "activity": "1.2.6.1",
+      "writes": ["foundation/goals/[id]"]
+    },
+    {
+      "id": "establish-baseline-metrics",
+      "do": "For each objective write its measure with the value it stands at today taken from a record, the source route, the date it was true and the target, and where there is no current value say so rather than putting a zero.",
+      "skill": "develop-business-strategy",
+      "activity": "1.2.6.2",
+      "writes": ["foundation/goals/[id]"]
+    },
+    {
+      "id": "monitor-performance-against-objective",
+      "do": "Read each measure's source again, write the observed value and the date on the goal, say whether it is on the way to its target by its due date, and bring the founder every goal whose date has passed so they settle it as met or missed, never setting that status yourself.",
+      "skill": "develop-business-strategy",
+      "activity": "1.2.6.3",
+      "writes": ["foundation/goals/[id]"],
+      "raises": ["set-priorities"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Attach each measured gap to the decision or bet it bears on, raise as a decision any objective that contradicts a decision in force or that no function is working on, and recommend to the strategy lead which gap to work first.",
+      "writes": ["decisions/*"],
+      "raises": ["contradicts-ledger", "set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "objectives-measurable-and-owned",
+      "kind": "review",
+      "check": "Does every goal written in this run have an owner, at least one measure with a baseline from a named record and a due date, with the status left to the founder?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

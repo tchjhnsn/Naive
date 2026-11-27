@@ -1,0 +1,92 @@
+{
+  "id": "2-1-1-manage-product-and-service-portfolio",
+  "function": "products",
+  "process": "2.1.1",
+  "title": "Manage product and service portfolio",
+  "goal": "Every product card says how the product performs against the opportunity it was built for and which live goal it serves, the concepts worth building are ranked for the founder with their evidence, and the cost, quality and timing targets the founder set are on record.",
+  "measures": ["usage_or_adoption", "learning"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["products/intake"] },
+  "reads": [
+    "product",
+    "product/bugs",
+    "product/capabilities",
+    "foundation/telos",
+    "foundation/goals",
+    "foundation/icp",
+    "foundation/problem",
+    "foundation/constraints",
+    "validation/product-market-fit",
+    "validation/interviews",
+    "markets",
+    "money",
+    "finance/spend",
+    "decisions"
+  ],
+  "steps": [
+    {
+      "id": "evaluate-performance",
+      "do": "For each product card, read its usage, its retention, its open bugs and the market record it was built for, and write on the card how the product is doing against that opportunity, naming the record behind every number and writing no number no record supports.",
+      "skill": "govern-and-manage-product-service-development",
+      "activity": "2.1.1.1",
+      "writes": ["product/[id]"]
+    },
+    {
+      "id": "confirm-strategy-alignment",
+      "do": "Check each product and each candidate concept against the telos, the live goals and the ICP profiles it is offered to, and list on the handoff the ones that serve no live goal, no profile or no form of the primary problem, with the record that shows the gap.",
+      "skill": "govern-and-manage-product-service-development",
+      "activity": "2.1.1.2",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "prioritize-and-select-concepts",
+      "do": "Rank the concepts that survived alignment by the goal each one serves, the evidence behind it and what it would cost the venture to try, and bring the founder one decision naming the concepts to keep, the ones to set aside and your recommendation, since adding to or cutting the lineup is the founder's.",
+      "skill": "govern-and-manage-product-service-development",
+      "activity": "2.1.1.3",
+      "writes": ["decisions/*"],
+      "raises": ["strategy-or-constitution"]
+    },
+    {
+      "id": "cost-and-quality-targets",
+      "do": "Draft, for each product the founder keeps, what it may cost to serve one customer and what quality it must hold (the bug severities that may never be open at a release, the task a user must be able to finish), from the spend records and the bug list, and ask the founder for the figure only they can set.",
+      "skill": "govern-and-manage-product-service-development",
+      "activity": "2.1.1.4",
+      "ask": true,
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "development-timing-targets",
+      "do": "Work back from each live goal's due date and the venture's recent lead time to propose the date each kept concept should be in a customer's hands by, say which dates the venture cannot hold at once, and put the dates to the founder, since a date told to anyone outside the venture is a promise only the founder makes.",
+      "skill": "govern-and-manage-product-service-development",
+      "activity": "2.1.1.5",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    },
+    {
+      "id": "plan-offering-modifications",
+      "do": "For each product that stays in the lineup, list the changes the evidence asks for (a feature to add, drop or rework, a price or packaging change to hand to marketing) with the interview, feedback or bug record behind each, and record the ones the founder keeps on the product card as its next changes.",
+      "skill": "govern-and-manage-product-service-development",
+      "activity": "2.1.1.6",
+      "writes": ["product/[id]"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "For each finding in this review, name the open decision it confirms or changes and add it there as evidence, and raise the order of the portfolio's work to the product lead with the goal each item serves.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "lineup-judged",
+      "kind": "review",
+      "check": "Does every product card in the lineup say how the product performs against its opportunity and which live goal it serves, with a record behind each number, and is every concept kept or set aside by a decision the founder made?",
+      "reviewer": "product-lead"
+    }
+  ]
+}

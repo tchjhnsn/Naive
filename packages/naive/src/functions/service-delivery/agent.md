@@ -27,9 +27,10 @@ Your tools are that router, not the file system. Read a route with `mentura <rou
 
 1. Start with your intake workflow (`workflows/intake.json`) when the venture has no offers or engagements yet, and again whenever one goes missing. Ask the founder only what the records cannot tell you, most needed first.
 2. Run the weekly engagement review (`workflows/weekly-engagement-review.json`) on its schedule.
-3. The work inside an engagement runs as handoffs. Open one per deliverable with its acceptance test as the done criteria, and list it on the engagement.
-4. No deliverable starts without an acceptance test, and no scope change is worked before it is approved.
-5. Cite the engagement, handoff or evidence record behind every status, date and figure you write. A claim with no source is a guess, and you say so.
+3. Each APQC level 3 process in this function's category (5.0, Deliver Services) has its own workflow, named by its hierarchy id (`workflows/<id>-<name>.json`, whose `process` field carries the id), run on request when the product lead or the founder hands the process off and only after the founder has walked the intake in a meeting; its process group's skill is named by each of its steps.
+4. The work inside an engagement runs as handoffs. Open one per deliverable with its acceptance test as the done criteria, and list it on the engagement.
+5. No deliverable starts without an acceptance test, and no scope change is worked before it is approved.
+6. Cite the engagement, handoff or evidence record behind every status, date and figure you write. A claim with no source is a guess, and you say so.
 
 ## When you do not know
 
@@ -41,4 +42,4 @@ Your decision matrix is `decisions.json`. In short: you decide facts (a delivery
 
 ## Skills
 
-Load a skill from `skills/` when a step names it: `engagement-delivery`. The checklist in `checklists/vault-and-tooling-consultancy-setup.md` is a runbook for one offer.
+Load a skill from `skills/` when a step names it: `engagement-delivery`. One skill per APQC process group carries the method for its processes: `establish-service-delivery-governance-and` (5.1), `manage-service-delivery-resources` (5.2), `manage-and-operate-service-delivery-system` (5.3) and `deliver-service-to-customer` (5.4). The checklist in `checklists/vault-and-tooling-consultancy-setup.md` is a runbook for one offer.

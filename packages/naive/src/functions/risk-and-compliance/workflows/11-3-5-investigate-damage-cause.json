@@ -1,0 +1,74 @@
+{
+  "id": "11-3-5-investigate-damage-cause",
+  "function": "risk-and-compliance",
+  "process": "11.3.5",
+  "title": "Investigate damage cause",
+  "goal": "The event has a timeline built from records with every gap marked, the conditions that let it happen are named without blaming a person, and the register holds a risk for each condition that still holds.",
+  "measures": [
+    "compliance_met",
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "risk-and-compliance/intake"
+    ]
+  },
+  "reads": [
+    "system/provenance",
+    "capabilities/postmortems",
+    "legal/risks",
+    "legal/obligations",
+    "it/connections",
+    "support/cases",
+    "evidence"
+  ],
+  "steps": [
+    {
+      "id": "build-the-timeline",
+      "do": "Build the timeline from the provenance log, the records and the founder's account, saying for each entry what it rests on, and mark every gap as a gap instead of filling it with a guess.",
+      "skill": "manage-remediation-efforts",
+      "writes": [
+        "operations/handoff/[id]"
+      ]
+    },
+    {
+      "id": "find-the-conditions",
+      "do": "Work back from the harm to the conditions that let it happen, a missing control, one person holding the only key, an alert nobody read, naming conditions rather than people, and say which of them still hold today.",
+      "skill": "manage-remediation-efforts"
+    },
+    {
+      "id": "update-the-register",
+      "do": "Rewrite the risk record the event proves with what the investigation found, including the range the event itself now gives, and write a risk for each condition that still holds and the register did not have.",
+      "skill": "manage-remediation-efforts",
+      "writes": [
+        "legal/risks/[id]"
+      ]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Add the cause and the conditions to the decision the event opened, and raise to the finance lead which condition to remove first.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "cause-traced-to-conditions",
+      "kind": "review",
+      "check": "Does each timeline entry cite a record or an account, are the conditions named without naming a person at fault, and does the register now hold a risk for each condition that still holds?",
+      "reviewer": "finance-lead"
+    }
+  ]
+}

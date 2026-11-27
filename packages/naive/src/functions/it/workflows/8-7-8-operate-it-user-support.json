@@ -1,0 +1,90 @@
+{
+  "id": "8-7-8-operate-it-user-support",
+  "function": "it",
+  "process": "8.7.8",
+  "title": "Operate IT user support",
+  "goal": "Every request that arrived has been rated, answered or escalated, and closed with what was done, and no request was answered to a customer by an agent in the venture's name.",
+  "measures": ["cost_or_time_saved", "compliance_met"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["it/intake"] },
+  "reads": [
+    "support/cases",
+    "support/policy",
+    "product/bugs",
+    "it/connections",
+    "customers",
+    "people/team-plan",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "triage-requests",
+      "do": "Rate each request that arrived by what it stops and how many it affects, mark whether it is a question, a fault or a request for access, and put the rating and the first step on the case.",
+      "skill": "create-and-manage-support-services-solutions",
+      "activity": "8.7.8.1",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "resolution-capabilities",
+      "do": "For each kind of request, gather what is needed to answer it in one place, the written answer, the logs, the access and the test account, and name every kind the venture cannot answer today.",
+      "skill": "create-and-manage-support-services-solutions",
+      "activity": "8.7.8.2",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "manage-requests",
+      "do": "Keep every open request moving: record what has been tried, what it is waiting on and when the asker was last updated, and draft each reply for the founder to send where the asker is a customer.",
+      "skill": "create-and-manage-support-services-solutions",
+      "activity": "8.7.8.3",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "escalate-requests",
+      "do": "Send up the requests whose time limit has passed or whose answer needs a judgment, money or wider access, naming on each what has been tried and what the decision is, and ask the founder where only the founder can answer.",
+      "skill": "create-and-manage-support-services-solutions",
+      "activity": "8.7.8.4",
+      "ask": true,
+      "writes": ["decisions/*"],
+      "raises": ["security-loosening", "spend-money"]
+    },
+    {
+      "id": "resolve-requests",
+      "do": "Fix what can be fixed within the agent's own reach, grant only access the rule already allows, record the cause and the steps on the case, and close it only when the asker has confirmed it is answered.",
+      "skill": "create-and-manage-support-services-solutions",
+      "activity": "8.7.8.5",
+      "writes": ["it/connections/[id]"],
+      "raises": ["security-tightening"]
+    },
+    {
+      "id": "continuity-action",
+      "do": "When a request turns out to be an outage or a loss of data, run the continuity and recovery procedure for that system as written, record each action with its time, and stop at any step that cannot be undone until the founder says to pass it.",
+      "skill": "create-and-manage-support-services-solutions",
+      "activity": "8.7.8.6",
+      "writes": ["operations/handoff/[id]"],
+      "raises": ["irreversible-data-change"],
+      "consider": {
+        "why": "Recovery steps change or restore live data, so they run only when something is actually down or lost.",
+        "when": "A request reports an outage, a loss of data or a system that cannot be reached."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Add the closed cases and their causes as evidence to the decision each bears on, name the three causes that produced the most requests, and raise to the product lead which cause to fix first.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "nothing-answered-unseen",
+      "kind": "review",
+      "check": "Does every request carry a rating, what was tried and how it was closed, was every reply to a customer sent by the founder rather than by the agent, and was no access granted that the rule did not already allow?",
+      "reviewer": "product-lead"
+    }
+  ]
+}

@@ -1,0 +1,98 @@
+{
+  "id": "13-6-1-define-content-management-strategy",
+  "function": "capabilities",
+  "process": "13.6.1",
+  "title": "Define content management strategy",
+  "goal": "The venture has one written rule for the documents and copy it produces: what each kind is for, who may approve it, where it lives, how it is kept current, and the measures that say whether it is read and whether it is true.",
+  "measures": ["cost_or_time_saved", "flow_and_lead_time"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["capabilities/intake"] },
+  "reads": [
+    "marketing/content",
+    "marketing/sitemap",
+    "governance/publication-policy",
+    "governance/publications",
+    "knowledge/catalog",
+    "capabilities/processes",
+    "glossary/terms"
+  ],
+  "steps": [
+    {
+      "id": "establish-content-objectives",
+      "do": "List the kinds of document and copy the venture produces, from the sitemap and the content records, and write for each what it is for and which reader it serves, marking the kinds that serve nobody.",
+      "skill": "manage-content",
+      "activity": "13.6.1.1",
+      "writes": ["capabilities/processes/[id]"]
+    },
+    {
+      "id": "develop-content-governance-model",
+      "do": "Write, as a process record, who may draft each kind, who must approve it before it leaves the venture and who may change it afterwards, taking the approval line from the publication policy rather than inventing one.",
+      "skill": "manage-content",
+      "activity": "13.6.1.2",
+      "writes": ["capabilities/processes/[id]"]
+    },
+    {
+      "id": "develop-content-funding-models",
+      "do": "Cost each kind of content per piece and per month it is kept current, in hours and in tools, and bring the founder the total so the kinds nobody will maintain are dropped before they are started.",
+      "skill": "manage-content",
+      "activity": "13.6.1.3",
+      "ask": true,
+      "consider": {
+        "why": "Content costs more to keep current than to write, and the cost is what decides how many kinds a small venture can carry.",
+        "when": "The venture keeps more than one kind of public content current."
+      }
+    },
+    {
+      "id": "develop-core-content-methodologies",
+      "do": "Write the few rules every piece follows, the venture's words from the glossary, a cited source for every claim, and one owner per piece, and put them in the process record for writing rather than in a style document nobody opens.",
+      "skill": "manage-content",
+      "activity": "13.6.1.4",
+      "writes": ["capabilities/processes/[id]"]
+    },
+    {
+      "id": "assess-content-it-needs",
+      "do": "List what the content work needs from the venture's tools, somewhere to keep a draft, a way to publish, and a record of what is live where, and hand the gaps to the IT function as a handoff.",
+      "skill": "manage-content",
+      "activity": "13.6.1.5",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "develop-content-training-and-communication",
+      "do": "Write what anyone drafting content for this venture must read first and in what order, and how they are told when an approved piece changes.",
+      "skill": "manage-content",
+      "activity": "13.6.1.6",
+      "consider": {
+        "why": "Content written by someone who has not read the venture's words and claims has to be rewritten.",
+        "when": "Someone other than the founder drafts content the venture publishes."
+      }
+    },
+    {
+      "id": "develop-content-measures",
+      "do": "Name the measures for content, pieces live, pieces past their review date, claims with no cited source, and the time from draft to approved, and say where each is read.",
+      "skill": "manage-content",
+      "activity": "13.6.1.7",
+      "writes": ["capabilities/processes/[id]"]
+    },
+    {
+      "id": "manage-content-intelligence-and-insights",
+      "do": "Report what the venture can and cannot tell about its content, which pieces are read and which are not, and say plainly where there is no measurement rather than guessing from impressions.",
+      "skill": "manage-content",
+      "activity": "13.6.1.8",
+      "writes": ["operations/handoff/[id]"],
+      "consider": {
+        "why": "A content plan built on guesses about what is read costs more than one built on the little that is actually measured.",
+        "when": "The venture has public content and a way of counting readers."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Bring the founder the strategy as one page and raise which kinds of content to keep and which to stop, since what the venture says in public is the founder's.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "approval-line-matches-policy", "kind": "review", "check": "Does the governance model take its approval line from the venture's publication policy, and does every kind of content name one reader and one owner?", "reviewer": "strategy-lead" }
+  ]
+}

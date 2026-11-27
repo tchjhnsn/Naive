@@ -1,0 +1,87 @@
+{
+  "id": "11-3-4-investigate-legal-aspects",
+  "function": "risk-and-compliance",
+  "process": "11.3.4",
+  "title": "Investigate legal aspects",
+  "goal": "What the venture may owe, to whom and by when is written as a range with its basis, every clause behind it is quoted with its source, the records that must not change are marked, and the questions needing a licensed lawyer are written as questions for counsel.",
+  "measures": [
+    "compliance_met",
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "risk-and-compliance/intake"
+    ]
+  },
+  "reads": [
+    "legal/obligations",
+    "legal/risks",
+    "governance/ownership",
+    "governance/internal-terms",
+    "assets/leases",
+    "it/connections",
+    "customers",
+    "support/policy"
+  ],
+  "steps": [
+    {
+      "id": "collect-the-documents",
+      "do": "Gather every contract, set of terms, notice and policy the event touches and quote the clause in each that bears on it with the file and the date it came from, so nobody later argues the terms from memory.",
+      "skill": "manage-remediation-efforts",
+      "writes": [
+        "operations/handoff/[id]"
+      ]
+    },
+    {
+      "id": "state-the-exposure",
+      "do": "Write what the venture may owe and to whom as a 90% range with its basis, with the deadline attached to each, and carry the range onto the risk record the event proves.",
+      "skill": "manage-remediation-efforts",
+      "writes": [
+        "legal/risks/[id]"
+      ]
+    },
+    {
+      "id": "preserve-the-record",
+      "do": "List the records, messages and logs that must not be changed or deleted while the matter is live, and bring to the founder before it happens any deletion a retention rule or a customer request would otherwise make.",
+      "skill": "manage-remediation-efforts",
+      "raises": [
+        "irreversible-data-change"
+      ]
+    },
+    {
+      "id": "name-what-needs-a-lawyer",
+      "do": "Say plainly which questions a licensed lawyer must answer, write each as the question to put to counsel with the facts it needs, and give nothing in this run as legal advice.",
+      "skill": "manage-remediation-efforts",
+      "raises": [
+        "legal-or-terms",
+        "spend-money"
+      ]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Add the exposure and its deadlines to the decision the event opened, and raise to the finance lead which question goes to counsel first.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "exposure-sourced",
+      "kind": "review",
+      "check": "Is every clause quoted with its source and date, is the exposure a range with its basis and deadline, and is each question needing a licensed lawyer written as a question for counsel?",
+      "reviewer": "finance-lead"
+    }
+  ]
+}

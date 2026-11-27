@@ -1,0 +1,157 @@
+{
+  "id": "9-6-1-process-accounts-payable-ap",
+  "function": "finance",
+  "process": "9.6.1",
+  "title": "Process accounts payable (AP)",
+  "goal": "Every bill is matched to its supplier, order and delivery before it is paid, the founder approved and made each payment, and the spend register and account balances carry what was paid with its document.",
+  "measures": [
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "finance/intake"
+    ]
+  },
+  "reads": [
+    "finance/spend",
+    "finance/spend/[id]",
+    "finance/budget",
+    "money",
+    "money/[id]",
+    "purpose/money/summary",
+    "supply-chain/suppliers",
+    "supply-chain/purchase-orders",
+    "it/connections",
+    "legal/obligations",
+    "assets/register"
+  ],
+  "steps": [
+    {
+      "id": "verify-supplier-and-order",
+      "do": "Match each bill to its supplier and its order in the supplier and purchase order records, check the bank details on it against what the supplier record already holds, and hold back any bill whose supplier or order you cannot find.",
+      "skill": "process-accounts-payable-and-expense",
+      "activity": "9.6.1.1"
+    },
+    {
+      "id": "payment-connections",
+      "do": "Check the payment, banking and invoicing connections the bills arrive and leave through, list which are live and what each is allowed to do, and flag any that could move money without the founder.",
+      "skill": "process-accounts-payable-and-expense",
+      "activity": "9.6.1.2",
+      "consider": {
+        "why": "A connection that can move money without a person is the one control worth checking before any bill is paid.",
+        "when": "The venture pays or receives bills through a connected payment, banking or invoicing service."
+      }
+    },
+    {
+      "id": "audit-invoices",
+      "do": "Check each bill line by line against the order, the agreed price and what was actually received, record it in the spend register with its document and due date, and list every difference and every duplicate.",
+      "skill": "process-accounts-payable-and-expense",
+      "activity": "9.6.1.3",
+      "writes": [
+        "finance/spend/[id]"
+      ],
+      "raises": [
+        "spend-register-upkeep"
+      ]
+    },
+    {
+      "id": "approve-payments",
+      "do": "Hand the founder the bills now due with the amount, the due date, what each is for and what paying them all would do to the balance, and record which ones they approve; the agent approves nothing.",
+      "skill": "process-accounts-payable-and-expense",
+      "ask": true,
+      "activity": "9.6.1.4",
+      "raises": [
+        "spend-money"
+      ]
+    },
+    {
+      "id": "accruals-and-reversals",
+      "do": "Prepare the accrual for each cost received but not yet billed and the reversal of last period's accruals, with the evidence for each amount.",
+      "skill": "process-accounts-payable-and-expense",
+      "activity": "9.6.1.5",
+      "consider": {
+        "why": "A cost received but not yet billed belongs to the period that received it.",
+        "when": "A bill for something already received has not arrived before the period ends."
+      }
+    },
+    {
+      "id": "payables-taxes",
+      "do": "Separate the tax on each bill from the cost itself, record which tax it is and whether the venture can reclaim it, and flag any bill whose tax treatment is unclear.",
+      "skill": "process-accounts-payable-and-expense",
+      "activity": "9.6.1.6",
+      "consider": {
+        "why": "Tax on a bill is often reclaimable, and treating it as cost quietly overstates spend.",
+        "when": "A bill carries sales tax, value added tax or withholding the venture must account for."
+      }
+    },
+    {
+      "id": "resolve-exceptions",
+      "do": "Work each held bill to a conclusion, a missing order, a price that does not match, a duplicate or a supplier nobody recognizes, and draft what the supplier must be asked for the founder to send.",
+      "skill": "process-accounts-payable-and-expense",
+      "activity": "9.6.1.7"
+    },
+    {
+      "id": "process-payments",
+      "do": "Prepare the approved bills as one payment run with the date and the account each leaves from, and once the founder has paid them record each payment and the new balance from the statement; you never move money.",
+      "skill": "process-accounts-payable-and-expense",
+      "activity": "9.6.1.8",
+      "writes": [
+        "money/[id]",
+        "finance/spend/[id]"
+      ]
+    },
+    {
+      "id": "ap-inquiries",
+      "do": "Draft the answer to each supplier question about a bill or a payment from the order, the bill and the payment records, and hand it to the founder to send.",
+      "skill": "process-accounts-payable-and-expense",
+      "activity": "9.6.1.9"
+    },
+    {
+      "id": "retain-records",
+      "do": "Keep every bill, order and payment confirmation filed where the spend entries point to it, list each document that is missing, and say how long each kind must be kept under the venture's policy.",
+      "skill": "process-accounts-payable-and-expense",
+      "activity": "9.6.1.10"
+    },
+    {
+      "id": "adjust-records",
+      "do": "Correct the spend register and the account balances for every duplicate, overpayment, credit note and miscategorized charge found, and record on each entry what was changed and why.",
+      "skill": "process-accounts-payable-and-expense",
+      "activity": "9.6.1.11",
+      "writes": [
+        "finance/spend/[id]",
+        "money/[id]"
+      ],
+      "raises": [
+        "domain-fact"
+      ]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Raise each disputed or duplicated bill and each cost nobody wants any more as a decision for the founder, and tell the finance lead which bills to pay first when the balance cannot cover them all.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "spend-money",
+        "cancel-or-downgrade",
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "bills-matched-and-approved",
+      "kind": "review",
+      "check": "Was every payment approved by the founder, and does every bill in the spend register cite its document and match what was ordered and received?",
+      "reviewer": "finance-lead"
+    }
+  ]
+}

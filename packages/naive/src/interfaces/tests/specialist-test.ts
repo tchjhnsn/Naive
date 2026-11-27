@@ -128,8 +128,8 @@ try {
   const listed = agent("list");
   expect("naive agent list shows a live specialist of the venture under its parent",
     listed.status === 0 && /strategy-specialist-check-pricing-page-competitor\s+specialist\s+of strategy-agent until /.test(listed.stdout), listed.stdout.split("\n").filter((l) => /specialist/.test(l)));
-  expect("a function agent's own prompt names the spawn and the steps it must record",
-    /naive agent spawn strategy-agent --task/.test(agent("brief", "strategy-agent").stdout) && /naive due record <function>\/<workflow> --steps/.test(agent("brief", "strategy-agent").stdout));
+  expect("a function agent's own prompt names the spawn and how it records a run package (EE-227)",
+    /naive agent spawn strategy-agent --task/.test(agent("brief", "strategy-agent").stdout) && /naive due record <function>\/<workflow> --run <run id> --started <iso> --results/.test(agent("brief", "strategy-agent").stdout));
   const refused = agent("spawn", "strategy-lead", "--task", "Do a thing", "--by", "a person");
   expect("naive agent spawn refuses a parent that is not a function agent", refused.status !== 0 && /only a function agent spawns a specialist/.test(refused.stdout + refused.stderr), refused.stdout + refused.stderr);
 

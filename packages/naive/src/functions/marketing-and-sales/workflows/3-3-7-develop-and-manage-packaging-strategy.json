@@ -1,0 +1,107 @@
+{
+  "id": "3-3-7-develop-and-manage-packaging-strategy",
+  "function": "marketing-and-sales",
+  "process": "3.3.7",
+  "title": "Develop and manage packaging strategy",
+  "goal": "How the offering is packaged is written down, which plans or bundles exist, what each contains and what a buyer sees when it arrives, tested where it can be tested and changed only with the founder's approval.",
+  "measures": [
+    "revenue",
+    "usage_or_adoption"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "marketing-and-sales/intake"
+    ]
+  },
+  "reads": [
+    "venture",
+    "product",
+    "service-delivery/offers",
+    "validation/pricing",
+    "foundation/icp",
+    "customers",
+    "sales/opportunities",
+    "marketing/message",
+    "marketing/brand",
+    "purpose/competitor",
+    "support/cases",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "plan-packaging-strategy",
+      "do": "Write what the venture sells as packages, the plans or bundles, what each contains and leaves out, who each is for and what a buyer first sees or receives, and say which packaging question the records cannot answer.",
+      "skill": "develop-and-manage-marketing-plans",
+      "activity": "3.3.7.1"
+    },
+    {
+      "id": "test-packaging-options",
+      "do": "Prepare two or three packagings of the same offering with the question that tells them apart, hand them to the founder to put to buyers, and record which one buyers understood without explanation and which they asked to change.",
+      "skill": "develop-and-manage-marketing-plans",
+      "raises": [
+        "public-commitment"
+      ],
+      "consider": {
+        "why": "Buyers choose between packages before they judge the product, and only buyers can say which package reads clearly.",
+        "when": "More than one packaging is on the table and buyers are reachable to ask."
+      },
+      "activity": "3.3.7.2"
+    },
+    {
+      "id": "execute-packaging-strategy",
+      "do": "Draft every place the chosen packaging appears, the plan names and what each includes in the message records, the offer records and the first-run or unboxing words, and hand them to the founder to publish.",
+      "skill": "develop-and-manage-marketing-plans",
+      "writes": [
+        "marketing/message/[id]"
+      ],
+      "raises": [
+        "public-commitment"
+      ],
+      "consider": {
+        "why": "A package named one way on the site and another in a quote loses the sale at the worst moment.",
+        "when": "The founder has approved a packaging that the public words do not yet match."
+      },
+      "activity": "3.3.7.3"
+    },
+    {
+      "id": "refine-packaging",
+      "do": "Count which package is bought, which is asked about and not bought and what support cases say buyers misread, and propose the one change with the counts behind it.",
+      "skill": "develop-and-manage-marketing-plans",
+      "raises": [
+        "set-priorities"
+      ],
+      "consider": {
+        "why": "What buyers choose among packages is evidence the venture already has and rarely reads.",
+        "when": "The venture has sold enough to count purchases by package."
+      },
+      "activity": "3.3.7.4"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Put a change of packaging to the founder as a decision with what it changes for existing customers, and add every count and buyer answer to the decision or goal it bears on.",
+      "skill": "develop-and-manage-marketing-plans",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "strategy-or-constitution"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "packages-written-and-consistent",
+      "kind": "review",
+      "check": "Does one record say what each package contains and who it is for, and do the public words and the offer records say the same thing about it?",
+      "reviewer": "growth-lead"
+    }
+  ]
+}

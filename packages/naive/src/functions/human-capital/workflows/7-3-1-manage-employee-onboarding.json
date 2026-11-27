@@ -1,0 +1,83 @@
+{
+  "id": "7-3-1-manage-employee-onboarding",
+  "function": "human-capital",
+  "process": "7.3.1",
+  "title": "Manage employee onboarding",
+  "goal": "Everyone who joins has run the same written first-week list, every access they need was granted by whoever may grant it, and the date they first did real work is recorded.",
+  "measures": [
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "human-capital/intake"
+    ]
+  },
+  "reads": [
+    "people",
+    "people/founders",
+    "people/team-plan",
+    "governance/delegation",
+    "governance/decision-rights",
+    "governance/internal-terms",
+    "it/connections",
+    "capabilities/processes",
+    "operations/activity-assignments",
+    "operations/handoff",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "develop-onboarding-program",
+      "do": "Write the first-week list once: the accounts and access the role needs with who may grant each from `governance/delegation` and `it/connections`, the records to read in order, the first real task, and who answers questions.",
+      "activity": "7.3.1.1",
+      "skill": "manage-employee-onboarding-training-and"
+    },
+    {
+      "id": "implement-onboarding-program",
+      "do": "Run that list for the person joining, track each item to done with its date, ask the founder for every grant, signature or introduction only they can give, and record the day the person first finished a real task.",
+      "activity": "7.3.1.2",
+      "skill": "manage-employee-onboarding-training-and",
+      "ask": true,
+      "writes": [
+        "people"
+      ]
+    },
+    {
+      "id": "monitor-and-update-onboarding",
+      "do": "After each onboarding, ask the person what was missing or late, fix the list, and record what changed and why so the next one is shorter.",
+      "activity": "7.3.1.3",
+      "skill": "manage-employee-onboarding-training-and",
+      "consider": {
+        "why": "The list only improves from someone who has just been through it.",
+        "when": "Someone has finished onboarding since the last run."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Record the onboarding against the hire's decision with the dates each access was granted, open a decision for any access the founder withheld or any item the venture cannot provide, and tell the strategy lead how long it took to first real work.",
+      "skill": "manage-employee-onboarding-training-and",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "first-week-complete",
+      "kind": "review",
+      "check": "Does every person who joined since the last run have each first-week item marked done with its date, and the date of their first real task recorded?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

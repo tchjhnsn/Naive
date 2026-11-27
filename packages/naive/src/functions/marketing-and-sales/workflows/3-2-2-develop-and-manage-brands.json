@@ -1,0 +1,102 @@
+{
+  "id": "3-2-2-develop-and-manage-brands",
+  "function": "marketing-and-sales",
+  "process": "3.2.2",
+  "title": "Develop and manage brands",
+  "goal": "The brand record holds the name, voice rules, colors and marks the founder approved, the design system says why each choice was made, and every place the brand already appears in public is measured against them.",
+  "measures": [
+    "usage_or_adoption"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "marketing-and-sales/intake"
+    ]
+  },
+  "reads": [
+    "venture",
+    "foundation/core",
+    "foundation/icp",
+    "markets",
+    "marketing/brand",
+    "marketing/brand-lint",
+    "marketing/design-system",
+    "marketing/message",
+    "marketing/sitemap",
+    "operations/site-presence",
+    "governance/publication-policy",
+    "purpose/competitor",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "conduct-brand-level-social-sentiment-analysis",
+      "do": "Read the public mentions, reviews and posts that name the venture, count them by whether they are favourable, unfavourable or neither, quote the two that matter most, and record each with its link and the date you read it; never reply to any of them.",
+      "skill": "develop-marketing-strategy",
+      "writes": [
+        "operations/handoff/[id]"
+      ],
+      "consider": {
+        "why": "What the public already says about the name is the only brand evidence the venture did not write itself.",
+        "when": "The venture's name appears in public and at least one mention or review exists."
+      },
+      "activity": "3.2.2.1"
+    },
+    {
+      "id": "develop-marketing-strategy-for-new-and-existing-brands",
+      "do": "Write in the design system which audiences the brand must speak to now, what each one must understand first, and which choices of color, type, shape and voice follow from the strategic foundation, giving the record behind each choice.",
+      "skill": "develop-marketing-strategy",
+      "activity": "3.2.2.2"
+    },
+    {
+      "id": "define-brand-equity-position",
+      "do": "Draft the brand record's name as customers see it, the one sentence saying what the brand should stand for, and the voice rules that keep every message in that sentence, and hand it to the founder to accept.",
+      "skill": "develop-marketing-strategy",
+      "writes": [
+        "marketing/brand"
+      ],
+      "raises": [
+        "public-commitment"
+      ],
+      "activity": "3.2.2.3"
+    },
+    {
+      "id": "assess-brand-performance-management",
+      "do": "Run the brand lint and read the site presence score, list every published page or message that departs from the brand's voice rules, colors or marks with the page it sits on, and report to the growth lead which departure to fix first.",
+      "skill": "develop-marketing-strategy",
+      "writes": [
+        "operations/handoff/[id]"
+      ],
+      "raises": [
+        "set-priorities"
+      ],
+      "activity": "3.2.2.4"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Bring each brand change to the founder as one decision with what it changes, where it already appears and what it would cost to change everywhere, and add every mention and departure as evidence on the decision it bears on.",
+      "skill": "develop-marketing-strategy",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "public-commitment"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "brand-approved-and-checked",
+      "kind": "review",
+      "check": "Did the founder accept every brand value written here, and does each design system choice name the record it follows from?",
+      "reviewer": "growth-lead"
+    }
+  ]
+}

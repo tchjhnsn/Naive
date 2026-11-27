@@ -1,0 +1,137 @@
+{
+  "id": "9-3-2-perform-general-accounting",
+  "function": "finance",
+  "process": "9.3.2",
+  "title": "Perform general accounting",
+  "goal": "Every money account is reconciled to its statement for the period, the spend categories are consistent, shared costs are split on a stated basis, and the entries a bookkeeper must post are prepared with every difference explained.",
+  "measures": [
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "finance/intake"
+    ]
+  },
+  "reads": [
+    "finance/spend",
+    "finance/budget",
+    "money",
+    "money/[id]",
+    "purpose/money/summary",
+    "it/connections",
+    "product",
+    "customers",
+    "assets/register",
+    "venture"
+  ],
+  "steps": [
+    {
+      "id": "chart-of-accounts",
+      "do": "Keep the category list the spend register and the budget share, one name per kind of cost and never two names for the same thing, and bring every new category to the founder before anything is filed under it.",
+      "skill": "perform-general-accounting-and-reporting",
+      "activity": "9.3.2.1",
+      "writes": [
+        "finance/spend/[id]"
+      ],
+      "raises": [
+        "spend-register-upkeep"
+      ]
+    },
+    {
+      "id": "journal-entries",
+      "do": "Turn each transaction of the period the records do not already carry into a prepared entry with its date, amount, category and the document behind it, and put them on the handoff for the founder or the bookkeeper to post.",
+      "skill": "perform-general-accounting-and-reporting",
+      "activity": "9.3.2.2"
+    },
+    {
+      "id": "allocations",
+      "do": "Split each shared cost across the products or customers that caused it on a basis you state in writing, and show the split adding back up to the amount actually paid.",
+      "skill": "perform-general-accounting-and-reporting",
+      "activity": "9.3.2.3"
+    },
+    {
+      "id": "period-end-adjustments",
+      "do": "List the amounts that belong to this period but were not paid or received in it, an annual bill apportioned to its months and work delivered but not yet invoiced included, and prepare the adjusting entry for each.",
+      "skill": "perform-general-accounting-and-reporting",
+      "activity": "9.3.2.4"
+    },
+    {
+      "id": "intercompany",
+      "do": "Match every transfer between the venture's own entities so both sides carry the same amount and date, and list each one only a single side records.",
+      "skill": "perform-general-accounting-and-reporting",
+      "activity": "9.3.2.5",
+      "consider": {
+        "why": "A transfer one entity records and the other does not shows up later as money that appeared from nowhere.",
+        "when": "The venture has more than one legal entity, or a parent that moves money between them."
+      }
+    },
+    {
+      "id": "reconcile-accounts",
+      "do": "Reconcile each money account against its statement line by line, set the balance to what the statement says, and list every difference with its reason or as unexplained.",
+      "skill": "perform-general-accounting-and-reporting",
+      "activity": "9.3.2.6",
+      "writes": [
+        "money/[id]"
+      ],
+      "raises": [
+        "domain-fact"
+      ]
+    },
+    {
+      "id": "consolidate",
+      "do": "Add the entities' figures together and remove the transactions between them, showing the eliminations as their own list beside the combined total.",
+      "skill": "perform-general-accounting-and-reporting",
+      "activity": "9.3.2.7",
+      "consider": {
+        "why": "Adding entities together without removing what they charged each other counts the same money twice.",
+        "when": "The venture has more than one legal entity whose results are reported together."
+      }
+    },
+    {
+      "id": "trial-balance",
+      "do": "Pull the trial balance from the bookkeeping tool, check that it balances and that each account's figure matches the venture's own records, and list every difference you find.",
+      "skill": "perform-general-accounting-and-reporting",
+      "activity": "9.3.2.8",
+      "consider": {
+        "why": "A trial balance is the quickest proof that nothing has been posted to only one side.",
+        "when": "The venture keeps a double-entry ledger in a bookkeeping tool."
+      }
+    },
+    {
+      "id": "management-adjustments",
+      "do": "Prepare each management adjustment apart from the ledger figures, state why it is made, and keep the unadjusted figure visible beside the adjusted one.",
+      "skill": "perform-general-accounting-and-reporting",
+      "activity": "9.3.2.9",
+      "consider": {
+        "why": "A report figure that differs from the ledger is defensible only while the reason is written down.",
+        "when": "A figure in a report must differ from the ledger for a reason that can be stated."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Raise every unexplained difference as a decision for the founder to settle, and attach the reconciled period figures to the open decision each one bears on.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "domain-fact"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "every-difference-explained",
+      "kind": "review",
+      "check": "Does every money account match its statement or carry a written reason for the difference, and does every shared cost split add back up to the amount paid?",
+      "reviewer": "finance-lead"
+    }
+  ]
+}

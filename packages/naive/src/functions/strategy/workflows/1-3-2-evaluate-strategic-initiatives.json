@@ -1,0 +1,61 @@
+{
+  "id": "1-3-2-evaluate-strategic-initiatives",
+  "function": "strategy",
+  "process": "1.3.2",
+  "title": "Evaluate strategic initiatives",
+  "goal": "Each proposed initiative carries what it is worth to the venture and what it is worth to the customer, both from cited records, with the assumptions each estimate rests on written beside it.",
+  "measures": ["learning", "impact"],
+  "trigger": { "kind": "request" },
+  "requires": {
+    "records": ["foundation/pre-registration"],
+    "meetings": ["strategy/intake"]
+  },
+  "reads": [
+    "foundation/goals",
+    "foundation/problem",
+    "foundation/icp",
+    "purpose/money/summary",
+    "purpose/validation/problems/rank",
+    "purpose/validation/score",
+    "validation/interviews",
+    "validation/pricing",
+    "validation/product-market-fit",
+    "finance/budget",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "determine-business-value-for-each-priority",
+      "do": "For each priority write what the venture gains if it is reached, in the measure's own unit and in money where the records allow it, name every assumption the figure rests on and what would show it wrong, and write it into the goal's value and why rather than keeping it in prose.",
+      "skill": "develop-and-measure-strategic-initiatives",
+      "activity": "1.3.2.1",
+      "writes": ["foundation/goals/[id]"]
+    },
+    {
+      "id": "determine-customer-value-for-each-priority",
+      "do": "For each priority write what the customer gains, taken from the interview records and the ranked problem forms, quoting the words customers used, and mark as a guess any priority no customer has spoken about.",
+      "skill": "develop-and-measure-strategic-initiatives",
+      "activity": "1.3.2.2",
+      "writes": ["foundation/goals/[id]"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Attach both valuations to the decision that will select the initiatives, say plainly which figures are estimates and which are observed, and recommend to the strategy lead which valuation to firm up before the choice is made.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "values-cited-or-marked-estimates",
+      "kind": "review",
+      "check": "Does every business and customer value carry the record it came from or stand marked as an estimate with the assumption it rests on?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

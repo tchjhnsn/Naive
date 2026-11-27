@@ -1,0 +1,44 @@
+{
+  "id": "10-1-4-manage-facilities-operations",
+  "function": "assets",
+  "process": "10.1.4",
+  "title": "Manage facilities operations",
+  "goal": "After every move the register says where each item is and who holds it, and every key, badge or code is recorded against a person who is still with the venture.",
+  "measures": ["compliance_met", "cost_or_time_saved"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["assets/intake"] },
+  "reads": ["venture", "people", "people/team", "assets/register", "assets/leases", "finance/spend", "decisions"],
+  "steps": [
+    {
+      "id": "relocate-people",
+      "do": "When someone moves desk, office or city, list what they hold from the register, say what moves with them, what comes back and what must be bought at the new place, and update each item's custodian and location once the move is done.",
+      "skill": "plan-and-acquire-assets",
+      "activity": "10.1.4.1",
+      "writes": ["assets/register/[id]"]
+    },
+    {
+      "id": "relocate-material-and-tools",
+      "do": "Plan the move of equipment and stock: what is packed, what is shipped and by whom, what is insured in transit and what must not travel, then update each item's location when it arrives and flag anything that did not arrive or arrived damaged.",
+      "skill": "plan-and-acquire-assets",
+      "activity": "10.1.4.2",
+      "writes": ["assets/register/[id]"]
+    },
+    {
+      "id": "provide-facility-access-and-security",
+      "do": "List who holds a key, badge, fob, door code or alarm code for each space, register each issued key or fob against its holder, check the list against the people record, and flag every access still held by someone who has left for the founder to revoke.",
+      "skill": "plan-and-acquire-assets",
+      "activity": "10.1.4.3",
+      "writes": ["assets/register/[id]"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Attach the move's cost and any access still open to the decision it bears on, and raise to the finance lead which facilities work to do first when a move and a lease date fall in the same weeks.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "nothing-lost-in-the-move", "kind": "review", "check": "After this run, does every registered item name its current location and a custodian who is still with the venture, and is every key, badge or code accounted for?", "reviewer": "finance-lead" }
+  ]
+}

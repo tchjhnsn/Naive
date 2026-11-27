@@ -1,0 +1,24 @@
+{
+  "id": "12-4-5-manage-outside-counsel",
+  "function": "external-relationships",
+  "process": "12.4.5",
+  "title": "Manage outside counsel",
+  "goal": "The question for counsel is one page with the records that bear on it, the engagement and its budget are current with every deadline named, each invoice is checked against the engagement before the founder pays it, and what was spent is recorded against what was predicted.",
+  "measures": ["compliance_met","learning"],
+  "trigger": {"kind":"request"},
+  "requires": {"meetings":["external-relationships/intake"]},
+  "reads": ["legal/risks","legal/obligations","deals","finance/budget","finance/spend","governance/decision-rights","operations/handoff","evidence","decisions/*"],
+  "steps": [
+    {"id":"assess-problem-and-determine-work-requirements","do":"Write the question for counsel on one page, what happened with dates, what the venture wants, the records that bear on it, the deadline, and which parts the venture's own records already answer, so nothing is paid for twice.","skill":"manage-legal-and-ethical-issues","activity":"12.4.5.1","writes":["operations/handoff/[id]"]},
+    {"id":"engage-retain-outside-counsel","do":"Prepare two or three candidates with the rate, the relevant experience and who can introduce the venture, list the open points in each engagement letter, a fee cap, a conflict check, who owns the work product, and leave choosing, signing and engaging to the founder.","skill":"manage-legal-and-ethical-issues","activity":"12.4.5.2","writes":["decisions/*"],"raises":["spend-money","legal-or-terms"],"consider":{"why":"Counsel costs money the venture need not spend when its own records and public primary sources answer the question.","when":"The question needs legal judgment the records and public primary sources cannot answer."}},
+    {"id":"receive-strategy-budget","do":"Restate the strategy and budget counsel sends in plain sentences with the fee cap, the milestones and what would trigger more work, record the date received, and flag at once any amount above what the founder approved.","skill":"manage-legal-and-ethical-issues","activity":"12.4.5.3","writes":["operations/handoff/[id]"]},
+    {"id":"receive-work-product-and-manage-the-matter","do":"Keep the matter current, every document received, filing made, deadline set and task owed with its date and who owes it, name every deadline inside fourteen days, and keep counsel's advice where the venture keeps privileged records and out of anything public.","skill":"manage-legal-and-ethical-issues","activity":"12.4.5.4","writes":["operations/handoff/[id]"]},
+    {"id":"process-payment-for-legal-services","do":"Check each invoice line against the engagement letter's rate and the approved budget, list every line outside them with its amount, and leave approving and paying to the founder.","skill":"manage-legal-and-ethical-issues","activity":"12.4.5.5","writes":["decisions/*"],"raises":["spend-money"]},
+    {"id":"track-legal-activity-performance","do":"Per matter record what was spent against what was budgeted, how long each answer took and whether the outcome matched what counsel predicted, so the next engagement can be compared with this one.","skill":"manage-legal-and-ethical-issues","activity":"12.4.5.6","writes":["operations/handoff/[id]"],"consider":{"why":"A record of what counsel actually cost and predicted is what makes the next choice of counsel cheap.","when":"The venture has closed at least one matter with outside counsel."}},
+    {"id":"feed-decisions","do":"Name the open decision each answer from counsel settles or changes and add it there as evidence, and propose to the strategy lead which matter is worth spending on next.","skill":"manage-legal-and-ethical-issues","writes":["decisions/*"],"raises":["set-priorities"]}
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "counsel-spend-checked", "kind": "review", "check": "Is every invoice line checked against the engagement letter's rate and the approved budget before the founder pays, and does the matter record name every deadline inside fourteen days?", "reviewer": "strategy-lead" }
+  ]
+}

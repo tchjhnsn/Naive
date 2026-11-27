@@ -1,0 +1,95 @@
+{
+  "id": "3-2-1-define-offering-and-customer-value-proposition",
+  "function": "marketing-and-sales",
+  "process": "3.2.1",
+  "title": "Define offering and customer value proposition",
+  "goal": "The venture's offering, its positioning and its value proposition for each target segment are message records the founder approved, each citing the records its claims rest on, and the wording buyers repeated back is the one in use.",
+  "measures": [
+    "revenue"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "marketing-and-sales/intake"
+    ]
+  },
+  "reads": [
+    "venture",
+    "foundation/core",
+    "foundation/icp",
+    "foundation/problem",
+    "product",
+    "purpose/competitor",
+    "markets",
+    "marketing/message",
+    "marketing/brand",
+    "validation/interviews",
+    "governance/publication-policy",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "define-offering-and-positioning",
+      "do": "Draft the positioning element as one record: what the venture is, whom it is for, what it replaces and why that matters, every clause citing the product, problem, ICP or competitor record it rests on, and leave any clause no record supports out rather than filling it.",
+      "skill": "develop-marketing-strategy",
+      "writes": [
+        "marketing/message/[id]"
+      ],
+      "raises": [
+        "public-commitment"
+      ],
+      "activity": "3.2.1.1"
+    },
+    {
+      "id": "develop-value-proposition",
+      "do": "Draft one value proposition record per target segment, plus the tagline and headline candidates that agree with the positioning, each naming the gain it promises and citing the record that shows the venture delivers it.",
+      "skill": "develop-marketing-strategy",
+      "writes": [
+        "marketing/message/[id]"
+      ],
+      "raises": [
+        "public-commitment"
+      ],
+      "activity": "3.2.1.2"
+    },
+    {
+      "id": "validate-value-proposition",
+      "do": "Prepare two or three wordings per element with the question that tells them apart, hand them to the founder to put to buyers in the segment, and record on the handoff which wording each buyer repeated back unprompted and which they could not explain.",
+      "skill": "develop-marketing-strategy",
+      "writes": [
+        "operations/handoff/[id]"
+      ],
+      "raises": [
+        "public-commitment"
+      ],
+      "activity": "3.2.1.3"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Bring the founder each element in turn as a decision with the wordings, the buyers' answers and the records cited, and write the one they choose; raise to the growth lead which segment's words to test next.",
+      "skill": "develop-marketing-strategy",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "public-commitment",
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "every-claim-cited",
+      "kind": "review",
+      "check": "Does every message record written here cite the record each claim rests on, and did the founder approve the wording before it left the venture?",
+      "reviewer": "growth-lead"
+    }
+  ]
+}

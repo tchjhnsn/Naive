@@ -1,0 +1,127 @@
+{
+  "id": "11-1-3-manage-business-unit-and-function-risk",
+  "function": "risk-and-compliance",
+  "process": "11.1.3",
+  "title": "Manage business unit and function risk",
+  "goal": "The one function named on the handoff has its own risks in the register, scored by the same rules as every other function's, with treatments carried out or open as handoffs, and its lead has one page of them.",
+  "measures": [
+    "compliance_met",
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "risk-and-compliance/intake"
+    ]
+  },
+  "reads": [
+    "legal/risks",
+    "legal/obligations",
+    "operations/activity-briefing/risk-and-compliance",
+    "operations/department",
+    "operations/handoff",
+    "capabilities/processes",
+    "finance/spend",
+    "evidence"
+  ],
+  "steps": [
+    {
+      "id": "identify-risks",
+      "do": "For the function named on the handoff, read its records and its activity briefing and write one risk record for each event inside that function's own work that could cost the venture money, a customer or a deadline.",
+      "skill": "manage-enterprise-risk",
+      "activity": "11.1.3.1",
+      "writes": [
+        "legal/risks/[id]"
+      ]
+    },
+    {
+      "id": "assess-risks-by-the-framework",
+      "do": "Score that function's risks by the same rules as the rest of the register, 90% ranges for likelihood and impact with a source or a stated basis, so its risks rank beside every other function's instead of in a list of their own.",
+      "skill": "manage-enterprise-risk",
+      "activity": "11.1.3.2",
+      "writes": [
+        "legal/risks/[id]"
+      ]
+    },
+    {
+      "id": "develop-mitigation-plans",
+      "do": "Propose one treatment for each of that function's risks above tolerance, and where money could transfer the risk read the cover the venture already holds and say in figures whether its limits and exclusions reach the impact range, leaving any purchase to the founder.",
+      "skill": "manage-enterprise-risk",
+      "activity": "11.1.3.3",
+      "writes": [
+        "legal/risks/[id]"
+      ],
+      "raises": [
+        "spend-money"
+      ]
+    },
+    {
+      "id": "implement-mitigation-plans",
+      "do": "Carry out the parts of each treatment you may do yourself, such as tightening an access control or adding the dated duty it creates to the obligations register, and open one handoff for every part that needs a person to sign, pay or speak.",
+      "skill": "manage-enterprise-risk",
+      "activity": "11.1.3.4",
+      "writes": [
+        "legal/obligations/[id]",
+        "operations/handoff/[id]"
+      ],
+      "raises": [
+        "security-tightening"
+      ]
+    },
+    {
+      "id": "monitor-function-risks",
+      "do": "Read the signal each of that function's risks names, record any movement in its range with the evidence that moved it, and leave a range alone when nothing new was read rather than nudging it.",
+      "skill": "manage-enterprise-risk",
+      "activity": "11.1.3.5",
+      "writes": [
+        "legal/risks/[id]"
+      ],
+      "raises": [
+        "domain-fact"
+      ]
+    },
+    {
+      "id": "analyze-and-update-plans",
+      "do": "Compare what actually happened in that function since the last run with what its risks predicted, close the risks that no longer apply with the reason, and rewrite the ranges the facts moved.",
+      "skill": "manage-enterprise-risk",
+      "activity": "11.1.3.6",
+      "writes": [
+        "legal/risks/[id]"
+      ]
+    },
+    {
+      "id": "report-function-risk-activities",
+      "do": "Give that function's lead one page: its risks by expected loss, the treatments done and still open with their evidence, the risks closed and why, and the one thing you need from the lead.",
+      "skill": "manage-enterprise-risk",
+      "activity": "11.1.3.7",
+      "writes": [
+        "operations/handoff/[id]"
+      ]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Add each finding to the decision it bears on, and raise to the finance lead which of this function's risks to treat before the next run.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "function-risks-comparable",
+      "kind": "review",
+      "check": "Does every risk this run wrote for the named function carry a range with its source or basis, an owner and a treatment, and did its lead get the page?",
+      "reviewer": "finance-lead"
+    }
+  ]
+}

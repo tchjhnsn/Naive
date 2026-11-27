@@ -3532,6 +3532,50 @@
       ]
     },
     {
+      "id": "EE-227",
+      "date": "2026-11-27",
+      "status": "in-force",
+      "decision": "An agent's word that it finished a step is not evidence. A function workflow run carries a package, one result per step (done, not-needed, nothing-to-record or skipped), and a done step's evidence is the provenance lines it wrote under its own session run:<run>/<step>. packages/naive/src/engine/run-proof.ts verifies each line against the venture's hash-chained provenance log and blob store: the session, the runner's role or a specialist of its function, the step's time window, a route the step may write through the router, and the bytes kept. Only a step with consider may be judged not needed, and only a step whose writes are all decisions/* may have nothing to record, each with a reason. `naive workflow run` runs each step as a durable Effect workflow activity and gathers the evidence itself. The skipped ledger keeps every step a run does not prove, check-runs.ts fails when a workflow's latest run does not verify, and the lifecycle gate refuses a phase change until the phase's gate records match their last recorded write, its latest runs verify and its intakes are walked, unless a person overrides with a reason.",
+      "why": "Torian, 2026-11-27: \"We don't want to take agents at their word for having completed a step. We want to be able to verify and for them to be able to prove that their work was completed.\" And: a venture must be able to prove it exited Discovery by proving its prerequisite records exist. Before this, a run was a line that said done, and a phase gate counted any file at a record's path.",
+      "related": [
+        "EE-031",
+        "EE-121",
+        "EE-161",
+        "EE-181",
+        "EE-182",
+        "EE-200",
+        "EE-213",
+        "EE-217",
+        "EE-226"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/run-proof.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/workflow-run.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/phase-proof.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/checks/check-runs.ts",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
       "id": "EE-154",
       "date": "2026-11-19",
       "status": "in-force",

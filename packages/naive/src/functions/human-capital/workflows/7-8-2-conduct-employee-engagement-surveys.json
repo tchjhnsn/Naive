@@ -1,0 +1,86 @@
+{
+  "id": "7-8-2-conduct-employee-engagement-surveys",
+  "function": "human-capital",
+  "process": "7.8.2",
+  "title": "Conduct employee engagement surveys",
+  "goal": "The venture has a recorded judgement about whether a survey can be answered honestly at its size, and where one is run, the same few items, answers no one person can be identified from, and a report of what will and will not be done about each theme.",
+  "measures": [
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "human-capital/intake"
+    ]
+  },
+  "reads": [
+    "people",
+    "people/founders",
+    "people/team-plan",
+    "foundation/goals",
+    "governance/internal-terms",
+    "operations/handoff",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "decide-whether-to-ask",
+      "do": "Say whether the venture has enough people for a survey to be answered honestly and anonymously, and where it has not, recommend that the founder simply ask each person the same two questions instead, and record that judgement with the count behind it.",
+      "skill": "manage-employee-communication"
+    },
+    {
+      "id": "write-the-items",
+      "do": "Write the few items, the same ones every time, each one about something the venture could actually change, with its scale and how it is read, and leave out every item whose answer would change nothing.",
+      "skill": "manage-employee-communication",
+      "consider": {
+        "why": "Items are worth writing only once a survey will be run.",
+        "when": "The venture has enough people for an anonymous survey and the founder has asked for one."
+      }
+    },
+    {
+      "id": "run-and-protect",
+      "do": "Run the survey so an answer cannot be traced to a person, report only groups large enough that no individual stands out, and never guess who said what even when it is obvious.",
+      "skill": "manage-employee-communication",
+      "consider": {
+        "why": "A survey that can be de-anonymised produces careful answers and lasting mistrust.",
+        "when": "The items are written and the founder has approved running the survey."
+      }
+    },
+    {
+      "id": "report-and-answer",
+      "do": "Report what the answers say theme by theme, what the venture will do about each and what it will not and why, and hand it to the founder, who tells the people who answered.",
+      "skill": "manage-employee-communication",
+      "consider": {
+        "why": "A survey with no answer back is worse than no survey.",
+        "when": "A survey has been run and its answers are in."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Open a decision for each theme the venture would act on that costs money or changes a commitment, attach the themes as evidence, and tell the strategy lead which theme most people raised.",
+      "skill": "manage-employee-communication",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities",
+        "spend-money"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "anonymity-or-no-survey",
+      "kind": "review",
+      "check": "Is there a recorded judgement that the venture is large enough for an anonymous survey, and does every reported group hide the individual?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

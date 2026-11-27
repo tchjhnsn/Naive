@@ -1,0 +1,71 @@
+{
+  "id": "4-4-4-operate-outbound-transportation",
+  "function": "supply-chain",
+  "process": "4.4.4",
+  "title": "Operate outbound transportation",
+  "goal": "Every outbound shipment has a carrier, a cost and a delivery outcome recorded, and every carrier invoice has been checked against what was actually shipped before it is paid.",
+  "measures": ["cost_or_time_saved", "flow_and_lead_time"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["supply-chain/intake"] },
+  "reads": [
+    "supply-chain/suppliers",
+    "supply-chain/purchase-orders",
+    "customers",
+    "deals",
+    "finance/spend",
+    "support/cases",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "plan-transport-and-deliver-outbound-product",
+      "do": "For each order due out, choose the service that meets the delivery promise at the lowest cost, book it, produce the labels and the customs paperwork the destination needs, and record the carrier, the service, the cost and the promised delivery date.",
+      "skill": "manage-logistics-and-warehousing",
+      "activity": "4.4.4.1"
+    },
+    {
+      "id": "track-carrier-delivery-performance",
+      "do": "Follow each shipment to delivery, record the date it actually arrived and any loss or damage, compute each carrier's on-time share and damage rate, and write those figures on the carrier's supplier record.",
+      "skill": "manage-logistics-and-warehousing",
+      "activity": "4.4.4.2",
+      "writes": ["supply-chain/suppliers/[id]"],
+      "raises": ["domain-fact"]
+    },
+    {
+      "id": "manage-transportation-fleet",
+      "do": "Keep the record of each vehicle the venture runs, its insurance, its service and inspection dates, its fuel and running cost per mile and who is licensed to drive it, and compare that cost with the price of a carrier doing the same work.",
+      "skill": "manage-logistics-and-warehousing",
+      "activity": "4.4.4.3",
+      "consider": {
+        "why": "A vehicle the venture owns carries insurance, service and licence duties that a carrier's invoice does not.",
+        "when": "The venture owns or leases a vehicle used to move its goods."
+      }
+    },
+    {
+      "id": "process-and-audit-carrier-invoices-and-documents",
+      "do": "Check each carrier and forwarder invoice line against the shipments recorded, the weight and volume billed, the surcharges, the duty and the brokerage fee, draft the dispute for the founder where it does not match, and pass only the agreed amount for payment.",
+      "skill": "manage-logistics-and-warehousing",
+      "activity": "4.4.4.4",
+      "raises": ["spend-money"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Add a decision for each outbound choice worth money, change carrier, change the packed size, pass a surcharge on in the shipping charge or dispute an invoice, each with the cost per order it changes, and hand the order of that work to the product lead.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "invoices-match-shipments",
+      "kind": "review",
+      "check": "Does every outbound shipment record its carrier, cost and delivery outcome, and was every carrier invoice line matched to a recorded shipment before payment was proposed?",
+      "reviewer": "product-lead"
+    }
+  ]
+}

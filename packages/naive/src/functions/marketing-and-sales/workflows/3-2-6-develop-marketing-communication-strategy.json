@@ -1,0 +1,149 @@
+{
+  "id": "3-2-6-develop-marketing-communication-strategy",
+  "function": "marketing-and-sales",
+  "process": "3.2.6",
+  "title": "Develop marketing communication strategy",
+  "goal": "The venture has one written communication plan: what it says, to whom, where and when, which media it uses, and the rules every outgoing message must meet before a person sends it.",
+  "measures": [
+    "usage_or_adoption"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "marketing-and-sales/intake"
+    ]
+  },
+  "reads": [
+    "venture",
+    "foundation/icp",
+    "marketing/brand",
+    "marketing/voice",
+    "marketing/message",
+    "marketing/publish-terms",
+    "marketing/sitemap",
+    "governance/publication-policy",
+    "governance/internal-terms",
+    "customers",
+    "sales/opportunities",
+    "operations/time-box",
+    "people/team-plan",
+    "legal/obligations",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "develop-customer-communication-calendar",
+      "do": "Draft a dated calendar for the next quarter of what goes to customers and to leads, with the channel, the audience and the records whose words it would use, and propose to the founder which entries should become campaigns as time boxes.",
+      "skill": "develop-marketing-strategy",
+      "writes": [
+        "operations/handoff/[id]"
+      ],
+      "raises": [
+        "set-priorities"
+      ],
+      "activity": "3.2.6.1"
+    },
+    {
+      "id": "define-public-relations-strategy",
+      "do": "Write what the venture would say publicly, who may say it, which outlets or communities are worth approaching and what must never be said before it is true, and list the facts a story would need with the record holding each.",
+      "skill": "develop-marketing-strategy",
+      "writes": [
+        "operations/handoff/[id]"
+      ],
+      "consider": {
+        "why": "A story told before the venture can stand behind it is a public commitment nobody can take back.",
+        "when": "The venture has something newsworthy, such as a launch, a funding round or a result it can prove."
+      },
+      "activity": "3.2.6.2"
+    },
+    {
+      "id": "define-direct-marketing-strategy",
+      "do": "Write how the venture reaches a named person directly, which message goes to which segment, where the list came from and what consent it carries, how often anyone may be contacted, and how they stop being contacted.",
+      "skill": "develop-marketing-strategy",
+      "writes": [
+        "operations/handoff/[id]"
+      ],
+      "activity": "3.2.6.3"
+    },
+    {
+      "id": "define-internal-marketing-communication-strategy",
+      "do": "Write how the people and agents inside the venture learn what is being said outside it: which record is the source of the current words, who is told when they change, and where to look before answering a buyer.",
+      "skill": "develop-marketing-strategy",
+      "writes": [
+        "operations/handoff/[id]"
+      ],
+      "consider": {
+        "why": "Two people answering a buyer differently costs more trust than saying nothing.",
+        "when": "Someone other than the founder speaks to buyers or writes public words."
+      },
+      "activity": "3.2.6.4"
+    },
+    {
+      "id": "identify-new-media-for-marketing-communication",
+      "do": "List the media and places the venture's segment already pays attention to that it does not use yet, with the evidence that the segment is there and what it would cost to show up.",
+      "skill": "develop-marketing-strategy",
+      "writes": [
+        "operations/handoff/[id]"
+      ],
+      "activity": "3.2.6.5"
+    },
+    {
+      "id": "define-new-media-communication-strategy",
+      "do": "For the one or two new media worth trying, write what the venture would publish there, how often, who writes it, which records the words come from and the number that would show it is worth continuing.",
+      "skill": "develop-marketing-strategy",
+      "writes": [
+        "operations/handoff/[id]"
+      ],
+      "activity": "3.2.6.6"
+    },
+    {
+      "id": "define-point-of-sale-communication-strategy",
+      "do": "Write what the buyer reads at the moment of paying, the price and what is included, the terms, the refund rule and the proof that reassures them, and name the record holding each sentence.",
+      "skill": "develop-marketing-strategy",
+      "writes": [
+        "operations/handoff/[id]"
+      ],
+      "consider": {
+        "why": "The words at the checkout decide whether a buyer who already wants the thing finishes paying.",
+        "when": "The venture takes money at a checkout page or a physical outlet."
+      },
+      "activity": "3.2.6.7"
+    },
+    {
+      "id": "define-communication-guidelines-and-mechanisms",
+      "do": "Write the rules every outgoing message must meet, the voice rules it follows, the claims it may make and the citation each needs, who approves what, and add to the publish terms every name the lint must flag in public copy.",
+      "skill": "develop-marketing-strategy",
+      "raises": [
+        "public-commitment"
+      ],
+      "activity": "3.2.6.8"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Put the calendar, the direct marketing rules and the communication guidelines to the founder as decisions, and tell the growth lead which audience is not being spoken to at all.",
+      "skill": "develop-marketing-strategy",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "public-commitment",
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "communication-rules-written",
+      "kind": "review",
+      "check": "Does the plan say for every audience what is said, where, how often and who approves it, and do the publish terms now hold every name that must not appear in public copy?",
+      "reviewer": "growth-lead"
+    }
+  ]
+}

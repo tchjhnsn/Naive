@@ -1,0 +1,21 @@
+{
+  "id": "12-5-3-promote-political-stability",
+  "function": "external-relationships",
+  "process": "12.5.3",
+  "title": "Promote political stability",
+  "goal": "Each place the venture depends on is named with what would stop working there, what the public assessments say about it with the date read, and whether the venture says anything publicly about a political question there is the founder's decision on the record.",
+  "measures": ["compliance_met","learning"],
+  "trigger": {"kind":"request"},
+  "requires": {"meetings":["external-relationships/intake"]},
+  "reads": ["venture","markets","customers","people/team","supply-chain/suppliers","legal/risks","legal/obligations","governance/publication-policy","decisions/*"],
+  "steps": [
+    {"id":"name-where-the-venture-depends-on-stability","do":"List each country, state or city the venture depends on for customers, people, money, suppliers or hosting, and for each say what would stop working if the rules, the courts or the currency there changed.","skill":"manage-public-relations-program","writes":["operations/handoff/[id]"]},
+    {"id":"read-the-public-assessments","do":"For each place read the official operating and travel guidance and the published risk assessments, write what they say with the source and the date you read it, and add no prediction of your own.","skill":"manage-public-relations-program","writes":["operations/handoff/[id]"],"consider":{"why":"A venture that depends on one place is the last to learn that the rules there changed.","when":"The venture depends on a place outside the one it is registered in."}},
+    {"id":"propose-what-the-venture-says-and-does-not-say","do":"Propose whether the venture takes a public position on a political question in any of those places, with what each option costs it in customers, people and attention, and leave the choice to the founder and the saying of it to a person.","skill":"manage-public-relations-program","writes":["decisions/*"],"raises":["public-commitment"],"consider":{"why":"A position taken in passing is read as the venture's position everywhere it operates.","when":"A political question in one of those places reaches the venture's customers, its people or its ability to operate."}},
+    {"id":"feed-decisions","do":"Name the open decision each dependency on a place bears on and add it there as evidence, and propose to the strategy lead which dependency to reduce first.","skill":"manage-public-relations-program","writes":["decisions/*"],"raises":["set-priorities"]}
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "places-and-sources", "kind": "review", "check": "Does every place the venture depends on name what would stop working there, and does every assessment cite its source and the date it was read?", "reviewer": "strategy-lead" }
+  ]
+}

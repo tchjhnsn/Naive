@@ -1,0 +1,85 @@
+{
+  "id": "9-10-2-manage-transactions",
+  "function": "finance",
+  "process": "9.10.2",
+  "title": "Manage transactions",
+  "goal": "Every cross-border receipt and payment is recorded in both currencies with the rate applied, its conversion and transfer fees are separated from the amount, and the gain or loss on settlement is written down.",
+  "measures": [
+    "cost_or_time_saved",
+    "revenue"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "finance/intake"
+    ]
+  },
+  "reads": [
+    "money",
+    "money/[id]",
+    "finance/spend",
+    "finance/budget",
+    "purpose/money/summary",
+    "customers",
+    "deals",
+    "supply-chain/suppliers",
+    "it/connections"
+  ],
+  "steps": [
+    {
+      "id": "list-the-transactions",
+      "do": "List every cross-border receipt and payment in the period with its amount in both currencies, the rate applied and the account it moved through, from the statements.",
+      "skill": "manage-international-funds-consolidation"
+    },
+    {
+      "id": "separate-the-costs",
+      "do": "Separate the conversion and transfer fees from the amount of each transaction, record them in the spend register as their own cost, and say what the effective rate was once they are counted.",
+      "skill": "manage-international-funds-consolidation",
+      "writes": [
+        "finance/spend/[id]"
+      ],
+      "consider": {
+        "why": "The spread hidden in a quoted rate usually costs more than the fee printed beside it.",
+        "when": "A cross-border payment or receipt carried a conversion fee, a transfer fee or an intermediary deduction."
+      }
+    },
+    {
+      "id": "settle-and-record",
+      "do": "Record the difference between the rate when each invoice or bill was raised and the rate when it settled as a gain or loss, set the account balance from the statement, and prepare the entry the books need.",
+      "skill": "manage-international-funds-consolidation",
+      "writes": [
+        "money/[id]"
+      ],
+      "consider": {
+        "why": "An invoice raised at one rate and paid at another leaves a real gain or loss that belongs in the books.",
+        "when": "A cross-border invoice or bill was raised in one period and settled in another."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Bring the founder the cheaper way to send or receive money where the fees and effective rates show one, since changing provider or route is theirs to decide, and attach the period's conversion cost to the open decision it bears on.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "cancel-or-downgrade",
+        "legal-or-terms"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "both-currencies-recorded",
+      "kind": "review",
+      "check": "Is every cross-border transaction recorded in both currencies with the rate applied, and are its fees separated from the amount?",
+      "reviewer": "finance-lead"
+    }
+  ]
+}

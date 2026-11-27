@@ -1,0 +1,72 @@
+{
+  "id": "7-4-5-monitor-legal-and-regulatory-environment",
+  "function": "human-capital",
+  "process": "7.4.5",
+  "title": "Monitor legal and regulatory environment",
+  "goal": "The venture has a current list of the employment sources that reach it, each read since the last run, with every change that bears on its own people arrangements written as what it must now do and by when.",
+  "measures": [
+    "compliance_met"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "human-capital/intake"
+    ]
+  },
+  "reads": [
+    "people",
+    "people/team-plan",
+    "governance/internal-terms",
+    "legal/obligations",
+    "legal/risks",
+    "knowledge/knowledge-sources",
+    "operations/handoff",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "list-the-sources",
+      "do": "List the authorities whose employment rules reach the venture, one set for each place it has someone working, naming the page or bulletin for each, and keep the list with the date each was last read on the handoff.",
+      "skill": "manage-employee-relations"
+    },
+    {
+      "id": "read-for-changes",
+      "do": "Read each source for everything published since the date of the last run, and record only the changes that bear on the venture's own arrangements, quoting the source and its date and leaving the rest out.",
+      "skill": "manage-employee-relations"
+    },
+    {
+      "id": "say-what-each-change-requires",
+      "do": "For each recorded change, write in one sentence what the venture must now do, by when and at what cost, and mark the ones where only counsel can say whether it applies.",
+      "skill": "manage-employee-relations",
+      "raises": [
+        "legal-or-terms"
+      ]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Open a decision for each change that needs money, a policy edit or counsel, add the quotations as evidence, and tell the strategy lead which change has the nearest deadline.",
+      "skill": "manage-employee-relations",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "sources-read-since-last-run",
+      "kind": "review",
+      "check": "Was every listed source read since the previous run's date, and does every recorded change quote its source and say what the venture must now do and by when?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

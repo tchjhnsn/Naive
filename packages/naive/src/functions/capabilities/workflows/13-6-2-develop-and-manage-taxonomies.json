@@ -1,0 +1,50 @@
+{
+  "id": "13-6-2-develop-and-manage-taxonomies",
+  "function": "capabilities",
+  "process": "13.6.2",
+  "title": "Develop and manage taxonomies",
+  "goal": "The venture has one set of names for its content: the kinds it keeps, the words it uses for them taken from the glossary, and a file naming and tagging rule that lets any piece be found by someone who did not write it.",
+  "measures": ["cost_or_time_saved"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["capabilities/intake"] },
+  "reads": [
+    "marketing/content",
+    "marketing/sitemap",
+    "glossary/terms",
+    "knowledge/catalog",
+    "capabilities/processes"
+  ],
+  "steps": [
+    {
+      "id": "determine-content-requirements",
+      "do": "Write down what has to be true of a piece of content before it can be kept, which fields it must carry and which questions someone must be able to answer about it later, from the kinds the strategy named.",
+      "skill": "manage-content",
+      "activity": "13.6.2.1",
+      "writes": ["capabilities/processes/[id]"]
+    },
+    {
+      "id": "define-content-taxonomies",
+      "do": "Group the venture's content into a short list of kinds whose names come from the glossary, with one sentence each saying what belongs and what does not, and merge any two kinds nobody can tell apart.",
+      "skill": "manage-content",
+      "activity": "13.6.2.2",
+      "writes": ["capabilities/processes/[id]"]
+    },
+    {
+      "id": "define-naming-and-tagging-standards",
+      "do": "Write the file naming rule and the tags each kind must carry, enough that a piece can be found by its subject, its kind and its date, and check it by finding three existing pieces by name alone.",
+      "skill": "findability",
+      "activity": "13.6.2.3",
+      "writes": ["capabilities/processes/[id]"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Record the taxonomy on the handoff as evidence, and raise any rename that would change a term already in the glossary or a path already published.",
+      "writes": ["decisions/*"],
+      "raises": ["implementation-detail", "irreversible-data-change"]
+    }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "findable-by-name", "kind": "review", "check": "Were three existing pieces of content found using the naming and tagging rule alone, by someone who did not write them?", "reviewer": "strategy-lead" }
+  ]
+}

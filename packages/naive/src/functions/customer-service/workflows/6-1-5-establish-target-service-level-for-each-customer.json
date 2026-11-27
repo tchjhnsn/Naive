@@ -1,0 +1,73 @@
+{
+  "id": "6-1-5-establish-target-service-level-for-each-customer",
+  "function": "customer-service",
+  "process": "6.1.5",
+  "title": "Establish target service level for each customer segment",
+  "goal": "Every customer segment the records name has a first response and a resolution target in the support policy, and the cases say whether today's replies meet it.",
+  "measures": [
+    "usage_or_adoption",
+    "revenue"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "customer-service/intake"
+    ]
+  },
+  "reads": [
+    "support/policy",
+    "support/cases",
+    "customers",
+    "foundation/icp",
+    "deals",
+    "money"
+  ],
+  "steps": [
+    {
+      "id": "name-the-segments",
+      "do": "List the customer segments from the ICP and the customer records, with how many customers and how much revenue each holds, and say which segment each open case belongs to.",
+      "skill": "develop-customer-service-strategy"
+    },
+    {
+      "id": "measure-today",
+      "do": "For each segment count the median and the worst first response and resolution time from the closed cases, and the share answered inside whatever target the policy states now.",
+      "skill": "develop-customer-service-strategy"
+    },
+    {
+      "id": "propose-targets",
+      "do": "Propose a first response and a resolution target per segment with what meeting it would cost in the founder's hours, and raise it for the founder, because a target told to customers is a promise.",
+      "writes": [
+        "support/policy"
+      ],
+      "raises": [
+        "public-commitment"
+      ],
+      "skill": "develop-customer-service-strategy"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Record the proposed targets next to what the cases show today, name the decision they bear on, and recommend to the growth lead which segment's target to meet first.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "targets-per-segment",
+      "kind": "review",
+      "check": "Does every segment have a target in the policy, and is each target reported next to what the closed cases show the venture achieves today?",
+      "reviewer": "growth-lead"
+    }
+  ]
+}

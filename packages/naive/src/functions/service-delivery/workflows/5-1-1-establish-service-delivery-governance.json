@@ -1,0 +1,98 @@
+{
+  "id": "5-1-1-establish-service-delivery-governance",
+  "function": "service-delivery",
+  "process": "5.1.1",
+  "title": "Establish service delivery governance",
+  "goal": "Delivery runs by one written rule set: every live offer points at its delivery runbook, this period's delivery figures sit on the handoff with every engagement that missed its promise named, and the client's own words about the last delivery are on the engagement with the founder's decision on what changes.",
+  "measures": [
+    "flow_and_lead_time",
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "service-delivery/intake"
+    ]
+  },
+  "reads": [
+    "service-delivery/offers",
+    "service-delivery/engagements",
+    "operations/handoff",
+    "evidence",
+    "customers",
+    "foundation/telos",
+    "foundation/goals",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "management-system",
+      "do": "Write the rules delivery runs by (no deliverable is worked without an acceptance test, no change request is worked before the founder approves it, one handoff per deliverable, status only from evidence) and set each live offer's runbook field to the file that holds its delivery steps, so one place says how this venture delivers.",
+      "skill": "establish-service-delivery-governance-and",
+      "activity": "5.1.1.1",
+      "writes": [
+        "service-delivery/offers/[id]"
+      ]
+    },
+    {
+      "id": "measure-performance",
+      "do": "Count from the engagements and their handoffs the share of deliverables delivered by their due date, the share the client accepted at the first attempt, the days from signature to the first deliverable and each active engagement's forecast margin, and put the figures with the engagement and handoff ids they were counted from on the handoff as evidence.",
+      "skill": "establish-service-delivery-governance-and",
+      "activity": "5.1.1.2",
+      "writes": [
+        "operations/handoff/[id]"
+      ]
+    },
+    {
+      "id": "direction",
+      "do": "Propose at most three changes to how delivery is run next period, each naming the figure above it should move, what it costs in founder hours and which offer or runbook it changes, and recommend the order to the product lead.",
+      "skill": "establish-service-delivery-governance-and",
+      "activity": "5.1.1.3",
+      "raises": [
+        "set-priorities"
+      ]
+    },
+    {
+      "id": "client-feedback",
+      "do": "Draft three questions about the last delivery (what it was worth to them, what was hard to work with, what they would want next) and the message that asks them, for the founder to send, then write each answer into that engagement's review in the client's own words and never a summary of your own.",
+      "skill": "establish-service-delivery-governance-and",
+      "activity": "5.1.1.4",
+      "ask": true,
+      "writes": [
+        "service-delivery/engagements/[id]"
+      ],
+      "raises": [
+        "public-commitment"
+      ],
+      "consider": {
+        "why": "Only the client can say whether the delivery was worth what they paid, and only the founder may ask them.",
+        "when": "A client has accepted a deliverable since the last run of this workflow."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "For each figure and each client answer, name the open decision it confirms or changes and add it there as evidence, and recommend to the product lead which delivery change to make first.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "rules-and-figures-sourced",
+      "kind": "review",
+      "check": "Does every live offer name its runbook, and does every delivery figure in this run cite the engagement or handoff it was counted from?",
+      "reviewer": "product-lead"
+    }
+  ]
+}

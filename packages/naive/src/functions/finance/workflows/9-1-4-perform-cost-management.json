@@ -1,0 +1,89 @@
+{
+  "id": "9-1-4-perform-cost-management",
+  "function": "finance",
+  "process": "9.1.4",
+  "title": "Perform cost management",
+  "goal": "Every recurring cost names the driver that makes it rise and carries a measured rate or a stated reason it cannot be measured, and the activities the venture pays for out of habit are open as decisions.",
+  "measures": [
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "finance/intake"
+    ]
+  },
+  "reads": [
+    "finance/spend",
+    "finance/budget",
+    "money",
+    "it/connections",
+    "assets/register",
+    "assets/leases",
+    "operations/activity-briefing/finance",
+    "purpose/money/summary",
+    "product"
+  ],
+  "steps": [
+    {
+      "id": "cost-drivers",
+      "do": "Name what actually makes each cost rise, customers served, seats, requests, storage or hours, one driver per spend entry, and mark the entries that are fixed whatever the venture does.",
+      "skill": "perform-planning-and-management-accounting",
+      "activity": "9.1.4.1"
+    },
+    {
+      "id": "measure-drivers",
+      "do": "Measure each driver for the period from the connection, statement or usage report behind it, record the rate per unit on the spend entry, and flag every entry whose driver nobody can measure today.",
+      "skill": "perform-planning-and-management-accounting",
+      "activity": "9.1.4.2",
+      "writes": [
+        "finance/spend/[id]"
+      ],
+      "raises": [
+        "spend-register-upkeep"
+      ]
+    },
+    {
+      "id": "critical-activities",
+      "do": "Read the finance activity briefing beside the spend register and list the activities the venture pays for, marking which ones a live goal depends on and which only continue out of habit.",
+      "skill": "perform-planning-and-management-accounting",
+      "activity": "9.1.4.3"
+    },
+    {
+      "id": "asset-utilization",
+      "do": "Compare each owned and leased asset with how much it is actually used and list the ones idle, duplicated or renewing soon, with what releasing each one would save.",
+      "skill": "perform-planning-and-management-accounting",
+      "activity": "9.1.4.4",
+      "consider": {
+        "why": "An idle asset still costs its lease or its depreciation every month.",
+        "when": "The venture owns or leases an asset recorded in the asset register or the lease register."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Bring each habit-only cost to the founder as a cancel, downgrade or keep decision with its saving and the evidence, and raise the order to cut them in to the finance lead.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "cancel-or-downgrade",
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "drivers-measured",
+      "kind": "review",
+      "check": "Does every recurring cost name a driver and carry a measured rate or a stated reason it cannot be measured, and is every habit-only cost open as a decision for the founder?",
+      "reviewer": "finance-lead"
+    }
+  ]
+}

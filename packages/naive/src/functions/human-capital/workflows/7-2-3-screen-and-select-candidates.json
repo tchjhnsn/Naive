@@ -1,0 +1,86 @@
+{
+  "id": "7-2-3-screen-and-select-candidates",
+  "function": "human-capital",
+  "process": "7.2.3",
+  "title": "Screen and select candidates",
+  "goal": "Every candidate has been scored against the same criteria recorded before anyone was seen, on evidence of the work itself, and the founder has decided who is selected and who is rejected.",
+  "measures": [
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "human-capital/intake"
+    ]
+  },
+  "reads": [
+    "people",
+    "people/team-plan",
+    "foundation/goals",
+    "capabilities/processes",
+    "finance/budget",
+    "operations/handoff",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "identify-selection-tools",
+      "do": "Before looking at any candidate, record how this role will be judged: a work sample close to the real work, the criteria it is scored against with what a weak and a strong answer looks like, and the same ordered questions every candidate is asked.",
+      "activity": "7.2.3.1",
+      "skill": "recruit-source-and-select-employees"
+    },
+    {
+      "id": "interview-candidates",
+      "do": "Prepare each interview, the same ordered questions for every candidate, the score sheet and what to listen for, hand it to the founder who holds the conversation, and record only the scores and notes the founder gives back.",
+      "activity": "7.2.3.2",
+      "skill": "recruit-source-and-select-employees"
+    },
+    {
+      "id": "test-candidates",
+      "do": "Set the work sample that mirrors one real task, time-boxed and paid when it takes real work, score it against the recorded criteria without knowing whose it is where that is possible, and keep the sample with the candidate's record.",
+      "activity": "7.2.3.3",
+      "skill": "recruit-source-and-select-employees",
+      "raises": [
+        "spend-money"
+      ]
+    },
+    {
+      "id": "select-and-reject-candidates",
+      "do": "Put the scored candidates to the founder side by side against the criteria, with what each would do in their first month and the risk of each, record the founder's selection and rejections, and draft the rejection notes for the founder to send.",
+      "activity": "7.2.3.4",
+      "skill": "recruit-source-and-select-employees",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "spend-money"
+      ]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Record the selection against the requisition's decision with the scores behind it, note every criterion that turned out not to predict anything, and tell the strategy lead whether to proceed to an offer or reopen the search.",
+      "skill": "recruit-source-and-select-employees",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "same-criteria-for-everyone",
+      "kind": "review",
+      "check": "Was every candidate scored against criteria recorded before any candidate was seen, and does the selection cite those scores?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

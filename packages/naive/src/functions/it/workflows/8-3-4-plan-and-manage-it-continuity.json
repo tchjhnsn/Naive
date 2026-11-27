@@ -1,0 +1,22 @@
+{
+  "id": "8-3-4-plan-and-manage-it-continuity",
+  "function": "it",
+  "process": "8.3.4",
+  "title": "Plan and manage IT continuity",
+  "goal": "For every system the venture depends on, it is written how long the venture could run without it and how it would get its records back, each gap between that and today is named, and the plan has been tested on a date.",
+  "measures": ["compliance_met", "cost_or_time_saved"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["it/intake"] },
+  "reads": ["venture", "it/connections", "knowledge/knowledge-sources", "legal/risks", "finance/spend", "decisions/*"],
+  "steps": [
+    { "id": "evaluate-it-continuity", "do": "For each system, write how its records are backed up today, how old the newest usable copy is, where that copy sits and who can restore it, taking each answer from the system's own settings rather than from assumption.", "skill": "develop-and-manage-it-resilience-and-risk", "activity": "8.3.4.1", "writes": ["it/connections/[id]"] },
+    { "id": "identify-it-continuity-gaps", "do": "Compare that with the longest outage and the oldest acceptable copy the founder set, and list each gap with what it would cost the venture if the system went away tonight, singling out every system with no export at all.", "skill": "develop-and-manage-it-resilience-and-risk", "activity": "8.3.4.2" },
+    { "id": "manage-it-business-continuity", "do": "Write the continuity plan per system in the order of ISO 22301's recover-and-resume thinking: what the venture does in the first hour, how the records come back, who does it, and what is accepted as lost, then test one restore and record the date and the result.", "skill": "develop-and-manage-it-resilience-and-risk", "activity": "8.3.4.3", "writes": ["it/connections/[id]"] },
+    { "id": "feed-decisions", "do": "Record the tested restore and each gap as evidence on the decision it bears on, propose to the product lead which gap to close first, and raise for the founder anything needing a paid plan, new terms or a second provider.", "skill": "develop-and-manage-it-resilience-and-risk", "writes": ["decisions/*"], "raises": ["set-priorities", "spend-money", "legal-or-terms", "new-dependency-free"] }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "connections-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-connections.ts \"$NAIVE_VENTURE\"" },
+    { "id": "restore-tested", "kind": "review", "check": "Does every system say how old its newest usable copy is and who can restore it, and has at least one restore been tested with its date and result recorded?", "reviewer": "product-lead" }
+  ]
+}

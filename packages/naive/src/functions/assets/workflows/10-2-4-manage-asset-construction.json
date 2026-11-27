@@ -1,0 +1,57 @@
+{
+  "id": "10-2-4-manage-asset-construction",
+  "function": "assets",
+  "process": "10.2.4",
+  "title": "Manage asset construction",
+  "goal": "Work in progress has been checked against what was agreed, every defect is listed with who must fix it, and each finished asset is in use only after its commissioning checks passed and its record names its warranty and documents.",
+  "measures": ["compliance_met", "cost_or_time_saved"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["assets/intake"] },
+  "reads": ["venture", "assets/register", "assets/leases", "finance/spend", "legal/risks", "people", "decisions"],
+  "steps": [
+    {
+      "id": "monitor-work-performance",
+      "do": "Compare what has been done with the schedule and the agreed scope at each milestone, report what is late, what has changed and what the change will cost, and flag at once any work done that nobody approved.",
+      "skill": "design-and-construct-assets",
+      "activity": "10.2.4.1"
+    },
+    {
+      "id": "undertake-construction-quality-control",
+      "do": "Inspect the work against the specification, list every defect with where it is, what it breaches and who must fix it by when, and hold the question of the final payment for the founder until that list is closed.",
+      "skill": "design-and-construct-assets",
+      "activity": "10.2.4.2",
+      "raises": ["spend-money"]
+    },
+    {
+      "id": "create-work-and-asset-records",
+      "do": "Register each asset the work produced with its cost, acquisition date, useful life, warranty end and serial, and name in its note where the drawings, manuals, test certificates and contractor details are kept.",
+      "skill": "design-and-construct-assets",
+      "activity": "10.2.4.3",
+      "writes": ["assets/register/[id]"]
+    },
+    {
+      "id": "manage-site-safety-security-and-access",
+      "do": "Record who may be on site, what each of them must hold before they are (insurance, a licence, an induction, protective equipment) and who has the keys or codes while the work runs, and flag anything the lease or the insurer requires that is not in place as a handoff to risk and compliance.",
+      "skill": "design-and-construct-assets",
+      "activity": "10.2.4.4",
+      "raises": ["legal-or-terms"]
+    },
+    {
+      "id": "schedule-and-perform-commissioning",
+      "do": "Schedule the checks that prove the asset works as specified, record the result of each with its date and who witnessed it, and set the asset's status to in-use only once they pass, naming the date they passed in its note.",
+      "skill": "design-and-construct-assets",
+      "activity": "10.2.4.5",
+      "writes": ["assets/register/[id]"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Attach the defect list, the commissioning results and the final cost against the approved figure to the decision that approved the build, and bring the final payment and the release of any retention to the founder.",
+      "writes": ["decisions/*"],
+      "raises": ["spend-money"]
+    }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "in-use-only-after-checks", "kind": "review", "check": "Is every asset this work produced recorded with its warranty end and where its documents are kept, and did each one reach status in-use only after its commissioning checks passed?", "reviewer": "finance-lead" }
+  ]
+}

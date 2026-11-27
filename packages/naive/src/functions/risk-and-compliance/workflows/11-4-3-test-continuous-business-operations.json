@@ -1,0 +1,86 @@
+{
+  "id": "11-4-3-test-continuous-business-operations",
+  "function": "risk-and-compliance",
+  "process": "11.4.3",
+  "title": "Test continuous business operations",
+  "goal": "The dependency whose failure would hurt most has been tested as far as it can be safely, and the result says against the founder's limit how long recovery took, what was lost and which step failed.",
+  "measures": [
+    "compliance_met",
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "risk-and-compliance/intake"
+    ]
+  },
+  "reads": [
+    "it/connections",
+    "legal/risks",
+    "legal/obligations",
+    "operations/handoff",
+    "evidence",
+    "customers"
+  ],
+  "steps": [
+    {
+      "id": "pick-the-test",
+      "do": "Choose the one dependency whose failure would hurt most and has never been tested, and write what the test is, what it must show against the limit, and what running the test could itself break.",
+      "skill": "manage-business-resiliency",
+      "writes": [
+        "operations/handoff/[id]"
+      ]
+    },
+    {
+      "id": "run-the-safe-parts",
+      "do": "Run only the parts that touch nothing live, restoring a backup to a scratch copy and reading it, checking a contact list resolves, confirming a second person can reach a credential, and record for each what it actually showed and how long it took.",
+      "skill": "manage-business-resiliency",
+      "writes": [
+        "operations/handoff/[id]"
+      ]
+    },
+    {
+      "id": "ask-before-the-live-parts",
+      "do": "Bring to the founder the parts of the test that would touch live data, a customer or a production account, with what each would prove and what it could cost, and run none of them yourself.",
+      "skill": "manage-business-resiliency",
+      "ask": true,
+      "raises": [
+        "irreversible-data-change"
+      ]
+    },
+    {
+      "id": "report-the-result",
+      "do": "Write what the test proved against the limit, how long recovery took, what was lost and which step failed, and move the ranges on the resiliency risks the result changed.",
+      "skill": "manage-business-resiliency",
+      "writes": [
+        "legal/risks/[id]",
+        "operations/handoff/[id]"
+      ]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Add the test result to the decision the limit belongs to, and raise to the finance lead which failed step to fix before the next test.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "result-against-the-limit",
+      "kind": "review",
+      "check": "Does the result say how long recovery took and what was lost against the founder's limit, and was nothing touching live data run without the founder's decision?",
+      "reviewer": "finance-lead"
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "id": "4-1-7-review-distribution-planning-policies",
+  "function": "supply-chain",
+  "process": "4.1.7",
+  "title": "Review distribution planning policies",
+  "goal": "The route goods take from maker to customer is written with its cost and time per unit, each sourcing relationship in it is named with who holds it and on what terms, and every proposed change is a decision with the alternative costed.",
+  "measures": ["cost_or_time_saved", "flow_and_lead_time"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["supply-chain/intake"] },
+  "reads": [
+    "supply-chain/suppliers",
+    "supply-chain/purchase-orders",
+    "product",
+    "customers",
+    "finance/spend",
+    "legal/obligations",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "review-distribution-network",
+      "do": "Lay out the network as it ran since the last review, every hop from maker to customer with its cost per unit and its days, and name the hop that costs most and the hop that takes longest.",
+      "skill": "plan-for-and-align-supply-chain-resources",
+      "activity": "4.1.7.1"
+    },
+    {
+      "id": "establish-sourcing-relationships",
+      "do": "Prepare what the founder needs to open or renew a sourcing relationship, who to approach, what the venture wants from them, the terms worth asking for and the walk-away point, then record the relationship and its terms on the supplier record after the founder has spoken to them.",
+      "skill": "plan-for-and-align-supply-chain-resources",
+      "activity": "4.1.7.2",
+      "writes": ["supply-chain/suppliers/[id]"],
+      "raises": ["legal-or-terms"]
+    },
+    {
+      "id": "establish-dynamic-deployment-policies",
+      "do": "Write the rule for moving stock between places when demand turns up somewhere it was not expected, what triggers a move, who approves it and what the move costs per unit, and say what the rule would have done over the last period.",
+      "skill": "plan-for-and-align-supply-chain-resources",
+      "activity": "4.1.7.3",
+      "consider": {
+        "why": "A rule set in advance is what stops stock sitting in the wrong place while a customer waits.",
+        "when": "The venture holds finished goods in more than one place."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Propose each change the review argues for, drop a hop, change a partner or ship direct from the maker, as a decision with the cost per unit and the days each option gives or takes, and hand the order of that work to the product lead.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "network-costed-end-to-end",
+      "kind": "review",
+      "check": "Does the review state the cost per unit and the days of every hop from maker to customer, and does each proposed change carry a costed alternative?",
+      "reviewer": "product-lead"
+    }
+  ]
+}

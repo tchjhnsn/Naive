@@ -1,0 +1,79 @@
+{
+  "id": "7-8-3-deliver-employee-communications",
+  "function": "human-capital",
+  "process": "7.8.3",
+  "title": "Deliver employee communications",
+  "goal": "Every message the plan calls for is drafted with its facts sourced, sent by the person whose message it is, and recorded with its date, channel, audience and what it promised.",
+  "measures": [
+    "cost_or_time_saved",
+    "compliance_met"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "human-capital/intake"
+    ]
+  },
+  "reads": [
+    "people",
+    "people/founders",
+    "foundation/goals",
+    "governance/internal-terms",
+    "governance/publication-policy",
+    "marketing/brand",
+    "decisions",
+    "operations/handoff",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "draft-each-message",
+      "do": "Draft each message the plan calls for: what changed, what it means for the reader and what they must do, in the venture's own voice from `marketing/brand`, with the record behind every fact named.",
+      "skill": "manage-employee-communication"
+    },
+    {
+      "id": "get-it-said",
+      "do": "Hand each draft to the founder, or to the lead whose message it is, to send, and never send a message to the people who work on the venture yourself, because the venture's word to them is a person's to give.",
+      "skill": "manage-employee-communication"
+    },
+    {
+      "id": "record-what-was-sent",
+      "do": "Record each message sent with its date, channel, who it went to and anything it promised, so the next message does not contradict it and a promise is not forgotten.",
+      "skill": "manage-employee-communication"
+    },
+    {
+      "id": "check-against-what-was-decided",
+      "do": "Before each message goes, check it against the decisions in `decisions` it reports, and flag every sentence that says more than the decision settled.",
+      "skill": "manage-employee-communication",
+      "raises": [
+        "public-commitment"
+      ]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Open a decision for every promise a message would make that nobody has decided, record each sent message against the decision it reports, and tell the strategy lead which promise is outstanding.",
+      "skill": "manage-employee-communication",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "sent-by-a-person-and-recorded",
+      "kind": "review",
+      "check": "Was every message sent by the founder or the lead whose message it is, and is each one recorded with its date, audience and what it promised?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

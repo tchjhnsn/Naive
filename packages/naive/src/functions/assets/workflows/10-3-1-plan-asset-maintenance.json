@@ -1,0 +1,79 @@
+{
+  "id": "10-3-1-plan-asset-maintenance",
+  "function": "assets",
+  "process": "10.3.1",
+  "title": "Plan asset maintenance",
+  "goal": "Every class of asset has a stated maintenance approach, every item worth servicing has a next date in its record, and the work, the hours and the money that plan needs are written down in priority order.",
+  "measures": ["cost_or_time_saved", "compliance_met"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["assets/intake"] },
+  "reads": ["venture", "assets/register", "assets/leases", "finance/budget", "finance/spend", "people", "supply-chain/suppliers", "decisions"],
+  "steps": [
+    {
+      "id": "develop-maintenance-strategies",
+      "do": "Decide for each class of asset on the register, and write it down with the reason, whether the venture runs it until it fails, services it on a calendar, or replaces it on a cycle, weighing what a day without the item costs the work against what the service costs.",
+      "skill": "maintain-assets",
+      "activity": "10.3.1.1"
+    },
+    {
+      "id": "analyze-assets-and-predict-maintenance",
+      "do": "Read the register for each item's age, use, warranty end, useful life and repair history, and list which items are likely to need work in the next twelve months, roughly when, and what the venture cannot do while each is away.",
+      "skill": "maintain-assets",
+      "activity": "10.3.1.2"
+    },
+    {
+      "id": "specify-maintenance-policies",
+      "do": "Write the policy for each class (what is done, how often, by whom, what is checked and what evidence is kept), taking the interval from the maker's manual where there is one and saying plainly where the interval is the venture's own judgment.",
+      "skill": "maintain-assets",
+      "activity": "10.3.1.3",
+      "consider": {
+        "why": "A written policy is what makes a service repeatable by whoever is free, instead of living in one person's head.",
+        "when": "The venture holds equipment beyond computers and phones, or a lease, warranty or insurer requires servicing."
+      }
+    },
+    {
+      "id": "integrate-preventive-maintenance",
+      "do": "Put each due service on a date where it costs the work least, record the next service date in each item's note, and name who is without the item while it is away and what they use instead.",
+      "skill": "maintain-assets",
+      "activity": "10.3.1.4",
+      "writes": ["assets/register/[id]"]
+    },
+    {
+      "id": "identify-work-tasks-and-priorities",
+      "do": "Turn the plan into a list of maintenance tasks in priority order, putting first the items the venture cannot work or deliver without, and recommend to the finance lead what to drop when the month has less time or money than the plan needs.",
+      "skill": "maintain-assets",
+      "activity": "10.3.1.5",
+      "raises": ["set-priorities"]
+    },
+    {
+      "id": "conduct-resource-planning",
+      "do": "Say what each task needs: who does it, which warranty, service plan or supplier covers it, the parts and spares the venture must hold, and the hours and money the month will take, checked against the budget's facilities and equipment lines.",
+      "skill": "maintain-assets",
+      "activity": "10.3.1.6",
+      "consider": {
+        "why": "A plan that nobody has the hours, the parts or the budget for is a list of good intentions.",
+        "when": "The plan needs a supplier, a part the venture does not hold, or more than a few hours in a month."
+      }
+    },
+    {
+      "id": "create-work-plans",
+      "do": "Write the work plan for each task (the steps in order, the parts, the tools, the time it takes, who may do it and how anyone can tell it is done) and put it on the handoff as the plan the next maintenance run follows.",
+      "skill": "maintain-assets",
+      "activity": "10.3.1.7",
+      "consider": {
+        "why": "A written work plan is how a task moves from the founder to anyone else without losing anything.",
+        "when": "A task recurs, or someone other than the person who wrote it will do it."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Attach the plan and its cost to the decision it needs (money for a service plan, an item worth replacing instead of maintaining) and recommend to the finance lead the order the tasks should be done in.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities", "spend-money"]
+    }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "every-class-has-an-approach", "kind": "review", "check": "Does every class of asset on the register have a stated maintenance approach with a reason, and does every item the plan services carry its next service date in its record?", "reviewer": "finance-lead" }
+  ]
+}

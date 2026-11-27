@@ -1,0 +1,88 @@
+{
+  "id": "2-1-3-manage-patents-copyrights-and-regulatory",
+  "function": "products",
+  "process": "2.1.3",
+  "title": "Manage patents, copyrights, and regulatory requirements",
+  "goal": "Every right and rule that bears on the product is named on record: the reviews it must pass before release, the third-party work it carries with each licence, what the venture would protect and how, where its technical documentation lives, and which questions the founder must take to counsel.",
+  "measures": ["learning"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["products/intake"] },
+  "reads": [
+    "product",
+    "product/capabilities",
+    "foundation/constraints",
+    "legal/obligations",
+    "legal/risks",
+    "industries",
+    "markets",
+    "it/connections",
+    "knowledge/knowledge-sources",
+    "operations/handoff",
+    "decisions"
+  ],
+  "steps": [
+    {
+      "id": "mandatory-and-elective-reviews",
+      "do": "List the reviews this product has to pass before anyone outside the venture uses it (security, privacy and data handling, accessibility, a platform or app store review, any rule the industry record names) and the ones the founder chooses to run anyway, with who runs each and what it would cost in time, and put the list on the handoff.",
+      "skill": "govern-and-manage-product-service-development",
+      "activity": "2.1.3.1",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "review-infringement",
+      "do": "List the third-party code, fonts, images, data sets and model outputs the product carries, with each one's licence and the use it permits, name every use the licence does not permit and every place the product could be read as using someone else's mark or text, and put each question that needs counsel on the handoff for the founder, since only the founder instructs counsel.",
+      "skill": "govern-and-manage-product-service-development",
+      "activity": "2.1.3.2",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "patent-and-copyright-needs",
+      "do": "Say which parts of the product are worth protecting and how the venture would do it (keeping the method unpublished, a notice on the work, a trademark on the name, a filing), what each would cost and what the venture loses by doing nothing, and bring the choice to the founder as a decision.",
+      "skill": "govern-and-manage-product-service-development",
+      "activity": "2.1.3.3",
+      "writes": ["decisions/*"],
+      "raises": ["strategy-or-constitution"],
+      "consider": {
+        "why": "A name or a method the venture never protected can be taken, and a filing costs money and time the venture may not have yet.",
+        "when": "The venture has published the product or its name, or a buyer or investor has asked what it owns."
+      }
+    },
+    {
+      "id": "technical-documentation-requirements",
+      "do": "Say what documentation this product must keep and for how long (what it does, how it is run and recovered, the decisions and evidence behind it, what a regulator, an auditor or a buyer would ask to see), name for each where it lives in the venture's records today, and list the ones with nowhere to live on the handoff.",
+      "skill": "govern-and-manage-product-service-development",
+      "activity": "2.1.3.4",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "manage-regulatory-requirements",
+      "do": "Keep the list of rules this product must meet current against the legal obligation records: for each one the record that shows it is met, the date it must be met by, who or what produces the evidence, and whoever works on that part of the product told which rule bears on it, and tell the founder plainly which rules the venture cannot meet today.",
+      "skill": "govern-and-manage-product-service-development",
+      "activity": "2.1.3.5",
+      "writes": ["operations/handoff/[id]"],
+      "consider": {
+        "why": "A rule the product breaks can stop a launch, and the evidence a rule is met is cheapest to keep while the work is being done.",
+        "when": "The product is used by people outside the venture, or the industry or legal records name a rule that reaches it."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Attach each finding to the open decision it bears on, and give the founder one list of what must be settled before release and what can wait, with the rule or licence behind each item.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "rights-and-rules-named",
+      "kind": "review",
+      "check": "Does every third-party work the product carries have its licence named, and does every rule that reaches the product name the record that shows it is met or say plainly that there is none?",
+      "reviewer": "product-lead"
+    }
+  ]
+}

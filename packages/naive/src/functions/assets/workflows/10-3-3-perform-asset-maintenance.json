@@ -1,0 +1,58 @@
+{
+  "id": "10-3-3-perform-asset-maintenance",
+  "function": "assets",
+  "process": "10.3.3",
+  "title": "Perform asset maintenance",
+  "goal": "Every due service has been done or carries a date, every reported fault is fixed or open as a decision with its cost, and each item's record shows its current status and what the work cost.",
+  "measures": ["cost_or_time_saved", "compliance_met"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["assets/intake"] },
+  "reads": ["venture", "assets/register", "assets/leases", "finance/spend", "people", "supply-chain/suppliers", "decisions"],
+  "steps": [
+    {
+      "id": "perform-preventative-asset-maintenance",
+      "do": "Do or arrange the scheduled preventative work on each due item (for a computer the updates, the backup check and the battery health; for equipment the filters, belts, lubrication and calibration), and record the date, the result and the next due date on the item.",
+      "skill": "maintain-assets",
+      "activity": "10.3.3.1",
+      "writes": ["assets/register/[id]"]
+    },
+    {
+      "id": "perform-routine-asset-maintenance",
+      "do": "Do the small recurring work that keeps items usable (cleaning, consumables, cable and fitting checks, stock of what runs out) and record it once per item for the period rather than as a separate job each time.",
+      "skill": "maintain-assets",
+      "activity": "10.3.3.2"
+    },
+    {
+      "id": "perform-corrective-maintenance-and-repairs",
+      "do": "For each fault a check turned up, arrange the repair under warranty or the service plan where it is covered, set the item's status to in-repair while it is away, record the cause, the cost and the days lost, and bring repair against replace to the founder when the repair approaches half of what a replacement costs.",
+      "skill": "maintain-assets",
+      "activity": "10.3.3.3",
+      "writes": ["assets/register/[id]"],
+      "raises": ["spend-money"]
+    },
+    {
+      "id": "identify-unplanned-maintenance-requirements",
+      "do": "Collect the faults people have reported and what the routine checks found, write each one with the item, the symptom, when it started and what work it stops, and rank them by what the venture cannot deliver without.",
+      "skill": "maintain-assets",
+      "activity": "10.3.3.4"
+    },
+    {
+      "id": "perform-unplanned-maintenance-and-repairs",
+      "do": "Fix or arrange the fix for a fault that is stopping work now, record what it cost and what it kept running, and tell the founder the same day when the item cannot be fixed or replaced quickly so they can choose a way around it.",
+      "skill": "maintain-assets",
+      "activity": "10.3.3.5",
+      "writes": ["assets/register/[id]"],
+      "raises": ["spend-money"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Attach each repair's cost and downtime to the decision it bears on, and recommend to the finance lead which open faults to fix now and which to leave until the item is replaced.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "no-silent-faults", "kind": "review", "check": "Is every fault found or reported in this run either fixed with its cost recorded on the item or open as a decision for the founder, and does every item away for repair show status in-repair?", "reviewer": "finance-lead" }
+  ]
+}

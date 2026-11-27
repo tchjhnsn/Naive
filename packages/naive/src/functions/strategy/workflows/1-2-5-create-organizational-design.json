@@ -1,0 +1,123 @@
+{
+  "id": "1-2-5-create-organizational-design",
+  "function": "strategy",
+  "process": "1.2.5",
+  "title": "Create organizational design",
+  "goal": "Who does what in the venture is written down as it actually stands, every activity has an owner that is a person or an agent on purpose, and each change the design needs is a decision for the founder with its cost named.",
+  "measures": ["impact"],
+  "trigger": { "kind": "request" },
+  "requires": {
+    "meetings": ["strategy/intake"]
+  },
+  "reads": [
+    "venture",
+    "operations/department",
+    "operations/element-owners",
+    "operations/activity-assignments",
+    "operations/activity-briefing",
+    "operations/lead",
+    "operations/handoff",
+    "people/team",
+    "people/team-plan",
+    "governance/delegation",
+    "foundation/goals",
+    "foundation/constraints",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "evaluate-breadth-and-depth-of-organizational-structure",
+      "do": "List the functions the venture runs, how many people and agents sit in each and how deep the line from the founder runs, and name every function that is listed but has nobody actually doing its work.",
+      "skill": "develop-business-strategy",
+      "activity": "1.2.5.1"
+    },
+    {
+      "id": "perform-roles-mapping-and-value-added-analyses",
+      "do": "Read the activity assignments and the element owners and write, per function, which activities a person performs or approves and which an agent does, and mark the assignments that came from a default rather than from the founder's own choice.",
+      "skill": "develop-business-strategy",
+      "activity": "1.2.5.2"
+    },
+    {
+      "id": "develop-role-activity-diagrams-to-assess-hand-off-activity",
+      "do": "Read the open and recent handoffs and draw, as a plain list of edges, which role hands what to which role, then name every handoff that waits on a role nobody holds.",
+      "skill": "develop-business-strategy",
+      "activity": "1.2.5.3",
+      "consider": {
+        "why": "Work stalls at the hand-off, and the stall is invisible until the edges are written out.",
+        "when": "A handoff has sat unclaimed or in progress past its due date."
+      }
+    },
+    {
+      "id": "perform-organization-redesign-workshops",
+      "do": "Prepare the questions and the current picture for a session the founder runs with whoever the change affects, and afterwards record what was agreed and what was left open, never holding the session yourself.",
+      "skill": "develop-business-strategy",
+      "activity": "1.2.5.4",
+      "ask": true,
+      "consider": {
+        "why": "A design change lands only if the people it moves were in the room when it was made.",
+        "when": "The venture has someone other than the founder whose work the change would move."
+      }
+    },
+    {
+      "id": "design-the-relationships-between-organizational-units",
+      "do": "Write for each pair of functions that must work together what one owes the other, by which route or handoff, and how often, so the relationship is a written obligation rather than a habit.",
+      "skill": "develop-business-strategy",
+      "activity": "1.2.5.5",
+      "consider": {
+        "why": "Two functions that depend on each other without a written obligation each assume the other is covering it.",
+        "when": "The venture runs more than two functions with people or agents actually working in them."
+      }
+    },
+    {
+      "id": "develop-role-analysis-and-activity-diagrams-for-key-processes",
+      "do": "For the two or three processes that carry the current goals, write the roles each step needs and where one role is both the builder and the verifier, which the delegation forbids.",
+      "skill": "develop-business-strategy",
+      "activity": "1.2.5.6",
+      "consider": {
+        "why": "A step whose builder is also its verifier produces evidence nobody checked.",
+        "when": "A goal's measure depends on a process whose steps have no named roles."
+      }
+    },
+    {
+      "id": "assess-organizational-implication-of-feasible-alternatives",
+      "do": "For each design the venture could move to, write what it would add in people, money and hand-offs, which activities would change performer, and the first thing that would break, keeping the comparison to the same columns.",
+      "skill": "develop-business-strategy",
+      "activity": "1.2.5.7",
+      "consider": {
+        "why": "A design is chosen well only against another design, not against today.",
+        "when": "The founder is weighing a hire, a lead role or a split of the current work."
+      }
+    },
+    {
+      "id": "migrate-to-new-organization",
+      "do": "Write the move the founder chose as an ordered list of changes to assignments, owners and grants, open a handoff to human capital and governance for the ones they own, and change no assignment or grant yourself.",
+      "skill": "develop-business-strategy",
+      "activity": "1.2.5.8",
+      "writes": ["operations/handoff/[id]"],
+      "raises": ["strategy-or-constitution"],
+      "consider": {
+        "why": "A design change that is not written as an ordered list of record changes is never finished.",
+        "when": "The founder has decided a change of design."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Open one decision for each design change the founder must make, attach the unowned functions, the defaulted assignments and the stalled hand-offs as its evidence, and recommend to the strategy lead which to settle first.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities", "strategy-or-constitution"]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "every-activity-has-an-owner-on-purpose",
+      "kind": "review",
+      "check": "Does the run name every function with no one doing its work and every activity assigned only by default, and were assignments, owners and grants left for human capital and governance to change?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

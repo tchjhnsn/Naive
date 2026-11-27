@@ -1,0 +1,108 @@
+{
+  "id": "13-5-1-develop-km-strategy",
+  "function": "capabilities",
+  "process": "13.5.1",
+  "title": "Develop KM strategy",
+  "goal": "The venture has one written rule for what it keeps, where it keeps it and who keeps it current, tied to the decisions that rule is meant to serve, with the measures that say whether anything can be found when it is needed.",
+  "measures": ["cost_or_time_saved", "flow_and_lead_time"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["capabilities/intake"] },
+  "reads": [
+    "knowledge/catalog",
+    "knowledge/knowledge-sources",
+    "knowledge/venture-profile",
+    "glossary/terms",
+    "capabilities/processes",
+    "foundation/goals",
+    "operations/research-program"
+  ],
+  "steps": [
+    {
+      "id": "develop-km-governance-model",
+      "do": "Write, as a process record, which kinds of knowledge the venture keeps as records, who may write each kind, who is accountable for its being current, and what happens when a record goes stale.",
+      "skill": "develop-and-manage-enterprise-wide-knowledge",
+      "activity": "13.5.1.1",
+      "writes": ["capabilities/processes/[id]"]
+    },
+    {
+      "id": "define-core-and-unit-roles",
+      "do": "Say which knowledge is kept once for the whole venture, the glossary, the sources and the decision ledger, and which each function keeps for itself, and name the owner on each side of that line.",
+      "skill": "develop-and-manage-enterprise-wide-knowledge",
+      "activity": "13.5.1.2",
+      "writes": ["capabilities/processes/[id]"],
+      "consider": {
+        "why": "The line between what is kept centrally and what a function keeps only matters once more than one function keeps records.",
+        "when": "The venture runs three or more functions with records of their own."
+      }
+    },
+    {
+      "id": "develop-km-funding-models",
+      "do": "Cost what keeping knowledge current takes in hours and in tools, bring the founder the smallest version that still answers the venture's questions, and leave any spending to them.",
+      "skill": "develop-and-manage-enterprise-wide-knowledge",
+      "activity": "13.5.1.3",
+      "ask": true,
+      "consider": {
+        "why": "Keeping knowledge costs hours, and a plan that ignores the cost is abandoned in the first busy week.",
+        "when": "The plan would need a paid tool or more than an hour a week of the founder's time."
+      }
+    },
+    {
+      "id": "identify-links-to-key-initiatives",
+      "do": "Tie each kind of knowledge the venture keeps to the live goal or open decision it serves, and name the kinds that serve none so they can be dropped rather than maintained.",
+      "skill": "develop-and-manage-enterprise-wide-knowledge",
+      "activity": "13.5.1.4",
+      "writes": ["capabilities/processes/[id]"]
+    },
+    {
+      "id": "develop-core-km-methodologies",
+      "do": "Write the few ways the venture will actually capture what it learns, a record written at the moment of the decision, a postmortem after a failure and a source cited for every default, and put each one inside the process that produces it rather than as a separate chore.",
+      "skill": "develop-and-manage-enterprise-wide-knowledge",
+      "activity": "13.5.1.5",
+      "writes": ["capabilities/processes/[id]"]
+    },
+    {
+      "id": "assess-km-it-needs",
+      "do": "List what the knowledge the venture keeps needs from its tools, somewhere to put a file a record names, search across records, and a way to see what changed, and hand the gaps to the IT function as a handoff rather than choosing a tool here.",
+      "skill": "develop-and-manage-enterprise-wide-knowledge",
+      "activity": "13.5.1.6",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "develop-km-training-and-communication",
+      "do": "Write how anyone who joins learns where the venture keeps what it knows, starting from the function READMEs and the glossary, and what is said when a kind of record changes.",
+      "skill": "develop-and-manage-enterprise-wide-knowledge",
+      "activity": "13.5.1.7",
+      "consider": {
+        "why": "A second person cannot find the venture's knowledge without being told where it is kept.",
+        "when": "Someone other than the founder will read or write the venture's records."
+      }
+    },
+    {
+      "id": "develop-km-change-approaches",
+      "do": "Say how a change to how knowledge is kept will be made, one kind of record at a time, with the old place left readable until the new one is filled, so nothing is lost in the move.",
+      "skill": "develop-and-manage-enterprise-wide-knowledge",
+      "activity": "13.5.1.8",
+      "consider": {
+        "why": "Moving where knowledge lives is the easiest way to lose it, so the move needs a rule before it starts.",
+        "when": "The strategy would move or retire a kind of record the venture already keeps."
+      }
+    },
+    {
+      "id": "develop-km-measures",
+      "do": "Name the two or three measures that say whether the knowledge is working, how long it takes to find the answer to a question the venture has answered before, the share of defaults with a cited source, and the number of stale records, and say where each is read.",
+      "skill": "develop-and-manage-enterprise-wide-knowledge",
+      "activity": "13.5.1.9",
+      "writes": ["capabilities/processes/[id]"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Bring the founder the strategy as one page and raise which kind of knowledge to keep properly first, with what not having it has already cost in repeated work.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "serves-a-decision", "kind": "review", "check": "Does every kind of knowledge the strategy keeps name the live goal or decision it serves, and is each capture step placed inside a process the venture already runs?", "reviewer": "strategy-lead" }
+  ]
+}

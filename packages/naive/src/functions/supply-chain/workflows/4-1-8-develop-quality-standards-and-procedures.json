@@ -1,0 +1,59 @@
+{
+  "id": "4-1-8-develop-quality-standards-and-procedures",
+  "function": "supply-chain",
+  "process": "4.1.8",
+  "title": "Develop quality standards and procedures",
+  "goal": "Each product has a written acceptance standard, a test procedure another person can repeat and get the same answer from, and every supplier's record says which standard it has been told to meet.",
+  "measures": ["cost_or_time_saved", "flow_and_lead_time"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["supply-chain/intake"] },
+  "reads": [
+    "product",
+    "product/bugs",
+    "supply-chain/suppliers",
+    "support/cases",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "establish-quality-targets",
+      "do": "Write the acceptance standard per product as numbers, the dimensions and tolerances that matter, the functions that must pass, the cosmetic faults that are allowed and the share of a lot that may fail before the lot is rejected, drawn from the product card and from the faults in `product/bugs` and `support/cases`, and ask the founder to settle the line between accept and reject.",
+      "skill": "plan-for-and-align-supply-chain-resources",
+      "activity": "4.1.8.1",
+      "ask": true
+    },
+    {
+      "id": "develop-standard-testing-procedures",
+      "do": "Write the test procedure for each standard, the sample to take, the equipment and settings, the steps in order, what is recorded and what counts as a pass, so that two people testing the same lot reach the same verdict.",
+      "skill": "plan-for-and-align-supply-chain-resources",
+      "activity": "4.1.8.2"
+    },
+    {
+      "id": "communicate-quality-specifications",
+      "do": "Draft the specification pack to go to each supplier, the drawings, the tolerances, the test procedure and what the venture will do with a failed lot, for the founder to send, and record on the supplier's record which version it was sent and when it was acknowledged.",
+      "skill": "plan-for-and-align-supply-chain-resources",
+      "activity": "4.1.8.3",
+      "writes": ["supply-chain/suppliers/[id]"],
+      "raises": ["public-commitment", "legal-or-terms"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Record the agreed acceptance standard as a fact, and where meeting it costs more per unit or more time, add the decision with the cost of the tighter standard against the cost of the failures it prevents, for the founder.",
+      "writes": ["decisions/*"],
+      "raises": ["domain-fact"]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "standard-is-repeatable",
+      "kind": "review",
+      "check": "Could another person follow the test procedure and reach the same accept or reject verdict, and does every supplier's record name the specification version it was sent?",
+      "reviewer": "product-lead"
+    }
+  ]
+}

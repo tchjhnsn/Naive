@@ -1,0 +1,22 @@
+{
+  "id": "12-4-7-resolve-disputes-and-litigations",
+  "function": "external-relationships",
+  "process": "12.4.7",
+  "title": "Resolve disputes and litigations",
+  "goal": "The dispute has a dated timeline built from the records alone with its gaps marked, everything it reaches is held rather than deleted, what each side wants is written with the least the venture would accept, and the options are costed in money and in the founder's weeks.",
+  "measures": ["compliance_met","learning"],
+  "trigger": {"kind":"request"},
+  "requires": {"meetings":["external-relationships/intake"]},
+  "reads": ["legal/risks","legal/obligations","deals","service-delivery/engagements","support/cases","customers","evidence","operations/handoff","decisions/*"],
+  "steps": [
+    {"id":"build-the-timeline","do":"Build the dated timeline from the records alone, every document, message, record and payment that bears on the dispute with where each one sits, and mark plainly what the records do not show.","skill":"manage-legal-and-ethical-issues","writes":["operations/handoff/[id]"]},
+    {"id":"hold-the-record","do":"List every record, log and file the dispute reaches and say which must be kept and from what date, and put the hold on the handoff so nothing is deleted or archived while the dispute is open.","skill":"manage-legal-and-ethical-issues","writes":["operations/handoff/[id]"]},
+    {"id":"name-what-each-side-wants","do":"Write what the other side asks for and what the venture wants, with the least the venture would accept, and ask the founder for the parts only they know, what was said and promised outside the records.","ask":true,"skill":"manage-legal-and-ethical-issues","writes":["operations/handoff/[id]"]},
+    {"id":"cost-the-options","do":"Set out settle, defend and do nothing with what each costs in money and in the founder's weeks and what would have to be true for each to be right, and leave the choice and anything filed to the founder and counsel.","skill":"manage-legal-and-ethical-issues","writes":["decisions/*"],"raises":["legal-or-terms","spend-money"]},
+    {"id":"feed-decisions","do":"Name the open decision the dispute blocks and add the timeline and the costed options there as evidence, and propose to the strategy lead what the venture should stop doing while it is open.","skill":"manage-legal-and-ethical-issues","writes":["decisions/*"],"raises":["set-priorities"]}
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "timeline-and-options", "kind": "review", "check": "Is the timeline built from records alone with its gaps marked, and does every option name what it costs in money and in the founder's weeks?", "reviewer": "strategy-lead" }
+  ]
+}

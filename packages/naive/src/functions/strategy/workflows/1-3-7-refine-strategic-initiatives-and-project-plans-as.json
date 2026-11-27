@@ -1,0 +1,83 @@
+{
+  "id": "1-3-7-refine-strategic-initiatives-and-project-plans-as",
+  "function": "strategy",
+  "process": "1.3.7",
+  "title": "Refine strategic initiatives and project plans as needed",
+  "goal": "Every gap the last review found has either a smallest change the founder decided on, written into the goal and the validation plan, or a reason recorded for leaving the initiative as it is.",
+  "measures": [
+    "learning",
+    "impact"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "records": [
+      "foundation/pre-registration"
+    ],
+    "meetings": [
+      "strategy/intake"
+    ]
+  },
+  "reads": [
+    "foundation/goals",
+    "foundation/requirements",
+    "foundation/bets",
+    "validation/plan",
+    "operations/handoff",
+    "operations/time-box",
+    "system/decision-index",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "read-the-last-review",
+      "do": "Read the last execution review and every decision it raised, and list for each gap whether the founder decided it, left it open or let it lapse, quoting the decision id.",
+      "skill": "develop-and-measure-strategic-initiatives"
+    },
+    {
+      "id": "propose-the-smallest-change",
+      "do": "For each gap write the smallest change that would close it, scope, measure, date, owner or stopping altogether, as candidates on one decision with what each gives up, and never widen an initiative to cover a measure it has already missed.",
+      "skill": "develop-and-measure-strategic-initiatives",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities",
+        "continue-or-stop"
+      ]
+    },
+    {
+      "id": "write-the-decided-changes",
+      "do": "Once the founder has decided, write the changed scope, measure or date onto the goal and the changed assumption with its test and date into the validation plan, leaving the goal's status for them, and supersede rather than overwrite anything they had adopted.",
+      "skill": "develop-and-measure-strategic-initiatives",
+      "writes": [
+        "foundation/goals/[id]"
+      ]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Record for each gap left unchanged the reason and the date it is looked at again, raise any change that alters the strategy rather than the plan, and recommend to the strategy lead the order of the remaining changes.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "strategy-or-constitution",
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "every-gap-changed-or-reasoned",
+      "kind": "review",
+      "check": "Does every gap from the last review have either a change the founder decided, now written in the goal and the validation plan, or a recorded reason and a date to look again?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

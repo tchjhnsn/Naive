@@ -1,0 +1,22 @@
+{
+  "id": "12-5-2-manage-media-relations",
+  "function": "external-relationships",
+  "process": "12.5.2",
+  "title": "Manage media relations",
+  "goal": "The journalists and outlets that cover this market are listed by name with what each last wrote and the date read, the answers to the questions they will ask are written from the records, and every approach and reply waits on the founder.",
+  "measures": ["learning","compliance_met"],
+  "trigger": {"kind":"request"},
+  "requires": {"meetings":["external-relationships/intake"]},
+  "reads": ["markets","industries","purpose/competitor","governance/publication-policy","governance/publications","marketing/voice","marketing/message","investor-relations/raises","product","decisions/*"],
+  "steps": [
+    {"id":"list-who-covers-this-market","do":"From public sources list by name each journalist and outlet that has written about this market in the last year, with what they wrote, the date you read it and whether they cover ventures of this size, and use no bought list.","skill":"manage-public-relations-program","writes":["operations/handoff/[id]"]},
+    {"id":"write-the-answers-before-the-call","do":"Write the answer to each question a journalist will ask, what it does, who pays, how many, who is behind it and what went wrong, from the records with each figure naming its source, and mark the ones only the founder may answer.","ask":true,"skill":"manage-public-relations-program","writes":["operations/handoff/[id]"]},
+    {"id":"prepare-the-approach","do":"Draft the approach to one named journalist about something that actually happened, in their own subject and length, for the founder to send, and contact no outlet yourself.","skill":"manage-public-relations-program","writes":["operations/handoff/[id]"],"raises":["public-commitment"],"consider":{"why":"A reporter writes about an event, so an approach with no event behind it spends the relationship for nothing.","when":"Something has happened that the records show and the founder wants covered."}},
+    {"id":"handle-an-inquiry","do":"When a journalist asks, assemble the same day what the records say, what the publication policy allows and what must not be said while the venture relies on a raise exemption that forbids it, and hand it to the founder, who speaks for the venture.","skill":"manage-public-relations-program","writes":["operations/handoff/[id]"],"raises":["public-commitment"],"consider":{"why":"A reporter's deadline is hours, and an unanswered question is printed without the venture in it.","when":"A journalist has asked the venture something."}},
+    {"id":"feed-decisions","do":"Name the open decision each piece of coverage bears on and add it there as evidence, and propose to the strategy lead whether press is worth the founder's hours this quarter.","skill":"manage-public-relations-program","writes":["decisions/*"],"raises":["set-priorities"]}
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "press-answers-ready", "kind": "review", "check": "Does every journalist in the list name what they last wrote and the date it was read, and did every approach and reply wait on the founder?", "reviewer": "strategy-lead" }
+  ]
+}

@@ -1,0 +1,95 @@
+{
+  "id": "8-6-2-plan-service-and-solution-implementation",
+  "function": "it",
+  "process": "8.6.2",
+  "title": "Plan service and solution implementation",
+  "goal": "This implementation has a dated plan: the order it goes out in, what has to be in place first, who tests it, what the people affected are told, and the roll-back that has been tried rather than written.",
+  "measures": ["cost_or_time_saved", "compliance_met"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["it/intake"] },
+  "reads": [
+    "product",
+    "product/capabilities",
+    "it/connections",
+    "customers",
+    "people/team-plan",
+    "operations/handoff",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "deployment-risk",
+      "do": "List what could go wrong in this implementation, each with how likely it is, what it would cost and the sign that it is happening, and mark the ones that cannot be undone.",
+      "skill": "deploy-services-solutions",
+      "activity": "8.6.2.1",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "schedule-and-sequence",
+      "do": "Write the order the parts go out in and the date and hour of each, putting the part that is easiest to undo first and the part that touches money or customer data last, and say what has to be true before each part starts.",
+      "skill": "deploy-services-solutions",
+      "activity": "8.6.2.2",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "implementation-requirements",
+      "do": "List what has to be in place before the first part goes out: the accounts, the access, the configuration values, the data migrated, the domains and the spend approved, and mark each one present or missing with who can supply it.",
+      "skill": "deploy-services-solutions",
+      "activity": "8.6.2.3",
+      "writes": ["operations/handoff/[id]"],
+      "raises": ["spend-money", "security-loosening"]
+    },
+    {
+      "id": "plan-user-testing",
+      "do": "Write what a person has to try before the change counts as working, as a short list of real tasks with the expected result of each, and name who tries them and when, which for a solo venture is the founder.",
+      "skill": "deploy-services-solutions",
+      "activity": "8.6.2.4",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "develop-training",
+      "do": "Write the short piece someone has to read to use the change, the task it supports, the steps, and what to do when it misbehaves, and keep it to the one page a founder or a first employee will actually read.",
+      "skill": "deploy-services-solutions",
+      "activity": "8.6.2.5",
+      "writes": ["operations/handoff/[id]"],
+      "consider": {
+        "why": "A change that only its author can operate is a change the venture cannot hand over.",
+        "when": "Someone other than the person who built it will use or operate the change."
+      }
+    },
+    {
+      "id": "implementation-communications",
+      "do": "Draft the messages the implementation needs, what customers are told and when, what a status page would say during the window, and what is said if it is rolled back, and hand each draft to the founder to send, since the venture speaks to its customers in the founder's voice.",
+      "skill": "deploy-services-solutions",
+      "activity": "8.6.2.6",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "roll-back-procedure",
+      "do": "Write the roll-back as its own ordered procedure, with the point of no return named, what happens to data written after the change went out, and the result of actually running it in a scratch copy, not merely the intention to.",
+      "skill": "deploy-services-solutions",
+      "activity": "8.6.2.7",
+      "writes": ["operations/handoff/[id]"],
+      "raises": ["irreversible-data-change"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Put the plan, the risks and the tried roll-back on the decision that authorises this implementation, and raise to the product lead anything missing that would delay the date.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "roll-back-tried",
+      "kind": "review",
+      "check": "Does the plan carry a date and an order for every part, a prerequisite list marked present or missing, and a roll-back that was actually run in a scratch copy with its result recorded?",
+      "reviewer": "product-lead"
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "id": "10-1-1-develop-property-strategy-and-long-term-vision",
+  "function": "assets",
+  "process": "10.1.1",
+  "title": "Develop property strategy and long term vision",
+  "goal": "The venture has one written position on where it works for the next twelve months, with the build, buy or lease question put to the founder as a decision carrying the total cost of each option.",
+  "measures": ["cost_or_time_saved"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["assets/intake"] },
+  "reads": ["venture", "people", "people/team-plan", "assets/leases", "assets/register", "finance/budget", "finance/spend", "foundation/telos", "foundation/goals", "decisions"],
+  "steps": [
+    {
+      "id": "confirm-alignment",
+      "do": "Read the venture's goals, telos and team plan and write what they require of a place of work (how many people, in which cities, what the work needs on site, by when), and name every place requirement no live goal supports, as evidence on the handoff.",
+      "skill": "plan-and-acquire-assets",
+      "activity": "10.1.1.1"
+    },
+    {
+      "id": "appraise-external-environment",
+      "do": "Collect current asking rents, coworking day and desk rates and the terms usually offered in the places the team actually works, from public listings only, each with its source and the date it was read, and put the range and what moved it on the handoff.",
+      "skill": "plan-and-acquire-assets",
+      "activity": "10.1.1.2"
+    },
+    {
+      "id": "build-buy-or-lease",
+      "do": "Put staying remote with a stipend, coworking, a short lease and buying side by side over the same period with rent, deposit, fit-out, insurance, utilities and the cost to exit each, say how many months of runway each one uses, recommend one and raise the choice to the founder, who decides.",
+      "skill": "plan-and-acquire-assets",
+      "activity": "10.1.1.3",
+      "raises": ["spend-money", "legal-or-terms"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Attach the position and the costed options to the open decision they answer, and recommend to the finance lead which property question to settle first and which to leave until the venture knows its headcount.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "options-costed-to-exit", "kind": "review", "check": "Does the position name the place requirements the venture's live goals imply, and does every build, buy or lease option carry its total cost over the same period including the cost to exit?", "reviewer": "finance-lead" }
+  ]
+}

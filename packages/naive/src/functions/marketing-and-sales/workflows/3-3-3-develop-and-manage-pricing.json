@@ -1,0 +1,178 @@
+{
+  "id": "3-3-3-develop-and-manage-pricing",
+  "function": "marketing-and-sales",
+  "process": "3.3.3",
+  "title": "Develop and manage pricing",
+  "goal": "Every price the venture charges is written down with the costs and volumes behind it, each change the founder approved and every affected customer told, and this period's pricing performance is counted from closed opportunities.",
+  "measures": [
+    "revenue"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "marketing-and-sales/intake"
+    ]
+  },
+  "reads": [
+    "venture",
+    "product",
+    "validation/pricing",
+    "markets",
+    "purpose/competitor",
+    "customers",
+    "sales/opportunities",
+    "finance/spend",
+    "finance/budget",
+    "money",
+    "service-delivery/offers",
+    "marketing/message",
+    "legal/obligations",
+    "governance/publication-policy",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "understand-resource-requirements-for-each-product-service-and-delivery-channel",
+      "do": "Work out what one unit of each product costs to deliver through each channel, counting the hours a person must spend and the services the venture pays for, and write the per unit cost with the records each input came from.",
+      "skill": "develop-and-manage-marketing-plans",
+      "activity": "3.3.3.1"
+    },
+    {
+      "id": "determine-corporate-incentives",
+      "do": "Write what anyone other than the founder earns for a sale, the commission or referral fee, when it is earned and when it is paid, and show its effect on the per unit margin.",
+      "skill": "develop-and-manage-marketing-plans",
+      "consider": {
+        "why": "An incentive changes which deals get sold and quietly changes the margin on every one of them.",
+        "when": "Someone other than the founder sells, or a partner is paid for a sale."
+      },
+      "activity": "3.3.3.2"
+    },
+    {
+      "id": "determine-pricing-based-on-volume-unit-forecast",
+      "do": "Take the unit volumes from the sales forecast and the per unit costs, work out the price each plan needs at that volume to leave the margin the founder set, and show how the answer moves if volume is half or double.",
+      "skill": "develop-and-manage-marketing-plans",
+      "activity": "3.3.3.3"
+    },
+    {
+      "id": "execute-pricing-plan",
+      "do": "Draft every place an approved price appears, the pricing message records, the quote wording and the checkout line, each citing the decision that set it, and hand them to the founder to publish; change nothing in public yourself.",
+      "skill": "develop-and-manage-marketing-plans",
+      "writes": [
+        "marketing/message/[id]"
+      ],
+      "raises": [
+        "public-commitment"
+      ],
+      "activity": "3.3.3.4"
+    },
+    {
+      "id": "evaluate-pricing-performance",
+      "do": "Count from the closed opportunities what was actually charged against the list price, how often a discount was given and how large, and how many deals were lost with price recorded as the reason.",
+      "skill": "develop-and-manage-marketing-plans",
+      "activity": "3.3.3.5"
+    },
+    {
+      "id": "refine-pricing-as-needed",
+      "do": "Where the counts show the price is wrong, propose the change with the evidence, who it affects, what it would add or cost at current volume and what would show the change wrong, and recommend one option.",
+      "skill": "develop-and-manage-marketing-plans",
+      "raises": [
+        "strategy-or-constitution"
+      ],
+      "activity": "3.3.3.6"
+    },
+    {
+      "id": "implement-promotional-pricing-programs",
+      "do": "Draft a time-boxed promotional price with its start and end date, who may use it, what happens to the price afterwards, and the number that would show it brought buyers who would not otherwise have paid.",
+      "skill": "develop-and-manage-marketing-plans",
+      "raises": [
+        "public-commitment"
+      ],
+      "consider": {
+        "why": "A promotional price teaches buyers to wait for the next one, so it is run with an end date and a number to judge it by.",
+        "when": "The founder asks for a promotion, or a campaign is open that needs one."
+      },
+      "activity": "3.3.3.7"
+    },
+    {
+      "id": "implement-other-retail-pricing-programs",
+      "do": "Draft the pricing the venture's storefronts need beyond its own list, such as a marketplace tier, a bundle or a currency, with the fee each storefront takes and the margin left.",
+      "skill": "develop-and-manage-marketing-plans",
+      "consider": {
+        "why": "A storefront's fee can take the margin the price was built on.",
+        "when": "The venture sells through a marketplace, an app store or a physical outlet."
+      },
+      "activity": "3.3.3.8"
+    },
+    {
+      "id": "communicate-and-implement-price-changes",
+      "do": "List every customer and open opportunity the change touches from the records, draft the notice to each group saying what changes, when and what they can do about it, and hand the notices and the page change to the founder to send.",
+      "skill": "develop-and-manage-marketing-plans",
+      "writes": [
+        "marketing/message/[id]"
+      ],
+      "raises": [
+        "public-commitment"
+      ],
+      "activity": "3.3.3.9"
+    },
+    {
+      "id": "achieve-regulatory-approval-for-pricing",
+      "do": "Read the legal obligation records for any rule that bounds what may be charged or how it must be shown, and open a handoff to risk and compliance with the proposed price and the rules it must clear.",
+      "skill": "develop-and-manage-marketing-plans",
+      "writes": [
+        "operations/handoff/[id]"
+      ],
+      "raises": [
+        "defer-or-route"
+      ],
+      "consider": {
+        "why": "A price that breaks a rule costs more than the revenue it brings.",
+        "when": "A legal obligation record bounds what the venture may charge or how a price must be shown."
+      },
+      "activity": "3.3.3.10"
+    },
+    {
+      "id": "conduct-competitive-pricing-review",
+      "do": "Read each competitor's published price online and in any offline material the venture holds, record the page or document and the date read, and set the venture's price beside each one with what is included on both sides.",
+      "skill": "develop-and-manage-marketing-plans",
+      "activity": "3.3.3.11"
+    },
+    {
+      "id": "determine-customer-segment-specific-pricing",
+      "do": "Propose a different price or plan for a segment whose willingness to pay or cost to serve the records show differs, with the evidence for the difference and the rule that decides which buyer gets which price.",
+      "skill": "develop-and-manage-marketing-plans",
+      "consider": {
+        "why": "Charging two buyers differently needs a reason a buyer would accept if they learned of it.",
+        "when": "The records show a segment pays or costs materially differently from the rest."
+      },
+      "activity": "3.3.3.12"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Put each price change to the founder as one decision with its evidence, its cost and who it touches, and tell the growth lead which price is losing the most deals.",
+      "skill": "develop-and-manage-marketing-plans",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "strategy-or-constitution",
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "prices-costed-and-counted",
+      "kind": "review",
+      "check": "Does every price in use rest on a written per unit cost and a volume assumption, and does every change made this run name the founder's decision and the customers told?",
+      "reviewer": "growth-lead"
+    }
+  ]
+}

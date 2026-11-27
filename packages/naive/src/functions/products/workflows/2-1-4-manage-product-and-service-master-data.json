@@ -1,0 +1,165 @@
+{
+  "id": "2-1-4-manage-product-and-service-master-data",
+  "function": "products",
+  "process": "2.1.4",
+  "title": "Manage product and service master data",
+  "goal": "The lasting facts about each product are true in the records: what it is made of, what each capability does and the category it sits under, the quality documents that say when it is fit to use, and a recorded answer to every request to read product data.",
+  "measures": [
+    "learning",
+    "flow_and_lead_time"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "products/intake"
+    ]
+  },
+  "reads": [
+    "product",
+    "product/capabilities",
+    "product/bugs",
+    "foundation/icp",
+    "glossary",
+    "it/connections",
+    "supply-chain/suppliers",
+    "supply-chain/purchase-orders",
+    "assets/register",
+    "operations/handoff",
+    "decisions"
+  ],
+  "steps": [
+    {
+      "id": "materials-master-lists",
+      "do": "List the bought parts, materials or ingredients each physical product is made of, one entry per part with its supplier and the unit the venture buys it in, and record the list on the product card against the supplier records.",
+      "skill": "govern-and-manage-product-service-development",
+      "activity": "2.1.4.1",
+      "writes": [
+        "product/[id]"
+      ],
+      "consider": {
+        "why": "A venture that buys parts cannot cost or reorder without one list of what it buys.",
+        "when": "The venture makes or assembles a physical product."
+      }
+    },
+    {
+      "id": "bills-of-material",
+      "do": "Write what goes into one unit of the product and in what quantity, including the parts of parts, so a cost and an order quantity can be computed from it, and keep it beside the product card.",
+      "skill": "govern-and-manage-product-service-development",
+      "activity": "2.1.4.2",
+      "writes": [
+        "product/[id]"
+      ],
+      "consider": {
+        "why": "Without the quantities per unit, a cost target and a purchase order are both guesses.",
+        "when": "The venture makes or assembles a physical product."
+      }
+    },
+    {
+      "id": "routings",
+      "do": "Write the ordered steps the product passes through to be made or delivered, with what each step needs and how long it takes, so the venture can say where a unit is and what the next step is.",
+      "skill": "govern-and-manage-product-service-development",
+      "activity": "2.1.4.3",
+      "writes": [
+        "operations/handoff/[id]"
+      ],
+      "consider": {
+        "why": "A delivery path nobody wrote down lives in one person's head and stops when they do.",
+        "when": "The product is made or delivered in more than two steps by more than one person or system."
+      }
+    },
+    {
+      "id": "specifications",
+      "do": "Keep one current specification per capability: what it does, the inputs it accepts, what it must never do, and the limits it holds to, each traced to the requirement or the ICP job behind it, and mark a specification the code no longer matches as drifted rather than rewriting it from the code.",
+      "skill": "govern-and-manage-product-service-development",
+      "activity": "2.1.4.4"
+    },
+    {
+      "id": "drawings",
+      "do": "Name where the design files for the product live (the drawings, the design system file, the schematics), which one is current, and who may change it, and record the pointer on the product card.",
+      "skill": "govern-and-manage-product-service-development",
+      "activity": "2.1.4.5",
+      "writes": [
+        "product/[id]"
+      ],
+      "consider": {
+        "why": "Two versions of a drawing in two places is how a venture builds the wrong thing.",
+        "when": "The product has drawings, schematics or a design file outside the venture's records."
+      }
+    },
+    {
+      "id": "product-classification",
+      "do": "Put every capability under the right category and give each one its owning agent role, so the tree from the products function down to one capability holds with no orphan and no capability under a capability, and correct a name that is not the name a customer would use.",
+      "skill": "govern-and-manage-product-service-development",
+      "activity": "2.1.4.6"
+    },
+    {
+      "id": "quality-and-inspection-documents",
+      "do": "Write, for each capability, what must be checked before it is called done and how: the tests that must pass, the task a person must be able to finish unaided, and the bug severities that may not be open, and keep the document beside the capability so a build handoff can point at it.",
+      "skill": "govern-and-manage-product-service-development",
+      "activity": "2.1.4.7"
+    },
+    {
+      "id": "process-specification-data",
+      "do": "Record the settings the making or running of the product depends on (the machine settings, the build and deploy configuration, the model and its parameters) with the value in use and the date it last changed.",
+      "skill": "govern-and-manage-product-service-development",
+      "activity": "2.1.4.8",
+      "writes": [
+        "operations/handoff/[id]"
+      ],
+      "consider": {
+        "why": "When a run goes wrong, the first question is what changed, and only recorded settings answer it.",
+        "when": "The product is produced or served by a process with settings that can be changed."
+      }
+    },
+    {
+      "id": "traceability-data",
+      "do": "Say what the venture can trace about a unit or a session after the fact (which build a customer is on, which batch a unit came from, which model version answered), how long that trace is kept and where, and name the traces the venture cannot produce today.",
+      "skill": "govern-and-manage-product-service-development",
+      "activity": "2.1.4.9",
+      "writes": [
+        "operations/handoff/[id]"
+      ],
+      "consider": {
+        "why": "A recall, a bug report and a regulator all ask which customers had which version, and that cannot be reconstructed later.",
+        "when": "The product is in customers' hands, or a rule in the legal records asks the venture to trace it."
+      }
+    },
+    {
+      "id": "data-access-requests",
+      "do": "For each request to read the venture's product data (a partner, a tool, an agent, a customer asking for their own), write what is asked for, what it is for and how long it is needed, recommend grant or refuse against the connection records, and leave the answer to the founder, recording what the founder decided.",
+      "skill": "govern-and-manage-product-service-development",
+      "activity": "2.1.4.10",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "strategy-or-constitution"
+      ]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "List the master data that is missing or drifted, most costly first, attach each item to the decision or handoff it blocks, and give the product lead the order to fix them in.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "master-data-true",
+      "kind": "review",
+      "check": "Does every live capability have a current specification and a document saying what must be checked before it is called done, and does the capability tree hold from the products function down with no orphan?",
+      "reviewer": "product-lead"
+    }
+  ]
+}

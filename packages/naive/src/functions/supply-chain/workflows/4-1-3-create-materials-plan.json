@@ -1,0 +1,82 @@
+{
+  "id": "4-1-3-create-materials-plan",
+  "function": "supply-chain",
+  "process": "4.1.3",
+  "title": "Create materials plan",
+  "goal": "Every part each product needs has a quantity, a lead time and a source, the plan says what must be ordered in which week to build the forecast, and every part that cannot be got in time is named.",
+  "measures": ["cost_or_time_saved", "flow_and_lead_time"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["supply-chain/intake"] },
+  "reads": [
+    "product",
+    "supply-chain/suppliers",
+    "supply-chain/purchase-orders",
+    "finance/spend",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "create-unconstrained-plan",
+      "do": "Explode each product's bill of materials against the agreed forecast to get the quantity of every part needed by week, ignoring supplier limits for now, and name each part whose quantity per unit or scrap allowance you had to assume.",
+      "skill": "plan-for-and-align-supply-chain-resources",
+      "activity": "4.1.3.1"
+    },
+    {
+      "id": "collaborate-with-suppliers-and-contract-manufacturers",
+      "do": "Draft the message to each supplier and contract manufacturer that asks for its current lead time, its minimum order and the quantity it can hold for the venture, for the founder to send, and record each reply against that supplier's record with the date it was given.",
+      "skill": "plan-for-and-align-supply-chain-resources",
+      "activity": "4.1.3.2",
+      "writes": ["supply-chain/suppliers/[id]"],
+      "raises": ["public-commitment"]
+    },
+    {
+      "id": "identify-critical-materials-and-supplier-capacity",
+      "do": "Mark every part the product cannot be built without, put each one in a Kraljic quadrant by profit impact and supply risk, and record for each critical part the supplier's stated capacity and whether it has a second source.",
+      "skill": "plan-for-and-align-supply-chain-resources",
+      "activity": "4.1.3.3",
+      "writes": ["supply-chain/suppliers/[id]"],
+      "raises": ["domain-fact"]
+    },
+    {
+      "id": "monitor-material-specifications",
+      "do": "Check each part still in the plan against the specification the product card names, and flag every part whose supplier has changed a datasheet, a revision or a material since the last order, since that is what silently breaks a build.",
+      "skill": "plan-for-and-align-supply-chain-resources",
+      "activity": "4.1.3.4"
+    },
+    {
+      "id": "generate-constrained-plan",
+      "do": "Rework the plan inside the suppliers' real lead times, minimum orders and capacity, and give the founder the order dates that must be met week by week and the quantity the venture can actually build if they are.",
+      "skill": "plan-for-and-align-supply-chain-resources",
+      "activity": "4.1.3.5"
+    },
+    {
+      "id": "define-production-balance-and-control",
+      "do": "Set the rule that keeps parts and builds in step, how much of each part is held ahead of the pacing step and what signal starts the next order, and state the stock level at which the rule says to act.",
+      "skill": "plan-for-and-align-supply-chain-resources",
+      "activity": "4.1.3.6",
+      "consider": {
+        "why": "A simple reorder signal stops both stockouts and the habit of ordering everything at once.",
+        "when": "The venture has built the product more than once and holds parts between builds."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "For each part the constrained plan cannot get in time, add a decision with the options, pay to expedite, find a second source, redesign around it or build fewer units, each with its cost and the weeks it saves, and hand the order of that work to the product lead.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities", "spend-money"]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "every-part-sourced-or-flagged",
+      "kind": "review",
+      "check": "Does every part in the plan have a quantity, a lead time and a named source, and does every part that cannot arrive in time have a decision with costed options?",
+      "reviewer": "product-lead"
+    }
+  ]
+}
