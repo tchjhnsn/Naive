@@ -244,6 +244,32 @@
       ]
     },
     {
+      "id": "product-capability",
+      "layer": "purpose",
+      "function": "products",
+      "level": "venture",
+      "data": "master",
+      "schema": "packages/naive/src/records/product-capability.schema.json",
+      "generator": "packages/naive/src/engine/generators/product-capability.ts",
+      "paths": [
+        "instance/**/product/capabilities/*.json",
+        "packages/naive/src/records/examples/**/product/capabilities/*.json"
+      ],
+      "note": "One capability of a product, or a category of them (EE-224): its name, the product it belongs to, the category above it (a chain that ends under the products function), the agent role that owns it and its status (live, building or retired). An app reads it to staff a capability agent and to give a site container its owner. Route product/capabilities/[id]",
+      "refs": [
+        {
+          "field": "product",
+          "to": "product",
+          "checked_by": "packages/naive/src/checks/check-ventures.ts"
+        },
+        {
+          "field": "parent",
+          "to": "product-capability",
+          "checked_by": "packages/naive/src/checks/check-ventures.ts"
+        }
+      ]
+    },
+    {
       "id": "account",
       "layer": "purpose",
       "function": null,

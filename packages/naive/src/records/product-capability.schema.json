@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "product-capability.schema.json",
+  "title": "Product capability",
+  "description": "One capability of a product, or a category that groups capabilities, at <venture>/product/capabilities/<id>.json (EE-224). Capabilities form a tree under the products function: a category's parent is another category or null (it sits directly under the products function), and a capability always has a category as its parent. Each names the agent role that owns it, the one that keeps its words and its site or docs containers current. A capability is live, building or retired, and nothing under a retired category is live or building (node packages/naive/src/checks/check-ventures.ts).",
+  "type": "object",
+  "required": ["id", "name", "product", "kind", "parent", "owner", "status"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+    "venture": { "type": "string" },
+    "name": { "type": "string", "minLength": 1, "description": "The capability as a customer would name it, for example Time travel" },
+    "product": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$", "description": "The product it belongs to: a product card's id in product/ or products/" },
+    "kind": { "enum": ["category", "capability"], "description": "A category groups capabilities and other categories; a capability is one thing the product does" },
+    "parent": { "type": ["string", "null"], "pattern": "^[a-z0-9][a-z0-9-]*$", "description": "The category it sits under, or null for a category directly under the products function" },
+    "owner": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$", "description": "The agent role that owns it: <capability>-agent for a capability, the category agent for a category. A container in a site's containers.json names the same role as its owner" },
+    "status": { "enum": ["live", "building", "retired"] },
+    "summary": { "type": "string", "description": "What it does, in one or two plain sentences" },
+    "since": { "type": "string", "format": "date", "description": "When it reached its status" },
+    "note": { "type": "string" }
+  },
+  "allOf": [
+    { "if": { "properties": { "kind": { "const": "capability" } } }, "then": { "properties": { "parent": { "type": "string" } } } }
+  ]
+}
