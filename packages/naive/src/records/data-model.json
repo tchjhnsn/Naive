@@ -1880,7 +1880,21 @@
         "instance/**/operations/marketing/sitemap.json",
         "packages/naive/src/records/examples/**/operations/marketing/sitemap.json"
       ],
-      "note": "The planned public site: each page's sections in order, with the MDX component, the need, the audience and why, when it shows, the internal record it draws on and the public variant to write; part of the marketing package handed to engineering (EE-064, EE-065)"
+      "note": "The planned public site: each page's sections in order, with the MDX component, the need, the audience and why, when it shows, the internal record it draws on, the public variant to write and the copy drafted for it (EE-064, EE-065, EE-214); part of the marketing package handed to engineering"
+    },
+    {
+      "id": "publish-terms",
+      "layer": "operations",
+      "function": "marketing-and-sales",
+      "level": "venture",
+      "data": "master",
+      "schema": "packages/naive/src/records/publish-terms.schema.json",
+      "generator": "packages/naive/src/engine/generators/publish-terms.ts",
+      "paths": [
+        "instance/**/marketing/publish-terms.json",
+        "packages/naive/src/records/examples/**/marketing/publish-terms.json"
+      ],
+      "note": "The names the publish lint flags in public copy, owned by the function that writes the words (EE-214): other companies' marks, and the names this venture never makes public, which are errors. It holds names only, never severities and never waivers, so the marketing agent can tighten the gate on itself without reaching naive.config.json"
     },
     {
       "id": "marketing-content",

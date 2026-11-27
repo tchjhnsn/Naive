@@ -9,6 +9,7 @@
   ],
   "optional": [
     "marketing-content",
+    "publish-terms",
     "site-presence",
     "marketing-brand",
     "marketing-design-system",
@@ -53,7 +54,8 @@
     "packages/naive/src/records/site-presence.schema.json",
     "packages/naive/src/records/marketing-brand.schema.json",
     "packages/naive/src/records/public-assets.schema.json",
-    "packages/naive/src/records/marketing-design-system.schema.json"
+    "packages/naive/src/records/marketing-design-system.schema.json",
+    "packages/naive/src/records/publish-terms.schema.json"
   ],
   "templates": [],
   "checks": [

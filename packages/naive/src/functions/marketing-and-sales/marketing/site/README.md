@@ -67,7 +67,8 @@ The result is drawn as the site's sitemap. The home page sits on top, with the p
   - the audiences and why;
   - any condition;
   - the internal record it draws on: the first file of that record type the venture has, found at the data model's current or older paths and wherever the venture's layout (flat, structured or src) keeps it, or, when there is none, where the record would go;
-  - the public variant a marketing agent writes, at `marketing/content/<page>/<item>.mdx`, through the route `marketing/content/<page>/<item>` with the whole text as `{ "text": "..." }`.
+  - the public variant a marketing agent writes, at `marketing/content/<page>/<item>.mdx`, through the route `marketing/content/<page>/<item>` with the whole text as `{ "text": "..." }`;
+  - `draft_copy`, the copy itself while it is still a record (EE-214): its `text`, a `status` of draft, ready or published, the records it draws on, who wrote it and when. A section takes no other field, so a word written into an invented field such as `site_text` is refused by name instead of shipping unlinted. `packages/naive/src/engine/publish-lint.ts` lints each section's drafted copy, so copy held in the record meets the same gates as the MDX variant.
 - **The public gate.** `packages/naive/src/engine/check-public.ts` checks every content file before it can be published:
   - it names the internal record it is a variant of, its audience, and whether it is published;
   - a published file names the person who approved it;

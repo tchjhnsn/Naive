@@ -493,8 +493,21 @@
         },
         "marks": {
           "type": "array",
+          "description": "The names the marks rule flags, each matched case-insensitively on whole words. A string is another company's mark; an object may say private, a name the venture never makes public, which is an error whatever level the marks rule has. The function that writes the words adds its own in marketing/publish-terms.json (EE-214).",
           "items": {
-            "type": "string"
+            "anyOf": [
+              { "type": "string" },
+              {
+                "type": "object",
+                "required": ["name"],
+                "additionalProperties": false,
+                "properties": {
+                  "name": { "type": "string", "minLength": 1 },
+                  "private": { "type": "boolean", "default": false },
+                  "why": { "type": "string" }
+                }
+              }
+            ]
           }
         },
         "waived": {

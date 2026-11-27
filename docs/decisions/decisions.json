@@ -3147,6 +3147,44 @@
       ]
     },
     {
+      "id": "EE-214",
+      "date": "2026-11-26",
+      "status": "in-force",
+      "decision": "Every word a venture publishes passes the publishing gate wherever it is held. The publish lint reads the copy a record holds as well as a page's prose: a marketing sitemap section's draft_copy, and every string under a field the visibility sidecar calls public. A sitemap section takes no field the schema does not name, so copy written into an invented field is refused by name instead of shipping unlinted. A mark is matched case-insensitively and on word boundaries, and a name the venture marks private is an error whatever its rule's severity; severities stay unvalidated priors the venture sets under publish_lint.rules in naive.config.json. The marketing and sales function writes its own marks in marketing/publish-terms.json, which holds names only and never severities or waivers, so the role that owns the words can tighten the gate and never loosen it. Code that reads a venture's config as a file resolves it through configFile in packages/naive/src/core/venture-paths.ts, so a structured venture's meta/naive.config.json is the copy that counts. A decision's unlock still holds an agent's edit of a live record: the lock fails closed, and a stale card is corrected by a person or by deciding. A handoff's inputs are looked for in the venture first, its roles are the one register in packages/naive/src/engine/agents/roles.ts (function agents and researchers included), and the check action of an item route gives a check in ID_CHECKS the item's id.",
+      "why": "Torian decided on 2026-11-26 that every word on the site must come from records and pass Naive's publishing gates and lint. A session publishing Mentura's marketing copy through Naive found each of these gaps open: copy in a record was never linted, a private name scored zero errors, a config written through the route was ignored, the role that owns the words could not set its own terms, and a writer-to-builder handoff could not pass its ready check.",
+      "related": [
+        "EE-058",
+        "EE-062",
+        "EE-064",
+        "EE-086",
+        "EE-124"
+      ],
+      "affects": [
+        {
+          "kind": "record",
+          "target": "publish-terms",
+          "expect": "exists"
+        },
+        {
+          "kind": "record",
+          "target": "marketing-sitemap.draft_copy",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/record-copy.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/agents/roles.ts",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
       "id": "EE-223",
       "date": "2026-11-26",
       "status": "in-force",
