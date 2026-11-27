@@ -4,7 +4,7 @@
 // playbook: product-first by default (unchanged), revenue-first clearing Validation on people paid.
 
 import { spawnSync } from "node:child_process";
-import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { check, ordered, roadmapOf, roadmaps } from "./check-roadmap.ts";
@@ -52,6 +52,8 @@ expect("an unknown roadmap is refused", !(await install(dir, "nope")).ok);
 // ---- playbooks ----
 expect("product-first and revenue-first exist", ["product-first", "revenue-first"].every((id) => playbookOf(id)));
 for (const p of playbooks()) { const f = join(repo, "packages/naive/src/functions/products/frameworks/product-anatomy/playbooks", `${p.id}.json`); const v = valid("lifecycle-playbook.schema.json", f); expect(`${p.id} matches its schema`, v.status === 0, v.stdout + v.stderr); }
+// Proof of work (EE-227): the phase's intake for finance, a function Tandem lists, was walked in a meeting a person closed.
+const closeIntake = (d: string): void => { mkdirSync(join(d, "operations/meetings"), { recursive: true }); writeFileSync(join(d, "operations/meetings/finance-intake.json"), JSON.stringify({ id: "finance-intake", title: "Finance intake", goal: "Settle how money is tracked.", outcome_expected: ["a budget"], workflow: "finance/intake", called_by: "maya", attendees: [{ id: "maya", kind: "person" }], status: "closed", agenda: [{ id: "money", title: "Money", status: "done" }], outcome: { reached: "yes", summary: "Settled." } })); };
 const person = { kind: "person", via: "cli", id: "maya" };
 let l = lifecycle(dir);
 expect("with no playbook named, product-first is read and the gate is unchanged", l.playbook?.id === "product-first" && !l.playbook?.chosen && l.current?.gate === "Product-market fit: retention holds" && l.gate_evidence[0].id === "retention");
@@ -66,6 +68,7 @@ l = lifecycle(dir);
 expect("under revenue-first, Validation clears on people paid, and retention alone does not clear it", l.current?.gate === "People paid" && !l.ready && l.blocking.some((b) => /people paid/i.test(b)), JSON.stringify(l.blocking));
 expect("the gate refuses the move", !advance(dir, "beachhead", { by: person }).ok);
 writeFileSync(vf, JSON.stringify({ ...v, lifecycle_playbook: "product-first" }, null, 2));
+closeIntake(dir);
 l = lifecycle(dir);
 expect("under product-first, met retention evidence clears Validation", l.ready && l.gate_evidence[0].met_by.includes("retention"), JSON.stringify(l));
 rmSync(tmp, { recursive: true, force: true });

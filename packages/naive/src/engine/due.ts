@@ -48,6 +48,7 @@ import { blockedForEffect } from "./prerequisites.ts";
 import type { Missing, Prerequisites } from "./prerequisites.ts";
 import { functionsOf } from "./research-programs.ts";
 import type { FunctionWorkflow, TimeBox } from "../records/types/records.d.ts";
+import type { StepResult } from "./run-proof.ts";
 
 export const RUNS = ".naive/workflow-runs.jsonl";
 /** The provenance activities that put a record's content live. A draft is not one: it waits for a person. */
@@ -57,8 +58,16 @@ export type Cadence = "daily" | "weekly" | "monthly" | "quarterly";
 export type WorkflowTrigger = { kind: "intake" | "schedule" | "event" | "request"; cadence?: Cadence; route?: string; during?: "campaign" | "sprint" };
 /** The part of a function workflow this reads. `steps` comes along from the file for the skipped ledger. */
 export type DueWorkflow = { id: string; function: string; title: string; trigger: WorkflowTrigger; steps?: FunctionWorkflow["steps"] };
-/** One line of the run log. `steps` is the step ids the run finished, when it reported them. */
-export type WorkflowRun = { workflow: string; at: string; outcome: "done" | "failed" | "skipped"; by: string; steps?: readonly string[] };
+/**
+ * One line of the run log. `steps` is the step ids the run finished, when it reported them (the older form, which
+ * proves nothing). `run`, `started`, `results` and `observed` are the run's package (EE-227,
+ * packages/naive/src/engine/run-proof.ts): one result per step with the provenance lines it wrote, checked against the
+ * log, and whether the runner observed each step's window itself.
+ */
+export type WorkflowRun = {
+  workflow: string; at: string; outcome: "done" | "failed" | "skipped"; by: string; steps?: readonly string[];
+  run?: string; started?: string; results?: readonly StepResult[]; observed?: boolean;
+};
 /** A write the provenance log holds: the route written and when. */
 export type Written = { route: string; at: string };
 export type DueStatus = "due" | "not-due" | "on-request" | "blocked";
@@ -204,6 +213,25 @@ export const recordRun = (dir: string, run: WorkflowRun): Effect.Effect<Workflow
   return run;
 });
 
+/**
+ * A reported run's package: the step results from a JSON file (an array of { step, status, why? }), each done step's
+ * evidence gathered from the provenance log under its session `run:<run>/<step>`. A run id is required, because the
+ * sessions name it; the start time bounds every step's window.
+ */
+export const reportedPackage = (dir: string, { file, run, started }: { file: string; run?: string; started?: string }): Effect.Effect<Pick<WorkflowRun, "run" | "started" | "results" | "observed"> | null, NaiveError, "naive/VentureFs"> => Effect.gen(function* () {
+  if (!run || !started || Number.isNaN(Date.parse(started))) return null;
+  const raw = (yield* readJson(file)) as unknown;
+  if (!Array.isArray(raw)) return yield* new Refused({ rule: "run-results", message: `${file} must hold an array of step results`, hint: '[{ "step": "<id>", "status": "done" }, { "step": "<id>", "status": "skipped", "why": "<why>" }]' });
+  const lines = yield* entriesEffect(dir);
+  const results = raw.map((r: { step?: unknown; status?: unknown; why?: unknown }): StepResult => {
+    const step = String(r.step ?? "");
+    const status = (["done", "not-needed", "nothing-to-record", "skipped"].includes(String(r.status)) ? r.status : "skipped") as StepResult["status"];
+    const session = `run:${run}/${step}`;
+    return { step, status, session, ...(typeof r.why === "string" ? { why: r.why } : {}), ...(status === "done" ? { evidence: lines.filter((l) => l.agent?.session === session && l.hash && ["write", "draft", "accept", "merge", "rollback", "confirm"].includes(l.activity)).map((l) => l.hash as string) } : {}) };
+  });
+  return { run, started: new Date(started).toISOString(), results, observed: false };
+});
+
 export const TIME_BOXES = "operations/time-boxes";
 /** The venture's time boxes, by file name. A missing folder is none. */
 export const readTimeBoxes = (dir: string): Effect.Effect<DueBox[], NaiveError, "naive/VentureFs"> => Effect.gen(function* () {
@@ -225,10 +253,10 @@ export const dueFor = (dir: string, now: string, only?: string): Effect.Effect<D
 if (import.meta.url === `file://${process.argv[1]}`) {
   const args = process.argv.slice(2);
   const flag = (name: string): string | undefined => { const i = args.indexOf(name); return i < 0 ? undefined : args[i + 1]; };
-  const valued = ["--at", "--function", "--outcome", "--by", "--steps"];
+  const valued = ["--at", "--function", "--outcome", "--by", "--steps", "--run", "--started", "--results"];
   const [dir, cmd, target] = args.filter((a, i) => !a.startsWith("--") && !valued.includes(args[i - 1]));
   const at = flag("--at") ?? new Date().toISOString();
-  const usage = "usage: node packages/naive/src/engine/due.ts <venture dir> [--at <iso>] [--function <id>] [--json]\n       node packages/naive/src/engine/due.ts <venture dir> record <function>/<workflow> [--outcome done|failed|skipped] [--by <who>] [--at <iso>] [--steps a,b]";
+  const usage = "usage: node packages/naive/src/engine/due.ts <venture dir> [--at <iso>] [--function <id>] [--json]\n       node packages/naive/src/engine/due.ts <venture dir> record <function>/<workflow> [--outcome done|failed|skipped] [--by <who>] [--at <iso>] [--steps a,b] [--run <id> --started <iso> --results <file.json>]";
   const program: Effect.Effect<void, NaiveError, "naive/VentureFs"> = Effect.gen(function* () {
     if (!dir || Number.isNaN(Date.parse(at)) || (cmd !== undefined && cmd !== "record") || (cmd === "record" && !target)) return yield* new CannotRun({ message: usage });
     const now = new Date(at).toISOString();
@@ -236,8 +264,14 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       const outcome = flag("--outcome") ?? "done";
       if (outcome !== "done" && outcome !== "failed" && outcome !== "skipped") return yield* new CannotRun({ message: usage });
       const steps = (flag("--steps") ?? "").split(",").map((s) => s.trim()).filter(Boolean);
-      const run = yield* recordRun(dir, { workflow: target, at: now, outcome, by: flag("--by") ?? process.env.MENTURA_ACTOR_ID ?? "person", ...(steps.length ? { steps } : {}) });
-      console.log(args.includes("--json") ? JSON.stringify(run) : `recorded ${run.workflow} ${run.outcome} at ${run.at} by ${run.by}${run.steps ? `, having finished ${run.steps.join(", ")}` : ""}`);
+      const by = flag("--by") ?? process.env.MENTURA_ACTOR_ID ?? "person";
+      // A package (EE-227): the step results come from a file, and each done step's evidence is gathered from the
+      // provenance log by its session, so the run never lists evidence by hand.
+      const resultsFile = flag("--results");
+      const pkg = resultsFile ? yield* reportedPackage(dir, { file: resultsFile, run: flag("--run"), started: flag("--started") }) : null;
+      if (resultsFile && !pkg) return yield* new CannotRun({ message: usage });
+      const run = yield* recordRun(dir, { workflow: target, at: now, outcome, by, ...(steps.length ? { steps } : {}), ...(pkg ?? {}) });
+      console.log(args.includes("--json") ? JSON.stringify(run) : `recorded ${run.workflow} ${run.outcome} at ${run.at} by ${run.by}${run.steps ? `, having finished ${run.steps.join(", ")}` : ""}${run.results ? `, with ${run.results.length} step results (run ${run.run}): naive runs verify ${run.run}` : ""}`);
       return;
     }
     const found = yield* dueFor(dir, now, flag("--function"));

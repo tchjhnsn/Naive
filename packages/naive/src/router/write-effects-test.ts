@@ -1,12 +1,15 @@
 // Tests the router's write steps as Effects (phase 8 of docs/design/TYPESCRIPT_AND_EFFECT_RUNTIME_2026-11-22.md):
-// the schema check through RecordValidator, the gate through Gate, and that a provided service replaces each.
+// the schema check through RecordValidator, the gate through Gate, that a provided service replaces each, and that a
+// connector's failure reaches the write path as a tagged error (readItem, writeItem).
 import assert from "node:assert/strict";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Effect, Layer } from "effect";
 import { gateWrite, gateWriteEffect } from "./gate-hooks.ts";
-import { schemaFailure, schemaFailureEffect } from "./write-effects.ts";
+import { readItem, schemaFailure, schemaFailureEffect, writeItem } from "./write-effects.ts";
+import type { Store } from "./router.ts";
+import { type NaiveError, VersionConflict } from "../core/effect/errors.ts";
 import { Gate } from "../engine/gate-service.ts";
 import { RecordValidatorOver } from "../records/record-validator.ts";
 import { Validator } from "../records/validate.ts";
@@ -49,6 +52,19 @@ await test("a provided Gate replaces the rules", () => {
   assert.equal(v?.then, "refuse");
   assert.equal(v?.why, "the host refuses");
   rmSync(dir, { recursive: true });
+});
+
+await test("a connector's failure reaches the write path as a tagged error with its own words", async () => {
+  const failing = (thrown: unknown): Store => ({ writes: "direct", list: async () => [], read: async () => { throw thrown; }, write: async () => { throw thrown; } });
+  const fail = async (e: Effect.Effect<unknown, NaiveError>) => { const r = await Effect.runPromise(Effect.result(e)); assert.equal(r._tag, "Failure"); return (r as { failure: NaiveError }).failure; };
+  const plain = await fail(readItem(failing(new Error("the host is down")), "a.json"));
+  assert.equal(plain._tag, "CannotRun");
+  assert.equal(plain.message, "the host is down");
+  const coded = await fail(writeItem(failing({ code: "version-conflict", current: "v2" }), "a.json", "{}", { base: "v1" }));
+  assert.equal(coded._tag, "VersionConflict");
+  assert.deepEqual(coded._tag === "VersionConflict" ? [coded.base, coded.current] : [], ["v1", "v2"]);
+  const tagged = new VersionConflict("a.json", "v1", null);
+  assert.equal(await fail(writeItem(failing(tagged), "a.json", "{}", { base: "v1" })), tagged);
 });
 
 for (const [name, ok] of results) console.log(`${ok ? "pass" : "FAIL"}  ${name}`);

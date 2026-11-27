@@ -41,7 +41,7 @@ export function agentPrompt(brief: AgentBrief, task: string, venture: string | n
     `## How to read and write records\n\nRun naive from the venture folder with MENTURA_ACTOR_ID=${brief.role} set, which this run already sets: \`naive <route> read\`, \`naive <route> write --input <file>\`, \`naive decisions\`. A write outside your reach is refused, and a write the gate holds waits as a draft for a person. Raise a decision instead of guessing on anything the decision matrix escalates.`,
     // The levers that keep skipped work and extra skills inside the system (EE-213), named only where they apply.
     brief.kind === "function-agent"
-      ? `## When you finish, and when you cannot\n\nRecord every workflow run with \`naive due record <function>/<workflow> --steps <the ids of the steps you finished>\`, so a step you did not finish stays on \`naive skipped\` instead of being lost, and say in the run why you left it. For a task inside your reach that needs skills you do not have, spawn one temporary specialist of your own: \`naive agent spawn ${brief.role} --task "<the one task>" [--skills a,b] [--ttl "2 hours"]\`. Its reach is never wider than yours, it ends with its ttl, and anything beyond its task comes back to you.`
+      ? `## When you finish, and when you cannot\n\nYour word that a step is done is not evidence (EE-227). Run a workflow with \`naive workflow run <function>/<workflow>\`, which runs you one step at a time and reads each step's evidence from the provenance log itself. When you run one by hand, write every step's output as records under the session \`run:<run id>/<step id>\` (set MENTURA_SESSION) and record the run with \`naive due record <function>/<workflow> --run <run id> --started <iso> --results <file.json>\`, one result per step: done, not-needed (a step to consider, with why), nothing-to-record (a step that only feeds decisions, with why) or skipped (with why). \`naive runs verify <run id>\` shows what is proven, and a step that is not stays on \`naive skipped\`. When you check another agent's work, check its run package with \`naive runs verify\`, never its say-so. For a task inside your reach that needs skills you do not have, spawn one temporary specialist of your own: \`naive agent spawn ${brief.role} --task "<the one task>" [--skills a,b] [--ttl "2 hours"]\`. Its reach is never wider than yours, it ends with its ttl, and anything beyond its task comes back to you.`
       : "",
     `## What you may write\n\n${writes.length ? writes.map((w) => `- ${w}`).join("\n") : "Nothing outside decisions."}`,
     brief.instructions ? `## Instructions (${brief.instructions.path})\n\n${brief.instructions.text.trim()}` : "",
@@ -147,5 +147,6 @@ function start(b: AgentBrief, task: string, dir: string | null, rest: string[]):
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  try { process.exit(main(process.argv.slice(2))); } catch (e) { console.error((e as Error).message); process.exit(1); }
+  // exitCode, not process.exit: exiting at once cuts a long brief written to a pipe (--json passes 146 KB).
+  try { process.exitCode = main(process.argv.slice(2)); } catch (e) { console.error((e as Error).message); process.exitCode = 1; }
 }

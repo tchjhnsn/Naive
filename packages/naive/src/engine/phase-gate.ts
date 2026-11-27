@@ -201,7 +201,7 @@ const sentence = (r: GateRow, preset: string) => r.why[0]?.startsWith("pending")
   : `${r.id} (${r.label}) is ${r.level}; the ${preset} policy needs ${r.min}, ${r.boundary}${r.next ? `. Next: ${r.next}` : ""}`;
 
 /** Every venture file of a record type, as logical paths; a collection's glob is listed. */
-const filesFor = (dir: string, globs: string[]) => Effect.gen(function* () {
+export const filesFor = (dir: string, globs: string[]) => Effect.gen(function* () {
   const fs = yield* VentureFs;
   const out: string[] = [];
   for (const g of globs) {
