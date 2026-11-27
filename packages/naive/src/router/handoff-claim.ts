@@ -16,11 +16,15 @@
 // Node strips no types, so the package ships it compiled to .mjs (scripts/build.ts, EE-160).
 // It never calls a model.
 
-import { record as prov } from "../core/provenance.ts";
+import { Effect } from "effect";
+import { recordProvenance } from "../core/effect/provenance.ts";
+import { runPromise } from "../core/effect/run.ts";
+import type { NaiveError } from "../core/effect/errors.ts";
+import type { VentureServices } from "../core/effect/runtime.ts";
 import { address } from "../store/connectors/contract.ts";
 import { schemaNameOf } from "../records/index.ts";
-import { validateValue } from "../records/validate.ts";
-import { gateWrite } from "./gate-hooks.ts";
+import { gateWriteEffect } from "./gate-hooks.ts";
+import { readItem, schemaFailureEffect, writeItem } from "./write-effects.ts";
 import type { Answer, CallProvenance, RouteEntry, Source, Store } from "./router.ts";
 import type { Handoff } from "../records/types/records.d.ts";
 
@@ -34,7 +38,6 @@ export const PROGRESS = ["status", "evidence", "pr", "escalations", "lesson", "a
 export const VERIFY = ["verification", "status", "claimed_by", "attempts"];
 
 const RETRIES = 50;
-const message = (e: unknown) => String((e && typeof e === "object" && "message" in e ? e.message : undefined) ?? e);
 const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
 
 /** Who a claim names, and who a later write is compared with: the run id, else the acting role. */
@@ -90,61 +93,68 @@ export function handoffWriteRefusal({ stored, input, person, actorId, who }: {
   return `${id} is claimed by ${stored.claimed_by} and was requested by ${req}: only the claimant writes progress and evidence, and only the requester writes the verification and acceptance, so ${who ?? actorId ?? "this caller"} may not write it`;
 }
 
+type HandoffWrite = { store: Store; file: string; input: Partial<Handoff>; person: boolean; actorId?: string; agent: Agent };
+type HandoffRuled = { ok: false; error: string } | { ok: true; base: string | null | undefined; stored: Handoff | null };
+
 /**
  * The rule for one router write of a handoff. Returns { ok: false, error } when refused, else { ok: true, base }: base is
  * the version read when a rule applied (null for a new file), which the write names so nothing slips in between the
  * check and the write, or undefined when the handoff names no requester and the write goes on as before. input is the
  * record as written, not yet checked against the schema, read for the handoff fields the rules name.
  */
-export async function handoffWriteRule({ store, file, input, person, actorId, agent }: {
-  store: Store; file: string; input: Partial<Handoff>; person: boolean; actorId?: string; agent: Agent;
-}): Promise<{ ok: false; error: string } | { ok: true; base: string | null | undefined; stored: Handoff | null }> {
-  let cur: Awaited<ReturnType<Store["read"]>>;
-  try { cur = await store.read(file); } catch (e) { return { ok: false, error: message(e) }; }
+export const handoffWriteRuleEffect = Effect.fnUntraced(function* ({ store, file, input, person, actorId, agent }: HandoffWrite): Effect.fn.Return<HandoffRuled> {
+  const read = yield* Effect.result(readItem(store, file));
+  if (read._tag === "Failure") return { ok: false, error: read.failure.message };
+  const cur = read.success;
   let stored: Handoff | null = null;
   try { stored = cur ? JSON.parse(cur.content) : null; } catch { stored = null; }
   if (!stored?.requested_by && !input?.requested_by) return { ok: true, base: undefined, stored };
   const why = handoffWriteRefusal({ stored, input, person, actorId, who: claimantOf(agent, actorId) });
   return why ? { ok: false, error: why } : { ok: true, base: cur?.version ?? null, stored };
-}
+});
+export const handoffWriteRule = (args: HandoffWrite): Promise<HandoffRuled> => runPromise(handoffWriteRuleEffect(args));
+
+type Claim = {
+  dir: string; r: RouteEntry; id?: string; route: string; requested: string; file: string; actor: string; actor_id?: string;
+  provenance?: CallProvenance; store: Store; src: Source; agent: Agent; remote: boolean | undefined;
+};
 
 /**
  * Claims one handoff for the acting role. Returns { ok, result: { claimed, claimed_by, status, version, provenance } },
  * or { ok: false, error } naming why it was refused.
  */
-export async function claimHandoff({ dir, r, id, route, requested, file, actor, actor_id, provenance = {}, store, src, agent, remote }: {
-  dir: string; r: RouteEntry; id?: string; route: string; requested: string; file: string; actor: string; actor_id?: string;
-  provenance?: CallProvenance; store: Store; src: Source; agent: Agent; remote: boolean | undefined;
-}): Promise<Answer> {
+export const claimHandoffEffect = Effect.fnUntraced(function* ({ dir, r, id, route, requested, file, actor, actor_id, provenance = {}, store, src, agent, remote }: Claim): Effect.fn.Return<Answer, NaiveError, VentureServices> {
   if (!actor_id) return { ok: false, error: `a claim names the acting role (actor_id), which must be the handoff's role` };
   if (store.writes !== "direct") return { ok: false, error: `${route} lives in ${src.id}, which ${store.writes === "none" ? "is read-only" : "takes writes by pull request, so a claim cannot land at once"}` };
   // Gate group hook: the venture's gate decides on a claim as on any write; a claim that would be held cannot wait.
-  const verdict = remote ? null : gateWrite({ dir, r, route, requested, file, actor, actor_id, provenance, gate: null });
+  const verdict = remote ? null : yield* gateWriteEffect({ dir, r, route, requested, file, actor, actor_id, provenance, gate: null });
   if (verdict) return { ok: false, gate_rule: verdict.rule, error: verdict.then === "refuse" ? verdict.why : `gate rule ${verdict.rule} (${verdict.source}) would hold this claim as a draft, and a claim cannot wait: nothing was claimed` };
   const who = claimantOf(agent, actor_id);
   for (let i = 0; ; i++) {
-    let cur: Awaited<ReturnType<Store["read"]>>;
-    try { cur = await store.read(file); } catch (e) { return { ok: false, error: `${src.id}: ${message(e)}` }; }
+    const read = yield* Effect.result(readItem(store, file));
+    if (read._tag === "Failure") return { ok: false, error: `${src.id}: ${read.failure.message}` };
+    const cur = read.success;
     if (!cur) return { ok: false, error: `no handoff ${id} in ${route}` };
     let h: Handoff;
-    try { h = JSON.parse(cur.content); } catch (e) { return { ok: false, error: `${file} does not parse: ${message(e)}` }; }
+    try { h = JSON.parse(cur.content); } catch (e) { return { ok: false, error: `${file} does not parse: ${e instanceof Error ? e.message : String(e)}` }; }
     if (h.claimed_by) return { ok: false, error: `${id} is already claimed by ${h.claimed_by}`, claimed_by: h.claimed_by };
     if (h.status !== "ready") return { ok: false, error: `${id} is ${h.status}: only a ready handoff is claimed (node packages/naive/src/checks/check-ready.ts --record makes it ready)` };
     if (h.role !== actor_id) return { ok: false, error: `${id} is addressed to ${h.role}, not ${actor_id}: only its role claims it` };
     const next = { ...h, claimed_by: who, status: "in-progress" };
-    const v = validateValue(schemaNameOf(String(r.schema)), next);
-    if (v.status !== 0) return { ok: false, error: `does not match ${r.schema}:\n${(v.stdout + v.stderr).trim()}` };
+    const failed = yield* schemaFailureEffect(schemaNameOf(String(r.schema)), next);
+    if (failed !== null) return { ok: false, error: `does not match ${r.schema}:\n${failed}` };
     const text = JSON.stringify(next, null, 2) + "\n";
-    let w: Awaited<ReturnType<Store["write"]>>;
-    try { w = await store.write(file, text, { base: cur.version, message: `${route}: claimed by ${who}`, title: `Mentura: ${route}` }); }
-    catch (e) {
+    const wrote = yield* Effect.result(writeItem(store, file, text, { base: cur.version, message: `${route}: claimed by ${who}`, title: `Mentura: ${route}` }));
+    if (wrote._tag === "Failure") {
       // Another write landed between the read and this one: read again, and the checks above decide.
-      if (e && typeof e === "object" && "code" in e && e.code === "version-conflict" && i < RETRIES) continue;
-      return { ok: false, error: `${src.id}: ${message(e)}` };
+      if (wrote.failure._tag === "VersionConflict" && i < RETRIES) continue;
+      return { ok: false, error: `${src.id}: ${wrote.failure.message}` };
     }
+    const w = wrote.success;
     const entity = remote ? address(src.id, file) : file;
-    const entry = prov(dir, { entity, route, activity: "write", agent, derived_from: provenance.derived_from, decision: provenance.decision,
+    const entry = yield* recordProvenance(dir, { entity, route, activity: "write", agent, derived_from: provenance.derived_from, decision: provenance.decision,
       note: provenance.note ?? `claimed by ${who}`, ...(remote ? { source: { id: src.id, connector: src.connector, version: w.version } } : {}) });
     return { ok: true, result: { claimed: entity, claimed_by: who, status: "in-progress", version: w.version, provenance: entry.hash } };
   }
-}
+});
+export const claimHandoff = (args: Claim): Promise<Answer> => runPromise(claimHandoffEffect(args));

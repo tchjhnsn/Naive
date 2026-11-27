@@ -15,11 +15,16 @@
 // appended line is a provenance entry. It never calls a model.
 
 import { createHash } from "node:crypto";
-import { lineHash, record as prov } from "../core/provenance.ts";
+import { Effect } from "effect";
+import { lineHash } from "../core/provenance.ts";
+import { recordProvenance } from "../core/effect/provenance.ts";
+import { runPromise } from "../core/effect/run.ts";
+import type { NaiveError } from "../core/effect/errors.ts";
+import type { VentureServices } from "../core/effect/runtime.ts";
 import { address } from "../store/connectors/contract.ts";
 import { schemaNameOf } from "../records/index.ts";
-import { validateValue } from "../records/validate.ts";
-import { gateWrite } from "./gate-hooks.ts";
+import { gateWriteEffect } from "./gate-hooks.ts";
+import { readItem, schemaFailureEffect, writeItem } from "./write-effects.ts";
 import type { Answer, CallProvenance, RouteEntry, Source, Store } from "./router.ts";
 
 type Obj = Record<string, unknown>;
@@ -27,20 +32,22 @@ const isObj = (x: unknown): x is Obj => !!x && typeof x === "object";
 
 const RETRIES = 200;
 const sha = (s: string) => createHash("sha256").update(s).digest("hex");
-const pause = () => new Promise<void>((ok) => setTimeout(ok, 1 + Math.random() * 10));
+const pause = () => Effect.sleep(1 + Math.random() * 10);
 const message = (e: unknown) => String((isObj(e) ? e.message : undefined) ?? e);
 
 /** The lines of a JSON lines log, in order. Throws on a line that does not parse. */
 export const linesOf = (text: string): unknown[] => text.split("\n").filter((l) => l.trim()).map((l) => JSON.parse(l));
 
+type Append = {
+  dir: string; r: RouteEntry; id?: string; route: string; requested: string; file: string; input: unknown; actor: string; actor_id?: string;
+  provenance?: CallProvenance; store: Store; src: Source; agent: Record<string, unknown>; remote: boolean | undefined;
+};
+
 /**
  * Appends one line to a log route. Returns { ok, result: { appended, line, version, provenance } }, or
  * { ok: false, error, conflict?: { current } } when the caller's base is stale.
  */
-export async function appendLine({ dir, r, id, route, requested, file, input, actor, actor_id, provenance = {}, store, src, agent, remote }: {
-  dir: string; r: RouteEntry; id?: string; route: string; requested: string; file: string; input: unknown; actor: string; actor_id?: string;
-  provenance?: CallProvenance; store: Store; src: Source; agent: Record<string, unknown>; remote: boolean | undefined;
-}): Promise<Answer> {
+export const appendLineEffect = Effect.fnUntraced(function* ({ dir, r, id, route, requested, file, input, actor, actor_id, provenance = {}, store, src, agent, remote }: Append): Effect.fn.Return<Answer, NaiveError, VentureServices> {
   const inp = isObj(input) ? input : undefined;
   const line = inp?.line;
   if (!isObj(line) || Array.isArray(line)) return { ok: false, error: "append needs one line, as input.line" };
@@ -49,12 +56,13 @@ export async function appendLine({ dir, r, id, route, requested, file, input, ac
   if (r.record === "detector-trial" && id && line.detector !== id) return { ok: false, error: `${route} is the ledger of detector ${id}, not ${line.detector}` };
   if (store.writes !== "direct") return { ok: false, error: `${route} lives in ${src.id}, which ${store.writes === "none" ? "is read-only" : "takes writes by pull request, so no line can be appended there"}` };
   // Gate group hook (X-1 to X-6): the venture's gate decides on a line as on any write.
-  const verdict = remote ? null : gateWrite({ dir, r, route, requested, file, actor, actor_id, provenance, gate: null });
+  const verdict = remote ? null : yield* gateWriteEffect({ dir, r, route, requested, file, actor, actor_id, provenance, gate: null });
   if (verdict) return { ok: false, gate_rule: verdict.rule, error: verdict.then === "refuse" ? verdict.why : `gate rule ${verdict.rule} (${verdict.source}) would hold this line as a draft, and a log line cannot wait while the chain moves on: nothing was appended` };
   const conflict = (current: unknown) => ({ ok: false, conflict: { current }, error: `${file} changed since version ${inp?.base ?? "(none)"}: it is ${current ?? "missing"} now; read it again and retry` });
   for (let i = 0; ; i++) {
-    let cur: Awaited<ReturnType<Store["read"]>>;
-    try { cur = await store.read(file); } catch (e) { return { ok: false, error: `${src.id}: ${message(e)}` }; }
+    const read = yield* Effect.result(readItem(store, file));
+    if (read._tag === "Failure") return { ok: false, error: `${src.id}: ${read.failure.message}` };
+    const cur = read.success;
     const version = cur?.version ?? null;
     if (pinned && inp?.base !== version) return conflict(version);
     let lines: unknown[];
@@ -66,22 +74,24 @@ export async function appendLine({ dir, r, id, route, requested, file, input, ac
     const { hash: _hash, prev: _prev, ...rest } = line;
     const chained: Obj = { ...rest, prev };
     chained.hash = lineHash(prev, chained);
-    const v = validateValue(schemaNameOf(String(r.schema)), chained);
-    if (v.status !== 0) return { ok: false, error: `does not match ${r.schema}:\n${(v.stdout + v.stderr).trim()}` };
+    const failed = yield* schemaFailureEffect(schemaNameOf(String(r.schema)), chained);
+    if (failed !== null) return { ok: false, error: `does not match ${r.schema}:\n${failed}` };
     const text = JSON.stringify(chained) + "\n";
-    let w: Awaited<ReturnType<Store["write"]>>;
-    try { w = await store.write(file, text, { append: true, base: version, message: `${route}: appended ${chained.id ?? "a line"}`, title: `Mentura: ${route}` }); }
-    catch (e) {
-      if (isObj(e) && e.code === "version-conflict") {
-        if (pinned) return conflict(e.current ?? null);
-        if (i < RETRIES) { await pause(); continue; }
+    const wrote = yield* Effect.result(writeItem(store, file, text, { append: true, base: version, message: `${route}: appended ${chained.id ?? "a line"}`, title: `Mentura: ${route}` }));
+    if (wrote._tag === "Failure") {
+      const e = wrote.failure;
+      if (e._tag === "VersionConflict") {
+        if (pinned) return conflict(e.current);
+        if (i < RETRIES) { yield* pause(); continue; }
       }
-      return { ok: false, error: `${src.id}: ${message(e)}` };
+      return { ok: false, error: `${src.id}: ${e.message}` };
     }
+    const w = wrote.success;
     const entity = remote ? address(src.id, file) : file;
-    const entry = prov(dir, { entity, route, activity: "write", agent, derived_from: provenance.derived_from, decision: provenance.decision,
+    const entry = yield* recordProvenance(dir, { entity, route, activity: "write", agent, derived_from: provenance.derived_from, decision: provenance.decision,
       note: provenance.note ?? `appended ${chained.kind ?? "line"} ${chained.id ?? ""}`.trim(), sha256: sha((cur?.content ?? "") + text),
       ...(remote ? { source: { id: src.id, connector: src.connector, version: w.version } } : {}) });
     return { ok: true, result: { appended: entity, line: chained, version: w.version, provenance: entry.hash } };
   }
-}
+});
+export const appendLine = (args: Append): Promise<Answer> => runPromise(appendLineEffect(args));

@@ -162,6 +162,9 @@ export type Finding = { rule: string, file: string, field?: string, line?: numbe
 export async function check(paths: string[], { venture }: { venture?: string } = {}) {
   const cfg = configFor(venture), findings = ([]) as Finding[], stages: string[] = [];
   const on = (r: string) => cfg.rules[r] !== "off";
+  // A path that is not there is an error, never a clean pass: a typo must not read as "nothing wrong".
+  for (const p of paths.filter((p) => !existsSync(p)))
+    findings.push({ rule: "missing-path", file: p, text: "", message: "no such file or folder, so nothing was checked", published: false, at_least: "error" });
   const given = paths.filter(existsSync).flatMap(walk);
   const files = given.filter((f) => /\.(mdx?|html|txt)$/.test(f));
   const publishedOf = new Map(files.map((f) => [resolve(f), frontmatter(readFileSync(f, "utf8")).meta.publish === true]));
