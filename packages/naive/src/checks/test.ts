@@ -9,7 +9,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { readDataModel, recordsIn } from "../records/index.ts";
 import { naiveScript } from "../core/scripts.ts";
-import type { Board, DataModel, DecisionRights, Department, DepartmentCatalog, Evidence, Exit, FounderAgreement, Handoff, Integration, KnowledgeSources, Layer, LeadPlan, Ownership, Product, PublicationPolicy, TeamPlan, Telos, ValidationProblem, ValidationProductMarketFit, Venture, WhereUsed } from "../records/types/records.d.ts";
+import type { Board, DataModel, DecisionRights, Department, DepartmentCatalog, Evidence, Exit, FounderAgreement, Handoff, Integration, KnowledgeSources, Layer, LeadPlan, Ownership, Product, ProductCapability, PublicationPolicy, TeamPlan, Telos, ValidationProblem, ValidationProductMarketFit, Venture, WhereUsed } from "../records/types/records.d.ts";
 
 // A library package's package.json has no schema: the fields these tests change.
 type PackageManifest = { department?: string, use_model?: { step: string, inputs: string[] }[] };
@@ -42,6 +42,12 @@ expect("check-ventures passes on the software example", run("check-ventures.ts",
 expect("check-ventures passes on the examples", run("check-ventures.ts", [join(root, "packages/naive/src/records/examples/workspace")]).status === 0);
 broken("a flows_to to an unknown product fails", "check-ventures.ts", (d) => edit(join(d, "product/plugin.json"), (p: Product) => { p.flows_to = ["nope"]; }), /flows_to unknown product nope/);
 broken("a part_of to an unknown product fails", "check-ventures.ts", (d) => edit(join(d, "product/recipes.json"), (p: Product) => { p.part_of = ["nope"]; }), /part_of unknown product nope/);
+const capability = (d: string, id: string) => join(d, "product/capabilities", `${id}.json`);
+broken("a capability of an unknown product fails", "check-ventures.ts", (d) => edit(capability(d, "changelog"), (c: ProductCapability) => { c.product = "nope"; }), /product nope is not one of the venture's products/);
+broken("a capability under an unknown category fails", "check-ventures.ts", (d) => edit(capability(d, "changelog"), (c: ProductCapability) => { c.parent = "nope"; }), /parent nope is no capability/);
+broken("a capability under a capability fails", "check-ventures.ts", (d) => edit(capability(d, "releasing"), (c: ProductCapability) => { c.kind = "capability"; c.parent = "changelog"; }), /only a category holds others/);
+broken("categories that loop fail", "check-ventures.ts", (d) => { edit(capability(d, "releasing"), (c: ProductCapability) => { c.parent = "publishing"; }); writeFileSync(capability(d, "publishing"), JSON.stringify({ id: "publishing", name: "Publishing", product: "cli", kind: "category", parent: "releasing", owner: "publishing-agent", status: "live" })); }, /its categories form a loop/);
+broken("a building capability under a retired category fails", "check-ventures.ts", (d) => edit(capability(d, "releasing"), (c: ProductCapability) => { c.status = "retired"; }), /building under the retired category releasing/);
 broken("a missing layer folder fails", "check-ventures.ts", (d) => rmSync(join(d, "operations"), { recursive: true }), /operations layer location/);
 broken("a tier scope outside operations fails", "check-ventures.ts", (d) => edit(join(d, "products/cli.json"), (p: Product) => { p.scope = { level: "tier", layer: "knowledge", tier: "delivery" }; }), /tier-scoped/);
 broken("software with no repository fails", "check-ventures.ts", (d) => edit(join(d, "venture.json"), (v: Venture) => { delete v.repos; }), /builds software, so the venture \(or a parent\) needs a repository/);
