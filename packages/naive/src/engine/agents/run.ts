@@ -147,5 +147,7 @@ function start(b: AgentBrief, task: string, dir: string | null, rest: string[]):
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  try { process.exit(main(process.argv.slice(2))); } catch (e) { console.error((e as Error).message); process.exit(1); }
+  // The exit code is set and the process ends by itself, so a brief longer than one pipe buffer reaches a reader
+  // that waits, whole. process.exit here cut `brief --json` off once every function had its workflows (EE-226).
+  try { process.exitCode = main(process.argv.slice(2)); } catch (e) { console.error((e as Error).message); process.exitCode = 1; }
 }
