@@ -169,7 +169,9 @@ const detectorErrors = (dir: string, d: Detector, where: string, known: { roles:
   const sensor = d.evidence?.sensor ?? "";
   if (d.evidence?.kind === "person" && !known.roles.has(sensor)) errors.push(`${where}: sensor ${sensor} is not a role in the roles registers or a person the venture names`);
   const path = sensor.split(/\s/)[0];
-  if (d.evidence?.kind === "check" && /\.(m?js|ts)$/.test(path) && !(yield* fs.exists(join(ROOT, path))) && !(yield* fs.exists(ventureFile(dir, path)))) {
+  if (d.evidence?.kind === "check" && /\.(m?js|ts)$/.test(path) && !(yield* fs.exists(join(ROOT, path)))
+    // The compiled package (EE-159) holds the same module as .mjs, so a default that names the .ts source still resolves there.
+    && !(yield* fs.exists(join(ROOT, path.replace(/\.ts$/, ".mjs")))) && !(yield* fs.exists(ventureFile(dir, path)))) {
     errors.push(`${where}: sensor ${path} is not a file in Naive or the venture`);
   }
   return errors;

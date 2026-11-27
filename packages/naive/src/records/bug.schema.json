@@ -15,6 +15,7 @@
     "found_in": { "type": "string", "description": "The version (or commit) it was found in" },
     "repro": { "type": "array", "items": { "type": "string" }, "description": "Steps to reproduce" },
     "fixed_in": { "type": ["string", "null"], "description": "The version that fixed it" },
-    "feedback": { "type": "string", "description": "The feedback record it came from, if any" }
+    "feedback": { "type": "string", "description": "The feedback record it came from, if any" },
+    "capability": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$", "description": "The product capability it breaks: an id in product/capabilities (EE-228). The feature report counts it against that capability" }
   }
 }

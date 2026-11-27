@@ -122,6 +122,10 @@ try {
   expect("record copy: a public field is linted", pub.findings.some((f) => f.rule === "leaks" && f.field === "statement"), pub.findings);
   expect("record copy: an internal field is not", !pub.findings.some((f) => f.field === "notes"), pub.findings);
 
+  // A path that is not there fails the check: a typo never reads as a clean pass.
+  const absent = await check([join(v, "content/no-such-page.mdx")], { venture: v });
+  expect("a missing path is an error, not a pass", !absent.ok && absent.findings.some((f) => f.rule === "missing-path" && f.severity === "error"), absent.findings);
+
   // The config is read where the router reads it: meta/naive.config.json in a structured venture.
   const s = join(ws, "struct");
   mkdirSync(join(s, "meta"), { recursive: true });

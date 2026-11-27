@@ -606,6 +606,8 @@ export type Bug = {
   fixed_in?: string | null;
   /** The feedback record it came from, if any */
   feedback?: string;
+  /** The product capability it breaks: an id in product/capabilities (EE-228). The feature report counts it against that capability */
+  capability?: string;
 };
 
 /** One event, one file (calendar/events/<uid>.json), in the shape of a JSCalendar Event (RFC 8984): a start in local time with its IANA time zone and a duration. Events derived from dated records (open decisions with a due time, releases) are never stored; packages/naive/src/engine/calendar.ts computes them each time the calendar is read. */
@@ -5395,7 +5397,7 @@ export type Process = {
   note?: string;
 };
 
-/** One capability of a product, or a category that groups capabilities, at <venture>/product/capabilities/<id>.json (EE-224). Capabilities form a tree under the products function: a category's parent is another category or null (it sits directly under the products function), and a capability always has a category as its parent. Each names the agent role that owns it, the one that keeps its words and its site or docs containers current. A capability is live, building or retired, and nothing under a retired category is live or building (node packages/naive/src/checks/check-ventures.ts). */
+/** One capability of a product, or a category that groups capabilities, at <venture>/product/capabilities/<id>.json (EE-224). Capabilities form a tree under the products function: a category's parent is another category or null (it sits directly under the products function), and a capability always has a category as its parent. Each names the agent role that owns it, the one that keeps its words and its site or docs containers current. A capability is live, building or retired, and nothing under a retired category is live or building (node packages/naive/src/checks/check-ventures.ts). A feature report (naive features, packages/naive/src/engine/feature-report.ts, EE-228) reads it with the records that name it. */
 export type ProductCapability = {
   id: string;
   venture?: string;
@@ -5418,6 +5420,31 @@ export type ProductCapability = {
    */
   since?: string;
   note?: string;
+  /** The goals it serves, each a goal id in foundation/goals or goal/measure for one measure of it (EE-228). The feature report reads each goal's status from its record */
+  goals?: string[];
+  /** The requirements it meets, each a requirement id in foundation/requirements (EE-228) */
+  requirements?: string[];
+  /** A person's RICE inputs for it (Intercom's method): the score is reach times impact times confidence over effort, computed by the feature report and never stored (EE-228). Naive ships no value: each is the venture's own estimate */
+  rice?: {
+    /** How many people or events it reaches in one period */
+    reach: number;
+    /** What reach counts, for example customers per quarter */
+    reach_unit?: string;
+    /** Intercom's scale: 3 massive, 2 high, 1 medium, 0.5 low, 0.25 minimal */
+    impact: 0.25 | 0.5 | 1 | 2 | 3;
+    /** How sure the estimates are, as a share: 1 is 100% */
+    confidence: number;
+    /** Work to build it, in person-months */
+    effort: number;
+    /** The person who set these inputs */
+    set_by: string;
+    /**
+     * When they were set
+     * @format date
+     */
+    at: string;
+    note?: string;
+  };
 };
 
 /** One product of a venture, stored as a card at products/<id>.json (EE-011). It holds the product's own market, job, technology, offering and business model; Product Anatomy judges it against the venture's core and assigns its portfolio role per phase. */

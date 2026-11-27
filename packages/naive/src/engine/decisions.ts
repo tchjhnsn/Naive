@@ -447,6 +447,10 @@ export const decisionFile = fileOf;
 /** Whether an applies_to file is a relative path that stays inside the venture (no ".", "..", or empty segment, not absolute), so it has one spelling. */
 const inside = (f: unknown) => typeof f === "string" && f !== "" && !isAbsolute(f) && !/^[a-zA-Z]:/.test(f) && !f.split(/[\\/]/).some((x) => ["", ".", ".."].includes(x));
 
+/** What a proposal may not change on a decision an agent did not draft: who may decide it, what it locks and what it writes to. */
+const AUTHORITY_FIELDS = ["class", "door", "boundary", "unlocks", "blocks", "applies_to", "decides", "parent", "candidates", "assigned_to", "publish", "sync_conflict", "detector_trial",
+  "decided_by", "decided_at", "withdrawn_by", "withdrawn_at", "reopened"] as const;
+
 /** An agent proposes a decision, or new wording for an open one. It stays open until a person
  *  approves it: an agent never decides (EE-058). at: the folder beside the record it decides. */
 export function propose(dir: string, input: ProposeInput | null | undefined, { agentId, via = "router", harness, model }: { agentId?: string; via?: string; harness?: string; model?: string } = {}): DoorResult<{ proposed: string; file: string; awaiting: "approval"; provenance: string }> {
@@ -468,6 +472,15 @@ export function propose(dir: string, input: ProposeInput | null | undefined, { a
     if (!rest.answer) return { ok: false, error: `${rest.id} is decided; propose new wording as an answer, and a person approves it as the next version` };
     d = { ...before, proposed: { answer: rest.answer, ...(rest.options ? { options: rest.options } : {}), drafted_by, proposed_at: new Date().toISOString().replace(/\.\d+Z$/, "Z") } };
   } else {
+    // A withdrawn decision is reopened by a person (naive reopen), never by proposing its id again.
+    if (before.status === "withdrawn") return { ok: false, error: `${rest.id} is withdrawn; only a person reopens it (naive reopen ${rest.id})` };
+    // The fields that say who may decide and what the answer changes are not an agent's to rewrite on a decision
+    // a person or the framework wrote. An agent may still correct them on a draft an agent wrote.
+    if (existing && before.provenance?.drafted_by?.kind !== "agent") {
+      const same = (x: unknown, y: unknown) => JSON.stringify(x) === JSON.stringify(y);
+      const changed = AUTHORITY_FIELDS.filter((k) => k in rest && !same((rest as Fields)[k], (before as Fields)[k]));
+      if (changed.length) return { ok: false, error: `${rest.id} was not drafted by an agent, so an agent may reword it but not change ${changed.join(", ")}; a person changes those` };
+    }
     // New wording for an open decision keeps what the agent did not restate: its parent, boundary, unlocks.
     if (rest.reasons) rest.reasons = stamp(dir, rest.reasons);
     d = { ...before, ...rest, status: "open", provenance: { drafted_by } };

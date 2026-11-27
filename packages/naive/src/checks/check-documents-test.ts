@@ -142,6 +142,24 @@ writeFileSync(file, JSON.stringify({ ...JSON.parse(readFileSync(file, "utf8")), 
 const afterApproval = run(RENDER, [copy, "site-copy", "--format", "html"]);
 t("once a person approved it, the html rung hands the work to the harness and renders nothing here",
   afterApproval.status === 0 && /the harness's to render, not Naive's/.test(afterApproval.out) && !existsSync(join(copy, "artifacts/site-copy-interactive.html")), afterApproval);
+// The live rung: its records, the rung below approved, and a decided public-commitment decision naming this document.
+const approve = (id: string) => { const f = join(copy, `artifacts/${id}.json`); writeFileSync(f, JSON.stringify({ id, kind: "site", title: "Site copy", audience: "customers", document_kind: "site-copy", format: "html", built_at: "2026-11-01T00:00:00Z", built_from: [{ record: "venture.json" }], ...(existsSync(f) ? JSON.parse(readFileSync(f, "utf8")) : {}), approved_by: "Torian" }, null, 2) + "\n"); };
+approve("site-copy-interactive");
+mkdirSync(join(copy, "governance"), { recursive: true });
+if (!existsSync(join(copy, "governance/publication-policy.json"))) writeFileSync(join(copy, "governance/publication-policy.json"), "{}\n");
+const noDecision = run(RENDER, [copy, "site-copy", "--format", "site"]);
+t("the live rung is refused with no decided public-commitment decision for this document",
+  noDecision.status === 1 && /no decided decision of class public-commitment names an artifact of site-copy/.test(noDecision.out), noDecision);
+mkdirSync(join(copy, "decisions"), { recursive: true });
+const decision = (name: string, body: object) => writeFileSync(join(copy, "decisions", `${name}.decision.json`), JSON.stringify({ id: name, question: "Publish?", class: "public-commitment", ...body }, null, 2) + "\n");
+decision("publish-other", { status: "decided", applies_to: [{ file: "artifacts/one-pager-reading-copy.json" }] });
+decision("publish-site-open", { status: "open", applies_to: [{ file: "artifacts/site-copy-interactive.json" }] });
+const otherDoc = run(RENDER, [copy, "site-copy", "--format", "site"]);
+t("a decision about another document, or one still open, unlocks nothing", otherDoc.status === 1 && /no decided decision of class public-commitment/.test(otherDoc.out), otherDoc);
+decision("publish-site", { status: "decided", applies_to: [{ file: "artifacts/site-copy-interactive.json" }] });
+const liveRung = run(RENDER, [copy, "site-copy", "--format", "site"]);
+t("with the decision decided, the live rung is reachable and handed to the publishing gate", liveRung.status === 0 && /naive publish/.test(liveRung.out), liveRung);
+
 const wrongFormat = run(RENDER, [copy, "spec", "--format", "pdf"]);
 t("a format the kind is not made in is refused with why", wrongFormat.status === 1 && /format-not-for-kind/.test(wrongFormat.out) && /made as md only/.test(wrongFormat.out), wrongFormat);
 const unknown = run(RENDER, [copy, "brochure"]);

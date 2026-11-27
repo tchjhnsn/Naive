@@ -3576,6 +3576,26 @@
       ]
     },
     {
+      "id": "EE-228",
+      "date": "2026-11-27",
+      "status": "in-force",
+      "decision": "A feature report is derived from the venture's records and stored nowhere. A feature is a product capability (EE-224). product-capability.schema.json gains three optional fields, goals (goal ids or goal/measure), requirements (requirement ids) and rice (a person's reach, impact on Intercom's 0.25 to 3 scale, confidence 0 to 1, effort in person-months, set_by and at), and bug.schema.json gains capability, the capability a bug breaks. packages/naive/src/engine/feature-report.ts gives one feature's place, its status history from provenance and the blob store, the goals and requirements it serves with their status, RICE, open bugs and the support cases through them, validation feedback, telemetry counts and the proof of its bytes, and a portfolio of every feature by product and category; naive features and the route product/features print them. Each section names the files its facts came from and a hole, with the record that would fill it, for each fact no record holds. RICE is scored only when provenance shows a person wrote the inputs; breadth, time to adopt and stickiness are holes because no record holds the eligible users or a user id. check-ventures.ts checks every new reference.",
+      "why": "Torian on 2026-11-27: \"generate some sort of feature reports. research what a product manager does and how they keep track of features.\" Product managers keep each feature with a lifecycle status, the goal it serves and progress against that goal (Aha!, Productboard), rank features by RICE (Intercom), and measure adoption by breadth, depth, time to adopt and stickiness (Pendo), while adoption alone does not prove value. Naive held the capability and the records around it, but bugs named no capability and nothing read them together. docs/design/FEATURE_REPORTS_2026-11-27.md.",
+      "related": [
+        "EE-031",
+        "EE-210",
+        "EE-224"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/feature-report.ts",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
       "id": "EE-129",
       "date": "2026-11-19",
       "status": "proposed",
