@@ -126,8 +126,9 @@ expect("with enforce, --override passes and is recorded", overridden.ok && gateO
 const reported = make("reported");
 criteria(reported);
 const lr = lifecycle(reported);
-expect("report-only: the gate is reported but does not block", lr.ready && lr.phase_gate.items.length === 8 && !lr.phase_gate.ready && !lr.blocking.some((b: string) => b.startsWith("gate strength")), lr.blocking);
-const moved = advance(reported, "validation", { by: person });
+// Proof of work (EE-227) blocks on its own, tested in phase-proof-test.ts; only gate strength is report-only.
+expect("report-only: the gate is reported but does not block", lr.blocking.every((b: string) => b.startsWith("proof:")) && lr.phase_gate.items.length === 8 && !lr.phase_gate.ready && !lr.blocking.some((b: string) => b.startsWith("gate strength")), lr.blocking);
+const moved = advance(reported, "validation", { by: person, override: "the proof of work is tested elsewhere" });
 expect("report-only: advance goes on, with the gate's risks in the result", moved.ok && gateOf(moved)?.strength?.ready === false, moved.error);
 
 // ---- The CLI and the route ----

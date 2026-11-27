@@ -291,7 +291,7 @@ async function dev(dir: string): Promise<void> {
 // path in Naive (packages/naive/src/checks/check-telos.ts), as the router's check action honours them.
 const CHECKS = ["check-ventures", "check-config", "check-people", "check-owners", "check-departments", "check-team", "check-delegation", "check-governance",
   "check-provenance", "check-traces", "check-sources", "check-records", "check-data-packages", "check-where-used", "check-private", "check-connections", "check-signals",
-  "check-telos", "check-goals", "check-problems", "check-validation", "check-pre-registration", "check-execution", "check-detectors", "check-documents",
+  "check-telos", "check-goals", "check-runs", "check-problems", "check-validation", "check-pre-registration", "check-execution", "check-detectors", "check-documents",
   "check-bets", "check-reasons", "check-validation-study", "check-recipes", "check-assets", "check-brand", "check-publication", "check-citations",
   "lint-investors", "lint-product", "lint-money", "lint-customers", "lint-validation", "lint-finance", "lint-legal", "lint-people", "lint-foundation"];
 function check(dir: string): number {
@@ -519,6 +519,18 @@ else if (cmd === "build" || cmd === "start") {
   // --at, --function and --json pass through, and --outcome, --by and --steps for record.
   const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
   process.exit(run("packages/naive/src/engine/due.ts", [here(), ...args]));
+} else if (cmd === "runs") {
+  // Proof of work (packages/naive/src/engine/run-proof.ts, EE-227): every run's package checked against the provenance
+  // log and the blob store, or one run by id. --workflow and --json pass through.
+  const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
+  process.exit(run("packages/naive/src/engine/run-proof.ts", [here(), ...args]));
+} else if (cmd === "workflow") {
+  // Running a workflow step by step, observed (packages/naive/src/engine/workflow-run.ts, EE-227): each step an Effect
+  // workflow activity, its evidence gathered from the provenance log by session. --as, --print and --json pass through.
+  const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
+  const [what, ...more] = args;
+  if (what !== "run" || !more.length) { console.error("usage: naive workflow run <function>/<workflow> [--as <role>] [--print] [--json] [--venture <dir>]"); process.exit(2); }
+  process.exit(run("packages/naive/src/engine/workflow-run.ts", [here(), ...more]));
 } else if (cmd === "blocked") {
   // Which workflows may run and which are locked, in hierarchical order (packages/naive/src/engine/prerequisites.ts,
   // EE-217). --json passes through.
