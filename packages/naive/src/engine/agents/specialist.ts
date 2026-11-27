@@ -24,7 +24,8 @@ import { join } from "node:path";
 import { Refused } from "../../core/effect/errors.ts";
 import type { NaiveError } from "../../core/effect/errors.ts";
 import { VentureFs, readJson } from "../../core/effect/fs.ts";
-import { actingAgent, agentFromEnv, recordEffect } from "../../core/provenance.ts";
+import { actingAgent, agentFromEnv } from "../../core/provenance.ts";
+import { writeRecordEffect } from "../../store/record-write.ts";
 import { ventureFile } from "../../core/venture-paths.ts";
 import { functionAgent, naivePath } from "./function-spec.ts";
 import { SPECIALISTS, functionOfAgent, narrowWrites, readSpecialist, specialistOfAgent, specialistReach } from "./reach.ts";
@@ -145,11 +146,9 @@ export const ttlFor = (dir: string): Effect.Effect<string, NaiveError, "naive/Ve
 
 /** Writes the record and its provenance line, and returns it. */
 const store = (dir: string, rec: Specialist, note: string): Effect.Effect<Specialist, NaiveError, "naive/VentureFs"> => Effect.gen(function* () {
-  const fs = yield* VentureFs;
   const file = `${SPECIALISTS}/${rec.id}.json`;
-  yield* fs.writeText(ventureFile(dir, file), `${JSON.stringify(rec, null, 2)}\n`);
-  yield* recordEffect(dir, { entity: file, route: `operations/specialist/${rec.id}`, activity: "write",
-    agent: agentFromEnv(rec.spawned_by === rec.parent ? "agent" : "person", "cli", { id: rec.spawned_by }), note } as Parameters<typeof recordEffect>[1]);
+  yield* writeRecordEffect(dir, file, rec, { route: `operations/specialist/${rec.id}`, activity: "write",
+    agent: agentFromEnv(rec.spawned_by === rec.parent ? "agent" : "person", "cli", { id: rec.spawned_by }), note });
   return rec;
 });
 

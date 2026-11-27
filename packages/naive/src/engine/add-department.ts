@@ -14,6 +14,7 @@ import { join } from "node:path";
 import { catalog, foldersOf } from "./departments.ts";
 import { seedPrograms } from "./research-programs.ts";
 import { ventureFile } from "../core/venture-paths.ts";
+import { writeRecord, writerFromEnv } from "../store/record-write.ts";
 import type { Venture } from "../records/types/records.d.ts";
 
 const args = process.argv.slice(2);
@@ -30,18 +31,22 @@ const layersOn = ["operations", ...(venture.layers?.governance ? ["governance"] 
 const held = foldersOf(dir).filter((f) => f.tag?.department === id).map((f) => f.layer);
 const tag = { department: d.id, value_chain: d.value_chain, apqc: d.apqc.id };
 const made: string[] = [];
+const agent = writerFromEnv("cli");
 for (const layer of layersOn.filter((l) => !held.includes(l))) {
   const rel = [layer, "departments", ...(group ? [d.value_chain] : []), d.id].join("/");
   if (existsSync(ventureFile(dir, rel))) { console.error(`${rel} exists without a department.json; add the tag by hand`); process.exit(1); }
   mkdirSync(ventureFile(dir, rel), { recursive: true });
-  writeFileSync(join(ventureFile(dir, rel), "department.json"), JSON.stringify(tag, null, 2) + "\n");
+  writeRecord(dir, `${rel}/department.json`, tag, { agent, note: `the ${d.id} department tag on ${layer}` });
   const [file, title, what] = layer === "governance"
     ? ["charter.md", "charter", d.governance] : ["README.md", "operations", d.operations];
-  writeFileSync(join(ventureFile(dir, rel), file), `# ${d.label}: ${title}\n\nHolds: ${what}.\n\nAPQC ${d.apqc.id} ${d.apqc.name}; value chain: ${d.value_chain} (${d.porter}).\n`);
+  const text = `# ${d.label}: ${title}\n\nHolds: ${what}.\n\nAPQC ${d.apqc.id} ${d.apqc.name}; value chain: ${d.value_chain} (${d.porter}).\n`;
+  // The charter is the department's record in prose; the operations README only explains the folder, so it is not logged.
+  if (layer === "governance") writeRecord(dir, `${rel}/${file}`, text, { agent, note: `the ${d.id} department charter` });
+  else writeFileSync(join(ventureFile(dir, rel), file), text);
   made.push(rel);
 }
 venture.departments = [...new Set([...(venture.departments ?? []), d.id])];
-writeFileSync(join(dir, "venture.json"), JSON.stringify(venture, null, 2) + "\n");
+writeRecord(dir, "venture.json", venture, { agent, note: `listed the ${d.id} department` });
 // The function's starter research program (autoresearch design), copied only when programs/<function>.md is missing.
 const programs = seedPrograms(dir, { only: [d.id] }).map((x) => x.path);
 console.log(made.length || programs.length ? `added ${d.label}: ${[...made, ...programs].join(", ")}` : `${d.label} is already in ${dir}`);

@@ -15,6 +15,7 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync
 import { basename, dirname, join } from "node:path";
 import { approve } from "./decisions.ts";
 import { ventureFile } from "../core/venture-paths.ts";
+import { writeRecord } from "../store/record-write.ts";
 
 /** One held draft of a record: its letter, file, and who wrote it when, from the sidecar. */
 type Variant = { variant: string; file: string; by?: string; at?: string; sha256?: string; trial?: string };
@@ -96,8 +97,9 @@ export function writeHeld(dir: string, { draft, file, text, verdict, route, agen
     note: `The gate kept ${variants.length} differing drafts side by side (rule ${verdict.rule}). Accept one: mentura accept ${route} --pick <letter>`,
     provenance: { drafted_by: { kind: "framework" } },
   };
-  mkdirSync(dirname(ventureFile(dir, dec.path)), { recursive: true });
-  writeFileSync(ventureFile(dir, dec.path), JSON.stringify(record, null, 2) + "\n");
+  // The gate opens this decision on the router's behalf; the framework drafted it, as its provenance field says.
+  writeRecord(dir, dec.path, record, { agent: { kind: "agent", via: "router", id: "gate" }, activity: existsSync(ventureFile(dir, dec.path)) ? "write" : "create",
+    note: `the gate kept ${variants.length} differing drafts of ${route} side by side (rule ${verdict.rule})` });
   writeFileSync(ventureFile(dir, sidecarOf(draft)), JSON.stringify({ ...(meta ?? { route, file, rule: verdict.rule, source: verdict.source, then: verdict.then, ...(verdict.owner ? { owner: verdict.owner, function: verdict.function ?? null } : {}) }), variants, decision: dec.id }, null, 2) + "\n");
   return { written: vfile, variant: next, variants: variants.map((v) => v.variant), decision: dec.id };
 }

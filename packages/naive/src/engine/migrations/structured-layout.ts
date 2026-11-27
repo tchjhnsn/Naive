@@ -15,6 +15,8 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, writeFile
 import { dirname, join } from "node:path";
 import { CODEBASE, KBASE, TOP as TOP_FILES, layoutOf } from "../../core/venture-paths.ts";
 import { git } from "../../core/runtime.ts";
+import { agentFromEnv } from "../../core/provenance.ts";
+import { writeRecord } from "../../store/record-write.ts";
 
 /** The part of the upgrade context this migration uses; naive upgrade --layout passes dry for --check. */
 type Ctx = { dry?: boolean; escalate(msg: string): void; note(msg: string): void };
@@ -61,15 +63,17 @@ export function apply(dir: string, ctx: Ctx) {
   if (!ctx.dry) { writeFileSync(vfile, JSON.stringify(v, null, 2) + "\n"); mkdirSync(join(dir, "meta"), { recursive: true }); }
   // Hats are read from venture.json functions in the structured layout (EE-086), so people/ stops storing them.
   if (!ctx.dry) {
+    // The person running naive upgrade --layout, as interfaces/cli/naive.ts names them on its venture.json line.
+    const agent = agentFromEnv("person", "cli");
     const rosterFile = join(dir, KBASE, "people/people.json");
     if (existsSync(rosterFile)) {
       const roster: { people?: Person[] } = JSON.parse(readFileSync(rosterFile, "utf8"));
-      if ((roster.people ?? []).some((p) => "hats" in p)) { for (const p of roster.people ?? []) delete p.hats; writeFileSync(rosterFile, JSON.stringify(roster, null, 2) + "\n"); }
+      if ((roster.people ?? []).some((p) => "hats" in p)) { for (const p of roster.people ?? []) delete p.hats; writeRecord(dir, "people/people.json", roster, { agent, note: "hats leave people/ on moving onto the structured layout" }); }
     }
     const fdir = join(dir, KBASE, "people/founders");
     if (existsSync(fdir)) for (const f of readdirSync(fdir).filter((n) => n.endsWith(".json"))) {
       const rec: Person = JSON.parse(readFileSync(join(fdir, f), "utf8"));
-      if ("hats" in rec) { delete rec.hats; writeFileSync(join(fdir, f), JSON.stringify(rec, null, 2) + "\n"); ctx.escalate(`people/founders/${f} stored hats; name each function's owner in venture.json functions instead`); }
+      if ("hats" in rec) { delete rec.hats; writeRecord(dir, `people/founders/${f}`, rec, { agent, note: "hats leave people/ on moving onto the structured layout" }); ctx.escalate(`people/founders/${f} stored hats; name each function's owner in venture.json functions instead`); }
     }
   }
   ctx.note(`moved ${movedPaths.length} entries into ${KBASE}/ and meta/: ${movedPaths.join(", ")}`);

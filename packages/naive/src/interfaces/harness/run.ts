@@ -38,7 +38,7 @@
 
 import { spawn, spawnSync } from "node:child_process";
 import type { Server } from "node:http";
-import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { basename, join, resolve } from "node:path";
 import { judgeCommand } from "../../engine/caching.ts";
@@ -52,6 +52,7 @@ import { agentFromEnv, record as prov } from "../../core/provenance.ts";
 import { evaluate, type Eval } from "./evals.ts";
 import { ventureFile } from "../../core/venture-paths.ts";
 import { HostedRefusal, isHosted } from "../../core/runtime.ts";
+import { writeRecord } from "../../store/record-write.ts";
 
 const repo = new URL("../../../../../", import.meta.url).pathname;
 
@@ -101,11 +102,10 @@ if (!existsSync(join(dir, "venture.json"))) {
   const p = spawnSync("node", [join(repo, "packages/naive/src/engine/init-venture.ts"), dir, id, "--phase", phase], { encoding: "utf8" });
   if (p.status !== 0) { console.error(p.stderr || p.stdout); process.exit(1); }
   const name = opt("name");
-  if (name) { const v = JSON.parse(readFileSync(join(dir, "venture.json"), "utf8")); v.name = name; writeFileSync(join(dir, "venture.json"), JSON.stringify(v, null, 2) + "\n"); }
+  if (name) { const v = JSON.parse(readFileSync(join(dir, "venture.json"), "utf8")); v.name = name; writeRecord(dir, "venture.json", v, { agent: agentFromEnv("person", "harness", { id: founder }), note: `named the venture ${name}` }); }
 }
 mkdirSync(join(ventureFile(dir, "purpose/ideas")), { recursive: true });
-copyFileSync(dumpFile, ventureFile(dir, DUMP));
-prov(dir, { entity: DUMP, route: "purpose/idea-dump", activity: "create", agent: agentFromEnv("person", "harness", { id: founder }), note: "the founder's idea dump, verbatim" });
+writeRecord(dir, DUMP, readFileSync(dumpFile, "utf8"), { route: "purpose/idea-dump", activity: "create", agent: agentFromEnv("person", "harness", { id: founder }), note: "the founder's idea dump, verbatim" });
 lap(`venture ${id} scaffolded in ${ws}; idea dump saved (${readFileSync(dumpFile, "utf8").length} characters)`);
 
 // Money (EE-070): the money source stays the system of record. Naive syncs pointers and a summary into
@@ -236,8 +236,7 @@ Ideas: ${JSON.stringify(Object.fromEntries(ideas.map((i) => [i.id, i.section ? `
   tags = JSON.parse(text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1));
   tagger = "claude-code";
 }
-writeFileSync(ventureFile(dir, MAP), render(ideas, clean(tags), { venture: id, tagger }));
-prov(dir, { entity: MAP, route: "purpose/idea-map", activity: "create", derived_from: [DUMP], agent: agentFromEnv("agent", "harness", { id: tagger }), note: `${ideas.length} ideas tagged with Naive's conventions` });
+writeRecord(dir, MAP, render(ideas, clean(tags), { venture: id, tagger }), { route: "purpose/idea-map", activity: "create", derived_from: [DUMP], agent: agentFromEnv("agent", "harness", { id: tagger }), note: `${ideas.length} ideas tagged with Naive's conventions` });
 const sum = summary(parse(readFileSync(ventureFile(dir, MAP), "utf8")), phase);
 trace.children.push(Object.assign(mapNode, { end: iso(), outputs: { tagger, summary: sum }, metadata: { tagger } }));
 lap(`idea map: ${sum.ideas} ideas; ${Object.entries(sum.by_pillar).map(([k, v]) => `${k} ${v}`).join(", ")}; clusters ${sum.strengths.map((s) => s.department).join(", ")}; ${sum.product.reading}`);
@@ -253,8 +252,7 @@ if (jev) {
   else console.log(`   Jev could not judge the dependencies (${p.stderr.trim().slice(0, 200)}); using Naive's record order`);
 }
 const g = buildGraph(mapIdeas, { answers: graphAnswers, phase, venture: id, source: `${MAP}@${createHash("sha256").update(readFileSync(ventureFile(dir, MAP))).digest("hex").slice(0, 16)}` });
-writeFileSync(ventureFile(dir, GRAPH), JSON.stringify(g, null, 2) + "\n");
-prov(dir, { entity: GRAPH, route: "purpose/idea-graph", activity: "create", derived_from: [MAP], agent: agentFromEnv("agent", "harness", { id: g.judged_by }), note: `Merkle root ${g.root}` });
+writeRecord(dir, GRAPH, g, { route: "purpose/idea-graph", activity: "create", derived_from: [MAP], agent: agentFromEnv("agent", "harness", { id: g.judged_by }), note: `Merkle root ${g.root}` });
 trace.children.push(Object.assign(graphNode, { end: iso(), outputs: { root: g.root, edges: g.edges.length, lanes: g.lanes.map((l) => ({ mode: l.mode, ideas: l.ideas.length })), next: g.next } }));
 lap(`idea graph: ${g.edges.length} dependencies (${g.judged_by}); ${g.lanes.filter((l) => l.mode === "sync").length} lane(s) in order, ${g.lanes.filter((l) => l.mode === "async").length} on their own; develop next: ${g.next.join(", ")}; root ${g.root}`);
 
@@ -334,8 +332,8 @@ if (jev) {
 }
 let pk = spawnSync("node", [join(repo, "packages/naive/src/router/orchestration/venture-package.ts"), dir, ...pkgArgs, "--json"], { encoding: "utf8" });
 if (pk.status === 0 && (JSON.parse(pk.stdout) as Pkg).core.some((x) => x.id === "marketing" && x.in === "now")) {
-  const sp = spawnSync("node", [join(repo, "packages/naive/src/functions/marketing-and-sales/marketing/site/plan.ts"), dir, "--write"], { encoding: "utf8" });
-  if (sp.status === 0) prov(dir, { entity: "operations/marketing/sitemap.json", route: "operations/marketing/sitemap", activity: "create", derived_from: ["purpose/icp.json", "products/"], agent: agentFromEnv("agent", "harness", { id: "naive-planner" }), note: "the site planned from the venture's records: the marketing package is open" });
+  // plan.ts --write logs the sitemap itself through the shared record writer, as the planner this run names.
+  spawnSync("node", [join(repo, "packages/naive/src/functions/marketing-and-sales/marketing/site/plan.ts"), dir, "--write"], { encoding: "utf8", env: { ...process.env, MENTURA_ACTOR: "agent", MENTURA_ACTOR_ID: "naive-planner" } });
 }
 pk = spawnSync("node", [join(repo, "packages/naive/src/router/orchestration/venture-package.ts"), dir, ...pkgArgs, "--write", "--json"], { encoding: "utf8" });
 if (pk.status === 0) {

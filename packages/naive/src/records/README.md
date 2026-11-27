@@ -98,3 +98,5 @@ It is `.mjs`, like [`packages/naive/src/core`](../core/README.md), until its uni
 
 - The record types have not moved here yet; that is step 5a-2 in the design.
 - This folder is not an npm workspace package yet, like `packages/naive/src/core`.
+
+- `provenance-entry.schema.json` lists two more activities the code already wrote: `create`, a record written for the first time by code that knows it is new, and `port`, a folder moved into the venture whole. `data-model.json` names `packages/naive/src/checks/direct-writes.json` as a file that is not a record.

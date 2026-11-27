@@ -286,3 +286,7 @@ The function and lead agent specs live in [`agents/`](./agents/README.md) (EE-12
 ## What a proposal may not change
 
 `propose()` in `decisions.ts` lets an agent open a decision or reword an open one. It refuses two things. An agent that proposes the id of a withdrawn decision is refused: only a person reopens it (`naive reopen`). On a decision an agent did not draft, an agent may reword the question, the answer, the options and the reasons, and may not change who decides it or what it writes to: `class`, `door`, `boundary`, `unlocks`, `blocks`, `applies_to`, `decides`, `parent`, `candidates`, `assigned_to`, `publish` and the fields a person's action writes. On a draft an agent wrote, an agent may still correct them. `interfaces/tests/decision-withdraw-test.ts` tests each case.
+
+## Writing records
+
+Engine code writes a venture's record with `writeRecord` or `writeRecordEffect` from [`../store/record-write.ts`](../store/README.md): the record is checked against its schema, written, and logged with its bytes. A record a program makes (a template from `init-venture.ts`, a rendered document, a computed day of activity) is logged with `programWriter`, as an agent named for the program and never a person, so a release does not freeze it as confirmed. `node packages/naive/src/checks/check-direct-writes.ts` fails on any other write. The files that still write directly, and why, are in `packages/naive/src/checks/direct-writes.json`. The gate, the one-writer rule and agent reach are not run here: only the router runs them.
