@@ -6,13 +6,16 @@
 //
 //   naive agent [list] [--venture <dir>]                      every role, and with a venture whether it is staffed
 //   naive agent brief <role> [--venture <dir>] [--json]       how to act as the role
-//   naive agent run <role> "<task>" [--venture <dir>] [--print]
+//   naive agent run <role> "<task>" [--venture <dir>] [--workflow <function>/<workflow>] [--print]
 //   naive agent spawn <parent-role> --task "<text>" [--skills a,b] [--ttl "2 hours"] [--writes a,b] [--print]
 //
 // spawn is a function agent dividing its own work (EE-213): it records a temporary specialist of itself in the venture
 // with reach equal to or narrower than its own and an expiry, runs it exactly as run does, and marks it finished when
 // that run returns, after which the router refuses its writes. A specialist of a specialist is refused, and only the
 // parent agent itself or a person may spawn one.
+//
+// With --workflow, the run is refused when that workflow's prerequisites are not met (EE-217,
+// packages/naive/src/engine/prerequisites.ts). An agent never overrides a lock: only a person opens one.
 
 import { spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
@@ -20,6 +23,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { runSync } from "../../core/effect/run.ts";
 import { envCommand } from "../../core/runtime.ts";
+import { prerequisitesOf } from "../prerequisites.ts";
 import type { AgentBrief } from "./brief.ts";
 import { agentBrief, agentRoles } from "./brief.ts";
 import { end, liveSpecialists, spawn } from "./specialist.ts";
@@ -60,7 +64,7 @@ function findVenture(from: string = process.cwd()): string | null {
 const flag = (args: string[], name: string): string | null => { const i = args.indexOf(name); return i >= 0 ? args[i + 1] ?? null : null; };
 const list = (args: string[], name: string): string[] | undefined => flag(args, name)?.split(",").map((s) => s.trim()).filter(Boolean);
 /** Every flag that takes a value, so the positional arguments can be told from them. */
-const VALUED = ["--venture", "--task", "--skills", "--ttl", "--writes", "--by"];
+const VALUED = ["--venture", "--workflow", "--task", "--skills", "--ttl", "--writes", "--by"];
 
 function venture(args: string[]): string | null {
   const v = flag(args, "--venture");
@@ -100,6 +104,12 @@ export function main(argv: string[]): number {
     const [role, ...words] = positional;
     const task = words.join(" ").trim();
     if (!task) throw new Error('give a task: naive agent run <role> "<task>"');
+    // Prerequisites (EE-217): a blocked workflow is not run, by the loop or by hand. Only a person opens the lock.
+    const workflow = flag(rest, "--workflow");
+    if (workflow && dir) {
+      const p = prerequisitesOf(dir, workflow);
+      if (!p.met) throw new Error(`${workflow} is blocked, so it was not run: ${p.missing.map((m) => m.why).join("; ")}. Run naive blocked to see what unblocks it first.`);
+    }
     return start(brief(role, dir), task, dir, rest);
   }
   if (cmd === "spawn") {
@@ -114,7 +124,7 @@ export function main(argv: string[]): number {
     if (!rest.includes("--print") && envCommand("NAIVE_AGENT_CMD")) runSync(end(dir, rec.id, "finished"));
     return code;
   }
-  console.error('usage: naive agent [list] | brief <role> [--json] | run <role> "<task>" [--print] | spawn <function>-agent --task "<text>" [--skills a,b] [--ttl "2 hours"] [--writes a,b]   (each takes --venture <dir>)');
+  console.error('usage: naive agent [list] | brief <role> [--json] | run <role> "<task>" [--workflow <function>/<workflow>] [--print] | spawn <function>-agent --task "<text>" [--skills a,b] [--ttl "2 hours"] [--writes a,b]   (each takes --venture <dir>)');
   return 2;
 }
 

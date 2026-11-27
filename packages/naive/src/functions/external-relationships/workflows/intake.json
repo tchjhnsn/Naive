@@ -7,6 +7,15 @@
   "trigger": {
     "kind": "intake"
   },
+  "requires": {
+    "records": [
+      "foundation/problem",
+      "foundation/goals"
+    ],
+    "meetings": [
+      "strategy/intake"
+    ]
+  },
   "reads": [
     "venture",
     "investors",

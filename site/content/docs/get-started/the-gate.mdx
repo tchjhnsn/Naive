@@ -192,12 +192,17 @@ cat > ~/ventures/gate-demo/naive.config.json <<'JSON'
 }
 JSON
 node packages/naive/src/checks/check-config.ts ~/ventures/gate-demo
-node packages/naive/src/interfaces/cli/mentura.ts validation/solution check --venture gate-demo
+node packages/naive/src/interfaces/cli/mentura.ts validation/solution check --venture gate-demo # exits 1
 node packages/naive/src/checks/check-config.ts ~/ventures/gate-demo --resolved
 ```
 
 ```json
 [
+  {
+    "check": "packages/naive/src/checks/check-problems.ts",
+    "passed": false,
+    "output": "next  gate-demo: no ICP profile: write foundation/icp/<id>.json for who has the problem, one of them primary, and name its core problem\nFAIL  gate-demo: validation/solution.json is written while foundation/problem.json has no forms: write the problem tree, one form per problem. ..."
+  },
   {
     "check": "packages/naive/src/checks/check-validation.ts",
     "passed": null,
@@ -205,6 +210,8 @@ node packages/naive/src/checks/check-config.ts ~/ventures/gate-demo --resolved
   }
 ]
 ```
+
+The check that was turned off reports `off`. The check still fails, because a solution is written before the venture names its problems, and the problem tree fails closed (EE-219). It passes once `foundation/problem.json` has its forms and the primary ICP profile names a core problem.
 
 `--resolved` prints the config with every default filled in.
 
