@@ -40,6 +40,7 @@ import { runMain } from "../core/effect/run.ts";
 import { entriesEffect, type Entry } from "../core/provenance.ts";
 import { ventureFile } from "../core/venture-paths.ts";
 import { readGoals, readRequirements, statusOf } from "./goals.ts";
+import { SETTLES } from "./phase-proof.ts";
 import { FILE as TELEMETRY, refuse } from "./telemetry.ts";
 import type { Bug, Goal, Product, ProductCapability, Requirement, SupportCase, Telemetry, ValidationFeedback } from "../records/types/records.d.ts";
 
@@ -47,7 +48,7 @@ export const CAPABILITIES = "product/capabilities";
 export const BUGS = "product/bugs";
 export const CASES = "support/cases";
 export const FEEDBACK = "validation/feedback";
-export { TELEMETRY };
+export { SETTLES, TELEMETRY };
 
 /** A record and the venture-relative file it was read from. */
 export interface Located<T> { readonly file: string; readonly record: T }
@@ -124,8 +125,6 @@ export interface PortfolioReport {
 
 const SEVERITIES: readonly Severity[] = ["P0", "P1", "P2", "P3"];
 const OUTCOMES: readonly Telemetry["outcome"][] = ["ok", "error", "refused", "cancelled"];
-/** The provenance activities that put a record's current bytes down. A held draft does not: it waits for a person. */
-export const SETTLES = new Set(["write", "accept", "merge", "rollback", "confirm", "baseline"]);
 const isOpen = (b: Bug): boolean => b.status === "open" || b.status === "in-progress";
 const same = (a: unknown, b: unknown): boolean => JSON.stringify(a) === JSON.stringify(b);
 const fileOf = (id: string): string => `${CAPABILITIES}/${id}.json`;
@@ -153,7 +152,7 @@ export function pathOf(caps: readonly ProductCapability[], id: string): string[]
   return out;
 }
 
-/** What one file's provenance says about its current bytes. Pure. The same rule as EE-227's proof of a record. */
+/** What one file's provenance says about its current bytes. Pure. EE-227's rule (proofOfFile in phase-proof.ts) over a capability's versions, with its SETTLES. */
 export function proofOf(file: string, sha256: string, versions: readonly Version[]): Proof {
   const last = [...versions].reverse().find((v) => SETTLES.has(v.activity));
   if (!last) return { state: "unrecorded", why: `${file} has no line in the provenance log, so it was written outside the router` };
