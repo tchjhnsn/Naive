@@ -2,6 +2,8 @@
   "id": "intake",
   "function": "finance",
   "title": "Learn the venture's money",
+  "goal": "The venture's accounts, recurring spend and ownership are recorded, and the money summary gives cash, burn and runway with every figure citing the records it came from.",
+  "measures": ["cost_or_time_saved"],
   "trigger": { "kind": "intake" },
   "reads": ["venture", "foundation/telos", "finance/spend", "finance/budget", "money", "governance/ownership"],
   "steps": [

@@ -2,6 +2,8 @@
   "id": "weekly-raise-review",
   "function": "external-relationships",
   "title": "Review an open raise each week",
+  "goal": "Every meeting on the open raise has a follow-up that is done or has a future due date, every status change rests on evidence, and a passed stop date is open as a decision.",
+  "measures": ["learning"],
   "trigger": {
     "kind": "schedule",
     "cadence": "weekly"

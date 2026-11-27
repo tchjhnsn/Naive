@@ -155,6 +155,10 @@ export function physical(dir: string, rel: string): string {
 /** The absolute path of a logical path in a venture. */
 export const ventureFile = (dir: string, rel: string): string => join(dir, physical(dir, rel));
 
+/** A venture's naive.config.json, wherever its layout keeps it (meta/ in a structured venture). Code that reads the
+ *  config as a file calls this, never join(dir, "naive.config.json"), which misses a structured venture's copy. */
+export const configFile = (dir: string): string => ventureFile(dir, "naive.config.json");
+
 /** The logical path of a venture-relative physical path: the inverse of `physical`. */
 export function logical(dir: string, rel: string): string {
   const r = String(rel).split(sep).join("/");

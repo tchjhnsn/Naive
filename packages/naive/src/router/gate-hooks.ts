@@ -48,15 +48,17 @@ export function ownerOfWrite({ dir, r, route, file, projector, remote = false, a
  * A function agent's write reach, checked on every write before the schema: an agent acting as <function>-agent
  * (a function in departments.json) writes only a route its derived write globs match (functionWrites in
  * packages/naive/src/engine/agents/reach.ts: decisions/* and the routes of the record types the data model gives
- * its function). A person's call made while the process says an agent is acting counts as the agent's. A person, the
+ * its function). A temporary specialist (<function>-specialist-<slug>, EE-213) writes only its spawn record's globs
+ * that its parent's reach covers too, and only while that record is live and unexpired, which is why `dir` is read
+ * here. A person's call made while the process says an agent is acting counts as the agent's. A person, the
  * projector and every other role (leads, researchers, the chief of staff, plain agent) are not checked here.
  * Returns the refusal as a router answer, or null.
  */
-export function reachOfWrite({ r, route, projector, actor = "agent", acting = false, role }: {
-  r: RouteEntry; route: string; projector: boolean; actor?: string; acting?: boolean; role?: string;
+export function reachOfWrite({ dir, r, route, projector, actor = "agent", acting = false, role }: {
+  dir?: string; r: RouteEntry; route: string; projector: boolean; actor?: string; acting?: boolean; role?: string;
 }): Refusal | null {
   if (projector || (actor === "person" && !acting)) return null;
-  const v = reachRefusal({ role, route, table: r.route });
+  const v = reachRefusal({ role, route, table: r.route, dir });
   return v ? { ok: false, error: v.why, gate_rule: v.rule, refused_by: v.source, may_write: v.writes } : null;
 }
 

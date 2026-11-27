@@ -2,6 +2,8 @@
   "id": "intake",
   "function": "products",
   "title": "Learn the venture's products",
+  "goal": "Every product the venture has is a product card with its customer and the job it does, and the product being built now names the evidence, or the lack of it, for each of the four risks.",
+  "measures": ["learning", "usage_or_adoption"],
   "trigger": { "kind": "intake" },
   "reads": ["venture", "foundation/telos", "foundation/icp", "foundation/core", "product", "product/bugs", "validation/solution", "validation/product-market-fit", "validation/interviews"],
   "steps": [
