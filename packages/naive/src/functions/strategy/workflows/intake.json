@@ -3,12 +3,15 @@
   "function": "strategy",
   "title": "Learn the venture's strategy",
   "goal": "The venture's telos, problem, primary customer, this quarter's goal and its exit criterion each exist as a record the founder has seen, and the first assumption to test is named.",
-  "measures": ["learning"],
+  "measures": [
+    "learning"
+  ],
   "trigger": {
     "kind": "intake"
   },
   "reads": [
     "venture",
+    "foundation/pre-registration",
     "foundation/telos",
     "foundation/problem",
     "foundation/icp",
@@ -20,11 +23,28 @@
   "steps": [
     {
       "id": "read-what-exists",
-      "do": "Read the telos, problem, customer profiles, goals, constraints and exit criteria, and list what is missing, most needed first."
+      "do": "Read the pre-registrations, telos, problem, customer profiles, goals, constraints and exit criteria, and list what is missing, most needed first."
+    },
+    {
+      "id": "pre-register-the-first-test",
+      "do": "Before the mission and the vision, ask what would have to be true for the venture to be worth building, and draft a pre-registration: the thesis and what would falsify it, the assumptions under it, the method, the measures with the founder's own thresholds and the dates they are judged by, what does not count as evidence, and the action on a pass and on a fail. Never offer a threshold as the answer: ask for it, or raise it as a decision. A person registers it (naive prereg register <id> --by <person>), and from then on nothing registered changes.",
+      "skill": "pre-registration",
+      "ask": true,
+      "writes": [
+        "foundation/pre-registration/[id]"
+      ],
+      "raises": [
+        "strategy-or-constitution"
+      ]
     },
     {
       "id": "ask-telos",
-      "do": "Ask what the venture is for when it has done its job and how anyone would know, and draft the venture goal telos (the end and its measures) for the founder to confirm.",
+      "do": "Once a pre-registration is registered, ask what the venture is for when it has done its job and how anyone would know, and draft the venture goal telos (the end and its measures) for the founder to confirm. The mission and the vision read differently once there is something they have to survive.",
+      "requires": {
+        "records": [
+          "foundation/pre-registration"
+        ]
+      },
       "skill": "telos",
       "ask": true,
       "writes": [
@@ -37,6 +57,11 @@
     {
       "id": "ask-problem-and-customer",
       "do": "Ask which problem the venture solves and for whom, and draft the problem and one primary customer profile.",
+      "requires": {
+        "records": [
+          "foundation/pre-registration"
+        ]
+      },
       "ask": true,
       "writes": [
         "foundation/problem",
@@ -49,6 +74,11 @@
     {
       "id": "ask-limits",
       "do": "Ask for the hard limits on money, time and values, and record them as constraints.",
+      "requires": {
+        "records": [
+          "foundation/pre-registration"
+        ]
+      },
       "ask": true,
       "writes": [
         "foundation/constraints"
@@ -61,6 +91,11 @@
     {
       "id": "ask-goals-and-kill-criteria",
       "do": "Ask for this quarter's goal and the state and date that would end the current bet, and draft a goal and an exit criterion.",
+      "requires": {
+        "records": [
+          "foundation/pre-registration"
+        ]
+      },
       "ask": true,
       "writes": [
         "foundation/goals/[id]",
