@@ -7,7 +7,7 @@
 //   node packages/naive/src/interfaces/tests/agent-reach-test.ts
 
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { call } from "../../router/router.ts";
@@ -43,6 +43,11 @@ try {
   const made = spawnSync(process.execPath, [join(repo, "packages/naive/src/engine/init-venture.ts"), join(ws, "ventures/lab"), "lab", "--type", "software-startup"], { encoding: "utf8", env });
   if (made.status !== 0) throw new Error(made.stderr || made.stdout);
   const dir = join(ws, "ventures/lab");
+  // The customer routes are written by workflows that wait on the strategy foundation (EE-217), so the venture gets
+  // its ICP and nothing here is blocked on its prerequisites; packages/naive/src/engine/prerequisites-test.ts tests
+  // that lock itself. Reach is what this file tests.
+  mkdirSync(join(dir, "foundation/icp"), { recursive: true });
+  writeFileSync(join(dir, "foundation/icp/primary.json"), JSON.stringify({ venture: "lab", id: "primary", name: "Solo founder" }, null, 2) + "\n");
   const customer = { id: "acme", name: "Acme" };
   const file = join(dir, "customers/acme.json");
 

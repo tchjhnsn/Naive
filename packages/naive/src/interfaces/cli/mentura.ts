@@ -61,6 +61,8 @@
 //          [--derived-from a,b] [--decision <id>] [--note <text>]   provenance for a write (EE-031)
 //          [--confidence <n>]   a score computed before the write, read by the gate's confidence rules
 //          [--revert]   with --as person: this write restores the version before (provenance activity rollback)
+//          [--override --by <person> --why <text>]   with --as person: writes past the prerequisite lock on this
+//          route (EE-217), and the provenance line keeps who overrode what and why. An agent never may
 //          append (governance/detector-trial/<detector>) adds one hash-chained line: --input holds { line, base? }
 //          claim (operations/handoff/<id>) takes a ready, unclaimed handoff for the acting role (MENTURA_ACTOR_ID), once;
 //          claimed_by is MENTURA_SESSION, else the role
@@ -542,12 +544,14 @@ if (flag("as-is")) input = { ...(input ?? {}), as_is: true };
 const where = opt("where");
 if (["read", "view"].includes(action) && where) input = { ...(input ?? {}), where: Object.fromEntries(where.split(",").map((kv) => kv.split("=")).map(([k, ...v]) => [k, v.join("=").includes("|") ? v.join("=").split("|") : v.join("=")])) };
 if (["read", "view"].includes(action) && flag("hierarchy")) input = { ...(input ?? {}), hierarchy: true };
-const provenance: { derived_from?: string[], decision?: string, note?: string, confidence?: number, activity?: string } = { derived_from: opt("derived-from")?.split(",").filter(Boolean), decision: opt("decision"), note: opt("note") };
+const provenance: { derived_from?: string[], decision?: string, note?: string, confidence?: number, activity?: string, override?: { by?: string, why?: string } } = { derived_from: opt("derived-from")?.split(",").filter(Boolean), decision: opt("decision"), note: opt("note") };
 // Gate group hook (X-4): a confidence score computed before the write, for the gate's confidence rules.
 if (opt("confidence") !== undefined) provenance.confidence = Number(opt("confidence"));
 // Detection ledger hook: --revert marks a person's write as restoring the version before (activity rollback), which
 // resolves the gate's no call on the write it reverts as a miss when the venture keeps the gate detector.
 if (flag("revert")) provenance.activity = "rollback";
+// Prerequisites hook (EE-217): a person's explicit override of the lock on this route, kept on the provenance line.
+if (flag("override")) provenance.override = { by: opt("by") ?? process.env.MENTURA_PERSON, why: opt("why") };
 const as = opt("as");
 const actor = as === "person" || as === "public" ? as : "agent";
 let r = await call({ venture, route: cmd, action, input, actor, workspace, via: "cli", provenance });

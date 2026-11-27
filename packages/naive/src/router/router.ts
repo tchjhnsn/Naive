@@ -58,7 +58,7 @@ import { readFlag as freshnessFlag } from "../engine/freshness.ts";
 // the gate's verdict, where held drafts wait, and check settings. The logic lives in these modules.
 import { PROJECTOR, actingCall, isProjector, itemId, mayReadItem, mayReadSome } from "./acting.ts";
 import { asOfStore, cutFor, inEval, observedBy, refusal as asOfRefusal } from "./reads-as-of.ts";
-import { checkPlan, gateWrite, heldDraft, ledgerHook, ownerOfWrite, reachOfWrite } from "./gate-hooks.ts";
+import { checkPlan, gateWrite, heldDraft, ledgerHook, ownerOfWrite, prerequisiteOfWrite, reachOfWrite } from "./gate-hooks.ts";
 // Appends (packages/naive/src/router/appends.ts): one hash-chained line added to a log route, such as the detection ledger.
 import { appendLine } from "./appends.ts";
 import { commitRawSource } from "./raw-source.ts";
@@ -103,7 +103,7 @@ const isObj = (x: unknown): x is Obj => !!x && typeof x === "object";
 /** A thrown value's message, or the value itself. */
 const messageOf = (e: unknown): string => String((isObj(e) ? e.message : undefined) ?? e);
 /** What a call logs in provenance beside the write. */
-export type CallProvenance = { derived_from?: string[]; decision?: string; note?: string; agent?: { id?: string; [k: string]: unknown }; activity?: string; confidence?: number | string | null };
+export type CallProvenance = { derived_from?: string[]; decision?: string; note?: string; agent?: { id?: string; [k: string]: unknown }; activity?: string; confidence?: number | string | null; override?: { by?: string; why?: string } | null };
 /** One router call: an action on a route for a venture. */
 export type CallArgs = {
   venture?: string; route: string; action: string; input?: unknown; actor?: string; actor_id?: string; workspace?: string; via?: string;
@@ -528,6 +528,11 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
       const why = goalWriteRefusal({ stored: storedGoal, input: inp as Goal, person: actor === "person" && !actingAgent(provenance.agent?.id) });
       if (why) return { ok: false, error: why, ...deprecated };
     }
+    // Prerequisites hook (prerequisiteOfWrite in packages/naive/src/router/gate-hooks.ts, EE-217): a route that only
+    // blocked function workflows write is refused, for an agent and for a person alike, until the records and meetings
+    // those workflows wait on exist. A person's --override lets one write through and is kept on its provenance line.
+    const locked = remote ? null : prerequisiteOfWrite({ dir, r, route, actor, acting: !!actingAgent(provenance.agent?.id), projector, override: provenance.override });
+    if (locked?.refusal) return { ...locked.refusal, ...deprecated };
     if (prose) return { ...(await writeProse({ dir, r, route, requested, file, input, actor, actor_id, via, provenance, store, remote, src, params, projector })), ...deprecated };
     // A raw source is written with its text in one step (EE-192). Create-only, duplicate text and the allowed-source term are decided before either file is written.
     if (r.record === "raw-source") {
@@ -566,7 +571,8 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
       if (w !== null) return { ok: false, error: `${file} does not match packages/naive/src/records/venture.schema.json, so nothing was written:\n${w}`, fix: fix(r) };
     }
     const agent = agentFromEnv(actor === "person" ? "person" : "agent", via, { ...(actor_id && actor !== "person" ? { id: actor_id } : {}), ...provenance.agent });
-    const log = (entity: string, activity: string, extra: Obj = {}) => prov(dir, { entity, route, activity, agent, derived_from: provenance.derived_from, decision: provenance.decision ?? gate?.class ?? undefined, note: provenance.note, ...extra });
+    // The person's override of the prerequisite lock, when they passed one, is kept on every line this write writes.
+    const log = (entity: string, activity: string, extra: Obj = {}) => prov(dir, { entity, route, activity, agent, derived_from: provenance.derived_from, decision: provenance.decision ?? gate?.class ?? undefined, note: provenance.note, override: locked?.override, ...extra });
 
     // Attributes mastered elsewhere (EE-042) go to their own system of record, each as a JSON
     // object holding only that attribute at the record's path, and leave the record's own file, so

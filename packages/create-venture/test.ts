@@ -5,6 +5,7 @@ import { spawn, spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { CODE_OVER_DOCS } from "../naive/src/core/code-over-docs.ts";
 import { ventureFile } from "../naive/src/core/venture-paths.ts";
 
 const repo = new URL("../..", import.meta.url).pathname;
@@ -33,6 +34,7 @@ t("--yes creates a venture with the recommended defaults, installs the framework
   const venture = load(join(v, "venture.json"));
   ok(venture.phase === "discovery" && venture.id === "kettle");
   ok(existsSync(join(v, "AGENTS.md")) && existsSync(ventureFile(v, "foundation")) && existsSync(ventureFile(v, "decisions")));
+  ok(readFileSync(join(v, "AGENTS.md"), "utf8").includes(CODE_OVER_DOCS), "the venture's AGENTS.md says existing code wins over stale docs (EE-225)");
   ok(venture.layout === "structured" && existsSync(join(v, "k-base/foundation")) && existsSync(join(v, "meta/provenance.jsonl")), "the structured layout: k-base/ and meta/");
   ok(existsSync(join(v, "node_modules/.bin/naive")), "naive is installed in the venture");
   ok(existsSync(join(v, ".git")), "a git repository");
@@ -53,6 +55,7 @@ t("the first venture is My first venture, in a workspace named Naive workspace; 
   const w = load(join(ws, "naive-workspace.json"));
   ok(w.name === "Naive workspace" && w.ventures.join() === "my-first-venture", JSON.stringify(w));
   ok(existsSync(join(ws, "AGENTS.md")), "the workspace has its own AGENTS.md");
+  ok(readFileSync(join(ws, "AGENTS.md"), "utf8").includes(CODE_OVER_DOCS), "so does the workspace's (EE-225)");
   ok(typeof w.timeZone === "string" && w.timeZone.length > 0, "the workspace starts with its clock's zone");
   ok(load(join(ws, "calendar/calendars/default.json")).visibility === "workspace", "and its default calendar");
   ok(create(["--yes", "--skip-install", "--no-git", "--venture-name", "Acme Labs"], ws).status === 0);
@@ -293,7 +296,7 @@ async function devTest() {
     const board = out.match(/Board:\s+http:\/\/127\.0\.0\.1:(\d+)/);
     if (!board) throw new Error(`no board address: ${out}`);
     const port = board[1];
-    ok(existsSync(join(v, "AGENTS.md")) && /wrote AGENTS\.md/.test(out), "the root layout is written when missing");
+    ok(existsSync(join(v, "AGENTS.md")) && /wrote AGENTS\.md/.test(out) && readFileSync(join(v, "AGENTS.md"), "utf8").includes(CODE_OVER_DOCS), "the root layout is written when missing, with the code-over-docs rule");
     ok((await fetch(`http://127.0.0.1:${port}/`)).status === 200, "the board answers");
     ok((await fetch(`http://127.0.0.1:${port}/map`)).status === 200, "the map answers");
     await new Promise((r) => setTimeout(r, 300));
