@@ -1,0 +1,71 @@
+{
+  "id": "9-8-2-operate-controls-and-monitor-compliance-with",
+  "function": "finance",
+  "process": "9.8.2",
+  "title": "Operate controls and monitor compliance with internal controls policies and procedures",
+  "goal": "Each money control has been tested against what actually happened in the period, every failure is written down with what it let through and what it cost, and each one has a fix with an owner and a date.",
+  "measures": [
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "finance/intake"
+    ]
+  },
+  "reads": [
+    "money",
+    "money/[id]",
+    "finance/spend",
+    "finance/budget",
+    "purpose/money/summary",
+    "decisions/*",
+    "operations/handoff/*",
+    "governance/decision-rights",
+    "governance/delegation",
+    "governance/detector",
+    "system/provenance",
+    "legal/risks",
+    "it/connections"
+  ],
+  "steps": [
+    {
+      "id": "monitor-effectiveness",
+      "do": "Test each money control against the period's record rather than against the policy: take the payments made, the bills recorded, the balances set and the decisions raised, and say for each control how often it should have run, how often it did and what it caught.",
+      "skill": "manage-internal-controls",
+      "activity": "9.8.2.1"
+    },
+    {
+      "id": "remediate-deficiencies",
+      "do": "For each control that failed or never ran, write what it let through, what that cost, the change that would fix it and who must do it by when, and mark the ones that need the founder's own authority.",
+      "skill": "manage-internal-controls",
+      "activity": "9.8.2.2"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Raise each fix needing the founder's authority as a decision with the exposure it closes, and tell the finance lead the order to work the rest in.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities",
+        "legal-or-terms"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "controls-tested-on-evidence",
+      "kind": "review",
+      "check": "Was each control tested against what actually happened in the period rather than against the written policy, and does every failure carry a fix with an owner and a date?",
+      "reviewer": "finance-lead"
+    }
+  ]
+}

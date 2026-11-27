@@ -9,6 +9,14 @@
 // Each rule is set like an ESLint rule, off | warn | error, under publish_lint.rules in the venture's
 // naive.config.json. Defaults: leaks, claims and secrets are error; the rest warn. Exit 1 on any error.
 //
+// Copy a page renders out of a JSON record is linted too (EE-214): packages/naive/src/engine/record-copy.ts gathers the
+// strings a public reader may see from a record, a field a person approved as public and the marketing sitemap's
+// drafted copy, and every text stage runs over them as it runs over a page.
+//
+// A mark is matched case-insensitively and on whole words. A mark the venture marks private is a name it never makes
+// public, and it is an error whatever level the marks rule has. The names come from publish_lint.marks and from
+// marketing/publish-terms.json, the record the function that writes the words owns; the levels stay in the config.
+//
 // The feedback loop: every run appends its findings to .naive/lint-findings.jsonl (the venture's, else the
 // working directory's). A finding is waived by listing it under publish_lint.waived ({ rule, file, text? }).
 //
@@ -18,15 +26,21 @@
 
 import { appendFileSync, existsSync, mkdirSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
-import { leaks } from "./check-leaks.ts";
-import type { NaiveConfig } from "../records/types/records.d.ts";
+import { configFile, logical, ventureFile } from "../core/venture-paths.ts";
+import { frontmatter } from "./frontmatter.ts";
+import { leaks, patterns } from "./check-leaks.ts";
+import type { NaiveConfig, PublishTerms } from "../records/types/records.d.ts";
+
 import { now } from "../core/clock.ts";
+
+export { frontmatter } from "./frontmatter.ts";
+export type { Meta } from "./frontmatter.ts";
 
 type PublishLint = NonNullable<NaiveConfig["publish_lint"]>;
 export type Level = "off" | "warn" | "error";
-/** A page's frontmatter: every value a string or a list, and publish a boolean. */
-export type Meta = { [key: string]: string | string[] | boolean };
-export type LintConfig = { rules: Record<string, Level>, marks: string[], waived: NonNullable<PublishLint["waived"]> };
+/** A name the lint flags: another company's mark, or a name the venture never makes public. */
+export type Mark = { name: string, private?: boolean };
+export type LintConfig = { rules: Record<string, Level>, marks: Mark[], waived: NonNullable<PublishLint["waived"]> };
 
 const repo = new URL("../../../..", import.meta.url).pathname;
 const load = (f: string) => { try { return JSON.parse(readFileSync(f, "utf8")); } catch { return null; } };
@@ -61,29 +75,32 @@ const esc = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const walk = (p: string): string[] => statSync(p).isDirectory() ? readdirSync(p).filter((n) => !n.startsWith(".")).flatMap((n) => walk(join(p, n))) : [p];
 const mask = (s: string) => s.length <= 8 ? "****" : `${s.slice(0, 4)}...${"*".repeat(4)}`;
 
-/** Frontmatter with list support: { meta, body }. sources may be `[a, b]` or a block of `- a` lines. */
-export function frontmatter(text: string): { meta: Meta, body: string } {
-  const m = text.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/);
-  if (!m) return { meta: {}, body: text };
-  const meta: Meta = {}; let key: string | null = null;
-  for (const line of m[1].split("\n")) {
-    const kv = line.match(/^([A-Za-z_]+):\s*(.*)$/), item = line.match(/^\s+-\s+(.*)$/);
-    if (kv) {
-      key = kv[1]; const v = kv[2].trim();
-      meta[key] = v.startsWith("[") ? v.slice(1, -1).split(",").map((s) => s.trim().replace(/^["']|["']$/g, "")).filter(Boolean)
-        : v === "" ? [] : v.replace(/^["']|["']$/g, "");
-    } else if (item && key) { const list = meta[key]; if (Array.isArray(list)) list.push(item[1].trim().replace(/^["']|["']$/g, "")); }
+/** The record the function that writes the words owns: the names it wants flagged, and which are never public. */
+export const TERMS = "marketing/publish-terms.json";
+
+/**
+ * The publish_lint section of the venture's naive.config.json, with the defaults filled in. The config is read where
+ * the router reads it (configFile), so a structured venture's meta/naive.config.json counts.
+ *
+ * The marks are the config's list, else Naive's default list, plus every name in marketing/publish-terms.json. That
+ * record holds names only, so the role that owns the copy can tighten the gate on itself without reaching the config.
+ */
+export function configFor(venture?: string): LintConfig {
+  const pl: PublishLint & { rules?: Record<string, Level> } = (venture && load(configFile(venture))?.publish_lint) || {};
+  const rules = Object.fromEntries(RULES.map((r): [string, Level] => { const set = pl.rules?.[r.id]; return [r.id, set && LEVELS.includes(set) ? set : r.level]; }));
+  const own: PublishTerms["marks"] = (venture && load(ventureFile(venture, TERMS))?.marks) || [];
+  const marks = new Map<string, Mark>();
+  for (const m of [...(pl.marks ?? MARKS), ...own]) {
+    const mark: Mark = typeof m === "string" ? { name: m } : { name: m.name, ...(m.private ? { private: true } : {}) };
+    if (!mark.name) continue;
+    const had = marks.get(mark.name.toLowerCase());
+    marks.set(mark.name.toLowerCase(), { ...mark, ...(had?.private || mark.private ? { private: true } : {}) });
   }
-  if (typeof meta.publish === "string") meta.publish = meta.publish === "true";
-  return { meta, body: m[2] };
+  return { rules, marks: [...marks.values()], waived: pl.waived ?? [] };
 }
 
-/** The publish_lint section of the venture's naive.config.json, with the defaults filled in. */
-export function configFor(venture?: string): LintConfig {
-  const pl: PublishLint & { rules?: Record<string, Level> } = (venture && load(join(venture, "naive.config.json"))?.publish_lint) || {};
-  const rules = Object.fromEntries(RULES.map((r): [string, Level] => { const set = pl.rules?.[r.id]; return [r.id, set && LEVELS.includes(set) ? set : r.level]; }));
-  return { rules, marks: pl.marks ?? MARKS, waived: pl.waived ?? [] };
-}
+/** A mark matches whole words, whatever its case: "nightjar" and "NIGHTJAR" are both the mark Nightjar. */
+export const markRe = (name: string) => new RegExp(`(?<![\\p{L}\\p{N}])${esc(name)}(?![\\p{L}\\p{N}])`, "giu");
 
 const visible = (body: string) => body.replace(/\{\/\*[\s\S]*?\*\/\}/g, "").replace(/<!--[\s\S]*?-->/g, "");
 const lineOf = (text: string, idx: number) => text.slice(0, idx).split("\n").length;
@@ -94,39 +111,73 @@ function sourceOk(src: string, file: string, venture: string | undefined) {
   return [venture && join(venture, src), join(dirname(file), src), resolve(src)].some((p) => p && existsSync(p));
 }
 
-function textStages(file: string, text: string, cfg: LintConfig, venture: string | undefined) {
-  const out: Finding[] = [], { meta, body } = frontmatter(text), vis = visible(body);
-  const add = (rule: string, idx: number | undefined, found: string, message: string) => out.push({ rule, file, line: lineOf(text, text.length - body.length + Math.max(0, body.indexOf(found))), text: found, message, published: meta.publish === true });
+/** A run of public text the stages read: a page's visible body, or one run of copy out of a record. */
+export type Text = {
+  /** The file it sits in. */ file: string,
+  /** The words a reader sees. */ text: string,
+  /** The whole file, for the secrets scan; the text itself when there is nothing more. */ whole?: string,
+  /** The sources that back a number in it. */ sources: string[],
+  /** Whether what holds it is published. */ published: boolean,
+  /** The record field it came from, for a record's copy. */ field?: string,
+  /** The line a found string is on, when the text has lines of its own. */ lineOfFound?: (found: string) => number,
+  /** The sources list to name in a claims message. */ where?: string,
+};
+
+function textStages(t: Text, cfg: LintConfig, venture: string | undefined) {
+  const out: Finding[] = [], vis = t.text, whole = t.whole ?? t.text;
+  const where = t.where ?? "sources in the frontmatter";
+  const add = (rule: string, found: string, message: string, extra: Partial<Finding> = {}) => out.push({ rule, file: t.file, ...(t.field ? { field: t.field } : {}),
+    ...(t.lineOfFound ? { line: t.lineOfFound(found) } : {}), text: found, message, published: t.published, ...extra });
 
   // claims
-  const sources = Array.isArray(meta.sources) ? meta.sources : typeof meta.sources === "string" && meta.sources ? [meta.sources] : [];
-  const good = sources.filter((s) => sourceOk(s, file, venture));
+  const good = t.sources.filter((s) => sourceOk(s, t.file, venture));
   if (!good.length) {
     for (const sentence of vis.replace(/^#+.*$/gm, "").split(/(?<=[.!?])\s+|\n/).map((s) => s.replace(/<[^>]+>|\|/g, " ")).map((s) => s.trim()).filter(Boolean)) {
       if (CLAIM_NUMBER.test(sentence) || CLAIM_CUSTOMER.test(sentence))
-        add("claims", 0, sentence.slice(0, 80), sources.length ? `asserts a number or customers, and none of its sources (${sources.join(", ")}) is a URL or a record that exists` : "asserts a number or customers without a source: list the record or URL under sources in the frontmatter");
+        add("claims", sentence.slice(0, 80), t.sources.length ? `asserts a number or customers, and none of its sources (${t.sources.join(", ")}) is a URL or a record that exists` : `asserts a number or customers without a source: list the record or URL under ${where}`);
     }
   }
-  // marks
-  for (const mark of cfg.marks) for (const m of vis.matchAll(new RegExp(`(?<![\\p{L}\\p{N}])${esc(mark)}(?![\\p{L}\\p{N}])`, "gu")))
-    add("marks", m.index, m[0], `uses "${mark}", another company's mark: say it plainly or have legal clear it`);
+  // marks: whole words, any case; a name the venture keeps private is an error whatever the rule's level
+  for (const mark of cfg.marks) for (const m of vis.matchAll(markRe(mark.name)))
+    add("marks", m[0], mark.private ? `uses "${mark.name}", a name this venture never makes public (${TERMS}): take it out` : `uses "${mark.name}", another company's mark: say it plainly or have legal clear it`,
+      mark.private ? { at_least: "error" } : {});
   // personal data
-  for (const m of vis.matchAll(EMAIL)) add("personal-data", m.index, m[0], "carries an email address");
-  for (const m of vis.matchAll(PHONE)) add("personal-data", m.index, m[0], "carries a phone number");
+  for (const m of vis.matchAll(EMAIL)) add("personal-data", m[0], "carries an email address");
+  for (const m of vis.matchAll(PHONE)) add("personal-data", m[0], "carries a phone number");
   // secrets: on the whole file, frontmatter included, and never echoed
-  for (const [kind, re] of SECRETS) for (const m of text.matchAll(re))
-    out.push({ rule: "secrets", file, line: lineOf(text, m.index ?? 0), text: mask(m[0]), message: `carries something shaped like a ${kind}: remove it and rotate it`, published: meta.publish === true });
+  for (const [kind, re] of SECRETS) for (const m of whole.matchAll(re))
+    out.push({ rule: "secrets", file: t.file, ...(t.field ? { field: t.field } : {}), line: lineOf(whole, m.index ?? 0), text: mask(m[0]), message: `carries something shaped like a ${kind}: remove it and rotate it`, published: t.published });
   return out;
 }
 
-export type Finding = { rule: string, file: string, line?: number, text: string, message: string, published: boolean, severity?: string, term_severity?: string, waived?: boolean };
+/** One page as the stages read it: its visible body, its frontmatter sources, and the whole file for secrets. */
+function pageText(file: string, text: string): Text {
+  const { meta, body } = frontmatter(text);
+  const sources = Array.isArray(meta.sources) ? meta.sources : typeof meta.sources === "string" && meta.sources ? [meta.sources] : [];
+  return { file, text: visible(body), whole: text, sources, published: meta.publish === true,
+    lineOfFound: (found) => lineOf(text, text.length - body.length + Math.max(0, body.indexOf(found))) };
+}
+
+export type Finding = { rule: string, file: string, field?: string, line?: number, text: string, message: string, published: boolean, severity?: string, term_severity?: string, at_least?: Level, waived?: boolean };
 
 /** Runs every stage in order. Returns { ok, findings, stages }. */
 export async function check(paths: string[], { venture }: { venture?: string } = {}) {
   const cfg = configFor(venture), findings = ([]) as Finding[], stages: string[] = [];
   const on = (r: string) => cfg.rules[r] !== "off";
-  const files = paths.filter(existsSync).flatMap(walk).filter((f) => /\.(mdx?|html|txt)$/.test(f));
+  const given = paths.filter(existsSync).flatMap(walk);
+  const files = given.filter((f) => /\.(mdx?|html|txt)$/.test(f));
   const publishedOf = new Map(files.map((f) => [resolve(f), frontmatter(readFileSync(f, "utf8")).meta.publish === true]));
+  // The copy a record shows the public (EE-214): one Text per run of copy, read as a page's body is read.
+  const copy: Text[] = [];
+  if (venture) {
+    const { recordCopy } = await import("./record-copy.ts");
+    for (const f of given.filter((f) => f.endsWith(".json") && !f.endsWith(".visibility.json"))) {
+      const rel = logical(venture, relative(venture, resolve(f)));
+      if (rel.startsWith("..")) continue; // a JSON file outside the venture has no record copy
+      for (const c of recordCopy(venture, rel)) copy.push({ file: f, text: c.text, sources: c.sources, published: c.published, field: c.field,
+        where: "sources beside the copy in the record" });
+    }
+  }
 
   // 1. copy distance
   if (on("copy-distance") && venture) {
@@ -138,10 +189,13 @@ export async function check(paths: string[], { venture }: { venture?: string } =
         findings.push({ rule: "copy-distance", file: join(venture, r.file), text: "", message: e, published: r.publish === true });
     }
   }
-  // 2. leaks
+  // 2. leaks, over the pages given and over each run of a record's copy (never the whole record)
   if (on("leaks")) {
     stages.push("leaks");
     for (const l of leaks(files, { venture })) findings.push({ rule: "leaks", file: l.file, text: l.text, message: `internal term ${l.pattern}: ${l.why}`, ...(l.severity === "warn" ? { term_severity: "warn" } : {}), published: publishedOf.get(resolve(l.file)) ?? false });
+    const ps = copy.length ? patterns(venture) : [];
+    for (const c of copy) for (const p of ps) for (const m of c.text.matchAll(p.re))
+      findings.push({ rule: "leaks", file: c.file, field: c.field, text: m[0], message: `internal term ${p.id}: ${p.why}`, ...(p.severity === "warn" ? { term_severity: "warn" } : {}), published: c.published });
   }
   // 3. brand
   if (on("brand") && venture && existsSync(join(repo, "packages/naive/src/engine/brand-lint.ts"))) {
@@ -149,16 +203,20 @@ export async function check(paths: string[], { venture }: { venture?: string } =
     const { lint } = await import("./brand-lint.ts");
     for (const f of lint(venture).findings) findings.push({ rule: "brand", file: join(venture, f.file ?? ""), text: f.rule, message: f.message, published: false });
   }
-  // 4-7. claims, marks, personal data, secrets
+  // 4-7. claims, marks, personal data, secrets, over every page and every run of a record's copy
   stages.push("claims", "marks", "personal-data", "secrets");
-  for (const f of files) for (const x of textStages(f, readFileSync(f, "utf8"), cfg, venture)) if (on(x.rule)) findings.push(x);
+  for (const t of [...files.map((f) => pageText(f, readFileSync(f, "utf8"))), ...copy])
+    for (const x of textStages(t, cfg, venture)) if (on(x.rule)) findings.push(x);
 
   const base = venture ?? process.cwd();
   for (const f of findings) {
     f.file = relative(base, resolve(f.file)) || f.file;
     // A term the founder marked warn (governance/internal-terms.json) is reported, never an error.
-    f.severity = f.term_severity === "warn" && cfg.rules[f.rule] === "error" ? "warn" : cfg.rules[f.rule];
+    const level = f.term_severity === "warn" && cfg.rules[f.rule] === "error" ? "warn" : cfg.rules[f.rule];
+    // A name the venture keeps private is an error even where its rule only warns (at_least).
+    f.severity = f.at_least && LEVELS.indexOf(f.at_least) > LEVELS.indexOf(level) ? f.at_least : level;
     delete f.term_severity;
+    delete f.at_least;
     f.waived = cfg.waived.some((w) => w.rule === f.rule && (!w.file || w.file === f.file) && (!w.text || w.text === f.text));
   }
   return { ok: !findings.some((f) => f.severity === "error" && !f.waived), stages, findings };
@@ -206,7 +264,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   append(log, r.findings);
   if (json) console.log(JSON.stringify(r, null, 2));
   else {
-    for (const f of r.findings.filter((f) => f.severity !== "off")) console.error(`${f.waived ? "WAIVED" : f.severity === "error" ? "ERROR " : "WARN  "} ${f.rule}  ${f.file}${f.line ? `:${f.line}` : ""}  ${f.message}${f.text && f.rule !== "claims" ? ` ("${f.text}")` : ""}`);
+    for (const f of r.findings.filter((f) => f.severity !== "off")) console.error(`${f.waived ? "WAIVED" : f.severity === "error" ? "ERROR " : "WARN  "} ${f.rule}  ${f.file}${f.line ? `:${f.line}` : ""}${f.field ? ` ${f.field}` : ""}  ${f.message}${f.text && f.rule !== "claims" ? ` ("${f.text}")` : ""}`);
     console.log(`${r.stages.join(" > ")}: ${r.findings.filter((f) => f.severity === "error" && !f.waived).length} error(s), ${r.findings.filter((f) => f.severity === "warn" && !f.waived).length} warning(s)`);
   }
   process.exit(r.ok ? 0 : 1);

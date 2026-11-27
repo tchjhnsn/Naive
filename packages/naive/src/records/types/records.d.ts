@@ -210,6 +210,13 @@ export type Adapter = {
   verify?: string[];
   /** Where the harness documents what it reads */
   sources: string[];
+  /** Which of this harness's own tools renders each document format the catalog leaves to the harness (EE-218). The catalog (packages/naive/src/functions/documents.json) names no vendor, so the mapping lives here, one entry per format, and a format with no entry is left to whatever the agent has. Naive renders Markdown itself and never delegates it. */
+  documents?: { [K in "pdf" | "docx" | "pptx" | "xlsx" | "html"]?: {
+      /** The skill, tool or command the agent loads for this format in this harness. */
+      use: string;
+      /** What to watch for, in one plain sentence. */
+      how?: string;
+    } };
   note?: string;
 };
 
@@ -320,6 +327,12 @@ export type Artifact = {
   action?: string;
   /** Who it is for: the founder, the team, investors, the public */
   audience?: string;
+  /** The document kind in packages/naive/src/functions/documents.json this was rendered as (EE-218). It ties the artifact to its catalog entry, so packages/naive/src/checks/check-documents.ts can tell which rung of the ladder it sits on. */
+  document_kind?: string;
+  /** The format it was rendered in (EE-218). The catalog gives each format a rung, and the ladder is fail closed: a rung is built only once the rung below it is a live artifact a person approved. */
+  format?: "md" | "pdf" | "docx" | "pptx" | "html" | "site";
+  /** The person who read this rung and approved building the one above it (EE-218). Never an agent. Publishing has its own approver, in governance/publications.json. */
+  approved_by?: string;
   /** It has gone out to its audience; a person decides that */
   published?: boolean;
   /**
@@ -338,6 +351,150 @@ export type Artifact = {
     sha256: string;
     channel?: string;
   };
+};
+
+/** One strategic claim the venture is betting on, at <venture>/foundation/bets/<id>.json (route foundation/bets/[id], EE-221). A bet is to strategy what a requirement is to a product: one claim, singular and unambiguous, with the observation that would show it wrong and the method that would check it (ISO/IEC/IEEE 29148:2018 characteristics; EARS, Mavin et al. 2009, for a fixed sentence form per kind). Its kind says what sort of claim it is, and what can be done with it: an empirical claim, a forecast, a causal claim, a premise another bet rests on, or a selection rule, which is a value and is never reported as supported by evidence. The claim's parts (population, measure, comparator, threshold, resolves_by) are fields, not prose, so a machine can check that the bet is verifiable without reading the sentence; packages/naive/src/engine/bets.ts statementForm renders the fixed form from them. Naive ships no threshold and no probability: a threshold is the venture's own, and only a person sets a probability or resolves a bet (Tetlock and Gardner 2015 for the probability and the score, Brier 1950 for the score itself). Once a person registers the bet, or a pre-registration that tests it is registered, the claim never changes: a real change is a new bet that supersedes it with a reason, so the old claim and its outcome stay readable (Nosek et al., The preregistration revolution, PNAS 2018). packages/naive/src/engine/bets.ts holds the freeze and the lifecycle, the router applies it to every write, packages/naive/src/checks/check-bets.ts checks the set at rest and naive lint premises attacks each bet's premises. */
+export type Bet = {
+  /** The file name without .json */
+  id: string;
+  /** The venture this belongs to, when the record names it */
+  venture?: string;
+  /** What sort of claim it is. empirical: true or false today, over a named population and measure. forecast: resolves at a date, and is scored by Brier against what happened. causal: a cause changes a measure against a comparison group. premise: a claim another bet rests on, listed in that bet's premises. selection-rule: whom or what the venture backs and does not back, which is a value and not true or false; it is tested by whether its tests are observable and whether the bets it rests on hold, and never by evidence for it */
+  kind: "empirical" | "forecast" | "causal" | "premise" | "selection-rule";
+  /** The claim in one sentence, singular: one claim per bet, so a sentence joining three claims is three bets. The sentence a person confirmed, in their words; statementForm renders the canonical form for the kind from the claim's parts, to read beside it */
+  statement: string;
+  /** Where the bet stands. proposed: an agent or a person wrote it and nobody has fixed it. registered: a person fixed the claim, and from then on it does not change. supported, weakened, refuted: a person's verdict after the evidence, which a selection rule never takes. superseded: a later bet replaced it. withdrawn: it was taken off the table, and a person may put it back by moving it to proposed. The transitions are in packages/naive/src/engine/bets.ts LIFECYCLE, and only a person moves a bet on (naive bets resolve, naive bets register): an agent's write of a lifecycle field is refused, with the decision to raise instead */
+  status?: "proposed" | "registered" | "supported" | "weakened" | "refuted" | "superseded" | "withdrawn";
+  /** The person who set the current status. Never an agent */
+  status_by?: string;
+  /**
+   * When the current status was set
+   * @format date-time
+   */
+  status_at?: string;
+  /** The parts the fixed sentence form is built from, for an empirical claim, a forecast, a causal claim or a premise. A claim with a population, a measure, a comparator, a threshold and a date is verifiable; one without is not, whatever its sentence says (ISO/IEC/IEEE 29148 verifiable; AsPredicted question 3 on the dependent variable and how it is measured) */
+  claim?: {
+    /** Who or what the claim is about, with what is left in and what is left out, as a population and not a list of names */
+    population?: string;
+    /** The observable quantity, in one phrase */
+    measure?: string;
+    /** How the observed value is compared with the threshold */
+    comparator?: ">=" | ">" | "<=" | "<" | "==" | "!=";
+    /** The line the measure must pass. The venture's own: Naive ships no value, and an agent proposes one as a decision a person settles */
+    threshold?: {
+      /** The line itself. A number is compared arithmetically; a string is compared only for equality */
+      value: number | string;
+      unit?: string;
+      /** The person who chose the line, or the decision that settled it. Never an agent */
+      set_by?: string;
+    };
+    /** For a causal claim: the comparison group the change is measured against. Without one a causal claim has no counterfactual */
+    compared_with?: string;
+    /**
+     * The date the claim is judged on, fixed before the evidence is read. A forecast with no date cannot fail, because its window can always be extended
+     * @format date
+     */
+    resolves_by?: string;
+    /** Where the observed value will be read from, named before the search: a kind of source, a named dataset or a record route */
+    source?: string;
+    /** What the count is out of, for a claim tested by counting cases. A list of companies that succeeded with small teams says nothing without the number that tried, so a bet counted this way states the denominator or says it is unknown */
+    denominator?: string;
+  };
+  /** For a selection rule: whom or what the venture backs and does not back, and the test that tells them apart. A rule is not true or false; what can be checked is whether the test is observable and whether the bets under it hold */
+  rule?: {
+    /** Whom or what the venture backs, defined by an observable test */
+    back?: string;
+    /** Whom or what it does not back, defined by an observable test */
+    do_not_back?: string;
+    /** What anyone could look at to say which side of the rule a case falls on. A rule whose test is a judgment of character is a stated value, and it says so here */
+    observable_test?: string;
+  };
+  /** The observation that would show the bet is wrong, and the date by which it would be looked for. A claim with no possible counter-observation is not a bet (Popper); a kill criterion pairs a state with a date, set in advance so the decision is not made in the moment (Duke, Quit, 2022) */
+  falsified_by?: string;
+  /** The bets this one rests on, by id. A reason given for a bet is not a bet of its own: it is a premise, usually of kind premise. No premise chain may cycle (packages/naive/src/checks/check-bets.ts), and a bet reported supported while a premise of it is refuted is an error there */
+  premises?: string[];
+  /** The competing claims or explanations considered, so the evidence is read against something (Platt, strong inference, 1964; Heuer, analysis of competing hypotheses). Appended after registration, never edited */
+  rivals?: {
+    /** The rival claim in one sentence */
+    statement: string;
+    /** The bet that holds the rival, when it is written as one */
+    bet?: string;
+    /** The observation that would tell this bet and the rival apart */
+    separates?: string;
+  }[];
+  /** The evidence read, for and against, by reference. Evidence against is first class: supports false is how it is recorded, and it is what decides (Heuer). Appended after registration, never edited or removed, so a search that found something inconvenient stays on the record */
+  evidence?: {
+    /** The evidence item: a validation evidence id, a record route, or a venture-relative path. The item itself carries its kind, source, audience, sample and the date it was collected (validation-evidence.schema.json), and check-validation.ts grades it */
+    ref: string;
+    /** True when the item supports the bet, false when it tells against it */
+    supports: boolean;
+    /** What it shows, in one sentence */
+    note?: string;
+    /**
+     * When it was found, which says whether it came before or after the bet was registered
+     * @format date
+     */
+    found?: string;
+  }[];
+  /** What a person thinks the odds are, appended and never rewritten. The first entry is the prior, set before the search, and it is the one scored by Brier (Tetlock and Gardner 2015). Only a person writes an entry: an agent's write of one is refused, because a probability nobody chose is a number nobody is bound by */
+  confidence?: {
+    /** The probability the bet holds, from 0 to 1 */
+    p: number;
+    /** The person who set it. Never an agent */
+    set_by: string;
+    /**
+     * @format date-time
+     */
+    at: string;
+    /** How much of the evidence had been seen when this probability was set, the five answers of the OSF preregistration template's existing-data item, in its order: before the data existed, before any human observation of it, before it was accessed, before it was analysed, or after it was analysed. A bet drawn from an example the founder already read is after-analysis for that evidence, and saying so is what makes the rest of the test readable (Nosek et al. 2018) */
+    data_seen: "before-data-exists" | "before-any-observation" | "before-access" | "before-analysis" | "after-analysis";
+    /** Why, in one line. An update with no reason cannot be learned from */
+    why?: string;
+  }[];
+  /** What happened, written once, by a person. It is separate from the status on purpose: the status says whether the bet stands, and this says what was observed, which is what a forecast is scored against. A forecast given a low probability that did not happen is a bet refuted and a forecast well made */
+  resolution?: {
+    /** What was observed against the registered claim. mixed and unresolvable are left out of the Brier score rather than guessed at */
+    outcome: "happened" | "did-not-happen" | "mixed" | "unresolvable";
+    /** The value the measure reached, when it has one */
+    observed?: number | string;
+    /** The evidence behind the outcome, by reference */
+    evidence?: string[];
+    /**
+     * @format date-time
+     */
+    at: string;
+    /** The person who resolved it. An agent never resolves a bet */
+    by: string;
+    /** Why this outcome, especially when the observation needed a judgment */
+    why?: string;
+  };
+  /** True when the venture is working to make the claim true. A founder building a product to make a forecast come true is not a neutral observer, and a bet of this kind is read apart from the others, never as foresight. Fixed at registration, because declaring the intent afterwards is the postdiction the register exists to prevent */
+  intends_to_cause?: boolean;
+  /** The records that rest on this bet, by route or id: a goal, a requirement, a mission or vision line. Traceability downward, as a requirement has it upward */
+  used_by?: string[];
+  /** The person who decides about this bet */
+  owner?: string;
+  /**
+   * When a person registered it. From then on the claim never changes
+   * @format date-time
+   */
+  registered_at?: string;
+  /** The person who registered it. Only a person registers a bet */
+  registered_by?: string;
+  /** The bet this one replaces. A registered claim is never edited: a narrowed or corrected claim is a new bet, and supersede_reason says why */
+  supersedes?: string;
+  /** Why the earlier bet was replaced, so the change stays visible */
+  supersede_reason?: string;
+  /** The bet that replaced this one. Set exactly when the status is superseded */
+  superseded_by?: string;
+  /** The framework for thinking the bet was written through (frameworks/<id>), if any */
+  framework?: string;
+  /** The decision that settled the claim, the threshold or the verdict */
+  decision?: string;
+  updated?: string;
+  note?: string;
+  /** The founder's messages this record was made from (naive diagnose catches), so a reader of the bet alone can read the words it came from */
+  conversation?: ConversationRef[];
 };
 
 /** The plugin beta's capabilities in the order they unlock, at beta/capabilities.json. Core capabilities start unlocked. Every other capability unlocks once the tester has given the checkpoint feedback of the one before it (packages/naive/src/engine/beta-gate.ts). */
@@ -1499,6 +1656,93 @@ export type DetectorLine = {
   decision?: string;
 };
 
+/** Which documents a venture makes, in which format, from which records, and in what order (EE-218), at packages/naive/src/functions/documents.json. A record is the source of truth and a document is an artifact rendered from records, never the record. The catalog is opinionated: each format says what it is for and the rules say when slides beat a printed document, so an agent does not guess. The ladder is the order every document climbs, a printable reading copy a person approved before any interactive page and the page before the live site; each rung names the extra records and decision classes it needs, in the shape packages/naive/src/engine/prerequisites.ts reads (EE-217). packages/naive/src/checks/check-documents.ts checks what this schema cannot: one root rung, no cycle, every kind's rungs reachable, every format and function known, every section's record path in the data model, and a venture's own document artifacts climbing in order. */
+export type DocumentCatalog = {
+  version: string;
+  note?: string;
+  /** The formats a document may be rendered in. A format is a way of reading, not a tool: the tool that writes it is the renderer. */
+  formats: {
+    id: "md" | "pdf" | "docx" | "pptx" | "html" | "site";
+    name: string;
+    /** The ladder rung this format sits on. */
+    rung: string;
+    /** How a person takes it in: alone and in order, on a screen, or in a room with a speaker. */
+    reads: string;
+    /** True when a person can print it and carry it into a meeting. */
+    prints?: boolean;
+    /** naive: naive render writes it in house, so the framework carries no heavy dependency. harness: the agent's own harness writes it from the reading copy, and the harness adapter (packages/naive/src/interfaces/adapters/) names the skill, so the catalog names no vendor. site-build: the venture's site build and the publishing gate (EE-025). */
+    renderer: "naive" | "harness" | "site-build";
+    /** Why this format exists in the catalog, in one plain sentence. */
+    why: string;
+  }[];
+  /** The opinionated part: how to choose a format. Each rule asks one question about the reader and names the format it points to. A rule never decides alone; a person may override it, and the override is a decision. */
+  rules: {
+    id: string;
+    /** The reader's situation, in one plain sentence. */
+    when: string;
+    then: ("md" | "pdf" | "docx" | "pptx" | "html" | "site")[];
+    /** Formats this situation rules out. */
+    not?: ("md" | "pdf" | "docx" | "pptx" | "html" | "site")[];
+    why: string;
+  }[];
+  /** The order a document climbs. Fail closed: a rung is built only once the rung it comes after exists as a live artifact a person approved. */
+  ladder: {
+    note: string;
+    rungs: {
+      id: string;
+      /** The rung below this one, or null for the first rung. Exactly one rung has null. */
+      after: string | null;
+      what: string;
+      formats: ("md" | "pdf" | "docx" | "pptx" | "html" | "site")[];
+      /** Only a person approves a rung. An agent drafts and renders. */
+      approved_by: "person";
+      /** What this rung needs beyond the rung below it, in the shape packages/naive/src/engine/prerequisites.ts reads (EE-217). The rung below is the ladder's own requirement and is not repeated here. */
+      requires: {
+        /** Logical record paths or route patterns that must be live. */
+        records?: string[];
+        /** Meeting kinds that must have happened. */
+        meetings?: string[];
+        /** Decision classes that must be decided by a person. */
+        decisions?: string[];
+      };
+    }[];
+  };
+  /** The documents this framework is opinionated about. A kind a venture wants and the catalog lacks is a pull request, not a local invention. */
+  kinds: {
+    id: string;
+    title: string;
+    /** The function in packages/naive/src/functions/departments.json whose agent drafts it. */
+    function: string;
+    /** What the reader can do once they have read it. */
+    purpose: string;
+    audience: ("founder" | "team" | "board" | "investor" | "customer" | "partner" | "counsel" | "public")[];
+    /** The artifact kind the rendered document is, as artifact.schema.json names it. */
+    artifact_kind: "document" | "deck" | "dashboard" | "design" | "page" | "file" | "site";
+    /** The top rung this kind climbs to. Most kinds stop at the reading copy. */
+    highest_rung: string;
+    formats: ("md" | "pdf" | "docx" | "pptx" | "html" | "site")[];
+    /** Why these formats and not the others, in one plain sentence. */
+    why_format: string;
+    /** The role that approves it, when it is not the founder. A person either way. */
+    approves?: string;
+    /** An unvalidated prior: about how many words belong on one page or one slide of this kind. A venture overrides it in naive.config.json. */
+    words_per_page?: number;
+    /** An unvalidated prior: about how many pages or slides this kind runs to. */
+    pages?: number;
+    /** The reading copy's sections, in order. Each names the record it reads, so every claim in the rendered document cites a record. */
+    sections: {
+      id: string;
+      title: string;
+      /** The logical path of the record it reads, such as foundation/problem.json. A path with * reads every record it matches, one block each. */
+      from: string;
+      /** A dotted path to a string or a list of strings in that record. Without it the section names the record and leaves the words to the writer. */
+      field?: string;
+      /** True when a hole is left out instead of shown: a missing record, or a record with nothing in the field, leaves the section out rather than printing what is not recorded. */
+      optional?: boolean;
+    }[];
+  }[];
+};
+
 /** The accountable owner a venture names for an element of APQC's Process Classification Framework (EE-187): a category, process group, process, activity or task in packages/naive/src/functions/pcf.json. An element with no entry takes its parent's owner, and a category with none is owned by its function's agent. The owner is accountable, the one who answers for the element; who performs an activity is in operations/activity-assignments.json. The file is operations/element-owners.json, and packages/naive/src/engine/element-owners.ts resolves it. */
 export type ElementOwners = {
   /** Per element, by its APQC hierarchy id (3.0 for a category, 3.5 for a process group, 3.5.1.6 for an activity): the role or the person accountable for it */
@@ -2254,6 +2498,8 @@ export type FunctionWorkflow = {
   id: string;
   function: string;
   title: string;
+  /** The APQC level 3 process this workflow performs, by hierarchy id in packages/naive/src/functions/pcf.json, such as 9.2.1. It must sit under the function's APQC category, one module names a process in one workflow, and every step's activity then sits under it (packages/naive/src/checks/check-pcf-coverage.ts, EE-226). */
+  process?: string;
   /** What one run is for, in one plain sentence: the state the venture's records are in when the run is done. The title names the work; the goal names the outcome, so an agent can tell a finished run from a performed one. */
   goal: string;
   /** The telos measure kinds this workflow moves (foundation/telos measures[].kind), each one of its function's measures in function.json. This is how an agent says which of the venture's goals its work serves: a goal binds a measure, and a lead weighs the workflow by it. */
@@ -2270,10 +2516,12 @@ export type FunctionWorkflow = {
   };
   /** Route patterns the agent reads first. */
   reads?: string[];
+  requires?: FunctionWorkflowRequires;
   steps: {
     id: string;
     /** What the agent does, in one plain sentence. */
     do: string;
+    requires?: FunctionWorkflowRequires;
     /** A skill in the function's skills/ folder to load for this step. */
     skill?: string;
     /** True when the step asks the person, because only they know the answer. */
@@ -2298,6 +2546,16 @@ export type FunctionWorkflow = {
     check: string;
     reviewer?: string;
   }[];
+};
+
+/** What must exist before this runs (EE-217, packages/naive/src/engine/prerequisites.ts). It fails closed: an entry that cannot be resolved blocks, `naive due` and `naive loop` never start a blocked workflow, `naive agent run --workflow` refuses one, and the router refuses a write to a route only blocked workflows write, for an agent and for a person alike. A step inherits its workflow's entries and may add its own. A venture loosens or tightens an entry under `prerequisites` in naive.config.json, which names the person who set it. */
+export type FunctionWorkflowRequires = {
+  /** Record routes whose record must be live in the venture, such as foundation/problem. A draft the gate holds is not live until a person accepts it. */
+  records?: string[];
+  /** Function workflows, `<function>/<workflow>`, that a meeting must have walked and closed with its goal reached (meeting.schema.json, EE-200). This is how a person's meeting, and the records drafted in it, come before the work. */
+  meetings?: string[];
+  /** Decisions a person must have decided. A shipped workflow names none, because a venture's decision ids are its own; only its naive.config.json does. */
+  decisions?: string[];
 };
 
 /** The fund's economics and structure (fund/terms.json): target size, vintage, fees, carry and term, and the closes so far. */
@@ -2727,6 +2985,8 @@ export type IcpProfile = {
   jobs?: string[];
   /** Ids of the problem record's forms they have */
   problem_forms?: string[];
+  /** The one problem of this profile's that the venture exists to solve (EE-219): the core problem of its problem tree, after the Logical Framework Approach. One per profile, so this field is single, and it names a form in problem_forms. Only a person sets it, since the profile is gated like the telos */
+  core_problem?: string;
   /** Where to reach them: communities, channels, events */
   where_to_find?: string[];
   /** Who is out of scope, and why */
@@ -3493,6 +3753,44 @@ export type MarketingDesignSystem = {
 /** The inputs the choice rests on, by key from marketing/design-system/inputs: mission, problem, icp:<id>, alignment:<id>, market:<product>, founder:<id>, competitor:<name> */
 export type MarketingDesignSystemFrom = string[];
 
+/** One element of the words a public page shows, at marketing/message/<id>.json (EE-216): the tagline, a headline, a subhead, the value proposition, a call to action with where it leads, a proof point, an objection answered, the contact line. The hierarchy is the standard one, positioning first and proof last, after April Dunford: positioning says what the venture is and whom it is for, the value propositions say what each audience gets, and the proof points stand behind them. Each element is its own record, so a person approves the words one element at a time, and each names the records its words come from (cites), including the ones still missing, so no page claims what no record holds. The page is built from these records and the sitemap, never the other way round (naive copy gaps). Version 0.x, unevaluated. */
+export type MarketingMessage = {
+  version: string;
+  venture?: string;
+  /** The file's name without .json. The element of a sitemap section is <page>-<item>, as the gap report names it (home-what, about-team); an element of the site's chrome keeps the chrome item's id (tagline). */
+  id: string;
+  /** Where the element sits in the messaging hierarchy. positioning is the one statement the rest agree with; a cta and the contact line carry a destination. */
+  kind: "positioning" | "tagline" | "headline" | "subhead" | "value-proposition" | "cta-primary" | "cta-secondary" | "proof-point" | "objection" | "body" | "footer" | "contact";
+  /** The words themselves, as a reader sees them. One element holds one piece of text, so a person approves or rejects it on its own. */
+  text: string;
+  /** What to call this element when a person is asked about it (Name and tagline, What to do next). */
+  label?: string;
+  /** The sitemap page this fills: a path in marketing/sitemap pages[].path, such as / or /about. Absent for the site's chrome, which every page shows. */
+  page?: string;
+  /** The sitemap section this fills (pages[].sections[].item, such as what or next-step), or a chrome item of the marketing matrix (tagline). */
+  item?: string;
+  /** Where a call to action or the contact line leads. none says plainly that there is nowhere to go yet, which is an answer a person may choose instead of inventing one. */
+  destination?: {
+    kind: "email" | "url" | "path" | "none";
+    /** The address, the link, or the path on the site. Absent when the kind is none. */
+    value?: string;
+    note?: string;
+  };
+  /** Where these words come from: at least one record, named even when it is missing, so the gap report can say what is still owed before the words are trusted. */
+  cites: {
+    /** A route or a venture-relative file: foundation/problem, foundation/icp.json, decisions/<id>.decision.json. */
+    record: string;
+    /** The field of that record these words rest on, such as statement. */
+    field?: string;
+    /** What this record contributes to the words, in one plain sentence. */
+    why?: string;
+  }[];
+  /** Whom the words are for: audiences of the marketing matrix, or ICP profile ids. */
+  audience?: string[];
+  /** Anything a person should know before approving these words, such as a claim that is not yet evidenced. */
+  note?: string;
+};
+
 /** The planned public site (EE-064): which information is shown where, how (the MDX component), when and for whom, with the reasons, planned from the venture's records by packages/naive/src/functions/marketing-and-sales/marketing/site/plan.ts. A marketing record, part of the marketing package handed to engineering (EE-065). Version 0.x, unevaluated. */
 export type MarketingSitemap = {
   version: string;
@@ -3531,6 +3829,17 @@ export type MarketingSitemap = {
     type: string;
     level: "home" | "nav" | "linked" | "anywhere";
     sections: {
+      /** The words for this section, drafted in the record the marketing function owns before they become the MDX variant named in `variant`, which is where published copy lives (EE-214). The publish lint reads text here as it reads a page (packages/naive/src/engine/record-copy.ts), so a leak, an uncited number or a private name is caught in the draft. */
+      draft_copy?: {
+        /** The copy itself, in the marketing agent's own words: this is the section's site text */
+        text: string;
+        /** draft while it is being written, ready once it is written and waiting for a person, published once the variant carries it */
+        status: "draft" | "ready" | "published";
+        /** The records or URLs behind any number or customer claim in the text; the claims rule fails without one */
+        sources?: string[];
+        by?: string;
+        at?: string;
+      };
       item: string;
       label?: string;
       component: string;
@@ -3543,7 +3852,6 @@ export type MarketingSitemap = {
         [key: string]: unknown;
       };
       variant: string;
-      [key: string]: unknown;
     }[];
     [key: string]: unknown;
   }[];
@@ -3708,6 +4016,27 @@ export type MoneySummary = {
 
 /** A venture's overrides to Naive's defaults, at the venture root (P-2, like next.config.js): the gate (fail-closed routes, rules over the router's path patterns, which package rules it imports), function owners, check settings (P-7, like eslint.config.mjs), thresholds, which System 1 questions run, pinned package versions (U-4) and how strictly the acting role is checked (M-18). Every field is optional; a missing one keeps the default in packages/naive/src/engine/naive-config.ts. node packages/naive/src/checks/check-config.ts <venture dir> checks it. */
 export type NaiveConfig = {
+  /** What this venture adds to, or takes off, the prerequisites its workflows ship with (EE-217, packages/naive/src/engine/prerequisites.ts, naive blocked). The lock fails closed, so only a person opens it: `set_by` is required, and a block whose person is empty is ignored. packages/naive/src/checks/check-config.ts holds each workflow and entry to the venture's own. */
+  prerequisites?: {
+    /** The person who last changed a prerequisite, and when. */
+    set_by: {
+      person: string;
+      at: string;
+    };
+    /** Per workflow, named <function>/<workflow>. */
+    workflows?: {
+      [key: string]: {
+        /** Entries that do not block this workflow here: the ref as the workflow names it, or `<kind> <ref>` to name one kind of it. */
+        off?: string[];
+        /** Record routes this venture adds. */
+        records?: string[];
+        /** Workflows a meeting must have walked and closed, that this venture adds. */
+        meetings?: string[];
+        /** Decisions a person must have decided, that this venture adds. */
+        decisions?: string[];
+      };
+    };
+  };
   /** How far the loop goes on its own when a function workflow is due (EE-183, packages/naive/src/engine/loop.ts, naive loop): manual, the default, starts nothing; ask files a decision per due occurrence and starts on the answer start; auto starts the workflow as its function agent. The most specific mode wins: workflow, then function, then mode. No mode goes past the gate. packages/naive/src/checks/check-config.ts holds each name to the venture's functions and workflows. */
   loops?: {
     /** The mode for every workflow that has none of its own */
@@ -3876,7 +4205,12 @@ export type NaiveConfig = {
   /** The publish lint (packages/naive/src/engine/publish-lint.ts): each rule off, warn or error, the marks to flag, and findings a person waived */
   publish_lint?: {
     rules?: { [K in "copy-distance" | "leaks" | "brand" | "claims" | "marks" | "personal-data" | "secrets"]?: "off" | "warn" | "error" };
-    marks?: string[];
+    /** The names the marks rule flags, each matched case-insensitively on whole words. A string is another company's mark; an object may say private, a name the venture never makes public, which is an error whatever level the marks rule has. The function that writes the words adds its own in marketing/publish-terms.json (EE-214). */
+    marks?: (string | {
+      name: string;
+      private?: boolean;
+      why?: string;
+    })[];
     waived?: {
       rule: string;
       file?: string;
@@ -3921,6 +4255,16 @@ export type NaiveConfig = {
     threshold?: number;
     stale_hours?: number;
   };
+  /** The venture's own weights for ranking its customer problems (EE-219), in place of the unvalidated priors in packages/naive/src/functions/strategy/problem-priority.json. A weight left out keeps the prior, and a person sets them (set_by), because what counts as evidence of a problem is a judgment. */
+  problems?: {
+    weights: {
+      raised_unprompted?: number;
+      ranked_first?: number;
+      pays_for_workaround?: number;
+    };
+    /** The person who set these weights */
+    set_by: string;
+  };
   /** The premise-attack linter (packages/naive/src/checks/premise-lint.ts): each rule, one per aspect, is off, warn (the default) or error */
   premise_lint?: {
     rules?: {
@@ -3928,6 +4272,7 @@ export type NaiveConfig = {
       unmeasurable?: "off" | "warn" | "error";
       "no-owner"?: "off" | "warn" | "error";
       "unsupported-premise"?: "off" | "warn" | "error";
+      "no-counter-evidence"?: "off" | "warn" | "error";
       orphan?: "off" | "warn" | "error";
       conflict?: "off" | "warn" | "error";
       dependency?: "off" | "warn" | "error";
@@ -4820,6 +5165,187 @@ export type Postmortem = {
   note?: string;
 };
 
+/** A plan for one test, fixed before the test runs, at <venture>/foundation/pre-registration/<id>.json (route foundation/pre-registration/[id], EE-220). It is the first durable object of the strategy function: the mission, the vision and the other strategy documents are written after a pre-registration is registered, so the standard of proof is set before the evidence arrives. The practice is preregistration in science (Nosek et al., The preregistration revolution, PNAS 2018), discovery-driven planning's assumption checklist and milestones (McGrath and MacMillan, HBR 1995) and the Test Card's metric and success criterion (Bland and Osterwalder, Testing Business Ideas, 2019). Once a person registers it, the thesis, assumptions, method, measures, thresholds, judged-by dates, exclusions and the actions on a pass and a fail never change: a deviation is appended to deviations, and a real change is a new pre-registration that supersedes this one with a reason, so every deviation stays visible. packages/naive/src/engine/pre-registration.ts holds that rule, the router applies it to every write and packages/naive/src/checks/check-pre-registration.ts checks the registered fields against the version in the blob store. Naive ships no threshold: each one is the venture's own, proposed as a decision a person settles. */
+export type PreRegistration = {
+  /** The file name without .json */
+  id: string;
+  /** The venture this belongs to, when the record names it */
+  venture?: string;
+  /** A short name for the test, for a list */
+  title?: string;
+  /** draft: still being written, and every field may change. registered: a person fixed it, and the registered fields never change again. judged: its verdict is written. superseded: a later version replaces it. withdrawn: it was taken off the table before registration or before a verdict */
+  status: "draft" | "registered" | "judged" | "superseded" | "withdrawn";
+  /** The claim, written so it can fail */
+  thesis: {
+    /** The claim in one sentence, about the world and not about the venture's hopes */
+    statement: string;
+    /** What would show the claim is wrong. A claim with no such state is not a thesis */
+    falsified_if?: string;
+  };
+  /** The bets this plan tests, by id (foundation/bets/<id>.json, EE-221). It is one of the registered fields, so a registered plan cannot be pointed at a different claim afterwards, and registering the plan fixes each named bet's claim as the plan was written against it. A plan may name none, for a thesis the venture has not written as a bet */
+  tests?: string[];
+  /** What the thesis rests on, after discovery-driven planning's assumption checklist. The ones that are critical and uncertain are the ones to test first */
+  assumptions?: {
+    id: string;
+    statement: string;
+    /** How much the thesis rests on it: high means the thesis fails if it is false */
+    criticality: "high" | "medium" | "low";
+    /** How little is known about it: high means nothing here settles it */
+    uncertainty: "high" | "medium" | "low";
+    /** The measures below that bear on this assumption */
+    measures?: string[];
+    /** What the assumption is drawn from, when anything is */
+    source?: string;
+  }[];
+  /** How the test runs, fixed before it runs */
+  method?: {
+    /** Whom the test is run with, as a population and not as a list of names */
+    who?: string;
+    /** How many, as a number or the rule that decides it */
+    how_many?: number | string;
+    /** How they are found and approached. Warm intros and friends are a recruitment method, and saying so is what makes the result readable */
+    recruitment?: string;
+    /** What is asked or observed, concretely enough that someone else could run it the same way */
+    asked_or_observed?: string;
+    /** How the answers become a number, when that is not obvious */
+    analysis?: string;
+  };
+  /** What is measured, each with the line it must pass and the date it is judged by */
+  measures?: {
+    id: string;
+    /** What is counted, in one sentence */
+    statement: string;
+    /** The line the measure must pass. The venture's own: Naive ships no value, and an agent proposes one as a decision a person settles */
+    threshold?: {
+      /** How the observed value is compared with the value */
+      operator: ">=" | ">" | "<=" | "<" | "==" | "!=";
+      /** The line itself. A number is compared arithmetically; a string is compared only for equality */
+      value: number | string;
+      unit?: string;
+      /** The person who chose it, or the decision that settled it */
+      set_by?: string;
+    };
+    /**
+     * The date the measure is judged on, fixed before the test runs so the window cannot be extended to reach the line
+     * @format date
+     */
+    judged_by?: string;
+    /** Where the observed value will be read from */
+    source?: string;
+  }[];
+  /** What does not count as evidence here, fixed in advance: compliments, friends' opinions, sign-ups without payment, anything the venture would be tempted to read as a yes. A standard of proof decided after the evidence arrives admits whatever arrived (Kerr 1998 on HARKing) */
+  exclusions?: {
+    statement: string;
+    /** Why it does not count */
+    why?: string;
+  }[];
+  /** What the venture does if the measures pass their thresholds */
+  on_pass?: PreRegistrationAction;
+  /** What the venture does if they do not */
+  on_fail?: PreRegistrationAction;
+  /**
+   * When a person registered it. From then on the registered fields never change
+   * @format date-time
+   */
+  registered_at?: string;
+  /** The person who registered it. Only a person registers a pre-registration */
+  registered_by?: string;
+  /** Every departure from the registered plan, appended beside it and never edited into it, so the record of what was promised and the record of what happened are both readable. An entry already written never changes */
+  deviations?: {
+    /**
+     * @format date-time
+     */
+    at: string;
+    /** What was done differently from the registered plan */
+    what: string;
+    why: string;
+    /** Who departed from the plan, a person's id or a role */
+    by: string;
+    /** The measures or assumptions it bears on */
+    affects?: string[];
+  }[];
+  /** What was observed, per measure, written after registration. The pass or fail of one measure is its observed value against its registered threshold; the verdict over the whole test is a person's */
+  results?: {
+    /** The measure above this result is for */
+    measure: string;
+    /** What was observed */
+    observed: number | string;
+    /** The records or sources behind it (validation/interviews/<id>, a raw source) */
+    evidence?: string[];
+    /** The observed value against the registered threshold */
+    verdict: "pass" | "fail";
+    /**
+     * @format date-time
+     */
+    at: string;
+    /** Who recorded it */
+    by?: string;
+    note?: string;
+  }[];
+  /** The verdict over the whole test, which is a person's and is written once */
+  verdict?: {
+    outcome: "pass" | "fail" | "mixed" | "inconclusive";
+    /** What the venture did, which the registered on_pass or on_fail said it would */
+    action_taken: "persevere" | "pivot" | "stop";
+    /** Why, especially when the action taken is not the registered one */
+    why?: string;
+    /**
+     * @format date-time
+     */
+    at: string;
+    /** The person who judged it */
+    by: string;
+  };
+  /** The pre-registration this one replaces. A registered plan is never edited: a real change is a new version, and supersede_reason says why */
+  supersedes?: string;
+  /** Why the earlier version was replaced, so the change stays visible */
+  supersede_reason?: string;
+  /** The later version that replaced this one */
+  superseded_by?: string;
+  /** The decision that settled the thresholds and the actions */
+  decision?: string;
+  note?: string;
+};
+
+/** A decision rule fixed before the answer is known: persevere, pivot or stop, and what that means here (Ries, The Lean Startup, 2011) */
+export type PreRegistrationAction = {
+  action: "persevere" | "pivot" | "stop";
+  /** What the venture does, concretely */
+  what: string;
+};
+
+/** How the framework ranks a venture's customer problems and what holds its problem tree together (EE-219), at packages/naive/src/functions/strategy/problem-priority.json. The weights are unvalidated priors a venture replaces under problems in naive.config.json; the labels are a view of the computed order and are never stored on a problem. */
+export type ProblemPriority = {
+  version: string;
+  note?: string;
+  standards?: {
+    name: string;
+    source: string;
+    /** What in Naive this standard governs, so a reader can tell the parts apart */
+    used_for: string;
+  }[];
+  /** The weight on each evidence count from the validation interviews (validation-interview.schema.json problems). Unvalidated priors. */
+  weights: {
+    raised_unprompted: number;
+    ranked_first: number;
+    pays_for_workaround: number;
+  };
+  weights_why?: string;
+  /** The statuses a problem must have to be in the ranking; one with any other status is listed with its status and no rank */
+  ranked_statuses: ("open" | "target" | "parked" | "dropped")[];
+  /** The label for each rank, from that rank onward: primary at 1, secondary at 2, tertiary at 3 and below */
+  labels: {
+    from: number;
+    label: string;
+  }[];
+  /** The record types that are written only once the primary profile's core problem and the venture's target problem exist. The fail-closed rule of packages/naive/src/checks/check-problems.ts */
+  requires_target?: {
+    /** Record types in data-model.json, whose venture paths say which files wait */
+    records: string[];
+    why: string;
+  };
+};
+
 /** One recurring business process in the venture's process catalog, at capabilities/processes/<id>.json (route capabilities/processes/[id]): its purpose and one owner, what starts it, its suppliers, inputs, outputs and customers (SIPOC), its working procedure as steps with the control points marked, and three health measures (cycle time, rework rate, first-pass yield). It follows APQC PCF 13.1 (manage business processes: assign process ownership 13.1.1, define processes and control points 13.1.3, measure process performance 13.1.4). The capabilities function owns it, and only its agent (capabilities-agent) or a person writes it (writer function). A process that crosses functions names each one. */
 export type Process = {
   /** The process's id, the file name without .json */
@@ -4866,6 +5392,31 @@ export type Process = {
    * @format date
    */
   last_reviewed?: string | null;
+  note?: string;
+};
+
+/** One capability of a product, or a category that groups capabilities, at <venture>/product/capabilities/<id>.json (EE-224). Capabilities form a tree under the products function: a category's parent is another category or null (it sits directly under the products function), and a capability always has a category as its parent. Each names the agent role that owns it, the one that keeps its words and its site or docs containers current. A capability is live, building or retired, and nothing under a retired category is live or building (node packages/naive/src/checks/check-ventures.ts). */
+export type ProductCapability = {
+  id: string;
+  venture?: string;
+  /** The capability as a customer would name it, for example Time travel */
+  name: string;
+  /** The product it belongs to: a product card's id in product/ or products/ */
+  product: string;
+  /** A category groups capabilities and other categories; a capability is one thing the product does */
+  kind: "category" | "capability";
+  /** The category it sits under, or null for a category directly under the products function */
+  parent: string | null;
+  /** The agent role that owns it: <capability>-agent for a capability, the category agent for a category. A container in a site's containers.json names the same role as its owner */
+  owner: string;
+  status: "live" | "building" | "retired";
+  /** What it does, in one or two plain sentences */
+  summary?: string;
+  /**
+   * When it reached its status
+   * @format date
+   */
+  since?: string;
   note?: string;
 };
 
@@ -4991,6 +5542,13 @@ export type ProvenanceEntry = {
   /** The decision or decision class the activity acted under, such as EE-026 or ownership-or-control */
   decision?: string;
   note?: string;
+  /** A person's explicit override of a fail-closed rule on this write (EE-217): the rule, the person, their reason, and what was missing when they passed it. An agent never writes one. */
+  override?: {
+    rule: string;
+    by: string;
+    why: string;
+    missing: string[];
+  };
   /** For a record kept outside the venture folder (EE-037): the source it was written to, its version there, and the commit or pull request that holds it */
   source?: {
     /** The source id from the venture's knowledge/sources.json */
@@ -5231,6 +5789,23 @@ export type Publications = {
       at?: string;
       decision?: string;
     }[];
+  }[];
+};
+
+/** The names the publish lint flags in public copy, owned by the function that writes the words (EE-214): marketing-and-sales. It holds names only, never severities and never waivers, so the role that owns the copy can tighten the gate on itself without reaching naive.config.json, which can loosen it. A mark is another company's name, matched case-insensitively and on whole words; a mark marked private is a name the venture never makes public, and it is an error whatever level naive.config.json gives the marks rule. Severities and waivers stay a prior the venture sets under publish_lint in naive.config.json. */
+export type PublishTerms = {
+  note?: string;
+  updated?: string;
+  /** The role or person that last wrote the list */
+  by?: string;
+  marks: {
+    /** The name to flag, matched case-insensitively on whole words */
+    name: string;
+    /** The venture never makes this name public: a line that carries it is an error, not a warning */
+    private?: boolean;
+    why?: string;
+    /** For a private name: what lifts it, such as the announcement */
+    until?: string;
   }[];
 };
 
@@ -6719,6 +7294,19 @@ export type ValidationInterview = {
   }[];
   /** The one bottleneck the person chose to work on */
   chosen_problem?: string;
+  /** What this interview says about the venture's problem tree (EE-219): one entry per form of foundation/problem.json the interview bears on, coded from the transcript the way qualitative research codes to a codebook, so the ranking counts evidence instead of guessing from words. The counts are what packages/naive/src/engine/problems.ts ranks by, and nothing here is a score. */
+  problems?: {
+    /** The form's id in foundation/problem.json forms */
+    problem: string;
+    /** unprompted: they named it before the interviewer did, answering an open question about last week. prompted: they agreed once asked, which is weaker evidence */
+    raised: "unprompted" | "prompted";
+    /** They put this problem first when asked which one to fix; at most one problem per interview */
+    ranked_first?: boolean;
+    /** They already spend money or someone's time working around it, the strongest of the three counts */
+    pays_for_workaround?: boolean;
+    /** What in the transcript the coding rests on */
+    note?: string;
+  }[];
   prediction?: {
     /** What the interviewer predicts happens with Naive */
     with_naive: string;
@@ -6822,7 +7410,7 @@ export type ValidationPricing = {
   };
 };
 
-/** The problem sub-score (EE-026), at <venture>/purpose/validation/problem.json: the problem, who has it, how they cope today, and the cited evidence that it is real. A statement alone is the weakest form of this record; packages/naive/src/checks/check-validation.ts grades it from its evidence. */
+/** The problem sub-score (EE-026), at <venture>/purpose/validation/problem.json: the problem, who has it, how they cope today, and the cited evidence that it is real. A statement alone is the weakest form of this record; packages/naive/src/checks/check-validation.ts grades it from its evidence. forms holds the customer problem tree (EE-219): one root problem in statement, each form below it either a narrower case (parent) or a cause (cause_of), one form at a time the target, and each ICP's core problem named by that profile (icp-profile.schema.json core_problem). packages/naive/src/checks/check-problems.ts checks the tree and packages/naive/src/engine/problems.ts ranks it from the interviews. */
 export type ValidationProblem = {
   venture: string;
   /**
@@ -6841,13 +7429,19 @@ export type ValidationProblem = {
   workarounds?: string[];
   /** What has changed that makes the problem solvable or urgent now (EE-050) */
   why_now?: string;
-  /** The forms the problem takes (EE-050): one root problem in statement, and each form a narrower problem with its own segment and evidence, assessed on its own so it can be validated or dropped without touching the root */
+  /** The customer problem tree (EE-050, EE-219): one root problem in statement, and each form a problem below it, assessed on its own so it can be validated or dropped without touching the root. Two relations hold the tree together, and they say different things: parent, a narrower case of the same problem (the opportunity solution tree, Torres 2021), and cause_of, a different problem that produces another (problem tree analysis in the Logical Framework Approach). The order the founder lists them in is their own order, which the ranking falls back to as a hypothesis before any interview codes them (packages/naive/src/engine/problems.ts). These are the customer's problems; the business's own problems are decisions, seams and handoffs, never forms here */
   forms?: {
+    /** Unique among the forms, and never root, which names the record's own statement */
     id: string;
     statement: string;
     /** Only when narrower than the root's */
     segment?: string;
-    status?: "open" | "dropped";
+    /** The form this one is a narrower case of (Torres's opportunity solution tree): the same problem for fewer people, or in one situation. Left out, the form sits directly under the record's statement, so a flat list of forms is a tree one level deep */
+    parent?: string;
+    /** The forms this problem is a cause of (the Logical Framework Approach's problem tree): a different problem that produces them. Never the same form as parent: a narrower case is one shape of the same problem, a cause is another problem behind it */
+    cause_of?: string[];
+    /** open, a live problem; target, the one problem being worked on now, which at most one form carries and only a person sets (the record is gated, so an agent's write is a draft a person accepts); parked, live but deliberately not now; dropped, ruled out by evidence. Primary, secondary and tertiary are not statuses: they are the computed ranking's labels (packages/naive/src/engine/problems.ts) */
+    status?: "open" | "target" | "parked" | "dropped";
   }[];
   evidence: ValidationEvidence[];
   /** The Jev probability that the problem is real and worth solving for this segment; the evidence grade weighs it in the validation score */
@@ -6914,6 +7508,8 @@ export type ValidationSolution = {
   updated?: string;
   /** How it solves the problem, in one or two sentences */
   statement: string;
+  /** The form of the problem tree this solution solves (EE-219), normally the venture's target problem: foundation/problem.json forms, by id */
+  problem?: string;
   /** Product id, if one product carries the solution */
   product?: string;
   /** What people use instead today, including doing nothing */

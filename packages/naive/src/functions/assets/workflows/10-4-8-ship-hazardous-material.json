@@ -1,0 +1,48 @@
+{
+  "id": "10-4-8-ship-hazardous-material",
+  "function": "assets",
+  "process": "10.4.8",
+  "title": "Ship hazardous material",
+  "goal": "Nothing a carrier treats as hazardous leaves the venture until its rules have been read and written down, the packaging, labels and declaration are prepared, and a named person has accepted and signed for the shipment.",
+  "measures": ["compliance_met"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["assets/intake"] },
+  "reads": ["venture", "assets/register", "legal/risks", "supply-chain/suppliers", "finance/spend", "decisions"],
+  "steps": [
+    {
+      "id": "identify-what-is-hazardous",
+      "do": "Identify which items the venture is sending that a carrier treats as hazardous (lithium batteries and devices containing them, aerosols, solvents, paints, refrigerants, compressed gas), and collect for each the safety data sheet and the carrier's current published rules, naming the source and the date read.",
+      "skill": "manage-asset-end-of-life",
+      "consider": {
+        "why": "A battery or solvent shipped as an ordinary parcel can be refused, destroyed or treated as an offence, and the rules change.",
+        "when": "The venture is sending, returning or disposing of batteries, chemicals or anything else a carrier treats as hazardous."
+      }
+    },
+    {
+      "id": "prepare-the-shipment",
+      "do": "Prepare what the shipment needs as a draft for the person who will sign it: the packaging and inner protection, the labels and marks, the quantity limits, the declaration, and which carriers and services accept the item at all.",
+      "skill": "manage-asset-end-of-life",
+      "consider": {
+        "why": "The paperwork and the packaging are what the carrier checks, and a refused shipment usually comes back at the venture's cost.",
+        "when": "A hazardous item has to move and the rules for it have been written down."
+      }
+    },
+    {
+      "id": "hand-it-to-a-person",
+      "do": "Tell the founder that a hazardous shipment needs a named person to sign its declaration, say plainly whether this one looks like a job for a qualified shipper or a licensed disposal contractor instead, and stop until they decide.",
+      "skill": "manage-asset-end-of-life",
+      "ask": true,
+      "raises": ["legal-or-terms"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Attach the rules read, the prepared paperwork and the options to the decision in front of the founder, and record on the item's handoff what was shipped, by which carrier and on whose signature.",
+      "writes": ["decisions/*"],
+      "raises": ["spend-money"]
+    }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "signed-by-a-person", "kind": "review", "check": "Does every hazardous item in this run have its current carrier rules and safety data sheet on the record, and was no shipment sent without a named person accepting and signing its declaration?", "reviewer": "finance-lead" }
+  ]
+}

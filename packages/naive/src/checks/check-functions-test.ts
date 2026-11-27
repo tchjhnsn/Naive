@@ -20,7 +20,7 @@ const copy = (): string => {
   return d;
 };
 type Row = { class: string, level: string, approver?: string, examples: string[] };
-type Step = { reads?: string[], writes?: string[], raises?: string[], skill?: string, activity?: string, consider?: { why?: string, when?: string } };
+type Step = { id?: string, reads?: string[], writes?: string[], raises?: string[], skill?: string, activity?: string, consider?: { why?: string, when?: string } };
 type Trigger = { kind: string, cadence?: string, route?: string };
 type Doc = { rows: Row[], steps: Step[], reads?: string[], intake?: string, clusters?: string[], grants: { id: string }[], measures?: string[], trigger?: Trigger };
 const edit = (root: string, rel: string, f: (j: Doc) => void) => { const p = join(root, rel); const j = JSON.parse(readFileSync(p, "utf8")) as Doc; f(j); writeFileSync(p, JSON.stringify(j, null, 2) + "\n"); };
@@ -40,7 +40,7 @@ const cases: [string, (d: string) => void, RegExp][] = [
   ["a required intake step that writes a record type need-now suggests only later fails", (d) => edit(d, `${FIN}/workflows/intake.json`, (j) => { delete j.steps[2].consider; }), /intake step ask-spend is required but writes finance\/spend\/\[id\], whose record type spend-register need-now suggests from Beachhead/],
   ["a required intake step that writes master data need-now never suggests fails", (d) => edit(d, `${FIN}/workflows/intake.json`, (j) => { delete j.steps[1].consider; }), /intake step ask-accounts is required but writes money\/\[id\], whose record type money-account need-now suggests only when a person asks/],
   ["an intake step to consider whose when does not name the phase its record type starts in fails", (d) => edit(d, `${FIN}/workflows/intake.json`, (j) => { j.steps[2].consider = { why: "Costs renew.", when: "The venture pays for a tool." }; }), /writes finance\/spend\/\[id\], which starts in Beachhead, but its consider\.when does not name Beachhead/],
-  ["the strategy intake asking for the legacy telos record as a required step fails", (d) => edit(d, "packages/naive/src/functions/strategy/workflows/intake.json", (j) => { j.steps[1].writes = ["foundation/telos"]; }), /intake step ask-telos is required but writes foundation\/telos, whose record type telos need-now suggests from Validation/],
+  ["the strategy intake asking for the legacy telos record as a required step fails", (d) => edit(d, "packages/naive/src/functions/strategy/workflows/intake.json", (j) => { const step = j.steps.find((s) => s.id === "ask-telos"); if (step) step.writes = ["foundation/telos"]; }), /intake step ask-telos is required but writes foundation\/telos, whose record type telos need-now suggests from Validation/],
   ["a step whose activity APQC does not have fails", (d) => edit(d, `${FIN}/workflows/intake.json`, (j) => { j.steps[0].activity = "9.1.1.99"; }), /performs activity 9\.1\.1\.99, which is not a level 4 activity in pcf\.json/],
   ["a step whose activity is an APQC process, not an activity, fails the schema", (d) => edit(d, `${FIN}/workflows/intake.json`, (j) => { j.steps[0].activity = "9.1.1"; }), /activity/],
   ["a step whose APQC activity is under another function's category fails", (d) => edit(d, `${FIN}/workflows/intake.json`, (j) => { j.steps[0].activity = "3.5.1.6"; }), /performs activity 3\.5\.1\.6, which is under APQC category 3\.0, not the function's 9\.0/],

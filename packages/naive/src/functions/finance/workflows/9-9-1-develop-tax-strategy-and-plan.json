@@ -1,0 +1,82 @@
+{
+  "id": "9-9-1-develop-tax-strategy-and-plan",
+  "function": "finance",
+  "process": "9.9.1",
+  "title": "Develop tax strategy and plan",
+  "goal": "Every tax the venture is liable for is named with its jurisdiction, rate, payee, deadline and form, the amount for each deadline is in its budget month, and the registrations and identifiers are recorded with their documents.",
+  "measures": [
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "finance/intake"
+    ]
+  },
+  "reads": [
+    "venture",
+    "money",
+    "finance/spend",
+    "finance/budget",
+    "purpose/money/summary",
+    "governance/ownership",
+    "legal/obligations",
+    "customers",
+    "markets",
+    "industries",
+    "product"
+  ],
+  "steps": [
+    {
+      "id": "tax-strategy",
+      "do": "List every tax the venture is liable for by jurisdiction, income, sales or value added, payroll, property and any local one, each with its rate, payee, deadline and form, mark the ones it is not registered for, and hand it to the founder for their accountant to confirm, because none of it is tax advice.",
+      "skill": "manage-taxes",
+      "ask": true,
+      "activity": "9.9.1.1",
+      "raises": [
+        "legal-or-terms"
+      ]
+    },
+    {
+      "id": "consolidate-tax-plan",
+      "do": "Build the year's tax calendar from that list, put each deadline's estimated amount into its budget month, and show what paying all of them in order does to the cash forecast.",
+      "skill": "manage-taxes",
+      "activity": "9.9.1.2",
+      "writes": [
+        "finance/budget/[id]"
+      ]
+    },
+    {
+      "id": "tax-master-data",
+      "do": "Record the facts every return and invoice needs, the legal entity names, the tax identifiers, the registration dates, the fiscal year and the rates applied, naming the document each came from and never writing down anything that is a credential.",
+      "skill": "manage-taxes",
+      "activity": "9.9.1.3"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Raise each tax the venture is not registered for as a decision for the founder with what registering involves and what not registering risks, and tell the finance lead which deadline is nearest.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "legal-or-terms",
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "taxes-named-and-dated",
+      "kind": "review",
+      "check": "Does every tax the venture is liable for carry its jurisdiction, rate, payee, deadline and form, with its estimated amount in the budget month it falls in?",
+      "reviewer": "finance-lead"
+    }
+  ]
+}

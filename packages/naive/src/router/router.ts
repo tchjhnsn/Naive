@@ -58,11 +58,13 @@ import { readFlag as freshnessFlag } from "../engine/freshness.ts";
 // the gate's verdict, where held drafts wait, and check settings. The logic lives in these modules.
 import { PROJECTOR, actingCall, isProjector, itemId, mayReadItem, mayReadSome } from "./acting.ts";
 import { asOfStore, cutFor, inEval, observedBy, refusal as asOfRefusal } from "./reads-as-of.ts";
-import { checkPlan, gateWrite, heldDraft, ledgerHook, ownerOfWrite, reachOfWrite } from "./gate-hooks.ts";
+import { checkPlan, gateWrite, heldDraft, ledgerHook, ownerOfWrite, prerequisiteOfWrite, reachOfWrite } from "./gate-hooks.ts";
 // Appends (packages/naive/src/router/appends.ts): one hash-chained line added to a log route, such as the detection ledger.
 import { appendLine } from "./appends.ts";
 import { commitRawSource } from "./raw-source.ts";
 import { claimHandoff, handoffWriteRule } from "./handoff-claim.ts";
+import { preRegistrationWriteRule } from "./pre-registration.ts";
+import { betWriteRule } from "./bets.ts";
 import { briefPath, splitBrief } from "./handoff-brief.ts";
 import { LOCAL, attributeSources, connect, sourceFor } from "../store/connectors/index.ts";
 // Caching (packages/naive/src/engine/caching.ts): per-action memo, the record-level cache for command routes, and system/cache, system/judge, system/answer.
@@ -90,10 +92,10 @@ import { coreOf, statementsIn, withCore } from "../engine/venture-core.ts";
 import { telosView } from "../../../../frameworks/telos/adapter.ts";
 import { migrated, scale } from "../engine/canonical.ts";
 import { schemaNameOf } from "../records/index.ts";
-import type { DecisionRecord, Goal, TeamPlan, Venture } from "../records/types/records.d.ts";
+import type { Bet, DecisionRecord, Goal, PreRegistration, TeamPlan, Venture } from "../records/types/records.d.ts";
 import type { RecordRoute, Route } from "../records/routes/routes.ts";
 import {
-  PHASES, allowed, deepItem, defaultWorkspace, files, gateOf, glob, groups, kits, load, repo, resolve, routes, skillsOf, ventureDir, ventures,
+  ID_CHECKS, PHASES, allowed, deepItem, defaultWorkspace, files, gateOf, glob, groups, kits, load, repo, resolve, routes, skillsOf, ventureDir, ventures,
 } from "../records/routes/routes.ts";
 // The route table lives in packages/naive/src/records/routes so that schema/ can read it without importing this file.
 export { PHASES, allowed, files, gateOf, glob, groups, kits, repo, resolve, routes, ventureDir, ventures };
@@ -103,7 +105,7 @@ const isObj = (x: unknown): x is Obj => !!x && typeof x === "object";
 /** A thrown value's message, or the value itself. */
 const messageOf = (e: unknown): string => String((isObj(e) ? e.message : undefined) ?? e);
 /** What a call logs in provenance beside the write. */
-export type CallProvenance = { derived_from?: string[]; decision?: string; note?: string; agent?: { id?: string; [k: string]: unknown }; activity?: string; confidence?: number | string | null };
+export type CallProvenance = { derived_from?: string[]; decision?: string; note?: string; agent?: { id?: string; [k: string]: unknown }; activity?: string; confidence?: number | string | null; override?: { by?: string; why?: string } | null };
 /** One router call: an action on a route for a venture. */
 export type CallArgs = {
   venture?: string; route: string; action: string; input?: unknown; actor?: string; actor_id?: string; workspace?: string; via?: string;
@@ -438,7 +440,10 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
   if (action === "check") {
     // Gate group hook (P-7): the checks settings in naive.config.json turn a check off or make it warn only.
     const plan = checkPlan(dir, r.checks);
-    const outs = plan.filter((p) => p.mode !== "off").map((p) => ({ check: p.check, mode: p.mode, ...spawnSync("node", [join(repo, p.check), dir], { encoding: "utf8" }) }));
+    // A check that takes a record id (ID_CHECKS) is given the item's, so an item route checks that item; every other
+    // check takes the venture dir alone.
+    const args = (check: string) => ID_CHECKS.has(check) && r.collection === "item" && params.id ? [dir, String(params.id)] : [dir];
+    const outs = plan.filter((p) => p.mode !== "off").map((p) => ({ check: p.check, mode: p.mode, ...spawnSync("node", [join(repo, p.check), ...args(p.check)], { encoding: "utf8" }) }));
     const ok = outs.every((o) => o.status === 0 || o.mode === "warn");
     return { ok, result: [...outs.map((o) => ({ check: o.check, passed: o.status === 0, ...(o.mode === "warn" ? { warn_only: true } : {}), output: (o.stdout + o.stderr).trim() })), ...plan.filter((p) => p.mode === "off").map((p) => ({ check: p.check, passed: null, off: true }))], ...(ok ? {} : { fix: fix(r) }), ...deprecated };
   }
@@ -482,8 +487,9 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
     if (owned) return { ...owned, ...deprecated };
     // Handoff claim hook (packages/naive/src/router/handoff-claim.ts): a handoff that names its requester is edited by
     // the requester before a claim; after one, the claimant writes progress and evidence and the requester the
-    // verification and acceptance. claimBase is the version that rule read, which the write below names.
-    let claimBase, claimed = false;
+    // verification and acceptance. claimBase is the version that rule read, which the write below names; the
+    // pre-registration freeze below names it the same way.
+    let claimBase: string | null | undefined, claimed = false;
     // Handoff brief hook (packages/naive/src/router/handoff-brief.ts): brief_text, the Markdown brief, rides beside the
     // record's fields; it is taken out before the schema and written to the file the record's brief names, once the
     // record is written.
@@ -525,6 +531,11 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
       const why = goalWriteRefusal({ stored: storedGoal, input: inp as Goal, person: actor === "person" && !actingAgent(provenance.agent?.id) });
       if (why) return { ok: false, error: why, ...deprecated };
     }
+    // Prerequisites hook (prerequisiteOfWrite in packages/naive/src/router/gate-hooks.ts, EE-217): a route that only
+    // blocked function workflows write is refused, for an agent and for a person alike, until the records and meetings
+    // those workflows wait on exist. A person's --override lets one write through and is kept on its provenance line.
+    const locked = remote ? null : prerequisiteOfWrite({ dir, r, route, actor, acting: !!actingAgent(provenance.agent?.id), projector, override: provenance.override });
+    if (locked?.refusal) return { ...locked.refusal, ...deprecated };
     if (prose) return { ...(await writeProse({ dir, r, route, requested, file, input, actor, actor_id, via, provenance, store, remote, src, params, projector })), ...deprecated };
     // A raw source is written with its text in one step (EE-192). Create-only, duplicate text and the allowed-source term are decided before either file is written.
     if (r.record === "raw-source") {
@@ -556,6 +567,25 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
     if (failed !== null) return { ok: false, error: `does not match ${r.schema}:\n${failed}`, fix: fix(r) };
     // The schema describes ends as after starts. A start that is not a time, or an end that is not after it, never opens.
     if (r.record === "time-box") { const span = timeBoxSpan(rec.starts, rec.ends); if (span) return { ok: false, error: span }; }
+    // Pre-registration freeze hook (packages/naive/src/router/pre-registration.ts, EE-220): once a person has
+    // registered a pre-registration, its thesis, assumptions, method, measures, thresholds, dates, exclusions and
+    // decision rules never change, for a person too; deviations and results are append-only. Refused here, before the
+    // gate, so it is a refusal and not a draft, and the message names the two ways on: a deviation or a new version.
+    if (r.record === "pre-registration") {
+      const frozen = await preRegistrationWriteRule({ store, file, input: rec as Partial<PreRegistration> });
+      if (!frozen.ok) return { ...frozen, ...deprecated };
+      claimBase = frozen.base;
+    }
+    // Bet freeze hook (packages/naive/src/router/bets.ts, EE-221): once a person has registered a bet, or has
+    // registered a pre-registration that tests it, its claim never changes, for a person too; its evidence,
+    // rivals and confidence entries are append-only and its outcome is written once. An agent's write that puts
+    // odds on a bet, resolves one or moves one on is refused here too, with the person's command named, because a
+    // probability nobody chose and an outcome an agent declared are what the register exists to prevent.
+    if (r.record === "bet") {
+      const frozen = await betWriteRule({ store, dir, file, input: rec as Partial<Bet>, person: actor === "person" && !actingAgent(provenance.agent?.id) });
+      if (!frozen.ok) return { ...frozen, ...deprecated };
+      claimBase = frozen.base;
+    }
     const base = r.view_of ? readFileSync(ventureFile(dir, file), "utf8") : null;
     const whole = base && JSON.stringify(withCore(JSON.parse(base), rec), null, 2) + "\n";
     if (whole) {
@@ -563,7 +593,8 @@ async function callInAction({ venture, route, action, input, actor = "agent", ac
       if (w !== null) return { ok: false, error: `${file} does not match packages/naive/src/records/venture.schema.json, so nothing was written:\n${w}`, fix: fix(r) };
     }
     const agent = agentFromEnv(actor === "person" ? "person" : "agent", via, { ...(actor_id && actor !== "person" ? { id: actor_id } : {}), ...provenance.agent });
-    const log = (entity: string, activity: string, extra: Obj = {}) => prov(dir, { entity, route, activity, agent, derived_from: provenance.derived_from, decision: provenance.decision ?? gate?.class ?? undefined, note: provenance.note, ...extra });
+    // The person's override of the prerequisite lock, when they passed one, is kept on every line this write writes.
+    const log = (entity: string, activity: string, extra: Obj = {}) => prov(dir, { entity, route, activity, agent, derived_from: provenance.derived_from, decision: provenance.decision ?? gate?.class ?? undefined, note: provenance.note, override: locked?.override, ...extra });
 
     // Attributes mastered elsewhere (EE-042) go to their own system of record, each as a JSON
     // object holding only that attribute at the record's path, and leave the record's own file, so

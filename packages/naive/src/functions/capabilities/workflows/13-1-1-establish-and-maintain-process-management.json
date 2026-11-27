@@ -1,0 +1,58 @@
+{
+  "id": "13-1-1-establish-and-maintain-process-management",
+  "function": "capabilities",
+  "process": "13.1.1",
+  "title": "Establish and maintain process management governance",
+  "goal": "The venture has one written rule for who owns a process, who may change a process record and how often the catalog is reviewed, every active process record names one owner, and each drifted record has a handoff to bring it back.",
+  "measures": ["flow_and_lead_time"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["capabilities/intake"] },
+  "reads": [
+    "capabilities/processes",
+    "governance/decision-rights",
+    "governance/delegation",
+    "people/team-plan",
+    "operations/handoff"
+  ],
+  "steps": [
+    {
+      "id": "define-governance-approach",
+      "do": "Read the venture's decision rights and delegation and write, as a process record for the catalog itself, who may change a process record, who reviews a change, how often the catalog is reviewed and what happens when a review finds drift, claiming for an agent no authority a person holds.",
+      "skill": "manage-business-processes",
+      "activity": "13.1.1.1",
+      "writes": ["capabilities/processes/[id]"]
+    },
+    {
+      "id": "process-tools-and-templates",
+      "do": "Keep one shape for every process record in this venture, the SIPOC fields, the steps with control points marked and the three measures cycle time, rework rate and first-pass yield, and record on the catalog's own process record which fields a new process must fill before it leaves draft.",
+      "skill": "manage-business-processes",
+      "activity": "13.1.1.2",
+      "writes": ["capabilities/processes/[id]"]
+    },
+    {
+      "id": "assign-and-support-process-ownership",
+      "do": "List every active process record with no owner, two owners or an owner who no longer does the work, bring the founder one candidate name per process with the handoffs that show who actually does it, and write the owner the founder names.",
+      "skill": "manage-business-processes",
+      "activity": "13.1.1.3",
+      "ask": true,
+      "writes": ["capabilities/processes/[id]"]
+    },
+    {
+      "id": "perform-process-governance",
+      "do": "Run the review the governance approach names: compare each active process record with its last ten handoffs, list the records whose steps, owner or measures have drifted from what the work now does, and open one handoff per record for its owner to correct it.",
+      "skill": "manage-business-processes",
+      "activity": "13.1.1.4",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Record the review's findings as evidence on the handoff, and raise to the strategy lead which drifted process to correct first, with what each one costs the venture in waiting time.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "one-owner-and-one-rule", "kind": "review", "check": "Does the catalog have one written rule for changing a process record, and does every active process record name exactly one owner the founder confirmed?", "reviewer": "strategy-lead" }
+  ]
+}

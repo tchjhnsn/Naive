@@ -1,0 +1,54 @@
+{
+  "id": "8-4-3-define-and-execute-business-information-lifecycle",
+  "function": "it",
+  "process": "8.4.3",
+  "title": "Define and execute business information lifecycle planning and control",
+  "goal": "Each kind of record the venture keeps has a written rule for how long it is kept, who may reach it and how it is backed up, and that rule is in force in every system that holds a copy, with a restore tested.",
+  "measures": ["compliance_met", "cost_or_time_saved"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["it/intake"] },
+  "reads": [
+    "venture",
+    "it/connections",
+    "knowledge/knowledge-sources",
+    "legal/obligations",
+    "governance/delegation",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "information-policies",
+      "do": "Draft one page per kind of record saying how it is named, where the authoritative copy lives, how long it is kept, who may reach it and how it is destroyed, and bring any rule that touches a person's data, a customer's contract or a retention period to the founder, since that rule is a legal commitment and not an agent's call.",
+      "skill": "manage-information",
+      "activity": "8.4.3.1",
+      "raises": ["legal-or-terms"]
+    },
+    {
+      "id": "data-administration",
+      "do": "Put the rule in force in each system that holds a copy, by setting the retention and sharing settings the connection allows, recording on the connection the backup schedule and the date a restore was last tested, and running a restore of the venture's records into a scratch copy so the backup is proved rather than assumed.",
+      "skill": "manage-information",
+      "activity": "8.4.3.2",
+      "writes": ["it/connections/[id]"],
+      "raises": ["security-tightening"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Prepare as a decision for the founder every deletion, purge or system retirement the rule now calls for, naming what would be lost and whether a copy is kept, and raise the order of the remaining lifecycle work to the product lead.",
+      "writes": ["decisions/*"],
+      "raises": ["irreversible-data-change", "set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "restore-proved",
+      "kind": "review",
+      "check": "Does every kind of record name its retention and its backup, has a restore been tested and dated on the connection, and is every deletion the rule calls for open as a decision for the founder rather than done?",
+      "reviewer": "product-lead"
+    }
+  ]
+}

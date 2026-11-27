@@ -1,0 +1,116 @@
+{
+  "id": "9-2-4-manage-and-process-collections",
+  "function": "finance",
+  "process": "9.2.4",
+  "title": "Manage and process collections",
+  "goal": "Every overdue account has an age, a next step and the founder's instruction, every message to a customer was sent by the founder, and any amount given up on is a decision carrying what was tried.",
+  "measures": [
+    "revenue"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "finance/intake"
+    ]
+  },
+  "reads": [
+    "customers",
+    "customers/[id]",
+    "deals",
+    "money",
+    "finance/budget",
+    "purpose/money/summary",
+    "legal/obligations",
+    "legal/risks",
+    "people/team"
+  ],
+  "steps": [
+    {
+      "id": "delinquency-policy",
+      "do": "Draft the rule for an account that has not paid, when the first reminder goes out, when work pauses, when the matter is handed on and the point at which the amount is written off, and bring it to the founder.",
+      "skill": "perform-revenue-accounting",
+      "ask": true,
+      "activity": "9.2.4.1",
+      "raises": [
+        "legal-or-terms"
+      ]
+    },
+    {
+      "id": "analyze-balances",
+      "do": "Age every unpaid invoice by days past due, group them by customer, and say for each customer how much of the venture's cash the gap is holding.",
+      "skill": "perform-revenue-accounting",
+      "activity": "9.2.4.2"
+    },
+    {
+      "id": "correspond",
+      "do": "Draft the reminder or the payment plan for each overdue account from the terms agreed and the facts of the invoice, and hand it to the founder to send, since only they speak to a customer.",
+      "skill": "perform-revenue-accounting",
+      "activity": "9.2.4.3"
+    },
+    {
+      "id": "internal-resolution",
+      "do": "Prepare the one-page brief the person who owns the relationship needs, what is owed, what was delivered and what was promised, so the venture says one thing.",
+      "skill": "perform-revenue-accounting",
+      "activity": "9.2.4.4",
+      "consider": {
+        "why": "Two people saying different things to a late-paying customer costs more than the invoice.",
+        "when": "Someone other than the founder owns the customer relationship or did the delivery."
+      }
+    },
+    {
+      "id": "write-off",
+      "do": "Prepare the write-off case for each amount you judge uncollectible, what is owed, what was tried and what it would cost to keep chasing, and leave forgiving the debt to the founder.",
+      "skill": "perform-revenue-accounting",
+      "ask": true,
+      "activity": "9.2.4.5",
+      "raises": [
+        "legal-or-terms"
+      ]
+    },
+    {
+      "id": "recovery-workout",
+      "do": "Track each agreed payment plan instalment by instalment against what was promised and flag the first one missed on the day it is missed.",
+      "skill": "perform-revenue-accounting",
+      "activity": "9.2.4.6",
+      "consider": {
+        "why": "A payment plan that nobody tracks is a write-off that nobody decided.",
+        "when": "The founder has agreed a payment plan with an overdue customer."
+      }
+    },
+    {
+      "id": "default-accounts",
+      "do": "Keep the record of each defaulted account, what was owed, what was agreed and what the founder decided, and mark the customer so no further credit is offered without them.",
+      "skill": "perform-revenue-accounting",
+      "activity": "9.2.4.7",
+      "consider": {
+        "why": "A customer who defaulted once should not get credit again by accident.",
+        "when": "An account is past due beyond the write-off point the policy sets."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Attach the ageing report to the open decision it bears on and raise to the finance lead which overdue accounts to pursue first, by cash at stake and not by the age of the invoice alone.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "no-customer-contacted-by-agent",
+      "kind": "review",
+      "check": "Was every message to an overdue customer sent by the founder, and does every write-off carry what was tried and the founder's decision?",
+      "reviewer": "finance-lead"
+    }
+  ]
+}

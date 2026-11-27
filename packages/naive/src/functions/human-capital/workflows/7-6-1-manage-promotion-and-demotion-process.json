@@ -1,0 +1,82 @@
+{
+  "id": "7-6-1-manage-promotion-and-demotion-process",
+  "function": "human-capital",
+  "process": "7.6.1",
+  "title": "Manage promotion and demotion process",
+  "goal": "Every change of a person's role, level or pay has a written test it was judged against, a case the founder decided, and a people record showing the new role, terms, decision rights and effective date.",
+  "measures": [
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "human-capital/intake"
+    ]
+  },
+  "reads": [
+    "people",
+    "people/founders",
+    "people/team-plan",
+    "governance/delegation",
+    "governance/decision-rights",
+    "governance/ownership",
+    "finance/budget",
+    "purpose/money/summary",
+    "operations/handoff",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "write-the-test",
+      "do": "Write what a move up or down turns on for each role: the competencies and their level, the decision rights it adds or removes from `governance/delegation`, and the pay range it moves into, so the same test is applied to everyone.",
+      "skill": "redeploy-and-retire-employees"
+    },
+    {
+      "id": "prepare-the-case",
+      "do": "For a proposed move, set the person's recorded work against that test, name what changes in their decision rights and what it costs over a year, and give the founder the case alongside the alternative of leaving the role as it is.",
+      "skill": "redeploy-and-retire-employees",
+      "raises": [
+        "spend-money",
+        "ownership-or-control"
+      ]
+    },
+    {
+      "id": "record-the-change",
+      "do": "Once the founder has decided and told the person, update `people` with the new role, terms and effective date, and name the change the delegation needs so the person's reach matches the role.",
+      "skill": "redeploy-and-retire-employees",
+      "writes": [
+        "people",
+        "decisions/*"
+      ],
+      "raises": [
+        "legal-or-terms"
+      ]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Open a decision for every proposed move the founder has not settled and for each delegation change a settled move requires, and tell the strategy lead which move the plan needs next.",
+      "skill": "redeploy-and-retire-employees",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "moves-judged-against-one-test",
+      "kind": "review",
+      "check": "Was every proposed move judged against the written test, with its yearly cost and its delegation change named?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

@@ -19,7 +19,7 @@ import { dirname, join, resolve } from "node:path";
 
 const read = (f: string) => { try { return JSON.parse(readFileSync(f, "utf8")); } catch { return null; } };
 
-/** The current instant, from the one clock (packages/naive/src/core/clock.ts, EE-224). */
+/** The current instant, from the one clock (packages/naive/src/core/clock.ts, EE-227). */
 import { now } from "../core/clock.ts";
 export { now };
 export const systemZone = (): string => Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";

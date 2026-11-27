@@ -562,6 +562,26 @@
       },
       "why": "Who you serve is a foundation statement: say it early and keep it in front of you (EE-051)"
     },
+    "pre-registration": {
+      "base": {
+        "discovery": 0.85,
+        "validation": 0.85,
+        "beachhead": 0.7,
+        "scale": 0.6,
+        "platform": 0.6
+      },
+      "why": "Write down what would have to be true, and what does not count, before the mission and the vision; an unvalidated prior (EE-220)"
+    },
+    "bet": {
+      "base": {
+        "discovery": 0.85,
+        "validation": 0.85,
+        "beachhead": 0.7,
+        "scale": 0.6,
+        "platform": 0.6
+      },
+      "why": "The claims the strategy rests on, each written so it can fail, before anything is built on them; an unvalidated prior (EE-221)"
+    },
     "goal": {
       "base": {
         "discovery": 0.7,
@@ -698,6 +718,22 @@
       },
       "why": "Whether the public site says what the audiences the venture courts now need to learn, once it has a site (EE-062)"
     },
+    "marketing-message": {
+      "base": {
+        "discovery": 0.5,
+        "validation": 0.7,
+        "beachhead": 0.9,
+        "scale": 0.9,
+        "platform": 0.9
+      },
+      "when": [
+        {
+          "if": "publishes",
+          "at_least": 0.95
+        }
+      ],
+      "why": "The words a public page shows, each element its own record a person approves: a venture that shows itself to anyone in Discovery needs its text on record before a page is built (EE-216)"
+    },
     "marketing-sitemap": {
       "base": {
         "discovery": 0.2,
@@ -717,6 +753,16 @@
         "platform": 0.8
       },
       "why": "Public variants of the venture's records, gated before they are published (EE-064)"
+    },
+    "publish-terms": {
+      "base": {
+        "discovery": 0.1,
+        "validation": 0.4,
+        "beachhead": 0.8,
+        "scale": 0.8,
+        "platform": 0.8
+      },
+      "why": "The names public copy must not carry, needed when the venture starts writing copy, so it tracks the copy itself (EE-214)"
     },
     "venture-package": {
       "base": {
@@ -1302,6 +1348,17 @@
         "platform": 0.9
       },
       "why": "Bugs matter once people use the product; stable means no open P0 or P1"
+    },
+    "product-capability": {
+      "base": {
+        "discovery": 0.05,
+        "validation": 0.4,
+        "beachhead": 0.7,
+        "scale": 0.8,
+        "platform": 0.8
+      },
+      "when": [],
+      "why": "Capabilities matter once a product does several things people can name, each with an owner who keeps its words and its pages current; before Validation a product is one job"
     },
     "telemetry-event": {
       "base": {

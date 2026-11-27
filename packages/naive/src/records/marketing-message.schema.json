@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "marketing-message.schema.json",
+  "title": "Message element",
+  "description": "One element of the words a public page shows, at marketing/message/<id>.json (EE-216): the tagline, a headline, a subhead, the value proposition, a call to action with where it leads, a proof point, an objection answered, the contact line. The hierarchy is the standard one, positioning first and proof last, after April Dunford: positioning says what the venture is and whom it is for, the value propositions say what each audience gets, and the proof points stand behind them. Each element is its own record, so a person approves the words one element at a time, and each names the records its words come from (cites), including the ones still missing, so no page claims what no record holds. The page is built from these records and the sitemap, never the other way round (naive copy gaps). Version 0.x, unevaluated.",
+  "type": "object",
+  "required": ["version", "id", "kind", "text", "cites"],
+  "additionalProperties": false,
+  "properties": {
+    "version": { "type": "string" },
+    "venture": { "type": "string" },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$",
+      "description": "The file's name without .json. The element of a sitemap section is <page>-<item>, as the gap report names it (home-what, about-team); an element of the site's chrome keeps the chrome item's id (tagline)."
+    },
+    "kind": {
+      "enum": ["positioning", "tagline", "headline", "subhead", "value-proposition", "cta-primary", "cta-secondary", "proof-point", "objection", "body", "footer", "contact"],
+      "description": "Where the element sits in the messaging hierarchy. positioning is the one statement the rest agree with; a cta and the contact line carry a destination."
+    },
+    "text": { "type": "string", "minLength": 1, "description": "The words themselves, as a reader sees them. One element holds one piece of text, so a person approves or rejects it on its own." },
+    "label": { "type": "string", "description": "What to call this element when a person is asked about it (Name and tagline, What to do next)." },
+    "page": { "type": "string", "description": "The sitemap page this fills: a path in marketing/sitemap pages[].path, such as / or /about. Absent for the site's chrome, which every page shows." },
+    "item": { "type": "string", "description": "The sitemap section this fills (pages[].sections[].item, such as what or next-step), or a chrome item of the marketing matrix (tagline)." },
+    "destination": {
+      "type": "object",
+      "required": ["kind"],
+      "additionalProperties": false,
+      "description": "Where a call to action or the contact line leads. none says plainly that there is nowhere to go yet, which is an answer a person may choose instead of inventing one.",
+      "properties": {
+        "kind": { "enum": ["email", "url", "path", "none"] },
+        "value": { "type": "string", "description": "The address, the link, or the path on the site. Absent when the kind is none." },
+        "note": { "type": "string" }
+      }
+    },
+    "cites": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Where these words come from: at least one record, named even when it is missing, so the gap report can say what is still owed before the words are trusted.",
+      "items": {
+        "type": "object",
+        "required": ["record"],
+        "additionalProperties": false,
+        "properties": {
+          "record": { "type": "string", "description": "A route or a venture-relative file: foundation/problem, foundation/icp.json, decisions/<id>.decision.json." },
+          "field": { "type": "string", "description": "The field of that record these words rest on, such as statement." },
+          "why": { "type": "string", "description": "What this record contributes to the words, in one plain sentence." }
+        }
+      }
+    },
+    "audience": { "type": "array", "items": { "type": "string" }, "description": "Whom the words are for: audiences of the marketing matrix, or ICP profile ids." },
+    "note": { "type": "string", "description": "Anything a person should know before approving these words, such as a claim that is not yet evidenced." }
+  }
+}

@@ -1,0 +1,75 @@
+{
+  "id": "7-7-1-manage-reporting-processes",
+  "function": "human-capital",
+  "process": "7.7.1",
+  "title": "Manage reporting processes",
+  "goal": "The venture has a short list of the people reports it owes or uses, each with who it goes to, when it is due and the record each number comes from, and the ones due this period are produced and handed to the founder.",
+  "measures": [
+    "compliance_met",
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "human-capital/intake"
+    ]
+  },
+  "reads": [
+    "people",
+    "people/founders",
+    "people/team-plan",
+    "legal/obligations",
+    "governance/board",
+    "investor-relations/updates",
+    "finance/spend",
+    "purpose/money/summary",
+    "operations/handoff",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "list-what-is-owed",
+      "do": "List every people report the venture owes a regulator, a lender, an investor or a board, from `legal/obligations`, `governance/board` and `investor-relations/updates`, and every one the founder actually reads, each with its due date.",
+      "skill": "manage-employee-information-and-analytics"
+    },
+    {
+      "id": "name-each-number-source",
+      "do": "For each report, name the record and field every number comes from and the step that turns one into the other, and mark each number no record holds as a hole rather than filling it.",
+      "skill": "manage-employee-information-and-analytics"
+    },
+    {
+      "id": "produce-this-period",
+      "do": "Produce the reports due this period from those records, show the arithmetic beside each number, and hand each one to the founder, who sends anything that leaves the venture.",
+      "skill": "manage-employee-information-and-analytics",
+      "raises": [
+        "legal-or-terms"
+      ]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Open a decision for each report the records cannot yet produce and each one whose due date has passed, attach the produced reports as evidence, and tell the strategy lead which due date comes next.",
+      "skill": "manage-employee-information-and-analytics",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "numbers-traced-to-records",
+      "kind": "review",
+      "check": "Does every number in the reports produced this run name the record and field it came from, or stand as a named hole?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

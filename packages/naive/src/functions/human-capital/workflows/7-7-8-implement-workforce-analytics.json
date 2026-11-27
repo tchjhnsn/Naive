@@ -1,0 +1,75 @@
+{
+  "id": "7-7-8-implement-workforce-analytics",
+  "function": "human-capital",
+  "process": "7.7.8",
+  "title": "Implement workforce analytics",
+  "goal": "The gathered data is in one shape with every rule and dropped row recorded, each question has an answer with its uncertainty and what the data cannot tell, and the one page the decision needs is with the founder.",
+  "measures": [
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "human-capital/intake"
+    ]
+  },
+  "reads": [
+    "people",
+    "people/founders",
+    "people/team-plan",
+    "foundation/goals",
+    "operations/activity-summary",
+    "finance/spend",
+    "operations/handoff",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "transform-workforce-analysis-data",
+      "do": "Put the gathered data into the one shape the questions can be read from, recording every rule you applied and every row you dropped with why, so the same numbers can be produced again from the same sources.",
+      "activity": "7.7.8.1",
+      "skill": "manage-employee-information-and-analytics"
+    },
+    {
+      "id": "develop-insights",
+      "do": "Answer each question with the number, how uncertain it is at this few people, what the data cannot tell, and the alternative explanation you could not rule out, and never report a difference the numbers cannot carry.",
+      "activity": "7.7.8.2",
+      "skill": "manage-employee-information-and-analytics"
+    },
+    {
+      "id": "communicate-outcomes",
+      "do": "Write the one page the decision needs, the question, the answer, the confidence and the recommended action, and hand it to the founder, who says anything that goes outside the venture.",
+      "activity": "7.7.8.3",
+      "skill": "manage-employee-information-and-analytics",
+      "raises": [
+        "public-commitment"
+      ]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Add each answer as evidence to the decision the analysis was run for, open a decision where the answer changes what the venture should do, and tell the strategy lead what the analysis could not settle.",
+      "skill": "manage-employee-information-and-analytics",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "answers-carry-their-uncertainty",
+      "kind": "review",
+      "check": "Does every answer state its uncertainty, what the data cannot tell and the alternative explanation that was not ruled out?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

@@ -6,14 +6,16 @@
 // Rules: venture ids are unique; every parent exists; no venture is its own ancestor;
 // links point at known ventures; within a venture, product ids are unique, flows_to and
 // an account's products and a product's part_of name that venture's own products, and a
-// product's scope names its layer or tier. Layer locations exist, relative to the venture
+// product's scope names its layer or tier. A product capability (EE-224) names one of the venture's products, sits
+// under a category of the same product, its categories form no loop, and nothing under a retired category is live or
+// building. Layer locations exist, relative to the venture
 // folder; several markets mark one primary. Warns on a business model outside the vocabulary. Warns when a formalized venture
 // (a legal form, or other members) has no governance layer.
 
 import { ventureFile } from "../core/venture-paths.ts";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, join } from "node:path";
-import type { Account, Product, Venture } from "../records/types/records.d.ts";
+import type { Account, Product, ProductCapability, Venture } from "../records/types/records.d.ts";
 
 const models = (() => {
   const b = JSON.parse(readFileSync(new URL("../records/vocab/business-models.json", import.meta.url), "utf8")) as { patterns: { id: string }[], extras: { id: string }[] };
@@ -30,7 +32,7 @@ const jsonIn = (d: string) => existsSync(d) ? readdirSync(d).filter((f) => f.end
 const accountsIn = (d: string) => existsSync(d) ? readdirSync(d).map((c) => join(d, c, "account.json")).filter(existsSync) : [];
 
 // Keyed by id as read; a parent of null finds nothing, as with any unknown id.
-const ventures = new Map<string | null, Venture & { products: Product[], accounts: Account[] }>();
+const ventures = new Map<string | null, Venture & { products: Product[], accounts: Account[], capabilities: ProductCapability[] }>();
 const errors: string[] = [], warnings: string[] = [];
 for (const f of walk(dir)) {
   const v = load<Venture>(f);
@@ -38,7 +40,8 @@ for (const f of walk(dir)) {
   const root = dirname(f);
   for (const [k, l] of Object.entries(v.layers ?? {})) if (l && !existsSync(ventureFile(root, l.location))) errors.push(`${v.id}: ${k} layer location ${l.location} not found (relative to the venture folder)`);
   const productFiles = [...jsonIn(ventureFile(root, "product")), ...jsonIn(ventureFile(root, "products"))];
-  ventures.set(v.id, { ...v, products: productFiles.map((p) => load<Product>(p)), accounts: accountsIn(ventureFile(root, "accounts")).map((a) => load<Account>(a)) });
+  ventures.set(v.id, { ...v, products: productFiles.map((p) => load<Product>(p)), accounts: accountsIn(ventureFile(root, "accounts")).map((a) => load<Account>(a)),
+    capabilities: jsonIn(ventureFile(root, "product/capabilities")).map((c) => load<ProductCapability>(c)) });
 }
 if (!ventures.size) { console.error(`no venture.json found under ${dir}`); process.exit(1); }
 
@@ -72,6 +75,22 @@ for (const v of ventures.values()) {
   for (const p of v.products) {
     if (p.software && !repos.size) errors.push(`${v.id}/${p.id}: builds software, so the venture (or a parent) needs a repository in repos`);
     if (p.repo && !repos.has(p.repo)) errors.push(`${v.id}/${p.id}: repo ${p.repo} is not in the venture's repos`);
+  }
+  const caps = new Map(v.capabilities.map((c) => [c.id, c]));
+  for (const c of v.capabilities) {
+    const at = `${v.id}/product/capabilities/${c.id}`;
+    if (!ids.has(c.product)) errors.push(`${at}: product ${c.product} is not one of the venture's products`);
+    if (c.parent === null) continue;
+    const up = caps.get(c.parent);
+    if (!up) { errors.push(`${at}: parent ${c.parent} is no capability of this venture`); continue; }
+    if (up.kind !== "category") errors.push(`${at}: parent ${c.parent} is a capability, and only a category holds others`);
+    if (up.product !== c.product) errors.push(`${at}: parent ${c.parent} belongs to ${up.product}, not ${c.product}`);
+    const seen = new Set([c.id]);
+    for (let a: ProductCapability | undefined = up; a; a = a.parent === null ? undefined : caps.get(a.parent)) {
+      if (seen.has(a.id)) { errors.push(`${at}: its categories form a loop`); break; }
+      seen.add(a.id);
+      if (a.status === "retired" && c.status !== "retired") { errors.push(`${at}: ${c.status} under the retired category ${a.id}`); break; }
+    }
   }
   for (const c of v.accounts) for (const t of c.products ?? []) if (!ids.has(t)) errors.push(`${v.id}/accounts/${c.id}: buys or uses unknown product ${t}`);
   const formal = (v.form?.legal_form && v.form.legal_form !== "none") || (v.members?.length ?? 0) > 0;

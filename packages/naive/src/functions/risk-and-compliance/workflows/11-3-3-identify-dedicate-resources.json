@@ -1,0 +1,77 @@
+{
+  "id": "11-3-3-identify-dedicate-resources",
+  "function": "risk-and-compliance",
+  "process": "11.3.3",
+  "title": "Identify/dedicate resources",
+  "goal": "Every step of the remediation plan has the hours, money and outside help it needs named, the founder has chosen what to spend and what to drop to make room, and each owner has a handoff.",
+  "measures": [
+    "cost_or_time_saved",
+    "compliance_met"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "risk-and-compliance/intake"
+    ]
+  },
+  "reads": [
+    "operations/handoff",
+    "legal/risks",
+    "legal/obligations",
+    "finance/budget",
+    "finance/spend",
+    "purpose/money/summary",
+    "people/team"
+  ],
+  "steps": [
+    {
+      "id": "list-what-the-plan-needs",
+      "do": "For each step of the plan say what it needs, whose hours, how much money, which tool and which outside help, and read the budget and the spend register for what the venture already has against each.",
+      "skill": "manage-remediation-efforts"
+    },
+    {
+      "id": "propose-the-allocation",
+      "do": "Propose who does what and what it costs, naming the work that would be dropped to make room and what dropping it delays, and bring it to the founder as one decision rather than as several small asks.",
+      "skill": "manage-remediation-efforts",
+      "raises": [
+        "spend-money",
+        "set-priorities"
+      ]
+    },
+    {
+      "id": "record-the-commitment",
+      "do": "Once the founder has chosen, write the owner and the date onto each plan step, open one handoff per owner saying what they must produce, and add to the obligations register any dated duty the choice created.",
+      "skill": "manage-remediation-efforts",
+      "ask": true,
+      "writes": [
+        "operations/handoff/[id]",
+        "legal/obligations/[id]"
+      ]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Add the allocation the founder chose to the decision the plan opened, and raise to the finance lead any step still without the hours or the money it needs.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "every-step-resourced",
+      "kind": "review",
+      "check": "Does every step of the plan have an owner, a date and the money or hours it needs, and did the founder decide what was dropped to make room?",
+      "reviewer": "finance-lead"
+    }
+  ]
+}

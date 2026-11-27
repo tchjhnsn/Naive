@@ -1,0 +1,53 @@
+{
+  "id": "13-8-6-analyze-data",
+  "function": "capabilities",
+  "process": "13.8.6",
+  "title": "Analyze data",
+  "goal": "Each hypothesis has been tested against the prepared data with the method written before the result, the figures are shown with the counts behind them, and what the data cannot settle is said as plainly as what it can.",
+  "measures": ["cost_or_time_saved"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["capabilities/intake"] },
+  "reads": [
+    "operations/handoff",
+    "evidence",
+    "foundation/bets",
+    "capabilities/processes"
+  ],
+  "steps": [
+    {
+      "id": "state-the-method-first",
+      "do": "Write how each hypothesis will be tested, the comparison, the window and the line, before computing anything, and record it on the handoff.",
+      "skill": "develop-manage-and-deliver-analytics",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "compute-and-show-the-counts",
+      "do": "Compute each figure and show the number of rows behind it, and mark every figure whose count is too small to separate from chance.",
+      "skill": "develop-manage-and-deliver-analytics",
+      "writes": ["operations/handoff/[id]"],
+      "raises": ["domain-fact"]
+    },
+    {
+      "id": "check-the-other-explanation",
+      "do": "For each result, name the other thing that could have produced it, a change in volume, a different customer mix, a process change in the same window, and say what in the data would tell them apart.",
+      "skill": "develop-manage-and-deliver-analytics",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "say-what-is-unsettled",
+      "do": "Write which hypotheses the data settles, which it leaves open and which it cannot reach at all, and never report an open one as settled.",
+      "skill": "develop-manage-and-deliver-analytics",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Attach the results to the decision they bear on with their counts and limits, and raise any result that contradicts a decision already in force.",
+      "writes": ["decisions/*"],
+      "raises": ["contradicts-ledger"]
+    }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "method-before-result", "kind": "review", "check": "Was each test's method recorded before its result, is every figure shown with its count, and is every unsettled hypothesis reported as unsettled?", "reviewer": "strategy-lead" }
+  ]
+}

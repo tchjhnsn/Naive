@@ -1,0 +1,45 @@
+{
+  "id": "13-8-5-prepare-data",
+  "function": "capabilities",
+  "process": "13.8.5",
+  "title": "Prepare data",
+  "goal": "The collected data is in one shape that can be analyzed, every change made to it is written down so the same set could be built again, and the rows left out are counted with the reason.",
+  "measures": ["cost_or_time_saved"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["capabilities/intake"] },
+  "reads": [
+    "operations/handoff",
+    "evidence",
+    "capabilities/processes"
+  ],
+  "steps": [
+    {
+      "id": "put-it-in-one-shape",
+      "do": "Bring the sets into one table with one row per thing being counted, name each column and its unit, and say which key joins the sets.",
+      "skill": "develop-manage-and-deliver-analytics",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "write-down-every-change",
+      "do": "Record each cleaning step in order, what was renamed, filled, dropped or recomputed, with the rule used, so the set could be rebuilt from the sources alone.",
+      "skill": "develop-manage-and-deliver-analytics",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "count-what-was-left-out",
+      "do": "Count the rows dropped and say why for each reason, and name the reason that could bend the answer, such as dropping exactly the runs that failed.",
+      "skill": "develop-manage-and-deliver-analytics",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Attach the prepared set, its steps and its dropped counts to the handoff as evidence, and raise any cleaning rule that changes what the analysis can mean.",
+      "writes": ["decisions/*"],
+      "raises": ["implementation-detail"]
+    }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "rebuildable", "kind": "review", "check": "Could the prepared set be rebuilt from the named sources using only the recorded steps, and is every dropped row counted with its reason?", "reviewer": "strategy-lead" }
+  ]
+}

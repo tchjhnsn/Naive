@@ -1,0 +1,85 @@
+{
+  "id": "6-5-2-measure-customer-satisfaction-with-customer",
+  "function": "customer-service",
+  "process": "6.5.2",
+  "title": "Measure customer satisfaction with customer- complaint handling and resolution",
+  "goal": "Every closed complaint has been asked whether its handling settled the matter, the complaints are counted by cause and days to redress, and the recurring ones are named.",
+  "measures": [
+    "usage_or_adoption",
+    "revenue"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "customer-service/intake"
+    ]
+  },
+  "reads": [
+    "support/policy",
+    "support/cases",
+    "customers",
+    "validation/feedback",
+    "finance/spend",
+    "product/bugs"
+  ],
+  "steps": [
+    {
+      "id": "solicit-complaint-feedback",
+      "activity": "6.5.2.1",
+      "do": "Draft one short question to each customer whose complaint closed this period, asking whether the outcome settled it, hand it to the founder to send, and record the answer on the case.",
+      "writes": [
+        "support/cases/[id]"
+      ],
+      "raises": [
+        "public-commitment"
+      ],
+      "skill": "evaluate-customer-service-operations-and-customer"
+    },
+    {
+      "id": "analyze-complaint-data",
+      "activity": "6.5.2.2",
+      "do": "Count the complaints by cause, the days from complaint to redress, the redress given and how many customers said they were satisfied, and name where the handling, not the original fault, lost the customer.",
+      "raises": [
+        "set-priorities"
+      ],
+      "skill": "evaluate-customer-service-operations-and-customer"
+    },
+    {
+      "id": "identify-common-complaints",
+      "activity": "6.5.2.3",
+      "do": "Group the period's complaints into the few that recur, say which of them share one cause, and record the grouping on the cases so the count still holds next period.",
+      "writes": [
+        "support/cases/[id]"
+      ],
+      "raises": [
+        "domain-fact"
+      ],
+      "skill": "evaluate-customer-service-operations-and-customer"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Name the decision each recurring complaint bears on, add its count and the customers' words there, and recommend to the growth lead whether to fix the cause or the handling first.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "complaints-measured",
+      "kind": "review",
+      "check": "Is every closed complaint either answered by its customer or recorded as unanswered, and are the recurring complaints named with their counts?",
+      "reviewer": "growth-lead"
+    }
+  ]
+}

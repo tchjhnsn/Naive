@@ -1,0 +1,88 @@
+{
+  "id": "7-5-4-administer-payroll",
+  "function": "human-capital",
+  "process": "7.5.4",
+  "title": "Administer payroll",
+  "goal": "Everyone owed money for the period has a checked amount with its arithmetic, each difference from the agreement or the last run is explained, the founder or the payroll service has paid it, and each payment, withholding and filing date is recorded.",
+  "measures": [
+    "compliance_met",
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "human-capital/intake"
+    ]
+  },
+  "reads": [
+    "people",
+    "people/founders",
+    "governance/internal-terms",
+    "finance/budget",
+    "finance/spend",
+    "purpose/money/summary",
+    "money",
+    "legal/obligations",
+    "operations/handoff",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "gather-what-is-owed",
+      "do": "From the agreements recorded in `people` and the hours or milestones recorded for the period, work out what each person is owed, showing the arithmetic line by line so the founder can check it.",
+      "skill": "reward-and-retain-employees"
+    },
+    {
+      "id": "check-before-paying",
+      "do": "Check each amount against the agreement and against the previous run, list every difference with its reason, and name the withholdings and the filings the venture owes for each person with their due dates.",
+      "skill": "reward-and-retain-employees",
+      "raises": [
+        "legal-or-terms"
+      ]
+    },
+    {
+      "id": "hand-the-run-to-the-founder",
+      "do": "Give the founder the run to approve and pay, naming the total, the date due and what a late payment costs or breaches, and ask for confirmation once it is paid; you never move money.",
+      "skill": "reward-and-retain-employees",
+      "ask": true,
+      "raises": [
+        "spend-money"
+      ]
+    },
+    {
+      "id": "record-the-run",
+      "do": "Once the founder confirms payment, record on the handoff who was paid what on which date, the withholdings taken and the filings made, and update `people` where a term or an end date changed, and say plainly that Naive has no payroll run record route.",
+      "skill": "reward-and-retain-employees",
+      "writes": [
+        "people"
+      ]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Open a decision for every unexplained difference, every filing the venture has not made and any change to how payroll is run, and tell the strategy lead what the next filing date is.",
+      "skill": "reward-and-retain-employees",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities",
+        "legal-or-terms"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "amounts-checked-and-filings-named",
+      "kind": "review",
+      "check": "Does every amount in this run show its arithmetic against the agreement, and is every withholding and filing named with its due date?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

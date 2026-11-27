@@ -6,6 +6,7 @@ import { tmpdir } from "node:os";
 import * as bug from "./bug.ts";
 import { validate } from "./generate.ts";
 import * as glossary from "./glossary.ts";
+import * as publishTerms from "./publish-terms.ts";
 import * as reference from "./reference.ts";
 import * as traceSpan from "./trace-span.ts";
 import * as detector from "./detector.ts";
@@ -21,6 +22,7 @@ import * as languageRubric from "./language-rubric.ts";
 import * as leadPlan from "./lead-plan.ts";
 import * as timeBox from "./time-box.ts";
 import * as meeting from "./meeting.ts";
+import * as productCapability from "./product-capability.ts";
 import * as rawDump from "./raw-dump.ts";
 import * as triage from "./triage.ts";
 import * as opportunity from "./opportunity.ts";
@@ -33,6 +35,8 @@ import * as marketAnatomy from "./market-anatomy.ts";
 import * as industryAnatomy from "./industry-anatomy.ts";
 import * as ventureAnatomy from "./venture-anatomy.ts";
 import * as risk from "./risk.ts";
+import * as marketingMessage from "./marketing-message.ts";
+import * as problemPriority from "./problem-priority.ts";
 import { readFileSync } from "node:fs";
 
 let fails = 0;
@@ -44,7 +48,7 @@ writeFileSync(join(v, "venture.json"), JSON.stringify({ id: "kettle" }));
 mkdirSync(join(v, "product/bugs"), { recursive: true });
 writeFileSync(join(v, "product/bugs/save-loses-draft.json"), "{}");
 
-for (const g of [bug, glossary, reference, traceSpan, detector, detectorTrial, connection, capabilityCluster, languageRubric, leadPlan, timeBox, meeting, rawDump, triage, opportunity, supportPolicy, supportCase, validationPlan, gatePolicies, marketAnatomy, industryAnatomy, ventureAnatomy]) t(`${g.record}: describe asks at least one required field`, g.describe().ask.some((q) => q.required));
+for (const g of [bug, glossary, publishTerms, reference, traceSpan, detector, detectorTrial, connection, capabilityCluster, languageRubric, leadPlan, timeBox, meeting, productCapability, rawDump, triage, opportunity, supportPolicy, supportCase, validationPlan, gatePolicies, marketAnatomy, industryAnatomy, ventureAnatomy, marketingMessage, problemPriority]) t(`${g.record}: describe asks at least one required field`, g.describe().ask.some((q) => q.required));
 
 const b = bug.draft({ title: "Save loses draft", severity: "P1", found_in: "0.6.0", repro: "open, type, save" }, { venture: v });
 t("bug: draft passes the schema", b.ok);
@@ -63,6 +67,14 @@ const g1 = glossary.draft({ package: "brand", term: "pour", meaning: "one use" }
 t("glossary: adds a term to the current file", g1.ok && g1.draft?.terms.length === 2);
 t("glossary: a second meaning for a defined term is refused", !glossary.draft({ package: "brand", term: "Kettle", meaning: "a pot" }, { venture: v }).ok);
 t("glossary: the same meaning again adds nothing", glossary.draft({ package: "brand", term: "kettle", meaning: "the product" }, { venture: v }).added === false);
+
+mkdirSync(join(v, "marketing"), { recursive: true });
+writeFileSync(join(v, "marketing/publish-terms.json"), JSON.stringify({ marks: [{ name: "Nike" }] }));
+const terms = publishTerms.draft({ name: "Nightjar", private: true, why: "the product is unannounced" }, { venture: v });
+t("publish-terms: adds a name to the current file", terms.ok && terms.draft?.marks.length === 2 && terms.draft.marks[1].private === true);
+t("publish-terms: a private name with no why is refused before the schema", !publishTerms.draft({ name: "Kestrel", private: true }, { venture: v }).ok);
+t("publish-terms: the same name again adds nothing", publishTerms.draft({ name: "Nike" }, { venture: v }).added === false);
+t("publish-terms: listing a public mark as private is refused", !publishTerms.draft({ name: "nike", private: true, why: "no" }, { venture: v }).ok);
 
 mkdirSync(join(v, "packages/naive/src/records/layers/purpose/references"), { recursive: true });
 writeFileSync(join(v, "packages/naive/src/records/layers/purpose/references/references.json"), JSON.stringify({ layer: "purpose", references: [{ id: "minsky-1974-framework", title: "x", authors: ["M"], year: 1974, kind: "paper", summary: "s", informs: [], stance: { is: "adopted", why: "w" } }] }));
@@ -133,6 +145,11 @@ t("meeting: the schema refuses a closed meeting with a pending item, or with no 
   && !validate("meeting", { ...closedBad, agenda: [{ ...mt.draft?.agenda[0], status: "done" }], outcome: undefined }).ok
   && validate("meeting", { ...closedBad, agenda: [{ ...mt.draft?.agenda[0], status: "done" }] }).ok);
 t("meeting: the schema refuses an open meeting with no opened_at", !validate("meeting", { ...mt.draft, status: "open" }).ok);
+const cap = productCapability.draft({ name: "Time travel", product: "kettle", kind: "capability", parent: "history", owner: "time-travel-agent" });
+t("product-capability: draft takes its id from the name, starts building, and goes to product/capabilities/<id>", cap.ok && cap.route === "product/capabilities/time-travel" && cap.draft?.status === "building");
+t("product-capability: a category may sit directly under the products function", productCapability.draft({ name: "History", product: "kettle", kind: "category", owner: "history-agent" }).draft?.parent === null);
+t("product-capability: a capability with no category, or no owner, is refused", !productCapability.draft({ ...cap.draft, parent: null }).ok && !productCapability.draft({ ...cap.draft, owner: undefined }).ok);
+t("product-capability: the schema refuses a capability whose parent is null, and an unknown status", !validate("product-capability", { ...cap.draft, parent: null }).ok && !validate("product-capability", { ...cap.draft, status: "paused" }).ok);
 const lp = leadPlan.draft({ lead: "growth-lead", measures: ["paying-teams"] });
 t("lead-plan: draft takes the portfolio from the role template, no bets and a monthly review", lp.ok && lp.route === "operations/lead/growth-lead"
   && lp.draft.portfolio.join() === "marketing-and-sales,customer-service" && lp.draft.bets.length === 0 && lp.draft.review_cadence === "monthly");
@@ -227,6 +244,18 @@ const both = risk.draft(invalid({ ...riskBase, impact: { low: 1, high: 2, curren
 t("risk: an impact with both a source and an estimate is refused", !both.ok);
 t("risk: an estimate with no one named as estimating it is refused", !risk.draft(invalid({ ...riskBase, impact: { low: 1, high: 2, currency: "USD", estimate: { basis: "a guess" } } })).ok);
 t("risk: a guess written into source as an assumption is refused, so it goes in estimate", !risk.draft({ ...riskBase, impact: { low: 1, high: 2, currency: "USD", source: "assumption: about what counsel charges" } }).ok);
+
+const msg = marketingMessage.draft({ kind: "headline", page: "/", item: "what", text: "Keep what the venture knows in one place.",
+  cites: [{ record: "foundation/problem", why: "the problem in the founder's words" }] });
+t("marketing-message: a drafted element passes, at the id the gap report names", msg.ok && msg.route === "marketing/message/home-what" && msg.draft?.id === "home-what");
+t("marketing-message: words no record stands behind are refused", !marketingMessage.draft({ kind: "headline", text: "The best tool ever" }).ok);
+t("marketing-message: a call to action with nowhere named is refused, and none is an answer", !marketingMessage.draft({ kind: "cta-primary", item: "next-step", text: "Start a venture", cites: [{ record: "foundation/core" }] }).ok
+  && marketingMessage.draft({ kind: "cta-primary", item: "next-step", text: "Start a venture", destination: { kind: "none", note: "the founder decides where it leads" }, cites: [{ record: "foundation/core" }] }).ok);
+
+const shippedPriority = JSON.parse(readFileSync(new URL("../../functions/strategy/problem-priority.json", import.meta.url), "utf8"));
+t("problem-priority: the shipped weights redraft and pass", problemPriority.draft(shippedPriority).ok);
+t("problem-priority: a draft with no weights is refused, since the ranking has nothing to weigh", !problemPriority.draft({ ...shippedPriority, weights: undefined }).ok);
+t("problem-priority: a negative weight is refused", !problemPriority.draft({ ...shippedPriority, weights: { ...shippedPriority.weights, ranked_first: -1 } }).ok);
 
 console.log(fails ? `${fails} failed` : "record generators: all pass");
 process.exitCode = fails ? 1 : 0;

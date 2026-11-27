@@ -21,6 +21,10 @@ Version 0.1.0, ours and unevaluated (EE-062, EE-063, EE-064, EE-065). For the de
    - **Need sets prominence:** 0.7 or more belongs on the home page, 0.4 in the navigation, 0.2 linked from the home page, and anything less can be anywhere. An item with its own page, such as pricing or careers, needs that page in the navigation, not on the home page.
 4. **Score.** An item scores 1 when it is as prominent as it needs to be, 0.5 when it is present but buried, and 0 when it is missing. The site score is the need-weighted share, from 0 to 100, with a score for each audience. "Fix first" lists the three most-needed items that fall short. A missing item that no audience needs now is noted and not held against the site.
 
+## The words each item shows (EE-216)
+
+The matrix's `copy` block says what the words of each item are, so the gap report and the records agree on one name per element. `copy.chrome` lists the elements no section covers, the name and tagline and the footer line, each with the record it comes from (`foundation/core#brand.tagline`). `copy.kinds` gives each of the matrix's items the kind of message its words are: `what` is a headline, `who-for` a value proposition, `proof` a proof point, `next-step` the primary call to action, `contact` the contact line, and the rest body copy. Those kinds are the kinds of `marketing-message`, the record that holds one element's words (route `marketing/message/[id]`), and `packages/naive/src/functions/marketing-and-sales/marketing/copy.ts` reads this block to list what a page shows. The block is ours and unevaluated too: the gap report reads it as it stands.
+
 ## Who the customers are, and why they look for what they look for (EE-063)
 
 What a customer looks for depends on who the customer is. A consumer rarely looks up the founders. A clinic owner trusting a vendor with patient data often does. So the matrix has customer types, and each type says how much each item matters to it and why:
@@ -63,7 +67,8 @@ The result is drawn as the site's sitemap. The home page sits on top, with the p
   - the audiences and why;
   - any condition;
   - the internal record it draws on: the first file of that record type the venture has, found at the data model's current or older paths and wherever the venture's layout (flat, structured or src) keeps it, or, when there is none, where the record would go;
-  - the public variant a marketing agent writes, at `marketing/content/<page>/<item>.mdx`, through the route `marketing/content/<page>/<item>` with the whole text as `{ "text": "..." }`.
+  - the public variant a marketing agent writes, at `marketing/content/<page>/<item>.mdx`, through the route `marketing/content/<page>/<item>` with the whole text as `{ "text": "..." }`;
+  - `draft_copy`, the copy itself while it is still a record (EE-214): its `text`, a `status` of draft, ready or published, the records it draws on, who wrote it and when. A section takes no other field, so a word written into an invented field such as `site_text` is refused by name instead of shipping unlinted. `packages/naive/src/engine/publish-lint.ts` lints each section's drafted copy, so copy held in the record meets the same gates as the MDX variant.
 - **The public gate.** `packages/naive/src/engine/check-public.ts` checks every content file before it can be published:
   - it names the internal record it is a variant of, its audience, and whether it is published;
   - a published file names the person who approved it;
@@ -87,4 +92,4 @@ Next work, logged in EE-062:
 
 ## Time
 
-Code here reads business time from the one clock, `packages/naive/src/core/clock.ts` (`now`, `nowMs`, `nowIso`), so `NAIVE_NOW` pins it for a simulation or a test, and reads `wallClock()` only for elapsed time, timeouts, lock staleness and unique names (EE-224). `node packages/naive/src/checks/check-clock.ts` fails on a direct read of the system clock.
+Code here reads business time from the one clock, `packages/naive/src/core/clock.ts` (`now`, `nowMs`, `nowIso`), so `NAIVE_NOW` pins it for a simulation or a test, and reads `wallClock()` only for elapsed time, timeouts, lock staleness and unique names (EE-227). `node packages/naive/src/checks/check-clock.ts` fails on a direct read of the system clock.

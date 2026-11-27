@@ -1,0 +1,62 @@
+{
+  "id": "10-2-2-design-and-plan-asset-construction",
+  "function": "assets",
+  "process": "10.2.2",
+  "title": "Design and plan asset construction",
+  "goal": "Before anything is built or fitted out, the specification, the order of the work, the permissions it needs, the resources it takes and the way progress will be judged are written down, and the founder has approved the cost.",
+  "measures": ["cost_or_time_saved", "compliance_met"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["assets/intake"] },
+  "reads": ["venture", "assets/register", "assets/leases", "finance/budget", "finance/spend", "legal/risks", "supply-chain/suppliers", "product", "decisions"],
+  "steps": [
+    {
+      "id": "develop-construction-strategy",
+      "do": "Write how the work will be done: what the venture does itself and what a contractor does, the order of the work, the dates it must fit between (a lease start, a landlord's access hours, a customer commitment) and what happens to the rest of the plan if a piece slips, as evidence on the handoff.",
+      "skill": "design-and-construct-assets",
+      "activity": "10.2.2.1"
+    },
+    {
+      "id": "perform-construction-performance-management",
+      "do": "Set how progress and quality will be judged before any work starts: the milestones, what each one must show to count as reached, who signs it off, how it is paid against and what triggers a stop, and record the figure each milestone is measured by.",
+      "skill": "design-and-construct-assets",
+      "activity": "10.2.2.2",
+      "consider": {
+        "why": "Work judged only at the end is work the venture pays for twice, and a milestone with no test is a date with no meaning.",
+        "when": "The work runs longer than a week or any of it is done by someone outside the venture."
+      }
+    },
+    {
+      "id": "obtain-construction-permissions",
+      "do": "List every permission the work needs (the landlord's written consent, a building or electrical permit, an inspection, an insurance endorsement, a body corporate approval), what each one takes and how long it usually takes, draft the applications, and bring to the founder every one that must be signed or filed by a person.",
+      "skill": "design-and-construct-assets",
+      "activity": "10.2.2.3",
+      "raises": ["legal-or-terms"]
+    },
+    {
+      "id": "design-assets",
+      "do": "Draft the layout or specification of what is being built, with its dimensions, the power, data, water and ventilation it needs, the loads it must carry and the standards it must meet, and name every assumption that a licensed professional has to check before anyone builds to it.",
+      "skill": "design-and-construct-assets",
+      "activity": "10.2.2.4"
+    },
+    {
+      "id": "plan-construction-resources",
+      "do": "List the labour, materials, tools and hired equipment the plan needs, with who supplies each, what it costs and its lead time from the supplier records, and flag anything whose lead time is longer than the dates allow so the schedule is fixed before it is published.",
+      "skill": "design-and-construct-assets",
+      "activity": "10.2.2.5",
+      "consider": {
+        "why": "A build is usually late because of one long lead time nobody checked, not because the work was slow.",
+        "when": "The work needs materials, hired equipment or a contractor the venture has not already booked."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Attach the specification, the permissions list and the costed resource plan to the decision that approves the build, and tell the finance lead what the plan commits and what the venture loses if it stops halfway.",
+      "writes": ["decisions/*"],
+      "raises": ["spend-money"]
+    }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "nothing-built-without-permission", "kind": "review", "check": "Does the plan name every permission and consent the work needs with who must sign it, and does the specification mark every assumption a licensed professional still has to check?", "reviewer": "finance-lead" }
+  ]
+}

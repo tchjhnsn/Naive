@@ -1,0 +1,86 @@
+{
+  "id": "4-4-1-provide-logistics-governance",
+  "function": "supply-chain",
+  "process": "4.4.1",
+  "title": "Provide logistics governance",
+  "goal": "How the venture gets goods to its customers is written down: what it promises them, who carries the goods, what each order costs to deliver, what is measured and what happens to a return.",
+  "measures": ["cost_or_time_saved", "flow_and_lead_time"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["supply-chain/intake"] },
+  "reads": [
+    "customers",
+    "foundation/icp",
+    "product",
+    "supply-chain/suppliers",
+    "supply-chain/purchase-orders",
+    "finance/spend",
+    "support/cases",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "translate-customer-service-requirements-into-logistics-requirements",
+      "do": "Turn what customers expect, read from `customers`, `foundation/icp` and the complaints in `support/cases`, into logistics requirements with numbers: the delivery window, the share of orders that must hit it, the tracking the customer sees and what packaging must survive.",
+      "skill": "manage-logistics-and-warehousing",
+      "activity": "4.4.1.1"
+    },
+    {
+      "id": "design-logistics-network",
+      "do": "Set out the ways goods could reach the customer, direct from the maker, through the founder's own stock or through a fulfilment partner, and give each one its cost per order, its delivery time and what it would take to start.",
+      "skill": "manage-logistics-and-warehousing",
+      "activity": "4.4.1.2"
+    },
+    {
+      "id": "communicate-outsourcing-needs",
+      "do": "Draft the brief that goes to carriers, forwarders and fulfilment partners, the volumes, the destinations, the packed dimensions and the service the venture needs, for the founder to send, and record each reply and quote against that supplier's record.",
+      "skill": "manage-logistics-and-warehousing",
+      "activity": "4.4.1.3",
+      "writes": ["supply-chain/suppliers/[id]"],
+      "raises": ["public-commitment"]
+    },
+    {
+      "id": "develop-and-maintain-delivery-service-policy",
+      "do": "Draft the delivery promise the venture will publish, the dispatch time, the delivery window per region, the shipping charge, and what happens when an order is late, lost or damaged, and put it to the founder, who alone approves anything said to customers.",
+      "skill": "manage-logistics-and-warehousing",
+      "activity": "4.4.1.4",
+      "raises": ["public-commitment"]
+    },
+    {
+      "id": "optimize-transportation-schedules-and-costs",
+      "do": "Compare the quoted services for each lane on cost and transit time at the venture's real shipment size, name the cheapest service that still meets the promise, and show what the venture pays today for the difference.",
+      "skill": "manage-logistics-and-warehousing",
+      "activity": "4.4.1.5"
+    },
+    {
+      "id": "define-key-performance-measures",
+      "do": "Name the few logistics measures the venture will watch, on-time delivery, delivered cost per order, damage and loss rate and the days from order to delivery, say for each where its number comes from, and flag any measure nothing records yet.",
+      "skill": "manage-logistics-and-warehousing",
+      "activity": "4.4.1.6"
+    },
+    {
+      "id": "define-reverse-logistics-strategy",
+      "do": "Write what happens when a customer sends something back, who pays the return freight, where it goes, how fast it is judged and whether it can be resold, refurbished or only scrapped, and state the cost per return that follows.",
+      "skill": "manage-logistics-and-warehousing",
+      "activity": "4.4.1.7"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Add a decision for each logistics choice the founder must make, which network to run, which carrier to use, what to promise publicly and who pays for returns, each with its cost per order and its delivery time, and hand the order of that work to the product lead.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities", "public-commitment"]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "promise-costed-and-approved",
+      "kind": "review",
+      "check": "Does the written delivery promise carry the cost per order of keeping it, and was every word meant for customers approved by a person?",
+      "reviewer": "product-lead"
+    }
+  ]
+}

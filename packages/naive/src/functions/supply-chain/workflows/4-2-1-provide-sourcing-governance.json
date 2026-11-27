@@ -1,0 +1,88 @@
+{
+  "id": "4-2-1-provide-sourcing-governance",
+  "function": "supply-chain",
+  "process": "4.2.1",
+  "title": "Provide sourcing governance",
+  "goal": "The venture has a written procurement plan saying what it buys, from whom, when and under whose approval, its spend is grouped so the largest line is visible, and a contingency is written for every item it cannot afford to lose.",
+  "measures": ["cost_or_time_saved", "flow_and_lead_time"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["supply-chain/intake"] },
+  "reads": [
+    "product",
+    "supply-chain/suppliers",
+    "supply-chain/purchase-orders",
+    "finance/spend",
+    "finance/budget",
+    "governance/decision-rights",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "develop-procurement-plan",
+      "do": "Write the plan for what the venture buys over the next period, each item or service with its quantity, the window it must be ordered in, the expected spend and the approval it needs, and show the total against the budget in `finance/budget`.",
+      "skill": "procure-materials-and-services",
+      "activity": "4.2.1.1"
+    },
+    {
+      "id": "clarify-purchasing-requirements",
+      "do": "Turn each vague need into something a supplier can quote, the specification or part number, the quantity, the tolerance, the packaging and the date it is needed by, and ask the founder only for the requirements no record answers.",
+      "skill": "procure-materials-and-services",
+      "activity": "4.2.1.2",
+      "ask": true
+    },
+    {
+      "id": "establish-materials-management-contingency-plans",
+      "do": "For every item the venture cannot build or ship without, write what it does if that supply stops, the named alternative, the weeks to switch, the buffer stock that would cover the gap and what the switch costs per unit.",
+      "skill": "procure-materials-and-services",
+      "activity": "4.2.1.3"
+    },
+    {
+      "id": "match-needs-to-supply-capabilities",
+      "do": "Put each requirement next to what the approved suppliers can actually do on quantity, tolerance, lead time and minimum order, and name every requirement no current supplier meets.",
+      "skill": "procure-materials-and-services",
+      "activity": "4.2.1.4"
+    },
+    {
+      "id": "analyze-spend-profile",
+      "do": "Group what the venture has spent in `finance/spend` by supplier and by category, show the few lines that carry most of the money and the share that goes to a single supplier, and put the table on the handoff.",
+      "skill": "procure-materials-and-services",
+      "activity": "4.2.1.5"
+    },
+    {
+      "id": "seek-opportunities-to-improve-efficiency-and-value",
+      "do": "From that profile name the two or three changes worth most, a larger order at a better price, a second quote on the biggest line, a cheaper freight term or a part that can be standardised across products, each with the saving per unit and what it costs in cash or lead time.",
+      "skill": "procure-materials-and-services",
+      "activity": "4.2.1.6"
+    },
+    {
+      "id": "collaborate-with-suppliers-on-long-term-goals",
+      "do": "Prepare for the founder's conversation with each supplier that matters, the volumes the venture expects over the next year, what it needs from the supplier to get there and what the supplier gets in return, and record afterwards what the supplier said it would do.",
+      "skill": "procure-materials-and-services",
+      "activity": "4.2.1.7",
+      "writes": ["supply-chain/suppliers/[id]"],
+      "consider": {
+        "why": "A supplier that knows the venture's expected volume prices and plans capacity differently.",
+        "when": "A supplier carries a critical item and the venture expects its volume to grow."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Add a decision for each sourcing choice the plan raises, the approval limit for an order, whether to second-source the largest line and which saving to take first, with the evidence from the spend profile, and hand the order of that work to the product lead.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "plan-and-contingencies-written",
+      "kind": "review",
+      "check": "Does the procurement plan name the approval each purchase needs, and does every item the venture cannot lose have a written contingency with its weeks to switch?",
+      "reviewer": "product-lead"
+    }
+  ]
+}

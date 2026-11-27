@@ -1,0 +1,21 @@
+{
+  "id": "12-1-2-plan-build-and-manage-analyst-relations",
+  "function": "external-relationships",
+  "process": "12.1.2",
+  "title": "Plan, build, and manage analyst relations",
+  "goal": "The analysts and publications that cover the venture's category are listed with what each last said and the date it was read, any briefing they would see is approved by the founder, and what to do about the coverage sits in a decision.",
+  "measures": ["learning"],
+  "trigger": {"kind":"request"},
+  "requires": {"meetings":["external-relationships/intake"]},
+  "reads": ["venture","markets","industries","purpose/competitor","foundation/icp","product","decisions/*"],
+  "steps": [
+    {"id":"list-who-covers-the-category","do":"From public sources read who writes research on the venture's market and industry, and put on the handoff one line per analyst or publication with its name, the last thing it published about the category, the date you read it and whether it covers ventures of this size.","skill":"build-investor-relationships","writes":["operations/handoff/[id]"]},
+    {"id":"prepare-the-briefing","do":"Draft a one-page briefing from approved records only, what the product does, who pays for it and the two or three figures the venture stands behind, each naming its record, for the founder to approve before any analyst sees it.","skill":"build-investor-relationships","writes":["operations/handoff/[id]"],"raises":["public-commitment"],"consider":{"why":"An analyst who holds the venture's own figures describes it in the venture's own words.","when":"An analyst or publication that covers the category has asked about the venture, or the founder means to brief one."}},
+    {"id":"track-what-they-publish","do":"Each time one of them publishes about the category, record what it says about the venture and its rivals with the date read, and name every claim about the venture that is wrong together with the record that corrects it.","skill":"build-investor-relationships","writes":["operations/handoff/[id]"],"consider":{"why":"A wrong claim in print is cheapest to correct in the week it appears.","when":"An analyst or publication has written about the venture or its category since the last run."}},
+    {"id":"feed-decisions","do":"Name the open decision each piece of coverage bears on and add it there as evidence, and propose to the strategy lead whether briefing an analyst is worth the founder's hours this quarter.","skill":"build-investor-relationships","writes":["decisions/*"],"raises":["set-priorities"]}
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "coverage-dated", "kind": "review", "check": "Does every analyst in the list name the last thing they published and the date it was read, and is every briefing still a draft or approved by the founder?", "reviewer": "strategy-lead" }
+  ]
+}

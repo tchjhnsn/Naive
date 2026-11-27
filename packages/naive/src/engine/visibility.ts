@@ -15,7 +15,7 @@
 import { createHash } from "node:crypto";
 import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { frontmatter } from "./publish-lint.ts";
+import { frontmatter } from "./frontmatter.ts";
 import { ventureFile } from "../core/venture-paths.ts";
 import { now as clockNow } from "../core/clock.ts";
 

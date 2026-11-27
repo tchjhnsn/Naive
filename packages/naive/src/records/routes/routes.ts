@@ -130,6 +130,9 @@ const TEXT_ITEMS = new Set(["marketing-content"]);
 const DEEP = /\/\*\*\/\*\.[a-z]+$/;
 /** Whether an item route's id may hold slashes: its files sit under a folder of any depth. */
 export const deepItem = (r: { collection?: string; files?: string[] }): boolean => r.collection === "item" && !!r.files?.length && r.files.every((f) => DEEP.test(f));
+/** The checks that take one record's id after the venture dir, so the check action of an item route names the item it
+ *  is checking (EE-214). Every other check takes the venture dir alone and is given nothing more. */
+export const ID_CHECKS = new Set(["packages/naive/src/checks/check-ready.ts"]);
 
 /** The route table, generated from packages/naive/src/records/data-model.json, the kit manifests and packages/naive/src/engine/need-now.json. */
 // Caching hook (F-12): built once per action and shared.
@@ -198,6 +201,9 @@ function buildRoutes(): Route[] {
     cmd("system/time-to-ready", "packages/naive/src/engine/time-to-ready.ts", "Time to running, and to ready per layer and MAD tier"),
     // Model steps hook (use model, EE-073): the logic is packages/naive/src/router/orchestration/model-steps.ts; this route only shows the payload.
     cmd("system/steps", "packages/naive/src/router/orchestration/model-steps.ts", "The model steps' payload (use model, EE-073): what code computed, a placeholder for each judgment a model has yet to give, and the only fields each one receives; asks no model. mentura steps run asks one", { args: ["payload"] }),
+    // The customer problem tree (EE-219): the tree as it stands, and the computed ranking beside it.
+    cmd("purpose/validation/problems", "packages/naive/src/engine/problems.ts", "The customer problem tree (EE-219): the root problem in the record's statement, each form below it as a narrower case (parent, Torres's opportunity solution tree) or a cause (cause_of, the Logical Framework Approach's problem tree), each profile's core problem and the one form that is the target. Reads only"),
+    cmd("purpose/validation/problems/rank", "packages/naive/src/engine/problems.ts", "The problems ranked by what the interviews counted (EE-219): raised unprompted, ranked first and pays for a workaround, under the weights in packages/naive/src/functions/strategy/problem-priority.json or the venture's own. Primary, secondary and tertiary are labels on this order, never stored; before any interview is coded the basis is the founder's own order, labelled a hypothesis", { args: ["rank"] }),
     cmd("purpose/validation/assess", "packages/naive/src/engine/assess-problem.ts", "What the problem's evidence is strong enough for: each assumption labelled demonstrated, inferred, assumed, unknown or contradicted, the commitment it supports and the next test (EE-050). Asks first when the record is incomplete; input as_is runs it anyway", { as_is: true }),
     cmd("governance/analytics", "packages/naive/src/engine/decision-analytics.ts", "Decision analytics (EE-072): how many decisions of each type each function has made, open against decided, in whose words, in which phase, and their outcomes. Data only; a view is the platform's, or a visualization skill's", { actions: ["run", "layout"] }),
     cmd("governance/decisions", "packages/naive/src/engine/decisions.ts", "The decision matrix: every decision the venture owes by layer and phase, with its parent and boundary, and whether it renders now, waits, comes later, is stale or deferred (EE-054, EE-057)"),
@@ -357,13 +363,15 @@ export function allowed(dir: string | null | undefined, actorId: string | null |
 const PACKAGE_ROUTE: Readonly<Record<string, string>> = {
   "validation-problem": "foundation/problem", icp: "foundation/icp", telos: "foundation/telos", alignment: "foundation/alignment",
   goal: "foundation/goals", requirement: "foundation/requirements", "exit-criteria": "foundation/exit-criteria", constraints: "foundation/constraints", "venture-core": "foundation/core",
+  "pre-registration": "foundation/pre-registration", bet: "foundation/bets",
   "validation-solution": "validation/solution", "validation-pricing": "validation/pricing", "validation-plan": "validation/plan", "validation-go-to-market": "validation/go-to-market",
   "validation-product-market-fit": "validation/product-market-fit", "validation-operations-readiness": "validation/operations-readiness",
-  "validation-team": "people/team", "team-plan": "people/team-plan", "marketing-sitemap": "marketing/sitemap", "marketing-content": "marketing/content",
+  "validation-team": "people/team", "team-plan": "people/team-plan", "marketing-sitemap": "marketing/sitemap", "marketing-content": "marketing/content", "marketing-message": "marketing/message",
+  "publish-terms": "marketing/publish-terms",
   "idea-dump": "raw/dump", "idea-map": "ideas/map", "idea-graph": "ideas/graph", product: "product", evidence: "evidence",
   "anatomy-answers": "product/anatomy-answers", "anatomy-input": "product/anatomy", "venture-package": ".release/venture-package",
   "decision-record": "decisions",
-  "validation-interview": "validation/interviews", "validation-feedback": "validation/feedback", bug: "product/bugs",
+  "validation-interview": "validation/interviews", "validation-feedback": "validation/feedback", bug: "product/bugs", "product-capability": "product/capabilities",
   customer: "customers", investor: "investors", "money-account": "money", "raw-source": "raw/sources", triage: "raw/triage",
   "spend-register": "finance/spend", budget: "finance/budget", "lead-plan": "operations/lead", "time-box": "operations/time-box", meeting: "operations/meeting",
   specialist: "operations/specialist",

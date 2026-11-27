@@ -1,0 +1,27 @@
+{
+  "id": "8-1-4-provide-it-transformation-guidance",
+  "function": "it",
+  "process": "8.1.4",
+  "title": "Provide IT transformation guidance",
+  "goal": "Each change the venture wants from its systems is written as a requirement with the evidence behind it, the ones worth doing are ordered by the founder, and the chosen ones have a business case and a dated roadmap on the handoff.",
+  "measures": ["cost_or_time_saved", "compliance_met"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["it/intake"] },
+  "reads": ["venture", "foundation/goals", "foundation/requirements", "it/connections", "finance/spend", "finance/budget", "product/capabilities", "operations/handoff", "decisions/*"],
+  "steps": [
+    { "id": "develop-it-transformation-plans", "do": "Name the one change this run is about (a system to adopt, replace, own or drop), what it is for in the words of a live goal, and what will still be true when it is done.", "skill": "develop-and-manage-it-customer-relationships", "activity": "8.1.4.1" },
+    { "id": "collect-it-customer-requirements", "do": "Collect what each person and agent role needs from the change by reading their workflows and activity assignments, ask the founder only what no record answers, and write each need on the handoff as one sentence with who asked for it.", "skill": "develop-and-manage-it-customer-relationships", "activity": "8.1.4.2", "ask": true },
+    { "id": "analyze-it-customer-requirements", "do": "Group the needs, strike the duplicates, mark which are needed for a live goal and which are wants, and name every pair that cannot both be satisfied.", "skill": "develop-and-manage-it-customer-relationships", "activity": "8.1.4.3" },
+    { "id": "identify-and-prioritize-it-opportunities", "do": "List the ways to meet the needs (own it in the venture's own code and records, rent a system, change the work so nothing is needed), and rank them by the time or money saved against the record the venture would lose visibility of, using `naive tools recommend` for the goal or activity.", "skill": "tool-selection", "activity": "8.1.4.4" },
+    { "id": "facilitate-solution-design-activities", "do": "For the two best options, write on the handoff what would change in the connection records, which function would hold the record, which scopes each role would need and what would break while the change is made.", "skill": "develop-and-manage-it-customer-relationships", "activity": "8.1.4.5" },
+    { "id": "prioritize-it-outcomes", "do": "Put the ranked outcomes to the founder as one decision with what each buys, what each costs and your recommendation, and let the founder choose the order; you do not choose it.", "skill": "develop-and-manage-it-customer-relationships", "activity": "8.1.4.6", "ask": true, "writes": ["decisions/*"], "raises": ["set-priorities", "spend-money"] },
+    { "id": "develop-business-cases", "do": "For the outcome the founder chose, write the case on the handoff: the hours or money it saves a month, the one-off and the recurring cost from the spend register or the provider's published price, what has to be true for the saving to hold, and what would show it wrong.", "skill": "develop-and-manage-it-customer-relationships", "activity": "8.1.4.7" },
+    { "id": "support-business-case", "do": "Answer the founder's questions on the case from the records, correct any number that was a guess, and say which part of the case rests on an assumption nobody has tested.", "skill": "develop-and-manage-it-customer-relationships", "activity": "8.1.4.8" },
+    { "id": "develop-transformation-roadmap", "do": "Write the roadmap on the handoff as an ordered list of steps with the connection each one touches, the access it needs, how each step can be undone, and the step that cannot be undone marked for the founder.", "skill": "develop-and-manage-it-customer-relationships", "activity": "8.1.4.9", "consider": { "why": "A change that touches more than one system needs an order, because the wrong order locks the venture out of its own records.", "when": "The chosen change touches more than one connection or includes a step that cannot be undone." } },
+    { "id": "feed-decisions", "do": "Record the chosen outcome and the roadmap as evidence on the decision that settles the change, and raise anything the roadmap needs that only the founder can grant: wider access, a paid plan, new terms or deleting a system's data.", "skill": "develop-and-manage-it-customer-relationships", "writes": ["decisions/*"], "raises": ["security-loosening", "spend-money", "legal-or-terms", "irreversible-data-change"] }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "founder-chose", "kind": "review", "check": "Did the founder choose the order of outcomes in a decision, and does the business case for the chosen one name its recurring cost from a source and what would show its saving wrong?", "reviewer": "product-lead" }
+  ]
+}

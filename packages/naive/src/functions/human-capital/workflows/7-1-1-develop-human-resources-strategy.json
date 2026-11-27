@@ -1,0 +1,152 @@
+{
+  "id": "7-1-1-develop-human-resources-strategy",
+  "function": "human-capital",
+  "process": "7.1.1",
+  "title": "Develop human resources strategy",
+  "goal": "The venture has a recorded answer to who does its work, agent or person, function by function, with the cost of each role, the measures the people work is judged by, and every gap standing as an open decision for the founder.",
+  "measures": [
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "human-capital/intake"
+    ]
+  },
+  "reads": [
+    "venture",
+    "people",
+    "people/team-plan",
+    "people/founders",
+    "foundation/goals",
+    "foundation/telos",
+    "foundation/constraints",
+    "operations/activity-assignments",
+    "operations/element-owners",
+    "governance/delegation",
+    "purpose/money/summary",
+    "finance/spend",
+    "marketing/brand",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "identify-strategic-hr-needs",
+      "do": "Read `foundation/goals`, `foundation/telos` and `operations/activity-assignments` and list, goal by goal, the work the venture has nobody for, naming for each whether an agent or a person is needed and which goal stalls while it is unfilled, and put the list on the handoff as evidence.",
+      "activity": "7.1.1.1",
+      "skill": "develop-and-manage-human-resources-hr-planning"
+    },
+    {
+      "id": "define-roles-and-accountability",
+      "do": "For each function the venture runs, name who answers for its work today, founder, lead or function agent, from `operations/element-owners` and `governance/delegation`, and list every function whose work nobody answers for.",
+      "activity": "7.1.1.2",
+      "skill": "develop-and-manage-human-resources-hr-planning"
+    },
+    {
+      "id": "determine-hr-function-roles-and-structure",
+      "do": "Record who does the people work itself, which in a solo venture is the founder with this agent, and write the split plainly: which records this agent keeps current and which questions always go to the founder.",
+      "activity": "7.1.1.3",
+      "skill": "develop-and-manage-human-resources-hr-planning"
+    },
+    {
+      "id": "determine-hr-delivery-model",
+      "do": "Write how the people work gets delivered: what this agent does, what the founder does, and which outside service, payroll, benefits administration or counsel, the venture would buy, each with the trigger that makes buying it worth the money.",
+      "activity": "7.1.1.4",
+      "skill": "develop-and-manage-human-resources-hr-planning",
+      "consider": {
+        "why": "A venture whose only people are its founders buys no people services, and a model written before then is guesswork.",
+        "when": "Someone other than the founders is paid by the venture, or the founder has decided to open a person role."
+      }
+    },
+    {
+      "id": "determine-hr-costs",
+      "do": "Add up what people cost the venture now from `finance/spend` and `purpose/money/summary`, founder draw, contractors, advisors and people tools included, and give the founder the fully loaded cost of each proposed role, wages plus about forty percent for employer taxes, tools and overhead, marked as an estimate.",
+      "activity": "7.1.1.5",
+      "skill": "develop-and-manage-human-resources-hr-planning"
+    },
+    {
+      "id": "establish-hr-measures",
+      "do": "Propose the few measures the venture will judge its people work by, each tied to the telos measure kinds cost_or_time_saved or compliance_met and each readable from records the venture already keeps, and put them to the founder as a decision, since the telos is not yours to write.",
+      "activity": "7.1.1.6",
+      "skill": "develop-and-manage-human-resources-hr-planning",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "strategy-or-constitution"
+      ]
+    },
+    {
+      "id": "communicate-hr-strategies",
+      "do": "Draft the short note that tells everyone who works on the venture who does what, what changed and what is expected of them, and hand it to the founder to send, because the venture's word to its people is the founder's to give.",
+      "activity": "7.1.1.7",
+      "skill": "develop-and-manage-human-resources-hr-planning",
+      "consider": {
+        "why": "There is nobody to tell while the founders are the only people working on the venture.",
+        "when": "Someone other than the founders works on the venture."
+      }
+    },
+    {
+      "id": "develop-hr-systems-strategy",
+      "do": "List what the people work needs a tool for, keeping records, running payroll, signing agreements, say which of those the router's own records already cover, and recommend at most one tool with its yearly cost and the data it would hold, for the founder to decide.",
+      "activity": "7.1.1.8",
+      "skill": "develop-and-manage-human-resources-hr-planning",
+      "raises": [
+        "spend-money"
+      ],
+      "consider": {
+        "why": "A tool bought before there is anyone to administer costs money and adds a place personal data can leak from.",
+        "when": "The venture pays someone other than its founders, or a report it owes cannot be produced from its records."
+      }
+    },
+    {
+      "id": "manage-employer-branding",
+      "do": "Draft what the venture would truthfully say about itself to someone deciding whether to work on it, from `marketing/brand` and the founder's own words, with no claim the records do not support, and hand it to the founder, who approves anything published.",
+      "activity": "7.1.1.9",
+      "skill": "develop-and-manage-human-resources-hr-planning",
+      "raises": [
+        "public-commitment"
+      ],
+      "consider": {
+        "why": "Nobody is deciding whether to join a venture that has no role open.",
+        "when": "The founder has approved an open person role."
+      }
+    },
+    {
+      "id": "design-the-employee-experience",
+      "do": "Write what the first week, the first month and an ordinary week look like for someone who joins, from the access they get through how decisions reach them and how their work is reviewed, and name the parts the venture does not have yet.",
+      "activity": "7.1.1.10",
+      "skill": "develop-and-manage-human-resources-hr-planning",
+      "consider": {
+        "why": "The experience is worth designing once a real person is about to live it.",
+        "when": "The founder has approved an open person role or someone is about to start."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "For each gap, cost and proposal from this run, name the open decision it bears on and add it there as evidence, open a decision where none exists, and recommend to the strategy lead which people question to settle first.",
+      "skill": "develop-and-manage-human-resources-hr-planning",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "roles-costed-and-justified",
+      "kind": "review",
+      "check": "Does every proposed person role name the work an agent cannot do, cite the capability register entry and its date, and carry a fully loaded cost?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

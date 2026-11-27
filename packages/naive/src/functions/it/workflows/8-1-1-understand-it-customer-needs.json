@@ -1,0 +1,20 @@
+{
+  "id": "8-1-1-understand-it-customer-needs",
+  "function": "it",
+  "process": "8.1.1",
+  "title": "Understand IT customer needs",
+  "goal": "Every person and agent role that depends on an outside system is named on that system's connection record with what it needs from it and what it cannot do without the founder, and each dependency worth removing is in a decision.",
+  "measures": ["cost_or_time_saved", "compliance_met"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["it/intake"] },
+  "reads": ["venture", "it/connections", "people/team-plan", "operations/activity-assignments", "governance/delegation", "foundation/goals", "decisions/*"],
+  "steps": [
+    { "id": "understand-it-customer-communities", "do": "From the team plan, the activity assignments and the delegation, list every person and agent role that reaches an outside system, group them by the function they work for, and write on each connection record which group depends on it and for which activity.", "skill": "develop-and-manage-it-customer-relationships", "activity": "8.1.1.1", "writes": ["it/connections/[id]"] },
+    { "id": "assess-it-customer-operational-capabilities", "do": "For each group, say which of its systems it can already work on its own (its own credential, MFA on, scope wide enough for the activity and narrow enough for nothing else) and where it has to wait for the founder, and record that wait on the connection as the capability gap with the date you checked it.", "skill": "develop-and-manage-it-customer-relationships", "activity": "8.1.1.2", "writes": ["it/connections/[id]"] },
+    { "id": "feed-decisions", "do": "For each capability gap, name the open decision or goal it bears on and add it there as evidence, and propose to the product lead which dependency on the founder to remove first, worst time cost first.", "skill": "develop-and-manage-it-customer-relationships", "writes": ["decisions/*"], "raises": ["set-priorities"] }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "dependencies-named", "kind": "review", "check": "Does every connection record name which person and agent role depends on it, for which activity, and what that group cannot do without the founder?", "reviewer": "product-lead" }
+  ]
+}

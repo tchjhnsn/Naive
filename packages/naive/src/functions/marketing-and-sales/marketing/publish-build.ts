@@ -15,6 +15,9 @@
 // output folder) set, and writes its outputs (paths relative to the output folder) under NAIVE_PUBLISH_OUT.
 //
 // In order, and any failure stops the build:
+//   0. copy     ./copy.ts (EE-216): text before design. Every element the sitemap plans has a message record a
+//               person stands behind, or the build is refused and names the elements. A person who chose the
+//               one-shot decision passes, and the build record says the output is unapproved
 //   1. gate     packages/naive/src/engine/check-public.ts (EE-064): every public variant names its source,
 //               audience and approver, and copies no ten-word run of its source
 //   2. compile  each field reaches the output only through packages/naive/src/engine/visibility.ts publicValue: the field
@@ -30,6 +33,7 @@ import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
 import { check, CONTENT, frontmatter } from "../../../engine/check-public.ts";
+import { gate as copyGate } from "./copy.ts";
 import { leaks } from "../../../engine/check-leaks.ts";
 import { visibilityOf } from "../../../engine/visibility.ts";
 import { ventureFile } from "../../../core/venture-paths.ts";
@@ -42,10 +46,12 @@ const sha = (s: string | Buffer) => createHash("sha256").update(s).digest("hex")
 export type Channel = { outputs: string[], builders: string[] };
 /** An MDX variant in the venture's public content. */
 type Variant = { file: string, variant_of: string, approved: boolean, approved_by: string | null, sha256: string };
-/** What a build records: each output's sha256, the approved variants it drew on, the drafts still waiting. */
+/** What a build records: each output's sha256, the approved variants it drew on, the drafts still waiting, and
+ *  whether the text itself was approved element by element or built in one pass a person chose (EE-216). */
 export type BuildRecord = {
   channel: string, venture: string | null, built_at: string, outputs: { path: string, sha256: string }[],
   sources: { file: string, variant_of: string, approved_by: string | null, sha256: string }[], pending: { file: string, variant_of: string }[],
+  copy: { approved: boolean, mode: "per-element" | "one-shot", unapproved: string[], chosen_by?: string, chosen_at?: string },
 };
 /** A build that passed, with its record, or one refused at a stage with the reasons. */
 export type BuildResult = ({ ok: true, stage?: undefined, errors?: undefined } & BuildRecord) | { ok: false, channel: string, stage?: string, errors: string[] };
@@ -119,6 +125,10 @@ export function build(channel: string, dir: string, opts: { out?: string, channe
     const known = Object.keys(channels);
     return { ok: false, channel, errors: [known.length ? `no channel ${channel}: one of ${known.join(", ")}` : `no channel ${channel}: the venture names no channel in naive.config.json publish_build.channels`] };
   }
+  // 0. copy: text before design (EE-216). A page is built only from words a person stands behind, unless that
+  // person chose the one-shot path themselves, which the build record then carries.
+  const copy = copyGate(dir);
+  if (!copy.ok) return { ok: false, channel, stage: "copy", errors: copy.errors };
   // 1. gate
   const gate = check(dir);
   if (gate.errors.length) return { ok: false, channel, stage: "gate", errors: gate.errors.flatMap((x: { file: string, errors: string[] }) => x.errors.map((e) => `${x.file}: ${e}`)) };
@@ -149,6 +159,8 @@ export function build(channel: string, dir: string, opts: { out?: string, channe
     outputs: outputs.map((o) => ({ path: o.path, sha256: sha(readFileSync(o.file)) })),
     sources: all.filter((v) => v.approved).map(({ file, variant_of, approved_by, sha256 }) => ({ file, variant_of, approved_by, sha256 })),
     pending: all.filter((v) => !v.approved).map(({ file, variant_of }) => ({ file, variant_of })),
+    copy: { approved: copy.unapproved.length === 0, mode: copy.mode, unapproved: copy.unapproved,
+      ...(copy.approval.chosen_by ? { chosen_by: copy.approval.chosen_by } : {}), ...(copy.approval.chosen_at ? { chosen_at: copy.approval.chosen_at } : {}) },
   };
   mkdirSync(join(out, "generated"), { recursive: true });
   writeFileSync(join(out, `generated/publish-build.${channel}.json`), JSON.stringify(record, null, 2) + "\n");
@@ -164,6 +176,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   if (argv.includes("--json")) console.log(JSON.stringify(r, null, 2));
   else if (r.ok) {
     console.log(`built ${channel} for ${r.venture}: ${r.outputs.map((o) => o.path).join(", ")}`);
+    if (!r.copy.approved) console.log(`  UNAPPROVED TEXT: ${r.copy.chosen_by ?? "a person"} chose the one-shot path, so ${r.copy.unapproved.length} element(s) of these pages carry words no one approved: ${r.copy.unapproved.join(", ")}`);
     console.log(`  ${r.sources.length} approved public variant(s); ${r.pending.length} draft(s) waiting for a person's approval`);
     for (const p of r.pending) console.log(`    ${p.file} (variant of ${p.variant_of})`);
   } else {

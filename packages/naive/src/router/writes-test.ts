@@ -299,6 +299,15 @@ expect("P-3: the check refuses an unknown package, a kit on a package not in use
 writeFileSync(join(acme, "venture.json"), JSON.stringify(vj, null, 2) + "\n");
 
 // E-5: boundaries.
+// The problem tree and a primary profile naming its core problem exist, so the foundation package's own check
+// (check-problems.ts, EE-219) passes and only the broken validation record fails below.
+{
+  const pf = join(acme, "foundation/problem.json");
+  const prob = JSON.parse(readFileSync(pf, "utf8")) as Record<string, unknown>;
+  writeFileSync(pf, JSON.stringify({ ...prob, forms: [{ id: "lost-evenings", statement: "Physios lose evenings to admin.", status: "target" }] }, null, 2));
+  mkdirSync(join(acme, "foundation/icp"), { recursive: true });
+  writeFileSync(join(acme, "foundation/icp/physio.json"), JSON.stringify({ id: "physio", who: "A solo physiotherapist", primary: true, problem_forms: ["lost-evenings"], core_problem: "lost-evenings" }, null, 2));
+}
 writeFileSync(join(acme, "validation/solution.json"), JSON.stringify({ venture: "acme", statement: 5 }));
 const b = await boundaries(acme);
 const vb = b.packages.find((p) => p.package === "validation"), fb = b.packages.find((p) => p.package === "foundation");

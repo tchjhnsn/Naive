@@ -81,6 +81,33 @@
 //                                                   blocks downstream (EE-213)
 //   naive skipped handback <item> [--to <role>]     hand one item to the owning function agent as an open decision:
 //                                                   it recommends do-now, defer or drop, and a person decides
+//   naive problems [tree|rank] [--json]             the customer problem tree: each problem a narrower case (parent)
+//                                                   or a cause (cause_of) of another, the one target and each
+//                                                   profile's core problem; rank orders them by what the interviews
+//                                                   counted, labelled primary, secondary and tertiary (EE-219)
+//   naive blocked [--json]                          every workflow of the venture's functions, in hierarchical order,
+//                                                   met or blocked, and what unblocks it first (EE-217)
+//   naive bets [show [<id>]] [--json]               the venture's bets: each claim, the fixed form of it, what would
+//                                                   show it wrong, the bets it rests on, the evidence for and
+//                                                   against, the odds a person put on it and the outcome (EE-221)
+//   naive bets register <id> --by <person>          a person fixes the claim: from then on its kind, statement,
+//                                                   claim, rule, premises and falsified_by never change
+//   naive bets confidence <id> --p <0..1> --by <person> --data-seen <answer> [--why <text>]
+//                                                   a person puts odds on it, saying how much of the evidence they
+//                                                   had seen. The first entry is the prior, and it is what is scored
+//   naive bets resolve <id> <happened|did-not-happen|mixed|unresolvable> --by <person> [--observed <value>]
+//                                                   a person records what happened, once. Only a person resolves
+//   naive bets score [--json]                       the Brier score of each resolved bet and the mean, with the ones
+//                                                   the venture worked to make true reported apart
+//   naive prereg [show [<id>]] [--json]             the venture's pre-registrations: the thesis, the measures with the
+//                                                   thresholds and dates they are judged by, what does not count as
+//                                                   evidence, and what it said it would do on a pass and a fail (EE-220)
+//   naive prereg register <id> --by <person>        a person fixes the plan: from then on its thesis, assumptions,
+//                                                   method, measures, thresholds, dates, exclusions and decision rules
+//                                                   never change, and a change is a deviation or a new version
+//   naive prereg result <id> --measure <m>=<value> [--evidence <ref>] [--by <person>]
+//                                                   what was observed for one measure, with its pass or fail against
+//                                                   the registered threshold; the verdict over the test is a person's
 //   naive owners [--function <id>] [--level <n>] [--json]
 //                                                   the accountable owner of each APQC element the venture runs, a
 //                                                   person or an agent, and where it came from (EE-187)
@@ -141,6 +168,21 @@
 //   naive sync push [--json]                        what this working copy changed, each record with its base
 //                                                   version; a store that moved is pulled, merged and tried again
 //   naive sync status [--json]                      where this working copy stands, with no network
+//   naive copy gaps [--page <id>] [--json]        what each page shows, the record that holds it, or what is missing
+//                                                   and which upstream record a draft would come from (EE-216)
+//   naive copy draft [--element <id>] [--propose] [--print]
+//                                                   one open decision per missing or undecided element, with two or
+//                                                   three options a person picks between, drafted through NAIVE_AGENT_CMD;
+//                                                   with no harness it prints the prompt and files the gap alone
+//   naive copy check [--json]                       the copy gate: it refuses while any element the sitemap plans has
+//                                                   no record a person stands behind, and names each one
+//   naive copy one-shot --by <person> [--why <text>]  a person skips approving the text: recorded as a decision, and
+//                                                   every page built from then on is marked unapproved
+//   naive render [<document kind>] [--format md|pdf|docx|pptx|html|site] [--json]
+//                                                   the document catalog, or one document's reading copy written from
+//                                                   the records it cites. Markdown is rendered here; a heavier format
+//                                                   is the harness's, and a rung above the reading copy is refused
+//                                                   until a person approved the one below (EE-218)
 //   naive lint premises [<route>] [--drafts] [--json] [--propose]
 //                                                   attack the premises of the venture's goals, requirements, exit criteria,
 //                                                   constraints and decisions; --propose writes findings as open decisions
@@ -151,6 +193,7 @@ import { spawnSync, type SpawnSyncOptions } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, watch, writeFileSync } from "node:fs";
 import type { AddressInfo } from "node:net";
 import { basename, join, relative, resolve } from "node:path";
+import { CODE_OVER_DOCS } from "../../core/code-over-docs.ts";
 import { asRouted, findVenture } from "./find-venture.ts";
 import { logical } from "../../core/venture-paths.ts";
 import { ventureFile } from "../../core/venture-paths.ts";
@@ -190,7 +233,7 @@ async function schemaFor(file: string): Promise<string | null> {
 async function dev(dir: string): Promise<void> {
   // The root layout is required (I-21): a venture without AGENTS.md gets a stub, as next dev writes a root layout.
   if (!existsSync(join(dir, "AGENTS.md"))) {
-    writeFileSync(join(dir, "AGENTS.md"), `# AGENTS.md: ${basename(dir)}\n\nThe map of this venture for agents. Read it, then a route's layout, before writing anything here.\n\n## Instructions\n\nphase: ${JSON.parse(readFileSync(join(dir, "venture.json"), "utf8")).phase}\nprivate: _private/\n`);
+    writeFileSync(join(dir, "AGENTS.md"), `# AGENTS.md: ${basename(dir)}\n\nThe map of this venture for agents. Read it, then a route's layout, before writing anything here.\n\n- ${CODE_OVER_DOCS}\n\n## Instructions\n\nphase: ${JSON.parse(readFileSync(join(dir, "venture.json"), "utf8")).phase}\nprivate: _private/\n`);
     console.log("   wrote AGENTS.md, the venture's root layout, because it was missing");
   }
   const { workspace, venture } = asRouted(dir);
@@ -460,6 +503,11 @@ else if (cmd === "build" || cmd === "start") {
   // --at, --function and --json pass through, and --outcome, --by and --steps for record.
   const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
   process.exit(run("packages/naive/src/engine/due.ts", [here(), ...args]));
+} else if (cmd === "blocked") {
+  // Which workflows may run and which are locked, in hierarchical order (packages/naive/src/engine/prerequisites.ts,
+  // EE-217). --json passes through.
+  const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
+  process.exit(run("packages/naive/src/engine/prerequisites.ts", [here(), ...args]));
 } else if (cmd === "graph") {
   // The element graph over the shipped function modules (packages/naive/src/engine/element-graph.ts, EE-188), with
   // --function <id>, --element <id>, --json and --mermaid passed through. It needs no venture.
@@ -487,6 +535,29 @@ else if (cmd === "build" || cmd === "start") {
   // --function, --at and --json pass through, and --to for handback.
   const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
   process.exit(run("packages/naive/src/engine/skipped.ts", [here(), ...args]));
+} else if (cmd === "render") {
+  // A document's reading copy from the records the catalog says it is made of (packages/naive/src/engine/render-document.ts,
+  // EE-218). With no kind it prints the catalog. --format and --json pass through; a rung above the reading copy is
+  // refused until a person approved the one below, and the heavier formats are the harness's, not Naive's.
+  const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
+  process.exit(run("packages/naive/src/engine/render-document.ts", [here(), ...args]));
+} else if (cmd === "problems") {
+  // The customer problem tree and its ranking (packages/naive/src/engine/problems.ts, EE-219). The subcommand, tree or
+  // rank, and --json pass through. It reads only.
+  const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
+  process.exit(run("packages/naive/src/engine/problems.ts", [here(), ...args]));
+} else if (cmd === "bets") {
+  // The venture's strategic claims (EE-221, packages/naive/src/router/orchestration/bets.ts). register, confidence
+  // and resolve are a person's; show and score read only.
+  const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
+  const [what = "show"] = args.filter((a) => !a.startsWith("--"));
+  if (!["show", "register", "confidence", "resolve", "score"].includes(what)) { console.error("usage: naive bets [show [<id>]] | register <id> --by <person> | confidence <id> --p <0..1> --by <person> --data-seen <answer> | resolve <id> <happened|did-not-happen|mixed|unresolvable> --by <person> | score [--venture <dir>] [--json]"); process.exit(2); }
+  process.exit(run("packages/naive/src/router/orchestration/bets.ts", [here(), ...args]));
+} else if (cmd === "prereg") {
+  // Pre-registrations: the plan for a test, fixed before it runs (EE-220,
+  // packages/naive/src/router/orchestration/pre-registration.ts). register is a person's.
+  const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
+  process.exit(run("packages/naive/src/router/orchestration/pre-registration.ts", [here(), ...(args.length ? args : ["show"])]));
 } else if (cmd === "owners") {
   // Who is accountable for each element of APQC's framework (packages/naive/src/engine/element-owners.ts, EE-187).
   const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
@@ -522,6 +593,12 @@ else if (cmd === "build" || cmd === "start") {
   const [what, ...args] = rest.filter((a, i) => !(a === "--venture" || rest[i - 1] === "--venture"));
   if (what !== "premises") { console.error("usage: naive lint premises [<route>] [--drafts] [--json] [--propose]"); process.exit(2); }
   process.exit(run("packages/naive/src/checks/premise-lint.ts", [here(), ...args]));
+} else if (cmd === "copy") {
+  // The site's words before the site (EE-216): packages/naive/src/functions/marketing-and-sales/marketing/copy.ts.
+  const args = rest.filter((a, i) => !(a === "--venture" || rest[i - 1] === "--venture"));
+  const [what = "gaps"] = args;
+  if (!["gaps", "check", "draft", "one-shot"].includes(what)) { console.error("usage: naive copy gaps [--page <id>] | check | draft [--element <id>] [--propose] [--print] | one-shot --by <person> [--why <text>]   [--venture <dir>] [--json]"); process.exit(2); }
+  process.exit(run("packages/naive/src/functions/marketing-and-sales/marketing/copy.ts", [here(), ...args]));
 } else if (cmd === "typegen") {
   const { TOOLS } = await import("../mcp/server.ts");
   const { routes } = await import("../../router/router.ts");
@@ -531,6 +608,8 @@ else if (cmd === "build" || cmd === "start") {
   writeFileSync(join(out, "routes.json"), JSON.stringify(routes().map((r: { route: string, actions: string[], kind: string }) => ({ route: r.route, actions: r.actions, kind: r.kind })), null, 2) + "\n");
   console.log(`wrote ${out}`);
 } else if (cmd === "agent") {
+  // list, brief and run for the function and lead agents (packages/naive/src/engine/agents/run.ts, EE-124).
+  // --json, --print and --workflow pass through; a run whose --workflow is blocked is refused (EE-217).
   process.exit(run("packages/naive/src/engine/agents/run.ts", rest));
 } else if (cmd === "new") {
   // A new venture: create-venture's questions and scaffold, so the whole lifecycle starts from this one command.

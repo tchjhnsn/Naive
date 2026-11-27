@@ -1,0 +1,184 @@
+{
+  "id": "3-4-2-develop-sales-partner-alliance-relationships",
+  "function": "marketing-and-sales",
+  "process": "3.4.2",
+  "title": "Develop sales partner/alliance relationships",
+  "goal": "Each partner or alliance the venture would sell through is on record with what it would do, what it would cost, who ends up owning the customer and what the founder agreed to, and nothing is counted on that is not signed.",
+  "measures": [
+    "revenue"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "marketing-and-sales/intake"
+    ]
+  },
+  "reads": [
+    "venture",
+    "foundation/icp",
+    "markets",
+    "customers",
+    "sales/opportunities",
+    "product",
+    "purpose/competitor",
+    "legal/obligations",
+    "legal/risks",
+    "finance/budget",
+    "governance/publication-policy",
+    "people",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "identify-alliance-opportunities",
+      "do": "List the companies already reaching the venture's segment that could sell or recommend its offering, from public sources only, with what each already sells to that buyer and why it would want to, and never contact one.",
+      "skill": "develop-sales-strategy",
+      "activity": "3.4.2.1"
+    },
+    {
+      "id": "design-alliance-programs-and-methods-for-selecting-and-managing-relationships",
+      "do": "Write what the venture would offer a partner, what it would ask in return, the plain tests a candidate must pass and how the relationship would be reviewed, so every candidate is judged the same way.",
+      "skill": "develop-sales-strategy",
+      "consider": {
+        "why": "A program written before the first conversation stops each partner being given different terms.",
+        "when": "More than one partner is a candidate, or a partner has asked for terms."
+      },
+      "activity": "3.4.2.2"
+    },
+    {
+      "id": "select-alliances",
+      "do": "Bring the founder and the growth lead the candidates ranked against the tests, each with what it would cost, what it would bring and who would own the customer, and record their choice; you never choose a partner.",
+      "ask": true,
+      "skill": "develop-sales-strategy",
+      "raises": [
+        "set-priorities"
+      ],
+      "activity": "3.4.2.3"
+    },
+    {
+      "id": "develop-customer-trade-strategy-and-customer-objectives-targets",
+      "do": "For each partner that resells or stocks the offering, write what the venture wants from that account, the volume, the placement and the price it holds, and the target and date each is judged on.",
+      "skill": "develop-sales-strategy",
+      "consider": {
+        "why": "A reseller account without a target drifts into the partner's priorities instead of the venture's.",
+        "when": "A partner resells or stocks the offering rather than only referring buyers."
+      },
+      "activity": "3.4.2.4"
+    },
+    {
+      "id": "define-trade-programs-and-funding-options",
+      "do": "Draft what the venture would fund for a partner, the margin, a co-marketing contribution or a rebate, with what the partner must do to earn it and what each option costs at the forecast volume.",
+      "skill": "develop-sales-strategy",
+      "raises": [
+        "spend-money"
+      ],
+      "consider": {
+        "why": "Money promised to a partner is spent before any sale arrives, so it is costed first.",
+        "when": "A partner asks for funding, or the program offers any payment beyond a share of a closed sale."
+      },
+      "activity": "3.4.2.5"
+    },
+    {
+      "id": "conduct-planning-activities-for-major-trade-customers",
+      "do": "Prepare for each major trade account the plan to put to it, what it sells now, what the venture proposes to change and the evidence for it, and hand the plan to the founder for the meeting.",
+      "skill": "develop-sales-strategy",
+      "consider": {
+        "why": "A large account's plan is agreed in a conversation, and the conversation goes better prepared.",
+        "when": "A trade account carries a material share of the venture's volume."
+      },
+      "activity": "3.4.2.6"
+    },
+    {
+      "id": "develop-partner-and-alliance-management-strategies",
+      "do": "Write how each live partner is kept, who speaks to it and how often, what it is told and when, what the venture will never ask of it, and what would end the relationship.",
+      "skill": "develop-sales-strategy",
+      "consider": {
+        "why": "A partner nobody is responsible for stops selling without telling anyone.",
+        "when": "The venture has a live partner or alliance."
+      },
+      "activity": "3.4.2.7"
+    },
+    {
+      "id": "establish-partner-and-alliance-management-goals",
+      "do": "Write for each live partner the one number the relationship is judged on, the target, the date and how it is counted from the venture's own records rather than the partner's word.",
+      "skill": "develop-sales-strategy",
+      "consider": {
+        "why": "A partner's own report is not evidence the venture can check.",
+        "when": "The venture has a live partner or alliance."
+      },
+      "activity": "3.4.2.8"
+    },
+    {
+      "id": "establish-partner-and-alliance-agreements",
+      "do": "Prepare the agreement's open points for the founder, the term, the territory, the margin, who owns the customer record, what each side may say in public and how either side ends it, and bring it to the founder and counsel to sign; you sign nothing.",
+      "ask": true,
+      "skill": "develop-sales-strategy",
+      "raises": [
+        "legal-or-terms"
+      ],
+      "activity": "3.4.2.9"
+    },
+    {
+      "id": "develop-promotional-and-category-management-calendars",
+      "do": "Draft the dated calendar of what the venture and each partner do together in the period, with who prepares each piece, what it costs and the number it is judged on.",
+      "skill": "develop-sales-strategy",
+      "consider": {
+        "why": "A joint promotion arranged late is a promise the venture cannot prepare for.",
+        "when": "A signed partner runs promotions or has a buying calendar."
+      },
+      "activity": "3.4.2.10"
+    },
+    {
+      "id": "create-strategic-and-tactical-sales-plans-by-customer",
+      "do": "For each partner-held account write what is sold there now, what the venture wants sold next, the steps to get there with dates, and the opportunity records each step would create.",
+      "skill": "develop-sales-strategy",
+      "writes": [
+        "sales/opportunities/[id]"
+      ],
+      "consider": {
+        "why": "An account plan is what turns a partner's goodwill into named opportunities.",
+        "when": "A signed partner holds accounts the venture wants to grow."
+      },
+      "activity": "3.4.2.11"
+    },
+    {
+      "id": "communicate-planning-information-to-customer-teams",
+      "do": "Draft what each partner's people are told, the current prices, what is included, the words to use and the questions to pass back, and hand it to the founder to send; you send nothing to anyone outside the venture.",
+      "skill": "develop-sales-strategy",
+      "raises": [
+        "public-commitment"
+      ],
+      "consider": {
+        "why": "A partner's staff sell what they were last told, right or wrong.",
+        "when": "A signed partner's people sell or recommend the offering."
+      },
+      "activity": "3.4.2.12"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Add each candidate's evidence and each live partner's number to the decision it bears on, and tell the growth lead which partner is worth more effort and which to let go.",
+      "skill": "develop-sales-strategy",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "partners-recorded-and-signed",
+      "kind": "review",
+      "check": "Is every live partner on record with what it does, what it costs, who owns the customer and a signed agreement, and is nothing in the forecast that rests on an unsigned partner?",
+      "reviewer": "growth-lead"
+    }
+  ]
+}

@@ -6,10 +6,39 @@
   "type": "object",
   "required": ["id", "function", "title", "goal", "measures", "trigger", "steps", "done_criteria"],
   "additionalProperties": false,
+  "$defs": {
+    "requires": {
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "description": "What must exist before this runs (EE-217, packages/naive/src/engine/prerequisites.ts). It fails closed: an entry that cannot be resolved blocks, `naive due` and `naive loop` never start a blocked workflow, `naive agent run --workflow` refuses one, and the router refuses a write to a route only blocked workflows write, for an agent and for a person alike. A step inherits its workflow's entries and may add its own. A venture loosens or tightens an entry under `prerequisites` in naive.config.json, which names the person who set it.",
+      "properties": {
+        "records": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 },
+          "description": "Record routes whose record must be live in the venture, such as foundation/problem. A draft the gate holds is not live until a person accepts it."
+        },
+        "meetings": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "pattern": "^[a-z][a-z-]*/[a-z0-9-]+$" },
+          "description": "Function workflows, `<function>/<workflow>`, that a meeting must have walked and closed with its goal reached (meeting.schema.json, EE-200). This is how a person's meeting, and the records drafted in it, come before the work."
+        },
+        "decisions": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "pattern": "^[a-z0-9][a-z0-9.-]*$" },
+          "description": "Decisions a person must have decided. A shipped workflow names none, because a venture's decision ids are its own; only its naive.config.json does."
+        }
+      }
+    }
+  },
   "properties": {
     "id": { "type": "string", "pattern": "^[a-z0-9-]+$", "description": "The file's name without .json." },
     "function": { "type": "string", "pattern": "^[a-z][a-z-]*$" },
     "title": { "type": "string", "minLength": 1 },
+    "process": { "type": "string", "pattern": "^\\d{1,2}\\.\\d{1,2}\\.\\d{1,2}$", "description": "The APQC level 3 process this workflow performs, by hierarchy id in packages/naive/src/functions/pcf.json, such as 9.2.1. It must sit under the function's APQC category, one module names a process in one workflow, and every step's activity then sits under it (packages/naive/src/checks/check-pcf-coverage.ts, EE-226)." },
     "goal": { "type": "string", "minLength": 1, "description": "What one run is for, in one plain sentence: the state the venture's records are in when the run is done. The title names the work; the goal names the outcome, so an agent can tell a finished run from a performed one." },
     "measures": {
       "type": "array",
@@ -34,6 +63,7 @@
       ]
     },
     "reads": { "type": "array", "items": { "type": "string" }, "description": "Route patterns the agent reads first." },
+    "requires": { "$ref": "#/$defs/requires" },
     "steps": {
       "type": "array",
       "minItems": 1,
@@ -44,6 +74,7 @@
         "properties": {
           "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
           "do": { "type": "string", "minLength": 1, "description": "What the agent does, in one plain sentence." },
+          "requires": { "$ref": "#/$defs/requires" },
           "skill": { "type": "string", "pattern": "^[a-z0-9-]+$", "description": "A skill in the function's skills/ folder to load for this step." },
           "ask": { "type": "boolean", "description": "True when the step asks the person, because only they know the answer." },
           "writes": { "type": "array", "items": { "type": "string" }, "description": "Route patterns this step writes." },

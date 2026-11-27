@@ -1,0 +1,112 @@
+{
+  "id": "8-7-6-develop-and-manage-service-delivery-operations",
+  "function": "it",
+  "process": "8.7.6",
+  "title": "Develop and manage service delivery operations",
+  "goal": "The venture's systems are watched while they run: every service and scheduled job has a current state on the record, every unplanned failure has an entry with what was done, and capacity and security signals are read rather than left in a dashboard.",
+  "measures": ["compliance_met", "cost_or_time_saved"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["it/intake"] },
+  "reads": [
+    "it/connections",
+    "product",
+    "product/bugs",
+    "support/cases",
+    "capabilities/postmortems",
+    "assets/register",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "monitor-online-systems",
+      "do": "Check each live service the venture runs against what a user would do with it, not only its health endpoint, and record on its connection when it was last seen working and what its error rate and response time were.",
+      "skill": "create-and-manage-support-services-solutions",
+      "activity": "8.7.6.1",
+      "writes": ["it/connections/[id]"]
+    },
+    {
+      "id": "monitor-scheduled-jobs",
+      "do": "Read the result of every scheduled job since the last run, list the ones that failed, the ones that did not start and the ones that ran longer than usual, and record the last successful run of each on its connection.",
+      "skill": "create-and-manage-support-services-solutions",
+      "activity": "8.7.6.2",
+      "writes": ["it/connections/[id]"]
+    },
+    {
+      "id": "manage-workloads",
+      "do": "Compare what is queued and waiting with what the systems can take, and reorder, pause or spread the work so the jobs a customer is waiting on finish first, saying what was moved and why.",
+      "skill": "create-and-manage-support-services-solutions",
+      "activity": "8.7.6.3",
+      "writes": ["operations/handoff/[id]"],
+      "consider": {
+        "why": "Reordering work matters only when more is queued than the systems can take.",
+        "when": "A job queue is backing up, a quota is near its limit, or a customer is waiting on work that has not run."
+      }
+    },
+    {
+      "id": "performance-and-capacity",
+      "do": "Read the use of each host, database, queue and quota against its limit, report the headroom left and the date the trend says it runs out, and bring any plan change that would cost money to the founder.",
+      "skill": "create-and-manage-support-services-solutions",
+      "activity": "8.7.6.4",
+      "writes": ["it/connections/[id]"],
+      "raises": ["spend-money"]
+    },
+    {
+      "id": "respond-to-issues",
+      "do": "For each unplanned failure, write what it stopped and from when, take the first step its triage rule gives, record every action with its time, and hand anything that needs a refund, a public statement or a promise to a customer to the founder.",
+      "skill": "create-and-manage-support-services-solutions",
+      "activity": "8.7.6.5",
+      "writes": ["operations/handoff/[id]"],
+      "raises": ["domain-fact"]
+    },
+    {
+      "id": "produce-output-media",
+      "do": "Produce and deliver the scheduled outputs the venture owes, the exports, invoices, statements and reports, and record for each one that it was produced, where it went and that its figures match the records it came from.",
+      "skill": "create-and-manage-support-services-solutions",
+      "activity": "8.7.6.6",
+      "writes": ["operations/handoff/[id]"],
+      "consider": {
+        "why": "A scheduled output nobody checks is how a customer first learns of a figure the venture got wrong.",
+        "when": "The venture owes a recurring export, invoice, statement or report to anyone outside it."
+      }
+    },
+    {
+      "id": "monitor-infrastructure-security",
+      "do": "Read the security signals each system exposes, the failed sign-ins, the new sessions and devices, the permission changes and the alerts the provider sent, and name every one nobody can account for.",
+      "skill": "create-and-manage-support-services-solutions",
+      "activity": "8.7.6.7",
+      "writes": ["it/connections/[id]"],
+      "raises": ["security-tightening", "security-loosening"]
+    },
+    {
+      "id": "manage-recovery",
+      "do": "Check that a current backup exists for every system that holds records the venture could not rebuild, restore one of them into a scratch copy and compare it with the live records, and record the date and the result on the connection.",
+      "skill": "create-and-manage-support-services-solutions",
+      "activity": "8.7.6.8",
+      "writes": ["it/connections/[id]"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Add the failures, the headroom figures and the unaccounted security signals as evidence to the decision each bears on, and raise to the product lead the order of the fixes, worst exposure and most customer harm first.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "connections-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-connections.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "watched-not-assumed",
+      "kind": "review",
+      "check": "Does every live service and scheduled job say when it was last seen working, was a restore actually run and compared rather than assumed, and is every security signal nobody can account for named?",
+      "reviewer": "product-lead"
+    }
+  ]
+}

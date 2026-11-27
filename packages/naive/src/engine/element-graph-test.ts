@@ -67,10 +67,10 @@ expect("every one of the 13 functions is an element node", toJson(shipped).nodes
 const toPipeline = upstream(shipped, "3.5.1.6").find((n) => n.element.id === "1.1.1.1");
 expect("identifying competitors (1.1.1.1) feeds managing the pipeline (3.5.1.6) through the competitor record", toPipeline !== undefined && toPipeline.evidence.some((f) => f.writer === "strategy/competitor-review" && f.step === "identify-competitors" && f.reader === "marketing-and-sales/weekly-pipeline-review" && f.record === "competitor"), toPipeline);
 expect("strategy feeds marketing and sales, and finance feeds it through spend", downstream(shipped, "strategy").some((n) => n.element.function === "marketing-and-sales") && upstream(shipped, "it").some((n) => n.element.function === "finance" && n.evidence.some((f) => f.record === "spend-register")));
-expect("venture.json is read by every intake and written by no workflow", unfed(shipped).find((r) => r.route === "venture")?.by.length === 13);
+expect("venture.json is read by every intake and written by no workflow", unfed(shipped).find((r) => r.route === "venture")?.by.filter((w) => String(w).endsWith("/intake")).length === 13);
 
 // The command.
-const naive = (...args: string[]) => spawnSync("node", ["packages/naive/src/interfaces/cli/naive.ts", "graph", ...args], { encoding: "utf8" });
+const naive = (...args: string[]) => spawnSync("node", ["packages/naive/src/interfaces/cli/naive.ts", "graph", ...args], { encoding: "utf8", maxBuffer: 256 * 1024 * 1024 });
 const out = naive("--element", "3.5.1.6", "--json");
 expect("naive graph --element --json gives the element with its upstream and downstream", out.status === 0 && JSON.parse(out.stdout).element.id === "3.5.1.6" && JSON.parse(out.stdout).upstream.length > 0, out.stderr);
 const fnOut = naive("--function", "it", "--json");

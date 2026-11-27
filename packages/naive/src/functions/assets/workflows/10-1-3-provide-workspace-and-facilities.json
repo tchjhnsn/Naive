@@ -1,0 +1,38 @@
+{
+  "id": "10-1-3-provide-workspace-and-facilities",
+  "function": "assets",
+  "process": "10.1.3",
+  "title": "Provide workspace and facilities",
+  "goal": "Every place and membership the venture uses is a live lease record with its term, rent, notice days and guarantee, the equipment that came with it is registered, and each change to a space is recorded with what it costs per month.",
+  "measures": ["compliance_met", "cost_or_time_saved"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["assets/intake"] },
+  "reads": ["venture", "people", "assets/leases", "assets/register", "finance/spend", "finance/budget", "decisions"],
+  "steps": [
+    {
+      "id": "acquire-workspace-and-facilities",
+      "do": "Stand the chosen space or membership up: abstract the signed document into a lease record with its kind, counterparty, start, end, rent, notice days, auto-renewal, break clause and any personal guarantee, citing the clause for each, register the furniture and equipment that came with it above the capitalization threshold, and list what is still missing before the first working day.",
+      "skill": "plan-and-acquire-assets",
+      "activity": "10.1.3.1",
+      "writes": ["assets/leases/[id]", "assets/register/[id]"]
+    },
+    {
+      "id": "change-fit-form-function",
+      "do": "Record each change to a space the venture already uses (more desks, a quieter room, a different membership tier, a sublet of part of it) with what it adds or saves each month and what it changes in the lease record, and raise the cost or the downgrade to the founder before it is committed.",
+      "skill": "plan-and-acquire-assets",
+      "activity": "10.1.3.2",
+      "writes": ["assets/leases/[id]"],
+      "raises": ["spend-money", "cancel-or-downgrade"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Name every workspace question the records now leave open (an insurance the lease requires and the venture does not hold, a notice date inside 90 days, a space the team has outgrown) and attach each one to the decision it belongs to, handing the insurance gap to risk and compliance as a handoff.",
+      "writes": ["decisions/*"],
+      "raises": ["legal-or-terms"]
+    }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "every-space-is-a-record", "kind": "review", "check": "Does every place and membership the venture pays for have a live lease record with its notice days, its auto-renewal and whether a founder guarantees it, each cited to a clause of the signed document?", "reviewer": "finance-lead" }
+  ]
+}

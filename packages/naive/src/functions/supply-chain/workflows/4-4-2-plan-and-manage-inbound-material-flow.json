@@ -1,0 +1,72 @@
+{
+  "id": "4-4-2-plan-and-manage-inbound-material-flow",
+  "function": "supply-chain",
+  "process": "4.4.2",
+  "title": "Plan and manage inbound material flow",
+  "goal": "Every inbound shipment has an expected arrival date, a recorded arrival with quantity and condition, and every product that came back from a customer has a disposition and a place it ended up.",
+  "measures": ["flow_and_lead_time", "cost_or_time_saved"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["supply-chain/intake"] },
+  "reads": [
+    "supply-chain/purchase-orders",
+    "supply-chain/suppliers",
+    "product",
+    "support/cases",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "plan-inbound-material-receipts",
+      "do": "Build the receiving calendar for the period from the open purchase orders, each shipment with its expected date, its quantity, its packed size and what must be ready to receive it, and tell the founder which week has more arriving than there is room for.",
+      "skill": "manage-logistics-and-warehousing",
+      "activity": "4.4.2.1"
+    },
+    {
+      "id": "manage-inbound-material-flow",
+      "do": "Track each shipment from the supplier's dispatch to the door, recording the carrier, the tracking reference, the customs or duty step it must clear and the date it actually arrives, and draft the chasing message for the founder when a shipment stops moving.",
+      "skill": "manage-logistics-and-warehousing",
+      "activity": "4.4.2.2",
+      "writes": ["supply-chain/purchase-orders/[id]"]
+    },
+    {
+      "id": "monitor-inbound-delivery-performance",
+      "do": "Measure each supplier's inbound performance from the closed shipments, days early or late against the confirmed date, quantity short or over and condition on arrival, and write the figures where supplier scoring reads them.",
+      "skill": "manage-logistics-and-warehousing",
+      "activity": "4.4.2.3",
+      "writes": ["supply-chain/suppliers/[id]"],
+      "raises": ["domain-fact"]
+    },
+    {
+      "id": "manage-flow-of-returned-products",
+      "do": "Record each product coming back from a customer with its lot, the reason given, the case it belongs to in `support/cases` and where it physically is, and keep returns separated from sellable stock until they are judged.",
+      "skill": "manage-logistics-and-warehousing",
+      "activity": "4.4.2.4"
+    },
+    {
+      "id": "manage-disposition-of-returned-products",
+      "do": "Judge each returned unit against the acceptance standard and send it one way, back to sellable stock, to rework or refurbishment, to salvage for parts or to scrap, record the choice with the cost of handling it and count the reasons so the pattern reaches the product records.",
+      "skill": "manage-logistics-and-warehousing",
+      "activity": "4.4.2.5",
+      "raises": ["domain-fact"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Add a decision for each inbound problem that costs money or weeks, a shipment stuck in customs, a short delivery to claim for or a return rate that makes the margin wrong, each with the amount and your recommendation, and hand the order of that work to the product lead.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities", "spend-money"]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "arrivals-and-returns-accounted",
+      "kind": "review",
+      "check": "Does every inbound shipment have an expected date and a recorded arrival with quantity and condition, and does every returned unit have a disposition and a location?",
+      "reviewer": "product-lead"
+    }
+  ]
+}

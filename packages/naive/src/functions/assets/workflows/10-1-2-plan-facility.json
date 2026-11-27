@@ -1,0 +1,61 @@
+{
+  "id": "10-1-2-plan-facility",
+  "function": "assets",
+  "process": "10.1.2",
+  "title": "Plan facility",
+  "goal": "Every candidate space is costed against written requirements, the founder has chosen one or chosen to stay as things are, and any terms offered are abstracted into a lease record with status proposed.",
+  "measures": ["cost_or_time_saved", "compliance_met"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["assets/intake"] },
+  "reads": ["venture", "people", "people/team-plan", "assets/leases", "assets/register", "finance/budget", "finance/spend", "legal/risks", "decisions"],
+  "steps": [
+    {
+      "id": "design-facility",
+      "do": "Write what the space must have for the work the venture actually does over the next twelve months (desks, power, storage or bench, a room that can take a call, access hours, internet, delivery and parking) and mark each item needed or wanted, so a space can be judged against it rather than on how it feels.",
+      "skill": "plan-and-acquire-assets",
+      "activity": "10.1.2.1"
+    },
+    {
+      "id": "analyze-budget",
+      "do": "Price each candidate space over the same period against the budget's rent and facilities lines, with deposit, fit-out, insurance, utilities, moving and the cost to exit, and say how many months of runway each one uses and what it would displace.",
+      "skill": "plan-and-acquire-assets",
+      "activity": "10.1.2.2"
+    },
+    {
+      "id": "select-property",
+      "do": "Put the shortlisted spaces side by side on cost, term, exit and fit against the written requirements, name what each one gives up, recommend one and raise the choice to the founder, who selects the property.",
+      "skill": "plan-and-acquire-assets",
+      "activity": "10.1.2.3",
+      "raises": ["spend-money"]
+    },
+    {
+      "id": "negotiate-terms-for-facility",
+      "do": "Prepare the founder for the conversation with the landlord or operator (the terms to ask for, such as a shorter term, a break clause, no personal guarantee and a rent-free fit-out period, the walk-away point and the questions to ask), abstract whatever is offered into a lease record with status proposed, and leave the talking and the signing to the founder.",
+      "skill": "plan-and-acquire-assets",
+      "activity": "10.1.2.4",
+      "writes": ["assets/leases/[id]"],
+      "raises": ["legal-or-terms"]
+    },
+    {
+      "id": "manage-construction-or-modification",
+      "do": "Track any fit-out or modification the chosen space needs against its scope, cost and dates, record what was done and what it cost on the handoff, and raise every extra cost to the founder before it is committed.",
+      "skill": "plan-and-acquire-assets",
+      "activity": "10.1.2.5",
+      "raises": ["spend-money"],
+      "consider": {
+        "why": "A space usually needs work before the team can use it, and that work is where a space plan goes over budget.",
+        "when": "The chosen space needs fit-out, wiring, furniture or a modification before the team can work in it."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Attach the shortlist, the costing and the offered terms to the decision the founder must make, and tell the finance lead what signing each option would commit the venture to and for how long.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "terms-abstracted-before-signing", "kind": "review", "check": "Is every space on the shortlist costed over the same period including the cost to exit, and is every set of offered terms a lease record with status proposed, its notice days and any personal guarantee named, before the founder is asked to sign?", "reviewer": "finance-lead" }
+  ]
+}

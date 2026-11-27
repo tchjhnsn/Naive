@@ -1,0 +1,82 @@
+{
+  "id": "9-11-4-perform-currency-conversion",
+  "function": "finance",
+  "process": "9.11.4",
+  "title": "Perform currency conversion",
+  "goal": "Every conversion the venture made is recorded with the rate quoted, the fees and the effective rate it actually got, that cost is in the spend register, and the cheaper route is in front of the founder where one exists.",
+  "measures": [
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "finance/intake"
+    ]
+  },
+  "reads": [
+    "money",
+    "money/[id]",
+    "finance/spend",
+    "finance/spend/[id]",
+    "finance/budget",
+    "purpose/money/summary",
+    "it/connections",
+    "supply-chain/suppliers",
+    "customers"
+  ],
+  "steps": [
+    {
+      "id": "record-the-conversions",
+      "do": "List every conversion in the period from the statements with the amount sent, the amount received, the rate quoted, the fees charged and the effective rate once they are counted.",
+      "skill": "perform-global-trade-services"
+    },
+    {
+      "id": "compare-the-routes",
+      "do": "Compare the effective rate the venture got with the published mid-market rate for the same date and with the other routes open to it, and say what each route would have cost on the same transactions.",
+      "skill": "perform-global-trade-services",
+      "consider": {
+        "why": "The spread inside a quoted rate is usually larger than the fee, and only a comparison shows it.",
+        "when": "The venture converted money more than once in the period, or converts regularly."
+      }
+    },
+    {
+      "id": "record-the-cost",
+      "do": "Record the conversion cost, the fee plus the distance from the mid-market rate, in the spend register as its own line, so the venture can see what moving money between currencies costs it.",
+      "skill": "perform-global-trade-services",
+      "writes": [
+        "finance/spend/[id]"
+      ],
+      "consider": {
+        "why": "A conversion cost nobody records is a cost the venture never sees in its spend.",
+        "when": "A conversion carried a fee or a spread the records do not yet show."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Bring the founder the cheaper route where one exists, with what it would have saved on the period's conversions, since moving to another provider or account is theirs to decide.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "cancel-or-downgrade",
+        "move-payment-method",
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "effective-rate-recorded",
+      "kind": "review",
+      "check": "Does every conversion carry the rate quoted, the fees and the effective rate once they are counted, taken from the statement?",
+      "reviewer": "finance-lead"
+    }
+  ]
+}

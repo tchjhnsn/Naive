@@ -1,0 +1,72 @@
+{
+  "id": "7-7-5-develop-and-manage-employee-measures",
+  "function": "human-capital",
+  "process": "7.7.5",
+  "title": "Develop and manage employee measures",
+  "goal": "The venture has a few people measures, each with a written definition, the records it is read from, its period and who reads it, each one read for the current period or named as one the records cannot yet produce.",
+  "measures": [
+    "cost_or_time_saved",
+    "compliance_met"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "human-capital/intake"
+    ]
+  },
+  "reads": [
+    "people",
+    "people/founders",
+    "people/team-plan",
+    "foundation/telos",
+    "foundation/goals",
+    "operations/activity-summary",
+    "finance/spend",
+    "operations/handoff",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "choose-the-few",
+      "do": "Propose the few measures the venture's people decisions actually need, each tied to the telos measure kinds cost_or_time_saved or compliance_met, and drop every measure no decision would use.",
+      "skill": "manage-employee-information-and-analytics"
+    },
+    {
+      "id": "define-each-measure",
+      "do": "Write each measure's definition, the records and fields it is read from, the period it covers, how a missing value is treated and who reads it, so that two runs a month apart give comparable numbers.",
+      "skill": "manage-employee-information-and-analytics"
+    },
+    {
+      "id": "read-and-report",
+      "do": "Read each measure for the current period from those records, show the arithmetic, and say which measures the records cannot yet produce and what record would be needed.",
+      "skill": "manage-employee-information-and-analytics"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Open a decision for each measure the venture should start keeping a record for, add the readings as evidence to the decisions they bear on, and tell the strategy lead which measure is worth the most and costs the least to read.",
+      "skill": "manage-employee-information-and-analytics",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities",
+        "strategy-or-constitution"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "measures-reproducible",
+      "kind": "review",
+      "check": "Does every measure name its definition, its records and its period precisely enough that a second run would produce the same number?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

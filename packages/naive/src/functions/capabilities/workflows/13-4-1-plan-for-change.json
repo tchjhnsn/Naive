@@ -1,0 +1,149 @@
+{
+  "id": "13-4-1-plan-for-change",
+  "function": "capabilities",
+  "process": "13.4.1",
+  "title": "Plan for change",
+  "goal": "The change is scoped before anyone starts it: who it touches, how the work is done today, what it must look like afterwards, what could go wrong, what stands in the way, and the measures that will say whether it took.",
+  "measures": ["flow_and_lead_time", "cost_or_time_saved"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["capabilities/intake"] },
+  "reads": [
+    "capabilities/processes",
+    "capabilities/postmortems",
+    "operations/handoff",
+    "people/team-plan",
+    "foundation/goals",
+    "legal/risks",
+    "customers"
+  ],
+  "steps": [
+    {
+      "id": "determine-stakeholders",
+      "do": "List everyone whose work or expectations the change touches, inside the venture and outside it, with what each would notice if it happened tomorrow, and mark which of them only the founder may speak to.",
+      "skill": "manage-change",
+      "activity": "13.4.1.1",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "assess-readiness-for-change",
+      "do": "Say whether the venture can carry this change now, from the work already in flight, the money in the budget and the hours the founder has, and name what would have to stop for it to start.",
+      "skill": "manage-change",
+      "activity": "13.4.1.2",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "identify-change-champions",
+      "do": "Name the one person whose habit has to change first for the rest to follow, and bring the founder the case for asking them, since asking anyone to carry a change is the founder's to do.",
+      "skill": "manage-change",
+      "activity": "13.4.1.3",
+      "ask": true,
+      "consider": {
+        "why": "A change that nobody will carry stays on paper, and in a small team the carrier is usually one named person.",
+        "when": "More than one person does the work the change touches."
+      }
+    },
+    {
+      "id": "form-design-team",
+      "do": "Name who will design the change and what each of them owns, keeping it to the smallest group that holds the knowledge, and record it on the handoff.",
+      "skill": "manage-change",
+      "activity": "13.4.1.4",
+      "consider": {
+        "why": "A change across several people needs a named small group to design it rather than a general invitation.",
+        "when": "The change touches the work of three or more people."
+      }
+    },
+    {
+      "id": "define-scope",
+      "do": "Write what the change covers and what it deliberately leaves alone, process by process, so a later argument about whether something was in scope can be settled from the record.",
+      "skill": "manage-change",
+      "activity": "13.4.1.5",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "understand-current-state",
+      "do": "Write how the work is done today from its process records and its last runs, with the current measures and the steps where runs wait, and mark anything the records claim that the runs do not show.",
+      "skill": "manage-change",
+      "activity": "13.4.1.6",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "define-future-state",
+      "do": "Write how the work will be done after the change, step by step, with the measure each step is meant to move and by how much, so the future state is something a run can be compared against.",
+      "skill": "manage-change",
+      "activity": "13.4.1.7",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "conduct-organizational-risk-analysis",
+      "do": "List what the change could break, the work that depends on the present way, the obligation that the present control point satisfies, and the knowledge that lives in one head, and record each with how likely and how bad it would be.",
+      "skill": "manage-change",
+      "activity": "13.4.1.8",
+      "writes": ["operations/handoff/[id]"],
+      "raises": ["legal-or-terms"]
+    },
+    {
+      "id": "assess-cultural-context",
+      "do": "Note how this venture has taken changes before, from the postmortems and the processes that were written and then abandoned, and say what that history suggests about this one.",
+      "skill": "manage-change",
+      "activity": "13.4.1.9",
+      "consider": {
+        "why": "A venture that has abandoned two written procedures will abandon a third unless the reason is understood.",
+        "when": "A process record in the catalog has been retired or left unreviewed for more than two quarters."
+      }
+    },
+    {
+      "id": "identify-impacted-groups",
+      "do": "Group the people and systems the change touches by what changes for each, the work they do, the tool they use or the promise they rely on, and name the customer-facing ones separately.",
+      "skill": "manage-change",
+      "activity": "13.4.1.10",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "determine-degree-of-impact",
+      "do": "For each group, say how much changes for them, nothing visible, a different step, or a different job, and order the groups by that, so the heaviest impact gets the most attention.",
+      "skill": "manage-change",
+      "activity": "13.4.1.11",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "establish-accountability-for-change-management",
+      "do": "Name the one person accountable for the change landing and the agent that keeps its records, and write that on the process record the change will alter.",
+      "skill": "manage-change",
+      "activity": "13.4.1.12",
+      "ask": true,
+      "writes": ["capabilities/processes/[id]"]
+    },
+    {
+      "id": "identify-barriers-to-change",
+      "do": "List what will stop the change, a tool that cannot do the new step, a contract that fixes the old one, a habit that is faster than the new way, and say for each whether it can be removed or must be worked around.",
+      "skill": "manage-change",
+      "activity": "13.4.1.13",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "determine-change-enablers",
+      "do": "List what makes the new way easier than the old one, a template, a default, a check that catches the mistake early, and put each where the person meets it rather than in a document.",
+      "skill": "manage-change",
+      "activity": "13.4.1.14",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "identify-resources-and-develop-measures",
+      "do": "Say what the change needs in hours, money and tools, and name the two or three measures that will show whether it took, each with where it is read and when, and bring any spending to the founder.",
+      "skill": "manage-change",
+      "activity": "13.4.1.15",
+      "writes": ["operations/handoff/[id]"],
+      "raises": ["set-priorities"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Bring the founder the plan as one page, the scope, the future state, the risks and the measures, and raise whether to start it now, start it smaller or not at all.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "future-state-measurable", "kind": "review", "check": "Is the future state written as steps with the measures that will show whether the change took, and is the current state written from actual runs rather than from the process record alone?", "reviewer": "strategy-lead" }
+  ]
+}

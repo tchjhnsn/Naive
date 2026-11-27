@@ -1,0 +1,84 @@
+{
+  "id": "5-3-4-assure-service-delivery-system-service",
+  "function": "service-delivery",
+  "process": "5.3.4",
+  "title": "Assure service delivery system service",
+  "goal": "Every active engagement is measured against what the venture promised it, each shortfall is recorded with the step of the procedure it started at and the check that now catches it, and what to tell the client is in front of the founder.",
+  "measures": [
+    "flow_and_lead_time",
+    "revenue"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "service-delivery/intake"
+    ]
+  },
+  "reads": [
+    "service-delivery/engagements",
+    "service-delivery/offers",
+    "operations/handoff",
+    "evidence",
+    "support/cases",
+    "legal/obligations",
+    "customers",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "check-against-the-promise",
+      "do": "Compare each active engagement with what was promised it (the offer's inclusions and duration, the dates and the response time in the statement of work) and list every place the venture is behind, each line citing the handoff or evidence that shows it.",
+      "skill": "manage-and-operate-service-delivery-system",
+      "writes": [
+        "operations/handoff/[id]"
+      ]
+    },
+    {
+      "id": "find-the-cause",
+      "do": "For each shortfall and each piece of rework, name the step of the offer's procedure where it started and the check that would have caught it, and add that check to the procedure so the next delivery cannot pass the step without it.",
+      "skill": "manage-and-operate-service-delivery-system",
+      "writes": [
+        "service-delivery/offers/[id]"
+      ]
+    },
+    {
+      "id": "tell-the-client",
+      "do": "Prepare for the founder what the client should be told, what the venture will do about it and by when, and the options if a credit, a discount or a new date is wanted; the founder decides and speaks.",
+      "skill": "manage-and-operate-service-delivery-system",
+      "ask": true,
+      "raises": [
+        "public-commitment",
+        "legal-or-terms"
+      ],
+      "consider": {
+        "why": "A client hearing about a slip from the venture first is the difference between a problem and a complaint, and only the founder may speak to them.",
+        "when": "The venture is behind on something it promised a client in writing."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Add each shortfall and its cause to the decision it bears on as evidence, and recommend to the product lead which procedure change or promise to change first.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "shortfalls-have-a-cause-and-a-check",
+      "kind": "review",
+      "check": "Does every shortfall found in this run name the procedure step it started at and the check now added, and has anything the client should hear been put in front of the founder?",
+      "reviewer": "product-lead"
+    }
+  ]
+}

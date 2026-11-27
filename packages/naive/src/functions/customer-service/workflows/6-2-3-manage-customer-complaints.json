@@ -1,0 +1,105 @@
+{
+  "id": "6-2-3-manage-customer-complaints",
+  "function": "customer-service",
+  "process": "6.2.3",
+  "title": "Manage customer complaints",
+  "goal": "Every complaint is a case that has been acknowledged, routed to whoever owns its cause, costed as redress options for the founder, answered, and counted by cause.",
+  "measures": [
+    "usage_or_adoption",
+    "revenue"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "customer-service/intake"
+    ]
+  },
+  "reads": [
+    "support/policy",
+    "support/cases",
+    "customers",
+    "product/bugs",
+    "legal/risks",
+    "legal/obligations",
+    "finance/spend"
+  ],
+  "steps": [
+    {
+      "id": "receive-complaints",
+      "activity": "6.2.3.1",
+      "do": "Write each complaint as a case of kind complaint with what happened, what the customer says it cost them and what they are asking for, and draft a short acknowledgement naming when they will hear back.",
+      "writes": [
+        "support/cases/[id]"
+      ],
+      "raises": [
+        "public-commitment"
+      ],
+      "skill": "plan-and-manage-customer-service-contacts"
+    },
+    {
+      "id": "route-complaints",
+      "activity": "6.2.3.2",
+      "do": "Check the complaint against the policy's escalation list, take anything carrying a legal threat, a chargeback or a risk to a person straight to the founder with the facts, and open a handoff to the function that owns the cause.",
+      "writes": [
+        "operations/handoff/[id]"
+      ],
+      "raises": [
+        "legal-or-terms",
+        "defer-or-route"
+      ],
+      "skill": "plan-and-manage-customer-service-contacts"
+    },
+    {
+      "id": "resolve-complaints",
+      "activity": "6.2.3.3",
+      "do": "Assemble what the records say happened, with dates, and put the redress options in front of the founder: what each costs, what the refund rule allows, and what was given in the nearest earlier complaint.",
+      "raises": [
+        "spend-money"
+      ],
+      "skill": "plan-and-manage-customer-service-contacts"
+    },
+    {
+      "id": "respond-to-complaints",
+      "activity": "6.2.3.4",
+      "do": "Draft the reply from the facts and the redress the founder chose, with no admission of fault the records do not support and no selling, and record the outcome on the case once the founder has sent it.",
+      "writes": [
+        "support/cases/[id]"
+      ],
+      "raises": [
+        "public-commitment"
+      ],
+      "skill": "plan-and-manage-customer-service-contacts"
+    },
+    {
+      "id": "analyze-complaints",
+      "activity": "6.2.3.5",
+      "do": "Count the complaints by cause, the days from complaint to redress and how many customers accepted the redress, and name every cause that produced more than one complaint.",
+      "skill": "plan-and-manage-customer-service-contacts"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Name the decision each recurring cause bears on, add the complaint counts there as evidence, and recommend to the growth lead which cause to remove first.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "complaints-closed",
+      "kind": "review",
+      "check": "Does every complaint case carry an acknowledgement, the founder's redress decision and a sent reply, and are the causes counted?",
+      "reviewer": "growth-lead"
+    }
+  ]
+}

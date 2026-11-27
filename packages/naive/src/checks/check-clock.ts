@@ -1,4 +1,4 @@
-// Business time comes from one clock (EE-224, packages/naive/src/core/clock.ts). Code reads `now()`, `nowMs()` or
+// Business time comes from one clock (EE-227, packages/naive/src/core/clock.ts). Code reads `now()`, `nowMs()` or
 // `nowIso()` for when something happened or is due, and `wallClock()` only for elapsed time, timeouts, lock
 // staleness and unique names. This check fails on a module under packages/naive/src that reads the system clock
 // any other way (`new Date()` with no arguments, or `Date.now()`), because a simulation that sets NAIVE_NOW would

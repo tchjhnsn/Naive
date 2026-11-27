@@ -1,0 +1,62 @@
+{
+  "id": "8-4-1-define-business-information-and-analytics-strategy",
+  "function": "it",
+  "process": "8.4.1",
+  "title": "Define business information and analytics strategy",
+  "goal": "Every question the venture must be able to look up names the record type or outside system that answers it, each kind of record has a read and write rule the founder has seen, and each question with no answer today is either a gap or a decision.",
+  "measures": ["compliance_met", "cost_or_time_saved"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["it/intake"] },
+  "reads": [
+    "venture",
+    "foundation/telos",
+    "foundation/goals",
+    "foundation/requirements",
+    "it/connections",
+    "knowledge/knowledge-sources",
+    "governance/delegation",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "establish-objectives",
+      "do": "Read the telos measures, the open goals and the requirements, and write one line per question the venture must be able to look up (a number, a date or a fact), naming for each the record type or outside system that would hold the answer and who asks the question, and put the list on the handoff as evidence.",
+      "skill": "manage-information",
+      "activity": "8.4.1.1",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "establish-governance",
+      "do": "For each kind of record on that list, draft who may read it, who may write it and how long it is kept, check the draft against the delegation and the source map, and bring any rule that would let a person or an agent role read more than it reads today to the founder as a decision.",
+      "skill": "manage-information",
+      "activity": "8.4.1.2",
+      "raises": ["security-loosening", "security-tightening"]
+    },
+    {
+      "id": "assess-capabilities",
+      "do": "Try each connection and knowledge source against the questions on the list, by exporting or querying what it holds rather than by reading its marketing, and record on each connection what it is authoritative for and whether every question is answerable now, answerable with work, or not answerable at all.",
+      "skill": "manage-information",
+      "activity": "8.4.1.3",
+      "writes": ["it/connections/[id]"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "For each question with no answer today, name the open decision it bears on and add the gap there as evidence, propose a free tool or an export where one would close it, and raise the order of the work to the product lead.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities", "new-dependency-free"]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "questions-answerable",
+      "kind": "review",
+      "check": "Does every question on the list name the record type or system that answers it, was each one tried against the real system rather than assumed, and does every question with no answer today carry a gap or a decision?",
+      "reviewer": "product-lead"
+    }
+  ]
+}

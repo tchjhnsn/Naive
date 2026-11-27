@@ -1,0 +1,87 @@
+{
+  "id": "1-2-1-develop-overall-mission-statement",
+  "function": "strategy",
+  "process": "1.2.1",
+  "title": "Develop overall mission statement",
+  "goal": "What the venture does today is written from its records, and the mission the founder chose stands as the telos statement with the places it must appear listed.",
+  "measures": [
+    "learning",
+    "impact"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "records": [
+      "foundation/pre-registration"
+    ],
+    "meetings": [
+      "strategy/intake"
+    ]
+  },
+  "reads": [
+    "venture",
+    "foundation/telos",
+    "foundation/problem",
+    "foundation/icp",
+    "foundation/constraints",
+    "purpose/foundation",
+    "identity/lean-canvas",
+    "product",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "define-current-business",
+      "do": "Write in three or four sentences what the venture does today: the problem it works on, whom it serves, what it offers and how it is paid, each clause citing the record it comes from, and mark every clause the records cannot support as a gap rather than filling it.",
+      "skill": "develop-business-strategy",
+      "activity": "1.2.1.1"
+    },
+    {
+      "id": "formulate-mission",
+      "do": "Offer the founder two or three candidate mission statements as candidates on one decision, each one sentence saying what the venture does for whom and why it is worth doing, each citing the problem record and customer profile it rests on, and once they choose write it into the telos statement as a draft for them to accept.",
+      "skill": "develop-business-strategy",
+      "activity": "1.2.1.2",
+      "ask": true,
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "strategy-or-constitution"
+      ]
+    },
+    {
+      "id": "communicate-mission",
+      "do": "List every place the mission now has to agree with itself, the agent briefs, the goals, the site copy records and any investor material, name which of them disagree with the new wording today, and hand the public ones to marketing and sales rather than changing them here.",
+      "skill": "develop-business-strategy",
+      "activity": "1.2.1.3",
+      "writes": [
+        "operations/handoff/[id]"
+      ]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Attach the chosen mission to the decision that settled it, name every goal, bet or constraint it now contradicts, and recommend to the strategy lead the order in which those are rewritten.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "contradicts-ledger",
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "mission-chosen-and-cited",
+      "kind": "review",
+      "check": "Did the founder choose the mission from candidates the agent prepared, and does every clause of the current-business description cite a record or stand marked as a gap?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

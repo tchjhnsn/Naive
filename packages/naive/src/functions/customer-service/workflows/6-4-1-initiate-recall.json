@@ -1,0 +1,73 @@
+{
+  "id": "6-4-1-initiate-recall",
+  "function": "customer-service",
+  "process": "6.4.1",
+  "title": "Initiate recall",
+  "goal": "The decision to recall is in front of the founder with who is affected, what they hold, what the hazard is and the words to send, and nothing has reached a customer without the founder's word.",
+  "measures": [
+    "usage_or_adoption"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "customer-service/intake"
+    ]
+  },
+  "reads": [
+    "customers",
+    "deals",
+    "product",
+    "product/bugs",
+    "support/cases",
+    "support/policy",
+    "legal/obligations",
+    "legal/risks"
+  ],
+  "steps": [
+    {
+      "id": "find-affected",
+      "do": "List every customer who holds the affected product, version, batch or release, from the customer, deal and case records, and name every holder the records cannot identify.",
+      "skill": "manage-product-recalls-and-regulatory-audits"
+    },
+    {
+      "id": "state-the-hazard",
+      "do": "Write what fails, under what use, how often the cases and bugs have shown it and what harm it could do, keeping what the records show apart from what is inferred.",
+      "skill": "manage-product-recalls-and-regulatory-audits"
+    },
+    {
+      "id": "put-the-decision-up",
+      "do": "Put the options in front of the founder, recall, repair in place, a notice or nothing, each with who it reaches, what it costs and what it admits, with a recommendation and a draft of the first message, and leave the choice to the founder and counsel.",
+      "raises": [
+        "legal-or-terms",
+        "public-commitment"
+      ],
+      "skill": "manage-product-recalls-and-regulatory-audits"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Record the founder's decision with the scope it covers and the date it was taken, which is the recall's starting point, name the decisions it changes, and open the work it needs as handoffs.",
+      "writes": [
+        "decisions/*",
+        "operations/handoff/[id]"
+      ],
+      "raises": [
+        "defer-or-route"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "recall-decided",
+      "kind": "review",
+      "check": "Is the recall decision recorded with its scope, its date and the hazard evidence behind it, and has nothing gone to a customer without the founder?",
+      "reviewer": "growth-lead"
+    }
+  ]
+}

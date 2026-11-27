@@ -1,0 +1,40 @@
+{
+  "id": "10-4-9-provide-government-reporting",
+  "function": "assets",
+  "process": "10.4.9",
+  "title": "Provide government reporting",
+  "goal": "Every report a government body requires about the venture's assets, waste or disposals has a named form, a due date and a draft built from the records, and each filed one is evidenced with its date and copy.",
+  "measures": ["compliance_met"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["assets/intake"] },
+  "reads": ["venture", "assets/register", "assets/leases", "finance/spend", "legal/risks", "decisions"],
+  "steps": [
+    {
+      "id": "list-the-obligations",
+      "do": "List the reports a government body requires about the venture's assets, waste or disposals where it operates (a return on business equipment where the state or locality taxes it, electronics or waste reporting where it applies, the return any permit the venture holds asks for), each with the body, the form, the due date and the source read, and say plainly where the answer is uncertain.",
+      "skill": "manage-asset-end-of-life"
+    },
+    {
+      "id": "draft-the-return",
+      "do": "Draft each return from the asset register, the lease records and the disposal records, cite the record behind every figure, and list separately what the form asks for that no record holds so the founder is not asked to guess at the last minute.",
+      "skill": "manage-asset-end-of-life"
+    },
+    {
+      "id": "file-it-with-a-person",
+      "do": "Bring the drafted return to the founder to check, sign and file, because only a person files with a government body, then record the filing date and where the copy and the acknowledgement are kept.",
+      "skill": "manage-asset-end-of-life",
+      "ask": true,
+      "raises": ["legal-or-terms"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Attach each obligation, its due date and its draft to the decision in front of the founder, and hand to risk and compliance as a handoff any obligation that reaches beyond assets so one function is not holding it alone.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "every-figure-traced", "kind": "review", "check": "Does every obligation name its body, form and due date with the source read, does every figure in a draft cite the record it came from, and was each return filed only by a person?", "reviewer": "finance-lead" }
+  ]
+}

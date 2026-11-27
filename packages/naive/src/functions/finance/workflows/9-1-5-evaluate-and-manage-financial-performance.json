@@ -1,0 +1,112 @@
+{
+  "id": "9-1-5-evaluate-and-manage-financial-performance",
+  "function": "finance",
+  "process": "9.1.5",
+  "title": "Evaluate and manage financial performance",
+  "goal": "Each customer, product and offer carries a current profitability figure with its records, the mix to push is recommended to the founder with evidence, and the savings already made are measured against the savings proposed.",
+  "measures": [
+    "revenue",
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "finance/intake"
+    ]
+  },
+  "reads": [
+    "customers",
+    "customers/[id]",
+    "deals",
+    "sales/opportunities",
+    "product",
+    "product/[id]",
+    "validation/pricing",
+    "finance/spend",
+    "finance/budget",
+    "purpose/money/summary",
+    "foundation/goals",
+    "service-delivery/engagements",
+    "markets"
+  ],
+  "steps": [
+    {
+      "id": "customer-product-profit",
+      "do": "Set revenue booked against the cost to serve for each customer and each product and list them most profitable first, naming the records behind every figure.",
+      "skill": "perform-planning-and-management-accounting",
+      "activity": "9.1.5.1"
+    },
+    {
+      "id": "evaluate-new-products",
+      "do": "Model what a proposed product would cost to build and to run and what it would have to sell at to pay that back, with the assumption behind each figure and what would show it wrong.",
+      "skill": "perform-planning-and-management-accounting",
+      "activity": "9.1.5.2",
+      "consider": {
+        "why": "A price set before anyone has costed the product is a guess the venture pays for later.",
+        "when": "A new product or offer is proposed and has no price or cost model yet."
+      }
+    },
+    {
+      "id": "life-cycle-costing",
+      "do": "Add up what each product costs over its whole life, build, run, support and retirement, and say in which month its cumulative cost is paid back.",
+      "skill": "perform-planning-and-management-accounting",
+      "activity": "9.1.5.3",
+      "consider": {
+        "why": "A product's support and retirement cost outlives the month it launched in.",
+        "when": "A product has run for more than a year, or a decision turns on what keeping it will cost."
+      }
+    },
+    {
+      "id": "optimize-mix",
+      "do": "Recommend which customers, products and offers to push, keep or drop from the profitability figures and the goals they serve, and bring it to the finance lead, since what the venture sells is the founder's to choose.",
+      "skill": "perform-planning-and-management-accounting",
+      "activity": "9.1.5.4",
+      "raises": [
+        "set-priorities"
+      ]
+    },
+    {
+      "id": "track-strategies",
+      "do": "Track what each new-customer and new-product push actually earned against what it was expected to earn, naming the goal it served and the date the expectation was set.",
+      "skill": "perform-planning-and-management-accounting",
+      "activity": "9.1.5.5"
+    },
+    {
+      "id": "activity-measures",
+      "do": "Turn the cost drivers into a short list of money measures anyone can read, cost per customer, cost per delivery and revenue per product, and record this period's value for each one with its source.",
+      "skill": "perform-planning-and-management-accounting",
+      "activity": "9.1.5.6"
+    },
+    {
+      "id": "continuous-improvement",
+      "do": "List every cut, downgrade and renegotiation made since the last run with the saving it actually produced, and name each proposed saving that did not happen and why.",
+      "skill": "perform-planning-and-management-accounting",
+      "activity": "9.1.5.7"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Attach each profitability finding to the open decision it confirms or changes and raise to the finance lead what to look at next, naming the measure it would move.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "mix-recommended-not-decided",
+      "kind": "review",
+      "check": "Is every profitability figure traced to revenue and cost records, and is the mix recommended to the founder rather than changed by the agent?",
+      "reviewer": "finance-lead"
+    }
+  ]
+}

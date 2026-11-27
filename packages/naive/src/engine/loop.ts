@@ -18,7 +18,8 @@
 // waits as a draft for a person, and a one-way door is still a person's. There is no mode that skips this.
 //
 // A workflow whose last run failed is not started again on the loop's own word, in any mode but manual: the loop
-// asks first. A tick holds a lock file, so two loops do not start the same workflow.
+// asks first. A workflow whose prerequisites are not met (EE-217) is blocked: no mode starts it, and only a person
+// opens the lock. A tick holds a lock file, so two loops do not start the same workflow.
 //
 //   node packages/naive/src/engine/loop.ts <venture dir> [plan] [--at <iso>] [--json]   what a tick would do, ending with
 //                                                                                       how much skipped work waits; writes nothing
@@ -98,9 +99,11 @@ export function askId(e: Pick<DueEntry, "workflow" | "last_done" | "last_failed"
 
 /** What a tick would do with each due workflow, in the order given. `canStart` is whether a harness is named to start an agent with. */
 export function plan(entries: readonly DueEntry[], cfg: LoopConfig | undefined, asked: ReadonlyMap<string, Asked>, canStart: boolean): LoopStep[] {
-  return entries.filter((e) => e.status === "due").map((e): LoopStep => {
+  return entries.filter((e) => e.status === "due" || e.status === "blocked").map((e): LoopStep => {
     const { mode, from } = modeFor(cfg, e.workflow, e.time_box);
     const base = { workflow: e.workflow, role: e.role, mode, from, due: e.why };
+    // Prerequisites (EE-217): a blocked workflow is never started, in any mode. Nothing here opens a lock.
+    if (e.status === "blocked") return { ...base, action: "blocked", decision: null, why: `Its prerequisites are not met, so nothing was started: ${e.missing.map((m) => m.why).join("; ")}. Run naive blocked.` };
     const where = from === "default" ? "no mode is set" : from === "time-box" && e.time_box ? `set by ${e.time_box.set_by ?? "a person"} for the ${e.time_box.kind} ${e.time_box.id}` : `set for the ${from}`;
     if (!e.in_phase && from !== "workflow" && from !== "time-box") return { ...base, action: "leave", decision: null, why: "The venture's phase does not list it as active, and no mode is set for this workflow by name or by an open time box." };
     if (mode === "manual") return { ...base, action: "leave", decision: null, why: `Its mode is manual (${where}): a person starts it.` };
@@ -147,7 +150,7 @@ export const planFor = (dir: string, now: string, canStart = envCommand("NAIVE_A
 });
 
 /** Starts the workflow as its function agent through NAIVE_AGENT_CMD. */
-export const startAgent: Starter = (dir, step) => agentMain(["run", step.role, `Run the workflow ${step.workflow} from start to end, as your workflows describe it. It is due: ${step.due}`, "--venture", dir]);
+export const startAgent: Starter = (dir, step) => agentMain(["run", step.role, `Run the workflow ${step.workflow} from start to end, as your workflows describe it. It is due: ${step.due}`, "--venture", dir, "--workflow", step.workflow]);
 
 /**
  * One tick: plan, then ask, skip and start. Each started workflow is recorded in the run log as done or failed, by

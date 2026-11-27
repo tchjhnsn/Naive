@@ -1,0 +1,80 @@
+{
+  "id": "9-11-1-screen-sanctioned-party-list",
+  "function": "finance",
+  "process": "9.11.1",
+  "title": "Screen sanctioned party list",
+  "goal": "Every customer, supplier, payee and investor has been checked against the official restricted-party lists that apply to the venture, each result records the list, its version and the date, and every possible match was stopped and handed to the founder.",
+  "measures": [
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "finance/intake"
+    ]
+  },
+  "reads": [
+    "venture",
+    "customers",
+    "customers/[id]",
+    "deals",
+    "supply-chain/suppliers",
+    "investors",
+    "money",
+    "finance/spend",
+    "legal/obligations",
+    "legal/risks",
+    "people/team"
+  ],
+  "steps": [
+    {
+      "id": "name-the-lists",
+      "do": "Name which official sanctions and restricted-party lists apply to the venture, from the countries it is established in, sells into and pays from, and record where each is published and how often it changes.",
+      "skill": "perform-global-trade-services"
+    },
+    {
+      "id": "screen-the-parties",
+      "do": "Check each customer, supplier, payee and investor against those lists, record the list, its version and the date used for each check, and keep the result whether or not anything matched.",
+      "skill": "perform-global-trade-services"
+    },
+    {
+      "id": "stop-on-a-match",
+      "do": "Stop the transaction, record exactly what matched and what differs, and hand it to the founder and their counsel; the agent never clears a match and never contacts the party.",
+      "skill": "perform-global-trade-services",
+      "ask": true,
+      "raises": [
+        "legal-or-terms"
+      ],
+      "consider": {
+        "why": "Dealing with a restricted party is an offence in its own right, and clearing a match wrongly is worse than stopping a good transaction.",
+        "when": "A screening result is a possible match."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Raise every possible match and every party the venture cannot screen as a decision for the founder, and record on the handoff the date the venture was last screened in full.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "legal-or-terms",
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "screening-dated-and-versioned",
+      "kind": "review",
+      "check": "Does every screening result carry the list, its version and the date of the check, and was every possible match stopped and handed to the founder?",
+      "reviewer": "finance-lead"
+    }
+  ]
+}

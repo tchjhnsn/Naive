@@ -1,6 +1,6 @@
 # Simulating businesses end to end
 
-Date: 2026-11-26. Decisions: EE-223, EE-224. Status: step 2 is built: one clock, `packages/naive/src/core/clock.ts` (EE-224). The rest is design.
+Date: 2026-11-26. Decisions: EE-223, EE-227. Status: step 2 is built: one clock, `packages/naive/src/core/clock.ts` (EE-227). The rest is design.
 
 ## The ask
 

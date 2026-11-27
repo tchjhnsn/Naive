@@ -1,0 +1,60 @@
+{
+  "id": "1-3-3-select-strategic-initiatives",
+  "function": "strategy",
+  "process": "1.3.3",
+  "title": "Select strategic initiatives",
+  "goal": "The founder has chosen which initiatives the venture runs now and which wait, the chosen ones are marked on their goal records, and every function that must act has been told through a handoff.",
+  "measures": ["impact", "learning"],
+  "trigger": { "kind": "request" },
+  "requires": {
+    "records": ["foundation/pre-registration"],
+    "meetings": ["strategy/intake"]
+  },
+  "reads": [
+    "foundation/goals",
+    "foundation/constraints",
+    "purpose/money/summary",
+    "people/team-plan",
+    "operations/lead",
+    "operations/time-box",
+    "system/phase-gate",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "prioritize-strategic-initiatives",
+      "do": "Rank the evaluated initiatives by the measure each moves against what it costs in money and in the venture's actual capacity, show what is dropped at each cut, ask the founder which cut the venture takes, and write their answer onto the goal records as drafts for them to accept.",
+      "skill": "develop-and-measure-strategic-initiatives",
+      "activity": "1.3.3.1",
+      "ask": true,
+      "writes": ["foundation/goals/[id]"],
+      "raises": ["set-priorities", "strategy-or-constitution"]
+    },
+    {
+      "id": "communicate-strategic-initiatives",
+      "do": "Open one handoff per function that must act, each naming the initiative, the measure, the owner, the date and what counts as done, and draft for the founder the few lines that say outside the venture what it is now working on, publishing none of it.",
+      "skill": "develop-and-measure-strategic-initiatives",
+      "activity": "1.3.3.2",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Record the selection as a decided decision with what was dropped and why, name any initiative that needs a time box only the founder can open, and recommend to the strategy lead when the selection is reviewed again.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "founder-chose-and-functions-told",
+      "kind": "review",
+      "check": "Did the founder choose the cut, and does every selected initiative have a handoff to the function that must act, naming its measure, owner, date and done criteria?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

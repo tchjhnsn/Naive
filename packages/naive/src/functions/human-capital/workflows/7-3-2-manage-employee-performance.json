@@ -1,0 +1,86 @@
+{
+  "id": "7-3-2-manage-employee-performance",
+  "function": "human-capital",
+  "process": "7.3.2",
+  "title": "Manage employee performance",
+  "goal": "Each person has two or three written outcomes traced to a goal, a review the founder held against them, and a dated record of what was said and what evidence it rested on.",
+  "measures": [
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "human-capital/intake"
+    ]
+  },
+  "reads": [
+    "people",
+    "people/founders",
+    "people/team-plan",
+    "foundation/goals",
+    "foundation/telos",
+    "operations/activity-summary",
+    "operations/handoff",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "define-performance-objectives",
+      "do": "For each person, write the two or three outcomes the coming quarter asks of them, each traced to a goal in `foundation/goals` and each readable from a record rather than an impression, and put them to the founder to agree with the person.",
+      "activity": "7.3.2.1",
+      "skill": "manage-employee-onboarding-training-and"
+    },
+    {
+      "id": "review-employee-performance",
+      "do": "Prepare the review: what the objectives said, what the records show happened, the gap between them and the questions to ask, and hand it to the founder, who holds the conversation and reports back what was said.",
+      "activity": "7.3.2.2",
+      "skill": "manage-employee-onboarding-training-and"
+    },
+    {
+      "id": "document-employee-performance",
+      "do": "Record what the founder reports against each objective, with the date, the evidence behind it and anything the person disputed, and keep your own opinion of the person out of the record.",
+      "activity": "7.3.2.3",
+      "skill": "manage-employee-onboarding-training-and",
+      "writes": [
+        "people"
+      ]
+    },
+    {
+      "id": "monitor-and-update-performance-program",
+      "do": "Check whether the objectives set last time were the right ones, report how many were met, missed or overtaken by a change of plan, and propose a change to how objectives are set.",
+      "activity": "7.3.2.4",
+      "skill": "manage-employee-onboarding-training-and",
+      "consider": {
+        "why": "The way objectives are set is worth revising only after a cycle has run.",
+        "when": "At least one full review cycle has finished since the last run."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Open a decision for any pay, role or continuation question the review raised, add the review's evidence to the decision it bears on, and tell the strategy lead which objective is most at risk.",
+      "skill": "manage-employee-onboarding-training-and",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities",
+        "spend-money"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "objectives-traced-and-evidenced",
+      "kind": "review",
+      "check": "Does every objective trace to a goal and name the record it is read from, and does every documented review cite the evidence behind each judgement?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

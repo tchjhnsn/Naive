@@ -1,0 +1,63 @@
+{
+  "id": "4-2-2-develop-category-plan",
+  "function": "supply-chain",
+  "process": "4.2.2",
+  "title": "Develop category plan",
+  "goal": "Each group of bought items has a plan: what it costs the venture today, what quantity it is expected to need, and the cost per unit it must come in under for the product's margin to hold.",
+  "measures": ["cost_or_time_saved"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["supply-chain/intake"] },
+  "reads": [
+    "product",
+    "supply-chain/suppliers",
+    "supply-chain/purchase-orders",
+    "finance/spend",
+    "validation/pricing",
+    "markets",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "analyze-category-positioning-and-performance",
+      "do": "Group the bought items into a few categories such as electronics, enclosure, packaging and freight, and for each one give the spend to date, the number of suppliers in it, the price trend you can evidence and how much of the product's cost it carries.",
+      "skill": "procure-materials-and-services",
+      "activity": "4.2.2.1"
+    },
+    {
+      "id": "forecast-demand-for-each-category",
+      "do": "Convert the product forecast into the quantity needed per category per period, using the bill of materials, and say which category's quantity is most uncertain and why.",
+      "skill": "procure-materials-and-services",
+      "activity": "4.2.2.2"
+    },
+    {
+      "id": "assign-revenue-and-margin-targets",
+      "do": "Work back from the selling price in `validation/pricing` to the cost each category must stay under for the margin the founder wants, put the gap between that figure and today's cost in front of the founder, and record the target the founder sets.",
+      "skill": "procure-materials-and-services",
+      "activity": "4.2.2.3",
+      "ask": true,
+      "consider": {
+        "why": "A cost target per category only means something once the selling price is set, and only the founder sets the margin the venture will live on.",
+        "when": "The product has a price the venture is selling at or about to sell at."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "For each category whose cost is above its target, add a decision with the ways to close the gap, requote, change supplier, change the design or accept a thinner margin, each with the saving and what it risks, and hand the order of that work to the product lead.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "categories-have-cost-targets",
+      "kind": "review",
+      "check": "Does every category state its current cost per unit, its expected quantity and the cost it must come in under, and is each gap either closed or an open decision?",
+      "reviewer": "product-lead"
+    }
+  ]
+}

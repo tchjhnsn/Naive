@@ -1,0 +1,162 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "bet.schema.json",
+  "title": "Bet",
+  "description": "One strategic claim the venture is betting on, at <venture>/foundation/bets/<id>.json (route foundation/bets/[id], EE-221). A bet is to strategy what a requirement is to a product: one claim, singular and unambiguous, with the observation that would show it wrong and the method that would check it (ISO/IEC/IEEE 29148:2018 characteristics; EARS, Mavin et al. 2009, for a fixed sentence form per kind). Its kind says what sort of claim it is, and what can be done with it: an empirical claim, a forecast, a causal claim, a premise another bet rests on, or a selection rule, which is a value and is never reported as supported by evidence. The claim's parts (population, measure, comparator, threshold, resolves_by) are fields, not prose, so a machine can check that the bet is verifiable without reading the sentence; packages/naive/src/engine/bets.ts statementForm renders the fixed form from them. Naive ships no threshold and no probability: a threshold is the venture's own, and only a person sets a probability or resolves a bet (Tetlock and Gardner 2015 for the probability and the score, Brier 1950 for the score itself). Once a person registers the bet, or a pre-registration that tests it is registered, the claim never changes: a real change is a new bet that supersedes it with a reason, so the old claim and its outcome stay readable (Nosek et al., The preregistration revolution, PNAS 2018). packages/naive/src/engine/bets.ts holds the freeze and the lifecycle, the router applies it to every write, packages/naive/src/checks/check-bets.ts checks the set at rest and naive lint premises attacks each bet's premises.",
+  "type": "object",
+  "required": ["id", "kind", "statement"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9-]+$", "description": "The file name without .json" },
+    "venture": { "type": "string", "description": "The venture this belongs to, when the record names it" },
+    "kind": {
+      "enum": ["empirical", "forecast", "causal", "premise", "selection-rule"],
+      "description": "What sort of claim it is. empirical: true or false today, over a named population and measure. forecast: resolves at a date, and is scored by Brier against what happened. causal: a cause changes a measure against a comparison group. premise: a claim another bet rests on, listed in that bet's premises. selection-rule: whom or what the venture backs and does not back, which is a value and not true or false; it is tested by whether its tests are observable and whether the bets it rests on hold, and never by evidence for it"
+    },
+    "statement": { "type": "string", "minLength": 1, "description": "The claim in one sentence, singular: one claim per bet, so a sentence joining three claims is three bets. The sentence a person confirmed, in their words; statementForm renders the canonical form for the kind from the claim's parts, to read beside it" },
+    "status": {
+      "enum": ["proposed", "registered", "supported", "weakened", "refuted", "superseded", "withdrawn"],
+      "default": "proposed",
+      "description": "Where the bet stands. proposed: an agent or a person wrote it and nobody has fixed it. registered: a person fixed the claim, and from then on it does not change. supported, weakened, refuted: a person's verdict after the evidence, which a selection rule never takes. superseded: a later bet replaced it. withdrawn: it was taken off the table, and a person may put it back by moving it to proposed. The transitions are in packages/naive/src/engine/bets.ts LIFECYCLE, and only a person moves a bet on (naive bets resolve, naive bets register): an agent's write of a lifecycle field is refused, with the decision to raise instead"
+    },
+    "status_by": { "type": "string", "description": "The person who set the current status. Never an agent" },
+    "status_at": { "type": "string", "format": "date-time", "description": "When the current status was set" },
+    "claim": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "The parts the fixed sentence form is built from, for an empirical claim, a forecast, a causal claim or a premise. A claim with a population, a measure, a comparator, a threshold and a date is verifiable; one without is not, whatever its sentence says (ISO/IEC/IEEE 29148 verifiable; AsPredicted question 3 on the dependent variable and how it is measured)",
+      "properties": {
+        "population": { "type": "string", "minLength": 1, "description": "Who or what the claim is about, with what is left in and what is left out, as a population and not a list of names" },
+        "measure": { "type": "string", "minLength": 1, "description": "The observable quantity, in one phrase" },
+        "comparator": { "enum": [">=", ">", "<=", "<", "==", "!="], "description": "How the observed value is compared with the threshold" },
+        "threshold": {
+          "type": "object",
+          "required": ["value"],
+          "additionalProperties": false,
+          "description": "The line the measure must pass. The venture's own: Naive ships no value, and an agent proposes one as a decision a person settles",
+          "properties": {
+            "value": { "type": ["number", "string"], "description": "The line itself. A number is compared arithmetically; a string is compared only for equality" },
+            "unit": { "type": "string" },
+            "set_by": { "type": "string", "minLength": 1, "description": "The person who chose the line, or the decision that settled it. Never an agent" }
+          }
+        },
+        "compared_with": { "type": "string", "description": "For a causal claim: the comparison group the change is measured against. Without one a causal claim has no counterfactual" },
+        "resolves_by": { "type": "string", "format": "date", "description": "The date the claim is judged on, fixed before the evidence is read. A forecast with no date cannot fail, because its window can always be extended" },
+        "source": { "type": "string", "minLength": 1, "description": "Where the observed value will be read from, named before the search: a kind of source, a named dataset or a record route" },
+        "denominator": { "type": "string", "description": "What the count is out of, for a claim tested by counting cases. A list of companies that succeeded with small teams says nothing without the number that tried, so a bet counted this way states the denominator or says it is unknown" }
+      }
+    },
+    "rule": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "For a selection rule: whom or what the venture backs and does not back, and the test that tells them apart. A rule is not true or false; what can be checked is whether the test is observable and whether the bets under it hold",
+      "properties": {
+        "back": { "type": "string", "minLength": 1, "description": "Whom or what the venture backs, defined by an observable test" },
+        "do_not_back": { "type": "string", "minLength": 1, "description": "Whom or what it does not back, defined by an observable test" },
+        "observable_test": { "type": "string", "minLength": 1, "description": "What anyone could look at to say which side of the rule a case falls on. A rule whose test is a judgment of character is a stated value, and it says so here" }
+      }
+    },
+    "falsified_by": { "type": "string", "minLength": 1, "description": "The observation that would show the bet is wrong, and the date by which it would be looked for. A claim with no possible counter-observation is not a bet (Popper); a kill criterion pairs a state with a date, set in advance so the decision is not made in the moment (Duke, Quit, 2022)" },
+    "premises": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+      "description": "The bets this one rests on, by id. A reason given for a bet is not a bet of its own: it is a premise, usually of kind premise. No premise chain may cycle (packages/naive/src/checks/check-bets.ts), and a bet reported supported while a premise of it is refuted is an error there"
+    },
+    "rivals": {
+      "type": "array",
+      "description": "The competing claims or explanations considered, so the evidence is read against something (Platt, strong inference, 1964; Heuer, analysis of competing hypotheses). Appended after registration, never edited",
+      "items": {
+        "type": "object",
+        "required": ["statement"],
+        "additionalProperties": false,
+        "properties": {
+          "statement": { "type": "string", "minLength": 1, "description": "The rival claim in one sentence" },
+          "bet": { "type": "string", "pattern": "^[a-z0-9-]+$", "description": "The bet that holds the rival, when it is written as one" },
+          "separates": { "type": "string", "description": "The observation that would tell this bet and the rival apart" }
+        }
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "description": "The evidence read, for and against, by reference. Evidence against is first class: supports false is how it is recorded, and it is what decides (Heuer). Appended after registration, never edited or removed, so a search that found something inconvenient stays on the record",
+      "items": {
+        "type": "object",
+        "required": ["ref", "supports"],
+        "additionalProperties": false,
+        "properties": {
+          "ref": { "type": "string", "minLength": 1, "description": "The evidence item: a validation evidence id, a record route, or a venture-relative path. The item itself carries its kind, source, audience, sample and the date it was collected (validation-evidence.schema.json), and check-validation.ts grades it" },
+          "supports": { "type": "boolean", "description": "True when the item supports the bet, false when it tells against it" },
+          "note": { "type": "string", "description": "What it shows, in one sentence" },
+          "found": { "type": "string", "format": "date", "description": "When it was found, which says whether it came before or after the bet was registered" }
+        }
+      }
+    },
+    "confidence": {
+      "type": "array",
+      "description": "What a person thinks the odds are, appended and never rewritten. The first entry is the prior, set before the search, and it is the one scored by Brier (Tetlock and Gardner 2015). Only a person writes an entry: an agent's write of one is refused, because a probability nobody chose is a number nobody is bound by",
+      "items": {
+        "type": "object",
+        "required": ["p", "set_by", "at", "data_seen"],
+        "additionalProperties": false,
+        "properties": {
+          "p": { "type": "number", "minimum": 0, "maximum": 1, "description": "The probability the bet holds, from 0 to 1" },
+          "set_by": { "type": "string", "minLength": 1, "description": "The person who set it. Never an agent" },
+          "at": { "type": "string", "format": "date-time" },
+          "data_seen": {
+            "enum": ["before-data-exists", "before-any-observation", "before-access", "before-analysis", "after-analysis"],
+            "description": "How much of the evidence had been seen when this probability was set, the five answers of the OSF preregistration template's existing-data item, in its order: before the data existed, before any human observation of it, before it was accessed, before it was analysed, or after it was analysed. A bet drawn from an example the founder already read is after-analysis for that evidence, and saying so is what makes the rest of the test readable (Nosek et al. 2018)"
+          },
+          "why": { "type": "string", "description": "Why, in one line. An update with no reason cannot be learned from" }
+        }
+      }
+    },
+    "resolution": {
+      "type": "object",
+      "required": ["outcome", "at", "by"],
+      "additionalProperties": false,
+      "description": "What happened, written once, by a person. It is separate from the status on purpose: the status says whether the bet stands, and this says what was observed, which is what a forecast is scored against. A forecast given a low probability that did not happen is a bet refuted and a forecast well made",
+      "properties": {
+        "outcome": { "enum": ["happened", "did-not-happen", "mixed", "unresolvable"], "description": "What was observed against the registered claim. mixed and unresolvable are left out of the Brier score rather than guessed at" },
+        "observed": { "type": ["number", "string"], "description": "The value the measure reached, when it has one" },
+        "evidence": { "type": "array", "items": { "type": "string" }, "description": "The evidence behind the outcome, by reference" },
+        "at": { "type": "string", "format": "date-time" },
+        "by": { "type": "string", "minLength": 1, "description": "The person who resolved it. An agent never resolves a bet" },
+        "why": { "type": "string", "description": "Why this outcome, especially when the observation needed a judgment" }
+      }
+    },
+    "intends_to_cause": { "type": "boolean", "description": "True when the venture is working to make the claim true. A founder building a product to make a forecast come true is not a neutral observer, and a bet of this kind is read apart from the others, never as foresight. Fixed at registration, because declaring the intent afterwards is the postdiction the register exists to prevent" },
+    "used_by": { "type": "array", "items": { "type": "string", "minLength": 1 }, "description": "The records that rest on this bet, by route or id: a goal, a requirement, a mission or vision line. Traceability downward, as a requirement has it upward" },
+    "owner": { "type": "string", "description": "The person who decides about this bet" },
+    "registered_at": { "type": "string", "format": "date-time", "description": "When a person registered it. From then on the claim never changes" },
+    "registered_by": { "type": "string", "minLength": 1, "description": "The person who registered it. Only a person registers a bet" },
+    "supersedes": { "type": "string", "pattern": "^[a-z0-9-]+$", "description": "The bet this one replaces. A registered claim is never edited: a narrowed or corrected claim is a new bet, and supersede_reason says why" },
+    "supersede_reason": { "type": "string", "minLength": 1, "description": "Why the earlier bet was replaced, so the change stays visible" },
+    "superseded_by": { "type": "string", "pattern": "^[a-z0-9-]+$", "description": "The bet that replaced this one. Set exactly when the status is superseded" },
+    "framework": { "type": "string", "description": "The framework for thinking the bet was written through (frameworks/<id>), if any" },
+    "decision": { "type": "string", "description": "The decision that settled the claim, the threshold or the verdict" },
+    "updated": { "type": "string" },
+    "note": { "type": "string" },
+    "conversation": { "type": "array", "description": "The founder's messages this record was made from (naive diagnose catches), so a reader of the bet alone can read the words it came from", "items": { "$ref": "conversation-ref.schema.json" } }
+  },
+  "allOf": [
+    {
+      "description": "A registered bet names who registered it and when: registering is a person's act and it is what fixes the claim.",
+      "if": { "required": ["status"], "properties": { "status": { "enum": ["registered", "supported", "weakened", "refuted", "superseded"] } } },
+      "then": { "required": ["registered_at", "registered_by"] }
+    },
+    {
+      "description": "A verdict after the evidence says what was observed.",
+      "if": { "required": ["status"], "properties": { "status": { "enum": ["supported", "weakened", "refuted"] } } },
+      "then": { "required": ["resolution"] }
+    },
+    { "if": { "required": ["status"], "properties": { "status": { "const": "superseded" } } }, "then": { "required": ["superseded_by"] } },
+    { "if": { "required": ["superseded_by"] }, "then": { "required": ["status"], "properties": { "status": { "const": "superseded" } } } },
+    { "if": { "required": ["supersedes"] }, "then": { "required": ["supersede_reason"] } },
+    {
+      "description": "A selection rule carries its rule and its observable test, and never a numeric claim; every other kind carries the claim and what would falsify it.",
+      "if": { "required": ["kind"], "properties": { "kind": { "const": "selection-rule" } } },
+      "then": { "required": ["rule"], "not": { "required": ["claim"] }, "properties": { "rule": { "required": ["back", "do_not_back", "observable_test"] } } },
+      "else": { "not": { "required": ["rule"] } }
+    }
+  ]
+}

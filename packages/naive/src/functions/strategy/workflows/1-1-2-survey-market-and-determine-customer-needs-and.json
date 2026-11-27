@@ -1,0 +1,84 @@
+{
+  "id": "1-1-2-survey-market-and-determine-customer-needs-and",
+  "function": "strategy",
+  "process": "1.1.2",
+  "title": "Survey market and determine customer needs and wants",
+  "goal": "Every need the venture is betting on is written in the problem record with the interviews behind it, each form carries its three evidence counts, and the core problem and the target form are prepared for the founder to choose.",
+  "measures": [
+    "learning"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "records": [
+      "foundation/pre-registration"
+    ],
+    "meetings": [
+      "strategy/intake"
+    ]
+  },
+  "reads": [
+    "foundation/pre-registration",
+    "foundation/problem",
+    "foundation/icp",
+    "validation/interviews",
+    "validation/plan",
+    "purpose/validation/problems",
+    "purpose/validation/problems/rank",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "conduct-research-and-assessments",
+      "do": "Write the question guide and the sampling plan from the registered pre-registration, ask the founder who they can actually reach and when, and after each conversation the founder holds write one interview record with the consent given, what the person said hurts, what they use now and the problem they chose, never speaking to anyone outside the venture yourself.",
+      "skill": "define-the-business-concept-and-long-term-vision",
+      "activity": "1.1.2.1",
+      "ask": true
+    },
+    {
+      "id": "capture-customer-needs-and-wants",
+      "do": "Code each interview for the problems raised unprompted, the one ranked first and any workaround the person pays for, and write each distinct need into the problem record's forms with its parent form or the problem it is caused by, so the tree holds what people said and not what the venture hopes.",
+      "skill": "define-the-business-concept-and-long-term-vision",
+      "activity": "1.1.2.2",
+      "writes": [
+        "foundation/problem"
+      ]
+    },
+    {
+      "id": "assess-customer-needs-and-wants",
+      "do": "Read `purpose/validation/problems/rank` for the primary, secondary and tertiary forms the coded counts give, write the frequency, cost and workarounds the evidence supports on the problem record, say which forms still rest on no interview, and bring the founder the core problem and the target form to set.",
+      "skill": "define-the-business-concept-and-long-term-vision",
+      "activity": "1.1.2.3",
+      "writes": [
+        "foundation/problem"
+      ],
+      "raises": [
+        "strategy-or-constitution"
+      ]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Attach each coded need to the open decision or assumption it settles or weakens, say which registered measure it moves and whether the threshold was met, and recommend to the strategy lead which need to interview for next.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "needs-traced-to-interviews",
+      "kind": "review",
+      "check": "Does every form in the problem record trace to an interview record or say plainly that it rests on none, and was the core problem left for the founder rather than set by the agent?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

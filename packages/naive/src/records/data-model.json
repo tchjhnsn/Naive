@@ -244,6 +244,32 @@
       ]
     },
     {
+      "id": "product-capability",
+      "layer": "purpose",
+      "function": "products",
+      "level": "venture",
+      "data": "master",
+      "schema": "packages/naive/src/records/product-capability.schema.json",
+      "generator": "packages/naive/src/engine/generators/product-capability.ts",
+      "paths": [
+        "instance/**/product/capabilities/*.json",
+        "packages/naive/src/records/examples/**/product/capabilities/*.json"
+      ],
+      "note": "One capability of a product, or a category of them (EE-224): its name, the product it belongs to, the category above it (a chain that ends under the products function), the agent role that owns it and its status (live, building or retired). An app reads it to staff a capability agent and to give a site container its owner. Route product/capabilities/[id]",
+      "refs": [
+        {
+          "field": "product",
+          "to": "product",
+          "checked_by": "packages/naive/src/checks/check-ventures.ts"
+        },
+        {
+          "field": "parent",
+          "to": "product-capability",
+          "checked_by": "packages/naive/src/checks/check-ventures.ts"
+        }
+      ]
+    },
+    {
       "id": "account",
       "layer": "purpose",
       "function": null,
@@ -297,6 +323,28 @@
       "decision_class": "strategy-or-constitution"
     },
     {
+      "id": "pre-registration",
+      "layer": "purpose",
+      "function": "strategy",
+      "level": "venture",
+      "data": "master",
+      "schema": "packages/naive/src/records/pre-registration.schema.json",
+      "generator": "packages/naive/src/engine/generators/pre-registration.ts",
+      "paths": [
+        "instance/**/foundation/pre-registration/*.json",
+        "packages/naive/src/records/examples/**/foundation/pre-registration/*.json"
+      ],
+      "refs": [
+        {
+          "field": "supersedes",
+          "to": "pre-registration",
+          "checked_by": "packages/naive/src/checks/check-pre-registration.ts"
+        }
+      ],
+      "note": "The plan for one test, fixed before the test runs (EE-220): a thesis written so it can fail, the assumptions under it, the method, the measures with their thresholds and the dates they are judged by, what does not count as evidence, and the action on a pass and on a fail. The first durable object of the strategy function: the mission, vision and other strategy documents come after it. Once a person registers it those fields never change; a deviation is appended and a real change is a new version that supersedes it. Route foundation/pre-registration/[id]",
+      "decision_class": "strategy-or-constitution"
+    },
+    {
       "id": "goal",
       "layer": "purpose",
       "function": "strategy",
@@ -346,6 +394,38 @@
         }
       ],
       "note": "A canonical requirement derived from goals or measures, by a phase, constraining functions, verified by a check, evidence or a person (the decision index's Requirements)",
+      "decision_class": "strategy-or-constitution"
+    },
+    {
+      "id": "bet",
+      "layer": "purpose",
+      "function": "strategy",
+      "level": "venture",
+      "data": "master",
+      "schema": "packages/naive/src/records/bet.schema.json",
+      "generator": "packages/naive/src/engine/generators/bet.ts",
+      "paths": [
+        "instance/**/foundation/bets/*.json",
+        "packages/naive/src/records/examples/**/foundation/bets/*.json"
+      ],
+      "refs": [
+        {
+          "field": "premises",
+          "to": "bet",
+          "checked_by": "packages/naive/src/checks/check-bets.ts"
+        },
+        {
+          "field": "supersedes",
+          "to": "bet",
+          "checked_by": "packages/naive/src/checks/check-bets.ts"
+        },
+        {
+          "field": "superseded_by",
+          "to": "bet",
+          "checked_by": "packages/naive/src/checks/check-bets.ts"
+        }
+      ],
+      "note": "One strategic claim the venture is betting on (EE-221): a requirement for strategy. Its kind says what sort of claim it is (empirical, forecast, causal, premise, selection-rule) and the claim's parts (population, measure, comparator, threshold, resolves_by) are fields, so a machine can check that the bet is verifiable without reading the sentence. A person registers it, or a pre-registration that tests it is registered, and from then on the claim never changes: a narrowed claim is a new bet that supersedes it. Only a person sets a probability or resolves one, and a forecast's prior is scored by Brier. Route foundation/bets/[id]",
       "decision_class": "strategy-or-constitution"
     },
     {
@@ -464,9 +544,19 @@
           "field": "evidence.source.path",
           "to": "(venture files)",
           "checked_by": "packages/naive/src/checks/check-validation.ts"
+        },
+        {
+          "field": "forms.parent",
+          "to": "validation-problem",
+          "checked_by": "packages/naive/src/checks/check-problems.ts"
+        },
+        {
+          "field": "forms.cause_of",
+          "to": "validation-problem",
+          "checked_by": "packages/naive/src/checks/check-problems.ts"
         }
       ],
-      "note": "The problem sub-score of validation: the claim and its cited evidence, each item graded (EE-026). Shares packages/naive/src/records/validation-evidence.schema.json with every sub-score Gated like the telos (EE-050): the problem statement is a founder-critical record, so an agent's write is a draft the founder accepts.",
+      "note": "The problem sub-score of validation: the claim and its cited evidence, each item graded (EE-026). Shares packages/naive/src/records/validation-evidence.schema.json with every sub-score Gated like the telos (EE-050): the problem statement is a founder-critical record, so an agent's write is a draft the founder accepts. Its forms are the customer problem tree (EE-219): a narrower case by parent, a cause by cause_of, one target at a time.",
       "decision_class": "strategy-or-constitution"
     },
     {
@@ -485,6 +575,11 @@
           "field": "icp",
           "to": "icp",
           "checked_by": "packages/naive/src/checks/check-validation-study.ts"
+        },
+        {
+          "field": "problems.problem",
+          "to": "validation-problem",
+          "checked_by": "packages/naive/src/checks/check-problems.ts"
         },
         {
           "field": "transcript.source",
@@ -537,6 +632,11 @@
           "field": "evidence.source.path",
           "to": "(venture files)",
           "checked_by": "packages/naive/src/checks/check-validation.ts"
+        },
+        {
+          "field": "problem",
+          "to": "validation-problem",
+          "checked_by": "packages/naive/src/checks/check-problems.ts"
         }
       ],
       "note": "Validation sub-score: how it solves the problem and the evidence people choose it (EE-026)"
@@ -1085,6 +1185,22 @@
         { "field": "tools[].cluster", "to": "capability-cluster", "checked_by": "packages/naive/src/checks/check-tools.ts" }
       ],
       "note": "The tools a business needs: each function's APQC level 2 process groups, and each tool's function, process groups and the record types it reads, writes or proposes. A tool with no function is universal. Consoles build their navigation from it (venture console spec, phase 3)"
+    },
+    {
+      "id": "document-catalog",
+      "layer": "interface",
+      "function": null,
+      "level": "method",
+      "schema": "packages/naive/src/records/document-catalog.schema.json",
+      "generator": "packages/naive/src/engine/generators/document-catalog.ts",
+      "paths": [
+        "packages/naive/src/functions/documents.json"
+      ],
+      "refs": [
+        { "field": "kinds[].function", "to": "department-catalog", "checked_by": "packages/naive/src/checks/check-documents.ts" },
+        { "field": "ladder.rungs[].requires.decisions", "to": "function-decisions", "checked_by": "packages/naive/src/checks/check-documents.ts" }
+      ],
+      "note": "Which documents a venture makes, in which format, from which records, and in what order (EE-218): the formats and what each is for, the rules for choosing one (slides for a live talk, a printed document for reading), the ladder a document climbs (a reading copy a person approved, then an interactive page, then the live site) and each kind's sections, so every claim in a rendered document cites a record. packages/naive/src/engine/render-document.ts writes the reading copy; the heavier formats are the harness's"
     },
     {
       "id": "operating-rules",
@@ -1826,6 +1942,22 @@
       "note": "How present the venture's public records are on its marketing site, item by item, with a score weighed by who the site must speak to now (EE-062)"
     },
     {
+      "id": "marketing-message",
+      "layer": "operations",
+      "function": "marketing-and-sales",
+      "level": "venture",
+      "data": "master",
+      "schema": "packages/naive/src/records/marketing-message.schema.json",
+      "generator": "packages/naive/src/engine/generators/marketing-message.ts",
+      "writer": "function",
+      "decision_class": "public-commitment",
+      "paths": [
+        "instance/**/marketing/message/*.json",
+        "packages/naive/src/records/examples/**/marketing/message/*.json"
+      ],
+      "note": "One element of the words a public page shows (EE-216): the tagline, a headline, the value proposition, a call to action with where it leads, a proof point, an objection answered, the contact line. Each element is its own record and cites the records its words come from, so a person approves the text element by element before any page is built, and the gap report says which element is missing and which upstream record a draft would come from (naive copy gaps). Owned by the marketing and sales function; the agent's write is held as a draft under public-commitment until a person accepts it. Route marketing/message/[id]"
+    },
+    {
       "id": "marketing-sitemap",
       "layer": "operations",
       "function": "marketing-and-sales",
@@ -1838,7 +1970,21 @@
         "instance/**/operations/marketing/sitemap.json",
         "packages/naive/src/records/examples/**/operations/marketing/sitemap.json"
       ],
-      "note": "The planned public site: each page's sections in order, with the MDX component, the need, the audience and why, when it shows, the internal record it draws on and the public variant to write; part of the marketing package handed to engineering (EE-064, EE-065)"
+      "note": "The planned public site: each page's sections in order, with the MDX component, the need, the audience and why, when it shows, the internal record it draws on, the public variant to write and the copy drafted for it (EE-064, EE-065, EE-214); part of the marketing package handed to engineering"
+    },
+    {
+      "id": "publish-terms",
+      "layer": "operations",
+      "function": "marketing-and-sales",
+      "level": "venture",
+      "data": "master",
+      "schema": "packages/naive/src/records/publish-terms.schema.json",
+      "generator": "packages/naive/src/engine/generators/publish-terms.ts",
+      "paths": [
+        "instance/**/marketing/publish-terms.json",
+        "packages/naive/src/records/examples/**/marketing/publish-terms.json"
+      ],
+      "note": "The names the publish lint flags in public copy, owned by the function that writes the words (EE-214): other companies' marks, and the names this venture never makes public, which are errors. It holds names only, never severities and never waivers, so the marketing agent can tighten the gate on itself without reaching naive.config.json"
     },
     {
       "id": "marketing-content",
@@ -2147,6 +2293,11 @@
           "field": "problem_forms",
           "to": "validation-problem",
           "checked_by": "packages/naive/src/engine/foundation.ts"
+        },
+        {
+          "field": "core_problem",
+          "to": "validation-problem",
+          "checked_by": "packages/naive/src/checks/check-problems.ts"
         }
       ],
       "note": "Who the venture serves: one record per ideal customer profile, each with its own id, exactly one primary (EE-051); a foundation statement, gated. The older single foundation/icp.json is split by the icp-profiles migration",
@@ -2185,6 +2336,25 @@
         }
       ],
       "note": "The map of strategic foundation by the Five Ws and How plus whether (EE-051)"
+    },
+    {
+      "id": "problem-priority",
+      "layer": "purpose",
+      "function": "strategy",
+      "level": "method",
+      "schema": "packages/naive/src/records/problem-priority.schema.json",
+      "generator": "packages/naive/src/engine/generators/problem-priority.ts",
+      "paths": [
+        "packages/naive/src/functions/strategy/problem-priority.json"
+      ],
+      "refs": [
+        {
+          "field": "requires_target.records",
+          "to": "(record types)",
+          "checked_by": "packages/naive/src/checks/check-problems.ts"
+        }
+      ],
+      "note": "How a venture's customer problems are ranked and what holds its problem tree together (EE-219): the weight on each evidence count from the interviews, the statuses that are ranked, the labels primary, secondary and tertiary for the computed order, and the routes that wait for a core problem and a target. Every weight is an unvalidated prior a venture overrides under problems in naive.config.json"
     },
     {
       "id": "lean-canvas",
