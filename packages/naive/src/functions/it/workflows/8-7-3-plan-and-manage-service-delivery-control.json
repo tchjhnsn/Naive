@@ -1,0 +1,46 @@
+{
+  "id": "8-7-3-plan-and-manage-service-delivery-control",
+  "function": "it",
+  "process": "8.7.3",
+  "title": "Plan and manage service delivery control",
+  "goal": "The venture's running week is planned: every scheduled job, backup, deployment window and recurring check has a time, an owner and a place it reports to, and nothing important runs only because someone remembered it.",
+  "measures": ["cost_or_time_saved", "compliance_met"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["it/intake"] },
+  "reads": [
+    "it/connections",
+    "operations/activity-assignments",
+    "people/team-plan",
+    "capabilities/processes",
+    "support/cases",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "plan-operational-activities",
+      "do": "Write the venture's operating schedule in one place: who or which agent role is on hand and when, the recurring jobs with their times and what each one would block if it failed, the hours in which a deployment may be made, the backup and archive runs with where their output lands, the work spread so that two heavy jobs do not run against the same host or quota at once, and for each recurring failure the venture already knows the procedure to follow, and record each scheduled job on the connection of the system that runs it.",
+      "skill": "create-and-manage-support-services-solutions",
+      "activity": "8.7.3.1",
+      "writes": ["it/connections/[id]"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Add the schedule as evidence to the decision it bears on, name every job that runs only by hand or only in one person's memory, and raise to the product lead which of those to automate or write down first.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "nothing-runs-from-memory",
+      "kind": "review",
+      "check": "Does every recurring job, backup and check in the schedule name its time, its owner and where it reports, and is every job that still runs only from someone's memory named with the fix?",
+      "reviewer": "product-lead"
+    }
+  ]
+}

@@ -1,0 +1,74 @@
+{
+  "id": "7-1-4-develop-competency-management-models",
+  "function": "human-capital",
+  "process": "7.1.4",
+  "title": "Develop competency management models",
+  "goal": "The venture has a written list of the competencies its work needs, each at a level, with who or what holds it today and its source and date, and the ones nothing holds are named.",
+  "measures": [
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "human-capital/intake"
+    ]
+  },
+  "reads": [
+    "people",
+    "people/team-plan",
+    "people/founders",
+    "operations/activity-assignments",
+    "capabilities/processes",
+    "foundation/goals",
+    "glossary",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "read-the-work",
+      "do": "Read `operations/activity-assignments`, `capabilities/processes` and the role descriptions, and list the work the venture actually performs, with who or what performs each piece today.",
+      "skill": "develop-and-manage-human-resources-hr-planning"
+    },
+    {
+      "id": "name-the-competencies",
+      "do": "For each piece of that work, name in plain words the competency it takes and the level it takes, enough to do it alone or enough to do it under review, reusing the venture's own words from `glossary` rather than coining new ones.",
+      "skill": "develop-and-manage-human-resources-hr-planning"
+    },
+    {
+      "id": "map-who-holds-each",
+      "do": "Say, competency by competency, who or what holds it today, founder, person or agent, citing the capability register entry and the date it was written, and mark every competency nothing holds.",
+      "skill": "develop-and-manage-human-resources-hr-planning"
+    },
+    {
+      "id": "set-the-bar-per-role",
+      "do": "For each role the plan keeps, record the competencies it requires at which level, so a candidate or an agent can be judged against the same list twice.",
+      "skill": "develop-and-manage-human-resources-hr-planning"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Open a decision for each competency nothing holds, naming whether to learn it, hire it, contract it or drop the work, and recommend to the strategy lead which gap to close first.",
+      "skill": "develop-and-manage-human-resources-hr-planning",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "competencies-held-or-named",
+      "kind": "review",
+      "check": "Does every competency name who or what holds it today, with the capability register entry and its date, or say that nothing holds it?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

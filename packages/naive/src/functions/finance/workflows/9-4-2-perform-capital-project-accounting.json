@@ -1,0 +1,112 @@
+{
+  "id": "9-4-2-perform-capital-project-accounting",
+  "function": "finance",
+  "process": "9.4.2",
+  "title": "Perform capital project accounting",
+  "goal": "Each approved project has its own category, every cost charged to it cites a document and an approval, and a finished project is closed with what it actually cost against what was approved.",
+  "measures": [
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "finance/intake"
+    ]
+  },
+  "reads": [
+    "finance/budget",
+    "finance/spend",
+    "money",
+    "assets/register",
+    "purpose/money/summary",
+    "supply-chain/purchase-orders",
+    "product"
+  ],
+  "steps": [
+    {
+      "id": "project-codes",
+      "do": "Give each approved project a code and record it as its own category in the spend register and the budget, so its costs stay apart from the month's running costs.",
+      "skill": "manage-fixed-asset-project-accounting",
+      "activity": "9.4.2.1",
+      "writes": [
+        "finance/spend/[id]"
+      ],
+      "raises": [
+        "spend-register-upkeep"
+      ],
+      "consider": {
+        "why": "A project's costs mixed into the month's running costs can never be totalled again.",
+        "when": "The founder has approved a capital project."
+      }
+    },
+    {
+      "id": "record-transactions",
+      "do": "Record each invoice, payment and committed order against its project code with the document behind it, and flag any cost charged to a project nobody approved.",
+      "skill": "manage-fixed-asset-project-accounting",
+      "activity": "9.4.2.2",
+      "writes": [
+        "finance/spend/[id]"
+      ],
+      "consider": {
+        "why": "A project's real cost is the sum of its documents, not its estimate.",
+        "when": "A cost has been incurred on an approved capital project."
+      }
+    },
+    {
+      "id": "monitor-spending",
+      "do": "Compare each project's spend and open commitments with its approved amount, say how much is left and how much work remains, and flag any project heading past its amount before it gets there.",
+      "skill": "manage-fixed-asset-project-accounting",
+      "activity": "9.4.2.3",
+      "consider": {
+        "why": "A project is stopped cheaply before it passes its approved amount and expensively after.",
+        "when": "An approved capital project is under way."
+      }
+    },
+    {
+      "id": "close-projects",
+      "do": "Close each finished or abandoned project, total what it actually cost, separate the part that became an asset from the part that was a cost of the period, and prepare the entry that capitalizes it.",
+      "skill": "manage-fixed-asset-project-accounting",
+      "activity": "9.4.2.4",
+      "consider": {
+        "why": "An unclosed project keeps absorbing costs that belong to the running business.",
+        "when": "An approved capital project is finished or abandoned."
+      }
+    },
+    {
+      "id": "project-returns",
+      "do": "Measure what each closed project actually saved or earned against the case that approved it, and say plainly where the payback did not happen and why.",
+      "skill": "manage-fixed-asset-project-accounting",
+      "activity": "9.4.2.5",
+      "consider": {
+        "why": "A venture that never checks a payback keeps approving the same kind of project.",
+        "when": "A capital project closed more than one period ago."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Raise any project heading past its approved amount as a decision for the founder, with the choice to stop, to fund more or to change scope, and tell the finance lead what the closed projects say about the next approval.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "spend-money",
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "project-costs-tied",
+      "kind": "review",
+      "check": "Does every cost charged to a project cite its document and an approval, and does each closed project carry what it actually cost against what was approved?",
+      "reviewer": "finance-lead"
+    }
+  ]
+}

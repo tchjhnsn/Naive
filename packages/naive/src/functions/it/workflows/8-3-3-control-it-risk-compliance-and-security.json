@@ -1,0 +1,29 @@
+{
+  "id": "8-3-3-control-it-risk-compliance-and-security",
+  "function": "it",
+  "process": "8.3.3",
+  "title": "Control IT risk, compliance, and security",
+  "goal": "The venture's IT rules exist in writing, are small enough to follow, and are checked: every obligation has a current requirement, every requirement a control, and every control a dated check with its result.",
+  "measures": ["compliance_met", "cost_or_time_saved"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["it/intake"] },
+  "reads": ["venture", "it/connections", "legal/obligations", "legal/risks", "governance/delegation", "governance/detector", "people/team-plan", "system/provenance", "decisions/*"],
+  "steps": [
+    { "id": "evaluate-enterprise-regulatory-and-compliance-obligations", "do": "Go through the obligations record and each provider's terms and say which obligations are still in force, which have changed and which no longer apply, citing the page and the date for every change.", "skill": "develop-and-manage-it-resilience-and-risk", "activity": "8.3.3.1" },
+    { "id": "analyze-it-security-threat-impact", "do": "For the handful of ways this venture would actually be attacked (a reused password, a phished login, a leaked token in a repository, a dependency taken over, an agent tricked into using a credential), write what each would reach given the scopes on the connection records today.", "skill": "develop-and-manage-it-resilience-and-risk", "activity": "8.3.3.2" },
+    { "id": "create-and-maintain-it-compliance-requirements", "do": "Write one requirement per obligation in plain words the venture can check (every account that can move money is on MFA; customer records are exported monthly and the export is tested), and strike every requirement no obligation supports.", "skill": "develop-and-manage-it-resilience-and-risk", "activity": "8.3.3.3" },
+    { "id": "create-and-maintain-it-security-policies-standards-and-procedures", "do": "Keep the venture's IT rules to one short page: how credentials are stored and rotated, which accounts need MFA, what an agent role may never do, what happens to access when someone leaves, and how a secret found in the open is handled; date it and say what changed.", "skill": "develop-and-manage-it-resilience-and-risk", "activity": "8.3.3.4" },
+    { "id": "develop-and-deploy-risk-management-training", "do": "Draft the short briefing each person and agent role needs before it is given access (what it may do, what it must never do, how to report a mistake), and hand it to the founder to give.", "skill": "develop-and-manage-it-resilience-and-risk", "activity": "8.3.3.5", "consider": { "why": "A briefing matters as soon as someone other than the founder holds a credential.", "when": "Someone other than the founder, or a contractor, holds access to a system." } },
+    { "id": "establish-risk-reporting-capabilities-and-responsibilities", "do": "Say where a risk is reported in this venture (a decision of its class, a note on the connection, a handoff to the IT agent), who must see it and how fast, and name the kinds of risk nobody is told about today.", "skill": "develop-and-manage-it-resilience-and-risk", "activity": "8.3.3.6" },
+    { "id": "establish-communication-standards", "do": "Write the rules for talking about an IT risk or incident: credentials named by variable name only, no secret in any record or message, no claim without its source, and who is allowed to say anything outside the venture (only the founder).", "skill": "develop-and-manage-it-resilience-and-risk", "activity": "8.3.3.7" },
+    { "id": "conduct-it-risk-and-threat-assessments", "do": "Run the assessment on a date: check each requirement against the connection records and the systems' own settings, and write pass, fail or could not check for each, with what you looked at.", "skill": "develop-and-manage-it-resilience-and-risk", "activity": "8.3.3.8", "writes": ["it/connections/[id]"] },
+    { "id": "monitor-and-manage-it-activity-risk", "do": "Watch what actually happens between assessments (new connections, new scopes, provenance lines showing a write by a role that should not have made it, a credential past its rotation date) and record each finding on the connection with its date.", "skill": "develop-and-manage-it-resilience-and-risk", "activity": "8.3.3.9", "writes": ["it/connections/[id]"] },
+    { "id": "identify-supervise-and-monitor-it-risk-mitigation-measures", "do": "Track every open mitigation to its date, narrow access yourself where that is the mitigation, and name each mitigation that has slipped twice so the founder sees it is not getting done.", "skill": "develop-and-manage-it-resilience-and-risk", "activity": "8.3.3.10", "writes": ["it/connections/[id]"], "raises": ["security-tightening"] },
+    { "id": "feed-decisions", "do": "Record every fail and every could-not-check as evidence on the decision it bears on, propose the order of fixes to the product lead, and raise for the founder anything that needs money, new terms, wider access or deleting data.", "skill": "develop-and-manage-it-resilience-and-risk", "writes": ["decisions/*"], "raises": ["set-priorities", "spend-money", "legal-or-terms", "security-loosening", "irreversible-data-change"] }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "connections-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-connections.ts \"$NAIVE_VENTURE\"" },
+    { "id": "requirements-checked", "kind": "review", "check": "Does every requirement trace to an obligation and carry a dated pass, fail or could-not-check with what was looked at, and is no secret written in any record or message produced by this run?", "reviewer": "product-lead" }
+  ]
+}

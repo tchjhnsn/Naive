@@ -1,0 +1,121 @@
+{
+  "id": "9-7-5-monitor-and-execute-risk-and-hedging-transactions",
+  "function": "finance",
+  "process": "9.7.5",
+  "title": "Monitor and execute risk and hedging transactions",
+  "goal": "Each rate, currency and customer concentration exposure is measured with its source and set against what the rules allow, and any cover the venture holds was transacted by the founder with its cost written down.",
+  "measures": [
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "finance/intake"
+    ]
+  },
+  "reads": [
+    "money",
+    "money/[id]",
+    "finance/budget",
+    "purpose/money/summary",
+    "customers",
+    "deals",
+    "legal/risks",
+    "legal/obligations",
+    "markets",
+    "industries"
+  ],
+  "steps": [
+    {
+      "id": "hedging-strategy",
+      "do": "Say which exposures the venture will carry and which it will cover, how much of each and with what, and bring it to the founder, since buying cover is itself a commitment.",
+      "skill": "manage-treasury-operations",
+      "ask": true,
+      "activity": "9.7.5.1",
+      "consider": {
+        "why": "A hedge costs money and gives up the upside, so which exposures to carry is a choice and not a calculation.",
+        "when": "The venture has a rate, currency or concentration exposure large enough to change its runway."
+      }
+    },
+    {
+      "id": "interest-rate-risk",
+      "do": "Record the rates the venture's loans and deposits actually move with and where each figure came from, total what a rate move would cost across all of them, measure that against what the rule allows, and hand the founder any cover worth buying; the agent never trades.",
+      "skill": "manage-treasury-operations",
+      "activity": "9.7.5.2",
+      "consider": {
+        "why": "A rate move on a floating loan arrives as a larger payment with no warning.",
+        "when": "The venture holds a loan or deposit whose rate can change."
+      }
+    },
+    {
+      "id": "foreign-exchange-risk",
+      "do": "Record the rate used for each currency with its source and date, total the exposure per currency including invoices and bills already issued, say what cover the rule asks for, and hand the founder the options; the agent never trades or converts.",
+      "skill": "manage-treasury-operations",
+      "activity": "9.7.5.3",
+      "consider": {
+        "why": "An invoice in another currency is already an exposure before anyone converts anything.",
+        "when": "The venture holds, bills or pays in more than one currency."
+      }
+    },
+    {
+      "id": "exposure-risk",
+      "do": "Work out how much of revenue and of what is owed sits with each customer, name every one over the limit the credit terms set, say what deposit or security is held against it, and review each large account's standing once a year.",
+      "skill": "manage-treasury-operations",
+      "activity": "9.7.5.4",
+      "consider": {
+        "why": "One customer that is most of the revenue is the venture's largest single risk.",
+        "when": "One customer accounts for a large enough share of revenue or of what is owed to matter."
+      }
+    },
+    {
+      "id": "execute-hedges",
+      "do": "Set out the position being covered, what the cover costs, when it would be unwound and what it gives up if the market moves the other way, hand it to the founder to transact, and record what they did; the agent never opens, closes or adjusts a position.",
+      "skill": "manage-treasury-operations",
+      "ask": true,
+      "activity": "9.7.5.5",
+      "raises": [
+        "legal-or-terms"
+      ],
+      "consider": {
+        "why": "Opening and unwinding a position are both transactions with a price and a counterparty.",
+        "when": "The founder has approved covering an exposure."
+      }
+    },
+    {
+      "id": "hedge-accounting",
+      "do": "Record each hedge with the exposure it covers, what it cost and what it is worth now, and prepare the entries and the note the books need.",
+      "skill": "manage-treasury-operations",
+      "activity": "9.7.5.6",
+      "consider": {
+        "why": "A hedge has its own value and its own accounting, separate from the thing it covers.",
+        "when": "The venture holds a hedge."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Raise each exposure past what the rules allow as a decision for the founder with the cover available and its cost, and tell the finance lead which exposure would hurt the runway first.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "legal-or-terms",
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "exposures-measured",
+      "kind": "review",
+      "check": "Is each rate, currency and customer concentration exposure measured with its source and set against the limit, and was every hedge transacted by the founder?",
+      "reviewer": "finance-lead"
+    }
+  ]
+}

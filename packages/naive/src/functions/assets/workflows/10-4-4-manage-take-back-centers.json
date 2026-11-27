@@ -1,0 +1,52 @@
+{
+  "id": "10-4-4-manage-take-back-centers",
+  "function": "assets",
+  "process": "10.4.4",
+  "title": "Manage take-back centers",
+  "goal": "For every class of item the venture disposes of, the maker's or retailer's take-back route is recorded with what it accepts, pays and requires, and each item sent that way carries its certificate on the record.",
+  "measures": ["compliance_met", "cost_or_time_saved"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["assets/intake"] },
+  "reads": ["venture", "assets/register", "product", "finance/spend", "decisions"],
+  "steps": [
+    {
+      "id": "find-take-back-routes",
+      "do": "For each class of item the venture disposes of, find the maker's, retailer's or carrier's take-back, trade-in or recycling programme, and record what it accepts, what it pays or charges, what it requires of the item and where to send it, each with its source and the date read.",
+      "skill": "manage-asset-end-of-life",
+      "consider": {
+        "why": "A take-back route is often cheaper than any other and is the one that returns proof of responsible disposal.",
+        "when": "The venture is disposing of electronics, batteries or equipment, or is replacing items a maker will take back."
+      }
+    },
+    {
+      "id": "use-the-recorded-route",
+      "do": "When an item leaves, use the recorded route, keep the certificate, receipt or trade-in credit it returns, and name it as the disposal evidence on that item's record.",
+      "skill": "manage-asset-end-of-life",
+      "writes": ["assets/register/[id]"],
+      "consider": {
+        "why": "A route found and then not used leaves the venture with no proof of where the item went.",
+        "when": "An item is leaving and a take-back route has been recorded for its class."
+      }
+    },
+    {
+      "id": "plan-taking-the-venture-product-back",
+      "do": "If the venture sells a physical product it may be asked to take back, draft how a returned item is received, inspected, sorted and then refurbished, recycled or scrapped, what it costs per item and who answers for it, and bring any public promise about it to the founder.",
+      "skill": "manage-asset-end-of-life",
+      "raises": ["legal-or-terms"],
+      "consider": {
+        "why": "A venture that sells hardware is eventually asked to take it back, and the promise is a public commitment only the founder can make.",
+        "when": "The venture sells a physical product and has promised, or has been asked, to take it back."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Attach the routes and their costs to the disposal decision they serve, and tell the finance lead where a take-back or trade-in changes what a replacement really costs.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "routes-sourced-and-used", "kind": "review", "check": "Does each recorded take-back route cite its source and the date it was read, and does every item sent through one carry its certificate or receipt as disposal evidence?", "reviewer": "finance-lead" }
+  ]
+}

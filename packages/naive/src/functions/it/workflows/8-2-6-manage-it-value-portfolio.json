@@ -1,0 +1,22 @@
+{
+  "id": "8-2-6-manage-it-value-portfolio",
+  "function": "it",
+  "process": "8.2.6",
+  "title": "Manage IT value portfolio",
+  "goal": "Every system and finished IT project is judged against the value criteria it was approved on, the ones that did not pay are named, and the adjustment the founder chose is recorded with its date.",
+  "measures": ["cost_or_time_saved", "compliance_met"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["it/intake"] },
+  "reads": ["venture", "it/connections", "finance/spend", "finance/budget", "foundation/goals", "operations/handoff", "decisions/*"],
+  "steps": [
+    { "id": "assess-performance-against-it-service-and-project-value-criteria", "do": "Take the value criteria each system or project was approved on from the decision that approved it, and write pass, short or unmeasured against each criterion with the record you read it from.", "skill": "develop-and-manage-it-business-strategy", "activity": "8.2.6.1" },
+    { "id": "quantify-value-of-it-service-and-project-portfolio-investments", "do": "Put a number on each one: hours saved a month and money saved a month against what it costs a month in the spend register, and show the arithmetic rather than a conclusion.", "skill": "develop-and-manage-it-business-strategy", "activity": "8.2.6.2" },
+    { "id": "communicate-business-technology-value-contribution", "do": "Write one short message for the founder that names which systems pay for themselves, which do not and by how much, and which cannot be judged yet and what would make them judgeable.", "skill": "develop-and-manage-it-business-strategy", "activity": "8.2.6.3" },
+    { "id": "determine-and-implement-it-portfolio-adjustments", "do": "Propose the adjustment for each one that did not pay (keep and change how it is used, downgrade, cancel, replace with something the venture owns), with what each would free and what would break, and record on the connection the adjustment the founder chose with its date; cancelling, downgrading or deleting data is the founder's.", "skill": "develop-and-manage-it-business-strategy", "activity": "8.2.6.4", "writes": ["it/connections/[id]"], "raises": ["cancel-or-downgrade", "irreversible-data-change"] },
+    { "id": "feed-decisions", "do": "Record each value judgement as evidence on the decision that approved the system or project, and propose to the product lead the order in which to act on the ones that did not pay.", "skill": "develop-and-manage-it-business-strategy", "writes": ["decisions/*"], "raises": ["set-priorities", "domain-fact"] }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "value-shown", "kind": "review", "check": "Is every system and finished project judged against the criteria its own approving decision named, with its arithmetic shown, and is every cancellation or data deletion a decision the founder made?", "reviewer": "product-lead" }
+  ]
+}

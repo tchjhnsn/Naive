@@ -1,0 +1,203 @@
+{
+  "id": "3-5-3-develop-and-manage-sales-proposals-bids-and-quotes",
+  "function": "marketing-and-sales",
+  "process": "3.5.3",
+  "title": "Develop and manage sales proposals, bids, and quotes",
+  "goal": "Every proposal, bid or quote the venture sends is built from the buyer's stated requirements, priced from the venture's own costs, approved by the founder before it leaves, and its outcome written on the opportunity.",
+  "measures": [
+    "revenue"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "marketing-and-sales/intake"
+    ]
+  },
+  "reads": [
+    "venture",
+    "sales/opportunities",
+    "customers",
+    "product",
+    "product/capabilities",
+    "service-delivery/offers",
+    "validation/pricing",
+    "purpose/competitor",
+    "markets",
+    "finance/spend",
+    "money",
+    "people/team-plan",
+    "legal/obligations",
+    "legal/risks",
+    "foundation/goals",
+    "governance/publication-policy",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "receive-request-for-proposal-request-for-quote",
+      "do": "Record the request the buyer sent, whether it is a formal document or an email asking a price, against its opportunity with the date it arrived, the date it is due and what it asks for.",
+      "skill": "develop-and-manage-sales-plans",
+      "writes": [
+        "sales/opportunities/[id]"
+      ],
+      "activity": "3.5.3.1"
+    },
+    {
+      "id": "refine-customer-requirements",
+      "do": "Write each requirement the buyer stated in their own words, mark the ones that are ambiguous or missing, and give the founder the short list of questions to put back before anything is priced.",
+      "ask": true,
+      "skill": "develop-and-manage-sales-plans",
+      "activity": "3.5.3.2"
+    },
+    {
+      "id": "review-request-for-proposal-request-for-quote-request",
+      "do": "Judge whether to answer at all: what it would take to prepare, whether the venture can actually deliver it, whether the buyer has budget and a date, and recommend to bid or to decline with the reason.",
+      "skill": "develop-and-manage-sales-plans",
+      "raises": [
+        "set-priorities"
+      ],
+      "activity": "3.5.3.3"
+    },
+    {
+      "id": "perform-competitive-analysis",
+      "do": "From the competitor records and public sources say who else is likely bidding, what each would offer and at roughly what price, and where the venture is weaker, from public sources only.",
+      "skill": "develop-and-manage-sales-plans",
+      "activity": "3.5.3.4"
+    },
+    {
+      "id": "validate-with-strategy-business-plans",
+      "do": "Check the work against the live goals and the ICP profiles, say whether winning it takes the venture where it decided to go, and name what it would commit the venture to that no record covers.",
+      "skill": "develop-and-manage-sales-plans",
+      "activity": "3.5.3.5"
+    },
+    {
+      "id": "understand-customer-business-and-requirements",
+      "do": "Write what the buyer is actually trying to achieve, why now, who inside it carries the problem and what success would look like to them, citing their own words from the opportunity and interview records.",
+      "skill": "develop-and-manage-sales-plans",
+      "activity": "3.5.3.6"
+    },
+    {
+      "id": "develop-solution-and-delivery-approach",
+      "do": "Map each requirement to a product capability or an offer that already exists, mark the ones nothing covers, and open a handoff to products or service delivery for anything the proposal would promise that is not built.",
+      "skill": "develop-and-manage-sales-plans",
+      "writes": [
+        "operations/handoff/[id]"
+      ],
+      "raises": [
+        "defer-or-route"
+      ],
+      "activity": "3.5.3.7"
+    },
+    {
+      "id": "identify-staffing-requirements",
+      "do": "List who would have to do the work if the venture won, the hours each part takes and where that time is not available, and name the hire or the partner the proposal depends on.",
+      "skill": "develop-and-manage-sales-plans",
+      "consider": {
+        "why": "A proposal the venture cannot staff is a loss that arrives after the win.",
+        "when": "Delivering the work would take more hours than the team plan shows are available."
+      },
+      "activity": "3.5.3.8"
+    },
+    {
+      "id": "develop-pricing-and-scheduling-estimates",
+      "do": "Price the work from the per unit costs and the approved price points, give the dates each part would be delivered, and show which numbers are firm and which are estimates with their range.",
+      "skill": "develop-and-manage-sales-plans",
+      "activity": "3.5.3.9"
+    },
+    {
+      "id": "conduct-profitability-analysis",
+      "do": "Subtract the delivery cost from the proposed price, show the margin and what it falls to if the work takes half again as long, and say plainly when the work loses money at the price the buyer will pay.",
+      "skill": "develop-and-manage-sales-plans",
+      "activity": "3.5.3.10"
+    },
+    {
+      "id": "manage-internal-reviews",
+      "do": "Have the functions whose work the proposal commits read the parts that bind them, collect each comment with who gave it, and resolve or record every one before approval is asked for.",
+      "skill": "develop-and-manage-sales-plans",
+      "writes": [
+        "operations/handoff/[id]"
+      ],
+      "consider": {
+        "why": "A promise made in a proposal binds whoever has to deliver it.",
+        "when": "Someone other than the founder would deliver part of the work."
+      },
+      "activity": "3.5.3.11"
+    },
+    {
+      "id": "manage-internal-approvals",
+      "do": "Bring the founder the proposal with the price, the margin, the terms that differ from standard and the commitments it makes, and record their approval or the change they ask for before it goes anywhere.",
+      "ask": true,
+      "skill": "develop-and-manage-sales-plans",
+      "raises": [
+        "legal-or-terms"
+      ],
+      "activity": "3.5.3.12"
+    },
+    {
+      "id": "submit-present-bid-proposal-quote-to-customer",
+      "do": "Put the approved proposal in its final form with the date it expires, hand it to the founder to send or present, and record on the opportunity what was sent, to whom and when; you send nothing.",
+      "skill": "develop-and-manage-sales-plans",
+      "writes": [
+        "sales/opportunities/[id]"
+      ],
+      "raises": [
+        "public-commitment"
+      ],
+      "activity": "3.5.3.13"
+    },
+    {
+      "id": "revise-bid-proposal-quote",
+      "do": "Write what the buyer asked to change, prepare the revision with its effect on price, margin and dates beside the previous version, and take any discount or non-standard term back to the founder.",
+      "skill": "develop-and-manage-sales-plans",
+      "raises": [
+        "legal-or-terms"
+      ],
+      "consider": {
+        "why": "A revision agreed in a conversation and never priced is how a margin disappears.",
+        "when": "The buyer answered the proposal and asked for a change."
+      },
+      "activity": "3.5.3.14"
+    },
+    {
+      "id": "manage-notification-outcome",
+      "do": "Write the outcome on the opportunity, won or lost with the reason in the buyer's words, the category and who gave it, name the competitor where one won, and write the customer record on a win.",
+      "skill": "develop-and-manage-sales-plans",
+      "writes": [
+        "sales/opportunities/[id]",
+        "customers/[id]"
+      ],
+      "raises": [
+        "domain-fact"
+      ],
+      "activity": "3.5.3.15"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Add the outcome and its reason to the decision or goal it bears on, route to the owning function what the buyer asked for that the venture does not have, and tell the growth lead what the loss or win says about the price.",
+      "skill": "develop-and-manage-sales-plans",
+      "writes": [
+        "decisions/*",
+        "operations/handoff/[id]"
+      ],
+      "raises": [
+        "defer-or-route",
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "proposal-approved-before-it-left",
+      "kind": "review",
+      "check": "Did the founder approve the price, the terms and the commitments before the proposal was sent, and does the opportunity record what was sent and what came back?",
+      "reviewer": "growth-lead"
+    }
+  ]
+}

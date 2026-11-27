@@ -1,0 +1,83 @@
+{
+  "id": "11-3-6-amend-or-create-policy",
+  "function": "risk-and-compliance",
+  "process": "11.3.6",
+  "title": "Amend or create policy",
+  "goal": "The rule that was missing, unclear or unfollowed is named with the cause behind it, the founder has decided the change, and a record now carries the duty or the review the change creates.",
+  "measures": [
+    "compliance_met"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "risk-and-compliance/intake"
+    ]
+  },
+  "reads": [
+    "legal/obligations",
+    "legal/risks",
+    "governance/decision-rights",
+    "governance/internal-terms",
+    "capabilities/processes",
+    "operations/handoff"
+  ],
+  "steps": [
+    {
+      "id": "name-what-failed",
+      "do": "Say which rule was missing, which was unclear and which was simply not followed, citing the investigation and the records that show it, so the change answers a cause rather than a feeling.",
+      "skill": "manage-remediation-efforts"
+    },
+    {
+      "id": "draft-the-change",
+      "do": "Draft the new or changed rule in plain sentences naming who it binds, what it requires, how anyone can tell it was followed and what it costs in time each month, and write what would show the change did not work.",
+      "skill": "manage-remediation-efforts",
+      "writes": [
+        "operations/handoff/[id]"
+      ]
+    },
+    {
+      "id": "bring-it-to-the-founder",
+      "do": "Bring the draft to the founder as one decision with leaving the rule alone offered as a real option and the cost of each, and change nothing until the founder has decided.",
+      "skill": "manage-remediation-efforts",
+      "raises": [
+        "legal-or-terms",
+        "set-priorities"
+      ]
+    },
+    {
+      "id": "carry-it-into-the-records",
+      "do": "Once the founder has decided, turn the rule into the records that enforce it, a dated duty on the obligations register and a review date and treatment on the risk it covers, and name the workflow step that will check it.",
+      "skill": "manage-remediation-efforts",
+      "ask": true,
+      "writes": [
+        "legal/obligations/[id]",
+        "legal/risks/[id]"
+      ]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Add the decided rule to the decision the failure opened, and raise to the finance lead any rule the founder left alone that a live risk still needs.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "rule-change-recorded",
+      "kind": "review",
+      "check": "Does the change name the rule that failed and the cause behind it, did the founder decide it, and does a record now carry the duty or the review the rule creates?",
+      "reviewer": "finance-lead"
+    }
+  ]
+}

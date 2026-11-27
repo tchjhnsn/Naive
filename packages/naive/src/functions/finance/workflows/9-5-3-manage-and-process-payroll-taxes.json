@@ -1,0 +1,110 @@
+{
+  "id": "9-5-3-manage-and-process-payroll-taxes",
+  "function": "finance",
+  "process": "9.5.3",
+  "title": "Manage and process payroll taxes",
+  "goal": "Every payroll tax the venture owes is named with its rate, deadline and form, the cash for each deadline is in the budget month it falls in, and each payment and return reaches the founder in time to file.",
+  "measures": [
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "finance/intake"
+    ]
+  },
+  "reads": [
+    "venture",
+    "people/team",
+    "finance/budget",
+    "finance/spend",
+    "money",
+    "purpose/money/summary",
+    "legal/obligations"
+  ],
+  "steps": [
+    {
+      "id": "payroll-tax-plan",
+      "do": "List every payroll tax the venture owes by jurisdiction with its rate, who it is paid to, its deadline and its form, and say which of them the venture is not yet registered for.",
+      "skill": "process-payroll",
+      "activity": "9.5.3.1",
+      "consider": {
+        "why": "A payroll tax the venture did not know about arrives with a penalty.",
+        "when": "The venture pays anyone through payroll."
+      }
+    },
+    {
+      "id": "manage-payroll-tax-plan",
+      "do": "Keep the payroll tax calendar current and put the amount for each deadline into its budget month, so the cash is there before the date arrives.",
+      "skill": "process-payroll",
+      "activity": "9.5.3.2",
+      "writes": [
+        "finance/budget/[id]"
+      ],
+      "consider": {
+        "why": "Payroll tax is money held on someone else's behalf, and spending it is the commonest way a small venture gets into trouble.",
+        "when": "The venture has a payroll tax list and a deadline inside the next quarter."
+      }
+    },
+    {
+      "id": "calculate-and-pay",
+      "do": "Calculate each payroll tax due from the period's pay run, show the working, and hand the founder the amount, the payee and the deadline; the agent never pays a tax authority.",
+      "skill": "process-payroll",
+      "ask": true,
+      "activity": "9.5.3.3",
+      "raises": [
+        "spend-money"
+      ],
+      "consider": {
+        "why": "The amount owed follows from the pay run and has to be shown, not asserted.",
+        "when": "A payroll tax deadline falls in this period."
+      }
+    },
+    {
+      "id": "annual-statements",
+      "do": "Assemble each person's annual tax statement from the year's pay runs, check the totals against the pay records, and hand them to the founder to issue.",
+      "skill": "process-payroll",
+      "activity": "9.5.3.4",
+      "consider": {
+        "why": "Each person needs their annual statement to file their own return.",
+        "when": "A tax year has ended and the venture paid someone in it."
+      }
+    },
+    {
+      "id": "file-payroll-tax-forms",
+      "do": "Assemble each payroll tax return the venture owes with its figures and the records behind them, list anything still missing, and hand it to the founder or their preparer to file and sign.",
+      "skill": "process-payroll",
+      "activity": "9.5.3.5",
+      "consider": {
+        "why": "A return is due whether or not anyone has assembled the figures.",
+        "when": "A payroll tax return is due."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Raise every payroll tax the venture is not registered for as a decision for the founder, tell the finance lead which deadline is nearest and least covered by cash, and when the venture pays nobody through payroll record that as the reason each step was considered and not run.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "spend-money",
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "payroll-tax-dated",
+      "kind": "review",
+      "check": "Does every payroll tax the venture owes carry its rate, deadline and form, with the cash for it in the budget month it falls in?",
+      "reviewer": "finance-lead"
+    }
+  ]
+}

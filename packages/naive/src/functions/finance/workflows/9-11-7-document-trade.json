@@ -1,0 +1,80 @@
+{
+  "id": "9-11-7-document-trade",
+  "function": "finance",
+  "process": "9.11.7",
+  "title": "Document trade",
+  "goal": "Each shipment has its document set collected, agreeing with itself on description, quantity, value, origin and parties, and retained with the date it must be kept until in each country involved.",
+  "measures": [
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "finance/intake"
+    ]
+  },
+  "reads": [
+    "product",
+    "product/[id]",
+    "supply-chain/purchase-orders",
+    "supply-chain/suppliers",
+    "customers",
+    "deals",
+    "finance/spend",
+    "legal/obligations"
+  ],
+  "steps": [
+    {
+      "id": "list-the-documents",
+      "do": "List the documents each shipment needs, the commercial invoice, the packing list, the transport document, the origin statement, any licence and the insurance certificate, and say who produces each one.",
+      "skill": "perform-global-trade-services",
+      "consider": {
+        "why": "A missing document holds goods at a border, where storage is charged by the day.",
+        "when": "The venture moves goods across a border."
+      }
+    },
+    {
+      "id": "collect-and-check",
+      "do": "Collect each document and check that the description, quantity, value, origin and parties agree across all of them, and list every disagreement before the goods move.",
+      "skill": "perform-global-trade-services",
+      "consider": {
+        "why": "Documents that disagree with each other are the commonest reason a shipment is held or a payment refused.",
+        "when": "A shipment's documents are being prepared."
+      }
+    },
+    {
+      "id": "retain-the-set",
+      "do": "Keep the full document set where the records point to it, with the date it must be kept until under the rules of each country involved, and list anything missing from a past shipment.",
+      "skill": "perform-global-trade-services",
+      "consider": {
+        "why": "A customs audit arrives years later and asks for the set.",
+        "when": "A shipment has completed."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Raise each disagreement between documents and each missing set as a decision for the founder, with what it exposes if a shipment is held or audited.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "legal-or-terms"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "documents-agree",
+      "kind": "review",
+      "check": "Do the description, quantity, value, origin and parties agree across every document in a shipment's set, and is each set retained with the date it must be kept until?",
+      "reviewer": "finance-lead"
+    }
+  ]
+}

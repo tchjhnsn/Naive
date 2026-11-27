@@ -1,0 +1,80 @@
+{
+  "id": "3-4-1-develop-sales-forecast",
+  "function": "marketing-and-sales",
+  "process": "3.4.1",
+  "title": "Develop sales forecast",
+  "goal": "The venture has one forecast for the period, built from its own closed and open opportunities, with the assumption behind each number, the promotions and events it accounts for, and what would make it wrong.",
+  "measures": [
+    "revenue"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "marketing-and-sales/intake"
+    ]
+  },
+  "reads": [
+    "venture",
+    "sales/opportunities",
+    "customers",
+    "money",
+    "product",
+    "markets",
+    "foundation/goals",
+    "operations/time-box",
+    "finance/budget",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "gather-current-and-historic-order-information",
+      "do": "List every closed and open opportunity with its value, its stage, its source and the dates it moved, say which periods the records actually cover, and name the gaps rather than filling them.",
+      "skill": "develop-sales-strategy",
+      "activity": "3.4.1.1"
+    },
+    {
+      "id": "analyze-sales-trends-and-patterns",
+      "do": "From that list work out how many opportunities each period produced, how many closed won, the average value and the days from first contact to close, and say which of these is steady enough to forecast from.",
+      "skill": "develop-sales-strategy",
+      "activity": "3.4.1.2"
+    },
+    {
+      "id": "generate-sales-forecast",
+      "do": "Forecast the period from the open pipeline weighted by stage and from the historic close rate separately, show both numbers and the arithmetic, name the assumption each rests on, and give the range rather than a single figure when the records are thin.",
+      "skill": "develop-sales-strategy",
+      "activity": "3.4.1.3"
+    },
+    {
+      "id": "analyze-historical-and-planned-promotions-and-events",
+      "do": "List the promotions and events that ran in the periods counted and the ones planned for the period forecast, say what each did to the numbers before, and adjust the forecast only where a past result supports it.",
+      "skill": "develop-sales-strategy",
+      "activity": "3.4.1.4"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Attach the forecast to the goal and the open decisions it bears on, say plainly which number is a count and which is an assumption, and tell the growth lead what would have to be true for the forecast to hold.",
+      "skill": "develop-sales-strategy",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "forecast-traceable-to-records",
+      "kind": "review",
+      "check": "Does the forecast show both the pipeline and the historic close-rate arithmetic with the opportunities counted, and does every adjustment for a promotion cite a past result?",
+      "reviewer": "growth-lead"
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "id": "1-3-6-review-execution-of-strategic-initiatives",
+  "function": "strategy",
+  "process": "1.3.6",
+  "title": "Review execution of strategic initiatives",
+  "goal": "Each running initiative has its observed value against its measure written on its goal with the evidence behind it, and the ones whose evidence no longer supports continuing stand before the founder as a decision.",
+  "measures": ["learning", "impact"],
+  "trigger": { "kind": "request" },
+  "requires": {
+    "records": ["foundation/pre-registration"],
+    "meetings": ["strategy/intake"]
+  },
+  "reads": [
+    "foundation/goals",
+    "foundation/bets",
+    "foundation/exit-criteria",
+    "operations/handoff",
+    "evidence",
+    "purpose/money/summary",
+    "validation/*",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "collect-the-evidence",
+      "do": "For each running initiative read its handoffs, their done criteria and the result records behind them, and list what has actually been finished and what evidence proves it, separating finished work from work merely performed.",
+      "skill": "develop-and-measure-strategic-initiatives"
+    },
+    {
+      "id": "compare-with-the-baseline",
+      "do": "Read each initiative's measure at its source again and write the observed value, its date and the gap to the target on the goal's result, saying plainly where the measure has moved for a reason the initiative cannot claim.",
+      "skill": "develop-and-measure-strategic-initiatives",
+      "writes": ["foundation/goals/[id]"]
+    },
+    {
+      "id": "judge-continue-or-stop",
+      "do": "For each initiative say whether the evidence supports continuing, stopping or changing it, name what would show that judgement wrong, check any bet whose kill criteria this evidence meets, and bring it to the founder without deciding.",
+      "skill": "develop-and-measure-strategic-initiatives",
+      "raises": ["continue-or-stop"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Open one decision per initiative whose future is in question with the evidence for each option, raise a change of direction where the evidence contradicts the strategy rather than the plan, and recommend to the strategy lead what to review next.",
+      "writes": ["decisions/*"],
+      "raises": ["change-direction", "set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "finished-not-merely-performed",
+      "kind": "review",
+      "check": "Does the review separate finished work with evidence from work merely performed, and is every judgement to continue or stop open as a decision rather than made by the agent?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

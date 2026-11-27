@@ -1,0 +1,78 @@
+{
+  "id": "11-3-2-contact-and-confer-with-experts",
+  "function": "risk-and-compliance",
+  "process": "11.3.2",
+  "title": "Contact and confer with experts",
+  "goal": "The question the venture needs an expert to answer is written with its facts, their sources and its deadline, the founder has a shortlist with costs, and whatever the expert said is recorded as the expert's words with its date.",
+  "measures": [
+    "compliance_met",
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "risk-and-compliance/intake"
+    ]
+  },
+  "reads": [
+    "legal/risks",
+    "legal/obligations",
+    "decisions",
+    "operations/handoff",
+    "finance/budget",
+    "knowledge/knowledge-sources"
+  ],
+  "steps": [
+    {
+      "id": "frame-the-question",
+      "do": "Write the question for the expert: the facts in order with the record behind each, what the venture has already decided, what exactly it needs answered and the date it needs it by, short enough that a paid hour is spent answering rather than reading.",
+      "skill": "manage-remediation-efforts",
+      "writes": [
+        "operations/handoff/[id]"
+      ]
+    },
+    {
+      "id": "shortlist-experts",
+      "do": "From public sources list the few experts who could answer the question, with what each charges, what each would need from the venture and how fast each could answer, and bring the shortlist to the founder with your recommendation and nothing booked.",
+      "skill": "manage-remediation-efforts",
+      "raises": [
+        "spend-money"
+      ]
+    },
+    {
+      "id": "record-the-answer",
+      "do": "After the founder has spoken to the expert, record what the expert said, on what date and who said it, keep it marked as the expert's words rather than yours, and move the range or the treatment on the risks the answer bears on.",
+      "skill": "manage-remediation-efforts",
+      "ask": true,
+      "writes": [
+        "legal/risks/[id]",
+        "operations/handoff/[id]"
+      ]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Add the expert's answer to the decision that waited on it, and raise to the finance lead what still needs an answer and what it would cost.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "question-and-answer-sourced",
+      "kind": "review",
+      "check": "Does the question name its facts, the record behind each and the date it is needed by, and is the expert's answer recorded as the expert's words with the date it was given?",
+      "reviewer": "finance-lead"
+    }
+  ]
+}

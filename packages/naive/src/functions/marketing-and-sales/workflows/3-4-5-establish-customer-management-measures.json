@@ -1,0 +1,72 @@
+{
+  "id": "3-4-5-establish-customer-management-measures",
+  "function": "marketing-and-sales",
+  "process": "3.4.5",
+  "title": "Establish customer management measures",
+  "goal": "How the venture judges its customer relationships is written down: which measures it keeps per customer, how each is counted, how often, and the number at which a person is told to act.",
+  "measures": [
+    "revenue",
+    "usage_or_adoption"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "marketing-and-sales/intake"
+    ]
+  },
+  "reads": [
+    "venture",
+    "customers",
+    "sales/opportunities",
+    "support/cases",
+    "product",
+    "money",
+    "validation/product-market-fit",
+    "foundation/icp",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "list-what-the-records-can-count",
+      "do": "List what the venture can honestly count about a customer today from its records, such as revenue, time as a customer, open cases and last contact, and list what it cannot count and what would be needed.",
+      "skill": "develop-sales-strategy"
+    },
+    {
+      "id": "define-the-measures",
+      "do": "Write the few measures the venture will keep per customer, how each is counted from which records and how often it is refreshed, and leave out any measure nothing would be done about.",
+      "skill": "develop-sales-strategy"
+    },
+    {
+      "id": "set-the-thresholds",
+      "do": "Ask the founder the number at which each measure should bring a customer to their attention and what they would do then, and record the threshold with the action beside it.",
+      "ask": true,
+      "skill": "develop-sales-strategy"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Put the measures and thresholds to the founder as one decision, and tell the growth lead which customers already sit past a threshold.",
+      "skill": "develop-sales-strategy",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "measures-have-thresholds-and-actions",
+      "kind": "review",
+      "check": "Does every customer measure say how it is counted, how often, and the number at which a person is told, with what they would do about it?",
+      "reviewer": "growth-lead"
+    }
+  ]
+}

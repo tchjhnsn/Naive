@@ -1,0 +1,80 @@
+{
+  "id": "4-4-5-deliver-last-mile-delivery-services",
+  "function": "supply-chain",
+  "process": "4.4.5",
+  "title": "Deliver last mile delivery services",
+  "goal": "Each delivery the venture makes to the customer's door has an order carrying that customer's requirements, a scheduled slot and resource, a recorded outcome, and the customer's feedback where it was asked for.",
+  "measures": ["flow_and_lead_time", "cost_or_time_saved"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["supply-chain/intake"] },
+  "reads": [
+    "customers",
+    "deals",
+    "product",
+    "support/cases",
+    "people/team",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "confirm-last-mile-delivery-service-requirements",
+      "do": "Take each customer's delivery request and turn it into a delivery order, the address and access, the slot the customer agreed, what must happen on arrival such as installation or taking the old unit away, and keep that customer's standing requirements with their record so they are not asked twice.",
+      "skill": "manage-logistics-and-warehousing",
+      "activity": "4.4.5.1",
+      "consider": {
+        "why": "A delivery the venture performs itself fails on access and timing far more often than on the goods.",
+        "when": "The venture delivers to the customer's door with its own people or vehicles."
+      }
+    },
+    {
+      "id": "identify-and-schedule-resources-for-last-mile-delivery",
+      "do": "Plan who delivers and in what, with the hours, the vehicle and any two-person or equipment need, and build the fulfilment schedule that puts each delivery order in a slot the resources can actually meet.",
+      "skill": "manage-logistics-and-warehousing",
+      "activity": "4.4.5.2",
+      "consider": {
+        "why": "Promising a slot before the hands and the vehicle are scheduled is what turns one late delivery into a day of them.",
+        "when": "The venture delivers to the customer's door with its own people or vehicles."
+      }
+    },
+    {
+      "id": "provide-last-mile-delivery-service",
+      "do": "Run the day's delivery schedule in the order that holds the slots, record for each delivery the arrival time, what was handed over, who signed and anything that stopped it, and tell the customer the same day when a slot will be missed.",
+      "skill": "manage-logistics-and-warehousing",
+      "activity": "4.4.5.3",
+      "consider": {
+        "why": "A delivery day only counts as done when every order has an outcome and the customer knows it.",
+        "when": "The venture delivers to the customer's door with its own people or vehicles."
+      }
+    },
+    {
+      "id": "ensure-quality-of-last-mile-delivery",
+      "do": "Split the day's deliveries into completed and failed, draft the message asking the customer how the delivery went for the founder to send, and record each answer against the delivery order and the case it opens in `support/cases`.",
+      "skill": "manage-logistics-and-warehousing",
+      "activity": "4.4.5.4",
+      "raises": ["public-commitment"],
+      "consider": {
+        "why": "The customer is the only source for whether the delivery was good, and a failed delivery that nobody records repeats.",
+        "when": "The venture delivered to a customer's door since the last run."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Add a decision for what the deliveries show, keep doing it with the venture's own hands or hand it to a carrier, change the slot length or charge for installation, each with the cost per delivery and the failure rate behind it, and hand the order of that work to the product lead.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "every-delivery-has-an-outcome",
+      "kind": "review",
+      "check": "Does every delivery order carry its agreed slot, its recorded outcome and, where it was asked for, the customer's answer, and is every failed delivery recorded with its cause?",
+      "reviewer": "product-lead"
+    }
+  ]
+}

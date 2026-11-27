@@ -1,0 +1,25 @@
+{
+  "id": "8-3-7-develop-and-execute-it-resilience-and-continuity",
+  "function": "it",
+  "process": "8.3.7",
+  "title": "Develop and execute IT resilience and continuity operations",
+  "goal": "The continuity plan is written down where it can be found without the systems it covers, changes to live systems go through a recorded control, and the plan and the providers' own continuity have been exercised on a date.",
+  "measures": ["compliance_met", "cost_or_time_saved"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["it/intake"] },
+  "reads": ["venture", "it/connections", "legal/risks", "operations/handoff", "system/release", "system/provenance", "people/team-plan", "decisions/*"],
+  "steps": [
+    { "id": "conduct-it-resilience-improvement-projects", "do": "Carry out the resilience fixes in the order the founder set (a second copy of the records, a credential held by more than one person, a system with an export where it had none), doing only what narrows risk without new spend or wider access, and record what changed on the connection.", "skill": "develop-and-manage-it-resilience-and-risk", "activity": "8.3.7.1", "writes": ["it/connections/[id]"], "raises": ["security-tightening"] },
+    { "id": "develop-document-and-maintain-it-business-continuity-planning", "do": "Keep the plan in one place that can be read when the systems are down (an exported copy, not only inside the system it covers): per system the first hour, how records come back, who does it, what is accepted as lost, and the date it was last reviewed.", "skill": "develop-and-manage-it-resilience-and-risk", "activity": "8.3.7.2", "writes": ["it/connections/[id]"] },
+    { "id": "implement-and-enforce-change-control-procedures", "do": "Write and then follow the rule for changing a live system: what may be changed without asking, what needs a decision of its class first, what must be reversible, and what is recorded afterwards; refuse your own change that does not meet it.", "skill": "develop-and-manage-it-resilience-and-risk", "activity": "8.3.7.3" },
+    { "id": "execute-recurring-it-service-provider-business-continuity", "do": "Check each provider's own continuity on a date: its published status history, its backup and export commitments, what notice it gives before closing an account, and whether the venture could move off it, and record each answer with the page you read.", "skill": "develop-and-manage-it-resilience-and-risk", "activity": "8.3.7.4", "writes": ["it/connections/[id]"] },
+    { "id": "provide-it-resilience-training", "do": "Draft the one-page card each person holding access needs (what to do when a system is down, where the plan is, who to tell, what not to do) and hand it to the founder to give.", "skill": "develop-and-manage-it-resilience-and-risk", "activity": "8.3.7.5", "consider": { "why": "A card is only needed once someone other than the founder would have to act during an outage.", "when": "Someone other than the founder holds access to a system the venture depends on." } },
+    { "id": "execute-recurring-it-business-operations-continuity", "do": "Exercise the plan on a date: restore one system's records from the copy, time it, and write what worked, what did not and what the plan said wrongly, then correct the plan.", "skill": "develop-and-manage-it-resilience-and-risk", "activity": "8.3.7.6", "writes": ["it/connections/[id]"] },
+    { "id": "feed-decisions", "do": "Record the exercise and each provider answer as evidence on the decision it bears on, propose the order of remaining resilience work to the product lead, and raise for the founder any second provider, paid plan or set of terms the plan needs.", "skill": "develop-and-manage-it-resilience-and-risk", "writes": ["decisions/*"], "raises": ["set-priorities", "spend-money", "legal-or-terms", "new-dependency-free"] }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "connections-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-connections.ts \"$NAIVE_VENTURE\"" },
+    { "id": "plan-exercised", "kind": "review", "check": "Is the continuity plan readable without the systems it covers, was a restore exercised with its date and timing recorded, and does every change to a live system in this run name the rule or the decision that allowed it?", "reviewer": "product-lead" }
+  ]
+}

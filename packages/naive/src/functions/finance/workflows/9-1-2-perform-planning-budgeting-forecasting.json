@@ -1,0 +1,94 @@
+{
+  "id": "9-1-2-perform-planning-budgeting-forecasting",
+  "function": "finance",
+  "process": "9.1.2",
+  "title": "Perform planning/budgeting/forecasting",
+  "goal": "The next 12 months are budgeted by category and month with every line citing a record or marked as an assumption, the money summary carries the current forecast and runway, and every category off its line is explained or open as a decision.",
+  "measures": [
+    "cost_or_time_saved",
+    "revenue"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "finance/intake"
+    ]
+  },
+  "reads": [
+    "foundation/goals",
+    "finance/budget",
+    "finance/spend",
+    "money",
+    "purpose/money/summary",
+    "product",
+    "validation/pricing",
+    "deals",
+    "people/team"
+  ],
+  "steps": [
+    {
+      "id": "budget-rules",
+      "do": "Write the venture's budget rules on one page: the spend categories, the record each line must cite, how often the budget is revised, and the amount above which a cost needs the founder's approval before it is committed, and put the page on the handoff as evidence.",
+      "skill": "perform-planning-and-management-accounting",
+      "activity": "9.1.2.1"
+    },
+    {
+      "id": "prepare-budget",
+      "do": "Draft or revise the next 12 months one line per category and month, costs from the spend register and the accounts and revenue from the deals and pricing records, each line citing its record or marked as an assumption with what would show it wrong.",
+      "skill": "perform-planning-and-management-accounting",
+      "activity": "9.1.2.2",
+      "writes": [
+        "finance/budget/[id]"
+      ]
+    },
+    {
+      "id": "operationalize",
+      "do": "Turn each budget line into something someone can act on by naming the function that owns it, the month it starts and the renewal or invoice date it depends on, and hand the founder the lines that need an action this month.",
+      "skill": "perform-planning-and-management-accounting",
+      "activity": "9.1.2.3"
+    },
+    {
+      "id": "forecast",
+      "do": "Project cash forward month by month from the budget and the current balances and rewrite the money summary with that forecast and the months of runway it gives, saying which months rest on assumptions.",
+      "skill": "perform-planning-and-management-accounting",
+      "activity": "9.1.2.4",
+      "writes": [
+        "purpose/money/summary"
+      ]
+    },
+    {
+      "id": "variance",
+      "do": "Compare the period's actual spend and revenue with the budget and the last forecast line by line, list every category more than 10% off with the amount and the cause, and revise the future lines from the facts while leaving past months as they were planned.",
+      "skill": "perform-planning-and-management-accounting",
+      "activity": "9.1.2.5",
+      "writes": [
+        "finance/budget/[id]"
+      ]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Name the open decision each variance or funding gap bears on and add it there as evidence, and raise to the finance lead which lines to cut first when the forecast puts runway under six months.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "every-line-cited",
+      "kind": "review",
+      "check": "Does every budget line cite a record or carry an assumption with what would show it wrong, and is every category more than 10% off its line explained or open as a decision?",
+      "reviewer": "finance-lead"
+    }
+  ]
+}

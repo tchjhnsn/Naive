@@ -1,0 +1,89 @@
+{
+  "id": "7-7-3-manage-and-maintain-employee-data",
+  "function": "human-capital",
+  "process": "7.7.3",
+  "title": "Manage and maintain employee data",
+  "goal": "Every person who works on the venture has one record whose fields each have a source and a date, nothing is held that the work does not need, who may read each field and how long it is kept are written down, and every removal stands as the founder's decision.",
+  "measures": [
+    "compliance_met"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "human-capital/intake"
+    ]
+  },
+  "reads": [
+    "people",
+    "people/founders",
+    "people/founders/[id]",
+    "governance/internal-terms",
+    "legal/obligations",
+    "legal/risks",
+    "it/connections",
+    "operations/handoff",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "inventory-the-fields",
+      "do": "List, field by field, what the venture holds about each person in `people` and `people/founders/[id]`, where each field came from, when it was written and why the work needs it.",
+      "skill": "manage-employee-information-and-analytics"
+    },
+    {
+      "id": "correct-and-fill",
+      "do": "Fill the fields the work needs from the agreement or the person's own words, correct what disagrees with its source, and record the source and date of every change you make.",
+      "skill": "manage-employee-information-and-analytics",
+      "writes": [
+        "people",
+        "people/founders/[id]"
+      ]
+    },
+    {
+      "id": "minimize-what-is-held",
+      "do": "Name every field the work does not need and put its removal to the founder as a decision, because removing a person's data cannot be undone and the venture may be obliged to keep some of it.",
+      "skill": "manage-employee-information-and-analytics",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "irreversible-data-change",
+        "legal-or-terms"
+      ]
+    },
+    {
+      "id": "set-access-and-retention",
+      "do": "Record who may read each field and how long the venture keeps it, taken from the obligation that sets it, and flag everything held past its date.",
+      "skill": "manage-employee-information-and-analytics",
+      "raises": [
+        "legal-or-terms"
+      ]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Open a decision for each removal now due and each field held with no source, attach the field inventory as evidence, and tell the strategy lead which retention date falls next.",
+      "skill": "manage-employee-information-and-analytics",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "every-field-sourced-and-needed",
+      "kind": "review",
+      "check": "Does every field held about a person name its source, its date and the work that needs it, or stand as an open removal decision?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

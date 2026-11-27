@@ -1,0 +1,84 @@
+{
+  "id": "6-1-4-define-customer-service-policies-and-procedures",
+  "function": "customer-service",
+  "process": "6.1.4",
+  "title": "Define customer service policies and procedures",
+  "goal": "The support policy holds the rules support runs on, the refund rule, the escalation triggers and what the agent may answer alone, and each rule names the decision or the person that approved it.",
+  "measures": [
+    "usage_or_adoption",
+    "revenue"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "customer-service/intake"
+    ]
+  },
+  "reads": [
+    "support/policy",
+    "support/cases",
+    "decisions",
+    "finance/spend",
+    "legal/obligations",
+    "customers"
+  ],
+  "steps": [
+    {
+      "id": "read-what-was-decided",
+      "do": "Read the decided decisions about customers, refunds and replies and write the rule each one set, so the policy records what the venture already does rather than something new.",
+      "skill": "develop-customer-service-strategy"
+    },
+    {
+      "id": "draft-refund-rule",
+      "do": "Draft the refund and credit rule, when it applies, up to how much and what always goes to a person, and raise it for the founder, because it changes what the venture owes a customer.",
+      "writes": [
+        "support/policy"
+      ],
+      "raises": [
+        "legal-or-terms"
+      ],
+      "skill": "develop-customer-service-strategy"
+    },
+    {
+      "id": "draft-escalation-list",
+      "do": "Draft the list of contacts that go to a person at once, a legal threat, a safety risk, a chargeback, a request to delete data, a public post and anything over the refund limit, with the decision class each is raised as.",
+      "writes": [
+        "support/policy"
+      ],
+      "skill": "develop-customer-service-strategy"
+    },
+    {
+      "id": "draft-what-the-agent-answers",
+      "do": "Draft what the agent may answer alone from the records and the published help, what it must hold for the founder, and the words it uses when it cannot answer at all.",
+      "writes": [
+        "support/policy"
+      ],
+      "skill": "develop-customer-service-strategy"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Name the decision each new rule settles or reopens, add the draft rule there, and recommend to the growth lead which missing rule costs the venture most time today.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "rules-approved",
+      "kind": "review",
+      "check": "Does every rule in the policy name the decision or the person that approved it, and does the escalation list name a decision class for each trigger?",
+      "reviewer": "growth-lead"
+    }
+  ]
+}

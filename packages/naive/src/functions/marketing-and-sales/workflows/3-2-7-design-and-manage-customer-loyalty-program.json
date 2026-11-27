@@ -1,0 +1,127 @@
+{
+  "id": "3-2-7-design-and-manage-customer-loyalty-program",
+  "function": "marketing-and-sales",
+  "process": "3.2.7",
+  "title": "Design and manage customer loyalty program",
+  "goal": "The venture knows whether it runs a loyalty program and why, and where it does, what members get, how they join, what it costs and what it returns are written down with the numbers read from the customer records.",
+  "measures": [
+    "usage_or_adoption",
+    "revenue"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "marketing-and-sales/intake"
+    ]
+  },
+  "reads": [
+    "venture",
+    "foundation/icp",
+    "customers",
+    "sales/opportunities",
+    "product",
+    "validation/product-market-fit",
+    "support/cases",
+    "finance/spend",
+    "marketing/message",
+    "governance/publication-policy",
+    "legal/obligations",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "define-customer-loyalty-program",
+      "do": "Draft what the program would give a member, what the member does to earn it, what it costs the venture per member and how a member leaves, and state the retention number it is meant to move and the record that would show it moved.",
+      "skill": "develop-marketing-strategy",
+      "writes": [
+        "operations/handoff/[id]"
+      ],
+      "consider": {
+        "why": "A reward for staying only pays when customers already stay for a reason, so the program is worth designing after retention exists and not before.",
+        "when": "The venture has paying customers who renew or repeat, and a retention number it can count."
+      },
+      "activity": "3.2.7.1"
+    },
+    {
+      "id": "acquire-members-to-customer-loyalty-program",
+      "do": "List the customers eligible for the program from the customer records, draft the invitation for each group with the words it uses and where they come from, and mark on each customer record who joined and when.",
+      "skill": "develop-marketing-strategy",
+      "writes": [
+        "customers/[id]"
+      ],
+      "raises": [
+        "public-commitment"
+      ],
+      "consider": {
+        "why": "A program nobody joins costs the same as one that works.",
+        "when": "The founder has approved a program and there are eligible customers to invite."
+      },
+      "activity": "3.2.7.2"
+    },
+    {
+      "id": "build-engagement-and-relationship-with-members",
+      "do": "Prepare for each member the thing worth talking about, what they have used, what they asked for and what is still open for them, and hand it to the founder for the conversation; you never contact a member.",
+      "skill": "develop-marketing-strategy",
+      "raises": [
+        "public-commitment"
+      ],
+      "consider": {
+        "why": "A relationship with a member is held by a person, and preparing it well is what makes the conversation worth having.",
+        "when": "A member has gone quiet, renewed, or asked for something still unanswered."
+      },
+      "activity": "3.2.7.3"
+    },
+    {
+      "id": "monitor-customer-loyalty-program-benefits-to-the-enterprise-and-the-customer",
+      "do": "Count what the program cost from the spend records and what it returned in retained revenue and repeat purchases from the customer records, count separately what each member actually received, and report both sides with the records counted.",
+      "skill": "develop-marketing-strategy",
+      "writes": [
+        "operations/handoff/[id]"
+      ],
+      "consider": {
+        "why": "A program that only the venture benefits from loses the customers it was meant to keep.",
+        "when": "The program has run long enough for one renewal or repeat purchase cycle."
+      },
+      "activity": "3.2.7.4"
+    },
+    {
+      "id": "optimize-loyalty-program-value-to-both-the-enterprise-and-the-customer",
+      "do": "Propose the smallest change that would improve the weaker side of the program, with what it costs, what members would notice and the number that would show it worked, and say plainly when the honest answer is to end the program.",
+      "skill": "develop-marketing-strategy",
+      "raises": [
+        "set-priorities"
+      ],
+      "consider": {
+        "why": "Changing a reward is a promise to every member, so it is proposed with its cost and never slipped in.",
+        "when": "The program's two sides have been counted and one of them is losing."
+      },
+      "activity": "3.2.7.5"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Say whether the venture should run a loyalty program at all on the evidence in its records, put that to the founder as the decision with the reason, and add every count to the decision or goal it bears on.",
+      "skill": "develop-marketing-strategy",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "strategy-or-constitution"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "program-justified-by-records",
+      "kind": "review",
+      "check": "Does the run either say with reasons that the venture should not run a loyalty program, or state what members get, what it costs and what it returns, each count citing the records it came from?",
+      "reviewer": "growth-lead"
+    }
+  ]
+}

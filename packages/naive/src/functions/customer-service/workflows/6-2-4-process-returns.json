@@ -1,0 +1,80 @@
+{
+  "id": "6-2-4-process-returns",
+  "function": "customer-service",
+  "process": "6.2.4",
+  "title": "Process returns",
+  "goal": "Each return or refund request has its policy rule, its amount and its window in front of the founder, and every authorized return is recorded with the reason the customer gave.",
+  "measures": [
+    "revenue",
+    "usage_or_adoption"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "customer-service/intake"
+    ]
+  },
+  "reads": [
+    "support/policy",
+    "support/cases",
+    "customers",
+    "deals",
+    "money",
+    "finance/spend",
+    "product"
+  ],
+  "steps": [
+    {
+      "id": "authorize-return",
+      "activity": "6.2.4.1",
+      "do": "Prepare the authorization for the founder: what was bought and when, whether it falls inside the policy's window, the amount at stake, what the refund rule says and a recommendation, and leave the authorizing to the founder.",
+      "raises": [
+        "spend-money",
+        "legal-or-terms"
+      ],
+      "consider": {
+        "why": "Only the founder may give money back, and the reason has to survive the conversation.",
+        "when": "A customer has asked to return something or to be refunded."
+      },
+      "skill": "plan-and-manage-customer-service-contacts"
+    },
+    {
+      "id": "process-return",
+      "activity": "6.2.4.2",
+      "do": "Once the founder has authorized it, record on the case the amount, the decision it follows and the reason the customer gave in their own words, and count that reason with the others.",
+      "writes": [
+        "support/cases/[id]"
+      ],
+      "consider": {
+        "why": "A return with no reason recorded teaches the venture nothing about why people leave.",
+        "when": "The founder has authorized a return or a refund."
+      },
+      "skill": "plan-and-manage-customer-service-contacts"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Report which reasons returns are coming for, with counts and the cases behind them, name the decision they bear on, and recommend to the growth lead whether to change the product, the refund rule or the way the offer is described.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "returns-recorded",
+      "kind": "review",
+      "check": "Does every authorized return name the founder's decision, the amount and the customer's own reason on its case?",
+      "reviewer": "growth-lead"
+    }
+  ]
+}

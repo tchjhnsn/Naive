@@ -1,0 +1,86 @@
+{
+  "id": "9-11-8-process-trade-preferences",
+  "function": "finance",
+  "process": "9.11.8",
+  "title": "Process trade preferences",
+  "goal": "Every preferential duty rate the venture could claim is identified with the agreement and origin rule it rests on, the evidence is tested, and nothing is claimed that the evidence cannot prove.",
+  "measures": [
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "finance/intake"
+    ]
+  },
+  "reads": [
+    "product",
+    "product/[id]",
+    "supply-chain/suppliers",
+    "supply-chain/purchase-orders",
+    "finance/spend",
+    "finance/budget",
+    "legal/obligations",
+    "markets",
+    "industries"
+  ],
+  "steps": [
+    {
+      "id": "find-the-agreements",
+      "do": "Find which trade agreements cover the venture's routes and products and write down for each the preferential rate, the origin rule it requires and the evidence that rule needs.",
+      "skill": "perform-global-trade-services",
+      "consider": {
+        "why": "A preference already available is duty the venture is paying for no reason.",
+        "when": "The venture moves goods between countries that have a trade agreement."
+      }
+    },
+    {
+      "id": "test-the-origin",
+      "do": "Test each product against the origin rule using the bill of materials and the suppliers' own statements, and say plainly whether the evidence proves it, only suggests it, or cannot support it.",
+      "skill": "perform-global-trade-services",
+      "consider": {
+        "why": "Origin is a rule about where value was added, not where the goods were shipped from.",
+        "when": "A preferential rate has been identified for a product."
+      }
+    },
+    {
+      "id": "claim-or-decline",
+      "do": "Hand the founder each claim worth making with the duty it saves and the evidence behind it, and recommend declining where the evidence is weak; only they or their broker claim a preference.",
+      "skill": "perform-global-trade-services",
+      "ask": true,
+      "raises": [
+        "legal-or-terms"
+      ],
+      "consider": {
+        "why": "A claim that fails an audit is repaid with interest and a penalty, years later.",
+        "when": "A product's origin evidence has been tested."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Raise each weak claim and each missing supplier origin statement as a decision for the founder, and tell the finance lead which preference is worth the most duty.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "legal-or-terms",
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "claims-backed-by-origin-evidence",
+      "kind": "review",
+      "check": "Does every preference claim name the agreement, the origin rule and the evidence that proves it, and is every weakly supported claim declined?",
+      "reviewer": "finance-lead"
+    }
+  ]
+}

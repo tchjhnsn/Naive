@@ -1,0 +1,52 @@
+{
+  "id": "13-5-2-assess-km-capabilities",
+  "function": "capabilities",
+  "process": "13.5.2",
+  "title": "Assess KM capabilities",
+  "goal": "What the venture keeps is read as it is: each kind of record judged on whether it is complete, current and findable, and the gaps named as questions the venture cannot answer today.",
+  "measures": ["cost_or_time_saved"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["capabilities/intake"] },
+  "reads": [
+    "knowledge/catalog",
+    "knowledge/knowledge-sources",
+    "knowledge/where-used",
+    "system/freshness",
+    "glossary/terms",
+    "capabilities/processes",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "assess-maturity-of-km-initiatives",
+      "do": "For each kind of record the venture keeps, say whether it does not exist, exists but is out of date, is current, or is current and checked, and give the evidence for the judgement from the freshness reading.",
+      "skill": "develop-and-manage-enterprise-wide-knowledge",
+      "activity": "13.5.2.1",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "evaluate-existing-km-approaches",
+      "do": "Judge each way the venture captures knowledge by whether it actually ran, counting the records written in the last quarter against the runs that should have produced one, and name the capture steps that are skipped every time.",
+      "skill": "develop-and-manage-enterprise-wide-knowledge",
+      "activity": "13.5.2.2",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "identify-km-gaps-and-needs",
+      "do": "Write the gaps as questions the venture has had to answer twice and cannot answer from its records, with the hours each repeat cost, and use the findability check to say which answers exist but cannot be found.",
+      "skill": "findability",
+      "activity": "13.5.2.3",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Raise to the strategy lead which gap to close first, with the repeated work it would save, and record the assessment as evidence on the handoff.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "gaps-are-questions", "kind": "review", "check": "Is every gap written as a question the venture could not answer from its records, with the cost of answering it again, rather than as a missing document?", "reviewer": "strategy-lead" }
+  ]
+}

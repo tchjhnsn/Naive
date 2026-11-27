@@ -1,0 +1,71 @@
+{
+  "id": "6-4-2-assess-the-likelihood-and-consequences-of",
+  "function": "customer-service",
+  "process": "6.4.2",
+  "title": "Assess the likelihood and consequences of occurrence of any hazards",
+  "goal": "Each hazard the contacts and the defects point at has a written likelihood, a consequence and the evidence behind it, ranked for the founder and handed to risk and compliance.",
+  "measures": [
+    "usage_or_adoption"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "customer-service/intake"
+    ]
+  },
+  "reads": [
+    "support/cases",
+    "product",
+    "product/bugs",
+    "legal/risks",
+    "customers"
+  ],
+  "steps": [
+    {
+      "id": "list-hazards",
+      "do": "List each way the product could harm a customer, their money or their data that the cases, the bugs and the risk records point at, one line each, with the records behind it.",
+      "skill": "manage-product-recalls-and-regulatory-audits"
+    },
+    {
+      "id": "rate-each-hazard",
+      "do": "For each hazard write how likely it is from the counts, how bad the consequence would be and how certain the evidence is, keeping likelihood and consequence apart instead of collapsing them into one number.",
+      "skill": "manage-product-recalls-and-regulatory-audits"
+    },
+    {
+      "id": "rank-and-hand",
+      "do": "Rank the hazards by consequence first and hand the ranking to risk and compliance as a handoff with its evidence, naming the hazards support cannot do anything about on its own.",
+      "writes": [
+        "operations/handoff/[id]"
+      ],
+      "raises": [
+        "defer-or-route"
+      ],
+      "skill": "manage-product-recalls-and-regulatory-audits"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Name the decision each top hazard bears on, add its rating and evidence there, and recommend to the growth lead which hazard to answer before the next release.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "hazards-rated",
+      "kind": "review",
+      "check": "Does every hazard carry a likelihood, a consequence and the cases or bugs behind it, and has the ranking gone on with its evidence?",
+      "reviewer": "growth-lead"
+    }
+  ]
+}

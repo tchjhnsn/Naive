@@ -1,0 +1,147 @@
+{
+  "id": "3-5-1-manage-leads-opportunities",
+  "function": "marketing-and-sales",
+  "process": "3.5.1",
+  "title": "Manage leads/opportunities",
+  "goal": "Every lead and open opportunity is a record at the stage its evidence supports, with a source, a next step and, where the deal is worth it, a win plan, and every sales conversation's outcome is written down the day it happens.",
+  "measures": [
+    "revenue"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "marketing-and-sales/intake"
+    ]
+  },
+  "reads": [
+    "venture",
+    "foundation/icp",
+    "foundation/telos",
+    "sales/opportunities",
+    "customers",
+    "purpose/account",
+    "markets",
+    "product",
+    "purpose/competitor",
+    "validation/go-to-market",
+    "governance/publication-policy",
+    "operations/time-box",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "identify-potential-customers",
+      "do": "From the ICP profiles and public sources list the organizations or people who match a profile and are reachable now, with the profile each matches and where the venture would find them, and write no contact details into any record.",
+      "skill": "develop-and-manage-sales-plans",
+      "activity": "3.5.1.1"
+    },
+    {
+      "id": "identify-receive-leads-opportunities",
+      "do": "Collect every new lead that arrived since the last run from the channels the venture uses, write one opportunity record each with its source, channel and the date it arrived, and say which arrived without a reply.",
+      "skill": "develop-and-manage-sales-plans",
+      "writes": [
+        "sales/opportunities/[id]"
+      ],
+      "activity": "3.5.1.2"
+    },
+    {
+      "id": "validate-and-qualify-leads-opportunities",
+      "do": "For each open opportunity fill what is known of the economic buyer, the decision criteria and the pain, move the stage only where those fields support it, and write what is missing as the next thing to find out.",
+      "skill": "develop-and-manage-sales-plans",
+      "writes": [
+        "sales/opportunities/[id]"
+      ],
+      "raises": [
+        "domain-fact"
+      ],
+      "activity": "3.5.1.3"
+    },
+    {
+      "id": "match-opportunities-to-business-strategy",
+      "do": "Set each opportunity against the ICP profiles and the live goals, link the profile it matches, and name the ones that match none so the growth lead can decide whether they are still worth working.",
+      "skill": "develop-and-manage-sales-plans",
+      "writes": [
+        "sales/opportunities/[id]"
+      ],
+      "raises": [
+        "set-priorities"
+      ],
+      "activity": "3.5.1.4"
+    },
+    {
+      "id": "develop-opportunity-win-plans",
+      "do": "For each opportunity worth the effort write the plan to win it, who must agree, what each of them needs to see, the objection expected and the dated next step, and keep it on the opportunity record.",
+      "skill": "develop-and-manage-sales-plans",
+      "writes": [
+        "sales/opportunities/[id]"
+      ],
+      "consider": {
+        "why": "A win plan costs more than it returns on a small or self-serve sale.",
+        "when": "An opportunity's value or the number of people who must agree makes it worth planning."
+      },
+      "activity": "3.5.1.5"
+    },
+    {
+      "id": "manage-opportunity-pipeline",
+      "do": "Check every open opportunity for a next step dated today or later and a stage its evidence supports, move back the ones whose evidence has gone stale, and propose closing the ones with no next step and no reply.",
+      "skill": "develop-and-manage-sales-plans",
+      "writes": [
+        "sales/opportunities/[id]"
+      ],
+      "raises": [
+        "domain-fact"
+      ],
+      "activity": "3.5.1.6"
+    },
+    {
+      "id": "determine-sales-resource-allocation",
+      "do": "Count the hours the open pipeline would take against the hours the records show are available, and recommend to the growth lead which opportunities get the time this week and which wait.",
+      "skill": "develop-and-manage-sales-plans",
+      "raises": [
+        "set-priorities"
+      ],
+      "activity": "3.5.1.7"
+    },
+    {
+      "id": "manage-customer-sales-calls",
+      "do": "Prepare each call for the founder, the buyer's record, what is known and unknown of their buyer and pain, the questions to ask and the next step to propose, then ask what actually happened and write the outcome, the commitment made and the new next step on the opportunity.",
+      "ask": true,
+      "skill": "develop-and-manage-sales-plans",
+      "writes": [
+        "sales/opportunities/[id]"
+      ],
+      "raises": [
+        "public-commitment"
+      ],
+      "activity": "3.5.1.8"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Add every stage change and outcome to the decision or goal it bears on, route what buyers asked for to the function that owns it, and recommend to the growth lead which opportunities to work next.",
+      "skill": "develop-and-manage-sales-plans",
+      "writes": [
+        "decisions/*",
+        "operations/handoff/[id]"
+      ],
+      "raises": [
+        "defer-or-route",
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "pipeline-true-and-dated",
+      "kind": "review",
+      "check": "Does every open opportunity carry a source, a stage its qualification fields support and a next step dated today or later, and does every call this run have its outcome written on the record?",
+      "reviewer": "growth-lead"
+    }
+  ]
+}

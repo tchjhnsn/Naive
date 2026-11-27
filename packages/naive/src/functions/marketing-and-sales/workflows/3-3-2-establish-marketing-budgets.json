@@ -1,0 +1,87 @@
+{
+  "id": "3-3-2-establish-marketing-budgets",
+  "function": "marketing-and-sales",
+  "process": "3.3.2",
+  "title": "Establish marketing budgets",
+  "goal": "The marketing budget for the period is one recommendation the founder can approve or cut: what each channel costs, what it is expected to return with the arithmetic shown, and what the venture will not spend on.",
+  "measures": [
+    "revenue"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "marketing-and-sales/intake"
+    ]
+  },
+  "reads": [
+    "venture",
+    "foundation/goals",
+    "foundation/telos",
+    "finance/budget",
+    "finance/spend",
+    "money",
+    "sales/opportunities",
+    "customers",
+    "markets",
+    "marketing/sitemap",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "confirm-marketing-alignment-to-business-strategy",
+      "do": "Name for every proposed line of marketing spend the live goal it serves and the measure it moves, and list any line that serves no goal so it can be dropped before it is costed.",
+      "skill": "develop-and-manage-marketing-plans",
+      "activity": "3.3.2.1"
+    },
+    {
+      "id": "determine-costs-of-marketing",
+      "do": "Read the spend records and list what marketing costs the venture per month today, tool by tool and channel by channel, counting the hours a person spends as hours and not as money unless the venture pays for them.",
+      "skill": "develop-and-manage-marketing-plans",
+      "activity": "3.3.2.2"
+    },
+    {
+      "id": "create-marketing-budget",
+      "do": "Draft the budget line by line with the channel, the amount, the month and the goal each line serves, keep the total inside what the finance records say is available, and open a handoff to finance to put it in the books.",
+      "skill": "develop-and-manage-marketing-plans",
+      "writes": [
+        "operations/handoff/[id]"
+      ],
+      "raises": [
+        "spend-money"
+      ],
+      "activity": "3.3.2.3"
+    },
+    {
+      "id": "determine-projected-roi-for-marketing-investment",
+      "do": "For each line write the return it is expected to produce with the arithmetic and the inputs it uses, name the assumption it rests on and mark it unvalidated where no record supports it, and rank the lines by return per dollar.",
+      "skill": "develop-and-manage-marketing-plans",
+      "activity": "3.3.2.4"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Put the budget to the founder as one spend decision with the ranked lines, what each is expected to return and what is dropped if it is cut, and add the costs and returns to the goal they bear on.",
+      "skill": "develop-and-manage-marketing-plans",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "spend-money"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "every-line-has-a-goal-and-a-return",
+      "kind": "review",
+      "check": "Does every budget line name the live goal it serves and the return expected with its arithmetic, and is the total inside what the finance records show is available?",
+      "reviewer": "growth-lead"
+    }
+  ]
+}

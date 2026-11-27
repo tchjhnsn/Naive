@@ -102,7 +102,7 @@ expect("the chain Naive ships is clean under the rule the modules are checked by
 
 expect("strategy intake is the root: it requires nothing", !allFlows().get("strategy/intake")?.requires);
 expect("products intake waits on the strategy foundation and the strategy meeting", JSON.stringify(allFlows().get("products/intake")?.requires) === JSON.stringify({ records: ["foundation/problem", "foundation/icp", "foundation/goals"], meetings: ["strategy/intake"] }));
-expect("the product card is written by the products intake alone, so the chain really locks it", writersOf("product/kettle", "product/[id]").join() === "products/intake");
+expect("the product card is written by the products intake and by products process workflows that wait on its meeting, so the chain really locks it", writersOf("product/kettle", "product/[id]").includes("products/intake") && writersOf("product/kettle", "product/[id]").every((id) => id === "products/intake" || (id.startsWith("products/") && (allFlows().get(id)?.requires?.meetings ?? []).includes("products/intake"))), writersOf("product/kettle", "product/[id]"));
 expect("the strategy foundation is written by the strategy intake, so the lock can always be opened", writersOf("foundation/problem").includes("strategy/intake"));
 
 // ---------------------------------------------------------------------------------------------------------------
@@ -180,7 +180,7 @@ expect("and runs one whose ground is there", open.status === 0, open.stderr);
 
 // The router: a write to a route only blocked workflows write is refused, for an agent and for a person alike.
 const lock = blockedWrite(dir, { route: "product/kettle", table: "product/[id]" });
-expect("the lock on a write names the workflows that write the route and what they are missing", lock !== null && lock.workflows.join() === "products/intake" && lock.missing.length > 0, lock);
+expect("the lock on a write names the workflows that write the route and what they are missing", lock !== null && lock.workflows.includes("products/intake") && lock.missing.length > 0, lock);
 expect("a decision is never locked, so the question that opens a lock always gets through", blockedWrite(dir, { route: "decisions/x", table: "decisions/[id]" }) === null && blockedWrite(dir, { route: "operations/handoff/h1", table: "operations/handoff/[id]" }) === null);
 expect("a route no workflow writes is not locked", blockedWrite(dir, { route: "foundation/alignment", table: "foundation/alignment" }) === null);
 
@@ -188,9 +188,9 @@ const mentura = (args: string[]) => node([join(repo, "packages/naive/src/interfa
 const card = join(ws, "card.json");
 writeFileSync(card, JSON.stringify({ id: "kettle", name: "Kettle", description: "A kettle that knows when the water is right.", status: "idea" }) + "\n");
 const asAgent = mentura(["product/kettle", "write", "--venture", "acme", "--input", card, "--json"]);
-expect("an agent's write to a locked route is refused, naming the workflow that writes it and what it waits on", asAgent.status === 1 && /written by products\/intake, and it is blocked/.test(asAgent.out) && /no meeting has walked strategy\/intake/.test(asAgent.out), asAgent.out.slice(0, 400));
+expect("an agent's write to a locked route is refused, naming the workflow that writes it and what it waits on", asAgent.status === 1 && /written by [^\n]*products\/intake[^\n]* is blocked/.test(asAgent.out) && /no meeting has walked strategy\/intake/.test(asAgent.out), asAgent.out.slice(0, 400));
 const asPerson = mentura(["product/kettle", "write", "--venture", "acme", "--as", "person", "--input", card, "--json"]);
-expect("a person's write is refused too, and told how to pass or open the lock", asPerson.status === 1 && /and it is blocked/.test(asPerson.out) && /--override --by/.test(asPerson.out) && /naive blocked/.test(asPerson.out), asPerson.out.slice(0, 400));
+expect("a person's write is refused too, and told how to pass or open the lock", asPerson.status === 1 && / is blocked/.test(asPerson.out) && /--override --by/.test(asPerson.out) && /naive blocked/.test(asPerson.out), asPerson.out.slice(0, 400));
 const agentOverride = mentura(["product/kettle", "write", "--venture", "acme", "--input", card, "--override", "--by", "products-agent", "--why", "it is fine", "--json"]);
 expect("an agent's override does not count", agentOverride.status === 1 && /never overrides/.test(agentOverride.out), agentOverride.out.slice(0, 400));
 const noWhy = mentura(["product/kettle", "write", "--venture", "acme", "--as", "person", "--input", card, "--override", "--by", "Torian", "--json"]);
@@ -200,7 +200,7 @@ expect("a person's override with who and why writes the record", /"ok": true/.te
 const line = readFileSync(join(dir, "provenance.jsonl"), "utf8").trim().split("\n").map((l) => JSON.parse(l) as { entity: string; override?: { by: string; why: string; missing: string[] } }).at(-1);
 expect("the provenance line keeps who overrode what and why", line?.override?.by === "Torian" && /meeting is on the calendar/.test(line?.override?.why ?? "") && (line?.override?.missing ?? []).some((m) => m.startsWith("meeting ")), line);
 const again = mentura(["product/kettle", "write", "--venture", "acme", "--as", "person", "--input", card, "--json"]);
-expect("the lock stays shut for the next write: an override is one write, not a setting", again.status === 1 && /and it is blocked/.test(again.out), again.out.slice(0, 300));
+expect("the lock stays shut for the next write: an override is one write, not a setting", again.status === 1 && / is blocked/.test(again.out), again.out.slice(0, 300));
 
 rmSync(ws, { recursive: true, force: true });
 

@@ -1,0 +1,154 @@
+{
+  "id": "1-2-2-define-and-evaluate-strategic-options-to-achieve",
+  "function": "strategy",
+  "process": "1.2.2",
+  "title": "Define and evaluate strategic options to achieve the mission",
+  "goal": "Every way the venture could reach its mission stands on one decision as a named option, each with what it would cost, what it would need to be true and what would rule it out, so the founder chooses between written options rather than moods.",
+  "measures": ["learning", "impact"],
+  "trigger": { "kind": "request" },
+  "requires": {
+    "meetings": ["strategy/intake"]
+  },
+  "reads": [
+    "foundation/telos",
+    "foundation/problem",
+    "foundation/icp",
+    "foundation/constraints",
+    "foundation/goals",
+    "foundation/bets",
+    "identity/lean-canvas",
+    "identity/venture-anatomy",
+    "industries",
+    "markets",
+    "product",
+    "purpose/competitor",
+    "purpose/money/summary",
+    "validation/*",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "define-strategic-options",
+      "do": "Write each distinct way the venture could reach the mission as one option with the customer it serves, the offering, how it is paid and which partners or suppliers it would need, keeping them few enough to compare and different enough to be real choices.",
+      "skill": "develop-business-strategy",
+      "activity": "1.2.2.1",
+      "writes": ["decisions/*"]
+    },
+    {
+      "id": "assess-and-analyze-impact-of-each-option",
+      "do": "For each option write what would have to change in the venture to run it, which functions and records it touches, what it would cost in money and months from the spend and budget records, and the one assumption that would sink it, so the comparison rests on the same columns for every option.",
+      "skill": "develop-business-strategy",
+      "activity": "1.2.2.2",
+      "writes": ["decisions/*"]
+    },
+    {
+      "id": "evaluate-b2b-options",
+      "do": "Write what selling to an organisation would mean here: who signs, who uses, how long a purchase takes and what proof a buyer asks for, citing the interviews that say it, and mark as a guess anything no interview supports.",
+      "skill": "develop-business-strategy",
+      "activity": "1.2.2.3",
+      "consider": {
+        "why": "Selling to an organisation and selling to a person need different products, prices and channels, and choosing late wastes both.",
+        "when": "The customer profiles name both an organisation and an individual buyer, or the founder is weighing the two."
+      }
+    },
+    {
+      "id": "evaluate-b2c-options",
+      "do": "Write what selling to an individual would mean here: what they would pay from their own money, how they would find the venture and how often they would come back, citing the interviews and any pricing evidence, and name what is unknown.",
+      "skill": "develop-business-strategy",
+      "activity": "1.2.2.4",
+      "consider": {
+        "why": "A consumer offering lives or dies on reach and repeat, which an organisation sale does not need.",
+        "when": "The customer profiles name an individual buyer, or the founder is weighing the two."
+      }
+    },
+    {
+      "id": "evaluate-partner-alliance-options",
+      "do": "List the partners that could carry the offering to the customer or supply a piece of it, write for each what it would give and want and what the venture would owe it, and bring the founder the list without approaching anyone.",
+      "skill": "develop-business-strategy",
+      "activity": "1.2.2.5",
+      "consider": {
+        "why": "A partner can reach a customer the venture cannot, and it can also take the relationship with that customer.",
+        "when": "A channel in the go-to-market record depends on another company, or the founder has raised a partnership."
+      }
+    },
+    {
+      "id": "evaluate-ip-acquisition-options",
+      "do": "Write whether any option needs rights the venture does not hold, a name, a patent, a dataset or a licence, what each is known to cost from public sources, and hand the question of whether it may be used to counsel rather than answering it.",
+      "skill": "develop-business-strategy",
+      "activity": "1.2.2.6",
+      "consider": {
+        "why": "An option that depends on rights the venture cannot get is not an option.",
+        "when": "An option names a technology, name or dataset the venture does not already hold."
+      }
+    },
+    {
+      "id": "evaluate-innovation-options",
+      "do": "Read the idea graph and write which of the founder's own ideas each option would use and which it would shelve, so the option set does not quietly throw away work already thought through.",
+      "skill": "develop-business-strategy",
+      "activity": "1.2.2.7",
+      "consider": {
+        "why": "A founder's existing ideas are the cheapest source of options, and the graph already holds them.",
+        "when": "The venture has an idea graph with ideas not yet routed."
+      }
+    },
+    {
+      "id": "evaluate-sustainability-options",
+      "do": "Write for each option what it would commit the venture to in energy, materials or waste and whether a buyer, a lender or a regulator in this industry asks for that, citing the industry record's regulation cell, and keep it on the handoff as evidence.",
+      "skill": "develop-business-strategy",
+      "activity": "1.2.2.8",
+      "consider": {
+        "why": "In some industries an answer here is a condition of sale or of lending.",
+        "when": "The industry record's regulation cell is licensed or heavy, or a customer has asked."
+      }
+    },
+    {
+      "id": "evaluate-global-support-options",
+      "do": "Write for each option which places it would have to serve, what that adds in language, currency, hours and local rules, and which of those the venture can meet today from its own records.",
+      "skill": "develop-business-strategy",
+      "activity": "1.2.2.9",
+      "consider": {
+        "why": "Serving a second country adds obligations that the first country's records do not show.",
+        "when": "A customer profile or a channel names a place outside the venture's own."
+      }
+    },
+    {
+      "id": "evaluate-shared-services-options",
+      "do": "Write which work two options would share rather than duplicate, the records and tools each would reuse, and what it would cost to keep both running, so an option that looks cheap alone is priced beside the rest.",
+      "skill": "develop-business-strategy",
+      "activity": "1.2.2.10",
+      "consider": {
+        "why": "A second line is affordable only if it reuses what the first already runs.",
+        "when": "The venture already runs one line and an option adds another."
+      }
+    },
+    {
+      "id": "evaluate-lean-continuous-improvement-options",
+      "do": "Write which of the venture's own stalls from the internal assessment each option would remove and which it would make worse, and name the one change that would pay for itself soonest.",
+      "skill": "develop-business-strategy",
+      "activity": "1.2.2.11",
+      "consider": {
+        "why": "An option that doubles the venture's own friction costs more than its plan says.",
+        "when": "The internal assessment named a stall that an option would touch."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Put every surviving option on one decision with its costs, its sinking assumption and your recommendation, name the ones you ruled out and why, and hand the founder's chosen option to the bet review so its claim is written and tested rather than assumed.",
+      "writes": ["decisions/*", "operations/handoff/[id]"],
+      "raises": ["strategy-or-constitution", "set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "options-comparable-and-open",
+      "kind": "review",
+      "check": "Does every option on the decision carry the same columns, including its cost and the assumption that would sink it, with the choice left to the founder?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

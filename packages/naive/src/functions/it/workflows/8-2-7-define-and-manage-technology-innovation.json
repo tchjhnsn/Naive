@@ -1,0 +1,25 @@
+{
+  "id": "8-2-7-define-and-manage-technology-innovation",
+  "function": "it",
+  "process": "8.2.7",
+  "title": "Define and manage technology innovation",
+  "goal": "Technology the venture might adopt is tried in a small, time-boxed test with a written question and a pass line, and each result is recorded as kept or dropped with the reason, so nothing is adopted on impression.",
+  "measures": ["cost_or_time_saved", "compliance_met"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["it/intake"] },
+  "reads": ["venture", "foundation/goals", "foundation/bets", "it/connections", "evidence", "knowledge/knowledge-sources", "decisions/*"],
+  "steps": [
+    { "id": "establish-selection-criteria-for-research-initiatives", "do": "Write what makes a technology worth a test here (it would remove a system the venture cannot leave, own a record it rents, or cut a measured waiting time) and the limits every test must respect: a fixed time box, no production records, no new spend.", "skill": "develop-and-manage-it-business-strategy", "activity": "8.2.7.1" },
+    { "id": "analyze-emerging-technology-concepts", "do": "For each candidate, read its own documentation and licence and write what it claims, what it requires, what it would replace and what it would lock the venture into, citing the page and the date you read it.", "skill": "develop-and-manage-it-business-strategy", "activity": "8.2.7.2" },
+    { "id": "identify-technology-concepts-and-capabilities", "do": "Reduce each candidate to the one capability the venture would actually use, and say whether the venture's present stack already has it unused.", "skill": "develop-and-manage-it-business-strategy", "activity": "8.2.7.3" },
+    { "id": "execute-it-research-projects", "do": "Run the test inside the time box on sample data only, never on the venture's live records or a customer's, and write what you did, what happened and what you could not try.", "skill": "develop-and-manage-it-business-strategy", "activity": "8.2.7.4", "consider": { "why": "A test costs real time, and a candidate that fails the written criteria does not need one.", "when": "A candidate passes the selection criteria and a live goal is waiting on it." } },
+    { "id": "evaluate-it-research-project-outcomes", "do": "Judge the result against the pass line you wrote before the test, and say plainly whether it passed, failed or was inconclusive and what the test could not tell you.", "skill": "develop-and-manage-it-business-strategy", "activity": "8.2.7.5" },
+    { "id": "identify-and-promote-viable-concepts", "do": "For each pass, write the short case for adopting it (what it replaces, its licence, its cost, how the venture would leave it) and hand it to the founder; for each fail, record the reason so it is not tried again blindly.", "skill": "develop-and-manage-it-business-strategy", "activity": "8.2.7.6" },
+    { "id": "develop-and-plan-it-investment-projects", "do": "Turn each concept the founder wants into a project for the portfolio run: the steps, the access needed, the connection record it would create and how it would be undone.", "skill": "develop-and-manage-it-business-strategy", "activity": "8.2.7.7", "consider": { "why": "A concept only becomes work once the founder wants it, and planning the others wastes the time the test saved.", "when": "The founder has said yes to a concept." } },
+    { "id": "feed-decisions", "do": "Record each test and its verdict as evidence on the decision it bears on, and raise adoption for the founder: a free open-licence tool to the product lead, and anything that costs money, accepts terms or widens access to the founder.", "skill": "develop-and-manage-it-business-strategy", "writes": ["decisions/*"], "raises": ["new-dependency-free", "spend-money", "legal-or-terms", "security-loosening"] }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "tests-prewritten", "kind": "review", "check": "Did every test have its question, its time box and its pass line written before it ran, did it use no live or customer records, and is every verdict recorded as kept or dropped with its reason?", "reviewer": "product-lead" }
+  ]
+}

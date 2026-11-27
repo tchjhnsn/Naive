@@ -1,0 +1,87 @@
+{
+  "id": "2-2-2-generate-new-product-service-concepts",
+  "function": "products",
+  "process": "2.2.2",
+  "title": "Generate new product/service concepts",
+  "goal": "Every idea in front of the venture is written down with the record it came from, the ones that serve a live form of the primary problem for a target profile are shaped into two or three concepts the founder can choose between, and the rest are set aside with the reason.",
+  "measures": ["learning", "usage_or_adoption"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["products/intake"] },
+  "reads": [
+    "product",
+    "product/bugs",
+    "product/capabilities",
+    "foundation/problem",
+    "foundation/icp",
+    "foundation/goals",
+    "foundation/constraints",
+    "validation/interviews",
+    "validation/feedback",
+    "support/cases",
+    "purpose/raw/dump",
+    "raw/dump",
+    "purpose/competitor",
+    "decisions"
+  ],
+  "steps": [
+    {
+      "id": "gather-ideas",
+      "do": "Collect into one list every idea and ask the venture's records hold (the interviews, the beta feedback, the support cases, the bug list, the founder's raw dumps and the open decisions), each with the record it came from and, where there is one, the customer's own words.",
+      "skill": "generate-and-define-new-product-service-ideas",
+      "activity": "2.2.2.1",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "analyze-ideas",
+      "do": "Group the list by the job and the ICP profile it serves, count how many separate sources raised each group and how many paid or worked around it, and for each group separate the thing asked for from the problem behind the ask.",
+      "skill": "generate-and-define-new-product-service-ideas",
+      "activity": "2.2.2.2",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "evaluate-inputs",
+      "do": "Weigh each group against the target form of the primary problem, the profile it would serve, the live goals' measures and the limits in the constraints record, and set aside the groups that serve no live problem, no target profile or nothing the venture is allowed to do, naming the reason for each.",
+      "skill": "generate-and-define-new-product-service-ideas",
+      "activity": "2.2.2.3",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "formulate-concepts",
+      "do": "Turn the groups that survive into two or three concepts, each one stated as who it is for, the job it does, how it does it and what the customer would stop doing, with the evidence for and against it and what it would cost to try, and bring them to the founder side by side.",
+      "skill": "generate-and-define-new-product-service-ideas",
+      "activity": "2.2.2.4",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    },
+    {
+      "id": "improvements-to-existing",
+      "do": "List the changes to products the venture already has that the same evidence asks for, each naming the capability it touches and the interview, feedback, support case or bug behind it, and record the ones worth doing on the product card as candidate changes.",
+      "skill": "generate-and-define-new-product-service-ideas",
+      "activity": "2.2.2.5",
+      "writes": ["product/[id]"],
+      "consider": {
+        "why": "An improvement to a product people already use usually pays off sooner than a new concept.",
+        "when": "The venture has a product people use today."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Attach each concept and each set-aside group to the decision it bears on as evidence, and raise to the product lead which concept to take into discovery next and what the next test for it is.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "ideas-traced",
+      "kind": "review",
+      "check": "Does every idea on the list name the record it came from, and does every concept put to the founder name the profile, the job and the form of the problem it serves?",
+      "reviewer": "product-lead"
+    }
+  ]
+}

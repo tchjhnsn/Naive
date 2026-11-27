@@ -1,0 +1,60 @@
+{
+  "id": "4-1-4-create-and-manage-master-production-schedule",
+  "function": "supply-chain",
+  "process": "4.1.4",
+  "title": "Create and manage master production schedule",
+  "goal": "One schedule says which product is built in which week, in what quantity and against which confirmed materials, and every change to it is recorded with its cause and what it cost in time.",
+  "measures": ["flow_and_lead_time", "cost_or_time_saved"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["supply-chain/intake"] },
+  "reads": [
+    "product",
+    "supply-chain/suppliers",
+    "supply-chain/purchase-orders",
+    "deals",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "model-production-network",
+      "do": "Build a simple model of the sites and lines that make the product, each with its capacity, its changeover time and its lead time, and run two or three alternatives, such as one big batch against several small ones, to show what each costs in cash and weeks.",
+      "skill": "plan-for-and-align-supply-chain-resources",
+      "activity": "4.1.4.1",
+      "consider": {
+        "why": "Comparing batch sizes or two assemblers on paper is cheaper than learning the difference from one bad order.",
+        "when": "The product can be made at more than one place or in more than one batch size."
+      }
+    },
+    {
+      "id": "create-master-production-schedule",
+      "do": "Write the schedule week by week for the planning horizon, each line a product, a quantity, a start and a finish, and show under each line which materials are already on order and which are not yet committed.",
+      "skill": "plan-for-and-align-supply-chain-resources",
+      "activity": "4.1.4.2"
+    },
+    {
+      "id": "maintain-master-production-schedule",
+      "do": "Rework the schedule whenever an order slips, a forecast moves or a build fails, record each change with its cause and the days gained or lost, and tell the founder which customer promise is now at risk.",
+      "skill": "plan-for-and-align-supply-chain-resources",
+      "activity": "4.1.4.3"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Where the schedule can no longer meet a promise, add a decision with the choices, expedite, split the shipment, tell the customer a new date or cut the quantity, and hand the order of that work to the product lead.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "schedule-matched-to-materials",
+      "kind": "review",
+      "check": "Does every scheduled build name the quantity and week, say which of its materials are on order with a confirmed date, and is every change since the last run recorded with its cause?",
+      "reviewer": "product-lead"
+    }
+  ]
+}
