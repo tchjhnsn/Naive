@@ -3507,6 +3507,31 @@
       ]
     },
     {
+      "id": "EE-226",
+      "date": "2026-11-27",
+      "status": "in-force",
+      "decision": "Every element of APQC's PCF 8.0 is covered by its function's module, and a check says which are not. A level 3 process is covered by one workflow of the module whose optional `process` field names it, with one step per level 4 activity under it, each naming the activity; a level 2 process group by one skill whose SKILL.md frontmatter names it as `process_group`; a category by a module with an agent and a workflow. A level 5 task is never a step of its own and is counted under its covered activity. packages/naive/src/checks/check-pcf-coverage.ts reports coverage per level and per category, lists the gaps with --gaps, fails on a claim with the wrong structure, and fails on any gap with --complete. The process workflows run on request and wait on their function's intake meeting.",
+      "why": "Torian asked long ago for every PCF element to be audited and given detailed skills and workflows. On 2026-11-27 the 35 shipped workflows touched 6 of 1,352 activities and no process or process group, and no check made the gap visible. Torian on 2026-11-27: \"that work needs to be done and it needs to be done immediately.\"",
+      "related": [
+        "EE-165",
+        "EE-168",
+        "EE-176",
+        "EE-179",
+        "EE-180",
+        "EE-181",
+        "EE-199",
+        "EE-217"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/checks/check-pcf-coverage.ts",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
       "id": "EE-152",
       "date": "2026-11-19",
       "status": "in-force",

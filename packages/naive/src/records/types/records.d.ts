@@ -2498,6 +2498,8 @@ export type FunctionWorkflow = {
   id: string;
   function: string;
   title: string;
+  /** The APQC level 3 process this workflow performs, by hierarchy id in packages/naive/src/functions/pcf.json, such as 9.2.1. It must sit under the function's APQC category, one module names a process in one workflow, and every step's activity then sits under it (packages/naive/src/checks/check-pcf-coverage.ts, EE-226). */
+  process?: string;
   /** What one run is for, in one plain sentence: the state the venture's records are in when the run is done. The title names the work; the goal names the outcome, so an agent can tell a finished run from a performed one. */
   goal: string;
   /** The telos measure kinds this workflow moves (foundation/telos measures[].kind), each one of its function's measures in function.json. This is how an agent says which of the venture's goals its work serves: a goal binds a measure, and a lead weighs the workflow by it. */
