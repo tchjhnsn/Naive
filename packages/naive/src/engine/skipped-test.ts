@@ -102,7 +102,7 @@ try {
   const d = JSON.parse(readFileSync(file, "utf8")) as { status: string; assigned_to: string; options: string[]; note: string; answer?: string };
   expect("handback files one open decision for the owning function agent with the three recommendations",
     handed.status === 0 && d.status === "open" && d.assigned_to === "strategy-agent" && d.options.join() === "do-now,defer,drop" && /A person decides\.$/.test(d.note), d);
-  expect("the note carries why it is skipped and what it blocks", /did not finish this required step/.test(d.note) && /It blocks .*3\.5\.1\.6 Manage opportunity pipeline\./.test(d.note), d.note);
+  expect("the note carries why it is skipped and what it blocks", /did not finish this required step/.test(d.note) && /It blocks .*3\.5\.1\.6 Manage opportunity pipeline[;.]/.test(d.note), d.note);
   expect("the decision has no answer: the agent recommends and a person decides", d.answer === undefined);
   const again = cli("handback", "strategy/competitor-review#identify-alternatives", "--at", now);
   expect("a rerun leaves the decision as it is", again.status === 0 && /already asks strategy-agent/.test(again.stdout), again.stdout + again.stderr);

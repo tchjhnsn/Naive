@@ -1,0 +1,64 @@
+{
+  "id": "13-1-3-define-processes",
+  "function": "capabilities",
+  "process": "13.1.3",
+  "title": "Define processes",
+  "goal": "The recurring work named in the handoff has one process record that is out of draft: its boundaries, its SIPOC, its steps with the control points marked, and a published version the owner and every agent that runs it can read.",
+  "measures": ["flow_and_lead_time", "cost_or_time_saved"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["capabilities/intake"] },
+  "reads": [
+    "capabilities/processes",
+    "operations/handoff",
+    "evidence",
+    "knowledge/knowledge-sources"
+  ],
+  "steps": [
+    {
+      "id": "scope-processes",
+      "do": "Name where the process starts and stops, what starts a run, which work is inside it and which belongs to a neighbouring process, and write that as the record's purpose, trigger and boundaries so two runs can be counted the same way.",
+      "skill": "manage-business-processes",
+      "activity": "13.1.3.1",
+      "writes": ["capabilities/processes/[id]"]
+    },
+    {
+      "id": "analyze-processes",
+      "do": "Walk the last runs from their handoffs and evidence, write what each run actually did rather than what anyone meant it to do, time each step, and name the published practice for this kind of work with its source before inventing a procedure.",
+      "skill": "manage-business-processes",
+      "activity": "13.1.3.2",
+      "writes": ["capabilities/processes/[id]"]
+    },
+    {
+      "id": "identify-control-points",
+      "do": "Mark as a control point each step where a run is checked or approved before the work goes on, say what the check looks at and what happens when it fails, and name any control point a contract or a regulation requires.",
+      "skill": "manage-business-processes",
+      "activity": "13.1.3.3",
+      "writes": ["capabilities/processes/[id]"],
+      "raises": ["legal-or-terms"]
+    },
+    {
+      "id": "model-and-document-processes",
+      "do": "Write the working procedure as ordered steps, each with the role that does it and one sentence that a person who has never run it could follow, fill suppliers, inputs, outputs and customers, and set the three measures to null with the date, so the first real run fills them.",
+      "skill": "manage-business-processes",
+      "activity": "13.1.3.4",
+      "writes": ["capabilities/processes/[id]"]
+    },
+    {
+      "id": "publish-processes",
+      "do": "Move the record from draft to active once its owner has read it, and open a handoff to the owner naming the first run that will be measured against it.",
+      "skill": "manage-business-processes",
+      "activity": "13.1.3.5",
+      "writes": ["capabilities/processes/[id]", "operations/handoff/[id]"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Record the new procedure on the handoff as evidence with the runs it was written from, and raise any step whose rewording would change what another function must deliver.",
+      "writes": ["decisions/*"],
+      "raises": ["implementation-detail"]
+    }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "followable-and-controlled", "kind": "review", "check": "Could a person who has never done this work run it from the record's steps alone, and is every step where a run is checked before it goes on marked as a control point?", "reviewer": "strategy-lead" }
+  ]
+}

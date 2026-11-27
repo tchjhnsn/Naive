@@ -1,0 +1,88 @@
+{
+  "id": "8-6-1-develop-and-manage-service-solution-deployment",
+  "function": "it",
+  "process": "8.6.1",
+  "title": "Develop and manage service/solution deployment strategy",
+  "goal": "The venture has one written way to put a change in front of customers: what a deployment may touch, the steps it follows, what a release has to carry, who approves it, and what the last deployments show about the rule.",
+  "measures": ["compliance_met", "cost_or_time_saved"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["it/intake"] },
+  "reads": [
+    "venture",
+    "product",
+    "it/connections",
+    "governance/delegation",
+    "governance/decision-rights",
+    "people/team-plan",
+    "capabilities/processes",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "deployment-impact",
+      "do": "Write what a deployment of this venture can actually break, naming the customers who would notice, the money that would stop moving, the records that could be lost and the hours in which an outage would cost most.",
+      "skill": "deploy-services-solutions",
+      "activity": "8.6.1.1",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "deployment-policies",
+      "do": "Write the rules a deployment obeys: what may go out without a plan, what may not go out at all without one, when deployments are not made, what has to be backed up first, and that nothing reaches a customer without a tested way back.",
+      "skill": "deploy-services-solutions",
+      "activity": "8.6.1.2",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "deployment-procedure",
+      "do": "Write the deployment as an ordered list of steps a person or an agent can follow without guessing, each with the command or the screen, what to check after it, and the step to take if the check fails.",
+      "skill": "deploy-services-solutions",
+      "activity": "8.6.1.3",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "release-standards",
+      "do": "Write what a change has to carry before it counts as a release: a version, the list of what changed, the tests that ran and their output, the configuration it needs, the way back, and who to tell.",
+      "skill": "deploy-services-solutions",
+      "activity": "8.6.1.4",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "approval-responsibilities",
+      "do": "Propose who approves which kind of deployment, checked against the venture's delegation and decision rights, and leave the founder to set it, since a deployment that reaches a customer is a commitment and an agent never grants itself that right.",
+      "skill": "deploy-services-solutions",
+      "activity": "8.6.1.5",
+      "ask": true,
+      "raises": ["security-loosening"]
+    },
+    {
+      "id": "analyze-outcomes",
+      "do": "Read the record of the deployments made since the last run and count how many needed a roll-back, how many broke something a customer saw and how long each took, and name the step of the procedure that failed each time.",
+      "skill": "deploy-services-solutions",
+      "activity": "8.6.1.6",
+      "writes": ["operations/handoff/[id]"],
+      "consider": {
+        "why": "A deployment rule is only as good as what the last deployments did, and the same step usually fails twice.",
+        "when": "The venture has deployed at least twice since this process last ran."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Add the deployment rule and what the last deployments showed as evidence to the decision it bears on, and raise to the product lead which part of the deployment path to fix first.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "procedure-followable",
+      "kind": "review",
+      "check": "Could someone who has never deployed this venture follow the written procedure without asking a question, does every release name its way back, and has the founder set who approves each kind of deployment?",
+      "reviewer": "product-lead"
+    }
+  ]
+}

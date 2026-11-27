@@ -1,0 +1,88 @@
+{
+  "id": "9-11-10-prepare-letter-of-credit",
+  "function": "finance",
+  "process": "9.11.10",
+  "title": "Prepare letter of credit",
+  "goal": "Where a transaction is to be settled by letter of credit, every term it requires is checked against what the venture can actually produce by the date required, and the founder agreed the terms and instructed the bank.",
+  "measures": [
+    "cost_or_time_saved",
+    "revenue"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "finance/intake"
+    ]
+  },
+  "reads": [
+    "customers",
+    "customers/[id]",
+    "deals",
+    "deals/[id]",
+    "supply-chain/suppliers",
+    "money",
+    "money/[id]",
+    "finance/spend",
+    "legal/obligations",
+    "legal/risks"
+  ],
+  "steps": [
+    {
+      "id": "read-the-terms",
+      "do": "Read the proposed letter of credit against the contract and list every document, date, quantity and form of words it requires, with who in the venture can produce each.",
+      "skill": "perform-global-trade-services",
+      "consider": {
+        "why": "A letter of credit pays against documents, so its wording is the contract that matters.",
+        "when": "A customer or supplier proposes settling a transaction by letter of credit."
+      }
+    },
+    {
+      "id": "test-what-can-be-produced",
+      "do": "Say for each requirement whether the venture can produce it exactly as worded and by the date required, and name every term it could not meet.",
+      "skill": "perform-global-trade-services",
+      "consider": {
+        "why": "A document that does not match the wording exactly is not paid, however correct the shipment was.",
+        "when": "A letter of credit's requirements have been listed."
+      }
+    },
+    {
+      "id": "instruct-the-bank",
+      "do": "Prepare what the bank needs and the amendments the venture must ask for, and hand it to the founder, who agrees the terms and instructs the bank; the agent never opens or amends a letter of credit.",
+      "skill": "perform-global-trade-services",
+      "ask": true,
+      "raises": [
+        "legal-or-terms"
+      ],
+      "consider": {
+        "why": "Opening or amending a letter of credit is an instruction to a bank and a commitment in the venture's name.",
+        "when": "The founder has agreed to a letter of credit's terms."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Raise each term the venture could not meet as a decision for the founder before anything is agreed, with the amendment to ask for and what the fees would cost.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "legal-or-terms",
+        "spend-money"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "every-term-can-be-met",
+      "kind": "review",
+      "check": "Does the review name every term the venture could not meet exactly as worded, and did the founder agree the terms and instruct the bank?",
+      "reviewer": "finance-lead"
+    }
+  ]
+}

@@ -1,0 +1,159 @@
+{
+  "id": "7-5-1-develop-and-manage-reward-recognition-and",
+  "function": "human-capital",
+  "process": "7.5.1",
+  "title": "Develop and manage reward, recognition, and motivation programs",
+  "goal": "The venture has a pay structure the founder decided on, checked against public ranges and against its runway, every person's pay sits inside its range or stands as an open decision, and each reward it gives is recorded with what it cost.",
+  "measures": [
+    "cost_or_time_saved",
+    "compliance_met"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "human-capital/intake"
+    ]
+  },
+  "reads": [
+    "people",
+    "people/founders",
+    "people/team-plan",
+    "governance/ownership",
+    "governance/internal-terms",
+    "finance/budget",
+    "finance/spend",
+    "purpose/money/summary",
+    "money",
+    "foundation/goals",
+    "operations/handoff",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "develop-compensation-structure",
+      "do": "Draft the pay structure for the roles the plan holds: a range per role from public comparable ranges cited and dated, how a person moves within a range, and what the whole structure would cost at full staffing, for the founder to decide.",
+      "activity": "7.5.1.1",
+      "skill": "reward-and-retain-employees",
+      "raises": [
+        "spend-money"
+      ]
+    },
+    {
+      "id": "develop-benefits-and-rewards-plan",
+      "do": "Draft what the venture would offer beyond cash, separating what the law requires where it employs someone from what it chooses, each with its cost per person per year and the obligation it creates.",
+      "activity": "7.5.1.2",
+      "skill": "reward-and-retain-employees",
+      "raises": [
+        "spend-money",
+        "legal-or-terms"
+      ],
+      "consider": {
+        "why": "Benefits cost money every month and bind the venture to a provider, which an early venture rarely needs.",
+        "when": "The venture employs someone or the founder has decided to."
+      }
+    },
+    {
+      "id": "analyze-benefits-and-rewards-competitively",
+      "do": "Collect what comparable ventures publish for the same roles, from public sources with the date read, set the venture's draft beside them, and mark every figure whose only source is a survey the venture has not bought.",
+      "activity": "7.5.1.3",
+      "skill": "reward-and-retain-employees",
+      "consider": {
+        "why": "Comparison is worth the hours when a real offer or a real raise depends on it.",
+        "when": "A pay range is being set or an offer or raise is being prepared."
+      }
+    },
+    {
+      "id": "identify-compensation-requirements",
+      "do": "Check the draft against `finance/budget`, `purpose/money/summary` and the venture's runway, and say for each proposed package how many months of runway it costs and what the venture would stop doing to afford it.",
+      "activity": "7.5.1.4",
+      "skill": "reward-and-retain-employees"
+    },
+    {
+      "id": "administer-compensation-and-rewards",
+      "do": "Prepare each run for the founder: who is owed what for which period, taken from the agreements and the recorded time or milestones, with the total, the date due and the withholdings named; the founder, or the payroll service the founder chose, makes every payment.",
+      "activity": "7.5.1.5",
+      "skill": "reward-and-retain-employees",
+      "raises": [
+        "spend-money"
+      ],
+      "consider": {
+        "why": "There is nothing to administer until the venture owes someone money.",
+        "when": "The venture owes someone money for a period that has closed."
+      }
+    },
+    {
+      "id": "reward-and-motivate-employees",
+      "do": "Propose the specific and cheap recognition the work actually warrants, naming what was done, when, and the record that shows it, and leave the saying of it to the founder.",
+      "activity": "7.5.1.6",
+      "skill": "reward-and-retain-employees",
+      "consider": {
+        "why": "Recognition that comes from an agent rather than the founder is worth nothing to the person.",
+        "when": "Someone other than the founders has finished work the records show."
+      }
+    },
+    {
+      "id": "review-engagement-and-retention-indicators",
+      "do": "Report only what the records can actually show about whether people stay and keep working, who left and the reason they gave, how long each engagement lasted, and say plainly what the records cannot show.",
+      "activity": "7.5.1.7",
+      "skill": "reward-and-retain-employees",
+      "consider": {
+        "why": "Retention indicators need more than one or two people before they mean anything.",
+        "when": "The venture has had at least three engagements with people other than the founders."
+      }
+    },
+    {
+      "id": "review-compensation-plan",
+      "do": "Set what the venture pays each person now against the structure and against current public ranges, and raise every person whose pay has drifted outside their range, with the cost of bringing it back in.",
+      "activity": "7.5.1.8",
+      "skill": "reward-and-retain-employees",
+      "raises": [
+        "spend-money"
+      ],
+      "consider": {
+        "why": "A structure drifts out of date, but only once there is pay to compare against it.",
+        "when": "The venture pays at least one person and the structure was set more than two quarters ago."
+      }
+    },
+    {
+      "id": "review-benefits-and-rewards-plan",
+      "do": "Report what each benefit and reward cost last period from `finance/spend`, how many people used it, and which to keep, change or drop, for the founder to decide.",
+      "activity": "7.5.1.9",
+      "skill": "reward-and-retain-employees",
+      "raises": [
+        "spend-money"
+      ],
+      "consider": {
+        "why": "A benefit nobody uses is a standing cost.",
+        "when": "The venture has paid for a benefit or reward for at least one full period."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Open a decision for the pay structure and for every range, raise, reward or benefit that commits money or equity, attach the cited ranges and the runway arithmetic as evidence, and tell the strategy lead which pay question to settle first.",
+      "skill": "reward-and-retain-employees",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities",
+        "spend-money",
+        "ownership-or-control"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "ranges-cited-and-affordable",
+      "kind": "review",
+      "check": "Does every pay range cite a public source with its date, and does every proposed package say what it costs in months of runway?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

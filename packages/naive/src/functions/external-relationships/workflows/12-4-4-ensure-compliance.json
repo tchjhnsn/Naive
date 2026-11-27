@@ -1,0 +1,20 @@
+{
+  "id": "12-4-4-ensure-compliance",
+  "function": "external-relationships",
+  "process": "12.4.4",
+  "title": "Ensure compliance",
+  "goal": "Every obligation that applies to the venture is in the register with its next due date, its owner and the evidence that proves it was met, and every obligation due this quarter is either proven met or handed to its owner as a gap.",
+  "measures": ["compliance_met","learning"],
+  "trigger": {"kind":"request"},
+  "requires": {"meetings":["external-relationships/intake"]},
+  "reads": ["venture","legal/obligations","legal/risks","industries","markets","evidence","operations/handoff","finance/spend","decisions/*"],
+  "steps": [
+    {"id":"plan-and-initiate-compliance-program","do":"From the venture's legal form, industry and places of business, list every filing, tax, licence, registration and data duty that applies, check each against the obligations register, and hand the ones the register is missing to risk and compliance with the source and the date you read it.","skill":"manage-legal-and-ethical-issues","activity":"12.4.4.1","writes":["operations/handoff/[id]"]},
+    {"id":"execute-compliance-program","do":"For each obligation due in the next quarter, find the evidence it was met in the evidence records and the records it names, list what is late or unproven with the days remaining, and hand each gap to its owner with its due date.","skill":"manage-legal-and-ethical-issues","activity":"12.4.4.2","writes":["operations/handoff/[id]"]},
+    {"id":"feed-decisions","do":"Name the open decision each gap bears on and add it there as evidence, and propose to the strategy lead which obligation to close first, nearest due date and worst penalty first.","skill":"manage-legal-and-ethical-issues","writes":["decisions/*"],"raises":["set-priorities"]}
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "every-due-obligation-proven", "kind": "review", "check": "Does every obligation due this quarter either carry evidence it was met or a gap handed to its owner with a due date?", "reviewer": "strategy-lead" }
+  ]
+}

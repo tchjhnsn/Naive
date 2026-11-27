@@ -1,0 +1,118 @@
+{
+  "id": "5-2-2-create-and-manage-resource-plan",
+  "function": "service-delivery",
+  "process": "5.2.2",
+  "title": "Create and manage resource plan",
+  "goal": "Every deliverable due in the next eight weeks is assigned to the founder, a named agent or a named supplier with its hours and its week, each week over capacity is named with the deliverable that would slip, and every resource whose loss would stop a delivery has a stated cover.",
+  "measures": [
+    "flow_and_lead_time",
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "service-delivery/intake"
+    ]
+  },
+  "reads": [
+    "service-delivery/engagements",
+    "service-delivery/offers",
+    "operations/handoff",
+    "people/team",
+    "people/team-plan",
+    "supply-chain/suppliers",
+    "finance/budget",
+    "it/connections",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "skills-taxonomy",
+      "do": "Write one list of the skills delivery needs, taken from the words the live offers' procedures already use, with what each skill lets the venture deliver, and put it on the handoff for the human capital function, which owns the venture's skills record.",
+      "skill": "manage-service-delivery-resources",
+      "activity": "5.2.2.1",
+      "writes": [
+        "operations/handoff/[id]"
+      ]
+    },
+    {
+      "id": "resource-plan",
+      "do": "Assign every deliverable due in the next eight weeks to the founder, a named agent or a named supplier with the hours it needs and the week it runs, open the handoff that carries it with the acceptance test as its done criteria, and list that handoff id on its engagement.",
+      "skill": "manage-service-delivery-resources",
+      "activity": "5.2.2.2",
+      "writes": [
+        "operations/handoff/[id]",
+        "service-delivery/engagements/[id]"
+      ]
+    },
+    {
+      "id": "match-demand-and-capacity",
+      "do": "Compare the assigned hours per week with the hours each performer has, name every week over capacity with the deliverable that would slip and the client it belongs to, and propose to the product lead which deliverable moves and to when.",
+      "skill": "manage-service-delivery-resources",
+      "activity": "5.2.2.3",
+      "raises": [
+        "set-priorities"
+      ]
+    },
+    {
+      "id": "suppliers-and-partners",
+      "do": "Prepare the brief for work a supplier would take (the scope, the acceptance test, the dates, the budget and what they may see of the client's data) and hand it to the founder to approach and agree, then record the agreed supplier and amount against that deliverable in the plan.",
+      "skill": "manage-service-delivery-resources",
+      "activity": "5.2.2.4",
+      "ask": true,
+      "writes": [
+        "operations/handoff/[id]"
+      ],
+      "raises": [
+        "spend-money"
+      ],
+      "consider": {
+        "why": "Buying a skill is how a committed deliverable survives a week that is over capacity, and only the founder may agree it.",
+        "when": "A week is over capacity and the deliverable at risk cannot be moved."
+      }
+    },
+    {
+      "id": "critical-resources",
+      "do": "Name every person, agent, tool, account or supplier whose loss would stop a committed deliverable, say what covers each one and how long the cover takes to arrange, and list the ones with no cover at all.",
+      "skill": "manage-service-delivery-resources",
+      "activity": "5.2.2.5",
+      "writes": [
+        "operations/handoff/[id]"
+      ]
+    },
+    {
+      "id": "monitor-capacity",
+      "do": "Update the hours committed against the hours available from the handoffs worked since the last run, flag any week where delivery took more than half the founder's working time, and say which deliverable took it.",
+      "skill": "manage-service-delivery-resources",
+      "activity": "5.2.2.6",
+      "writes": [
+        "operations/handoff/[id]"
+      ]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Add the capacity gaps and the uncovered critical resources to the decisions they bear on as evidence, and recommend to the product lead the order of work for the next eight weeks.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "every-deliverable-has-a-performer",
+      "kind": "review",
+      "check": "Does every deliverable due in the next eight weeks have a named performer, its hours and an open handoff, and is every week over capacity named with the deliverable at risk?",
+      "reviewer": "product-lead"
+    }
+  ]
+}

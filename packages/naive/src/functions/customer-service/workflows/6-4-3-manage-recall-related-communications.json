@@ -1,0 +1,72 @@
+{
+  "id": "6-4-3-manage-recall-related-communications",
+  "function": "customer-service",
+  "process": "6.4.3",
+  "title": "Manage recall related communications",
+  "goal": "Every message the recall needs is drafted and either sent by the founder or recorded as held, and every customer reply is a case linked to the recall.",
+  "measures": [
+    "usage_or_adoption"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "customer-service/intake"
+    ]
+  },
+  "reads": [
+    "support/policy",
+    "support/cases",
+    "customers",
+    "marketing/message",
+    "marketing/content",
+    "governance/publication-policy"
+  ],
+  "steps": [
+    {
+      "id": "list-audiences",
+      "do": "List who must hear about the recall, the affected customers, everyone else, the site and each channel the venture answers, what each needs to know and when, reading the publication policy for who may publish.",
+      "skill": "manage-product-recalls-and-regulatory-audits"
+    },
+    {
+      "id": "draft-the-messages",
+      "do": "Draft each message, what is wrong, what the customer should do now, what the venture will do and by when, in plain words with no blame and no selling, and hand them to the founder to send or hold.",
+      "raises": [
+        "public-commitment"
+      ],
+      "skill": "manage-product-recalls-and-regulatory-audits"
+    },
+    {
+      "id": "track-replies",
+      "do": "Write a case for every reply the recall brings, tagged with the recall as its reason, and report how many replied, what they asked and which question the messages failed to answer.",
+      "writes": [
+        "support/cases/[id]"
+      ],
+      "skill": "manage-product-recalls-and-regulatory-audits"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Name what the replies change in the next message and open that change as a decision for the founder, leaving which message went to whom and when as evidence on the handoff.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "public-commitment"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "messages-accounted",
+      "kind": "review",
+      "check": "Does every audience have a drafted message the founder has sent or held, and is every reply a case linked to the recall?",
+      "reviewer": "growth-lead"
+    }
+  ]
+}

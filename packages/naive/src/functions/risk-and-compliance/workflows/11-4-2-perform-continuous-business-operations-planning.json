@@ -1,0 +1,89 @@
+{
+  "id": "11-4-2-perform-continuous-business-operations-planning",
+  "function": "risk-and-compliance",
+  "process": "11.4.2",
+  "title": "Perform continuous business operations planning",
+  "goal": "Each thing the venture cannot stop has a runbook someone could follow on a bad day, every single point of failure is named, and the recurring duties the plan creates are on the obligations register with owners and dates.",
+  "measures": [
+    "compliance_met",
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "risk-and-compliance/intake"
+    ]
+  },
+  "reads": [
+    "it/connections",
+    "governance/ownership",
+    "people/team",
+    "legal/risks",
+    "legal/obligations",
+    "customers",
+    "product"
+  ],
+  "steps": [
+    {
+      "id": "map-dependencies",
+      "do": "For each thing the venture cannot stop, list every account, platform, key, payment rail and person it depends on, from the connections record and the ownership record, and mark the ones where a single account or a single person is the only way in.",
+      "skill": "manage-business-resiliency",
+      "writes": [
+        "operations/handoff/[id]"
+      ]
+    },
+    {
+      "id": "write-the-runbook",
+      "do": "Write the steps to keep going without each marked dependency, in the order someone would actually do them, naming who does it, which credential they need and where the backup is, short enough to follow on a bad day.",
+      "skill": "manage-business-resiliency",
+      "writes": [
+        "operations/handoff/[id]"
+      ]
+    },
+    {
+      "id": "name-the-duties",
+      "do": "Add to the obligations register the recurring duties the plan creates, a backup to verify, a contact list to refresh, a domain or certificate that must not lapse, each with an owner, a date and its preparation days.",
+      "skill": "manage-business-resiliency",
+      "writes": [
+        "legal/obligations/[id]"
+      ]
+    },
+    {
+      "id": "plan-the-notices",
+      "do": "Draft what the venture would tell its customers, its platform and any regulator during an outage, using only the facts it would know at the time, and leave every word of sending it to the founder.",
+      "skill": "manage-business-resiliency",
+      "raises": [
+        "public-commitment"
+      ],
+      "consider": {
+        "why": "A venture with no customers and no duty to notify anyone has nobody to tell, and what it would say to outsiders is the founder's.",
+        "when": "The venture has a customer record or a live obligation to notify anyone."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Add each single point of failure and each runbook step nobody can perform to the decision it bears on, and raise to the finance lead which one to fix first.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "runbook-followable",
+      "kind": "review",
+      "check": "Does each thing the venture cannot stop have a runbook naming who acts, which credential they need and where the backup is, and is every single point of failure named?",
+      "reviewer": "finance-lead"
+    }
+  ]
+}

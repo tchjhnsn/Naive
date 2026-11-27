@@ -1,0 +1,103 @@
+{
+  "id": "8-6-5-perform-service-and-solution-rollout",
+  "function": "it",
+  "process": "8.6.5",
+  "title": "Perform service and solution rollout",
+  "goal": "The people who have to use the change can use it: they have been told, they have what they need to follow, the rollout has reached every group it was meant to, and every issue raised during it is recorded with its answer.",
+  "measures": ["cost_or_time_saved", "compliance_met"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["it/intake"] },
+  "reads": [
+    "product",
+    "customers",
+    "support/cases",
+    "support/policy",
+    "people/team",
+    "people/team-plan",
+    "operations/handoff",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "conduct-training",
+      "do": "Walk whoever will use the change through the real tasks it supports, with the one-page guide in hand, and write down each question they asked, because a question asked twice belongs in the guide.",
+      "skill": "deploy-services-solutions",
+      "activity": "8.6.5.1",
+      "writes": ["operations/handoff/[id]"],
+      "consider": {
+        "why": "A change nobody has been walked through gets used wrongly or not at all.",
+        "when": "Someone other than the person who built the change has to use or operate it."
+      }
+    },
+    {
+      "id": "distribute-communications",
+      "do": "Draft the rollout messages for each group the change affects, what it does, what they have to do, when, and where to go when it breaks, and hand them to the founder to send, since what the venture says to customers is the founder's to say.",
+      "skill": "deploy-services-solutions",
+      "activity": "8.6.5.2",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "support-organizational-changes",
+      "do": "List what has to change in how the venture works now that the change is out, the steps that are no longer done by hand, the records that are written somewhere else, the role whose work moves, and hand the list to the founder.",
+      "skill": "deploy-services-solutions",
+      "activity": "8.6.5.3",
+      "writes": ["operations/handoff/[id]"],
+      "consider": {
+        "why": "A technical change that leaves the venture's own routine untouched is a change half made.",
+        "when": "The change moves work between a person and an agent, or replaces a step someone does today."
+      }
+    },
+    {
+      "id": "execute-rollout",
+      "do": "Turn the change on for each group in the order the plan gives, smallest and most forgiving group first, and record the date each group was switched and how many were in it.",
+      "skill": "deploy-services-solutions",
+      "activity": "8.6.5.4",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "provide-rollout-support",
+      "do": "Watch for the questions and failures the rollout brings in during its first days, answer the ones the guide already covers, and send anything that needs a judgment, a refund or a promise to the founder.",
+      "skill": "deploy-services-solutions",
+      "activity": "8.6.5.5",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "manage-support-capabilities",
+      "do": "Make sure the rollout can be supported at the volume it brings: say who answers, in what hours, through which channel, and what the fallback is when nobody is there, and name the gap when there is one.",
+      "skill": "deploy-services-solutions",
+      "activity": "8.6.5.6",
+      "writes": ["operations/handoff/[id]"],
+      "consider": {
+        "why": "A rollout that arrives faster than the venture can answer turns into complaints nobody reads.",
+        "when": "The change reaches customers or more than a handful of users."
+      }
+    },
+    {
+      "id": "record-rollout-issues",
+      "do": "Write each issue the rollout raised with the group that hit it, how often, what was done about it and whether it is closed, and mark the ones that should hold the next group back.",
+      "skill": "deploy-services-solutions",
+      "activity": "8.6.5.7",
+      "writes": ["operations/handoff/[id]"],
+      "raises": ["domain-fact"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Add the rollout record and its open issues as evidence to the decision the rollout serves, and raise to the product lead whether to carry on to the next group, hold, or roll the change back.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "every-group-reached",
+      "kind": "review",
+      "check": "Does the record name every group the change reached with the date it was switched, was every message sent by the founder rather than by the agent, and does every issue raised carry an answer or a reason it is still open?",
+      "reviewer": "product-lead"
+    }
+  ]
+}

@@ -1,0 +1,123 @@
+{
+  "id": "9-7-3-manage-in-house-bank-accounts",
+  "function": "finance",
+  "process": "9.7.3",
+  "title": "Manage in-house bank accounts",
+  "goal": "When the venture holds money for its own entities, each entity's internal balance, transfer, loan and charge is recorded on both sides and each entity has a statement that balances.",
+  "measures": [
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "finance/intake"
+    ]
+  },
+  "reads": [
+    "venture",
+    "money",
+    "money/[id]",
+    "finance/spend",
+    "finance/budget",
+    "purpose/money/summary",
+    "governance/ownership",
+    "legal/obligations"
+  ],
+  "steps": [
+    {
+      "id": "subsidiary-accounts",
+      "do": "Keep each entity's balance inside the shared account separately so the shared total is always the sum of the entity balances, and list any difference between the two.",
+      "skill": "manage-treasury-operations",
+      "activity": "9.7.3.1",
+      "consider": {
+        "why": "One bank account holding several entities' money is one mistake away from mixing them.",
+        "when": "The venture has more than one legal entity and holds money for them in one place."
+      }
+    },
+    {
+      "id": "intercompany-borrowing",
+      "do": "Record each loan between the venture's own entities with its amount, date, rate and the agreement behind it, and flag every one with no written agreement.",
+      "skill": "manage-treasury-operations",
+      "activity": "9.7.3.2",
+      "consider": {
+        "why": "A loan between the venture's own entities with no written agreement is a tax and legal problem later.",
+        "when": "One of the venture's entities has lent money to another."
+      }
+    },
+    {
+      "id": "outgoing-payments",
+      "do": "Record each payment the shared account makes for an entity against that entity's balance, with the approval and the document behind it.",
+      "skill": "manage-treasury-operations",
+      "activity": "9.7.3.3",
+      "consider": {
+        "why": "A payment made for an entity and charged to the wrong one moves money between owners.",
+        "when": "The shared account pays a bill on behalf of one of the venture's entities."
+      }
+    },
+    {
+      "id": "incoming-payments",
+      "do": "Record each receipt the shared account takes for an entity against that entity's balance, and list every receipt no entity claims.",
+      "skill": "manage-treasury-operations",
+      "activity": "9.7.3.4",
+      "consider": {
+        "why": "A receipt no entity claims sits in the shared account looking like everyone's money.",
+        "when": "The shared account receives money on behalf of one of the venture's entities."
+      }
+    },
+    {
+      "id": "netting",
+      "do": "Net what the entities owe each other down to one settlement per pair per period and show the working that gets there.",
+      "skill": "manage-treasury-operations",
+      "activity": "9.7.3.5",
+      "consider": {
+        "why": "Settling every internal invoice separately costs fees and time for no result.",
+        "when": "The venture's entities owe each other amounts in both directions."
+      }
+    },
+    {
+      "id": "internal-interest-and-fees",
+      "do": "Calculate the interest and fees each entity's internal balance has earned or owes from the agreed rate, and prepare the entry for each side.",
+      "skill": "manage-treasury-operations",
+      "activity": "9.7.3.6",
+      "consider": {
+        "why": "An internal loan at no rate is treated as something else by a tax authority.",
+        "when": "An internal balance or loan between entities carries an agreed rate or fee."
+      }
+    },
+    {
+      "id": "internal-statements",
+      "do": "Produce a statement for each entity, its opening balance, receipts, payments, interest and closing balance, and hand it to the founder for that entity's records.",
+      "skill": "manage-treasury-operations",
+      "activity": "9.7.3.7",
+      "consider": {
+        "why": "Each entity's own books need a statement it can reconcile to.",
+        "when": "The venture holds money for an entity that keeps its own books."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Raise every internal loan with no agreement and every unclaimed receipt as a decision for the founder, and record on the handoff that this process does not apply when the venture is a single entity.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "legal-or-terms"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "both-sides-recorded",
+      "kind": "review",
+      "check": "Does every internal transfer, loan and charge between the venture's entities appear on both sides with the same amount and date, and does each entity's statement balance?",
+      "reviewer": "finance-lead"
+    }
+  ]
+}

@@ -1,0 +1,142 @@
+{
+  "id": "4-1-5-plan-distribution-requirements",
+  "function": "supply-chain",
+  "process": "4.1.5",
+  "title": "Plan distribution requirements",
+  "goal": "Every place the venture holds or ships finished goods from has a required quantity, a replenishment rule and a cost per unit shipped, and the plan the venture works to states what it assumes.",
+  "measures": ["cost_or_time_saved", "flow_and_lead_time"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["supply-chain/intake"] },
+  "reads": [
+    "product",
+    "customers",
+    "deals",
+    "supply-chain/suppliers",
+    "supply-chain/purchase-orders",
+    "finance/spend",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "maintain-master-data",
+      "do": "Keep the data every distribution figure is computed from current on the supplier and order records, the unit weight and packed dimensions, the units per carton and per pallet, the origin and destination addresses and the customs code, and list what is still missing.",
+      "skill": "plan-for-and-align-supply-chain-resources",
+      "activity": "4.1.5.1",
+      "writes": ["supply-chain/suppliers/[id]"]
+    },
+    {
+      "id": "determine-finished-goods-inventory-requirements-at-destination",
+      "do": "For each place finished goods sit, the founder's home, a fulfilment warehouse or a retailer, work out how many units must be there to cover demand over the time it takes to replenish, and state the safety stock and the assumption behind it.",
+      "skill": "plan-for-and-align-supply-chain-resources",
+      "activity": "4.1.5.2"
+    },
+    {
+      "id": "determine-product-storage-facility-requirements",
+      "do": "Turn that quantity into the space and conditions it needs, cartons or pallets, floor area, temperature, humidity and any handling rule the product carries, and say whether the space the venture has today can hold it.",
+      "skill": "plan-for-and-align-supply-chain-resources",
+      "activity": "4.1.5.3"
+    },
+    {
+      "id": "calculate-requirements-at-destination",
+      "do": "Compute, per destination and per week, how many units must arrive to hold the required stock given what is on hand and what is already in transit, and give the founder the dates by which each shipment must leave.",
+      "skill": "plan-for-and-align-supply-chain-resources",
+      "activity": "4.1.5.4"
+    },
+    {
+      "id": "calculate-consolidation-at-source",
+      "do": "Group the shipments due to leave a source within the same window into one consignment where that is cheaper, and show the saving per unit against the extra days each order waits for the group.",
+      "skill": "plan-for-and-align-supply-chain-resources",
+      "activity": "4.1.5.5",
+      "consider": {
+        "why": "Freight per unit falls steeply with a fuller container or pallet, and waiting a week to fill one is often the cheapest saving available.",
+        "when": "More than one order ships from the same source within a few weeks."
+      }
+    },
+    {
+      "id": "manage-collaborative-replenishment-planning",
+      "do": "Draft the replenishment plan to share with the fulfilment partner or retailer, how much it should hold, when it should pull more and who raises the order, for the founder to agree with them, and record what was agreed.",
+      "skill": "plan-for-and-align-supply-chain-resources",
+      "activity": "4.1.5.6",
+      "raises": ["legal-or-terms"],
+      "consider": {
+        "why": "A partner that holds stock is planning too, and two plans that disagree show up as a stockout or a return.",
+        "when": "A third party holds the venture's finished goods or reorders on its behalf."
+      }
+    },
+    {
+      "id": "calculate-and-optimize-destination-dispatch-plan",
+      "do": "Build the dispatch plan for each destination, which orders go out on which day by which service, and show the cost and the delivery date of the cheapest and the fastest option side by side.",
+      "skill": "plan-for-and-align-supply-chain-resources",
+      "activity": "4.1.5.7",
+      "consider": {
+        "why": "Choosing the service per order rather than once for all orders is where most small shippers overpay.",
+        "when": "The venture ships from stock to customers on more than a handful of days a month."
+      }
+    },
+    {
+      "id": "manage-dispatch-plan-attainment",
+      "do": "Track what actually went out against the dispatch plan, count the orders that missed their day and say why each one missed, and put the count and the causes on the handoff.",
+      "skill": "plan-for-and-align-supply-chain-resources",
+      "activity": "4.1.5.8",
+      "consider": {
+        "why": "A dispatch plan nobody checks becomes a wish, and late dispatch is usually what makes a delivery promise fail.",
+        "when": "A dispatch plan has been in force for at least one period."
+      }
+    },
+    {
+      "id": "calculate-and-optimize-destination-load-plans",
+      "do": "Work out how the units are stacked into cartons, pallets or a container for each destination, and give the loaded quantity, the weight and the cubic volume that the freight quote will be priced on.",
+      "skill": "plan-for-and-align-supply-chain-resources",
+      "activity": "4.1.5.9",
+      "consider": {
+        "why": "A quote is priced on volume or weight, whichever is greater, so the packing decides the bill.",
+        "when": "The venture ships pallets or containers rather than parcels."
+      }
+    },
+    {
+      "id": "manage-partner-load-plan",
+      "do": "Check the load the carrier or forwarder plans against your own load plan, flag every difference in quantity, weight or volume before the goods move, and record what the partner confirmed.",
+      "skill": "plan-for-and-align-supply-chain-resources",
+      "activity": "4.1.5.10",
+      "consider": {
+        "why": "A difference between the venture's figures and the carrier's is found either before the goods move or on the invoice.",
+        "when": "A carrier or forwarder plans the load for the venture."
+      }
+    },
+    {
+      "id": "manage-cost-of-supply",
+      "do": "Compute the cost to put one unit in the customer's hands, adding freight in, duty, brokerage, storage, pick and pack and freight out to the unit cost, show it per destination, and name every part of it you had to estimate.",
+      "skill": "plan-for-and-align-supply-chain-resources",
+      "activity": "4.1.5.11"
+    },
+    {
+      "id": "manage-capacity-utilization",
+      "do": "Report how much of the storage and shipping capacity the venture pays for is actually used, by space and by shipment, and say whether the venture is paying for room it does not need or is about to run out.",
+      "skill": "plan-for-and-align-supply-chain-resources",
+      "activity": "4.1.5.12",
+      "consider": {
+        "why": "Storage and minimum carrier charges are paid whether they are used or not.",
+        "when": "The venture pays for storage or a shipping contract with a minimum."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Add a decision for each distribution choice the plan forces, where to hold stock, which service to ship by and whether to pay a fulfilment partner, with the cost per unit and the delivery time of each option, and hand the order of that work to the product lead.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities", "spend-money"]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "cost-per-unit-delivered-stated",
+      "kind": "review",
+      "check": "Does the plan give, for each destination, the stock to hold, the replenishment rule and the cost to put one unit in the customer's hands, with every estimated part of that cost named?",
+      "reviewer": "product-lead"
+    }
+  ]
+}

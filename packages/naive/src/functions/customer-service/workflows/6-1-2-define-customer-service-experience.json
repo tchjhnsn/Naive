@@ -1,0 +1,77 @@
+{
+  "id": "6-1-2-define-customer-service-experience",
+  "function": "customer-service",
+  "process": "6.1.2",
+  "title": "Define customer service experience",
+  "goal": "The support policy describes what a customer meets at each stage of a contact, from the first reply to the close, in the venture's own voice and with the timings the founder approved.",
+  "measures": [
+    "usage_or_adoption"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "customer-service/intake"
+    ]
+  },
+  "reads": [
+    "support/policy",
+    "support/cases",
+    "customers",
+    "marketing/voice",
+    "marketing/brand",
+    "foundation/icp"
+  ],
+  "steps": [
+    {
+      "id": "map-the-stages",
+      "do": "Walk the last ten closed cases from first contact to close and write what the customer actually met at each stage, the first reply, the updates, the resolution and the close, with how long each took.",
+      "skill": "develop-customer-service-strategy"
+    },
+    {
+      "id": "find-the-breaks",
+      "do": "Name the stages where the customer had to ask again, waited with no word, or was passed between channels, citing the cases that show each break and how often it happened.",
+      "skill": "develop-customer-service-strategy"
+    },
+    {
+      "id": "align-the-voice",
+      "do": "Read the voice and brand records and write how a reply should sound at each stage, including the line that always leaves the customer a way to reach a person.",
+      "skill": "develop-customer-service-strategy"
+    },
+    {
+      "id": "draft-the-experience",
+      "do": "Draft the experience into the support policy stage by stage, what the customer is told and by when, and raise it for the founder, because every stage of it is a promise.",
+      "writes": [
+        "support/policy"
+      ],
+      "raises": [
+        "public-commitment"
+      ],
+      "skill": "develop-customer-service-strategy"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Name the decision each break bears on, add the cases there as evidence, and recommend to the growth lead which stage to fix first.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "experience-written",
+      "kind": "review",
+      "check": "Does the policy say what the customer is told at each stage and by when, and does every stage named as broken cite the cases behind it?",
+      "reviewer": "growth-lead"
+    }
+  ]
+}

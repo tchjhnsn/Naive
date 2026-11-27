@@ -1,0 +1,68 @@
+{
+  "id": "1-3-1-develop-strategic-initiatives",
+  "function": "strategy",
+  "process": "1.3.1",
+  "title": "Develop strategic initiatives",
+  "goal": "The few pieces of work that would move the venture's goals this phase are written as goal records with their measure, their owner and what they would cost, and everyone who must carry one has seen it before it is chosen.",
+  "measures": ["impact", "learning"],
+  "trigger": { "kind": "request" },
+  "requires": {
+    "records": ["foundation/pre-registration"],
+    "meetings": ["strategy/intake"]
+  },
+  "reads": [
+    "foundation/telos",
+    "foundation/goals",
+    "foundation/exit-criteria",
+    "foundation/requirements",
+    "validation/plan",
+    "system/need-now",
+    "system/phase-gate",
+    "system/decision-index",
+    "purpose/money/summary",
+    "operations/lead",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "identify-strategic-priorities",
+      "do": "Read the current phase gate, what the venture needs now and the open decisions by rank, and write the three or four priorities for this phase, each naming the exit criterion or goal measure it serves and the evidence that it is the binding one.",
+      "skill": "develop-and-measure-strategic-initiatives",
+      "activity": "1.3.1.1",
+      "writes": ["foundation/goals/[id]"]
+    },
+    {
+      "id": "develop-strategic-initiatives-based-on-value",
+      "do": "For each priority write one initiative as a child goal: what would be done, the measure it moves and by how much, who would own it, how long it would take and what it would cost from the spend and budget records, with the status left proposed for the founder.",
+      "skill": "develop-and-measure-strategic-initiatives",
+      "activity": "1.3.1.2",
+      "writes": ["foundation/goals/[id]"]
+    },
+    {
+      "id": "review-with-stakeholders",
+      "do": "Prepare for each initiative the one page its owner, a cofounder or a funder would need, send it through a handoff to the lead who would carry it, and record what each said, including any refusal, as evidence rather than adjusting the initiative to suit it.",
+      "skill": "develop-and-measure-strategic-initiatives",
+      "activity": "1.3.1.3",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Open one decision carrying the initiative set with each one's measure, cost and reviewer's answer, name any priority no initiative covers, and recommend to the strategy lead the order to work them in.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities", "strategy-or-constitution"]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "every-initiative-serves-a-measure",
+      "kind": "review",
+      "check": "Does every initiative written in this run name the goal measure it moves, by how much, its owner and its cost, and was it reviewed by the lead who would carry it?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

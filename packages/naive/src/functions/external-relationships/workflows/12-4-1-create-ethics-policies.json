@@ -1,0 +1,21 @@
+{
+  "id": "12-4-1-create-ethics-policies",
+  "function": "external-relationships",
+  "process": "12.4.1",
+  "title": "Create ethics policies",
+  "goal": "The few rules the venture will not break are written as a decision the founder took, each with a real case it would have decided differently, and the way a concern is raised names who hears it and what happens next.",
+  "measures": ["compliance_met","learning"],
+  "trigger": {"kind":"request"},
+  "requires": {"meetings":["external-relationships/intake"]},
+  "reads": ["venture","foundation/alignment","foundation/constraints","governance/pillar","governance/decision-rights","governance/publication-policy","decisions/*"],
+  "steps": [
+    {"id":"read-what-the-venture-already-commits-to","do":"Read the alignment record, the governance pillars, the decision rights and the constraints and list the commitments the venture has already made, so a new policy restates nothing and contradicts nothing.","skill":"manage-legal-and-ethical-issues"},
+    {"id":"draft-the-rules-that-would-change-a-decision","do":"Draft the few rules that would actually change a decision, what the venture will not sell, whose data it will not collect, what it will not claim, each with a real case it would have decided differently, and leave adopting them to the founder.","skill":"manage-legal-and-ethical-issues","writes":["decisions/*"],"raises":["strategy-or-constitution"]},
+    {"id":"name-how-a-concern-is-raised","do":"Ask the founder who hears a concern about conduct, how someone raises it and what happens next, and write the answer plainly, including that in a one-person venture the answer is the founder alone.","ask":true,"skill":"manage-legal-and-ethical-issues","writes":["operations/handoff/[id]"]},
+    {"id":"feed-decisions","do":"Name the open decision each rule bears on and add it there as evidence, and propose to the strategy lead which rule to adopt first, the one a waiting decision needs.","skill":"manage-legal-and-ethical-issues","writes":["decisions/*"],"raises":["set-priorities"]}
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "rules-bite", "kind": "review", "check": "Does every rule name a real case it would have decided differently, and does the record say who hears a concern and what happens next?", "reviewer": "strategy-lead" }
+  ]
+}

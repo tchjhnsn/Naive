@@ -1,0 +1,89 @@
+{
+  "id": "13-7-3-evaluate-performance",
+  "function": "capabilities",
+  "process": "13.7.3",
+  "title": "Evaluate performance",
+  "goal": "This window's performance is read and reported: the indicators are set, the data is collected from the records, the measures are computed, the trend is named with what would change it, and one improvement plan is proposed.",
+  "measures": ["flow_and_lead_time", "cost_or_time_saved"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["capabilities/intake"] },
+  "reads": [
+    "foundation/telos",
+    "foundation/goals",
+    "capabilities/processes",
+    "operations/handoff",
+    "evidence",
+    "system/vitals",
+    "finance/spend"
+  ],
+  "steps": [
+    {
+      "id": "establish-performance-indicators",
+      "do": "Take the indicators for this reading from the measurement model, no more than can be acted on, each with the goal it serves, and say for each what reading would make the venture do something different.",
+      "skill": "measure-and-benchmark",
+      "activity": "13.7.3.1",
+      "writes": ["capabilities/processes/[id]"]
+    },
+    {
+      "id": "establish-monitoring-frequency",
+      "do": "Set how often each indicator is read from how fast it can actually move and how long the venture would take to act on it, and write that on the process record.",
+      "skill": "measure-and-benchmark",
+      "activity": "13.7.3.2",
+      "writes": ["capabilities/processes/[id]"]
+    },
+    {
+      "id": "collect-performance-data",
+      "do": "Pull this window's data from the records the definitions name, handoffs, evidence and spend, and list every indicator whose data is missing or partial rather than filling the gap with an estimate.",
+      "skill": "measure-and-benchmark",
+      "activity": "13.7.3.3",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "calculate-performance-measures",
+      "do": "Compute each indicator exactly as its definition says, show the count behind it, and mark any figure resting on too few runs to mean anything.",
+      "skill": "measure-and-benchmark",
+      "activity": "13.7.3.4",
+      "writes": ["capabilities/processes/[id]"],
+      "raises": ["domain-fact"]
+    },
+    {
+      "id": "identify-performance-trends",
+      "do": "Put each measure beside its previous readings and say whether it moved, stayed or cannot be told apart from noise, naming the number of windows the judgement rests on.",
+      "skill": "measure-and-benchmark",
+      "activity": "13.7.3.5",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "analyze-performance",
+      "do": "For each measure that moved, name what in the venture's own records changed before it, a process change, a new customer, a different volume, and say what would show that explanation wrong.",
+      "skill": "measure-and-benchmark",
+      "activity": "13.7.3.6",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "prepare-performance-reports",
+      "do": "Write the reading as one page for the founder: each indicator, its figure, the count behind it, whether it moved, and what is not measured, and keep it the same shape each window.",
+      "skill": "measure-and-benchmark",
+      "activity": "13.7.3.7",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "develop-performance-improvement-plan",
+      "do": "Propose one change at the measure that is furthest from its goal, with the step it touches, what it would take and the reading that will judge it, and leave the choice to the founder or the strategy lead.",
+      "skill": "measure-and-benchmark",
+      "activity": "13.7.3.8",
+      "writes": ["operations/handoff/[id]"],
+      "raises": ["set-priorities"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Raise to the strategy lead which improvement to take this cycle, and record the reading and its data as evidence on the handoff.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "counts-and-gaps-shown", "kind": "review", "check": "Does every figure in the report show the count behind it, and does the report name the indicators whose data was missing instead of estimating them?", "reviewer": "strategy-lead" }
+  ]
+}

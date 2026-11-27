@@ -1,0 +1,91 @@
+{
+  "id": "1-1-4-establish-strategic-vision",
+  "function": "strategy",
+  "process": "1.1.4",
+  "title": "Establish strategic vision",
+  "goal": "The end state the venture exists to reach and the horizon it is reached by stand in the telos in the founder's own words, everyone who must stand behind them has heard them, and every objection raised is open as a decision.",
+  "measures": [
+    "learning",
+    "impact"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "records": [
+      "foundation/pre-registration"
+    ],
+    "meetings": [
+      "strategy/intake"
+    ]
+  },
+  "reads": [
+    "venture",
+    "foundation/pre-registration",
+    "foundation/telos",
+    "foundation/problem",
+    "foundation/icp",
+    "foundation/goals",
+    "foundation/constraints",
+    "purpose/foundation",
+    "people/founders",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "define-the-strategic-vision",
+      "do": "Bring the founder two or three candidate end states, each written as what is true in the world when the venture has done its job, with the problem record, the customer profile and the registered pre-registration each one rests on, ask which they mean and by when, and write their answer into the telos end_state and horizon as a draft for them to accept.",
+      "skill": "define-the-business-concept-and-long-term-vision",
+      "activity": "1.1.4.1",
+      "ask": true,
+      "raises": [
+        "strategy-or-constitution"
+      ]
+    },
+    {
+      "id": "align-stakeholders-around-strategic-vision",
+      "do": "List everyone who must stand behind the end state, a cofounder, an early customer, an investor or a lender, write for each what they would ask and what the records answer, and after the founder has spoken to them record each answer and open every objection as a decision rather than arguing it away.",
+      "skill": "define-the-business-concept-and-long-term-vision",
+      "activity": "1.1.4.2",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "strategy-or-constitution"
+      ]
+    },
+    {
+      "id": "communicate-strategic-vision-to-stakeholders",
+      "do": "Draft the one or two sentences of the end state that may be said outside the venture, cite the record each clause comes from, and hand them to the marketing and sales function to publish, because saying it in public is a commitment and neither you nor this function publishes.",
+      "skill": "define-the-business-concept-and-long-term-vision",
+      "activity": "1.1.4.3",
+      "writes": [
+        "operations/handoff/[id]"
+      ]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Attach the chosen end state and every objection to the decision that settles it, name which existing goals or bets it contradicts, and recommend to the strategy lead what must be rewritten next because the end state changed.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "contradicts-ledger",
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "vision-is-the-founders-words",
+      "kind": "review",
+      "check": "Is the end state in the telos the founder's own answer, accepted by them, with every objection raised open as a decision rather than written out?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

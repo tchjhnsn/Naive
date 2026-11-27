@@ -1,0 +1,47 @@
+{
+  "id": "13-8-3-develop-and-manage-hypotheses",
+  "function": "capabilities",
+  "process": "13.8.3",
+  "title": "Develop and manage hypotheses",
+  "goal": "Each hypothesis behind the analysis is written so it can fail: what is claimed, the measure and the line that would settle it, what would show it wrong, and which are already registered as the venture's bets rather than restated here.",
+  "measures": ["cost_or_time_saved"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["capabilities/intake"] },
+  "reads": [
+    "foundation/bets",
+    "foundation/pre-registration",
+    "operations/handoff",
+    "evidence",
+    "validation/interviews"
+  ],
+  "steps": [
+    {
+      "id": "read-the-registered-claims",
+      "do": "Read the venture's registered bets and pre-registrations first, and say which of them this analysis would test, so the claim is not reworded here into something easier to pass.",
+      "skill": "develop-manage-and-deliver-analytics",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "write-the-hypotheses",
+      "do": "Write each remaining hypothesis as one claim with the measure, the population and the line that would settle it, and the observation that would show it wrong.",
+      "skill": "develop-manage-and-deliver-analytics",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "fix-them-before-looking",
+      "do": "Fix the hypotheses and their lines on the handoff before any data is read, and when a later run changes one, append the change with its reason rather than overwriting it.",
+      "skill": "develop-manage-and-deliver-analytics",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Hand the claims that belong in the venture's bet register to the strategy function as a handoff, and raise anything the analysis would settle that a decision in force already assumes.",
+      "writes": ["decisions/*"],
+      "raises": ["contradicts-ledger"]
+    }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "falsifiable-and-fixed-first", "kind": "review", "check": "Does every hypothesis name the measure, the line and what would show it wrong, and were they all written down before any data was read?", "reviewer": "strategy-lead" }
+  ]
+}

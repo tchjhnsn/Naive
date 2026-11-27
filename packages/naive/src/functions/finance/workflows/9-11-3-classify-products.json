@@ -1,0 +1,79 @@
+{
+  "id": "9-11-3-classify-products",
+  "function": "finance",
+  "process": "9.11.3",
+  "title": "Classify products",
+  "goal": "Each product the venture moves across a border carries a tariff classification and a country of origin with the reasoning and published source behind it, and whoever confirmed it is recorded with the date.",
+  "measures": [
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "finance/intake"
+    ]
+  },
+  "reads": [
+    "product",
+    "product/[id]",
+    "supply-chain/suppliers",
+    "supply-chain/purchase-orders",
+    "finance/spend",
+    "legal/obligations",
+    "markets"
+  ],
+  "steps": [
+    {
+      "id": "gather-the-facts",
+      "do": "Gather for each product what it is made of, what it does and how it is packed, from the product records and the supplier's documents, and list every fact no document supports.",
+      "skill": "perform-global-trade-services",
+      "consider": {
+        "why": "Classification turns on what a thing is made of and what it does, not on what it is called.",
+        "when": "The venture moves a physical product across a border."
+      }
+    },
+    {
+      "id": "propose-the-classification",
+      "do": "Propose the tariff classification and the country of origin for each product with the reasoning and the published source behind it, and mark it a proposal until a customs broker or the founder confirms it.",
+      "skill": "perform-global-trade-services",
+      "consider": {
+        "why": "The duty rate, the licences and the preferences all follow from the classification.",
+        "when": "The facts for a product are gathered and it has no classification."
+      }
+    },
+    {
+      "id": "record-and-review",
+      "do": "Keep each confirmed classification with its date, its source and the name of whoever confirmed it, and review it when the product, its materials or the tariff schedule changes.",
+      "skill": "perform-global-trade-services",
+      "consider": {
+        "why": "A classification that was right two years ago can be wrong after a change of materials or of the tariff schedule.",
+        "when": "A product's classification was set more than a year ago, or the product has changed."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Raise each unconfirmed classification as a decision for the founder with what a wrong one would cost in duty and penalty, since only they or their broker can confirm it.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "legal-or-terms"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "classification-confirmed",
+      "kind": "review",
+      "check": "Does every classification carry its reasoning, its published source, and the date and name of whoever confirmed it?",
+      "reviewer": "finance-lead"
+    }
+  ]
+}

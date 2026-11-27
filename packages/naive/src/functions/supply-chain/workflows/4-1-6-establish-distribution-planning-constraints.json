@@ -1,0 +1,68 @@
+{
+  "id": "4-1-6-establish-distribution-planning-constraints",
+  "function": "supply-chain",
+  "process": "4.1.6",
+  "title": "Establish distribution planning constraints",
+  "goal": "The limits every distribution plan must respect are written down with the number that binds each one: the space available, the stock the venture will hold, how it ships and how it stores.",
+  "measures": ["cost_or_time_saved", "flow_and_lead_time"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["supply-chain/intake"] },
+  "reads": [
+    "product",
+    "supply-chain/suppliers",
+    "supply-chain/purchase-orders",
+    "finance/budget",
+    "assets/leases",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "establish-distribution-center-layout-constraints",
+      "do": "Write what the storage space itself limits, the floor area, the stacking height, the door and lift size and the largest pallet or carton that can get in, and say which of these caps the monthly volume first.",
+      "skill": "plan-for-and-align-supply-chain-resources",
+      "activity": "4.1.6.1",
+      "consider": {
+        "why": "A door or a ceiling that cannot take a pallet changes the whole shipping plan, and it is cheap to measure now.",
+        "when": "The venture stores goods in a space it rents or owns."
+      }
+    },
+    {
+      "id": "establish-inventory-management-constraints",
+      "do": "Set the inventory limits the venture will plan inside, the most cash it will hold in stock at once, the maximum weeks of cover per item, the shelf life or expiry of anything perishable and the minimum the venture refuses to go below, and ask the founder for the cash limit.",
+      "skill": "plan-for-and-align-supply-chain-resources",
+      "activity": "4.1.6.2",
+      "ask": true
+    },
+    {
+      "id": "establish-transportation-management-constraints",
+      "do": "Write what shipping can and cannot do for this venture, the services available from each origin with their transit times, the carrier minimums, the dangerous goods or battery rules the product triggers and the customs documents each lane needs.",
+      "skill": "plan-for-and-align-supply-chain-resources",
+      "activity": "4.1.6.3"
+    },
+    {
+      "id": "establish-storage-management-constraints",
+      "do": "Write the rules goods must be stored under, temperature, humidity, stacking, separation of returns and rejects from sellable stock, and how long anything may sit before it is checked again, and name each rule that comes from the product rather than from preference.",
+      "skill": "plan-for-and-align-supply-chain-resources",
+      "activity": "4.1.6.4"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Where a constraint blocks the plan the venture wants, add a decision with the ways round it, rent more space, hold less stock, ship more often or use a fulfilment partner, each costed, and hand the order of that work to the product lead.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities", "spend-money"]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "constraints-have-numbers",
+      "kind": "review",
+      "check": "Does every written constraint carry the number or rule that binds it, and is the one that caps monthly volume first named?",
+      "reviewer": "product-lead"
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "id": "13-6-6-deliver-approved-content",
+  "function": "capabilities",
+  "process": "13.6.6",
+  "title": "Deliver approved content",
+  "goal": "Nothing leaves the venture unapproved: each piece has a person's approval on the record, the publishing is handed to the function that owns the channel, and the approved version is stored where the storage rule says with its approval beside it.",
+  "measures": ["flow_and_lead_time"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["capabilities/intake"] },
+  "reads": [
+    "marketing/content",
+    "marketing/sitemap",
+    "governance/publication-policy",
+    "governance/publications",
+    "capabilities/processes",
+    "operations/handoff"
+  ],
+  "steps": [
+    {
+      "id": "assess-and-approve-content",
+      "do": "Check the piece against every control the governance model names, citations, voice, licence and retention, present what remains to the person whose approval the publication policy requires, and record their approval or their changes without approving anything yourself.",
+      "skill": "manage-content",
+      "activity": "13.6.6.1",
+      "ask": true,
+      "writes": ["operations/handoff/[id]"],
+      "raises": ["legal-or-terms"]
+    },
+    {
+      "id": "publish-approved-content",
+      "do": "Hand the approved piece to the function that owns the channel with the version, the date and the approver named, and never publish it from here.",
+      "skill": "manage-content",
+      "activity": "13.6.6.2",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "store-approved-content",
+      "do": "Put the approved version where the storage rule says, with who approved it, when, and the version that went out, and record its next review date.",
+      "skill": "manage-content",
+      "activity": "13.6.6.3",
+      "writes": ["capabilities/processes/[id]", "operations/handoff/[id]"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Record the approval and the handover as evidence on the handoff, and raise anything that was published without the approval the policy requires.",
+      "writes": ["decisions/*"],
+      "raises": ["contradicts-ledger"]
+    }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "approved-by-a-person", "kind": "review", "check": "Does every piece delivered in this run name the person who approved it and the date, with the publishing done by the function that owns the channel?", "reviewer": "strategy-lead" }
+  ]
+}

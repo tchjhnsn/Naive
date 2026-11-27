@@ -1,0 +1,82 @@
+{
+  "id": "13-3-4-implement-and-maintain-the-enterprise-quality",
+  "function": "capabilities",
+  "process": "13.3.4",
+  "title": "Implement and maintain the enterprise quality management system (EQMS)",
+  "goal": "The venture has one written account of how it keeps its work good: what quality means here, which processes carry the checks, the procedures and measures behind them, and a reading of how well the system is working.",
+  "measures": ["cost_or_time_saved", "flow_and_lead_time"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["capabilities/intake"] },
+  "reads": [
+    "capabilities/processes",
+    "capabilities/postmortems",
+    "foundation/telos",
+    "legal/obligations",
+    "operations/handoff",
+    "evidence"
+  ],
+  "steps": [
+    {
+      "id": "define-the-quality-strategy",
+      "do": "Write what quality means for this venture in a sentence the founder would say out loud, which failures it will never accept and which it will tolerate for now, and bring it to the founder, since it is a statement of what the venture values.",
+      "skill": "manage-enterprise-quality",
+      "activity": "13.3.4.1",
+      "ask": true,
+      "writes": ["capabilities/processes/[id]"]
+    },
+    {
+      "id": "plan-and-deploy-eqms-scope",
+      "do": "Say which processes the quality system covers now and which are left out on purpose, set a target for each covered process and the date it is read, and write the order in which the uncovered ones are brought in.",
+      "skill": "manage-enterprise-quality",
+      "activity": "13.3.4.2",
+      "writes": ["capabilities/processes/[id]"],
+      "consider": {
+        "why": "A quality system that claims to cover everything on day one covers nothing, so the scope is written down and widened on purpose.",
+        "when": "The venture has more than three active processes with checks in them."
+      }
+    },
+    {
+      "id": "identify-core-eqms-processes-controls-and-metrics",
+      "do": "List the processes whose failure would be felt by a customer, the control point in each that catches it, and the one measure per process that says whether the control is working, and name any process on that list with no control at all.",
+      "skill": "manage-enterprise-quality",
+      "activity": "13.3.4.3",
+      "writes": ["capabilities/processes/[id]"]
+    },
+    {
+      "id": "document-eqms-policies-and-measures",
+      "do": "Write the procedures behind those controls as steps on the process records, with the standard each one follows where a standard applies, and record for each measure how it is computed and from which records.",
+      "skill": "manage-enterprise-quality",
+      "activity": "13.3.4.4",
+      "writes": ["capabilities/processes/[id]"]
+    },
+    {
+      "id": "assess-the-eqms-performance",
+      "do": "Read the system rather than a process: count the failures that reached a customer since the last reading, how many were caught by a control first, and how many postmortem actions are open past their due date.",
+      "skill": "manage-enterprise-quality",
+      "activity": "13.3.4.5",
+      "writes": ["operations/handoff/[id]"],
+      "raises": ["domain-fact"]
+    },
+    {
+      "id": "create-environment-for-eqms-improvement",
+      "do": "Write how what one process learns reaches the others, where a proven check is copied to a process that lacks it, and what the founder says about quality where customers can hear it, and leave every public statement and every reward to the founder.",
+      "skill": "manage-enterprise-quality",
+      "activity": "13.3.4.6",
+      "writes": ["capabilities/processes/[id]"],
+      "consider": {
+        "why": "A small team learns from its failures in one place and repeats them in another unless the lesson is carried across.",
+        "when": "Two processes have failed in the same way, or the venture has more than one person doing the work."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Raise to the strategy lead which uncontrolled process to bring into the quality system next, with what its failure has already cost.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "scope-honest", "kind": "review", "check": "Does the account say plainly which processes the quality system does not cover, and does every covered process name one control point and one measure?", "reviewer": "strategy-lead" }
+  ]
+}

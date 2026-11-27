@@ -1,0 +1,94 @@
+{
+  "id": "8-6-3-manage-change-deployment-control",
+  "function": "it",
+  "process": "8.6.3",
+  "title": "Manage change deployment control",
+  "goal": "Every change waiting to go out has been weighed for impact, risk and compliance, gathered into one dated release, approved by the founder, and recorded afterwards with what actually happened.",
+  "measures": ["compliance_met", "cost_or_time_saved"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["it/intake"] },
+  "reads": [
+    "product",
+    "product/bugs",
+    "it/connections",
+    "legal/obligations",
+    "governance/publication-policy",
+    "governance/delegation",
+    "operations/handoff",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "change-impact",
+      "do": "For each change waiting to go out, write what it touches: the customers who would see it, the records it changes shape of, the integrations that read those records, and whether anything about it cannot be undone.",
+      "skill": "deploy-services-solutions",
+      "activity": "8.6.3.1",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "confirm-compliance",
+      "do": "Check each change against the venture's own rules and obligations, the release standards, the publication policy for anything a customer will read, and the terms of the systems it touches, and name every change that does not pass with the rule it misses.",
+      "skill": "deploy-services-solutions",
+      "activity": "8.6.3.2",
+      "writes": ["operations/handoff/[id]"],
+      "raises": ["legal-or-terms"]
+    },
+    {
+      "id": "change-risk",
+      "do": "Rate each change low, medium or high by what it would cost if it went wrong and how easily it could be undone, and say for each high one what would have to be true for it to go out at all.",
+      "skill": "deploy-services-solutions",
+      "activity": "8.6.3.3",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "consolidate-change",
+      "do": "Gather the changes that pass into one release with a version and a list of what changed, holding back the ones that failed a check, and say which changes must go out together because one depends on the other.",
+      "skill": "deploy-services-solutions",
+      "activity": "8.6.3.4",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "deployment-schedule",
+      "do": "Set the window for the release from the deployment rule and the hours an outage would cost least, write the schedule with who is at hand, and tell everyone the release affects.",
+      "skill": "deploy-services-solutions",
+      "activity": "8.6.3.5",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "approve-deployment",
+      "do": "Put the release in front of the founder as one decision with what is in it, its risk rating, its window, its way back and what fails a check, and deploy nothing until the founder has said yes, because putting a change in front of customers is the founder's commitment.",
+      "skill": "deploy-services-solutions",
+      "activity": "8.6.3.6",
+      "ask": true,
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    },
+    {
+      "id": "document-outcome",
+      "do": "After the window, record what went out, when, who approved it, what the checks said, whether it was rolled back and what the customers saw, and put the release notes and the log on the handoff as evidence.",
+      "skill": "deploy-services-solutions",
+      "activity": "8.6.3.7",
+      "writes": ["operations/handoff/[id]"],
+      "raises": ["domain-fact"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Add the outcome as evidence to the decision that approved the release, and raise to the product lead the changes held back and the order in which they should be made ready.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "approved-before-deployed",
+      "kind": "review",
+      "check": "Did the founder approve this release before anything went out, does the release name every change in it with its risk rating, and is the outcome recorded with whether it was rolled back?",
+      "reviewer": "product-lead"
+    }
+  ]
+}

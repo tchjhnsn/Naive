@@ -1,0 +1,134 @@
+{
+  "id": "9-7-2-manage-cash",
+  "function": "finance",
+  "process": "9.7.2",
+  "title": "Manage cash",
+  "goal": "Every account is reconciled to its statement, the next thirteen weeks of cash in and out are forecast from the invoices, bills and pay dates on record, and the money summary carries the position and the runway.",
+  "measures": [
+    "cost_or_time_saved",
+    "revenue"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "finance/intake"
+    ]
+  },
+  "reads": [
+    "money",
+    "money/[id]",
+    "finance/spend",
+    "finance/budget",
+    "purpose/money/summary",
+    "customers",
+    "deals",
+    "it/connections",
+    "supply-chain/purchase-orders",
+    "legal/obligations"
+  ],
+  "steps": [
+    {
+      "id": "cash-positions",
+      "do": "Reconcile each account against its statement, set its balance and the date it was read, and report the venture's total cash as one figure with the accounts behind it.",
+      "skill": "manage-treasury-operations",
+      "activity": "9.7.2.1",
+      "writes": [
+        "money/[id]"
+      ],
+      "raises": [
+        "domain-fact"
+      ]
+    },
+    {
+      "id": "cash-equivalents",
+      "do": "Record what each holding is, what it earns, how quickly it can become spendable cash and what breaking it early would cost.",
+      "skill": "manage-treasury-operations",
+      "activity": "9.7.2.2",
+      "consider": {
+        "why": "Money that takes a month to reach the current account is not runway this month.",
+        "when": "The venture holds money in anything other than a current account, a savings account, a term deposit or a money market fund included."
+      }
+    },
+    {
+      "id": "electronic-transfers",
+      "do": "List every way money can leave electronically, each payment service, standing order and direct debit, say what each is for, how much it may take and who approved it, and flag the ones the venture no longer needs.",
+      "skill": "manage-treasury-operations",
+      "activity": "9.7.2.3"
+    },
+    {
+      "id": "cash-flow-forecast",
+      "do": "Build the next thirteen weeks of cash in and out week by week from the invoices owed, the bills due, the recurring spend and the pay dates, and mark every week the balance would fall below the minimum the rules set.",
+      "skill": "manage-treasury-operations",
+      "activity": "9.7.2.4",
+      "writes": [
+        "finance/budget/[id]"
+      ]
+    },
+    {
+      "id": "manage-cash-flows",
+      "do": "For each week the forecast goes short, set out what could be delayed, invoiced earlier, collected or cut and what each would move, and bring the order to the finance lead.",
+      "skill": "manage-treasury-operations",
+      "activity": "9.7.2.5",
+      "raises": [
+        "set-priorities"
+      ]
+    },
+    {
+      "id": "cash-reports",
+      "do": "Write the cash position, the period's receipts and payments and the months of runway into the money summary, each figure citing the account and the records behind it.",
+      "skill": "manage-treasury-operations",
+      "activity": "9.7.2.6",
+      "writes": [
+        "purpose/money/summary"
+      ]
+    },
+    {
+      "id": "banking-relationships",
+      "do": "Prepare what the founder needs for the bank, the account and service list, the fees paid, what the venture wants changed and the questions to ask, and leave the relationship and every instruction to the bank to them.",
+      "skill": "manage-treasury-operations",
+      "ask": true,
+      "activity": "9.7.2.7",
+      "raises": [
+        "legal-or-terms"
+      ]
+    },
+    {
+      "id": "bank-fees",
+      "do": "Pull every fee charged on each account for the period into the spend register, set each against the service it paid for and the alternatives, and bring the founder the fees worth questioning or moving.",
+      "skill": "manage-treasury-operations",
+      "activity": "9.7.2.8",
+      "writes": [
+        "finance/spend/[id]"
+      ],
+      "raises": [
+        "cancel-or-downgrade"
+      ]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Attach the forecast to the open decision each short week bears on and raise to the finance lead what to do first about the nearest week the balance goes below the minimum.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities",
+        "cancel-or-downgrade"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "thirteen-week-forecast",
+      "kind": "review",
+      "check": "Is every account's balance set from its statement, and does the cash forecast cover the next thirteen weeks with the records behind each line?",
+      "reviewer": "finance-lead"
+    }
+  ]
+}

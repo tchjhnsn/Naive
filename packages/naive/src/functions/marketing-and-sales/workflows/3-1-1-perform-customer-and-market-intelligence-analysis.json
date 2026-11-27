@@ -1,0 +1,116 @@
+{
+  "id": "3-1-1-perform-customer-and-market-intelligence-analysis",
+  "function": "marketing-and-sales",
+  "process": "3.1.1",
+  "title": "Perform customer and market intelligence analysis",
+  "goal": "The venture's primary market record holds a current cited value or an honest unknown for every cell it can answer, and each finding about its buyers, segments, trends, competitors and present offering is attached to the decision it bears on.",
+  "measures": [
+    "revenue"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "marketing-and-sales/intake"
+    ]
+  },
+  "reads": [
+    "venture",
+    "foundation/icp",
+    "foundation/problem",
+    "foundation/goals",
+    "markets",
+    "industries",
+    "purpose/competitor",
+    "purpose/validation/problems",
+    "validation/interviews",
+    "product",
+    "customers",
+    "sales/opportunities",
+    "legal/obligations",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "conduct-customer-and-market-research",
+      "do": "Read every interview, customer and closed opportunity record, group what buyers said they needed and what they actually did into the jobs they were trying to get done, state from that what the segment is likely to buy next and what would show the prediction wrong, and write the counts you can support on the primary market record's customer_type and reachable_buyers cells with the records each one was counted from.",
+      "skill": "understand-markets-customers-and-capabilities",
+      "activity": "3.1.1.1"
+    },
+    {
+      "id": "identify-market-segments",
+      "do": "Group the venture's interviews, customers and closed opportunities into segments by the job they buy for and who signs, count each segment, compare each count with the previous run to say where the venture gained or lost share of the buyers it can reach, and write the segments and the comparison on the market record.",
+      "skill": "understand-markets-customers-and-capabilities",
+      "consider": {
+        "why": "Counting buyers by segment is what turns a list of conversations into a market, and a venture that sells to everyone learns nothing from a win.",
+        "when": "The venture has at least five interview, customer or closed opportunity records to group."
+      },
+      "activity": "3.1.1.2"
+    },
+    {
+      "id": "analyze-market-and-industry-trends",
+      "do": "Read public industry sources and the venture's own counts, write the market record's maturity and concentration cells with the source and the date each was read, and name on the handoff the two trends that would change who the buyer is, each with what would show it wrong.",
+      "skill": "understand-markets-customers-and-capabilities",
+      "consider": {
+        "why": "A trend can move the buyer before the venture reaches them, and a plan built on last year's market fails quietly.",
+        "when": "An open decision turns on where the market is going, or the venture is in Validation or later."
+      },
+      "activity": "3.1.1.3"
+    },
+    {
+      "id": "analyze-competing-organizations",
+      "do": "Read the competitor records the strategy function keeps, name for each won and lost opportunity which competitor or substitute the buyer weighed instead and what the buyer said about it, and open a handoff to strategy listing the competitors and substitutes its records do not yet cover.",
+      "skill": "understand-markets-customers-and-capabilities",
+      "writes": [
+        "operations/handoff/[id]"
+      ],
+      "raises": [
+        "defer-or-route"
+      ],
+      "activity": "3.1.1.4"
+    },
+    {
+      "id": "evaluate-existing-products-services",
+      "do": "Compare each product card's claims with what customers actually use and ask for in the records, list the claims no record supports and the things buyers asked for that no product does, and put both lists on the handoff as evidence for the products function.",
+      "skill": "understand-markets-customers-and-capabilities",
+      "writes": [
+        "operations/handoff/[id]"
+      ],
+      "activity": "3.1.1.5"
+    },
+    {
+      "id": "assess-internal-and-external-business-environment",
+      "do": "List what inside the venture limits reaching the segment, such as the hours one founder has, the money in the budget and the capabilities the product holds, and what outside it does, such as a platform's terms, an obligation in the legal records or a buyer's procurement process, each with the record it was read from.",
+      "skill": "understand-markets-customers-and-capabilities",
+      "writes": [
+        "operations/handoff/[id]"
+      ],
+      "activity": "3.1.1.6"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "For each finding name the open decision or goal it bears on and add it there as evidence, and propose to the growth lead which part of the market to study next, the one blocking the nearest decision first.",
+      "skill": "understand-markets-customers-and-capabilities",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "market-record-sourced",
+      "kind": "review",
+      "check": "Does every cell written on the market record cite the record or public source it came from with the date it was read, and is every value that rests on a guess marked estimated rather than known?",
+      "reviewer": "growth-lead"
+    }
+  ]
+}

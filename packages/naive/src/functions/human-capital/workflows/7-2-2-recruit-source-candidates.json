@@ -1,0 +1,109 @@
+{
+  "id": "7-2-2-recruit-source-candidates",
+  "function": "human-capital",
+  "process": "7.2.2",
+  "title": "Recruit/Source candidates",
+  "goal": "Each approved requisition has a named pool of candidates with where each one came from and the public source for every claim about them, and nobody outside the venture has been contacted except by the founder.",
+  "measures": [
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "human-capital/intake"
+    ]
+  },
+  "reads": [
+    "people",
+    "people/team-plan",
+    "people/founders",
+    "finance/budget",
+    "purpose/money/summary",
+    "marketing/brand",
+    "operations/handoff",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "determine-methods-and-channels",
+      "do": "For each open requisition, list the places this kind of person is actually found, with what each costs in money and in the founder's hours and how long it takes to produce a candidate, and recommend at most three.",
+      "activity": "7.2.2.1",
+      "skill": "recruit-source-and-select-employees"
+    },
+    {
+      "id": "perform-recruiting-activities",
+      "do": "Prepare what the founder needs to go where candidates are: the short description of the role, the three questions to ask, who to look for and the follow-up note, and leave every conversation and every message to the founder.",
+      "activity": "7.2.2.2",
+      "skill": "recruit-source-and-select-employees",
+      "consider": {
+        "why": "Events and outreach cost the founder's hours, which are the venture's scarcest input.",
+        "when": "A requisition is approved and the chosen channels include an event or direct outreach."
+      }
+    },
+    {
+      "id": "maintain-candidate-pool",
+      "do": "Keep one list per requisition of the people who could do the work, each with where they were found, what they have done, the public source and date for every claim, and nothing the person did not themselves publish or send.",
+      "activity": "7.2.2.3",
+      "skill": "recruit-source-and-select-employees"
+    },
+    {
+      "id": "manage-recruitment-vendors",
+      "do": "Compare agencies or recruiters on fee, replacement terms, who owns the candidate relationship and what they would do that the venture cannot, and hand the founder the comparison, who signs and pays.",
+      "activity": "7.2.2.4",
+      "skill": "recruit-source-and-select-employees",
+      "raises": [
+        "spend-money",
+        "legal-or-terms"
+      ],
+      "consider": {
+        "why": "An agency fee is often a fifth of first-year pay, which is usually more than an early venture can spend.",
+        "when": "The founder asks, or a requisition has produced no candidate through free channels by its target date."
+      }
+    },
+    {
+      "id": "manage-referral-programs",
+      "do": "Draft the ask the founders can send their own networks, naming the role and what a good fit looks like, with the terms and cost of any referral reward, for the founder to decide and to send.",
+      "activity": "7.2.2.5",
+      "skill": "recruit-source-and-select-employees",
+      "raises": [
+        "spend-money"
+      ],
+      "consider": {
+        "why": "A founder's network is the cheapest channel, and a reward turns it into a commitment to pay.",
+        "when": "A requisition is approved and the founder is willing to ask their network."
+      }
+    },
+    {
+      "id": "manage-recruitment-channels",
+      "do": "Record for each channel how many candidates it produced, how many reached an interview and what it cost, and recommend dropping every channel that produced none.",
+      "activity": "7.2.2.6",
+      "skill": "recruit-source-and-select-employees"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Attach the pool and the channel counts to the requisition's decision, open a decision where a channel needs money or a vendor, and tell the strategy lead which channel to put the next hour into.",
+      "skill": "recruit-source-and-select-employees",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "pool-sourced-and-cited",
+      "kind": "review",
+      "check": "Does every candidate in the pool name where they came from, and does every claim about a candidate cite a public source or something the candidate sent?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

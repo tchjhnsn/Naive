@@ -1,0 +1,73 @@
+{
+  "id": "6-1-3-define-and-manage-customer-service-channel",
+  "function": "customer-service",
+  "process": "6.1.3",
+  "title": "Define and manage customer service channel strategy",
+  "goal": "Each channel the venture answers is named in the support policy with its hours and its first response target, each channel it does not answer is named as closed with what it tells a customer, and the cases show what each channel costs.",
+  "measures": [
+    "usage_or_adoption"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "customer-service/intake"
+    ]
+  },
+  "reads": [
+    "support/policy",
+    "support/cases",
+    "customers",
+    "it/connections",
+    "marketing/sitemap",
+    "marketing/message"
+  ],
+  "steps": [
+    {
+      "id": "inventory-channels",
+      "do": "List every way a customer can reach the venture today, from the site, the product, the published messages and the connected tools, and mark which ones are answered and which are not.",
+      "skill": "develop-customer-service-strategy"
+    },
+    {
+      "id": "cost-each-channel",
+      "do": "Count the cases each channel brought last period, the share answered inside the policy's target, and the reasons that arrive almost only through one channel.",
+      "skill": "develop-customer-service-strategy"
+    },
+    {
+      "id": "ask-which-stay-open",
+      "do": "Ask the founder which channels stay open, which close and what a closed one should say, and draft the answer into the support policy with hours and a first response target for each open channel.",
+      "ask": true,
+      "writes": [
+        "support/policy"
+      ],
+      "raises": [
+        "public-commitment"
+      ],
+      "skill": "develop-customer-service-strategy"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Record the channel decision with the counts that support it, name the decisions it changes, and recommend to the growth lead which channel to close or automate first.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "channels-named",
+      "kind": "review",
+      "check": "Does the policy name every open channel with its hours and first response target, and say plainly what a channel the venture does not answer tells a customer?",
+      "reviewer": "growth-lead"
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "id": "13-7-1-define-and-manage-organizational-performance",
+  "function": "capabilities",
+  "process": "13.7.1",
+  "title": "Define and manage organizational performance strategy",
+  "goal": "The venture has one model of how it is measured: each measure defined once, computed from named records, tied to the goal it serves, and kept the same between readings so two readings can be compared.",
+  "measures": ["flow_and_lead_time", "cost_or_time_saved"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["capabilities/intake"] },
+  "reads": [
+    "foundation/telos",
+    "foundation/goals",
+    "capabilities/processes",
+    "system/vitals",
+    "evidence",
+    "operations/lead"
+  ],
+  "steps": [
+    {
+      "id": "define-enterprise-measurement-models",
+      "do": "Write, as a process record, each measure the venture reads: its one definition, the records it is computed from, the window it covers, who reads it and the goal it serves, and drop any measure nobody acts on.",
+      "skill": "measure-and-benchmark",
+      "activity": "13.7.1.1",
+      "writes": ["capabilities/processes/[id]"]
+    },
+    {
+      "id": "maintain-enterprise-measurement-models",
+      "do": "Check each definition against how the measure was last computed, and when a definition has to change, record the change with its date and keep the old series separate so a break is never read as a trend.",
+      "skill": "measure-and-benchmark",
+      "activity": "13.7.1.2",
+      "writes": ["capabilities/processes/[id]"],
+      "raises": ["implementation-detail"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Raise to the strategy lead any measure the venture reads that serves no live goal, and record the measurement model as evidence on the handoff.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "one-definition-each", "kind": "review", "check": "Does every measure have one definition naming the records it is computed from and the goal it serves, with any changed definition dated and its old series kept separate?", "reviewer": "strategy-lead" }
+  ]
+}

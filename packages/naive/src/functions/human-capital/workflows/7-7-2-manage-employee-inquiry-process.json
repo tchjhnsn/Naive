@@ -1,0 +1,82 @@
+{
+  "id": "7-7-2-manage-employee-inquiry-process",
+  "function": "human-capital",
+  "process": "7.7.2",
+  "title": "Manage employee inquiry process",
+  "goal": "Anyone who works on the venture knows where a question about their pay, terms, time or records goes and how fast an answer comes, and every question asked has a dated answer naming the record it came from.",
+  "measures": [
+    "cost_or_time_saved",
+    "compliance_met"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "human-capital/intake"
+    ]
+  },
+  "reads": [
+    "people",
+    "people/founders",
+    "governance/internal-terms",
+    "governance/decision-rights",
+    "legal/obligations",
+    "operations/handoff",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "say-where-questions-go",
+      "do": "Write the one line that says where a question about pay, terms, time or records goes, who answers it and within how long, and put it where the people who work on the venture already look.",
+      "skill": "manage-employee-information-and-analytics"
+    },
+    {
+      "id": "answer-from-records",
+      "do": "Answer each question from the record that holds the answer, quoting the record and the date it was written, and never from memory; where no record holds it, say so and ask the founder.",
+      "skill": "manage-employee-information-and-analytics",
+      "ask": true
+    },
+    {
+      "id": "escalate-what-is-not-yours",
+      "do": "Send to the founder every question that asks for a commitment, a payment, a reading of the law or another person's data, record that you did and when, and answer none of them yourself.",
+      "skill": "manage-employee-information-and-analytics",
+      "raises": [
+        "legal-or-terms"
+      ]
+    },
+    {
+      "id": "report-what-keeps-being-asked",
+      "do": "Group the questions asked since the last run and name the record or the written policy whose absence causes each group, so the questions stop rather than being answered again.",
+      "skill": "manage-employee-information-and-analytics",
+      "consider": {
+        "why": "A question asked repeatedly is a missing record, not a missing answer.",
+        "when": "At least three questions have been asked since the last run."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Open a decision for each missing record or policy the questions exposed, attach the question groups as evidence, and tell the strategy lead which gap would stop the most questions.",
+      "skill": "manage-employee-information-and-analytics",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "answers-quote-a-record",
+      "kind": "review",
+      "check": "Does every answer given in this run quote the record and date it came from, or say that no record holds it?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

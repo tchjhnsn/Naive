@@ -1,0 +1,91 @@
+{
+  "id": "9-2-2-invoice-customer",
+  "function": "finance",
+  "process": "9.2.2",
+  "title": "Invoice customer",
+  "goal": "Every delivery that is owed for has an invoice the founder has sent, its amount and due date are recorded, and the expected receipt is in the budget's revenue line for the month it falls due.",
+  "measures": [
+    "revenue"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "finance/intake"
+    ]
+  },
+  "reads": [
+    "customers",
+    "customers/[id]",
+    "deals",
+    "deals/[id]",
+    "product",
+    "product/[id]",
+    "validation/pricing",
+    "service-delivery/offers",
+    "service-delivery/engagements",
+    "finance/budget",
+    "money",
+    "purpose/money/summary"
+  ],
+  "steps": [
+    {
+      "id": "billing-master-data",
+      "do": "Check the facts an invoice needs against the customer and product records, the legal name, the address, the tax identifier, the billing contact and the agreed price, and list each one missing or stale for the function that owns that record to fix.",
+      "skill": "perform-revenue-accounting",
+      "activity": "9.2.2.1"
+    },
+    {
+      "id": "generate-billing-data",
+      "do": "Draft one invoice per delivery owed for from the deal, the offer and the price records, what was delivered, the amount, the tax, the terms and the due date, and mark every amount the records cannot support.",
+      "skill": "perform-revenue-accounting",
+      "activity": "9.2.2.2"
+    },
+    {
+      "id": "send-invoices",
+      "do": "Hand the founder each drafted invoice to send to the customer and ask them to confirm the date it went out, since the agent never contacts a customer.",
+      "skill": "perform-revenue-accounting",
+      "ask": true,
+      "activity": "9.2.2.3"
+    },
+    {
+      "id": "post-receivables",
+      "do": "Record each sent invoice as an amount owed with its due date and put the expected receipt into the budget's revenue line for the month it falls due.",
+      "skill": "perform-revenue-accounting",
+      "activity": "9.2.2.4",
+      "writes": [
+        "finance/budget/[id]"
+      ]
+    },
+    {
+      "id": "billing-inquiries",
+      "do": "For each billing question a customer raises, work out the correct amount from the deal, the price and the delivery records and draft the answer for the founder to send, naming where the figure came from.",
+      "skill": "perform-revenue-accounting",
+      "activity": "9.2.2.5"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Attach the invoice list and the amounts owed to the open decision each one bears on, and raise as a decision any amount the records cannot support so the founder settles what the customer owes.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "domain-fact"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "invoice-traces-to-delivery",
+      "kind": "review",
+      "check": "Does every invoice trace to a delivery and a price in the records, and was each one sent by the founder with the date it went out recorded?",
+      "reviewer": "finance-lead"
+    }
+  ]
+}

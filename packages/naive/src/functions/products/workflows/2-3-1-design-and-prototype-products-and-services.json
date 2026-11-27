@@ -1,0 +1,200 @@
+{
+  "id": "2-3-1-design-and-prototype-products-and-services",
+  "function": "products",
+  "process": "2.3.1",
+  "title": "Design and prototype products and services",
+  "goal": "The thing being built has its design on record: who is doing it, the business case and technical assessment behind it, the specifications for what it does and how it is used, a prototype that answers the open risks, and every quality or reliability problem the testing found either fixed or recorded as a bug with a severity.",
+  "measures": [
+    "usage_or_adoption",
+    "flow_and_lead_time",
+    "learning"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "products/intake"
+    ]
+  },
+  "reads": [
+    "product",
+    "product/capabilities",
+    "product/bugs",
+    "foundation/icp",
+    "foundation/problem",
+    "foundation/requirements",
+    "foundation/constraints",
+    "foundation/goals",
+    "validation/interviews",
+    "validation/feedback",
+    "validation/pricing",
+    "marketing/design-system",
+    "people/team",
+    "people/team-plan",
+    "finance/budget",
+    "finance/spend",
+    "supply-chain/suppliers",
+    "operations/handoff",
+    "decisions"
+  ],
+  "steps": [
+    {
+      "id": "assign-resources",
+      "do": "Say who or which agent role does each part of this design, how many hours of the founder's own time it needs, and which parts the venture cannot do itself, and for those name what a design or development partner would have to be able to do and what it would cost, leaving the hiring and the engaging to the founder.",
+      "skill": "develop-products-and-services",
+      "activity": "2.3.1.1",
+      "ask": true,
+      "writes": [
+        "operations/handoff/[id]"
+      ]
+    },
+    {
+      "id": "business-case-and-technical-assessment",
+      "do": "Put on one page what this is expected to earn or save and by when, what it will cost to build and to run, the goal it serves, and the technical assessment beside it: what the venture would build, what it would buy, and the one or two things that could make it take twice as long.",
+      "skill": "develop-products-and-services",
+      "activity": "2.3.1.2",
+      "writes": [
+        "operations/handoff/[id]"
+      ]
+    },
+    {
+      "id": "design-specifications",
+      "do": "Write the design specification for each capability in scope: what it does, the inputs it accepts and refuses, what it stores, what it must never do, and how it behaves when a dependency is down, each line traced to a requirement.",
+      "skill": "develop-products-and-services",
+      "activity": "2.3.1.3"
+    },
+    {
+      "id": "user-experience-specifications",
+      "do": "Write how the person gets through the job: the screens or steps in order, what they see first, the words at each decision point taken from the design system and the glossary, what happens on an error and what an unfinished attempt leaves behind, and bring any change to a flow a customer already knows to the founder as a decision.",
+      "skill": "develop-products-and-services",
+      "activity": "2.3.1.4",
+      "raises": [
+        "experience-design"
+      ]
+    },
+    {
+      "id": "warranty-recommendations",
+      "do": "Recommend what the venture should and should not promise about this design once it is in use (what is covered, for how long, what voids it) and say which parts of the design make a promise expensive to keep.",
+      "skill": "develop-products-and-services",
+      "activity": "2.3.1.5",
+      "writes": [
+        "operations/handoff/[id]"
+      ],
+      "consider": {
+        "why": "A promise made at launch is paid for by the design, and changing the design later is dearer than changing the promise now.",
+        "when": "The product will carry a warranty, a guarantee or a service level the venture states to customers."
+      }
+    },
+    {
+      "id": "document-design-specifications",
+      "do": "Bring the specifications, the user experience steps and the open questions into one current document per capability, mark each line as decided, assumed or open with the record behind it, and leave the superseded version in place rather than overwriting it.",
+      "skill": "develop-products-and-services",
+      "activity": "2.3.1.6"
+    },
+    {
+      "id": "external-reviews",
+      "do": "Prepare the design for the outside reviews it must pass or the founder chooses to run (a security or privacy review, an accessibility review, a platform review, a review by a partner's engineer): what each reviewer needs, the questions to put to them, and the answers once they come back, with the founder sending the request.",
+      "skill": "develop-products-and-services",
+      "activity": "2.3.1.7",
+      "writes": [
+        "operations/handoff/[id]"
+      ],
+      "consider": {
+        "why": "An outside reviewer finds what the people who designed it cannot see, and a mandatory review found late moves a launch.",
+        "when": "A review is required before release, or the design handles money, health or a person's identifying data."
+      }
+    },
+    {
+      "id": "design-the-product",
+      "do": "Design the thing itself: how it will be made or assembled with what the venture can get, how it will be serviced, repaired and upgraded without being rebuilt, what a person does when it misbehaves and how they are told, and where its own data, design files and parts list live, naming for each choice the requirement it satisfies.",
+      "skill": "develop-products-and-services",
+      "activity": "2.3.1.8"
+    },
+    {
+      "id": "build-prototypes",
+      "do": "Build the smallest prototype that answers the open risks rather than a smaller version of the whole product, say for each risk what the prototype would show, and record what it showed, what broke and what it cost to build.",
+      "skill": "develop-products-and-services",
+      "activity": "2.3.1.9",
+      "writes": [
+        "operations/handoff/[id]"
+      ]
+    },
+    {
+      "id": "prototype-the-delivery-process",
+      "do": "Run the way the product will reach the customer once end to end on the prototype (the build and deploy, the account being created, the first unit packed and sent, the first session served) and record where it stuck and how long each step took.",
+      "skill": "develop-products-and-services",
+      "activity": "2.3.1.10",
+      "writes": [
+        "operations/handoff/[id]"
+      ],
+      "consider": {
+        "why": "A product that works on the builder's machine can still have no path to a customer, and that is found late and expensively.",
+        "when": "The product will be delivered by a process the venture has not run before."
+      }
+    },
+    {
+      "id": "eliminate-quality-problems",
+      "do": "List every quality and reliability problem the prototype and the reviews turned up, with what makes each happen and how often, fix the ones inside this design, and record each one left as a bug with its severity and its steps to reproduce.",
+      "skill": "develop-products-and-services",
+      "activity": "2.3.1.11",
+      "writes": [
+        "product/bugs/[id]"
+      ]
+    },
+    {
+      "id": "in-house-testing",
+      "do": "Test the design inside the venture against the quality document for each capability: run the tests, do the job yourself from a clean start, and say whether it is feasible to build and run the rest at this quality within the time and money named, with the evidence for the verdict.",
+      "skill": "develop-products-and-services",
+      "activity": "2.3.1.12",
+      "writes": [
+        "operations/handoff/[id]"
+      ]
+    },
+    {
+      "id": "design-performance-indicators",
+      "do": "Name the few numbers that say whether this design is going well while it is being built (how long a capability takes from start to usable, how much rework each one takes, how many bugs the prototype produced) and say where each is read from.",
+      "skill": "develop-products-and-services",
+      "activity": "2.3.1.13",
+      "writes": [
+        "operations/handoff/[id]"
+      ]
+    },
+    {
+      "id": "collaborate-with-partners",
+      "do": "Prepare what a supplier or an outside partner needs to design their part with the venture (the interface between the two parts, the specification each side owes the other, the dates), with the questions written out for the founder to put to them, and record their answers against the design once the founder has spoken to them.",
+      "skill": "develop-products-and-services",
+      "activity": "2.3.1.14",
+      "writes": [
+        "operations/handoff/[id]"
+      ],
+      "consider": {
+        "why": "A part designed by someone else fits only if the interface between the two parts was agreed in writing first.",
+        "when": "A supplier or partner designs or builds part of this product."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Attach each design finding to the open decision it confirms or changes, name the risks the prototype left open and what would close each, and raise to the product lead what to build first.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "design-traced-and-tested",
+      "kind": "review",
+      "check": "Does every line of the design specification trace to a requirement, and is every quality or reliability problem the prototype found either fixed or recorded as a bug with a severity and steps to reproduce?",
+      "reviewer": "product-lead"
+    }
+  ]
+}

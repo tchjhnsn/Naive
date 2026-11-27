@@ -1,0 +1,92 @@
+{
+  "id": "4-2-4-order-materials-and-services",
+  "function": "supply-chain",
+  "process": "4.2.4",
+  "title": "Order materials and services",
+  "goal": "Every order the plan needs exists as a purchase order with its lines, terms and promised date, approved by a person before it is sent, and every difference between what was ordered, what arrived and what was invoiced is resolved or open as a decision.",
+  "measures": ["cost_or_time_saved", "flow_and_lead_time"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["supply-chain/intake"] },
+  "reads": [
+    "supply-chain/suppliers",
+    "supply-chain/purchase-orders",
+    "product",
+    "finance/spend",
+    "finance/budget",
+    "money",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "process-review-requisitions",
+      "do": "Collect what has been asked for, from the materials plan and from the founder, and for each line check the specification, the quantity, the date needed and whether the item is already on an open order before anything new is raised.",
+      "skill": "procure-materials-and-services",
+      "activity": "4.2.4.1"
+    },
+    {
+      "id": "approve-requisitions",
+      "do": "Put each requisition to the founder with its total, the budget line it comes from and what happens if it is not bought, and record the approval or refusal against the requisition; the agent never approves one.",
+      "skill": "procure-materials-and-services",
+      "activity": "4.2.4.2",
+      "raises": ["spend-money"]
+    },
+    {
+      "id": "solicit-supplier-quotes",
+      "do": "Draft one request for quotation per item, the same specification, quantity, packaging and date to every supplier so the replies can be compared, for the founder to send, and record each quote with its price, lead time, validity date and the terms it assumes.",
+      "skill": "procure-materials-and-services",
+      "activity": "4.2.4.3",
+      "writes": ["supply-chain/suppliers/[id]"],
+      "raises": ["public-commitment"]
+    },
+    {
+      "id": "create-distribute-purchase-orders",
+      "do": "Write the purchase order with its lines, unit prices, total, currency, Incoterms rule and named place, payment terms and required date, leave it as a draft for the founder to approve and send, and record when it was sent and to whom.",
+      "skill": "procure-materials-and-services",
+      "activity": "4.2.4.4",
+      "writes": ["supply-chain/purchase-orders/[id]"],
+      "raises": ["spend-money", "public-commitment"]
+    },
+    {
+      "id": "expedite-orders-and-satisfy-inquiries",
+      "do": "Chase every order whose confirmed date has passed or is at risk, update its status and date from the supplier's reply, draft the chasing message for the founder to send, and say which customer promise each late order now threatens.",
+      "skill": "procure-materials-and-services",
+      "activity": "4.2.4.5",
+      "writes": ["supply-chain/purchase-orders/[id]"]
+    },
+    {
+      "id": "reconcile-purchase-orders",
+      "do": "Match each order against what arrived and what was invoiced, line by line on quantity and price, record the received quantities and close the order when the three agree.",
+      "skill": "procure-materials-and-services",
+      "activity": "4.2.4.6",
+      "writes": ["supply-chain/purchase-orders/[id]"],
+      "raises": ["domain-fact"]
+    },
+    {
+      "id": "research-resolve-order-exceptions",
+      "do": "For every order that does not match, short or over shipment, a price other than the quote, a substituted part or goods held at customs, find out what happened, record the cause and the amount on the order and draft the claim or credit note for the founder to send.",
+      "skill": "procure-materials-and-services",
+      "activity": "4.2.4.7",
+      "writes": ["supply-chain/purchase-orders/[id]"],
+      "raises": ["domain-fact"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Add a decision for every draft order waiting to be placed or sent and every exception that costs money, each with the amount, the lead time at stake and your recommendation, and hand the order of that work to the product lead.",
+      "writes": ["decisions/*"],
+      "raises": ["spend-money", "set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "orders-approved-and-reconciled",
+      "kind": "review",
+      "check": "Was every order sent only after a person approved it, and is every order either reconciled against the receipt and the invoice or open as an exception with its cause and amount?",
+      "reviewer": "product-lead"
+    }
+  ]
+}

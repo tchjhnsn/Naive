@@ -1,0 +1,119 @@
+{
+  "id": "7-2-1-manage-employee-requisitions",
+  "function": "human-capital",
+  "process": "7.2.1",
+  "title": "Manage employee requisitions",
+  "goal": "Every role the venture is filling has a requisition the founder approved, saying what it is for, what an agent cannot do, what it pays, what it costs and when it closes, and no search is running without one.",
+  "measures": [
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "records": [
+      "people/team-plan"
+    ],
+    "meetings": [
+      "human-capital/intake"
+    ]
+  },
+  "reads": [
+    "people",
+    "people/team-plan",
+    "people/founders",
+    "foundation/goals",
+    "foundation/constraints",
+    "finance/budget",
+    "purpose/money/summary",
+    "governance/delegation",
+    "operations/handoff",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "align-staffing-plan",
+      "do": "Check each role the venture wants to fill against `people/team-plan` and `foundation/goals`, and for any role the plan does not hold, stop and say which goal it would serve and that the plan must change first.",
+      "activity": "7.2.1.1",
+      "skill": "recruit-source-and-select-employees"
+    },
+    {
+      "id": "open-job-requisitions",
+      "do": "Draft one requisition per aligned role: what the role is for, what it decides, the work an agent cannot do with the capability register entry behind that, the terms, the fully loaded cost and the date the role must be filled by, and keep it on the handoff as evidence.",
+      "activity": "7.2.1.2",
+      "skill": "recruit-source-and-select-employees"
+    },
+    {
+      "id": "approve-job-requisition",
+      "do": "Put the drafted requisition to the founder with its cost, the agent alternative and what the venture stops doing while the role is empty, record the founder's answer as the decision, and start no search until it is approved.",
+      "activity": "7.2.1.3",
+      "skill": "recruit-source-and-select-employees",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "strategy-or-constitution",
+        "spend-money"
+      ]
+    },
+    {
+      "id": "post-job-requisitions",
+      "do": "Draft the public wording of the approved requisition, with pay stated where the venture must or chooses to state it, list the places to post it with each one's cost, and hand both to the founder, who posts it, because a job posting is a public statement.",
+      "activity": "7.2.1.4",
+      "skill": "recruit-source-and-select-employees",
+      "raises": [
+        "public-commitment"
+      ]
+    },
+    {
+      "id": "modify-job-requisitions",
+      "do": "When the role changes mid-search, write the change, its date and its reason onto the requisition, tell every candidate already in the search through the founder, and put any change to pay, scope or equity back to the founder.",
+      "activity": "7.2.1.5",
+      "skill": "recruit-source-and-select-employees",
+      "raises": [
+        "spend-money",
+        "ownership-or-control"
+      ],
+      "consider": {
+        "why": "A role that quietly changed mid-search misleads the people still in it.",
+        "when": "The founder has changed the role's scope, pay or terms while a search is open."
+      }
+    },
+    {
+      "id": "notify-hiring-manager",
+      "do": "Tell whoever will actually work with the hire, which in a solo venture is the founder, that the requisition is approved, what they must do and by when, and record the date you told them.",
+      "activity": "7.2.1.6",
+      "skill": "recruit-source-and-select-employees"
+    },
+    {
+      "id": "manage-requisition-dates",
+      "do": "Keep each requisition's opened, posted, target and close dates current, and flag every requisition past its close date for the founder to extend, refill or close.",
+      "activity": "7.2.1.7",
+      "skill": "recruit-source-and-select-employees"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Record each approved, changed or closed requisition against the decision that settled it, open a decision for any role still waiting on the founder, and recommend to the strategy lead which open requisition to work first.",
+      "skill": "recruit-source-and-select-employees",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "requisitions-approved-and-aligned",
+      "kind": "review",
+      "check": "Does every open requisition trace to a role in the team plan and carry the founder's recorded approval with its cost and agent alternative?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

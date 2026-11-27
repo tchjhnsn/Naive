@@ -1,0 +1,71 @@
+{
+  "id": "6-4-5-monitor-and-audit-recall-effectiveness",
+  "function": "customer-service",
+  "process": "6.4.5",
+  "title": "Monitor and audit recall effectiveness",
+  "goal": "How many affected customers were reached, how many acted and how many units are still out there is counted from the records each week the recall runs, and every unreached customer is named.",
+  "measures": [
+    "usage_or_adoption"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "customer-service/intake"
+    ]
+  },
+  "reads": [
+    "customers",
+    "support/cases",
+    "support/policy",
+    "product",
+    "operations/handoff"
+  ],
+  "steps": [
+    {
+      "id": "count-reach",
+      "do": "Count, against the list of affected customers, how many were messaged, how many replied and how many have done what the recall asked, with the date of each count.",
+      "skill": "manage-product-recalls-and-regulatory-audits"
+    },
+    {
+      "id": "find-the-unreached",
+      "do": "Name every affected customer who has not replied or acted, draft a second message for the founder on another channel where the records allow one, and say which holders cannot be reached at all.",
+      "raises": [
+        "public-commitment"
+      ],
+      "skill": "manage-product-recalls-and-regulatory-audits"
+    },
+    {
+      "id": "report-the-numbers",
+      "do": "Hand the week's numbers, reached, acted, outstanding and unreachable, to the founder and risk and compliance on the handoff, each count citing the cases and customer records behind it.",
+      "writes": [
+        "operations/handoff/[id]"
+      ],
+      "skill": "manage-product-recalls-and-regulatory-audits"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Name the decision the week's reach bears on, add the counts there as evidence, and recommend to the growth lead whether to widen the recall, change the message or keep going.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "reach-counted",
+      "kind": "review",
+      "check": "Does each week of the recall have counts of reached, acted and outstanding customers that cite their records, and is every unreached customer named?",
+      "reviewer": "growth-lead"
+    }
+  ]
+}

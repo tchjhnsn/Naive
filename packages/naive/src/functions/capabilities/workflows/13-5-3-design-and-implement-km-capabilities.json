@@ -1,0 +1,70 @@
+{
+  "id": "13-5-3-design-and-implement-km-capabilities",
+  "function": "capabilities",
+  "process": "13.5.3",
+  "title": "Design and implement KM capabilities",
+  "goal": "The gap named in the assessment is closed by one new way of keeping knowledge that is in force inside a process the venture already runs, with the hours it takes known and a measure that says whether it is used.",
+  "measures": ["cost_or_time_saved", "flow_and_lead_time"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["capabilities/intake"] },
+  "reads": [
+    "knowledge/catalog",
+    "knowledge/knowledge-sources",
+    "capabilities/processes",
+    "operations/handoff",
+    "glossary/terms",
+    "it/connections"
+  ],
+  "steps": [
+    {
+      "id": "develop-new-km-approaches",
+      "do": "Design the one way that closes the named gap, the record to write, the moment in the process at which it is written and the field that must be filled, and keep it to something a person can do in minutes.",
+      "skill": "develop-and-manage-enterprise-wide-knowledge",
+      "activity": "13.5.3.1",
+      "writes": ["capabilities/processes/[id]"]
+    },
+    {
+      "id": "design-km-resource-model",
+      "do": "Say what the new way costs each time it runs and each month it is kept, in whose hours, and name what will be dropped to pay for it.",
+      "skill": "develop-and-manage-enterprise-wide-knowledge",
+      "activity": "13.5.3.2",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "implement-new-km-approaches",
+      "do": "Put the new step into the process record where the knowledge is produced, with its control point, run it once on real work, and record what the first run produced.",
+      "skill": "develop-and-manage-enterprise-wide-knowledge",
+      "activity": "13.5.3.3",
+      "writes": ["capabilities/processes/[id]", "operations/handoff/[id]"]
+    },
+    {
+      "id": "enhance-it-for-km",
+      "do": "List what the new way needs from the venture's tools, a place for the file, a search that reaches it, a reminder when it goes stale, and hand each to the IT function as a handoff rather than choosing or buying a tool here.",
+      "skill": "develop-and-manage-enterprise-wide-knowledge",
+      "activity": "13.5.3.4",
+      "writes": ["operations/handoff/[id]"],
+      "consider": {
+        "why": "A capture step that needs a tool the venture does not have is skipped, and the tool is the IT function's to choose.",
+        "when": "The new way needs a tool or an access the venture does not already have."
+      }
+    },
+    {
+      "id": "develop-km-measures",
+      "do": "Write the measure for the new way, the share of runs that produced the record and the time to find it afterwards, on the process record with its as-of date, so the next reading can be compared.",
+      "skill": "develop-and-manage-enterprise-wide-knowledge",
+      "activity": "13.5.3.5",
+      "writes": ["capabilities/processes/[id]"],
+      "raises": ["domain-fact"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Record the first runs as evidence on the handoff, and raise to the strategy lead whether to keep the new way, simplify it or drop it.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "inside-an-existing-process", "kind": "review", "check": "Is the new way a step inside a process the venture already runs, with its cost per run known and one measure of whether it is used?", "reviewer": "strategy-lead" }
+  ]
+}

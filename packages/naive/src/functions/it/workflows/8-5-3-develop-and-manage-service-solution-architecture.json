@@ -1,0 +1,106 @@
+{
+  "id": "8-5-3-develop-and-manage-service-solution-architecture",
+  "function": "it",
+  "process": "8.5.3",
+  "title": "Develop and manage service/solution architecture",
+  "goal": "The solution has one written architecture naming its parts, how they talk to each other and which constraints they were drawn against, and every place the built thing departs from it is either fixed or recorded as an exception with an end date.",
+  "measures": ["cost_or_time_saved", "compliance_met"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["it/intake"] },
+  "reads": [
+    "venture",
+    "product",
+    "product/capabilities",
+    "foundation/requirements",
+    "foundation/constraints",
+    "it/connections",
+    "finance/budget",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "technical-constraints",
+      "do": "Write what the venture's present stack and hosting force on the design: the runtimes and versions it is on, what its host cannot do, the limits of the systems it connects, and where its data has to sit.",
+      "skill": "develop-and-manage-services-solutions",
+      "activity": "8.5.3.1",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "business-constraints",
+      "do": "Write what the venture itself forces on the design: the budget the solution has to run inside, the date it is needed by, who can maintain it, and the obligations and commitments the records already carry.",
+      "skill": "develop-and-manage-services-solutions",
+      "activity": "8.5.3.2",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "integration-requirements",
+      "do": "For each pair of parts that has to exchange data, write what crosses, in which direction, how often, which side is authoritative, how a failure is handled and what the receiver does with data it cannot read.",
+      "skill": "develop-and-manage-services-solutions",
+      "activity": "8.5.3.3",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "reuse-opportunities",
+      "do": "Check the design against the component list and the systems the venture already connects, and name each part that an existing component or connection would already do, with what would have to be given up to reuse it.",
+      "skill": "develop-and-manage-services-solutions",
+      "activity": "8.5.3.4",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "promote-adoption",
+      "do": "Write the design as one diagram and one page a reader can act on, saying which part each existing component plays, and hand it to the founder and to whoever will build the solution.",
+      "skill": "develop-and-manage-services-solutions",
+      "activity": "8.5.3.5",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "maintain-architecture",
+      "do": "Write or update the architecture itself: the parts, their boundaries, what each one owns, how they are reached, where state lives and which constraint each choice answers, and record the alternatives that were rejected and why.",
+      "skill": "develop-and-manage-services-solutions",
+      "activity": "8.5.3.6",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "conformance",
+      "do": "Read the code and the running systems and list every place the built thing departs from the architecture, each with the file or system it is in and whether it is a defect or a change the architecture should take up.",
+      "skill": "develop-and-manage-services-solutions",
+      "activity": "8.5.3.7",
+      "writes": ["operations/handoff/[id]"],
+      "consider": {
+        "why": "An architecture nobody checks against the code becomes a description of something the venture no longer runs.",
+        "when": "The solution has been built or changed since the architecture was last written."
+      }
+    },
+    {
+      "id": "architectural-exceptions",
+      "do": "Record each departure the venture chooses to keep as an exception with its reason, its end date and what would have to be true to close it, and bring to the founder any exception that puts customer data, money or a commitment at risk.",
+      "skill": "develop-and-manage-services-solutions",
+      "activity": "8.5.3.8",
+      "writes": ["operations/handoff/[id]"],
+      "raises": ["security-loosening"],
+      "consider": {
+        "why": "An exception with no end date is a permanent change pretending to be temporary.",
+        "when": "The conformance check found a departure the venture is not going to fix now."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Add the architecture and each departure as evidence to the decision it bears on, and raise to the product lead the order in which the departures should be closed.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "design-answers-constraints",
+      "kind": "review",
+      "check": "Does the architecture name every part, every exchange between parts and the constraint each choice answers, and does every departure from it carry either a fix or an exception with an end date?",
+      "reviewer": "product-lead"
+    }
+  ]
+}

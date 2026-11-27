@@ -1,0 +1,93 @@
+{
+  "id": "11-2-1-establish-compliance-framework-and-policies",
+  "function": "risk-and-compliance",
+  "process": "11.2.1",
+  "title": "Establish compliance framework and policies",
+  "goal": "Every class of duty the venture must meet is written down with an owner, the days of warning it needs and what counts as proof, and every obligation marked met carries evidence that actually proves it.",
+  "measures": [
+    "compliance_met"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "risk-and-compliance/intake"
+    ]
+  },
+  "reads": [
+    "legal/obligations",
+    "legal/risks",
+    "governance/ownership",
+    "governance/decision-rights",
+    "assets/leases",
+    "it/connections",
+    "people/team",
+    "evidence"
+  ],
+  "steps": [
+    {
+      "id": "compliance-policies",
+      "do": "Write the venture's compliance rules on the handoff: the classes of duty it must meet (entity filings, tax, employment, personal data, contract notices), who owns each class, how many days before a due date you raise it, and what counts as proof it was met.",
+      "skill": "manage-compliance",
+      "activity": "11.2.1.1",
+      "writes": [
+        "operations/handoff/[id]"
+      ]
+    },
+    {
+      "id": "implement-compliance-activities",
+      "do": "Turn each rule into entries in the obligations register with an owner, a due date, the preparation days it needs and whether missing it can be cured, so the weekly compliance check raises each one in time rather than on the day.",
+      "skill": "manage-compliance",
+      "activity": "11.2.1.2",
+      "writes": [
+        "legal/obligations/[id]"
+      ]
+    },
+    {
+      "id": "manage-internal-audits",
+      "do": "Take every obligation marked met since the last run, check that its evidence really proves the duty (a filing receipt, proof of mailing, a signed copy with a date), and set back to open any one whose evidence is missing or does not match the duty it claims to meet.",
+      "skill": "manage-compliance",
+      "activity": "11.2.1.3",
+      "writes": [
+        "legal/obligations/[id]"
+      ]
+    },
+    {
+      "id": "controls-technologies",
+      "do": "List from the connections record which tool holds the evidence for each duty (the filing portal, the signature service, the password manager), name the duties whose evidence lives nowhere, and hand that gap to the IT function.",
+      "skill": "manage-compliance",
+      "activity": "11.2.1.4",
+      "writes": [
+        "operations/handoff/[id]"
+      ],
+      "consider": {
+        "why": "A venture whose evidence fits in one folder does not need tools for holding it.",
+        "when": "A duty's evidence sits in a tool no record names, or more than one person files."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Add each duty with no owner and each piece of evidence that failed the audit to the decision it bears on, and raise to the finance lead which gaps to close first.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "every-class-has-an-obligation",
+      "kind": "review",
+      "check": "Does every class of duty in the written rules have at least one obligation with an owner, a due date and preparation days, and does every obligation marked met carry evidence that proves it?",
+      "reviewer": "finance-lead"
+    }
+  ]
+}

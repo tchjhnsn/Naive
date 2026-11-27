@@ -1,0 +1,47 @@
+{
+  "id": "8-5-5-perform-service-solution-maintenance-and-testing",
+  "function": "it",
+  "process": "8.5.5",
+  "title": "Perform service/solution maintenance and testing",
+  "goal": "Each fix or small change to a solution already in use is assessed, made, tested against the behaviour it was meant to change and packaged, with the bug it closes and the test evidence on the handoff.",
+  "measures": ["cost_or_time_saved", "compliance_met"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["it/intake"] },
+  "reads": [
+    "product",
+    "product/bugs",
+    "product/capabilities",
+    "support/cases",
+    "foundation/requirements",
+    "it/connections",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "maintenance-lifecycle",
+      "do": "Run the fix end to end for each bug or small change in scope: read the bug and the support cases behind it and say what the fix is worth against what it risks, change the design only as far as the fix needs, make the change with a test that fails before it and passes after, keep the solution running while the fix is prepared, and package the fixed version with its configuration and a way back, putting the test output and the before and after behaviour on the handoff.",
+      "skill": "develop-and-manage-services-solutions",
+      "activity": "8.5.5.1",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Add the fix and its evidence to the decision or bug it closes, name every bug left open with why, and raise to the product lead the order of the remaining fixes, most customer harm first.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "fix-proved",
+      "kind": "review",
+      "check": "Does every fix name the bug or case it closes and a test that failed before it and passes after, and is the fixed version packaged with a way back to the previous one?",
+      "reviewer": "product-lead"
+    }
+  ]
+}

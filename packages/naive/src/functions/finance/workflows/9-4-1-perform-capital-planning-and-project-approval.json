@@ -1,0 +1,88 @@
+{
+  "id": "9-4-1-perform-capital-planning-and-project-approval",
+  "function": "finance",
+  "process": "9.4.1",
+  "title": "Perform capital planning and project approval",
+  "goal": "The rule for treating a purchase as an investment is written, each proposed project carries its full cost, its payback and its effect on runway, and the founder has approved or refused each one.",
+  "measures": [
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "finance/intake"
+    ]
+  },
+  "reads": [
+    "finance/budget",
+    "finance/spend",
+    "money",
+    "purpose/money/summary",
+    "assets/register",
+    "assets/leases",
+    "product",
+    "foundation/goals",
+    "supply-chain/purchase-orders"
+  ],
+  "steps": [
+    {
+      "id": "investment-policy",
+      "do": "Draft the rule for when a purchase is an investment rather than a cost of the month, the amount, the minimum useful life, the evidence a proposal must carry and the payback period the venture will accept, and put it on the handoff for the founder to confirm.",
+      "skill": "manage-fixed-asset-project-accounting",
+      "activity": "9.4.1.1"
+    },
+    {
+      "id": "capex-plan",
+      "do": "Draft the investment lines for the next 12 months, one per proposed project with its amount and the month it falls, keep them as their own budget category, and bring the total to the founder, because it is cash leaving the venture.",
+      "skill": "manage-fixed-asset-project-accounting",
+      "activity": "9.4.1.2",
+      "writes": [
+        "finance/budget/[id]"
+      ],
+      "raises": [
+        "spend-money"
+      ]
+    },
+    {
+      "id": "approve-projects",
+      "do": "Hand the founder each proposed project and asset purchase with its cost, its payback, what it does to runway and what happens if it waits, and record their decision; the agent never commits the money.",
+      "skill": "manage-fixed-asset-project-accounting",
+      "ask": true,
+      "activity": "9.4.1.3",
+      "raises": [
+        "spend-money"
+      ]
+    },
+    {
+      "id": "financial-justification",
+      "do": "Work out for each project what it costs in full, what it saves or earns, how many months until the cash comes back and what would have to be true for that to hold, and name the single assumption that carries the case.",
+      "skill": "manage-fixed-asset-project-accounting",
+      "activity": "9.4.1.4"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "File each proposed project as an open decision with its case and the alternative of waiting, and raise to the finance lead the order to fund them in when the budget cannot carry all.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "projects-justified",
+      "kind": "review",
+      "check": "Does every proposed project carry its full cost, its payback and the assumption that carries the case, and is each one approved or refused by the founder?",
+      "reviewer": "finance-lead"
+    }
+  ]
+}

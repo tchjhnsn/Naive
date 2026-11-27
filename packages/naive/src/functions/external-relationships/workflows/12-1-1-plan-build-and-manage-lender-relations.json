@@ -1,0 +1,22 @@
+{
+  "id": "12-1-1-plan-build-and-manage-lender-relations",
+  "function": "external-relationships",
+  "process": "12.1.1",
+  "title": "Plan, build, and manage lender relations",
+  "goal": "Every lender the venture owes or means to approach is an investor record with what is owed, the covenant it carries and the next report it is due, and any new borrowing sits in a raise record the founder decided.",
+  "measures": ["compliance_met","learning"],
+  "trigger": {"kind":"request"},
+  "requires": {"meetings":["external-relationships/intake"]},
+  "reads": ["venture","investors","investor-relations/raises","purpose/money/summary","finance/spend","governance/ownership","foundation/goals","decisions/*"],
+  "steps": [
+    {"id":"read-the-debt-position","do":"Read the money summary, the spend register and every raise whose instrument is debt or revenue-based, and write one investor record per lender with the principal outstanding, the rate, the covenant it carries and the date of its next report.","skill":"build-investor-relationships","writes":["investors/[id]"]},
+    {"id":"plan-the-borrowing","do":"When the founder wants to borrow, draft a raise record with instrument debt or revenue-based, the amount, the milestone it reaches, the stop date and the runway it buys from the money summary, and leave opening it to the founder.","skill":"build-investor-relationships","writes":["investor-relations/raises/[id]"],"raises":["strategy-or-constitution"],"consider":{"why":"Borrowing against no revenue costs more than it buys, and a lender asks for figures a venture with no customers cannot show.","when":"The venture has revenue or an asset to lend against, or the founder says they mean to borrow."}},
+    {"id":"prepare-the-lender-packet","do":"Assemble what a lender asks for from the records alone, the last twelve months of cash in and out, the runway, the customer concentration and who owns the venture, each figure naming the record it came from, and hand it to the founder to send.","skill":"build-investor-relationships","writes":["operations/handoff/[id]"],"raises":["public-commitment"]},
+    {"id":"track-the-covenants","do":"For each lender keep on its investor record the covenant in plain words, the figure it tests, the record that figure comes from and the next date it is tested, and name every covenant the current figure would fail.","skill":"build-investor-relationships","writes":["investors/[id]"]},
+    {"id":"feed-decisions","do":"Name the open decision each lender finding bears on and add it there as evidence, and propose to the strategy lead which lender conversation to have first, nearest covenant test first.","skill":"build-investor-relationships","writes":["decisions/*"],"raises":["set-priorities"]}
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "lender-records-true", "kind": "review", "check": "Does every lender record name the principal outstanding, its covenant and the next report due, and does every figure in the lender packet name the record it came from?", "reviewer": "strategy-lead" }
+  ]
+}

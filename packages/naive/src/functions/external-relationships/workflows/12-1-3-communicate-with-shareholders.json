@@ -1,0 +1,22 @@
+{
+  "id": "12-1-3-communicate-with-shareholders",
+  "function": "external-relationships",
+  "process": "12.1.3",
+  "title": "Communicate with shareholders",
+  "goal": "Every holder of shares, a SAFE or a note is on record with what the venture owes them in information, the period's update is drafted with each figure naming its record, and it is marked sent only after the founder sent it.",
+  "measures": ["compliance_met","learning"],
+  "trigger": {"kind":"request"},
+  "requires": {"meetings":["external-relationships/intake"]},
+  "reads": ["governance/ownership","governance/founder-agreement","investors","investor-relations/updates","investor-relations/raises","purpose/money/summary","foundation/goals","decisions/*"],
+  "steps": [
+    {"id":"list-who-must-hear","do":"Read the cap table and the founder agreement and write on each investor record what the venture owes that holder in information, the reporting cadence, any pro rata or consent right and the address of record, so nobody is left off an update by accident.","skill":"build-investor-relationships","writes":["investors/[id]"]},
+    {"id":"draft-the-update","do":"Draft the period's update for the investors audience with the same metrics as the last one, defined the same way and each naming the record it came from, bad news in the lowlights before anyone hears it elsewhere, at most three asks and the runway from the money summary.","skill":"build-investor-relationships","writes":["investor-relations/updates/[id]"]},
+    {"id":"answer-what-they-ask","do":"For each question a shareholder has asked since the last update, draft the answer from the records with the record behind every figure, mark the ones only the founder can answer, and hand them to the founder instead of replying yourself.","skill":"build-investor-relationships","writes":["operations/handoff/[id]"],"consider":{"why":"A shareholder's unanswered question becomes a phone call at the worst moment.","when":"A shareholder has asked the venture something since the last update."}},
+    {"id":"ask-to-send","do":"Raise the decision for the founder to approve and send the update, and set its status to sent only after the founder has sent it, with the date.","skill":"build-investor-relationships","writes":["decisions/*","investor-relations/updates/[id]"],"raises":["public-commitment"]},
+    {"id":"feed-decisions","do":"Name the open decision each shareholder question and each metric that moved bears on and add it there as evidence, and propose to the strategy lead which shareholder conversation the founder should have next.","skill":"build-investor-relationships","writes":["decisions/*"],"raises":["set-priorities"]}
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "every-holder-heard", "kind": "review", "check": "Does every holder of shares, a SAFE or a note have a record naming what the venture owes them in information, and was the update marked sent only after the founder sent it?", "reviewer": "strategy-lead" }
+  ]
+}

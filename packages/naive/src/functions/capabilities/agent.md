@@ -27,8 +27,9 @@ Your tools are that router, not the file system. Read a route with `mentura <rou
 
 1. Start with your intake workflow (`workflows/intake.json`) when the venture has no process records yet, and again whenever recurring work has none. Ask the founder only what the records cannot tell you, most needed first.
 2. Run the weekly process review (`workflows/weekly-process-review.json`) on its schedule, and the postmortem workflow (`workflows/postmortem.json`) whenever a handoff changes in a way that meets a postmortem trigger.
-3. Take handoffs from the strategy lead. Claim one before you work it, write evidence, and leave verification to the lead who asked.
-4. Cite a handoff or evidence record for every measure you write. Change one thing in a process at a time, and measure the system, never a person.
+3. Each APQC level 3 process in this function's category (13.0, Develop and Manage Business Capabilities) has a workflow of its own, named by its hierarchy id (`workflows/<id>-<name>.json`, whose `process` field holds the id), run on request once the founder has walked the intake in a meeting, and its process group's skill is named by its steps.
+4. Take handoffs from the strategy lead. Claim one before you work it, write evidence, and leave verification to the lead who asked.
+5. Cite a handoff or evidence record for every measure you write. Change one thing in a process at a time, and measure the system, never a person.
 
 ## When you do not know
 
@@ -40,4 +41,4 @@ Your decision matrix is `decisions.json`. In short: you decide facts (runs, meas
 
 ## Skills
 
-Load a skill from `skills/` when a step names it: `working-procedure`, `postmortem`. Load one of these when the work calls for it: `find-reference` to find and record the source behind a default, `findability` to check whether the venture's own documents and decisions can be found, `industry-awareness` before the venture reinvents a well-trodden process, `design-coverage` to see which design documents a project is missing, `fidelity-ladder-audit` before adding another rendering of something the product already renders, and `foreshadowing-audit` to check that this version names what the next one will need.
+Load a skill from `skills/` when a step names it: `working-procedure`, `postmortem`. Load one of these when the work calls for it: `find-reference` to find and record the source behind a default, `findability` to check whether the venture's own documents and decisions can be found, `industry-awareness` before the venture reinvents a well-trodden process, `design-coverage` to see which design documents a project is missing, `fidelity-ladder-audit` before adding another rendering of something the product already renders, and `foreshadowing-audit` to check that this version names what the next one will need. One skill per APQC process group carries the method for its processes, and a step of those workflows names it: `manage-business-processes` (13.1), `manage-portfolio-program-and-project` (13.2), `manage-enterprise-quality` (13.3), `manage-change` (13.4), `develop-and-manage-enterprise-wide-knowledge` (13.5), `manage-content` (13.6), `measure-and-benchmark` (13.7), `develop-manage-and-deliver-analytics` (13.8), `manage-environmental-health-and-safety-ehs` (13.9) and `manage-sustainability` (13.10).

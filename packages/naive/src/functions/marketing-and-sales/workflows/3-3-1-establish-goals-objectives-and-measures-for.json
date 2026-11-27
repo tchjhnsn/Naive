@@ -1,0 +1,75 @@
+{
+  "id": "3-3-1-establish-goals-objectives-and-measures-for",
+  "function": "marketing-and-sales",
+  "process": "3.3.1",
+  "title": "Establish goals, objectives, and measures for products/services by channel/segment",
+  "goal": "Each product the venture sells has, for every channel and segment it is sold through, one measure with the number it stands at now, a target and a date, and each one is on its way to a live goal record.",
+  "measures": [
+    "revenue",
+    "usage_or_adoption"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "marketing-and-sales/intake"
+    ]
+  },
+  "reads": [
+    "venture",
+    "foundation/telos",
+    "foundation/goals",
+    "product",
+    "markets",
+    "foundation/icp",
+    "customers",
+    "sales/opportunities",
+    "governance/analytics",
+    "marketing/sitemap",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "read-the-goals",
+      "do": "Read the telos and the goal records, list which live goals bind revenue or adoption, and say for each which product, channel and segment it already covers and which pairs no goal covers at all.",
+      "skill": "develop-and-manage-marketing-plans"
+    },
+    {
+      "id": "propose-the-measures",
+      "do": "For each product by channel by segment pair the venture actually sells through, propose one measure with how it is counted, the number it stands at now from the records, and say plainly where no record can count it yet.",
+      "skill": "develop-and-manage-marketing-plans"
+    },
+    {
+      "id": "ask-for-the-targets",
+      "do": "Ask the founder for the target and the date on each measure no record can set, one at a time and most needed first, and record the answer beside the measure with the date they gave it.",
+      "ask": true,
+      "skill": "develop-and-manage-marketing-plans"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Open a handoff to the strategy function with each agreed measure, target and date so it lands on the goal record, and add to the decision it bears on any pair the founder chose to leave unmeasured and why.",
+      "skill": "develop-and-manage-marketing-plans",
+      "writes": [
+        "operations/handoff/[id]",
+        "decisions/*"
+      ],
+      "raises": [
+        "defer-or-route"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "every-pair-measured-or-declined",
+      "kind": "review",
+      "check": "Does every product by channel by segment pair the venture sells through have either a measure with a target and a date, or a recorded reason the founder left it unmeasured?",
+      "reviewer": "growth-lead"
+    }
+  ]
+}
