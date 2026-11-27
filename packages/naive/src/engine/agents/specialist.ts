@@ -29,6 +29,7 @@ import { ventureFile } from "../../core/venture-paths.ts";
 import { functionAgent, naivePath } from "./function-spec.ts";
 import { SPECIALISTS, functionOfAgent, narrowWrites, readSpecialist, specialistOfAgent, specialistReach } from "./reach.ts";
 import type { Specialist } from "../../records/types/records.d.ts";
+import { nowIso } from "../../core/clock.ts";
 
 export { SPECIALISTS, readSpecialist, specialistOfAgent, specialistReach } from "./reach.ts";
 
@@ -111,7 +112,7 @@ export function spawnPlan(input: SpawnInput, ctx: { parentWrites: readonly strin
   const ttl = input.ttl?.trim() || ctx.ttl;
   const ms = ttlMillis(ttl);
   if (ms === null) return { ok: false, rule: "ttl", error: `${ttl} is not a duration`, hint: 'A ttl is a number and a unit, such as "2 hours" or "30 minutes".' };
-  const at = input.at ?? new Date().toISOString();
+  const at = input.at ?? nowIso();
   if (Number.isNaN(Date.parse(at))) return { ok: false, rule: "ttl", error: `${at} is not a time` };
   const spawned_at = new Date(at).toISOString();
   return { ok: true, record: {
@@ -170,6 +171,6 @@ export const end = (dir: string, role: string, how: "finished" | "revoked", at?:
   const rec = readSpecialist(dir, role);
   if (!rec) return yield* new Refused({ rule: "known-specialist", message: `${role} is not a specialist of this venture`, hint: `Its record would be ${SPECIALISTS}/${role}.json.` });
   if (rec.status !== "live") return rec;
-  const ended: Specialist = { ...rec, status: how, finished_at: new Date(at ?? new Date().toISOString()).toISOString() };
+  const ended: Specialist = { ...rec, status: how, finished_at: new Date(at ?? nowIso()).toISOString() };
   return yield* store(dir, ended, `the specialist ${role} is ${how}, so its reach is gone`);
 });

@@ -42,6 +42,7 @@ import { LEVELS, causeKey, levelOf, propagate, replay, whatIf, SCENARIOS } from 
 import type { Data, Effective, ElementEvent, Feeds, Own, Quality, Scenario, WhatIf } from "./element-state.ts";
 import { freshness } from "./freshness.ts";
 import { functionsOf } from "./research-programs.ts";
+import { now as clockNow } from "../core/clock.ts";
 
 /** What belongs to an element: its workflows and the record types its steps write. */
 export interface Attachment { readonly workflows: readonly string[], readonly records: readonly string[] }
@@ -164,7 +165,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const valued = ["--at"];
   const [dir, ref, ...stray] = args.filter((a, i) => !a.startsWith("--") && !valued.includes(args[i - 1]));
   const i = args.indexOf("--at");
-  const at = i < 0 ? new Date().toISOString() : args[i + 1];
+  const at = i < 0 ? clockNow().toISOString() : args[i + 1];
   const usage = "usage: node packages/naive/src/engine/element-effects.ts <venture dir> [<element>] [--at <iso>] [--json]";
   const program: Effect.Effect<void, NaiveError, "naive/VentureFs"> = Effect.gen(function* () {
     if (!dir || stray.length || !at || Number.isNaN(Date.parse(at)) || args.some((a) => a.startsWith("--") && !["--at", "--json"].includes(a))) return yield* new CannotRun({ message: usage });

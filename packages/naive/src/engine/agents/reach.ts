@@ -21,6 +21,7 @@ import { PLANS, routeGlob } from "../access.ts";
 import { catalog } from "../departments.ts";
 import { ventureFile } from "../../core/venture-paths.ts";
 import type { DataModel, Specialist } from "../../records/types/records.d.ts";
+import { nowIso } from "../../core/clock.ts";
 
 const cache = new Map<string, string[]>();
 
@@ -128,7 +129,7 @@ export function reachRefusal({ role, route, table, dir, now }: { role?: string |
   const refuse = (why: string, writes: string[] = []) => ({ then: "refuse" as const, rule: "specialist-reach", source: "temporary specialist", matched: ["specialist-reach"], writes, why });
   const rec = readSpecialist(dir, role as string);
   if (!rec) return refuse(`${role} may not write ${route}: a specialist writes only the reach its spawn record gives it, and ${dir ? `this venture has no ${SPECIALISTS}/${role}.json` : "no venture folder was given to read it from"}; spawn it with naive agent spawn ${sp.function}-agent, or a person writes it`);
-  const { writes, gone } = specialistReach(rec, now ?? new Date().toISOString());
+  const { writes, gone } = specialistReach(rec, now ?? nowIso());
   if (gone) return refuse(`${role} may not write ${route}: its reach is gone because ${gone}; spawn a new specialist with naive agent spawn ${rec.parent}, or a person writes it`, writes);
   if (matches(writes)) return null;
   return refuse(`${role} may not write ${route}: a specialist of ${rec.parent} writes only ${writes.join(", ")}, the reach its spawn record gives it inside its parent's own; hand the change back to ${rec.parent}, or a person writes it`, writes);

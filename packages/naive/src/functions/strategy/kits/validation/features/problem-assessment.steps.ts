@@ -6,6 +6,7 @@ import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } f
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { assess } from "../../../../../engine/assess-problem.ts";
+import { now } from "../../../../../core/clock.ts";
 
 /** The problem record the steps build up. */
 type ProblemRec = { venture: string, statement: string, segment: string, cost?: string, why_now?: string, evidence: Record<string, unknown>[],
@@ -26,7 +27,7 @@ const repo = new URL("../../../../../../../../", import.meta.url).pathname;
 const ok = (cond: unknown, msg: string) => { if (!cond) throw new Error(msg); };
 // A list or record the step reads fails the scenario when it is missing, as reading a field of undefined did.
 const must = <T,>(x: T | undefined | null, what: string): T => { if (x === undefined || x === null) throw new TypeError(`missing ${what}`); return x; };
-const TODAY = new Date().toISOString().slice(0, 10);
+const TODAY = now().toISOString().slice(0, 10);
 
 const venture = (w: World) => w.dir ??= (() => { const d = mkdtempSync(join(tmpdir(), "assess-")); w.cleanup = () => rmSync(d, { recursive: true, force: true }); return d; })();
 const save = (w: World) => { mkdirSync(join(venture(w), "purpose/validation"), { recursive: true }); writeFileSync(join(venture(w), "purpose/validation/problem.json"), JSON.stringify(w.rec)); };

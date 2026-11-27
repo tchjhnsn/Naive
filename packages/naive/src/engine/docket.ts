@@ -26,6 +26,7 @@ import { basename, join } from "node:path";
 import { decisions, ownScore } from "./decisions.ts";
 import { analytics } from "./decision-analytics.ts";
 import { PACKAGES } from "./packages.ts";
+import { nowMs } from "../core/clock.ts";
 
 /** A decision to rank: what ownScore in packages/naive/src/engine/decisions.ts scores, and the fields the ranking reads.
  *  A scenario (packages/naive/src/engine/docket-eval.ts) passes its own decisions in this shape. */
@@ -43,7 +44,7 @@ const ACTIONABLE = new Set(["now", "overdue", "stale"]);
 const OPEN = new Set(["now", "overdue", "stale", "waiting"]);
 const BASE = 10;
 
-export function docket(dir: string, now = Date.parse(process.env.DECISIONS_NOW ?? "") || Date.now(), { set_aside = new Set<string>() } = {}) {
+export function docket(dir: string, now = Date.parse(process.env.DECISIONS_NOW ?? "") || nowMs(), { set_aside = new Set<string>() } = {}) {
   const r = decisions(dir, now);
   const fnOf = new Map<string, Fn>(analytics(dir, now).decisions.map((x: { id: string; function_id: string; function: string }) => [x.id, { id: x.function_id, title: x.function }]));
   const ds = r.decisions.filter((d: DocketDecision) => d.source !== "root" && !set_aside.has(d.id)).map((d: DocketDecision): DocketDecision => ({ ...d, function: fnOf.get(d.id) }));
@@ -52,7 +53,7 @@ export function docket(dir: string, now = Date.parse(process.env.DECISIONS_NOW ?
 
 /** The ranking itself, over decisions as decisions.ts resolves them, each with its function ({id, title}).
  *  Pure, so scenarios can be ranked without a venture on disk (packages/naive/src/engine/docket-eval.ts). */
-export function rankDocket(all: DocketDecision[], phase: string, now = Date.now()) {
+export function rankDocket(all: DocketDecision[], phase: string, now = nowMs()) {
   const ds = all.filter((d) => OPEN.has(d.render));
   const own = new Map(ds.map((d): [string, { score: number; why: string[] }] => { const o = ownScore(d, phase, now); return [d.id, { score: BASE + o.score, why: o.why }]; }));
   const ownOf = (id: string) => own.get(id) ?? { score: 0, why: [] };

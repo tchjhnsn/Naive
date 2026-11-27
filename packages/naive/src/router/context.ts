@@ -50,6 +50,7 @@ import { ventureFile } from "../core/venture-paths.ts";
 import { readDataModel } from "../records/index.ts";
 import type { Answer, CallArgs, RouteEntry } from "./router.ts";
 import type { TeamPlan } from "../records/types/records.d.ts";
+import { now as clockNow, wallClock } from "../core/clock.ts";
 
 type Obj = Record<string, unknown>;
 const isObj = (x: unknown): x is Obj => !!x && typeof x === "object";
@@ -236,10 +237,10 @@ export function layoutFor(r: RouteEntry, dir: string, session: string | undefine
 type Ran = { ok: true; json: Obj & { rows?: unknown; phase?: string; decisions?: unknown }; ms: number; timed_out?: undefined; error?: undefined } | { ok: false; timed_out?: boolean; error?: string; ms: number; json?: undefined };
 function runJson(script: string, args: string[], ms: number): Promise<Ran> {
   return new Promise((done) => {
-    const t0 = Date.now();
+    const t0 = wallClock();
     execFile(process.execPath, [join(repoRoot, script), ...args], { timeout: ms, maxBuffer: 64 * 1024 * 1024 }, (err, stdout) => {
-      if (err?.killed) return done({ ok: false, timed_out: true, ms: Date.now() - t0 });
-      try { done({ ok: true, json: JSON.parse(stdout), ms: Date.now() - t0 }); } catch { done({ ok: false, error: String(err?.message ?? "no JSON").split("\n")[0], ms: Date.now() - t0 }); }
+      if (err?.killed) return done({ ok: false, timed_out: true, ms: wallClock() - t0 });
+      try { done({ ok: true, json: JSON.parse(stdout), ms: wallClock() - t0 }); } catch { done({ ok: false, error: String(err?.message ?? "no JSON").split("\n")[0], ms: wallClock() - t0 }); }
     });
   });
 }
@@ -247,7 +248,7 @@ function runJson(script: string, args: string[], ms: number): Promise<Ran> {
 /** The template for a route: the need-now ranking and open decisions, computed now. Parts that run past template_ms come back pending. */
 export async function templateFor(r: RouteEntry, dir: string, set: Settings = settings(dir)): Promise<Template> {
   const [nn, ds] = await Promise.all([runJson("packages/naive/src/engine/need-now.ts", [dir, "--json"], set.template_ms), runJson("packages/naive/src/engine/decisions.ts", [dir, "--json"], set.template_ms)]);
-  const out: Template = { computed_at: new Date().toISOString() };
+  const out: Template = { computed_at: clockNow().toISOString() };
   const pending: string[] = [];
   if (nn.ok) {
     type Row = { type: string; status: string; now: number; why: string };
@@ -392,7 +393,7 @@ export async function navigate({ venture, route, workspace, actor = "agent", act
     header.state = res.needs_input ? "needs input" : "computed";
     out.result = res.result ?? null;
     if (res.needs_input) out.needs_input = res.needs_input;
-    else { mkdirSync(dirname(runCacheFile(dir, concrete)), { recursive: true }); writeFileSync(runCacheFile(dir, concrete), JSON.stringify({ at: new Date().toISOString(), result: res.result })); }
+    else { mkdirSync(dirname(runCacheFile(dir, concrete)), { recursive: true }); writeFileSync(runCacheFile(dir, concrete), JSON.stringify({ at: clockNow().toISOString(), result: res.result })); }
     send("result", out.result);
     out.budget = budgetOf(out, budgetFor(set, r.route));
     send("budget", out.budget);
@@ -447,9 +448,9 @@ export function runStreaming({ venture, route, input, workspace, actor_id }: { v
     const env = { ...process.env, ...(actor_id ? { MENTURA_ACTOR_ID: actor_id } : {}) };
     const p = spawn(process.execPath, args, { env });
     let stdout = "", stderr = "", n = 0;
-    const t0 = Date.now();
+    const t0 = wallClock();
     onProgress({ progress: 0, message: `started ${route}` });
-    const timer = setInterval(() => onProgress({ progress: ++n, message: `running ${route}: ${((Date.now() - t0) / 1000).toFixed(1)}s` }), every);
+    const timer = setInterval(() => onProgress({ progress: ++n, message: `running ${route}: ${((wallClock() - t0) / 1000).toFixed(1)}s` }), every);
     p.stdout.on("data", (d: Buffer) => { stdout += d; });
     p.stderr.on("data", (d: Buffer) => {
       stderr += d;
@@ -457,7 +458,7 @@ export function runStreaming({ venture, route, input, workspace, actor_id }: { v
     });
     p.on("close", (code) => {
       clearInterval(timer);
-      onProgress({ progress: ++n, message: `finished ${route} in ${((Date.now() - t0) / 1000).toFixed(1)}s` });
+      onProgress({ progress: ++n, message: `finished ${route} in ${((wallClock() - t0) / 1000).toFixed(1)}s` });
       if (code !== 0) return done({ ok: false, error: (stderr || stdout).trim() });
       try { const j = JSON.parse(stdout); done(j.ok !== undefined ? j : { ok: true, result: j }); } catch { done({ ok: true, result: stdout.trim() }); }
     });

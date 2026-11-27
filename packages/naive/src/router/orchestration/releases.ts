@@ -49,6 +49,7 @@ import { validateFile } from "../../records/validate.ts";
 import type { RecordRoute, RouteEntry } from "../router.ts";
 import type { DecisionRecord, Venture } from "../../records/types/records.d.ts";
 import type { Entry } from "../../core/provenance.ts";
+import { now as clockNow, nowMs } from "../../core/clock.ts";
 
 // The release (release.json, card.json) has no JSON Schema (its data model entry has schema null): this
 // module writes it, so its shapes are written here.
@@ -446,7 +447,7 @@ const strip = ({ text, ...rest }: Frozen): Shipped => ({ ...rest, sha256: sha(te
  * naive build: survey the venture, check every open package can be released, and write the release.
  * Returns { ok, manifest } or { ok: false, blockers, failed_checks, packages }.
  */
-export async function build(dir: string, { now = new Date().toISOString(), actor = "person", dryRun = false }: { now?: string; actor?: string; dryRun?: boolean } = {}): Promise<
+export async function build(dir: string, { now = clockNow().toISOString(), actor = "person", dryRun = false }: { now?: string; actor?: string; dryRun?: boolean } = {}): Promise<
   | { ok: false; error: string; blockers?: undefined; failed_checks?: undefined; packages?: undefined; manifest?: undefined; dry_run?: undefined }
   | { ok: false; error?: undefined; blockers: Blocker[]; failed_checks: Check[]; packages: PackageEntry[]; manifest?: undefined; dry_run?: undefined }
   | { ok: true; manifest: Manifest; dry_run?: boolean; error?: undefined; blockers?: undefined; failed_checks?: undefined; packages?: undefined }
@@ -467,7 +468,7 @@ export async function build(dir: string, { now = new Date().toISOString(), actor
   const commands = await frozenCommands(dir, s.venture, s.frozen, plan, cache, log);
   const m: Manifest = {
     release: null, venture: s.venture.id, name: s.venture.name, phase: s.venture.phase,
-    built_at: stamp(Date.now()), now: stamp(now), key: cache.key,
+    built_at: stamp(nowMs()), now: stamp(now), key: cache.key,
     records: s.frozen.map(strip).sort((a, b) => a.file.localeCompare(b.file)),
     holes: s.holes.sort((a, b) => a.name.localeCompare(b.name)),
     left_out: leftOut.sort((a, b) => a.file.localeCompare(b.file)), withheld: { private_records: s.private.records, private_folder_files: s.private.folder },
@@ -487,7 +488,7 @@ export async function build(dir: string, { now = new Date().toISOString(), actor
 }
 
 /** C-18: adds one item (a new customer, a new product) to the release, leaving the rest as built. */
-export async function add(dir: string, route: string, { now = new Date().toISOString(), actor = "person" }: { now?: string; actor?: string } = {}): Promise<
+export async function add(dir: string, route: string, { now = clockNow().toISOString(), actor = "person" }: { now?: string; actor?: string } = {}): Promise<
   { ok: false; error: string; fix?: string; manifest?: undefined; added?: undefined } | { ok: true; manifest: Manifest; added: { route: string; file: string; from: string | null }; error?: undefined; fix?: undefined }
 > {
   dir = resolvePath(dir);
@@ -554,7 +555,7 @@ export function exportRelease(dir: string, out: string): { ok: false; error: str
   lines.push("", `Not in this export: ${m.holes.length} live items (open decisions, streams, money and fields mastered elsewhere), read in the venture itself.`, "");
   writeFileSync(join(out, "README.md"), lines.join("\n"));
   const { holes, routes: rs, commands, left_out, cache, ...rest } = m;
-  const exported = { ...rest, routes: rs.filter((r) => r.in === "release").map((r) => r.route), export: { at: stamp(Date.now()), as_of: m.now, live_left_out: holes.length, holes: 0 } };
+  const exported = { ...rest, routes: rs.filter((r) => r.in === "release").map((r) => r.route), export: { at: stamp(nowMs()), as_of: m.now, live_left_out: holes.length, holes: 0 } };
   writeFileSync(join(out, "release.json"), JSON.stringify(exported, null, 2) + "\n");
   writeFileSync(join(out, "card.json"), JSON.stringify({ ...card, headline: card.headline.filter((h) => h.label !== "Live holes") }, null, 2) + "\n");
   return { ok: true, out, records: m.records.length, left_out_live: holes.length };

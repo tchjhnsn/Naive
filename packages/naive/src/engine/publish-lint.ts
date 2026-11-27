@@ -31,6 +31,8 @@ import { frontmatter } from "./frontmatter.ts";
 import { leaks, patterns } from "./check-leaks.ts";
 import type { NaiveConfig, PublishTerms } from "../records/types/records.d.ts";
 
+import { now } from "../core/clock.ts";
+
 export { frontmatter } from "./frontmatter.ts";
 export type { Meta } from "./frontmatter.ts";
 
@@ -222,7 +224,7 @@ export async function check(paths: string[], { venture }: { venture?: string } =
 
 export const logFile = (venture: string | undefined, log: string | undefined) => log ?? join(venture ?? process.cwd(), ".naive", "lint-findings.jsonl");
 
-export function append(file: string, findings: Finding[], at = new Date().toISOString()) {
+export function append(file: string, findings: Finding[], at = now().toISOString()) {
   mkdirSync(dirname(file), { recursive: true });
   appendFileSync(file, findings.map((f) => JSON.stringify({ at, ...f }) + "\n").join(""));
 }

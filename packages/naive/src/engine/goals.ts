@@ -45,6 +45,7 @@ import { validateValue } from "../records/validate.ts";
 import { refusedPerson } from "./decisions.ts";
 import { inbox } from "./gate-drafts.ts";
 import type { Goal, Requirement } from "../records/types/records.d.ts";
+import { now } from "../core/clock.ts";
 
 /** Where a venture's goals live, as a logical path. */
 export const GOALS = "foundation/goals";
@@ -244,7 +245,7 @@ export const setStatus = (dir: string, id: string, status: GoalStatus, input: St
   const from = statusOf(stored);
   const why = transitionRefusal(from, status);
   if (why) return yield* new Refused({ rule: "goal-lifecycle", message: why });
-  const at = input.at ?? new Date().toISOString().replace(/\.\d+Z$/, "Z");
+  const at = input.at ?? now().toISOString().replace(/\.\d+Z$/, "Z");
   const next: Goal = { ...stored, status, status_by: by, status_at: at };
   if (status === "superseded") {
     const successor = input.supersededBy;

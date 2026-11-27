@@ -84,3 +84,7 @@ node packages/naive/src/store/connectors/service-test.ts               # Connect
 ## Connectors as a service
 
 `service.ts` names how a venture reaches its sources as one Effect service, `Connectors` (EE-161, phase 7): `connect(source, dir)`, `connectAll(dir)` and `sourceFor(dir, recordType, context)`, and `connectorFor(dir, recordType)` for the source and connector that hold a record type. It is a `Context.Reference` whose default is the `registerConnector` registry above, so an Effect that asks for it needs no layer; a host that keeps records in Postgres or Neon provides another with `Layer.succeed(Connectors, ...)`. Its methods run over the `VentureFs` in scope. The plain `connect`, `connectAll` and `sourceFor` keep working; the router does not ask for the service yet (not built; phase 8).
+
+## Time
+
+Code here reads business time from the one clock, `packages/naive/src/core/clock.ts` (`now`, `nowMs`, `nowIso`), so `NAIVE_NOW` pins it for a simulation or a test, and reads `wallClock()` only for elapsed time, timeouts, lock staleness and unique names (EE-228). `node packages/naive/src/checks/check-clock.ts` fails on a direct read of the system clock.

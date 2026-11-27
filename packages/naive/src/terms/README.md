@@ -101,3 +101,7 @@ It registers `engine/gate-service.ts` as plain too: the gate as an Effect servic
 `bypass-guard-test.ts` registers `packages/naive/src/checks/check-visibility-rubric.ts` (the visibility rubric, EE-222) and its test as plain checks: they check the rubric's shape and that its weights sum to 1, so no term is decided.
 
 `bypass-guard-test.ts` registers `packages/naive/src/checks/check-goals.ts` (the goal ledger, EE-210) and its test as plain checks: they compare goal ids, parents and statuses, so no term is decided.
+
+## Time
+
+Code here reads business time from the one clock, `packages/naive/src/core/clock.ts` (`now`, `nowMs`, `nowIso`), so `NAIVE_NOW` pins it for a simulation or a test, and reads `wallClock()` only for elapsed time, timeouts, lock staleness and unique names (EE-228). `node packages/naive/src/checks/check-clock.ts` fails on a direct read of the system clock.

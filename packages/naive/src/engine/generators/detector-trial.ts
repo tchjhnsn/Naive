@@ -8,6 +8,7 @@ import { randomUUID } from "node:crypto";
 import { cli, drop, questions, schemaOf, validate } from "./generate.ts";
 import { lineHash } from "../../core/provenance.ts";
 import type { DetectorTrial } from "../../records/types/records.d.ts";
+import { now } from "../../core/clock.ts";
 
 export const record = "detector-trial";
 const DERIVED = ["id", "call", "prev", "hash"];
@@ -36,7 +37,7 @@ export function draft(a: Partial<DetectorTrial>) {
   if (!a.detector) return { ok: false, record, errors: ["a ledger line needs a detector"] };
   if (kind === "trial" && (typeof a.score !== "number" || !a.criterion)) return { ok: false, record, errors: ["a trial needs a score and the criterion in force"] };
   if (kind === "resolution" && (!a.trial || !a.outcome || !a.by)) return { ok: false, record, errors: ["a resolution needs the trial, the outcome and who settled it"] };
-  const base = { kind, id: a.id ?? randomUUID(), detector: a.detector, at: a.at ?? new Date().toISOString() };
+  const base = { kind, id: a.id ?? randomUUID(), detector: a.detector, at: a.at ?? now().toISOString() };
   const line = kind === "trial" && typeof a.score === "number" && a.criterion
     ? drop({ ...base, score: a.score, criterion: a.criterion, call: a.call ?? call(a.score, a.criterion), provenance: a.provenance, note: a.note })
     : drop({ ...base, trial: a.trial, outcome: a.outcome, signal: a.signal, by: a.by, note: a.note });

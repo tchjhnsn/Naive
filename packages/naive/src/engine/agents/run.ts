@@ -27,6 +27,7 @@ import { prerequisitesOf } from "../prerequisites.ts";
 import type { AgentBrief } from "./brief.ts";
 import { agentBrief, agentRoles } from "./brief.ts";
 import { end, liveSpecialists, spawn } from "./specialist.ts";
+import { nowIso } from "../../core/clock.ts";
 
 const fence = (label: string, body: string): string => `### ${label}\n\n\`\`\`json\n${body}\n\`\`\``;
 const pretty = (v: unknown): string => JSON.stringify(v, null, 2);
@@ -92,7 +93,7 @@ export function main(argv: string[]): number {
       console.log(`${role.padEnd(26)} ${b.kind}${dir ? (b.staffed ? "  staffed" : "  not staffed") : ""}`);
     }
     // A specialist is a role in one venture, not in Naive's data, so it is listed only when a venture is given.
-    if (dir) for (const s of runSync(liveSpecialists(dir, new Date().toISOString()))) console.log(`${s.id.padEnd(26)} specialist  of ${s.parent} until ${s.expires}`);
+    if (dir) for (const s of runSync(liveSpecialists(dir, nowIso()))) console.log(`${s.id.padEnd(26)} specialist  of ${s.parent} until ${s.expires}`);
     return 0;
   }
   if (cmd === "brief") {

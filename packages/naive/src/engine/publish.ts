@@ -31,6 +31,7 @@ import { leaks } from "./check-leaks.ts";
 import { check, frontmatter } from "./publish-lint.ts";
 import { record } from "../core/provenance.ts";
 import type { PublicationPolicy, Publications } from "../records/types/records.d.ts";
+import { now as clockNow } from "../core/clock.ts";
 
 /** A publishing channel as the gate reads it; kind is read loosely, since older policies name kinds the schema no longer lists. */
 export type Channel = Pick<PublicationPolicy["channels"][number], "id" | "name"> & { kind?: string };
@@ -96,7 +97,7 @@ export function build(dir: string, channel: string, { artifact }: { artifact?: s
   const aFile = ventureFile(dir, `artifacts/${id}.json`);
   const prior = existsSync(aFile) ? load(aFile) : {};
   const a = { ...prior, id, kind: prior.kind ?? (ch.kind === "docs-site" || ch.kind === "site" ? "site" : "page"), title: prior.title ?? ch.name ?? id,
-    built_at: new Date().toISOString(), built_from: [...from].map(([r, s]) => ({ record: r, sha256: s })), output: { path: rel, sha256: sha, channel } };
+    built_at: clockNow().toISOString(), built_from: [...from].map(([r, s]) => ({ record: r, sha256: s })), output: { path: rel, sha256: sha, channel } };
   save(aFile, a);
   return { artifact: id, output: rel, sha256: sha, sources: srcs.map((s) => s.file), leaks: found };
 }
@@ -126,7 +127,7 @@ const stamp = (t: string) => t.replace(/[-:.]/g, "").toLowerCase();
 
 function decide(dir: string, { channel, artifact, sha256, url, action, door, exposure, who, reversibility, as, by, ok, why, not_before }: { channel: string, artifact: string, sha256: string, url?: string, action: string, door: string, exposure: string, who?: string[],
   reversibility: Reversibility, as: string, by?: string, ok: boolean, why?: string, not_before?: string }) {
-  const at = new Date().toISOString();
+  const at = clockNow().toISOString();
   const v = load(ventureFile(dir, "venture.json"));
   const file = `decisions/publications.${channel}-${stamp(at)}.decision.json`;
   const rec = {
@@ -157,7 +158,7 @@ function defaults(ch: Channel, door: string | undefined, reversibility: string |
 /**
  *  naive publish <channel>: the gate. Returns { decision, entry } or throws Refused (the decision is still written).
  */
-export async function publish(dir: string, channel: string, { by, as = "founder", door, exposure = "low", who = [], reversibility, url, now = new Date() }: { by?: string, as?: string, door?: string, exposure?: string, who?: string[], reversibility?: string, url?: string, now?: Date } = {}) {
+export async function publish(dir: string, channel: string, { by, as = "founder", door, exposure = "low", who = [], reversibility, url, now = clockNow() }: { by?: string, as?: string, door?: string, exposure?: string, who?: string[], reversibility?: string, url?: string, now?: Date } = {}) {
   const ch = channelOf(dir, channel);
   if (!EXPOSURE.includes(exposure)) refuse(`exposure is low, medium or high, not ${exposure}`);
   const m = manifest(dir);
@@ -187,7 +188,7 @@ export async function publish(dir: string, channel: string, { by, as = "founder"
   const kept = `.release/publish/${channel}/versions/${sha}.md`;
   mkdirSync(dirname(ventureFile(dir, kept)), { recursive: true });
   copyFileSync(out, ventureFile(dir, kept));
-  const at = new Date().toISOString();
+  const at = clockNow().toISOString();
   if (!entry) { entry = { channel, artifact: id }; m.entries.push(entry); }
   if (entry.sha256 && entry.sha256 !== sha) entry.previous = [{ sha256: entry.sha256, output: `.release/publish/${channel}/versions/${entry.sha256}.md`, approved_by: entry.approved_by, at: entry.at, decision: entry.decision }, ...(entry.previous ?? [])];
   Object.assign(entry, { url: url ?? entry.url, kind: entry.kind ?? kindOf(ch), sources: a.built_from.map((b: { record: string }) => b.record).filter((r: string) => r.endsWith(".mdx")), output: kept, sha256: sha, approved_by: by, at, decision, door: d.door });
@@ -216,7 +217,7 @@ export function rollback(dir: string, channel: string, { by, as = "founder" }: {
     reversibility: { how: "naive publish of the newer version again", takes: "minutes" }, as, by, ok: gate.ok, why: gate.why });
   if (!gate.ok) refuse(`${gate.why} (the decision waits open in ${decision})`);
   const undone = { sha256: entry.sha256, output: entry.output, approved_by: entry.approved_by, at: entry.at, decision: entry.decision };
-  Object.assign(entry, { sha256: prev.sha256, output: prev.output, approved_by: by, at: new Date().toISOString(), decision });
+  Object.assign(entry, { sha256: prev.sha256, output: prev.output, approved_by: by, at: clockNow().toISOString(), decision });
   entry.previous = [undone, ...(entry.previous ?? []).slice(1)];
   save(manifestPath(dir), m);
   record(dir, ({ entity: prev.output, activity: "rollback", agent: { kind: "person", via: "cli", id: by }, decision, sha256: prev.sha256, note: `rolled ${channel} back from ${undone.sha256.slice(0, 12)} to ${prev.sha256.slice(0, 12)}` }) as Parameters<typeof record>[1]);

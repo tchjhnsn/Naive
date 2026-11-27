@@ -40,6 +40,7 @@ import type { DueWorkflow, WorkflowRun } from "./due.ts";
 import { buildGraph, downstream, shippedInput } from "./element-graph.ts";
 import type { ElementGraph } from "./element-graph.ts";
 import type { FunctionWorkflow } from "../records/types/records.d.ts";
+import { nowIso } from "../core/clock.ts";
 
 /** The part of a function workflow the ledger reads. */
 export type SkippedWorkflow = Pick<DueWorkflow, "id" | "function" | "title" | "steps">;
@@ -208,7 +209,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const flag = (name: string): string | undefined => { const i = args.indexOf(name); return i < 0 ? undefined : args[i + 1]; };
   const valued = ["--at", "--function", "--to"];
   const [dir, cmd, target] = args.filter((a, i) => !a.startsWith("--") && !valued.includes(args[i - 1]));
-  const at = flag("--at") ?? new Date().toISOString();
+  const at = flag("--at") ?? nowIso();
   const json = args.includes("--json");
   const usage = "usage: node packages/naive/src/engine/skipped.ts <venture dir> [--function <id>] [--at <iso>] [--json]\n       node packages/naive/src/engine/skipped.ts <venture dir> handback <item> [--to <role>]";
   const program: Effect.Effect<void, NaiveError, "naive/VentureFs"> = Effect.gen(function* () {

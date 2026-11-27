@@ -25,6 +25,7 @@ import { actingAgent } from "../../core/provenance.ts";
 import { brierOf, calibration, registrationGaps, statementForm, statusOf } from "../../engine/bets.ts";
 import { call } from "../router.ts";
 import type { Bet } from "../../records/types/records.d.ts";
+import { nowIso } from "../../core/clock.ts";
 
 /** What one command answers with. ok false carries why; a write carries the route it landed on. */
 export type BetAnswer = { ok: boolean; error?: string; errors?: string[]; result?: unknown };
@@ -81,7 +82,7 @@ export async function register(dir: string, id: string, o: { by?: string; now?: 
   if (statusOf(bet) !== "proposed") return { ok: false, error: `${id} is ${statusOf(bet)}, and only a proposed bet is registered` };
   const gaps = registrationGaps(bet);
   if (gaps.length) return { ok: false, error: `${id} is not ready to register`, errors: gaps };
-  const at = o.now ?? new Date().toISOString();
+  const at = o.now ?? nowIso();
   const next: Bet = { ...bet, status: "registered", status_by: o.by as string, status_at: at, registered_at: at, registered_by: o.by as string };
   const answer = await write(dir, id, next, `naive bets register: ${o.by} fixed the claim of ${id}`);
   return answer.ok ? { ok: true, result: { registered: route(id), at, by: o.by, form: statementForm(next) } } : answer;
@@ -102,7 +103,7 @@ export async function confidence(dir: string, id: string, o: { p?: string; by?: 
   const bet = await read(dir, id);
   if (!bet) return { ok: false, error: `no bet ${id} in ${ROUTE}` };
   if (bet.kind === "selection-rule") return { ok: false, error: `${id} is a selection rule, so there are no odds on it: a rule about whom to back is a value, and what can be tested is its observable test and the bets under it` };
-  const at = o.now ?? new Date().toISOString();
+  const at = o.now ?? nowIso();
   const entry = { p, set_by: o.by as string, at, data_seen: seen as NonNullable<Bet["confidence"]>[number]["data_seen"], ...(o.why ? { why: o.why } : {}) };
   const prior = !(bet.confidence ?? []).length;
   const next: Bet = { ...bet, confidence: [...(bet.confidence ?? []), entry] };
@@ -124,7 +125,7 @@ export async function resolve(dir: string, id: string, outcome: string, o: { by?
   if (bet.kind === "selection-rule") return { ok: false, error: `${id} is a selection rule, so it is not resolved: a value is withdrawn or superseded, never shown right by evidence` };
   if (!["registered", "supported", "weakened", "refuted"].includes(statusOf(bet))) return { ok: false, error: `${id} is ${statusOf(bet)}: a bet is registered before it is resolved, or the outcome was measured against nothing (naive bets register ${id} --by <person>)` };
   if (bet.resolution) return { ok: false, error: `${id} was resolved by ${bet.resolution.by} at ${bet.resolution.at}, and an outcome is written once: write a new bet that supersedes this one if the claim has to change` };
-  const at = o.now ?? new Date().toISOString();
+  const at = o.now ?? nowIso();
   const n = Number(o.observed);
   const observed = o.observed === undefined ? undefined : o.observed.trim() !== "" && Number.isFinite(n) ? n : o.observed;
   const status = AFTER[outcome];

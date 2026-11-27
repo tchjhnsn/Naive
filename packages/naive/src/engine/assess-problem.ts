@@ -28,6 +28,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ventureFile } from "../core/venture-paths.ts";
 import type { ValidationEvidence, ValidationProblem } from "../records/types/records.d.ts";
+import { now } from "../core/clock.ts";
 
 export const ASSUMPTIONS = [
   { id: "exists", says: "the problem is real", field: "statement", test: "Find people already paying for or building a workaround (search, forums, competitors' customers)" },
@@ -60,7 +61,7 @@ export function problemFile(dir: string): string | null {
 }
 
 /** How strongly one item bears on its assumption: 2 demonstrates, 1 infers, 0 counts for nothing. */
-export function strength(e: ValidationEvidence, today = new Date()): number {
+export function strength(e: ValidationEvidence, today = now()): number {
   if (e.audience === "wrong") return 0;
   const shows = ["behavior", "commitment"].includes(e.kind) && e.audience === "target" && originOf(e) === "first-hand"
     && (e.sample?.n ?? 0) >= MIN_SAMPLE && months(e.collected, today) <= MAX_AGE_MONTHS;
@@ -73,7 +74,7 @@ const stated = (rec: ValidationProblem, a: (typeof ASSUMPTIONS)[number]) => a.id
 /** One assumption's label, with the items behind it. */
 export type Label = { assumption: string; says: string; label: string; level: number; for: string[]; against: string[]; ignored: string[] };
 
-export function label(rec: ValidationProblem | null, today = new Date()): Label[] {
+export function label(rec: ValidationProblem | null, today = now()): Label[] {
   const ev = rec?.evidence ?? [];
   return ASSUMPTIONS.map((a) => {
     const on = ev.filter((e) => (e.assumption ?? "exists") === a.id).map((e) => ({ id: e.id, supports: e.supports !== false, s: strength(e, today), target: e.audience === "target" }));
@@ -121,7 +122,7 @@ export type Assessment = { needs_input?: { ask: string; missing: Missing[]; opti
   forms: ({ form: string; statement: string; assumptions: Label[] } & Pick<Rung, "supports" | "next" | "blocking">)[] }>;
 
 /** The whole run: preflight first, then the assessment unless input is missing and as_is is not set. */
-export function assess(dir: string, { as_is = false, today = new Date() }: { as_is?: boolean; today?: Date } = {}): Assessment {
+export function assess(dir: string, { as_is = false, today = now() }: { as_is?: boolean; today?: Date } = {}): Assessment {
   const f = problemFile(dir);
   const rec: ValidationProblem | null = f ? JSON.parse(readFileSync(f, "utf8")) : null;
   const missing = preflight(rec);

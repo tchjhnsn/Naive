@@ -85,3 +85,7 @@ Each level 3 process of APQC category 13.0 has one workflow, named by its hierar
 | 13.9.3 | Monitor and manage EHS program | [workflows/13-9-3-monitor-and-manage-ehs-program.json](./workflows/13-9-3-monitor-and-manage-ehs-program.json) | [skills/manage-environmental-health-and-safety-ehs](./skills/manage-environmental-health-and-safety-ehs) |
 | 13.10.1 | Develop sustainability capability | [workflows/13-10-1-develop-sustainability-capability.json](./workflows/13-10-1-develop-sustainability-capability.json) | [skills/manage-sustainability](./skills/manage-sustainability) |
 | 13.10.2 | Manage sustainability capability | [workflows/13-10-2-manage-sustainability-capability.json](./workflows/13-10-2-manage-sustainability-capability.json) | [skills/manage-sustainability](./skills/manage-sustainability) |
+
+## Time
+
+Code here reads business time from the one clock, `packages/naive/src/core/clock.ts` (`now`, `nowMs`, `nowIso`), so `NAIVE_NOW` pins it for a simulation or a test, and reads `wallClock()` only for elapsed time, timeouts, lock staleness and unique names (EE-228). `node packages/naive/src/checks/check-clock.ts` fails on a direct read of the system clock.

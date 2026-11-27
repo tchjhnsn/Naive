@@ -93,3 +93,7 @@ The signal pull ([`packages/naive/src/router/orchestration/signals.ts`](../../ro
 - Record and reception types generated from JSON Schema through `naive typegen`; the fixture and the example recipe in `packages/naive/src/records/examples/signals/` declare their own types.
 - Type stripping needs Node 22.13 or later. On an older Node every recipe fails closed with that reason.
 - QuickJS compiled to wasm as a second realm behind the same interface.
+
+## Time
+
+Code here reads business time from the one clock, `packages/naive/src/core/clock.ts` (`now`, `nowMs`, `nowIso`), so `NAIVE_NOW` pins it for a simulation or a test, and reads `wallClock()` only for elapsed time, timeouts, lock staleness and unique names (EE-228). `node packages/naive/src/checks/check-clock.ts` fails on a direct read of the system clock.

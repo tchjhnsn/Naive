@@ -76,3 +76,6 @@ Every level 3 process of APQC category 3.0, Market and Sell Products and Service
 | 3.5.7 | Perform field sales | [3-5-7-perform-field-sales.json](./workflows/3-5-7-perform-field-sales.json) | [develop-and-manage-sales-plans](./skills/develop-and-manage-sales-plans) |
 | 3.5.8 | Perform digital sales | [3-5-8-perform-digital-sales.json](./workflows/3-5-8-perform-digital-sales.json) | [develop-and-manage-sales-plans](./skills/develop-and-manage-sales-plans) |
 
+## Time
+
+Code here reads business time from the one clock, `packages/naive/src/core/clock.ts` (`now`, `nowMs`, `nowIso`), so `NAIVE_NOW` pins it for a simulation or a test, and reads `wallClock()` only for elapsed time, timeouts, lock staleness and unique names (EE-228). `node packages/naive/src/checks/check-clock.ts` fails on a direct read of the system clock.

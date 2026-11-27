@@ -24,6 +24,7 @@ import { runMain } from "../core/effect/run.ts";
 import { ventureFile } from "../core/venture-paths.ts";
 import { artifactPath, catalog, climbTo, kind, outputPath, prerequisites, rung, format as formatOf, renderMarkdown, type Requires } from "./documents.ts";
 import type { Artifact, DocumentCatalog } from "../records/types/records.d.ts";
+import { nowIso } from "../core/clock.ts";
 
 /** What a render produced, or what stands in its way. */
 export type Rendered = { kind: string; rung: string; format: string; output?: string; record?: string; instructions: string[] };
@@ -70,7 +71,7 @@ const unmet = (venture: string, below: string | null, needs: Requires) => Effect
 });
 
 /** Renders one document kind in one format, or refuses with what stands in the way. */
-export const render = (venture: string, kindId: string, want: string, { now = new Date().toISOString() }: { now?: string } = {}) =>
+export const render = (venture: string, kindId: string, want: string, { now = nowIso() }: { now?: string } = {}) =>
   Effect.gen(function* () {
     const fs = yield* VentureFs;
     const c: DocumentCatalog = catalog();

@@ -52,6 +52,7 @@ import { agentFromEnv, record as prov } from "../../core/provenance.ts";
 import { evaluate, type Eval } from "./evals.ts";
 import { ventureFile } from "../../core/venture-paths.ts";
 import { HostedRefusal, isHosted } from "../../core/runtime.ts";
+import { now as clockNow, wallClock } from "../../core/clock.ts";
 
 const repo = new URL("../../../../../", import.meta.url).pathname;
 
@@ -91,9 +92,9 @@ const moneyCmd = judgeCommand(process.env.NAIVE_MONEY_CMD);
 const traceCmd = judgeCommand(process.env.NAIVE_TRACE_CMD);
 /** Runs the app's judge on one request. */
 const judgeRun = (req: unknown) => { if (!judgeCmd) throw new Error("no judge: set NAIVE_JUDGE_CMD"); return spawnSync(judgeCmd[0], judgeCmd.slice(1), { input: JSON.stringify(req), encoding: "utf8", maxBuffer: 1 << 26 }); };
-const t0 = Date.now();
+const t0 = wallClock();
 const laps: { at: number, what: string }[] = [];
-const lap = (what: string): void => { const s = (Date.now() - t0) / 1000; laps.push({ at: s, what }); console.log(`\n[${s.toFixed(1)}s] ${what}`); };
+const lap = (what: string): void => { const s = (wallClock() - t0) / 1000; laps.push({ at: s, what }); console.log(`\n[${s.toFixed(1)}s] ${what}`); };
 const cli = (...args: string[]) => spawnSync("node", [join(repo, "packages/naive/src/interfaces/cli/mentura.ts"), ...args], { env: { ...process.env, MENTURA_WORKSPACE: ws }, encoding: "utf8" });
 
 // The venture, scaffolded by Naive, and the founder's dump, kept as they wrote it.
@@ -133,11 +134,11 @@ let board: Server | null = null;
 if (flag("board")) { process.env.MENTURA_WORKSPACE = ws; board = (await import("../demo/board.ts")).serve(4331, id); console.log("Decision board: http://127.0.0.1:4331/   Idea map: http://127.0.0.1:4331/map"); }
 
 // The trace (EE-058): every step and every tool call the agent made, with timings, for an exporter such as LangSmith.
-const iso = () => new Date().toISOString();
+const iso = () => clockNow().toISOString();
 const trace: Run & { children: Run[] } = { name: `naive discovery: ${id}`, run_type: "chain", start: iso(), inputs: { dump: DUMP, ideas: readFileSync(ventureFile(dir, DUMP), "utf8"), founder, phase }, children: [], metadata: {
   venture: id, venture_id: id, pipeline_step: phase, money: money?.source ?? null,
   // LangSmith groups a founder's runs into one thread by thread_id: one session per venture per day.
-  thread_id: process.env.NAIVE_SESSION ?? `${id}-${new Date().toISOString().slice(0, 10)}`,
+  thread_id: process.env.NAIVE_SESSION ?? `${id}-${clockNow().toISOString().slice(0, 10)}`,
   harness_version: spawnSync("git", ["rev-parse", "--short", "HEAD"], { cwd: repo, encoding: "utf8" }).stdout.trim() || null,
 } };
 const researched: string[] = [];

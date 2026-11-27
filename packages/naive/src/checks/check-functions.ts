@@ -59,6 +59,7 @@ import { startOf, type Prior } from "../engine/need-now.ts";
 import { requireProblems } from "../engine/prerequisites.ts";
 import type { Flow } from "../engine/prerequisites.ts";
 import { validateValue } from "../records/validate.ts";
+import { now as clockNow } from "../core/clock.ts";
 
 const args = process.argv.slice(2);
 const flag = (f: string) => args.includes(f);
@@ -142,7 +143,7 @@ export const checkFunctions = Effect.gen(function* () {
   const departments = ids(yield* required(join(FUNCTIONS, "departments.json")), "departments");
   const classes = new Set(ids(yield* required(join(root, "packages/naive/template/governance/decision-rights.json")), "classes"));
   const delegation = yield* required(join(root, "packages/naive/template/governance/delegation.json"));
-  const today = new Date().toISOString().slice(0, 10);
+  const today = clockNow().toISOString().slice(0, 10);
   const personOnly = new Set(isObject(delegation) ? [...strings(delegation.one_way_doors), ...strings(delegation.never_redelegated)] : []);
   const clusters = new Set(ids(yield* required(join(FUNCTIONS, "it/capability-clusters.json")), "clusters"));
   const roleFiles = (yield* fs.list(ROLES)).filter((f) => f.endsWith(".json"));

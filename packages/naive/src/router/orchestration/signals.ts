@@ -50,6 +50,7 @@ import type { Reception as Receptions, SignalType } from "../../records/types/re
 import { asProjector } from "../acting.ts";
 import { call } from "../router.ts";
 import type { WorkflowEngine, WorkflowInstance } from "effect/workflow/WorkflowEngine";
+import { nowMs } from "../../core/clock.ts";
 
 type Reply = { ok: boolean; error?: string; result?: unknown };
 type Venture = { id: string; phase?: string };
@@ -404,7 +405,7 @@ export async function pull(dir: string, { now: asked }: { now?: string } = {}, s
   const durable = step !== plainStep;
   const store = await ventureStore(dir);
   let loaded: Loaded | null = null;
-  const plan = await step("plan", () => planPull(dir, store, asked ?? iso(Date.now()), (l) => { loaded = l; }));
+  const plan = await step("plan", () => planPull(dir, store, asked ?? iso(nowMs()), (l) => { loaded = l; }));
   if (plan.at === "done") return plan.out;
   const { out, now } = plan;
   if (plan.at === "nothing") {
@@ -511,7 +512,7 @@ function saveCursor(dir: string, c: S.Cursor) {
 }
 
 /** One signal at every listener. */
-export async function explainSignal(dir: string, id: string, { now = iso(Date.now()) }: { now?: string } = {}) {
+export async function explainSignal(dir: string, id: string, { now = iso(nowMs()) }: { now?: string } = {}) {
   const c = await context(dir);
   const found = await S.findSignal(c.libs, id, c.types);
   if (!found.signal) return { ok: false, error: found.problem ?? `no signal ${id}`, problems: c.problems };
@@ -522,7 +523,7 @@ export async function explainSignal(dir: string, id: string, { now = iso(Date.no
 }
 
 /** Every projected record rendered again from what its subjects' signals say; drift is any that would change. */
-export async function replay(dir: string, { now = iso(Date.now()) }: { now?: string } = {}) {
+export async function replay(dir: string, { now = iso(nowMs()) }: { now?: string } = {}) {
   const c = await context(dir);
   const live = await liveRecipes(readText(await ventureStore(dir)));
   if (live.failures.length) return { ok: false, error: `a live recipe cannot be read: ${live.failures.join("; ")}`, problems: c.problems };
@@ -559,7 +560,7 @@ export async function emit(dir: string, typeRef: string, o: EmitOptions) {
   }
   const rating = /^([A-F])([1-6])$/.exec(o.rating ?? "C3");
   if (!rating) return { ok: false, error: `--rating is an Admiralty code, a letter A to F and a digit 1 to 6 (B2), not ${o.rating}` };
-  const now = o.now ?? iso(Date.now());
+  const now = o.now ?? iso(nowMs());
   const person = o.by ?? process.env.MENTURA_PERSON ?? "person";
   const built = S.buildSignal(type, {
     props: o.props ?? {}, subject, time: o.time ?? now.slice(0, 10), observed: now, producer: `local/${S.slug(person) || "person"}`,

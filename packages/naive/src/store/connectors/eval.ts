@@ -18,6 +18,7 @@ import { join } from "node:path";
 import { contract, FIXTURE, harness, OUTSIDE, type Make } from "./suite.ts";
 import { connect as fsConnect } from "./filesystem.ts";
 import { connect, registerConnector, registry } from "./index.ts";
+import { nowMs } from "../../core/clock.ts";
 
 const h = harness("connectors");
 const { expect, write, scratch, finish } = h;
@@ -58,7 +59,7 @@ const gitT = await contract(h, "filesystem (git repository)", fsMake(true));
   const c = fsConnect({ root: d });
   const lock = join(d, ".log.jsonl.lock");
   writeFileSync(lock, "");
-  const old = new Date(Date.now() - 60_000);
+  const old = new Date(nowMs() - 60_000);
   utimesSync(lock, old, old);
   const w = await c.write("log.jsonl", "b\n", { append: true, base: await c.version("log.jsonl") });
   expect("filesystem (compare on write): a lock left by a process that died is removed and the write lands", w.version === await c.version("log.jsonl") && !existsSync(lock));

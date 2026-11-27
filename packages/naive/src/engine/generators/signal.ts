@@ -7,6 +7,7 @@
 import { cli, drop, questions, schemaOf, validate } from "./generate.ts";
 import { signalId } from "../../core/signal-id.ts";
 import type { Signal } from "../../records/types/records.d.ts";
+import { now } from "../../core/clock.ts";
 
 export const record = "signal";
 const DERIVED = ["id", "producer", "observed"];
@@ -18,7 +19,7 @@ export const signalPath = (s: Pick<Signal, "type" | "subject" | "time" | "id">) 
 
 export function draft(a: Partial<Signal>) {
   if (!a.type || !a.subject || !a.time || !a.props || !a.rating) return { ok: false, record, errors: ["a signal needs a type, a subject, a time, props and a rating"] };
-  const body = drop({ type: a.type, producer: a.producer ?? "local/founder", subject: a.subject, time: a.time, observed: a.observed ?? new Date().toISOString().replace(/\.\d+Z$/, "Z"),
+  const body = drop({ type: a.type, producer: a.producer ?? "local/founder", subject: a.subject, time: a.time, observed: a.observed ?? now().toISOString().replace(/\.\d+Z$/, "Z"),
     props: a.props, rating: a.rating, cites: a.cites ?? [], retracts: a.retracts, supersedes: a.supersedes });
   const rec = { id: signalId(body), ...body } as Signal;
   const v = validate(record, rec);

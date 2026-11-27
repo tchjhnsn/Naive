@@ -37,6 +37,7 @@ import type * as Engine from "../../../../terms/engine.ts";
 import type * as Terms from "../../../../terms/terms.ts";
 import type * as Relations from "../../../../terms/relations.ts";
 import type { Target } from "../../../../terms/relations.ts";
+import { now as clockNow } from "../../../../core/clock.ts";
 
 /** A dependency or a stated relation between two ideas: from the idea built on to the idea that builds on it. */
 type Edge = { from: string, to: string, p: number, by: string, relation?: string };
@@ -221,7 +222,7 @@ export function build(ideas: MapIdea[], { answers = null, phase = "discovery", v
   });
   const sinks = nodes.filter((n) => !got(children, n.id).length).map((n) => n.hash).sort();
   return {
-    version: "0.1.0", venture, phase, created: new Date().toISOString().replace(/\.\d+Z$/, "Z"), source,
+    version: "0.1.0", venture, phase, created: clockNow().toISOString().replace(/\.\d+Z$/, "Z"), source,
     root: sha(sinks.join("")).slice(0, 16), judged_by: answers ? "jev" : "convention", weights: WEIGHTS,
     nodes: nodes.sort((a, b) => b.signal - a.signal), edges, dropped, lanes: laneOut,
     next: nodes.filter((n) => n.depth === 0).sort((a, b) => b.signal - a.signal).slice(0, 3).map((n) => n.id),

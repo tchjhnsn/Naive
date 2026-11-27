@@ -30,6 +30,7 @@ import { packages } from "../../engine/packages.ts";
 import { ventureFile } from "../../core/venture-paths.ts";
 import type { NaiveConfig, Trigger, Venture } from "../../records/types/records.d.ts";
 import type { Entry } from "../../core/provenance.ts";
+import { now as clockNow, wallClock } from "../../core/clock.ts";
 
 /**
  * The config as triggers read it. triggers_off is read and written here but naive-config.schema.json
@@ -52,7 +53,7 @@ type Dec = { id: string; status: string; answer?: unknown };
 export const STATE = ".naive/triggers.json";
 export const ERRORS = ".naive/trigger-errors.jsonl";
 const load = (p: string): unknown => JSON.parse(readFileSync(p, "utf8"));
-const now = () => new Date().toISOString();
+const now = () => clockNow().toISOString();
 
 /** The venture's triggers, from its config and its kits, with what is wrong with any of them. */
 export function triggersOf(dir: string): { triggers: Live[]; problems: string[] } {
@@ -90,7 +91,7 @@ function readState(dir: string): State {
   if (existsSync(f)) {
     try { const s = load(f) as State; if (Array.isArray(s.runs) && Array.isArray(s.waiting)) return s; } catch {}
     // A state file that cannot be read is kept beside it, and the failure is raised; runs start again from now.
-    const kept = `.naive/triggers.unreadable-${Date.now()}.json`;
+    const kept = `.naive/triggers.unreadable-${wallClock()}.json`;
     renameSync(f, ventureFile(dir, kept));
     return { since: now(), cursor: null, runs: [], waiting: [], unreadable: kept };
   }
@@ -107,7 +108,7 @@ const brief = (x: unknown) => (x == null ? null : typeof x === "string" ? x.slic
 function raise(dir: string, run: Run) {
   const v = load(join(dir, "venture.json")) as Venture;
   // A runner failure can recur across state files, so its id carries the time instead of the run number.
-  const id = `trigger-${run.trigger}-failed-${run.trigger === "runner" ? Date.now().toString(36) : run.n}`.replace(/[^a-z0-9-]+/g, "-").slice(0, 80);
+  const id = `trigger-${run.trigger}-failed-${run.trigger === "runner" ? wallClock().toString(36) : run.n}`.replace(/[^a-z0-9-]+/g, "-").slice(0, 80);
   const r = propose(dir, { id, question: `Trigger ${run.trigger} ${run.outcome === "uncaught" ? "crashed" : "failed"} on ${run.activity ?? "an event"} of ${run.entity ?? "the venture"}: ${String(run.error).split("\n")[0].slice(0, 300)}. Retry it, skip this event, or turn the trigger off?`,
     options: ["Retry", "Skip this event", "Turn the trigger off"], layer: "operations", boundary: "fail-open", needed_in: v.phase, decides: { path: CONFIG },
     note: `Raised by packages/naive/src/router/orchestration/triggers.ts (E-7). The run is kept in ${STATE} as run ${run.n}.` }, { agentId: "naive-triggers", via: "router" } as Parameters<typeof propose>[2]);

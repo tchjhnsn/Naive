@@ -17,6 +17,7 @@ import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { frontmatter } from "./frontmatter.ts";
 import { ventureFile } from "../core/venture-paths.ts";
+import { now as clockNow } from "../core/clock.ts";
 
 /** One field's entry in a record's visibility sidecar. */
 export type SidecarField = { visibility?: string, level?: string, sha256?: string, approved_by?: string, approved_at?: string, proposed?: { visibility: string, sha256: string, by: string, at: string } };
@@ -74,7 +75,7 @@ export function setPublic(dir: string, rel: string, field: string, { by, propose
   const sf = ventureFile(dir, rel.replace(/\.json$/, ".visibility.json"));
   const side = existsSync(sf) ? load(sf) : {};
   const fields: Record<string, SidecarField> = side.fields ?? {};
-  const at = new Date().toISOString().replace(/\.\d+Z$/, "Z");
+  const at = clockNow().toISOString().replace(/\.\d+Z$/, "Z");
   if (propose) fields[field] = { ...(fields[field] ?? { visibility: "internal" }), proposed: { visibility: "public", sha256: hash(value), by: agentId ?? "agent", at } };
   else {
     if (!isPerson(dir, by)) return { ok: false, error: by ? `${by} is not a person in people/people.json: only a person approves a field as public; an agent proposes (--propose)` : "approving a field as public needs the person's name (--by)" };

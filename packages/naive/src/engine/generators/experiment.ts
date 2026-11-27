@@ -9,6 +9,7 @@ import { randomUUID } from "node:crypto";
 import { cli, drop, questions, schemaOf, validate } from "./generate.ts";
 import { lineHash } from "../../core/provenance.ts";
 import type { Experiment } from "../../records/types/records.d.ts";
+import { now } from "../../core/clock.ts";
 
 export const record = "experiment";
 const DERIVED = ["id", "at", "prev", "hash"];
@@ -27,7 +28,7 @@ export function draft(a: Partial<Experiment>) {
   if (!a.pattern || !a.plan || !a.candidate || !a.actor) return { ok: false, record, errors: ["a log line needs the pattern, the plan's sha, the candidate's sha and who acted"] };
   if (kind === "experiment" && (a.base === undefined || !a.verdict)) return { ok: false, record, errors: ["an experiment needs the base it was edited from (null for a first write) and a verdict"] };
   if (kind === "holdout" && (!a.result || a.over_holdout === undefined)) return { ok: false, record, errors: ["a holdout check needs its result and whether the person accepted over it"] };
-  const line = drop({ kind, id: a.id ?? randomUUID(), at: a.at ?? new Date().toISOString(), pattern: a.pattern, plan: a.plan, candidate: a.candidate,
+  const line = drop({ kind, id: a.id ?? randomUUID(), at: a.at ?? now().toISOString(), pattern: a.pattern, plan: a.plan, candidate: a.candidate,
     base: a.base, verdict: a.verdict, kept_as: a.kept_as, dev: a.dev, training: a.training, result: a.result, over_holdout: a.over_holdout,
     reason: a.reason, actor: a.actor, span: a.span, provenance: a.provenance });
   const rec = chainOnto("genesis", line as Omit<Experiment, "prev" | "hash">);

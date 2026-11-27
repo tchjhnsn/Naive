@@ -23,6 +23,7 @@ import { git as runGit, refusedBy } from "../core/runtime.ts";
 import { ROOT, dataModelFile, readDataModel, readSchema, schemaFile, schemaNameOf } from "../records/index.ts";
 import { validateFile as checkFile } from "../records/validate.ts";
 import type { RouteEntry } from "./router.ts";
+import { now } from "../core/clock.ts";
 
 const repo = new URL("../../../..", import.meta.url).pathname;
 const load = (f: string) => JSON.parse(readFileSync(f, "utf8"));
@@ -215,7 +216,7 @@ function files(d: string, base = d): string[] {
 export function recover(dir: string) {
   const h = ventureHealth(dir);
   if (!h) return { ok: true, result: "venture.json is sound: nothing to recover" };
-  const kept = join("_private", `venture.json.broken-${new Date().toISOString().replace(/[:.]/g, "-")}`);
+  const kept = join("_private", `venture.json.broken-${now().toISOString().replace(/[:.]/g, "-")}`);
   if (existsSync(join(dir, "venture.json"))) { mkdirSync(join(ventureFile(dir, "_private")), { recursive: true }); renameSync(join(dir, "venture.json"), ventureFile(dir, kept)); }
   writeFileSync(join(dir, "venture.json"), JSON.stringify(minimalVenture(dir), null, 2) + "\n");
   return { ok: true, result: { written: "venture.json", kept: existsSync(ventureFile(dir, kept)) ? kept : null, note: "a minimal venture.json: copy back what you need from the kept file, then check it" } };

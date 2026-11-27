@@ -9,6 +9,7 @@ import { createHash } from "node:crypto";
 import { cli, drop, questions, schemaOf, validate } from "./generate.ts";
 import { canonicalJson } from "../../core/signal-id.ts";
 import type { EvalPlan } from "../../records/types/records.d.ts";
+import { now } from "../../core/clock.ts";
 
 export const record = "eval-plan";
 const DERIVED = ["version", "sha", "made", "gap", "$schema"];
@@ -57,7 +58,7 @@ export function draft(a: Partial<EvalPlan>) {
   if (!a.pattern || !a.made_by || !a.horizon || !a.read_cut || !a.windows || !a.weights || a.min_gain === undefined || !a.budgets) {
     return { ok: false, record, errors: ["a plan needs the pattern, who made it, the horizon, the read cut, the windows, the weights, min_gain and the budgets"] };
   }
-  const body = drop({ pattern: a.pattern, version: a.version ?? 1, previous: a.previous, made: a.made ?? new Date().toISOString().replace(/\.\d+Z$/, "Z"), made_by: a.made_by,
+  const body = drop({ pattern: a.pattern, version: a.version ?? 1, previous: a.previous, made: a.made ?? now().toISOString().replace(/\.\d+Z$/, "Z"), made_by: a.made_by,
     horizon: a.horizon, gap: a.gap ?? a.horizon, read_cut: a.read_cut, windows: a.windows, weights: a.weights, min_gain: a.min_gain, bootstrap: a.bootstrap, budgets: a.budgets, limits: a.limits });
   const rec = { ...body, sha: planSha(body) } as EvalPlan;
   const v = validate(record, rec);

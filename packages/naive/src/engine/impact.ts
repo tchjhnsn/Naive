@@ -25,6 +25,7 @@ import { layoutOf, logicalFiles, ventureFile } from "../core/venture-paths.ts";
 import { readDataModel } from "../records/index.ts";
 
 import type { DataModel, DecisionImpact, DecisionRecord } from "../records/types/records.d.ts";
+import { now } from "../core/clock.ts";
 
 /** What a merge of a decision touches, as impact() returns it. */
 export type ImpactSummary = { file: string; affected: number; functions: { function: string; affected: number; proposed: string[] }[] };
@@ -32,7 +33,7 @@ type FunctionImpact = { function: string; affected_records: string[]; stale: str
 
 const MODEL: DataModel = readDataModel();
 const load = (p: string) => JSON.parse(readFileSync(p, "utf8"));
-const stamp = () => new Date().toISOString().replace(/\.\d+Z$/, "Z");
+const stamp = () => now().toISOString().replace(/\.\d+Z$/, "Z");
 
 /** Every venture function, in the order the impact map lists them. */
 export const FUNCTIONS: string[] = ["foundation", "validation", "product", "marketing", "finance", "people", "customers", "investors", "money", "operations"];

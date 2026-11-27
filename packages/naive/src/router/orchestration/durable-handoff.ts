@@ -23,6 +23,7 @@ import { HostedRefusal, hostHook, isHosted, missingHook } from "../../core/runti
 import { evidenceOf, isBash, naiveVersion, readHandoff, runCriterion, type CriterionResult } from "../../engine/run-handoff.ts";
 import type { Evidence } from "../../records/types/records.d.ts";
 import { call } from "../router.ts";
+import { now as clockNow } from "../../core/clock.ts";
 
 export { durableEngine, durableFile, type DurableEngine };
 
@@ -57,7 +58,7 @@ export async function runHandoffDurable(dir: string, id: string, { runner = "loc
 
   const HandoffLive = Handoff.toLayer(Effect.fn(function* () {
     // The time the run started is kept, so a resumed run names the same evidence.
-    const at = yield* Activity.make({ name: "started", success: Schema.String, execute: Effect.sync(() => new Date().toISOString().replace(/\.\d+Z$/, "Z")) });
+    const at = yield* Activity.make({ name: "started", success: Schema.String, execute: Effect.sync(() => clockNow().toISOString().replace(/\.\d+Z$/, "Z")) });
     const results: CriterionResult[] = [];
     for (const c of criteria) {
       const r = yield* Activity.make({ name: `criterion/${c.id}`, success: Result, execute: Effect.promise(() => runCriterion(dir, c, sandbox)).pipe(Effect.map((x) => ({ criterion: x.criterion, kind: x.kind, passed: x.passed, command: x.command ?? "", output: x.output ?? "" }))) });

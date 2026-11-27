@@ -14,6 +14,7 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { add, build, exportRelease } from "./releases.ts";
+import { now as clockNow } from "../../core/clock.ts";
 
 const args = process.argv.slice(2);
 const opt = (n: string) => { const i = args.indexOf(`--${n}`); return i >= 0 ? args[i + 1] : undefined; };
@@ -26,7 +27,7 @@ if (!dir || !existsSync(join(dir, "venture.json"))) {
 }
 const actor = process.env.MENTURA_ACTOR === "agent" ? "agent" : "person";
 const nowOpt = opt("now");
-const now = nowOpt ?? new Date().toISOString();
+const now = nowOpt ?? clockNow().toISOString();
 if (nowOpt && Number.isNaN(Date.parse(nowOpt))) { console.error(`--now ${nowOpt} is not a time`); process.exit(2); }
 
 const exportTo = opt("export"), addRoute = opt("add");

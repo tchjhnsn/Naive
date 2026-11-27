@@ -27,6 +27,7 @@ import { altStatement, checkAssets, facts as allFacts, factsOf, REGISTER, regist
 import { brandOf, checkBrand, resolveBrand, sitemapOf, sitemapXml, termsFor, tokens, voice } from "../engine/brand.ts";
 import { ventureFile } from "../core/venture-paths.ts";
 import type { PublicAssets, PublicAssetsFacts } from "../records/types/records.d.ts";
+import { now } from "../core/clock.ts";
 
 type Asset = PublicAssets["assets"][number];
 type Remote = NonNullable<PublicAssets["remote"]>[number];
@@ -37,7 +38,7 @@ type Filled = { filled: string[]; missing: string[]; unregistered: string[] };
 const isFilled = (x: unknown): x is Filled => !!x && typeof x === "object" && "filled" in x && Array.isArray(x.filled) && "unregistered" in x && Array.isArray(x.unregistered);
 
 const VERSION = "0.1.0";
-const today = () => new Date().toISOString();
+const today = () => now().toISOString();
 
 /** The facts code reads, in the register's shape. */
 export const factsFor = (dir: string, path: string): PublicAssetsFacts => {

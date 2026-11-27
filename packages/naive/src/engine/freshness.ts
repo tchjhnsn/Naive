@@ -42,6 +42,7 @@ import { decisions as decisionMatrix, PHASES, type RankedDecision } from "./deci
 import { ventureFile } from "../core/venture-paths.ts";
 import { validateFile } from "../records/validate.ts";
 import type { FreshnessLog, FreshnessProfiles, FreshnessProfilesProfile, ProvenanceEntry, WhereUsed } from "../records/types/records.d.ts";
+import { nowMs } from "../core/clock.ts";
 
 /** The route table entry fields this module reads (packages/naive/src/records/routes/routes.ts). */
 type RouteEntry = { kind: string; route: string; record?: string; files?: string[]; collection?: string; package?: string | null; layer?: string };
@@ -76,9 +77,9 @@ const isUrl = (s: string) => /^[a-z][a-z0-9+.-]*:\/\//.test(s);
 /** The time freshness is judged at: an explicit input, else NAIVE_NOW, else the clock (C-9). */
 export function nowOf(now?: string | number | null): number {
   const v = now ?? process.env.NAIVE_NOW;
-  if (v === undefined || v === null || v === "") return Date.now();
+  if (v === undefined || v === null || v === "") return nowMs();
   // +100d: that long from the clock, so a founder can ask what will be stale in 100 days.
-  if (typeof v === "string" && v.startsWith("+")) return Date.now() + Number(seconds(v.slice(1))) * 1000;
+  if (typeof v === "string" && v.startsWith("+")) return nowMs() + Number(seconds(v.slice(1))) * 1000;
   const t = typeof v === "number" ? v : Date.parse(v);
   if (Number.isNaN(t)) throw new Error(`not a time: ${v}`);
   return t;

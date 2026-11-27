@@ -32,6 +32,7 @@ import { schemaNameOf } from "../records/index.ts";
 import { validateFile } from "../records/validate.ts";
 import type { NaiveConfig, UpgradeRegistry } from "../records/types/records.d.ts";
 import { alignPin } from "./effect-pin.ts";
+import { now as clockNow } from "../core/clock.ts";
 
 export type Registry = UpgradeRegistry;
 export type Migration = Registry["migrations"][number];
@@ -57,7 +58,7 @@ export const STAGED = `${STAGE}/venture`;
 export const DRAFT = `${STAGE}/draft.json`;
 export const CONFIRM = "upgrade";
 const load = (p: string) => JSON.parse(readFileSync(p, "utf8"));
-const now = () => new Date().toISOString().replace(/\.\d+Z$/, "Z");
+const now = () => clockNow().toISOString().replace(/\.\d+Z$/, "Z");
 const sha = (buf: Buffer) => createHash("sha256").update(buf).digest("hex");
 
 /** Compares two x.y.z versions. */

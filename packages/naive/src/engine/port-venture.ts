@@ -27,6 +27,7 @@ import { agentFromEnv, record } from "../core/provenance.ts";
 import { CODEBASE, ventureFile } from "../core/venture-paths.ts";
 import { envCommand, git as runGit, hostHook, refusedBy } from "../core/runtime.ts";
 import type { KnowledgeSources } from "../records/types/records.d.ts";
+import { now } from "../core/clock.ts";
 
 /** One planned move in .release/port-plan.json. */
 export type PortItem = ReturnType<typeof measure> & { action: string, from: string, to: string, source: string, identity: { dev: number, ino: number }, reason?: string,
@@ -159,7 +160,7 @@ export function plan(folder: string, dir: string, opts: { to?: string, links?: s
   if (others.some((i) => i.source === item.source)) Object.assign(item, { action: "leave", reason: `another planned move already uses the source id ${item.source}` });
   if (others.some((i) => i.to === item.to)) Object.assign(item, { action: "leave", reason: `another planned move already goes to ${item.to}` });
   p.items = [...p.items.filter((i) => i.from !== item.from || i.done), item];
-  p.at = new Date().toISOString();
+  p.at = now().toISOString();
   mkdirSync(dirname(ventureFile(dir, PLAN)), { recursive: true });
   writeFileSync(ventureFile(dir, PLAN), JSON.stringify(p, null, 2) + "\n");
   return { plan: p, item };
@@ -188,7 +189,7 @@ export function apply(dir: string, p: PortPlan, { agent = agentFromEnv("person",
     mkdirSync(dirname(ventureFile(dir, MAP)), { recursive: true });
     writeFileSync(ventureFile(dir, MAP), JSON.stringify(map, null, 2) + "\n");
     record(dir, ({ entity: root, activity: "port", agent, derived_from: [`file://${i.from}`], sha256: measure(i.to).manifest, note: `moved unchanged (${i.files} files); named in sources.json as source ${i.source}` }) as Parameters<typeof record>[1]);
-    i.done = new Date().toISOString();
+    i.done = now().toISOString();
     done.push(i);
     writeFileSync(ventureFile(dir, PLAN), JSON.stringify(p, null, 2) + "\n");
   }
@@ -197,7 +198,7 @@ export function apply(dir: string, p: PortPlan, { agent = agentFromEnv("person",
 
 // One run as a trace for an exporter: the run, and a child per item.
 function trace(dir: string, name: string, inputs: Record<string, unknown>, start: string, items: PortItem[], error?: string) {
-  const end = new Date().toISOString();
+  const end = now().toISOString();
   const t = { name, run_type: "chain", start, end, inputs, outputs: { items: items.map(({ from, to, action, done }) => ({ from, to, action, done })) }, ...(error ? { error } : {}),
     tags: ["naive", "port"], children: items.map((i) => ({ name: `${i.action} ${basename(i.from)}`, run_type: "tool", start, end, inputs: { from: i.from, to: i.to },
       outputs: { action: i.action, reason: i.reason, files: i.files, bytes: i.bytes, warnings: i.warnings, done: i.done } })) };
@@ -226,7 +227,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const folder = opt("from") ?? args.find((a, i) => !a.startsWith("--") && !VALUED.has(args[i - 1]));
   const dir = opt("venture");
   if (!dir) { console.error("usage: node packages/naive/src/engine/port-venture.ts <folder> --venture <dir> [--to <path>] | --venture <dir> --apply --confirm port"); process.exit(2); }
-  const start = new Date().toISOString();
+  const start = now().toISOString();
   if (args.includes("--apply")) {
     if (opt("confirm") !== "port") { console.error("type --confirm port to carry out the plan"); process.exit(1); }
     const p = readPlan(dir);

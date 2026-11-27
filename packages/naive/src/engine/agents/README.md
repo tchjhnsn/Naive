@@ -23,3 +23,7 @@ The function agents and lead agents, derived from Naive's own data (EE-124; they
 ## Run and test
 
 - `node packages/naive/src/engine/agents/agents-test.ts` and `node packages/naive/src/engine/agents/assignments-test.ts`; `node test.ts` runs both. The MCP tools are tested in [`mcp-agent-brief-test.ts`](../../interfaces/tests/mcp-agent-brief-test.ts).
+
+## Time
+
+A specialist's reach, its spawn and end times and the brief's live specialists read business time from the one clock, `nowIso()` in [`clock.ts`](../../core/clock.ts) (EE-228), so a run with `NAIVE_NOW` set sees the simulated instant.

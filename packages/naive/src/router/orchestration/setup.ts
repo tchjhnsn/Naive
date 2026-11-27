@@ -16,6 +16,7 @@ import { sync, syncCommand } from "../../core/sync.ts";
 import { ventureFile } from "../../core/venture-paths.ts";
 import type { KnowledgeSources, People, SystemsCatalog, Venture, VentureTypes } from "../../records/types/records.d.ts";
 import type { ProposeInput, RankedDecision } from "../../engine/decisions.ts";
+import { now as clockNow } from "../../core/clock.ts";
 
 type Functions = NonNullable<KnowledgeSources["functions"]>;
 /** Where one function keeps its truth, in knowledge/sources.json. */
@@ -97,7 +98,7 @@ export async function point(dir: string, { fn, system, address, via = "api", act
   const f = ((map.functions ??= {}) as Record<string, FunctionTruth | undefined>)[fn] ??= { systems: [] };
   const entry: SystemPointer = { system, ...(address ? { address } : {}), status: "pointed" };
   const synced = sync(system, dir);
-  if (synced.ran && synced.ok) Object.assign(entry, { status: "connected", synced: new Date().toISOString().replace(/\.\d+Z$/, "Z"), ...(synced.fixture ? { fixture: true } : {}), ...(address || synced.address ? { address: address || synced.address } : {}) });
+  if (synced.ran && synced.ok) Object.assign(entry, { status: "connected", synced: clockNow().toISOString().replace(/\.\d+Z$/, "Z"), ...(synced.fixture ? { fixture: true } : {}), ...(address || synced.address ? { address: address || synced.address } : {}) });
   f.systems = [...f.systems.filter((s) => s.system !== system), entry];
   const { call } = await import("../router.ts");
   const r = await call({ workspace: dirname(dir), venture: basename(dir), route: "knowledge/knowledge-sources", action: "write", input: map, actor, ...(agentId ? { actor_id: agentId } : {}), via, provenance: { note: `${fn}: ${system}${address ? ` at ${address}` : ""} (${entry.status})` } });

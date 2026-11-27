@@ -20,6 +20,7 @@ import { findSecrets } from "./redact.ts";
 import { schemaFile } from "../records/index.ts";
 import { validateFile } from "../records/validate.ts";
 import type { Framework } from "../records/types/records.d.ts";
+import { now } from "../core/clock.ts";
 
 /** A framework a venture or workspace can use, and where it lives. */
 export type FrameworkEntry = { id: string, title: string, source: "built-in" | "workspace", root: string, dir: string, framework: Framework, playbook: string | null, shadows?: boolean };
@@ -64,7 +65,7 @@ export function newFramework(id: string, from: string = process.cwd(), { title, 
   const dir = join(ws, "frameworks", id);
   mkdirSync(dir, { recursive: true });
   const name = title ?? id.split("-").map((w) => w[0].toUpperCase() + w.slice(1)).join(" ");
-  const today = new Date().toISOString().slice(0, 10);
+  const today = now().toISOString().slice(0, 10);
   const fw: Framework = {
     id, title: name,
     purpose: "What this framework helps you think through, in one or two sentences.",

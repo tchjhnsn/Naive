@@ -21,6 +21,7 @@ import { actingAgent } from "../../core/provenance.ts";
 import { measureVerdict, registrationGaps } from "../../engine/pre-registration.ts";
 import { call } from "../router.ts";
 import type { PreRegistration } from "../../records/types/records.d.ts";
+import { nowIso } from "../../core/clock.ts";
 
 /** What one command answers with. ok false carries why; a write carries the route it landed on. */
 export type PreRegAnswer = { ok: boolean; error?: string; errors?: string[]; result?: unknown };
@@ -63,7 +64,7 @@ export async function register(dir: string, id: string, o: { by?: string; now?: 
   if (rec.status !== "draft") return { ok: false, error: `${id} is ${rec.status}, and only a draft is registered` };
   const gaps = registrationGaps(rec);
   if (gaps.length) return { ok: false, error: `${id} is not ready to register`, errors: gaps };
-  const at = o.now ?? new Date().toISOString();
+  const at = o.now ?? nowIso();
   const next = { ...rec, status: "registered", registered_at: at, registered_by: o.by };
   const answer = await call({ venture: idOf(dir), workspace: dir, route: route(id), action: "write", actor: "person", input: next,
     provenance: { note: `naive prereg register: ${o.by} fixed the plan for ${id}` } });
@@ -85,7 +86,7 @@ export async function result(dir: string, id: string, o: { measure?: string; val
   if (!m.threshold) return { ok: false, error: `measure ${m.id} has no threshold, so nothing says whether an observation passes it: a threshold is chosen before the test runs, and this one was not` };
   const verdict = measureVerdict(m.threshold, observed);
   if (!verdict) return { ok: false, error: `${o.measure} cannot be judged here: ${JSON.stringify(observed)} against the threshold ${m.threshold.operator} ${JSON.stringify(m.threshold.value)} is not arithmetic, so a person writes the result through ${route(id)} with the verdict stated` };
-  const at = o.now ?? new Date().toISOString();
+  const at = o.now ?? nowIso();
   const entry = { measure: m.id, observed, verdict, at, ...(o.evidence?.length ? { evidence: o.evidence } : {}), ...(o.by ? { by: o.by } : {}), ...(o.note ? { note: o.note } : {}) };
   const next = { ...rec, results: [...(rec.results ?? []), entry] };
   const answer = await call({ venture: idOf(dir), workspace: dir, route: route(id), action: "write", ...(o.by ? { actor: "person" as const } : {}), input: next,

@@ -16,6 +16,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createInterface } from "node:readline";
 import { ventureFile } from "../../core/venture-paths.ts";
+import { nowMs } from "../../core/clock.ts";
 
 const repo = new URL("../../../../../", import.meta.url).pathname;
 const auto = process.argv.includes("--auto");
@@ -55,7 +56,7 @@ try {
   await say("agent", "I want to change the product card. First I propose the decision that change needs.");
   const p = await tool("mentura_propose_decision", { venture, agent_id: "builder", model: "scripted", decision: {
     id: "reposition-shop-app", question: "Do we reposition the shop app around payroll first?", at: "products", name: "shop-app.reposition",
-    answer: "Yes: lead with payroll, which owners named as the worst admin job.", due: new Date(Date.now() + 864e5).toISOString().replace(/\.\d+Z$/, "Z"),
+    answer: "Yes: lead with payroll, which owners named as the worst admin job.", due: new Date(nowMs() + 864e5).toISOString().replace(/\.\d+Z$/, "Z"),
     outcomes: [{ id: "trial-signups", projected: "Ten shops start a trial within two weeks of the change", measure: "Trial sign-ups" }],
     unlocks: [{ activity: "Rewrite the product card", routes: ["purpose/product/*"], for: ["builder"] }] } });
   expect(!p.error && p.body.awaiting === "approval", `propose: ${JSON.stringify(p.body)}`);

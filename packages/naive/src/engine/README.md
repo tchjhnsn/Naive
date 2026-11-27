@@ -272,3 +272,7 @@ Since EE-226 the shipped modules hold one process workflow per APQC process, so 
 ## Agents
 
 The function and lead agent specs live in [`agents/`](./agents/README.md) (EE-124).
+
+## Time
+
+Code here reads business time from the one clock, `packages/naive/src/core/clock.ts` (`now`, `nowMs`, `nowIso`), so `NAIVE_NOW` pins it for a simulation or a test, and reads `wallClock()` only for elapsed time, timeouts, lock staleness and unique names (EE-228). `node packages/naive/src/checks/check-clock.ts` fails on a direct read of the system clock.

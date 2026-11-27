@@ -1,6 +1,6 @@
 # Simulating businesses end to end
 
-Date: 2026-11-26. Decision: EE-223. Status: design only; nothing here is built. Step 1 of the plan below.
+Date: 2026-11-26. Decisions: EE-223, EE-228. Status: step 2 is built: one clock, `packages/naive/src/core/clock.ts` (EE-228). The rest is design.
 
 ## The ask
 

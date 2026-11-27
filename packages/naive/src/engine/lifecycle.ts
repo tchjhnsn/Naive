@@ -35,6 +35,7 @@ import { runSync } from "../core/effect/run.ts";
 import { loadPhases } from "../phases/phases.ts";
 import { meter, phaseGate } from "./phase-gate.ts";
 import type { ExitCriteria, LifecyclePlaybook, Telos } from "../records/types/records.d.ts";
+import { now as clockNow } from "../core/clock.ts";
 
 type Criterion = ExitCriteria["criteria"][number];
 type Agent = ReturnType<typeof agentFromEnv>;
@@ -104,7 +105,7 @@ export function meet(dir: string, id: string, { evidence, by }: { evidence?: str
   if (!c) return { ok: false, error: `${v.phase} has no exit criterion ${id}` };
   const agent = by ?? agentFromEnv("person", "cli");
   if (agent.kind !== "person") return { ok: false, error: "only a person can say an exit criterion is met; an agent can propose it" };
-  c.met = { at: new Date().toISOString(), by: String(agent.id ?? "person"), ...(evidence ? { evidence } : {}) };
+  c.met = { at: clockNow().toISOString(), by: String(agent.id ?? "person"), ...(evidence ? { evidence } : {}) };
   // Checked against its schema on a scratch copy first, so a bad record never lands.
   const schema = ec.source === "telos" ? "telos.schema.json" : "exit-criteria.schema.json";
   const scratch = mkdtempSync(join(tmpdir(), "exit-"));

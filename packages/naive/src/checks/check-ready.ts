@@ -18,6 +18,7 @@ import { ventureFile } from "../core/venture-paths.ts";
 import { knownRoles } from "../engine/agents/roles.ts";
 import { reviewIsIndependent } from "./verify.ts";
 import type { Decision, DecisionRights, Handoff } from "../records/types/records.d.ts";
+import { now } from "../core/clock.ts";
 
 const args = process.argv.slice(2).filter((a, i) => !a.startsWith("--") && process.argv.slice(2)[i - 1] !== "--by");
 const [dir, id] = args;
@@ -109,7 +110,7 @@ if (process.argv.includes("--record")) {
   const by = opt("--by");
   if (!by) { console.error("--record needs --by <role or session>"); process.exit(2); }
   const version = execSync("git rev-parse --short HEAD", { cwd: root, encoding: "utf8" }).trim();
-  h.ready_check = { at: new Date().toISOString().replace(/\.\d+Z$/, "Z"), by, version, items: items.length };
+  h.ready_check = { at: now().toISOString().replace(/\.\d+Z$/, "Z"), by, version, items: items.length };
   if (h.status === "draft") h.status = "ready";
   writeFileSync(hPath, JSON.stringify(h, null, 2) + "\n");
   console.log(`recorded in ${hPath}`);

@@ -26,6 +26,7 @@ import { traceContextOf } from "./effect/tracer.ts";
 import { currentSpan, emit } from "./instrumentation.ts";
 import { ventureFile } from "./venture-paths.ts";
 import type { ProvenanceEntry } from "../records/types/records.d.ts";
+import { now, wallClock } from "./clock.ts";
 
 /**
  * Who acted, as a provenance line names them. The schema (ProvenanceEntry) lists the kinds and interfaces the router
@@ -79,7 +80,7 @@ export function packageForSidecar(sidecar: string): string {
 /** Sleeps the process: record is synchronous, so a waiting writer cannot yield to an event loop. */
 function sleepMs(ms: number): void {
   const ran = spawnSync("sleep", [String(ms / 1000)]);
-  if (ran.error) { const end = Date.now() + ms; while (Date.now() < end) Date.now(); }
+  if (ran.error) { const end = wallClock() + ms; while (wallClock() < end) wallClock(); }
 }
 
 const LOCK_STALE_MS = 2000;
@@ -105,7 +106,7 @@ const holderPid = (lock: string): Effect.Effect<number | null, never, "naive/Ven
  */
 export const takeStaleLockEffect = (lock: string, judged: LockStat): Effect.Effect<boolean, never, "naive/VentureFs"> => Effect.gen(function* () {
   const fs = yield* VentureFs;
-  const parked = `${lock}.${process.pid}.${Date.now()}.${Math.random().toString(16).slice(2)}`;
+  const parked = `${lock}.${process.pid}.${wallClock()}.${Math.random().toString(16).slice(2)}`;
   if ((yield* Effect.exit(fs.rename(lock, parked)))._tag === "Failure") return false;
   const parkedSt = yield* fs.stat(parked);
   if (!parkedSt) return false;
@@ -131,7 +132,7 @@ export const stealDeadLockEffect = (lock: string): Effect.Effect<boolean, IoErro
   const pid = yield* holderPid(lock);
   if (pid !== null && pidAlive(pid)) return false;
   // An empty lock may be a writer that has created it and not yet written its pid.
-  if (pid === null && Date.now() - st.mtimeMs < LOCK_STALE_MS) return false;
+  if (pid === null && wallClock() - st.mtimeMs < LOCK_STALE_MS) return false;
   return yield* takeStaleLockEffect(lock, { ino: st.ino, mtimeMs: st.mtimeMs });
 });
 export const stealDeadLock = (lock: string): boolean => runSync(stealDeadLockEffect(lock));
@@ -144,7 +145,7 @@ export const stealDeadLock = (lock: string): boolean => runSync(stealDeadLockEff
 export const lockFile = (lock: string): Effect.Effect<string, IoError, "naive/VentureFs" | Scope> => Effect.acquireRelease(
   Effect.gen(function* () {
     const fs = yield* VentureFs;
-    const start = Date.now();
+    const start = wallClock();
     for (;;) {
       if (yield* fs.createExclusive(lock)) {
         const wrote = yield* Effect.exit(fs.writeText(lock, String(process.pid)));
@@ -155,7 +156,7 @@ export const lockFile = (lock: string): Effect.Effect<string, IoError, "naive/Ve
         return lock;
       }
       yield* stealDeadLockEffect(lock);
-      if (Date.now() - start > LOCK_WAIT_MS) return yield* Effect.fail(new IoError({ path: lock, op: "lock", cause: "timed out waiting for the lock" }));
+      if (wallClock() - start > LOCK_WAIT_MS) return yield* Effect.fail(new IoError({ path: lock, op: "lock", cause: "timed out waiting for the lock" }));
       yield* Effect.sync(() => sleepMs(5));
     }
   }),
@@ -199,7 +200,7 @@ export const recordGateEffect = (packageFile: string, judgment: GateJudgment): E
     const last = prior.at(-1);
     const prev = last ? last.hash : "genesis";
     const fields: Omit<Entry, "hash"> = {
-      at: new Date().toISOString(), entity: basename(packageFile), activity: "gate",
+      at: now().toISOString(), entity: basename(packageFile), activity: "gate",
       agent: { kind: "agent", via: "cli", id: "ontology-gate" }, sha256, gate: judgment.function, judgment, prev,
     };
     const entry: Entry = { ...fields, hash: lineHash(prev, fields) };
@@ -267,7 +268,7 @@ export const recordEffect = (dir: string, { entity, route, activity, agent, deri
     // instrumentation span (withSpan), else the Effect span the write runs in when NaiveTracer writes it for this venture.
     const cur = currentSpan() ?? Option.match(effectSpan, { onNone: () => null, onSome: (s) => traceContextOf(s, dir) });
     const span = cur ? { trace_id: cur.trace_id, span_id: cur.span_id, ...(cur.session && cur.session !== cur.trace_id ? { session: cur.session } : {}) } : undefined;
-    const fields: Omit<Entry, "hash"> = { at: new Date().toISOString(), entity, route, activity, agent,
+    const fields: Omit<Entry, "hash"> = { at: now().toISOString(), entity, route, activity, agent,
       derived_from: derived_from?.length ? derived_from : undefined, span, decision, note, override, source, statement, statements, sha256: hash, prev };
     for (const [k, v] of Object.entries(fields)) if (v === undefined) Reflect.deleteProperty(fields, k);
     const entry: Entry = { ...fields, hash: lineHash(prev, fields) };
@@ -305,7 +306,7 @@ const fireTriggersEffect = (dir: string): Effect.Effect<void, never, "naive/Vent
   }
   const p = ran.value;
   if (p.status === 0) return;
-  const line = JSON.stringify({ at: new Date().toISOString(), status: p.status, error: (p.stderr || p.stdout || String(p.error ?? "")).trim().slice(-2000) }) + "\n";
+  const line = JSON.stringify({ at: now().toISOString(), status: p.status, error: (p.stderr || p.stdout || String(p.error ?? "")).trim().slice(-2000) }) + "\n";
   const kept = yield* Effect.exit(fs.append(join(dir, ".naive/trigger-errors.jsonl"), line));
   if (kept._tag === "Failure") yield* Effect.sync(() => console.error(`triggers did not run after this write: ${kept.cause}`));
 });

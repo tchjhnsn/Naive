@@ -23,6 +23,7 @@ import type { JevAnswers } from "./presence.ts";
 import { ventureFile } from "../../../../core/venture-paths.ts";
 import { filesOf, icpProfiles } from "../../../../engine/foundation.ts";
 import type { IcpProfile, MarketingSitemap, Product, Venture } from "../../../../records/types/records.d.ts";
+import { now as clockNow } from "../../../../core/clock.ts";
 
 /** A page of the planned sitemap. */
 type Page = MarketingSitemap["pages"][number];
@@ -108,7 +109,7 @@ export function plan(dir: string, { flags = {}, answers = null }: { flags?: Reco
     { item: "how", label: `How ${p.name} works`, component: "HowItWorks", need: need.how.need, required: "anywhere", for: ["customers"], why: [`${p.offering} offered to ${p.offered_to.join(", ")}`], source: { record: "product", file: files.get(p.id) ?? null, exists: true }, variant: `${CONTENT}/product/${p.id}.mdx` }] });
   for (const pg of pages.values()) pg.sections.sort((a, b) => b.need - a.need);
   const list = [...pages.values()].sort((a, b) => RANK[b.level] - RANK[a.level] || b.sections.reduce((s, x) => s + x.need, 0) - a.sections.reduce((s, x) => s + x.need, 0));
-  return { version: MATRIX.version, venture: venture.id, name: venture.name, phase: venture.phase, planned_at: new Date().toISOString().replace(/\.\d+Z$/, "Z"), planned_by: answers ? "jev" : "conventions", facts,
+  return { version: MATRIX.version, venture: venture.id, name: venture.name, phase: venture.phase, planned_at: clockNow().toISOString().replace(/\.\d+Z$/, "Z"), planned_by: answers ? "jev" : "conventions", facts,
     offerings: products, audience: { offered_to: to.map((p) => ({ id: p.id, who: p.who })), partner_led: partnerLed, types, weights: w,
       note: partnerLed ? "The products are offered to partners who serve customers of their own: the partners are this site's customers, and their customers appear as who it ultimately serves." : "The site's customers are the profiles the products are offered to." },
     pages: list, omitted,

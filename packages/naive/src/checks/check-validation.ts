@@ -30,6 +30,7 @@ import { join } from "node:path";
 import type { Product, ValidationEvidence, ValidationGoToMarket, ValidationOperationsReadiness, ValidationPricing, ValidationProblem, ValidationProductMarketFit, ValidationSolution, ValidationTeam, Venture } from "../records/types/records.d.ts";
 
 import { LEVELS, WEIGHT, START, gradeItem, gradeRecord } from "../engine/evidence-grade.ts";
+import { now } from "../core/clock.ts";
 export { LEVELS, WEIGHT, START, gradeItem, gradeRecord };
 
 /** A validation record. Which sub-score it is comes from its file name, so code narrows it by that name. */
@@ -49,7 +50,7 @@ export type ScoredRecord = { probability?: number | null, weight: number };
 export const SUBSCORES = ["problem", "solution", "product-market-fit", "pricing", "go-to-market", "team", "operations-readiness"];
 
 // Operations readiness grades as its weakest tier; every other record from its own evidence.
-export function grade(name: string, rec: SubScoreRecord, today = new Date()): Graded {
+export function grade(name: string, rec: SubScoreRecord, today = now()): Graded {
   if (name !== "operations-readiness") return gradeRecord(rec, today) as Graded;
   const tiers = (rec as ValidationOperationsReadiness).tiers.map((t) => ({ tier: t.tier, ...(gradeRecord(t, today) as Graded) }));
   const worst = tiers.reduce((a, b) => (LEVELS.indexOf(b.level) < LEVELS.indexOf(a.level) ? b : a));
@@ -104,7 +105,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const errors: string[] = [];
   const out: { venture: string, record: string, grade: string, weight: number, why: string[], probability: number | null, facts: ReturnType<typeof facts>, tiers: Graded["tiers"], items: { id: string, kind: string, grade: string, why: string[], supports: boolean }[] }[] = [];
   const scores: ({ venture: string } & ReturnType<typeof score>)[] = [];
-  const today = new Date();
+  const today = now();
   for (const root of walk(dir)) {
     const v = load<Venture>(ventureFile(root, "venture.json"));
     const where: [string, string | null][] = [["foundation/problem.json", "problem"], ["validation", null], ["purpose/validation", null]];

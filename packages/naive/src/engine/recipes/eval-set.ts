@@ -34,6 +34,7 @@ import type { JsonObject, RecipeCall, SandboxOptions } from "./sandbox.ts";
 import { durationMs, fieldLosses, rowLoss, settledLoss, verdict } from "./scoring.ts";
 import type { Outcomes, RowScore, Settles, Verdict } from "./scoring.ts";
 import type { EvalPlan, Signal, SignalType } from "../../records/types/records.d.ts";
+import { nowMs } from "../../core/clock.ts";
 
 type Obj = Record<string, unknown>;
 /** forward: points after the live recipe changed, scored by monitor once their horizon passed; never frozen. */
@@ -185,7 +186,7 @@ export async function planRecipe(dir: string, pattern: string, o: PlanOptions = 
   const s = rt.settles, h = durationMs(s.horizon), cadence = durationMs(s.cadence), gap = durationMs(o.gap ?? s.horizon);
   if (!(h > 0) || !(cadence > 0) || !(gap >= h)) return { ok: false, errors: ["the horizon and cadence must be durations, and the gap at least the horizon"] };
   for (const [f, spec] of Object.entries(s.forecasts ?? {})) if (durationMs(spec.window) > h) return { ok: false, errors: [`forecast ${f}: its window is longer than the horizon, so its outcome would not settle in the plan`] };
-  const made = Date.parse(o.made ?? iso(Date.now()));
+  const made = Date.parse(o.made ?? iso(nowMs()));
 
   const { known: all, types, problems } = await loadSignals(dir);
   const projects = (sig: Signal) => { const [id, v] = splitRange(sig.type); return resolveType(types, id, v)?.projects.some((p) => p.route === pattern) ?? false; };

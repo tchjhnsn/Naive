@@ -19,6 +19,7 @@ import type { Phase, TeamPlanRole } from "./function-spec.ts";
 import { functionAgent, functionIds, naivePath, teamPlanEntry } from "./function-spec.ts";
 import { leadAgent, leadIds, leadTeamPlanEntry } from "./lead-spec.ts";
 import { SPECIALISTS, readSpecialist, specialistOfAgent, specialistReach } from "./reach.ts";
+import { nowIso } from "../../core/clock.ts";
 
 /** A file the brief carries: its path from the Naive root and its whole text. */
 export interface BriefFile { readonly path: string, readonly text: string }
@@ -96,7 +97,7 @@ export function agentBrief(role: string, dir: string | null): AgentBrief | Error
     const rec = readSpecialist(dir, role);
     if (!rec) return new Error(`no specialist ${role}${dir ? ` in this venture: its record would be ${SPECIALISTS}/${role}.json` : ": name the venture it was spawned in with --venture"}`);
     const p = functionAgent(rec.function);
-    const { writes, gone } = specialistReach(rec, new Date().toISOString());
+    const { writes, gone } = specialistReach(rec, nowIso());
     const named = new Set(rec.skills ?? []);
     const skills = p.skills.filter((s) => named.has(s.name)).map((s) => text(join(p.module, `${s.path.replace("/function/", "")}SKILL.md`))).filter((f): f is BriefFile => !!f);
     return {

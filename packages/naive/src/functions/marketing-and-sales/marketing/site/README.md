@@ -89,3 +89,7 @@ Next work, logged in EE-062:
 - derive the recommended sitemap and the order a visitor meets information from those priorities, beyond suggested pages;
 - write skills and kits for organizing marketing content (MDX, EE-044);
 - draft missing marketing records from what the site already says.
+
+## Time
+
+Code here reads business time from the one clock, `packages/naive/src/core/clock.ts` (`now`, `nowMs`, `nowIso`), so `NAIVE_NOW` pins it for a simulation or a test, and reads `wallClock()` only for elapsed time, timeouts, lock staleness and unique names (EE-228). `node packages/naive/src/checks/check-clock.ts` fails on a direct read of the system clock.

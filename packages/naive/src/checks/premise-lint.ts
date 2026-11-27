@@ -20,6 +20,7 @@ import { readConfig } from "../engine/naive-config.ts";
 import { decisions, decisionFiles, propose, decisionFile } from "../engine/decisions.ts";
 import { claimGaps, statusOf } from "../engine/bets.ts";
 import type { Bet, Constraints, DecisionRecord, ExitCriteria, Goal, NaiveConfig, Requirement, Venture } from "../records/types/records.d.ts";
+import { nowMs } from "../core/clock.ts";
 
 type Aspect = "undefined-term" | "unmeasurable" | "no-owner" | "unsupported-premise" | "no-counter-evidence" | "orphan" | "conflict" | "dependency" | "phase-mismatch";
 type Kind = "goal" | "requirement" | "criterion" | "constraint" | "decision" | "bet";
@@ -118,7 +119,7 @@ export function graph(dir: string, { includeDrafts = false }: { includeDrafts?: 
     if (rec?.id && !OWN_ID.test(rec.id)) g.decisions.push({ ...rec, _rel: rel });
   }
   // A parent may be any decision decisions.ts resolves: the linter's own, the roots, a foundation statement.
-  g.decisionIds = new Set(decisions(dir, Date.now()).decisions.map((d: { id: string }) => d.id));
+  g.decisionIds = new Set(decisions(dir, nowMs()).decisions.map((d: { id: string }) => d.id));
   const v = (load(join(dir, "venture.json")) ?? {}) as Partial<Venture>;
   // An older venture.json lists its functions as an array of ids or { id } objects.
   const fns: unknown = v.functions;

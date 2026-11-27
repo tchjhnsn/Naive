@@ -13,6 +13,7 @@ import { ideasOf } from "../../functions/strategy/frameworks/idea-map/route.ts";
 import { createHash } from "node:crypto";
 import { ventureFile } from "../../core/venture-paths.ts";
 import type { MoneySummary } from "../../records/types/records.d.ts";
+import { nowMs } from "../../core/clock.ts";
 
 /** One eval: its key, a score from 0 to 1, and what failed. */
 export type Eval = { key: string, score: number, comment: string };
@@ -87,7 +88,7 @@ export function evaluate(dir: string, { researched = [], settled = [] }: { resea
   const summaryFile = join(ventureFile(dir, "money/_summary.json"));
   if (existsSync(summaryFile)) {
     const m = load<MoneySummary>(summaryFile);
-    const age = (Date.now() - Date.parse(m.synced_at)) / 864e5;
+    const age = (nowMs() - Date.parse(m.synced_at)) / 864e5;
     add("money_fresh", age <= 7 ? 1 : 0, `money synced from ${m.source} ${age.toFixed(1)} days ago (7 at most); activity as of ${m.as_of}`);
     // Only what touches money has to cite it: pricing, spend, hiring, runway, fundraising, cash.
     const records = [...agentDrafted, ...(problem ? [{ problem: load<unknown>(problem) }] : [])].map((d) => JSON.stringify(d));

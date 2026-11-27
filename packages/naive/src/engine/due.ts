@@ -48,6 +48,7 @@ import { blockedForEffect } from "./prerequisites.ts";
 import type { Missing, Prerequisites } from "./prerequisites.ts";
 import { functionsOf } from "./research-programs.ts";
 import type { FunctionWorkflow, TimeBox } from "../records/types/records.d.ts";
+import { now as clockNow } from "../core/clock.ts";
 
 export const RUNS = ".naive/workflow-runs.jsonl";
 /** The provenance activities that put a record's content live. A draft is not one: it waits for a person. */
@@ -227,7 +228,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const flag = (name: string): string | undefined => { const i = args.indexOf(name); return i < 0 ? undefined : args[i + 1]; };
   const valued = ["--at", "--function", "--outcome", "--by", "--steps"];
   const [dir, cmd, target] = args.filter((a, i) => !a.startsWith("--") && !valued.includes(args[i - 1]));
-  const at = flag("--at") ?? new Date().toISOString();
+  const at = flag("--at") ?? clockNow().toISOString();
   const usage = "usage: node packages/naive/src/engine/due.ts <venture dir> [--at <iso>] [--function <id>] [--json]\n       node packages/naive/src/engine/due.ts <venture dir> record <function>/<workflow> [--outcome done|failed|skipped] [--by <who>] [--at <iso>] [--steps a,b]";
   const program: Effect.Effect<void, NaiveError, "naive/VentureFs"> = Effect.gen(function* () {
     if (!dir || Number.isNaN(Date.parse(at)) || (cmd !== undefined && cmd !== "record") || (cmd === "record" && !target)) return yield* new CannotRun({ message: usage });

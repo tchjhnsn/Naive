@@ -5,6 +5,7 @@
 import { cli, questions, schemaOf, validate } from "./generate.ts";
 import { signalPath } from "./signal.ts";
 import type { Signal, SignalLog } from "../../records/types/records.d.ts";
+import { now } from "../../core/clock.ts";
 
 export const record = "signal-log";
 export const describe = () => ({ record, ask: [{ field: "signal", required: true, type: "object", says: "The signal published" }, ...questions(schemaOf(record)).filter((q: { field: string }) => q.field === "published")],
@@ -13,7 +14,7 @@ export const describe = () => ({ record, ask: [{ field: "signal", required: true
 export function draft(a: { signal?: Signal; published?: string }) {
   const s = a.signal;
   if (!s?.id || !s.type || !s.subject || !s.time) return { ok: false, record, errors: ["a log line needs the signal it indexes"] };
-  const published = a.published ?? new Date().toISOString().replace(/\.\d+Z$/, "Z");
+  const published = a.published ?? now().toISOString().replace(/\.\d+Z$/, "Z");
   const rec: SignalLog = { id: s.id, subject: s.subject, path: signalPath(s), published };
   const v = validate(record, rec);
   return { ok: v.ok, record, file: `log/${s.type.split("@")[0]}/${published.slice(0, 10)}.jsonl`, draft: rec, errors: v.errors };

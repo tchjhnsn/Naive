@@ -53,6 +53,7 @@ import { decisions as decisionsOf, propose } from "../../engine/decisions.ts";
 import { loadPackages } from "../../engine/load-packages.ts";
 import { ventureFile } from "../../core/venture-paths.ts";
 import { envCommand } from "../../core/runtime.ts";
+import { now as clockNow, wallClock } from "../../core/clock.ts";
 
 const repo = new URL("../../../../..", import.meta.url).pathname;
 const load = (p: string): unknown => JSON.parse(readFileSync(p, "utf8"));
@@ -536,7 +537,7 @@ export async function run(dir: string, declared: Declared[], { ask, speculate = 
   hooks?: { compute?: (f: () => Promise<Record<string, Obj>>) => Record<string, Obj> | Promise<Record<string, Obj>> }; call?: Call; workspace?: string; model?: string;
 } = {}) {
   if (typeof ask !== "function") throw new Expected("no model: pass --answers <file> or set MENTURA_MODEL_CMD (payload shows what would be asked)", "no model");
-  const t0 = Date.now();
+  const t0 = wallClock();
   const { ctx, steps, order, items, founder } = await plan(dir, declared, { call, workspace });
   const out: { venture: string; speculate: boolean; judgments: Entry[]; reused: Entry[]; uncertain: Entry[]; discarded: Entry[]; skipped: Entry[]; waiting: Entry[]; withheld: Entry[]; errors: Entry[]; uncaught: Entry[]; computed?: Obj; ms?: number } =
     { venture: ctx.venture, speculate, judgments: [], reused: [], uncertain: [], discarded: [], skipped: [], waiting: [], withheld: [], errors: [], uncaught: [] };
@@ -556,7 +557,7 @@ export async function run(dir: string, declared: Declared[], { ask, speculate = 
     // checkStep allows only the kinds in KINDS, which are the judgment kinds.
     const rec: Judgment = { id, package: s.package, step: s.step, kind: s.kind as Judgment["kind"], item: it.id, question: s.question, reads, outcome: j.outcome, answer: j.answer, confidence: j.confidence ?? null,
       threshold: j.threshold ?? null, why: j.why, ...(j.kept ? { kept: j.kept } : {}), ...(j.overruled ? { overruled: j.overruled } : {}), ...(j.decision ? { decision: j.decision } : {}),
-      by, ...(j.state_sha256 ? { state_sha256: j.state_sha256 } : {}), asked_at: new Date().toISOString().replace(/\.\d+Z$/, "Z") };
+      by, ...(j.state_sha256 ? { state_sha256: j.state_sha256 } : {}), asked_at: clockNow().toISOString().replace(/\.\d+Z$/, "Z") };
     const person = by.kind === "person";
     const w = await call({ venture: ctx.venture, workspace: ctx.workspace, route: `knowledge/judgment/${id}`, action: "write", input: rec, actor: person ? "person" : "agent", actor_id: person ? undefined : ACTOR,
       provenance: { derived_from: files, ...(j.decision ? { decision: j.decision } : {}), note: `use model: ${s.package}/${s.step}${person ? `, answered by ${by.name}` : ""}`, ...(person ? {} : { agent: by.model ? { model: by.model } : {} }) } });
@@ -653,7 +654,7 @@ export async function run(dir: string, declared: Declared[], { ask, speculate = 
   }
   out.computed = Object.fromEntries(Object.entries(await computeP).filter(([, v]) => Object.keys(v).length));
   await queue;
-  out.ms = Date.now() - t0;
+  out.ms = wallClock() - t0;
   onEvent({ event: "done", judgments: out.judgments.length, uncertain: out.uncertain.length, discarded: out.discarded.length, uncaught: out.uncaught.length });
   return out;
 }

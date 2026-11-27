@@ -41,6 +41,7 @@ import { ventureFile } from "../core/venture-paths.ts";
 import type { CommandResult } from "../core/runtime.ts";
 import { askJudge, commandArgv } from "../core/effect/host.ts";
 import { runPromise } from "../core/effect/run.ts";
+import { nowMs } from "../core/clock.ts";
 
 /** A life by profile name, or { revalidate, expire } in seconds (stale is how long a stale value may be served). */
 export type LifeInput = string | { stale?: number; revalidate?: number; expire?: number | null } | null | undefined;
@@ -214,7 +215,7 @@ export function identityOf({ actor, actor_id }: { actor?: string; actor_id?: str
 }
 
 /** The values a declaration varies on (C-9: "now" is an input, read on purpose). */
-export function varyValues(vary: string[] = [], { now = Date.now(), identity = null }: { now?: number; identity?: string | null } = {}): Record<string, string | null> {
+export function varyValues(vary: string[] = [], { now = nowMs(), identity = null }: { now?: number; identity?: string | null } = {}): Record<string, string | null> {
   const iso = new Date(now).toISOString();
   return Object.fromEntries(vary.map((v) => [v, v === "day" ? iso.slice(0, 10) : v === "hour" ? iso.slice(0, 13) : v === "actor" ? identity
     : v.startsWith("env:") ? process.env[v.slice(4)] ?? null : (() => { throw new Error(`unknown vary ${v}: day, hour, actor or env:<NAME>`); })()]));
@@ -240,7 +241,7 @@ function spec(s: CacheSpec): Spec {
  * Looks a value up. status: hit (fresh), stale (served because allowStale), revalidate (stale, to be
  * computed again), expired, miss, or skip (private with no named actor: never stored or shared).
  */
-export function lookup(dir: string, s: CacheSpec, { now = Date.now(), allowStale = false }: { now?: number; allowStale?: boolean } = {}): Lookup {
+export function lookup(dir: string, s: CacheSpec, { now = nowMs(), allowStale = false }: { now?: number; allowStale?: boolean } = {}): Lookup {
   const p = spec(s);
   if (p.priv && !p.identity) return { status: "skip", why: "a private result with no named actor is never cached", spec: p };
   const f = fileOf(dir, p);
@@ -255,7 +256,7 @@ export function lookup(dir: string, s: CacheSpec, { now = Date.now(), allowStale
 }
 
 /** Stores a value for the looked-up spec. Written whole (temp file, then rename), so a reader never sees half of it. */
-export function store(dir: string, p: Spec, value: unknown, { now = Date.now() }: { now?: number } = {}): Entry | null {
+export function store(dir: string, p: Spec, value: unknown, { now = nowMs() }: { now?: number } = {}): Entry | null {
   if (p.priv && !p.identity) return null;
   const f = fileOf(dir, p);
   mkdirSync(dirname(f), { recursive: true });
@@ -276,7 +277,7 @@ const info = (l: Lookup, entry: Entry | null | undefined): CacheInfo => ({ statu
  * (a failure is never cached). Returns { value, cache }, cache saying hit, stale, miss, revalidate,
  * expired, skip or off.
  */
-export async function cached<T>(dir: string, s: CacheSpec, compute: () => T | Promise<T>, { now = Date.now(), allowStale = false, enabled = configOf(dir).enabled }: { now?: number; allowStale?: boolean; enabled?: boolean } = {}): Promise<{ value: T; cache: CacheInfo }> {
+export async function cached<T>(dir: string, s: CacheSpec, compute: () => T | Promise<T>, { now = nowMs(), allowStale = false, enabled = configOf(dir).enabled }: { now?: number; allowStale?: boolean; enabled?: boolean } = {}): Promise<{ value: T; cache: CacheInfo }> {
   const p = spec(s);
   if (!enabled) return { value: await compute(), cache: { status: "off", level: p.level, name: p.name } };
   const l = lookup(dir, s, { now, allowStale });
@@ -297,7 +298,7 @@ export type CommandRequest = { dir: string; route: string; script: string; args?
  * spawn; its { status, stdout, stderr } comes back, from the store on a hit, plus cache. A failing
  * run is returned as it is and never stored. Only the run action uses this; a write never does.
  */
-export async function command({ dir, route, script, args = [], input, actor, actor_id, now = Date.now() }: CommandRequest, run: () => CommandResult): Promise<CommandResult & { cache?: CacheInfo }> {
+export async function command({ dir, route, script, args = [], input, actor, actor_id, now = nowMs() }: CommandRequest, run: () => CommandResult): Promise<CommandResult & { cache?: CacheInfo }> {
   const d = declarationFor(dir, route);
   if (!d) return run();
   const cfg = configOf(dir);
@@ -333,7 +334,7 @@ export const judgeCommand = commandArgv;
  * answer it can reuse, and asks the judge only the rest, in one request. Each question is its own entry, keyed by the request's state, the question, the model and the package
  * versions. Returns { model, answers, cache: { reused, asked, unanswered } }.
  */
-export async function judge(dir: string, request: Partial<JudgeRequest>, { cmd, life, actor, actor_id, private: priv = false, packages, now = Date.now(), allowStale = false }: JudgeOptions = {}) {
+export async function judge(dir: string, request: Partial<JudgeRequest>, { cmd, life, actor, actor_id, private: priv = false, packages, now = nowMs(), allowStale = false }: JudgeOptions = {}) {
   if (!request || typeof request !== "object" || !request.questions || typeof request.questions !== "object") throw new Error("a judgment request has questions: { state, model, questions }");
   const questions = request.questions;
   const cfg = configOf(dir);
@@ -388,7 +389,7 @@ export function entries(dir: string, { identity = null, level }: { identity?: st
 }
 
 /** Counts by level and scope, what has expired, and the size. */
-export function stats(dir: string, { identity = null, now = Date.now() }: { identity?: string | null; now?: number } = {}) {
+export function stats(dir: string, { identity = null, now = nowMs() }: { identity?: string | null; now?: number } = {}) {
   const es = entries(dir, { identity });
   const expired = (e: ListedEntry) => e.expires_at && Date.parse(e.expires_at) <= now;
   const by = (k: (e: ListedEntry) => string) => es.reduce<Record<string, number>>((m, e) => ({ ...m, [k(e)]: (m[k(e)] ?? 0) + 1 }), {});
@@ -399,7 +400,7 @@ export function stats(dir: string, { identity = null, now = Date.now() }: { iden
 }
 
 /** Removes expired entries in every scope. Returns how many. */
-export function prune(dir: string, { now = Date.now() }: { now?: number } = {}) {
+export function prune(dir: string, { now = nowMs() }: { now?: number } = {}) {
   let n = 0;
   for (const f of walkEntries(ventureFile(dir, CACHE_DIR))) {
     try { const e = load(f) as Entry; if (e.expires_at && Date.parse(e.expires_at) <= now) { rmSync(f); n++; } } catch { rmSync(f, { force: true }); n++; }

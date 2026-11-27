@@ -15,6 +15,7 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync
 import { basename, dirname, join } from "node:path";
 import { approve } from "./decisions.ts";
 import { ventureFile } from "../core/venture-paths.ts";
+import { now } from "../core/clock.ts";
 
 /** One held draft of a record: its letter, file, and who wrote it when, from the sidecar. */
 type Variant = { variant: string; file: string; by?: string; at?: string; sha256?: string; trial?: string };
@@ -61,7 +62,7 @@ export function writeHeld(dir: string, { draft, file, text, verdict, route, agen
 }) {
   const dest = ventureFile(dir, draft);
   mkdirSync(dirname(dest), { recursive: true });
-  const at = new Date().toISOString();
+  const at = now().toISOString();
   const by = agent.id ?? agent.kind ?? "agent";
   const meta = sidecar(dir, draft);
   const keep = !!verdict?.variants && existsSync(dest);
