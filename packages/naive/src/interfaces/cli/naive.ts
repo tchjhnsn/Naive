@@ -166,6 +166,7 @@ import { spawnSync, type SpawnSyncOptions } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, watch, writeFileSync } from "node:fs";
 import type { AddressInfo } from "node:net";
 import { basename, join, relative, resolve } from "node:path";
+import { CODE_OVER_DOCS } from "../../core/code-over-docs.ts";
 import { asRouted, findVenture } from "./find-venture.ts";
 import { logical } from "../../core/venture-paths.ts";
 import { ventureFile } from "../../core/venture-paths.ts";
@@ -205,7 +206,7 @@ async function schemaFor(file: string): Promise<string | null> {
 async function dev(dir: string): Promise<void> {
   // The root layout is required (I-21): a venture without AGENTS.md gets a stub, as next dev writes a root layout.
   if (!existsSync(join(dir, "AGENTS.md"))) {
-    writeFileSync(join(dir, "AGENTS.md"), `# AGENTS.md: ${basename(dir)}\n\nThe map of this venture for agents. Read it, then a route's layout, before writing anything here.\n\n## Instructions\n\nphase: ${JSON.parse(readFileSync(join(dir, "venture.json"), "utf8")).phase}\nprivate: _private/\n`);
+    writeFileSync(join(dir, "AGENTS.md"), `# AGENTS.md: ${basename(dir)}\n\nThe map of this venture for agents. Read it, then a route's layout, before writing anything here.\n\n- ${CODE_OVER_DOCS}\n\n## Instructions\n\nphase: ${JSON.parse(readFileSync(join(dir, "venture.json"), "utf8")).phase}\nprivate: _private/\n`);
     console.log("   wrote AGENTS.md, the venture's root layout, because it was missing");
   }
   const { workspace, venture } = asRouted(dir);
