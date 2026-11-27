@@ -1,0 +1,25 @@
+{
+  "version": "0.1.0",
+  "note": "How a venture's customer problems are ranked (EE-219), and the rules that hold the tree. The weights are unvalidated priors: a venture replaces them under problems in naive.config.json, with the person who set them. Primary, secondary and tertiary are labels on the computed order and are never stored on a problem. packages/naive/src/engine/problems.ts reads this file and packages/naive/src/checks/check-problems.ts enforces the rules.",
+  "standards": [
+    { "name": "Opportunity solution tree", "source": "Teresa Torres, Continuous Discovery Habits, Product Talk LLC, 2021", "used_for": "parent: a child problem is a narrower case of its parent, and the tree is worked one branch at a time" },
+    { "name": "Problem tree analysis (Logical Framework Approach)", "source": "Norwegian Agency for Development Cooperation, The Logical Framework Approach, 4th edition, 1999", "used_for": "cause_of and the core problem: one core problem per profile, with the problems that cause it below it" },
+    { "name": "Jobs to be done", "source": "Anthony Ulwick, Jobs to be Done: Theory to Practice, Idea Bite Press, 2016", "used_for": "a profile's jobs stay on icp-profile.schema.json jobs; a problem here is a job that is going badly" }
+  ],
+  "weights": {
+    "raised_unprompted": 1,
+    "ranked_first": 2,
+    "pays_for_workaround": 3
+  },
+  "weights_why": "A count of behaviour outranks a count of words, as the evidence grades do (EE-026): money or someone's time already spent on a workaround is behaviour, putting the problem first is a stated ranking, and naming it unprompted is the weakest of the three. The numbers are priors, not measurements.",
+  "ranked_statuses": ["open", "target"],
+  "labels": [
+    { "from": 1, "label": "primary" },
+    { "from": 2, "label": "secondary" },
+    { "from": 3, "label": "tertiary" }
+  ],
+  "requires_target": {
+    "records": ["validation-solution", "service-offer", "marketing-content"],
+    "why": "A solution, a priced offer and public words about either all claim a problem is worth solving, so the venture names the problem first: the primary profile's core problem, and the one problem it is working on now."
+  }
+}

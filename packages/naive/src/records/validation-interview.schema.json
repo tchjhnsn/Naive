@@ -44,6 +44,22 @@
       }
     },
     "chosen_problem": { "type": "string", "description": "The one bottleneck the person chose to work on" },
+    "problems": {
+      "type": "array",
+      "description": "What this interview says about the venture's problem tree (EE-219): one entry per form of foundation/problem.json the interview bears on, coded from the transcript the way qualitative research codes to a codebook, so the ranking counts evidence instead of guessing from words. The counts are what packages/naive/src/engine/problems.ts ranks by, and nothing here is a score.",
+      "items": {
+        "type": "object",
+        "required": ["problem", "raised"],
+        "additionalProperties": false,
+        "properties": {
+          "problem": { "type": "string", "pattern": "^[a-z0-9-]+$", "description": "The form's id in foundation/problem.json forms" },
+          "raised": { "enum": ["unprompted", "prompted"], "description": "unprompted: they named it before the interviewer did, answering an open question about last week. prompted: they agreed once asked, which is weaker evidence" },
+          "ranked_first": { "type": "boolean", "default": false, "description": "They put this problem first when asked which one to fix; at most one problem per interview" },
+          "pays_for_workaround": { "type": "boolean", "default": false, "description": "They already spend money or someone's time working around it, the strongest of the three counts" },
+          "note": { "type": "string", "description": "What in the transcript the coding rests on" }
+        }
+      }
+    },
     "prediction": {
       "type": "object",
       "required": ["with_naive", "status_quo"],

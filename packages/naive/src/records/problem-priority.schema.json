@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "problem-priority.schema.json",
+  "title": "Problem priority",
+  "description": "How the framework ranks a venture's customer problems and what holds its problem tree together (EE-219), at packages/naive/src/functions/strategy/problem-priority.json. The weights are unvalidated priors a venture replaces under problems in naive.config.json; the labels are a view of the computed order and are never stored on a problem.",
+  "type": "object",
+  "required": ["version", "weights", "ranked_statuses", "labels"],
+  "additionalProperties": false,
+  "properties": {
+    "version": { "type": "string" },
+    "note": { "type": "string" },
+    "standards": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name", "source", "used_for"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string" },
+          "source": { "type": "string" },
+          "used_for": { "type": "string", "description": "What in Naive this standard governs, so a reader can tell the parts apart" }
+        }
+      }
+    },
+    "weights": {
+      "type": "object",
+      "required": ["raised_unprompted", "ranked_first", "pays_for_workaround"],
+      "additionalProperties": false,
+      "description": "The weight on each evidence count from the validation interviews (validation-interview.schema.json problems). Unvalidated priors.",
+      "properties": {
+        "raised_unprompted": { "type": "number", "minimum": 0 },
+        "ranked_first": { "type": "number", "minimum": 0 },
+        "pays_for_workaround": { "type": "number", "minimum": 0 }
+      }
+    },
+    "weights_why": { "type": "string" },
+    "ranked_statuses": {
+      "type": "array",
+      "minItems": 1,
+      "description": "The statuses a problem must have to be in the ranking; one with any other status is listed with its status and no rank",
+      "items": { "enum": ["open", "target", "parked", "dropped"] }
+    },
+    "labels": {
+      "type": "array",
+      "minItems": 1,
+      "description": "The label for each rank, from that rank onward: primary at 1, secondary at 2, tertiary at 3 and below",
+      "items": {
+        "type": "object",
+        "required": ["from", "label"],
+        "additionalProperties": false,
+        "properties": {
+          "from": { "type": "integer", "minimum": 1 },
+          "label": { "type": "string" }
+        }
+      }
+    },
+    "requires_target": {
+      "type": "object",
+      "required": ["records", "why"],
+      "additionalProperties": false,
+      "description": "The record types that are written only once the primary profile's core problem and the venture's target problem exist. The fail-closed rule of packages/naive/src/checks/check-problems.ts",
+      "properties": {
+        "records": { "type": "array", "minItems": 1, "items": { "type": "string" }, "description": "Record types in data-model.json, whose venture paths say which files wait" },
+        "why": { "type": "string" }
+      }
+    }
+  }
+}

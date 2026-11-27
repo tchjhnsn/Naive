@@ -6,6 +6,44 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
+    "prerequisites": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["set_by"],
+      "description": "What this venture adds to, or takes off, the prerequisites its workflows ship with (EE-217, packages/naive/src/engine/prerequisites.ts, naive blocked). The lock fails closed, so only a person opens it: `set_by` is required, and a block whose person is empty is ignored. packages/naive/src/checks/check-config.ts holds each workflow and entry to the venture's own.",
+      "properties": {
+        "set_by": {
+          "type": "object",
+          "required": ["person", "at"],
+          "additionalProperties": false,
+          "description": "The person who last changed a prerequisite, and when.",
+          "properties": {
+            "person": { "type": "string", "minLength": 1 },
+            "at": { "type": "string" }
+          }
+        },
+        "workflows": {
+          "type": "object",
+          "description": "Per workflow, named <function>/<workflow>.",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "minProperties": 1,
+            "properties": {
+              "off": {
+                "type": "array",
+                "minItems": 1,
+                "items": { "type": "string", "minLength": 1 },
+                "description": "Entries that do not block this workflow here: the ref as the workflow names it, or `<kind> <ref>` to name one kind of it."
+              },
+              "records": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 }, "description": "Record routes this venture adds." },
+              "meetings": { "type": "array", "minItems": 1, "items": { "type": "string", "pattern": "^[a-z][a-z-]*/[a-z0-9-]+$" }, "description": "Workflows a meeting must have walked and closed, that this venture adds." },
+              "decisions": { "type": "array", "minItems": 1, "items": { "type": "string", "pattern": "^[a-z0-9][a-z0-9.-]*$" }, "description": "Decisions a person must have decided, that this venture adds." }
+            }
+          }
+        }
+      }
+    },
     "loops": {
       "type": "object",
       "additionalProperties": false,
@@ -653,6 +691,39 @@
           "type": "number",
           "minimum": 0,
           "default": 24
+        }
+      }
+    },
+    "problems": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "weights",
+        "set_by"
+      ],
+      "description": "The venture's own weights for ranking its customer problems (EE-219), in place of the unvalidated priors in packages/naive/src/functions/strategy/problem-priority.json. A weight left out keeps the prior, and a person sets them (set_by), because what counts as evidence of a problem is a judgment.",
+      "properties": {
+        "weights": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "raised_unprompted": {
+              "type": "number",
+              "minimum": 0
+            },
+            "ranked_first": {
+              "type": "number",
+              "minimum": 0
+            },
+            "pays_for_workaround": {
+              "type": "number",
+              "minimum": 0
+            }
+          }
+        },
+        "set_by": {
+          "type": "string",
+          "description": "The person who set these weights"
         }
       }
     },

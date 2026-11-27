@@ -28,7 +28,21 @@
   "forms": [
     {
       "id": "first-run",
-      "statement": "A new user installs the tool and the first run fails with an error they cannot read."
+      "statement": "A new user installs the tool and the first run fails with an error they cannot read.",
+      "status": "target"
+    },
+    {
+      "id": "one-build-per-machine",
+      "statement": "Each release is built by hand on the maintainer's own machine, so another machine gets a different build.",
+      "cause_of": [
+        "first-run"
+      ]
+    },
+    {
+      "id": "internal-tool-handover",
+      "statement": "A platform team hands an internal tool to another team, and the first run fails on their image.",
+      "segment": "Platform teams packaging internal tools",
+      "parent": "first-run"
     }
   ]
 }

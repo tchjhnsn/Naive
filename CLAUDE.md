@@ -2,6 +2,8 @@
 
 Read and follow AGENTS.md.
 
+When a repository's documentation and its existing code disagree, follow the conventions used in the existing code, and in your final reply point out each inconsistency you found between the documentation and the code.
+
 At the start of every task, load /pstack:poteto-mode and follow it. Read pstack's docs/harness/claude-code.md adapter and follow it. No other skills.
 
 Restate the goal first. Name each principle you use and the choice it changed.

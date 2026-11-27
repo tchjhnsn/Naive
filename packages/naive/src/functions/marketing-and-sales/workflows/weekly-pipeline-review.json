@@ -5,6 +5,7 @@
   "goal": "Every open opportunity has a next step dated this week or later, every lead a reply sent or drafted, and every opportunity closed this week its outcome and reason.",
   "measures": ["revenue"],
   "trigger": { "kind": "schedule", "cadence": "weekly" },
+  "requires": { "records": ["foundation/icp"] },
   "reads": ["sales/opportunities", "customers", "foundation/icp", "purpose/competitor", "governance/publication-policy"],
   "steps": [
     { "id": "find-unanswered", "do": "List leads with no first response, and for each draft the reply for the founder to send.", "skill": "pipeline-review", "raises": ["public-commitment"] },
