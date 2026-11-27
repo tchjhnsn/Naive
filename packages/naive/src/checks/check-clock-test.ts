@@ -1,4 +1,4 @@
-// Tests the one clock (packages/naive/src/core/clock.ts, EE-227): NAIVE_NOW pins business time for every reader,
+// Tests the one clock (packages/naive/src/core/clock.ts, EE-228): NAIVE_NOW pins business time for every reader,
 // an unreadable NAIVE_NOW refuses instead of falling back, a hosted run ignores it, Effect's Clock agrees, a
 // provenance line written under it carries the pinned time, and check-clock fails on a module that reads the
 // system clock directly.

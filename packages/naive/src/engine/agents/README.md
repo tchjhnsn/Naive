@@ -26,4 +26,4 @@ The function agents and lead agents, derived from Naive's own data (EE-124; they
 
 ## Time
 
-A specialist's reach, its spawn and end times and the brief's live specialists read business time from the one clock, `nowIso()` in [`clock.ts`](../../core/clock.ts) (EE-227), so a run with `NAIVE_NOW` set sees the simulated instant.
+A specialist's reach, its spawn and end times and the brief's live specialists read business time from the one clock, `nowIso()` in [`clock.ts`](../../core/clock.ts) (EE-228), so a run with `NAIVE_NOW` set sees the simulated instant.

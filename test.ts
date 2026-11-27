@@ -230,7 +230,7 @@ const steps: Step[] = [
   ["ontology catalog: one name@function scope per function, imports acyclic (term layer, L2), every term defined or imported; a cycle is printed and a missing term is an open item for its owning scope", "node", ["packages/naive/src/terms/catalog-test.ts"]],
   ["record types match the schemas (regenerate with node packages/naive/src/records/record-types.ts)", "node", ["packages/naive/src/records/record-types.ts", "--check"]],
   ["record types: the mapping, its refusals, the stale check and every record against its type", "node", ["packages/naive/src/records/record-types-test.ts"]],
-  ["one clock: every module under packages/naive/src reads business time from core/clock.ts, never the system clock directly (EE-227)", "node", ["packages/naive/src/checks/check-clock.ts"]],
+  ["one clock: every module under packages/naive/src reads business time from core/clock.ts, never the system clock directly (EE-228)", "node", ["packages/naive/src/checks/check-clock.ts"]],
   ["one clock: NAIVE_NOW pins now() for every reader and for provenance, an unreadable one refuses, hosted runs ignore it, Effect's Clock agrees, and check-clock finds a direct read", "node", ["packages/naive/src/checks/check-clock-test.ts"]],
   ["record paths: every schema and data-model path goes through packages/naive/src/records", "node", ["packages/naive/src/checks/check-record-paths.ts"]],
   ["record paths: the resolver resolves every schema, and the check breaks on copies that bypass it", "node", ["packages/naive/src/checks/check-record-paths-test.ts"]],

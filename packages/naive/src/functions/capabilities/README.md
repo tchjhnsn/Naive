@@ -88,4 +88,4 @@ Each level 3 process of APQC category 13.0 has one workflow, named by its hierar
 
 ## Time
 
-Code here reads business time from the one clock, `packages/naive/src/core/clock.ts` (`now`, `nowMs`, `nowIso`), so `NAIVE_NOW` pins it for a simulation or a test, and reads `wallClock()` only for elapsed time, timeouts, lock staleness and unique names (EE-227). `node packages/naive/src/checks/check-clock.ts` fails on a direct read of the system clock.
+Code here reads business time from the one clock, `packages/naive/src/core/clock.ts` (`now`, `nowMs`, `nowIso`), so `NAIVE_NOW` pins it for a simulation or a test, and reads `wallClock()` only for elapsed time, timeouts, lock staleness and unique names (EE-228). `node packages/naive/src/checks/check-clock.ts` fails on a direct read of the system clock.

@@ -1,4 +1,4 @@
-// The one clock (EE-227). Every module reads business time from `now()`: when a record was written, what is due,
+// The one clock (EE-228). Every module reads business time from `now()`: when a record was written, what is due,
 // what is stale, what day it is. A simulation sets NAIVE_NOW to the simulated instant, and so does a test that pins
 // time, so the whole of Naive agrees on what time it is (docs/design/SIMULATION_2026-11-26.md, step 2).
 //
