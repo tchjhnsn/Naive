@@ -141,6 +141,16 @@
 //   naive sync push [--json]                        what this working copy changed, each record with its base
 //                                                   version; a store that moved is pulled, merged and tried again
 //   naive sync status [--json]                      where this working copy stands, with no network
+//   naive copy gaps [--page <id>] [--json]        what each page shows, the record that holds it, or what is missing
+//                                                   and which upstream record a draft would come from (EE-216)
+//   naive copy draft [--element <id>] [--propose] [--print]
+//                                                   one open decision per missing or undecided element, with two or
+//                                                   three options a person picks between, drafted through NAIVE_AGENT_CMD;
+//                                                   with no harness it prints the prompt and files the gap alone
+//   naive copy check [--json]                       the copy gate: it refuses while any element the sitemap plans has
+//                                                   no record a person stands behind, and names each one
+//   naive copy one-shot --by <person> [--why <text>]  a person skips approving the text: recorded as a decision, and
+//                                                   every page built from then on is marked unapproved
 //   naive lint premises [<route>] [--drafts] [--json] [--propose]
 //                                                   attack the premises of the venture's goals, requirements, exit criteria,
 //                                                   constraints and decisions; --propose writes findings as open decisions
@@ -522,6 +532,12 @@ else if (cmd === "build" || cmd === "start") {
   const [what, ...args] = rest.filter((a, i) => !(a === "--venture" || rest[i - 1] === "--venture"));
   if (what !== "premises") { console.error("usage: naive lint premises [<route>] [--drafts] [--json] [--propose]"); process.exit(2); }
   process.exit(run("packages/naive/src/checks/premise-lint.ts", [here(), ...args]));
+} else if (cmd === "copy") {
+  // The site's words before the site (EE-216): packages/naive/src/functions/marketing-and-sales/marketing/copy.ts.
+  const args = rest.filter((a, i) => !(a === "--venture" || rest[i - 1] === "--venture"));
+  const [what = "gaps"] = args;
+  if (!["gaps", "check", "draft", "one-shot"].includes(what)) { console.error("usage: naive copy gaps [--page <id>] | check | draft [--element <id>] [--propose] [--print] | one-shot --by <person> [--why <text>]   [--venture <dir>] [--json]"); process.exit(2); }
+  process.exit(run("packages/naive/src/functions/marketing-and-sales/marketing/copy.ts", [here(), ...args]));
 } else if (cmd === "typegen") {
   const { TOOLS } = await import("../mcp/server.ts");
   const { routes } = await import("../../router/router.ts");

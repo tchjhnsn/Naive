@@ -33,6 +33,7 @@ import * as marketAnatomy from "./market-anatomy.ts";
 import * as industryAnatomy from "./industry-anatomy.ts";
 import * as ventureAnatomy from "./venture-anatomy.ts";
 import * as risk from "./risk.ts";
+import * as marketingMessage from "./marketing-message.ts";
 import { readFileSync } from "node:fs";
 
 let fails = 0;
@@ -44,7 +45,7 @@ writeFileSync(join(v, "venture.json"), JSON.stringify({ id: "kettle" }));
 mkdirSync(join(v, "product/bugs"), { recursive: true });
 writeFileSync(join(v, "product/bugs/save-loses-draft.json"), "{}");
 
-for (const g of [bug, glossary, reference, traceSpan, detector, detectorTrial, connection, capabilityCluster, languageRubric, leadPlan, timeBox, meeting, rawDump, triage, opportunity, supportPolicy, supportCase, validationPlan, gatePolicies, marketAnatomy, industryAnatomy, ventureAnatomy]) t(`${g.record}: describe asks at least one required field`, g.describe().ask.some((q) => q.required));
+for (const g of [bug, glossary, reference, traceSpan, detector, detectorTrial, connection, capabilityCluster, languageRubric, leadPlan, timeBox, meeting, rawDump, triage, opportunity, supportPolicy, supportCase, validationPlan, gatePolicies, marketAnatomy, industryAnatomy, ventureAnatomy, marketingMessage]) t(`${g.record}: describe asks at least one required field`, g.describe().ask.some((q) => q.required));
 
 const b = bug.draft({ title: "Save loses draft", severity: "P1", found_in: "0.6.0", repro: "open, type, save" }, { venture: v });
 t("bug: draft passes the schema", b.ok);
@@ -227,6 +228,13 @@ const both = risk.draft(invalid({ ...riskBase, impact: { low: 1, high: 2, curren
 t("risk: an impact with both a source and an estimate is refused", !both.ok);
 t("risk: an estimate with no one named as estimating it is refused", !risk.draft(invalid({ ...riskBase, impact: { low: 1, high: 2, currency: "USD", estimate: { basis: "a guess" } } })).ok);
 t("risk: a guess written into source as an assumption is refused, so it goes in estimate", !risk.draft({ ...riskBase, impact: { low: 1, high: 2, currency: "USD", source: "assumption: about what counsel charges" } }).ok);
+
+const msg = marketingMessage.draft({ kind: "headline", page: "/", item: "what", text: "Keep what the venture knows in one place.",
+  cites: [{ record: "foundation/problem", why: "the problem in the founder's words" }] });
+t("marketing-message: a drafted element passes, at the id the gap report names", msg.ok && msg.route === "marketing/message/home-what" && msg.draft?.id === "home-what");
+t("marketing-message: words no record stands behind are refused", !marketingMessage.draft({ kind: "headline", text: "The best tool ever" }).ok);
+t("marketing-message: a call to action with nowhere named is refused, and none is an answer", !marketingMessage.draft({ kind: "cta-primary", item: "next-step", text: "Start a venture", cites: [{ record: "foundation/core" }] }).ok
+  && marketingMessage.draft({ kind: "cta-primary", item: "next-step", text: "Start a venture", destination: { kind: "none", note: "the founder decides where it leads" }, cites: [{ record: "foundation/core" }] }).ok);
 
 console.log(fails ? `${fails} failed` : "record generators: all pass");
 process.exitCode = fails ? 1 : 0;

@@ -21,6 +21,10 @@ Version 0.1.0, ours and unevaluated (EE-062, EE-063, EE-064, EE-065). For the de
    - **Need sets prominence:** 0.7 or more belongs on the home page, 0.4 in the navigation, 0.2 linked from the home page, and anything less can be anywhere. An item with its own page, such as pricing or careers, needs that page in the navigation, not on the home page.
 4. **Score.** An item scores 1 when it is as prominent as it needs to be, 0.5 when it is present but buried, and 0 when it is missing. The site score is the need-weighted share, from 0 to 100, with a score for each audience. "Fix first" lists the three most-needed items that fall short. A missing item that no audience needs now is noted and not held against the site.
 
+## The words each item shows (EE-216)
+
+The matrix's `copy` block says what the words of each item are, so the gap report and the records agree on one name per element. `copy.chrome` lists the elements no section covers, the name and tagline and the footer line, each with the record it comes from (`foundation/core#brand.tagline`). `copy.kinds` gives each of the matrix's items the kind of message its words are: `what` is a headline, `who-for` a value proposition, `proof` a proof point, `next-step` the primary call to action, `contact` the contact line, and the rest body copy. Those kinds are the kinds of `marketing-message`, the record that holds one element's words (route `marketing/message/[id]`), and `packages/naive/src/functions/marketing-and-sales/marketing/copy.ts` reads this block to list what a page shows. The block is ours and unevaluated too: the gap report reads it as it stands.
+
 ## Who the customers are, and why they look for what they look for (EE-063)
 
 What a customer looks for depends on who the customer is. A consumer rarely looks up the founders. A clinic owner trusting a vendor with patient data often does. So the matrix has customer types, and each type says how much each item matters to it and why:

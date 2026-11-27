@@ -3,6 +3,10 @@
   "purpose": "Run the business (business operations): the team plan and hiring, handing work to people and agents (handoffs, with decision rights, done-criteria, attempt limits and run caps), and the tools each function uses, such as marketing (including the marketing website, EE-044), sales and research. How software or hardware gets built is MAD's, a separate product that reads these records (EE-038).",
   "skills": [
     {
+      "id": "site-copy",
+      "path": "packages/naive/src/functions/marketing-and-sales/skills/site-copy/SKILL.md"
+    },
+    {
       "id": "support-triage",
       "path": "packages/naive/src/functions/customer-service/skills/support-triage/SKILL.md"
     },
@@ -67,6 +71,7 @@
     "tool-catalog",
     "department",
     "marketing-matrix",
+    "marketing-message",
     "site-presence",
     "marketing-sitemap",
     "marketing-content",

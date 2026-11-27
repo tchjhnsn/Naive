@@ -3493,6 +3493,44 @@ export type MarketingDesignSystem = {
 /** The inputs the choice rests on, by key from marketing/design-system/inputs: mission, problem, icp:<id>, alignment:<id>, market:<product>, founder:<id>, competitor:<name> */
 export type MarketingDesignSystemFrom = string[];
 
+/** One element of the words a public page shows, at marketing/message/<id>.json (EE-216): the tagline, a headline, a subhead, the value proposition, a call to action with where it leads, a proof point, an objection answered, the contact line. The hierarchy is the standard one, positioning first and proof last, after April Dunford: positioning says what the venture is and whom it is for, the value propositions say what each audience gets, and the proof points stand behind them. Each element is its own record, so a person approves the words one element at a time, and each names the records its words come from (cites), including the ones still missing, so no page claims what no record holds. The page is built from these records and the sitemap, never the other way round (naive copy gaps). Version 0.x, unevaluated. */
+export type MarketingMessage = {
+  version: string;
+  venture?: string;
+  /** The file's name without .json. The element of a sitemap section is <page>-<item>, as the gap report names it (home-what, about-team); an element of the site's chrome keeps the chrome item's id (tagline). */
+  id: string;
+  /** Where the element sits in the messaging hierarchy. positioning is the one statement the rest agree with; a cta and the contact line carry a destination. */
+  kind: "positioning" | "tagline" | "headline" | "subhead" | "value-proposition" | "cta-primary" | "cta-secondary" | "proof-point" | "objection" | "body" | "footer" | "contact";
+  /** The words themselves, as a reader sees them. One element holds one piece of text, so a person approves or rejects it on its own. */
+  text: string;
+  /** What to call this element when a person is asked about it (Name and tagline, What to do next). */
+  label?: string;
+  /** The sitemap page this fills: a path in marketing/sitemap pages[].path, such as / or /about. Absent for the site's chrome, which every page shows. */
+  page?: string;
+  /** The sitemap section this fills (pages[].sections[].item, such as what or next-step), or a chrome item of the marketing matrix (tagline). */
+  item?: string;
+  /** Where a call to action or the contact line leads. none says plainly that there is nowhere to go yet, which is an answer a person may choose instead of inventing one. */
+  destination?: {
+    kind: "email" | "url" | "path" | "none";
+    /** The address, the link, or the path on the site. Absent when the kind is none. */
+    value?: string;
+    note?: string;
+  };
+  /** Where these words come from: at least one record, named even when it is missing, so the gap report can say what is still owed before the words are trusted. */
+  cites: {
+    /** A route or a venture-relative file: foundation/problem, foundation/icp.json, decisions/<id>.decision.json. */
+    record: string;
+    /** The field of that record these words rest on, such as statement. */
+    field?: string;
+    /** What this record contributes to the words, in one plain sentence. */
+    why?: string;
+  }[];
+  /** Whom the words are for: audiences of the marketing matrix, or ICP profile ids. */
+  audience?: string[];
+  /** Anything a person should know before approving these words, such as a claim that is not yet evidenced. */
+  note?: string;
+};
+
 /** The planned public site (EE-064): which information is shown where, how (the MDX component), when and for whom, with the reasons, planned from the venture's records by packages/naive/src/functions/marketing-and-sales/marketing/site/plan.ts. A marketing record, part of the marketing package handed to engineering (EE-065). Version 0.x, unevaluated. */
 export type MarketingSitemap = {
   version: string;
