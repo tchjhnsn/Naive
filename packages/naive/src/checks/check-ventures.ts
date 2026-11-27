@@ -8,14 +8,15 @@
 // an account's products and a product's part_of name that venture's own products, and a
 // product's scope names its layer or tier. A product capability (EE-224) names one of the venture's products, sits
 // under a category of the same product, its categories form no loop, and nothing under a retired category is live or
-// building. Layer locations exist, relative to the venture
+// building. A capability's goals and requirements name records of the venture (a goal/measure names a measure of
+// that goal), and a bug's capability names one of its capabilities (EE-228). Layer locations exist, relative to the venture
 // folder; several markets mark one primary. Warns on a business model outside the vocabulary. Warns when a formalized venture
 // (a legal form, or other members) has no governance layer.
 
 import { ventureFile } from "../core/venture-paths.ts";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, join } from "node:path";
-import type { Account, Product, ProductCapability, Venture } from "../records/types/records.d.ts";
+import type { Account, Bug, Goal, Product, ProductCapability, Requirement, Venture } from "../records/types/records.d.ts";
 
 const models = (() => {
   const b = JSON.parse(readFileSync(new URL("../records/vocab/business-models.json", import.meta.url), "utf8")) as { patterns: { id: string }[], extras: { id: string }[] };
@@ -32,7 +33,8 @@ const jsonIn = (d: string) => existsSync(d) ? readdirSync(d).filter((f) => f.end
 const accountsIn = (d: string) => existsSync(d) ? readdirSync(d).map((c) => join(d, c, "account.json")).filter(existsSync) : [];
 
 // Keyed by id as read; a parent of null finds nothing, as with any unknown id.
-const ventures = new Map<string | null, Venture & { products: Product[], accounts: Account[], capabilities: ProductCapability[] }>();
+type Loaded = { products: Product[], accounts: Account[], capabilities: ProductCapability[], goals: Goal[], requirements: Requirement[], bugs: Bug[] };
+const ventures = new Map<string | null, Venture & Loaded>();
 const errors: string[] = [], warnings: string[] = [];
 for (const f of walk(dir)) {
   const v = load<Venture>(f);
@@ -41,7 +43,9 @@ for (const f of walk(dir)) {
   for (const [k, l] of Object.entries(v.layers ?? {})) if (l && !existsSync(ventureFile(root, l.location))) errors.push(`${v.id}: ${k} layer location ${l.location} not found (relative to the venture folder)`);
   const productFiles = [...jsonIn(ventureFile(root, "product")), ...jsonIn(ventureFile(root, "products"))];
   ventures.set(v.id, { ...v, products: productFiles.map((p) => load<Product>(p)), accounts: accountsIn(ventureFile(root, "accounts")).map((a) => load<Account>(a)),
-    capabilities: jsonIn(ventureFile(root, "product/capabilities")).map((c) => load<ProductCapability>(c)) });
+    capabilities: jsonIn(ventureFile(root, "product/capabilities")).map((c) => load<ProductCapability>(c)),
+    goals: jsonIn(ventureFile(root, "foundation/goals")).map((g) => load<Goal>(g)), requirements: jsonIn(ventureFile(root, "foundation/requirements")).map((r) => load<Requirement>(r)),
+    bugs: jsonIn(ventureFile(root, "product/bugs")).map((b) => load<Bug>(b)) });
 }
 if (!ventures.size) { console.error(`no venture.json found under ${dir}`); process.exit(1); }
 
@@ -92,6 +96,19 @@ for (const v of ventures.values()) {
       if (a.status === "retired" && c.status !== "retired") { errors.push(`${at}: ${c.status} under the retired category ${a.id}`); break; }
     }
   }
+  const goals = new Map(v.goals.map((g) => [g.id, g]));
+  const requirements = new Set(v.requirements.map((r) => r.id));
+  for (const c of v.capabilities) {
+    const at = `${v.id}/product/capabilities/${c.id}`;
+    for (const ref of c.goals ?? []) {
+      const [goal, measure] = ref.split("/");
+      const g = goals.get(goal);
+      if (!g) errors.push(`${at}: serves goal ${goal}, which is not in foundation/goals`);
+      else if (measure && !(g.measures ?? []).some((m) => m.id === measure)) errors.push(`${at}: serves ${ref}, but goal ${goal} has no measure ${measure}`);
+    }
+    for (const r of c.requirements ?? []) if (!requirements.has(r)) errors.push(`${at}: meets requirement ${r}, which is not in foundation/requirements`);
+  }
+  for (const b of v.bugs) if (b.capability !== undefined && !caps.has(b.capability)) errors.push(`${v.id}/product/bugs/${b.id}: capability ${b.capability} is no capability of this venture`);
   for (const c of v.accounts) for (const t of c.products ?? []) if (!ids.has(t)) errors.push(`${v.id}/accounts/${c.id}: buys or uses unknown product ${t}`);
   const formal = (v.form?.legal_form && v.form.legal_form !== "none") || (v.members?.length ?? 0) > 0;
   if (formal && !v.layers.governance) warnings.push(`${v.id}: formalized (legal form or members) but has no governance layer`);

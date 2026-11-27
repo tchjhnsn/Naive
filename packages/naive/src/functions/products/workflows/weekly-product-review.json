@@ -6,9 +6,10 @@
   "measures": ["usage_or_adoption", "flow_and_lead_time"],
   "trigger": { "kind": "schedule", "cadence": "weekly" },
   "requires": { "records": ["product"] },
-  "reads": ["product", "product/bugs", "validation/interviews", "validation/feedback", "validation/product-market-fit", "operations/handoff", "foundation/telos"],
+  "reads": ["product", "product/capabilities", "product/bugs", "validation/interviews", "validation/feedback", "validation/product-market-fit", "operations/handoff", "foundation/telos"],
   "steps": [
-    { "id": "triage-bugs", "do": "Give every new bug a priority from P0 to P3 with its steps to reproduce, and list open P0 and P1 bugs.", "writes": ["product/bugs/[id]"] },
+    { "id": "triage-bugs", "do": "Give every new bug a priority from P0 to P3 with its steps to reproduce and the capability it breaks, and list open P0 and P1 bugs.", "writes": ["product/bugs/[id]"] },
+    { "id": "read-feature-reports", "do": "Read the portfolio with naive features, then the report of each feature with an open P0 or P1 bug, new feedback or no goal it serves (naive features report <id>), and carry its goals, RICE, quality, adoption and every hole it names into the proposed order." },
     { "id": "check-touchpoints", "do": "Count this week's customer interviews, usability sessions and calls, and flag the week if there were none.", "skill": "four-risks-review" },
     { "id": "check-build-handoffs", "do": "For each handoff proposed as a build, check that all four risks have evidence; one that lacks it goes back as a discovery task.", "skill": "four-risks-review" },
     { "id": "read-fit", "do": "Read retention and the product-market fit survey against the telos, and when the evidence contradicts the current direction, prepare a continue, stop or change decision for the founder with the evidence.", "raises": ["continue-or-stop", "change-direction"] },

@@ -85,6 +85,11 @@
 //                                                   or a cause (cause_of) of another, the one target and each
 //                                                   profile's core problem; rank orders them by what the interviews
 //                                                   counted, labelled primary, secondary and tertiary (EE-219)
+//   naive features [list|report <id>] [--json] [--md]
+//                                                   feature reports from the venture's records (EE-228): list is the
+//                                                   portfolio by product and category; report is one capability's
+//                                                   place, status history, goals, RICE, bugs, feedback, adoption and
+//                                                   proof, with a hole for each fact no record holds
 //   naive blocked [--json]                          every workflow of the venture's functions, in hierarchical order,
 //                                                   met or blocked, and what unblocks it first (EE-217)
 //   naive bets [show [<id>]] [--json]               the venture's bets: each claim, the fixed form of it, what would
@@ -574,6 +579,13 @@ else if (cmd === "build" || cmd === "start") {
   // rank, and --json pass through. It reads only.
   const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
   process.exit(run("packages/naive/src/engine/problems.ts", [here(), ...args]));
+} else if (cmd === "features") {
+  // Feature reports (packages/naive/src/engine/feature-report.ts, EE-228). list or report <id>, --json and --md pass
+  // through. It reads only.
+  const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
+  const [what = "list"] = args.filter((a) => !a.startsWith("--"));
+  if (!["list", "report"].includes(what)) { console.error("usage: naive features [list|report <id>] [--json] [--md]"); process.exit(2); }
+  process.exit(run("packages/naive/src/engine/feature-report.ts", [here(), ...args]));
 } else if (cmd === "bets") {
   // The venture's strategic claims (EE-221, packages/naive/src/router/orchestration/bets.ts). register, confidence
   // and resolve are a person's; show and score read only.
