@@ -1,0 +1,103 @@
+{
+  "id": "3-2-5-analyze-and-manage-channel-performance",
+  "function": "marketing-and-sales",
+  "process": "3.2.5",
+  "title": "Analyze and manage channel performance",
+  "goal": "Each channel in use has a measure, a target and this period's number counted from the venture's own records, what else moved the number is named, and the one change to make next is in front of the growth lead.",
+  "measures": [
+    "revenue",
+    "usage_or_adoption"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "marketing-and-sales/intake"
+    ]
+  },
+  "reads": [
+    "venture",
+    "foundation/goals",
+    "sales/opportunities",
+    "customers",
+    "markets",
+    "marketing/sitemap",
+    "governance/analytics",
+    "operations/site-presence",
+    "operations/time-box",
+    "finance/spend",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "establish-channel-specific-measures-and-targets",
+      "do": "Write for each channel in use the one measure it is judged on, how that measure is counted from which records, the target and the date, and say plainly where no record can count it yet.",
+      "skill": "develop-marketing-strategy",
+      "writes": [
+        "operations/handoff/[id]"
+      ],
+      "activity": "3.2.5.1"
+    },
+    {
+      "id": "monitor-and-report-performance",
+      "do": "Count this period's number for each channel from the opportunity source and channel fields, the customer records and the analytics the venture keeps, and report each count beside its target with the records it was counted from.",
+      "skill": "develop-marketing-strategy",
+      "writes": [
+        "operations/handoff/[id]"
+      ],
+      "activity": "3.2.5.2"
+    },
+    {
+      "id": "monitor-and-report-events-influencing-factors",
+      "do": "Name what else moved the numbers this period, such as a launch, an outage, a holiday, a campaign that ran or a competitor's price change, each with its date and the source that shows it happened.",
+      "skill": "develop-marketing-strategy",
+      "writes": [
+        "operations/handoff/[id]"
+      ],
+      "activity": "3.2.5.3"
+    },
+    {
+      "id": "analyze-channel-performance",
+      "do": "For each channel work out the cost per qualified opportunity and per closed sale from the spend records, say which channels beat their target and which did not, and say how much of the difference the named events explain.",
+      "skill": "develop-marketing-strategy",
+      "writes": [
+        "operations/handoff/[id]"
+      ],
+      "activity": "3.2.5.4"
+    },
+    {
+      "id": "develop-plan-for-channel-improvements",
+      "do": "Propose one change per channel that falls short, the smallest change that would move its measure, with what it costs, what it would take to try and the number that would show it worked.",
+      "skill": "develop-marketing-strategy",
+      "raises": [
+        "set-priorities"
+      ],
+      "activity": "3.2.5.5"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Add each channel's number and its explanation to the decision or goal it bears on, and recommend to the growth lead which channel to keep, which to change and which to stop.",
+      "skill": "develop-marketing-strategy",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "every-channel-number-counted",
+      "kind": "review",
+      "check": "Does every channel number in the report name the records it was counted from, and is each shortfall either explained by a named event or carried into a proposed change?",
+      "reviewer": "growth-lead"
+    }
+  ]
+}

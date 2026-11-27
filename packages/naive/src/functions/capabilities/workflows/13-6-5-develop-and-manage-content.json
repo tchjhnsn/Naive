@@ -1,0 +1,92 @@
+{
+  "id": "13-6-5-develop-and-manage-content",
+  "function": "capabilities",
+  "process": "13.6.5",
+  "title": "Develop and manage content",
+  "goal": "Each piece of content in hand is ready for a person to approve: its kind and owner are set, every claim cites the record it comes from, the venture's words are used, and it is readable at the length its reader will give it.",
+  "measures": ["cost_or_time_saved", "flow_and_lead_time"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["capabilities/intake"] },
+  "reads": [
+    "marketing/content",
+    "marketing/message",
+    "marketing/sitemap",
+    "marketing/voice",
+    "glossary/terms",
+    "raw/sources",
+    "capabilities/processes",
+    "product"
+  ],
+  "steps": [
+    {
+      "id": "identify-new-and-existing-content",
+      "do": "List what the venture already has that covers the subject and what is genuinely missing, so an existing piece is updated rather than a second one written that will contradict it.",
+      "skill": "manage-content",
+      "activity": "13.6.5.1",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "identify-content-control-requirements",
+      "do": "For the piece in hand, name the approval it needs before it leaves the venture, whether it makes a public commitment, and the claims in it that must cite a record, from the governance model.",
+      "skill": "manage-content",
+      "activity": "13.6.5.2",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "prepare-created-content",
+      "do": "Draft what the venture is writing itself, taking every fact from a record and citing it, and leaving a hole where no record answers rather than filling it from memory.",
+      "skill": "manage-content",
+      "activity": "13.6.5.3",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "prepare-acquired-content",
+      "do": "For anything taken from outside, record where it came from, its licence or permission, and the date it was read, and drop anything whose licence or permission cannot be shown.",
+      "skill": "manage-content",
+      "activity": "13.6.5.4",
+      "writes": ["operations/handoff/[id]"],
+      "raises": ["legal-or-terms"]
+    },
+    {
+      "id": "refine-content",
+      "do": "Cut the draft to what the reader needs, check every claim against the record it cites, and remove any sentence that rests on nothing.",
+      "skill": "manage-content",
+      "activity": "13.6.5.5",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "enhance-and-adapt-content",
+      "do": "Make the versions the other places need from the one approved source, a short version and a long one, keeping the claims identical, and never let a shorter version say more than the longer one.",
+      "skill": "manage-content",
+      "activity": "13.6.5.6",
+      "consider": {
+        "why": "One subject spread across several hand-written versions drifts until they contradict each other.",
+        "when": "The same subject must appear in more than one place."
+      }
+    },
+    {
+      "id": "perform-content-branding",
+      "do": "Check the piece against the venture's voice and words as its records define them, and list each line that departs from them for the owner rather than rewriting the voice.",
+      "skill": "manage-content",
+      "activity": "13.6.5.7",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "execute-technical-edits",
+      "do": "Fix spelling, links, names, numbers and formatting, check that every link resolves and every number matches its record, and list what was changed.",
+      "skill": "manage-content",
+      "activity": "13.6.5.8",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Hand the piece to the founder for approval with its citations and its open holes listed, and raise anything in it that would commit the venture in public.",
+      "writes": ["decisions/*"],
+      "raises": ["legal-or-terms"]
+    }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "every-claim-cited", "kind": "review", "check": "Does every claim in the piece cite the record it came from, with each unanswered question left as a visible hole rather than filled in?", "reviewer": "strategy-lead" }
+  ]
+}

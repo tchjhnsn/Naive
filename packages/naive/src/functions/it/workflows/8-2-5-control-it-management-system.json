@@ -1,0 +1,27 @@
+{
+  "id": "8-2-5-control-it-management-system",
+  "function": "it",
+  "process": "8.2.5",
+  "title": "Control IT management system",
+  "goal": "IT has a small set of measures with a known source, the control points where a mistake would be caught are written down, and the quarter's performance, spend and value are reported with every number traced to a record.",
+  "measures": ["compliance_met", "cost_or_time_saved"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["it/intake"] },
+  "reads": ["venture", "it/connections", "finance/spend", "finance/budget", "foundation/goals", "foundation/telos", "operations/handoff", "system/provenance", "governance/detector", "decisions/*"],
+  "steps": [
+    { "id": "determine-it-performance-measures", "do": "Pick the few IT measures worth keeping (time lost waiting for access, monthly spend per system, systems without MFA, days since the last tested restore), and for each one name where its number is read and how often, dropping any measure with no source.", "skill": "develop-and-manage-it-business-strategy", "activity": "8.2.5.1" },
+    { "id": "define-it-control-points-and-assurance-procedures-governance-model", "do": "Write where an IT mistake would be caught before it does harm (the gate holding an agent's write, the decision class that escalates a widening, the quarterly access review, the restore test) and name every move that today has no control point at all.", "skill": "develop-and-manage-it-business-strategy", "activity": "8.2.5.2" },
+    { "id": "monitor-and-analyze-overall-it-performance", "do": "Read each measure for the period, write it next to the period before, and explain any change of more than a quarter in size from the records rather than from guesswork.", "skill": "develop-and-manage-it-business-strategy", "activity": "8.2.5.3" },
+    { "id": "monitor-and-analyze-it-financial-performance", "do": "Compare what IT spent in the spend register with the budget, line up each charge with the connection it belongs to, and name every charge no connection explains.", "skill": "develop-and-manage-it-business-strategy", "activity": "8.2.5.4", "writes": ["it/connections/[id]"] },
+    { "id": "monitor-and-analyze-it-value-and-benefits", "do": "For each system and finished IT project, write what it was supposed to save, what the records show it saved, and the difference, marking a saving nobody can measure as unmeasured rather than as zero or as achieved.", "skill": "develop-and-manage-it-business-strategy", "activity": "8.2.5.5" },
+    { "id": "optimize-it-resource-allocation", "do": "Name where IT time and money are going that the measures do not justify, and propose the move (narrow a scope, drop a seat, stop a project) with what it frees.", "skill": "develop-and-manage-it-business-strategy", "activity": "8.2.5.6", "raises": ["security-tightening"] },
+    { "id": "manage-it-projects-and-services-interdependencies", "do": "Write which IT projects and systems depend on each other and which single system, credential or person is in the path of more than one, so the founder can see where one failure stops several things.", "skill": "develop-and-manage-it-business-strategy", "activity": "8.2.5.7" },
+    { "id": "report-it-service-and-project-performance", "do": "Write the one report for the founder and the product lead: measures, spend against budget, value against what was promised, and what you recommend next, each claim with the record behind it.", "skill": "develop-and-manage-it-business-strategy", "activity": "8.2.5.8" },
+    { "id": "select-deploy-and-operate-it-performance-analytics-tools", "do": "Prepare for the founder the candidates for reading these measures (including reading them from the venture's own records with no new tool), scored with `naive tools recommend` for visibility and ownership, and let the founder choose; an analytics tool that holds the venture's data is the founder's call.", "skill": "tool-selection", "activity": "8.2.5.9", "ask": true, "writes": ["decisions/*"], "raises": ["new-dependency-free", "spend-money", "legal-or-terms"], "consider": { "why": "Reading four measures by hand is cheaper than a tool until the venture has several systems and more than one person.", "when": "A measure cannot be read from the venture's own records and is needed every month." } },
+    { "id": "feed-decisions", "do": "Record the report and each unexplained charge as evidence on the decision it bears on, propose the order of fixes to the product lead, and raise a cancellation or downgrade for anything the value numbers do not support.", "skill": "develop-and-manage-it-business-strategy", "writes": ["decisions/*"], "raises": ["set-priorities", "cancel-or-downgrade", "domain-fact"] }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "numbers-sourced", "kind": "review", "check": "Does every measure in the report name where its number was read, is every IT charge matched to a connection or named as unexplained, and is every saving nobody can measure marked unmeasured?", "reviewer": "product-lead" }
+  ]
+}

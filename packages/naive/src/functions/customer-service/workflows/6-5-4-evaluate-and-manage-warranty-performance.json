@@ -1,0 +1,103 @@
+{
+  "id": "6-5-4-evaluate-and-manage-warranty-performance",
+  "function": "customer-service",
+  "process": "6.5.4",
+  "title": "Evaluate and manage warranty performance",
+  "goal": "The period's warranty claims are counted by cause, cost and days to close, the waste and the doubtful claims are named, and the change that would cut the top cause is proposed.",
+  "measures": [
+    "revenue",
+    "usage_or_adoption"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "customer-service/intake"
+    ]
+  },
+  "reads": [
+    "support/cases",
+    "customers",
+    "product",
+    "product/bugs",
+    "finance/spend",
+    "legal/obligations",
+    "supply-chain/suppliers"
+  ],
+  "steps": [
+    {
+      "id": "measure-claim-satisfaction",
+      "activity": "6.5.4.1",
+      "do": "Draft one short question to each customer whose warranty claim closed, asking whether the outcome and the wait were acceptable, hand it to the founder to send, and record the answers on the cases.",
+      "writes": [
+        "support/cases/[id]"
+      ],
+      "raises": [
+        "public-commitment"
+      ],
+      "skill": "evaluate-customer-service-operations-and-customer"
+    },
+    {
+      "id": "report-warranty-metrics",
+      "activity": "6.5.4.2",
+      "do": "Count the period's claims, the share approved, the days from claim to close and the money given per claim and per unit sold, citing the cases and the spend records behind each number.",
+      "skill": "evaluate-customer-service-operations-and-customer"
+    },
+    {
+      "id": "identify-improvements",
+      "activity": "6.5.4.3",
+      "do": "Name the product, terms or instruction change that would cut the top claim cause, with the claims behind it and the cost it would avoid.",
+      "raises": [
+        "set-priorities"
+      ],
+      "skill": "evaluate-customer-service-operations-and-customer"
+    },
+    {
+      "id": "identify-warranty-waste",
+      "activity": "6.5.4.4",
+      "do": "List the claims paid that the terms did not cover, the units repaired more than once and the parts replaced where the investigation found no fault, with what each cost.",
+      "consider": {
+        "why": "Money given outside the terms, repeat repairs and parts replaced with no fault found are costs the venture never decided to carry.",
+        "when": "The venture has closed more than a handful of claims."
+      },
+      "skill": "evaluate-customer-service-operations-and-customer"
+    },
+    {
+      "id": "investigate-doubtful-claims",
+      "activity": "6.5.4.5",
+      "do": "List the claims whose purchase record, dates or history disagree with what was claimed, with the records that disagree, and hand them to the founder without writing any accusation to the customer.",
+      "raises": [
+        "legal-or-terms"
+      ],
+      "consider": {
+        "why": "A claim whose records contradict each other is judged by a person, never by an agent.",
+        "when": "A claim's purchase record, dates or history disagree with what the customer said."
+      },
+      "skill": "evaluate-customer-service-operations-and-customer"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Name the decision the top claim cause and the warranty cost bear on, add the counts there as evidence, and recommend to the growth lead whether to change the product, the terms or the price.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "warranty-measured",
+      "kind": "review",
+      "check": "Do the period's claim counts and costs cite their cases and spend records, and does the top cause have a proposed change behind a number?",
+      "reviewer": "growth-lead"
+    }
+  ]
+}

@@ -1,0 +1,79 @@
+{
+  "id": "11-4-1-develop-the-business-resilience-strategy",
+  "function": "risk-and-compliance",
+  "process": "11.4.1",
+  "title": "Develop the business resilience strategy",
+  "goal": "The few things the venture cannot stop doing are listed with the founder's own limit on how long each may be down and how much work may be lost, and every dependency with no recovery answer is a risk record.",
+  "measures": [
+    "compliance_met",
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "risk-and-compliance/intake"
+    ]
+  },
+  "reads": [
+    "it/connections",
+    "product",
+    "support/policy",
+    "customers",
+    "governance/ownership",
+    "legal/risks",
+    "purpose/money/summary"
+  ],
+  "steps": [
+    {
+      "id": "name-what-cannot-stop",
+      "do": "List the few things the venture cannot stop doing for long, serving its customers, taking money and keeping its records, and read the connections record, the product records and the support policy for what each one depends on.",
+      "skill": "manage-business-resiliency",
+      "writes": [
+        "operations/handoff/[id]"
+      ]
+    },
+    {
+      "id": "set-the-tolerances",
+      "do": "Propose for each one how long it may be down and how much work or data it may lose, as plain figures with what the outage would cost behind them, and ask the founder to set the figures because only the founder can.",
+      "skill": "manage-business-resiliency",
+      "ask": true,
+      "raises": [
+        "set-priorities"
+      ]
+    },
+    {
+      "id": "write-the-strategy",
+      "do": "Write on the handoff how each dependency would be brought back inside its limit, who would do it and what it would cost, and write a risk record for every dependency whose honest answer is that nobody knows.",
+      "skill": "manage-business-resiliency",
+      "writes": [
+        "legal/risks/[id]",
+        "operations/handoff/[id]"
+      ]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Add the limits the founder set and the dependencies with no answer to the decision they bear on, and raise to the finance lead which dependency to make recoverable first.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "limits-set-by-the-founder",
+      "kind": "review",
+      "check": "Has the founder set a time limit and a data-loss limit for each thing the venture cannot stop, and does every dependency with no recovery answer have a risk record?",
+      "reviewer": "finance-lead"
+    }
+  ]
+}

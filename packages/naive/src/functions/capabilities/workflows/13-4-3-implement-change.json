@@ -1,0 +1,71 @@
+{
+  "id": "13-4-3-implement-change",
+  "function": "capabilities",
+  "process": "13.4.3",
+  "title": "Implement change",
+  "goal": "The change is in force: the founder has committed to it in words the venture can be held to, the process records and tools say the new way, and the adoption measures are being read and reported.",
+  "measures": ["flow_and_lead_time", "cost_or_time_saved"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["capabilities/intake"] },
+  "reads": [
+    "operations/handoff",
+    "capabilities/processes",
+    "evidence",
+    "it/connections",
+    "people/team-plan"
+  ],
+  "steps": [
+    {
+      "id": "create-commitment-for-change",
+      "do": "Put in front of the founder what committing to this change means, the date it starts, what stops to make room for it and what will be said to whom, and record the commitment only in the founder's own words once they have given them.",
+      "skill": "manage-change",
+      "activity": "13.4.3.1",
+      "ask": true,
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    },
+    {
+      "id": "reengineer-processes-and-systems",
+      "do": "Rewrite the affected process records to the new steps with their control points, list the tool or connection changes each new step needs, and hand those to the IT function rather than making them here.",
+      "skill": "manage-change",
+      "activity": "13.4.3.2",
+      "writes": ["capabilities/processes/[id]", "operations/handoff/[id]"]
+    },
+    {
+      "id": "support-transition-to-new-roles",
+      "do": "For each person whose work changes, write what they stop doing, what they start doing and what is taken off them first, and leave every conversation about someone's role or leaving to the founder.",
+      "skill": "manage-change",
+      "activity": "13.4.3.3",
+      "ask": true,
+      "consider": {
+        "why": "A change that quietly adds work to one person stalls there, and a role ending is the founder's conversation.",
+        "when": "The change moves work between people the venture pays."
+      }
+    },
+    {
+      "id": "monitor-change",
+      "do": "Count the runs since the change started, the share that followed the new steps and the share that fell back to the old way, and write the first week's numbers against the targets the design named.",
+      "skill": "manage-change",
+      "activity": "13.4.3.4",
+      "writes": ["capabilities/processes/[id]"],
+      "raises": ["domain-fact"]
+    },
+    {
+      "id": "report-on-change",
+      "do": "Report what is in force, what is still waiting and what fell back, with the runs behind each number, and say plainly whether the change is landing or not.",
+      "skill": "manage-change",
+      "activity": "13.4.3.5",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Raise to the strategy lead whether to carry on, pause or roll back, with what rolling back would cost now compared with a week ago.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "records-match-the-new-way", "kind": "review", "check": "Does every affected process record describe the way the work is now actually done, and is the fall-back rate reported from counted runs?", "reviewer": "strategy-lead" }
+  ]
+}

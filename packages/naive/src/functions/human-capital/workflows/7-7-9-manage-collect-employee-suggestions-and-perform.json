@@ -1,0 +1,73 @@
+{
+  "id": "7-7-9-manage-collect-employee-suggestions-and-perform",
+  "function": "human-capital",
+  "process": "7.7.9",
+  "title": "Manage/Collect employee suggestions and perform employee research",
+  "goal": "The suggestions and employee research the venture collects are kept as data: one entry each in a fixed shape, grouped and counted, readable over time, with every answer given traceable back to the entry.",
+  "measures": [
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "human-capital/intake"
+    ]
+  },
+  "reads": [
+    "people",
+    "people/founders",
+    "foundation/goals",
+    "capabilities/postmortems",
+    "operations/activity-summary",
+    "operations/handoff",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "define-the-entry",
+      "do": "Say what is kept for each suggestion and each piece of employee research: the date, the source, the text as it was given, the group it falls in and the answer given, and keep every entry to exactly those fields.",
+      "skill": "manage-employee-information-and-analytics"
+    },
+    {
+      "id": "collect-and-group",
+      "do": "Record each new suggestion and research answer in that shape, put the ones that say the same thing in one group, count each group, and never rewrite what someone said into your own words.",
+      "skill": "manage-employee-information-and-analytics"
+    },
+    {
+      "id": "read-as-a-measure",
+      "do": "Report what the groups say over time, how many entries were answered and how long an answer took, and say plainly where the counts are too few to mean anything.",
+      "skill": "manage-employee-information-and-analytics"
+    },
+    {
+      "id": "keep-it-unidentifying",
+      "do": "Check before reporting that no group is small enough to point at one person, and merge or withhold any that is.",
+      "skill": "manage-employee-information-and-analytics"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Open a decision for each group the venture should act on, add the counts as evidence to the decision they bear on, and tell the strategy lead which group has grown most since the last run.",
+      "skill": "manage-employee-information-and-analytics",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "entries-in-one-shape",
+      "kind": "review",
+      "check": "Is every entry in the defined shape with the text as it was given, and is no reported group small enough to identify one person?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

@@ -1,0 +1,93 @@
+{
+  "id": "9-8-3-report-on-internal-controls-compliance",
+  "function": "finance",
+  "process": "9.8.3",
+  "title": "Report on internal controls compliance",
+  "goal": "Everyone entitled to know how the venture controls its money has a dated report drawn from the period's tests, nothing claims a control the tests do not support, and the founder sent every report that leaves the venture.",
+  "measures": [
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "finance/intake"
+    ]
+  },
+  "reads": [
+    "governance/board",
+    "governance/ownership",
+    "governance/publication-policy",
+    "investors",
+    "investor-relations/updates",
+    "legal/obligations",
+    "purpose/money/summary",
+    "finance/spend",
+    "money",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "report-to-auditors",
+      "do": "Assemble what the external auditor or accountant asks for, the control descriptions, the period's tests and the evidence behind each, list what cannot be produced, and hand it to the founder to send.",
+      "skill": "manage-internal-controls",
+      "activity": "9.8.3.1",
+      "consider": {
+        "why": "An auditor asks for the evidence behind a control, not the description of it.",
+        "when": "An external auditor or accountant is examining the venture's books."
+      }
+    },
+    {
+      "id": "report-to-regulators-and-holders",
+      "do": "Assemble each report a regulator, shareholder or lender is entitled to in the form it asks for, mark every unaudited figure as unaudited, and hand it to the founder, who sends and signs it.",
+      "skill": "manage-internal-controls",
+      "ask": true,
+      "activity": "9.8.3.2",
+      "consider": {
+        "why": "A report to a regulator or a shareholder is a statement the venture is held to.",
+        "when": "The venture has outside shareholders, a lender or a regulator entitled to a report."
+      }
+    },
+    {
+      "id": "report-to-third-parties",
+      "do": "Answer a third party's question about the venture's controls from what the records actually show, say plainly what is not in place, and hand the answer to the founder to send; never claim a control the tests do not support.",
+      "skill": "manage-internal-controls",
+      "activity": "9.8.3.3",
+      "consider": {
+        "why": "A customer or insurer asking how the venture handles money is asking a question the venture can be held to later.",
+        "when": "A customer, partner or insurer has asked how the venture controls its money."
+      }
+    },
+    {
+      "id": "report-to-management",
+      "do": "Write the one-page control report for the founder and the finance lead: which controls ran, which failed, what each failure let through, what is being fixed and the date each test was done.",
+      "skill": "manage-internal-controls",
+      "activity": "9.8.3.4"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Raise anything a report cannot support as a decision for the founder before it is sent, and tell the finance lead which recipient is owed something the venture cannot yet produce.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities",
+        "legal-or-terms"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "no-control-overstated",
+      "kind": "review",
+      "check": "Does every report cite the period's tests, mark unaudited figures as unaudited, and avoid claiming a control the tests do not support?",
+      "reviewer": "finance-lead"
+    }
+  ]
+}

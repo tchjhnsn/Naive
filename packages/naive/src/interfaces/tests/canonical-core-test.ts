@@ -22,6 +22,8 @@ type Json = Record<string, unknown> & { ambition?: string, phase?: string, value
 const expect = (name: string, ok: unknown, detail: string = ""): void => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${detail}`}`); if (!ok) failed++; };
 const load = (f: string): Json => JSON.parse(readFileSync(f, "utf8")) as Json;
 const person = { kind: "person", via: "cli", id: "maya" };
+// Proof of work (EE-227): the phase's intake for finance, a function Tandem lists, was walked in a meeting a person closed.
+const closeIntake = (d: string): void => { mkdirSync(join(d, "operations/meetings"), { recursive: true }); writeFileSync(join(d, "operations/meetings/finance-intake.json"), JSON.stringify({ id: "finance-intake", title: "Finance intake", goal: "Settle how money is tracked.", outcome_expected: ["a budget"], workflow: "finance/intake", called_by: "maya", attendees: [{ id: "maya", kind: "person" }], status: "closed", agenda: [{ id: "money", title: "Money", status: "done" }], outcome: { reached: "yes", summary: "Settled." } })); };
 const copy = (ws: string): string => { const d = join(tmp, ws, "ventures", "tandem"); cpSync(join(repo, "packages/naive/src/records/examples/workspace/ventures/tandem"), d, { recursive: true }); return d; };
 const migrate = (dir: string) => { const ctx = context(dir, { dry: false, git: false, cfg: {}, at: new Date().toISOString(), onConfig() {} }); mig.apply(dir, ctx); return ctx; };
 
@@ -57,7 +59,8 @@ const l1 = lifecycle(dir);
 expect("migrated: the lifecycle reads foundation/exit-criteria", l1.source === "canonical" && l1.file === "foundation/exit-criteria/validation.json" && l1.exit_criteria.length === 2 && !l1.ready);
 expect("migrated: a person meets a canonical criterion", meet(dir, "retention", { by: person, evidence: "cohort" }).ok && load(join(dir, "foundation/exit-criteria/validation.json")).criteria[0].met?.by === "maya");
 meet(dir, "time-saved", { by: person });
-expect("migrated: with every canonical criterion met the gate is ready", lifecycle(dir).ready);
+closeIntake(dir);
+expect("migrated: with every canonical criterion met and the phase's work proven, the gate is ready", lifecycle(dir).ready, lifecycle(dir).blocking.join("; "));
 expect("exitCriteria for a phase with none is empty, not the archived telos", exitCriteria(dir, "scale").criteria.length === 0);
 
 // The telos route still reads, as a view.

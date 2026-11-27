@@ -1,0 +1,76 @@
+{
+  "id": "8-5-2-manage-service-solution-lifecycle-planning",
+  "function": "it",
+  "process": "8.5.2",
+  "title": "Manage service/solution lifecycle planning",
+  "goal": "Each service and solution the venture runs has a named stage, a next step and an end: what replaces it, when it is retired, and what happens to the data it holds.",
+  "measures": ["cost_or_time_saved", "compliance_met"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["it/intake"] },
+  "reads": [
+    "venture",
+    "product",
+    "product/capabilities",
+    "it/connections",
+    "finance/spend",
+    "purpose/competitor",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "track-emerging-capabilities",
+      "do": "Read what the venture's own tools, hosts and model providers have shipped since the last run, and write only the changes that would let the venture drop a component, cut a cost or do something it cannot do today, each with its source and the date it was read.",
+      "skill": "develop-and-manage-services-solutions",
+      "activity": "8.5.2.1",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "identify-services",
+      "do": "List every service and solution the venture actually runs, its own code, the hosted systems it depends on and the scripts a founder runs by hand, and mark the ones that no record names yet.",
+      "skill": "develop-and-manage-services-solutions",
+      "activity": "8.5.2.2",
+      "writes": ["it/connections/[id]"]
+    },
+    {
+      "id": "determine-approach",
+      "do": "For each one, write whether it should be kept as it is, invested in, consolidated into another, or retired, with the use it gets, what it costs to run and what would break as the reason.",
+      "skill": "develop-and-manage-services-solutions",
+      "activity": "8.5.2.3",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "define-lifecycle",
+      "do": "Write the stages a solution of the venture passes through, from trial to in use to replaced to retired, with the evidence that moves it from one stage to the next, and put every solution on the list at its current stage.",
+      "skill": "develop-and-manage-services-solutions",
+      "activity": "8.5.2.4",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "sunset-plans",
+      "do": "For each solution marked consolidate or retire, draft the plan to end it: what takes over, the order of the steps, where its data goes, who is told, and what is kept as a copy, and bring the plan to the founder, because turning a system off and dropping its data cannot be undone.",
+      "skill": "develop-and-manage-services-solutions",
+      "activity": "8.5.2.5",
+      "writes": ["operations/handoff/[id]"],
+      "raises": ["irreversible-data-change", "cancel-or-downgrade"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Add each keep, consolidate or retire answer as evidence to the decision it bears on, and raise to the product lead which solution to deal with first, counting cost and the risk of being left on something unmaintained.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "every-solution-has-a-stage",
+      "kind": "review",
+      "check": "Does every service and solution the venture runs carry a stage and a next step, and does every one marked for retirement have a plan naming what takes over and what happens to its data, open as a decision for the founder?",
+      "reviewer": "product-lead"
+    }
+  ]
+}

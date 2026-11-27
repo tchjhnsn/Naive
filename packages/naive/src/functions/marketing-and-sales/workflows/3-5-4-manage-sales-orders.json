@@ -1,0 +1,134 @@
+{
+  "id": "3-5-4-manage-sales-orders",
+  "function": "marketing-and-sales",
+  "process": "3.5.4",
+  "title": "Manage sales orders",
+  "goal": "Every order the venture accepts is checked against what it can actually deliver, the buyer's details on the customer record are current, and anyone can say from the records where an order stands.",
+  "measures": [
+    "revenue"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "marketing-and-sales/intake"
+    ]
+  },
+  "reads": [
+    "venture",
+    "sales/opportunities",
+    "customers",
+    "customers/lint",
+    "product",
+    "service-delivery/offers",
+    "service-delivery/engagements",
+    "supply-chain/purchase-orders",
+    "support/cases",
+    "money",
+    "legal/obligations",
+    "governance/publication-policy",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "accept-and-validate-sales-orders",
+      "do": "For each order check that what was ordered, the price and the terms match the approved quote and the price records, write the order on its opportunity and close it won, and send any mismatch back to the founder before accepting it.",
+      "skill": "develop-and-manage-sales-plans",
+      "writes": [
+        "sales/opportunities/[id]"
+      ],
+      "raises": [
+        "domain-fact"
+      ],
+      "activity": "3.5.4.1"
+    },
+    {
+      "id": "collect-and-maintain-account-information",
+      "do": "Bring the customer record up to date for the order, the name the venture invoices, who is the contact for it and what communication they agreed to, keep contact details in the system of record the source map names rather than on an opportunity, and mark a party the venture no longer deals with as ended.",
+      "skill": "develop-and-manage-sales-plans",
+      "writes": [
+        "customers/[id]"
+      ],
+      "activity": "3.5.4.2"
+    },
+    {
+      "id": "determine-availability",
+      "do": "Check from the product, offer and supply records whether what was ordered can be delivered and by when, and say plainly where the records cannot tell rather than promising a date.",
+      "skill": "develop-and-manage-sales-plans",
+      "activity": "3.5.4.3"
+    },
+    {
+      "id": "determine-fulfillment-process",
+      "do": "Write how this order will be delivered, the steps, who does each and the date each is due, and open a handoff to service delivery or supply chain for the parts the function owns.",
+      "skill": "develop-and-manage-sales-plans",
+      "writes": [
+        "operations/handoff/[id]"
+      ],
+      "raises": [
+        "defer-or-route"
+      ],
+      "activity": "3.5.4.4"
+    },
+    {
+      "id": "process-back-orders-and-updates",
+      "do": "For every order that cannot be filled on time, record what is outstanding and the new date, draft the message telling the buyer for the founder to send, and keep the order open until it is actually filled.",
+      "skill": "develop-and-manage-sales-plans",
+      "raises": [
+        "public-commitment"
+      ],
+      "consider": {
+        "why": "A buyer who hears late that an order slipped loses more trust than one told early.",
+        "when": "An accepted order cannot be filled by the date promised."
+      },
+      "activity": "3.5.4.5"
+    },
+    {
+      "id": "handle-sales-order-inquiries-including-post-order-fulfillment-transactions",
+      "do": "For each question about an order, assemble the answer from the records, draft the reply for the founder, and route a complaint or a request for a refund or return to customer service as a handoff.",
+      "skill": "develop-and-manage-sales-plans",
+      "writes": [
+        "operations/handoff/[id]"
+      ],
+      "raises": [
+        "public-commitment",
+        "defer-or-route"
+      ],
+      "activity": "3.5.4.6"
+    },
+    {
+      "id": "provide-product-tracking",
+      "do": "Record for each open order where it stands and the reference a buyer can use to check it, and say plainly which orders the records cannot track.",
+      "skill": "develop-and-manage-sales-plans",
+      "consider": {
+        "why": "A buyer asking where their order is should not need a person to find out.",
+        "when": "The venture ships something physical or delivers in stages."
+      },
+      "activity": "3.5.4.7"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Add each order and each mismatch to the decision or goal it bears on, and tell the growth lead which part of taking an order keeps going wrong.",
+      "skill": "develop-and-manage-sales-plans",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "orders-checked-against-delivery",
+      "kind": "review",
+      "check": "Was every accepted order checked against the approved quote and against what the records say can be delivered, and is the customer record current for each one?",
+      "reviewer": "growth-lead"
+    }
+  ]
+}

@@ -1,0 +1,120 @@
+{
+  "id": "7-3-4-develop-and-train-employees",
+  "function": "human-capital",
+  "process": "7.3.4",
+  "title": "Develop and train employees",
+  "goal": "The capabilities the goals demand are named, set against what people and agents hold today, ranked by the goal each gap blocks, and each gap the venture chose to close has a specific way to close it with its cost and the task it is practised on.",
+  "measures": [
+    "cost_or_time_saved",
+    "compliance_met"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "human-capital/intake"
+    ]
+  },
+  "reads": [
+    "people",
+    "people/founders",
+    "people/team-plan",
+    "foundation/goals",
+    "foundation/telos",
+    "capabilities/processes",
+    "capabilities/postmortems",
+    "finance/budget",
+    "legal/obligations",
+    "operations/handoff",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "align-development-needs",
+      "do": "Read `foundation/goals` and the workforce plan and say which capability the venture must gain in the next two quarters, then which person or agent would carry it and why that one.",
+      "activity": "7.3.4.1",
+      "skill": "manage-employee-onboarding-training-and"
+    },
+    {
+      "id": "define-competencies-and-skills",
+      "do": "For each role, write the competencies it needs and the level of each, reusing the venture's competency list and `glossary` rather than inventing new names for the same thing.",
+      "activity": "7.3.4.2",
+      "skill": "manage-employee-onboarding-training-and"
+    },
+    {
+      "id": "align-learning-to-competencies",
+      "do": "Match each missing competency to one specific way to gain it, naming the source, its cost, its hours and who delivers it, and drop anything that has no named competency behind it.",
+      "activity": "7.3.4.3",
+      "skill": "manage-employee-onboarding-training-and"
+    },
+    {
+      "id": "establish-training-needs",
+      "do": "Set the needed level against the held level, competency by competency, and rank the gaps by the goal each one blocks and by what the venture loses each month it stays open.",
+      "activity": "7.3.4.4",
+      "skill": "manage-employee-onboarding-training-and"
+    },
+    {
+      "id": "deliver-training-programs",
+      "do": "Build the small training the top gaps call for, the material, who delivers it, when, and the real task it is practised on, and put any paid course, trainer or licence to the founder before booking it.",
+      "activity": "7.3.4.5",
+      "skill": "manage-employee-onboarding-training-and",
+      "raises": [
+        "spend-money"
+      ],
+      "consider": {
+        "why": "Built training is worth the hours only once a gap is blocking a goal.",
+        "when": "A ranked gap blocks a live goal and no cheaper way to close it exists."
+      }
+    },
+    {
+      "id": "manage-examinations-and-certifications",
+      "do": "Keep the certifications the venture's work requires: who holds which, its number, its expiry, what renewal takes and the date each was last checked, and leave every approach to a certifying body and every appraisal of experience to the founder.",
+      "activity": "7.3.4.6",
+      "skill": "manage-employee-onboarding-training-and",
+      "raises": [
+        "legal-or-terms",
+        "spend-money"
+      ],
+      "consider": {
+        "why": "Some work may not lawfully be done without a current licence or certification, and an expiry is a compliance date.",
+        "when": "The venture's work, or a client's contract, requires a licence or certification."
+      }
+    },
+    {
+      "id": "evaluate-learning-programs",
+      "do": "Say whether each training changed the work: the measure before and after, the task it was practised on and what else changed at the same time, and recommend stopping anything that showed nothing.",
+      "activity": "7.3.4.7",
+      "skill": "manage-employee-onboarding-training-and",
+      "consider": {
+        "why": "Training that changes no measure is cost with no return, and only a finished training can be judged.",
+        "when": "A training has finished since the last run."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Open a decision for each paid training and each certification the venture must hold, attach the ranked gap list as evidence, and tell the strategy lead which capability gap blocks the most goals.",
+      "skill": "manage-employee-onboarding-training-and",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities",
+        "spend-money"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "gaps-ranked-by-goal",
+      "kind": "review",
+      "check": "Is every training in this run tied to a named competency gap, ranked by the goal it blocks, with its cost and the real task it is practised on?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

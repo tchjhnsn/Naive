@@ -1,0 +1,142 @@
+{
+  "id": "9-7-4-manage-debt-and-investment",
+  "function": "finance",
+  "process": "9.7.4",
+  "title": "Manage debt and investment",
+  "goal": "The rule for where spare cash may sit is approved, every loan, note and investment is recorded with the terms from its signed document, and what the venture owes and holds is in the money summary with its next payment dates.",
+  "measures": [
+    "cost_or_time_saved",
+    "revenue"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "finance/intake"
+    ]
+  },
+  "reads": [
+    "money",
+    "money/[id]",
+    "finance/budget",
+    "finance/spend",
+    "purpose/money/summary",
+    "governance/ownership",
+    "fund/thesis",
+    "fund/terms",
+    "investors",
+    "investor-relations/raises",
+    "legal/obligations",
+    "legal/risks"
+  ],
+  "steps": [
+    {
+      "id": "investment-policy",
+      "do": "Draft the rule for where spare cash may sit, what may be held, the longest it may be tied up, the most in any one institution and how much must stay reachable within a week, and bring it to the founder.",
+      "skill": "manage-treasury-operations",
+      "ask": true,
+      "activity": "9.7.4.1",
+      "raises": [
+        "legal-or-terms"
+      ]
+    },
+    {
+      "id": "intermediary-relationships",
+      "do": "Prepare the comparison and the questions for each bank, broker, lender or platform, what it charges, what it requires and what it would hold, and leave the conversation and the agreement to the founder.",
+      "skill": "manage-treasury-operations",
+      "ask": true,
+      "activity": "9.7.4.2",
+      "raises": [
+        "legal-or-terms"
+      ],
+      "consider": {
+        "why": "A broker, lender or platform sets terms the venture lives with for years.",
+        "when": "The venture deals with a bank, broker, lender or platform beyond its everyday accounts."
+      }
+    },
+    {
+      "id": "liquidity",
+      "do": "Say how much of the venture's money could be in the current account within a day, a week and a month, set it against the payments due over the next thirteen weeks, and name every gap.",
+      "skill": "manage-treasury-operations",
+      "activity": "9.7.4.3"
+    },
+    {
+      "id": "issuer-exposure",
+      "do": "List how much the venture holds with each institution, mark anything over the policy's limit or over the deposit protection where it sits, and say what moving it would cost.",
+      "skill": "manage-treasury-operations",
+      "activity": "9.7.4.4",
+      "consider": {
+        "why": "Deposit protection has a limit, and anything over it with one institution is money at risk of that institution.",
+        "when": "The venture holds money or investments with more than one institution, or more than the protected limit with one."
+      }
+    },
+    {
+      "id": "debt-and-investment-transactions",
+      "do": "Record each loan, note, deposit and investment with its amount, rate, dates, security and covenants taken from the signed document, hand the founder every term that binds the venture, and prepare the entry the books need.",
+      "skill": "manage-treasury-operations",
+      "ask": true,
+      "activity": "9.7.4.5",
+      "writes": [
+        "money/[id]"
+      ],
+      "raises": [
+        "legal-or-terms"
+      ]
+    },
+    {
+      "id": "foreign-currency",
+      "do": "Record each currency the venture holds with its balance and the rate used and its source, and show what a ten percent move either way would do to the cash position.",
+      "skill": "manage-treasury-operations",
+      "activity": "9.7.4.6",
+      "consider": {
+        "why": "A currency move can take more from the cash position than a month of spend.",
+        "when": "The venture holds, bills or pays in more than one currency."
+      }
+    },
+    {
+      "id": "debt-and-investment-reports",
+      "do": "Report what the venture owes and what it holds with each instrument's next payment date and the interest earned or paid in the period, and put the totals into the money summary.",
+      "skill": "manage-treasury-operations",
+      "activity": "9.7.4.7",
+      "writes": [
+        "purpose/money/summary"
+      ]
+    },
+    {
+      "id": "interest-rate-transactions",
+      "do": "Show for each floating-rate loan or deposit what a rate change of one point and of three points would cost or earn over the next year, and name the date its rate next resets.",
+      "skill": "manage-treasury-operations",
+      "activity": "9.7.4.8",
+      "consider": {
+        "why": "A floating rate turns a known payment into an unknown one.",
+        "when": "The venture holds a loan or deposit whose rate can change."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Raise every term that binds the venture, every covenant close to breach and every holding over the policy's limit as a decision for the founder, and tell the finance lead which one is nearest.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "legal-or-terms",
+        "ownership-or-control",
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "terms-from-signed-documents",
+      "kind": "review",
+      "check": "Does every loan and investment cite the signed document its terms came from, and has the founder approved both each one and the rule for where spare cash may sit?",
+      "reviewer": "finance-lead"
+    }
+  ]
+}

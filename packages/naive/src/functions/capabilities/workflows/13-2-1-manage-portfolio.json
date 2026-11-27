@@ -1,0 +1,55 @@
+{
+  "id": "13-2-1-manage-portfolio",
+  "function": "capabilities",
+  "process": "13.2.1",
+  "title": "Manage portfolio",
+  "goal": "Every piece of work in flight is listed against the goal it serves, the rule for starting and stopping work is written, and the work that serves no live goal is named for the founder to stop.",
+  "measures": ["flow_and_lead_time", "cost_or_time_saved"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["capabilities/intake"] },
+  "reads": [
+    "foundation/goals",
+    "foundation/telos",
+    "operations/handoff",
+    "operations/lead",
+    "capabilities/processes",
+    "system/decision-index"
+  ],
+  "steps": [
+    {
+      "id": "establish-portfolio-strategy",
+      "do": "List every handoff and improvement in flight with the goal and measure it serves, mark the ones that serve no live goal, and write that list as the portfolio the founder is actually funding with time.",
+      "skill": "manage-portfolio-program-and-project",
+      "activity": "13.2.1.1",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "define-portfolio-governance",
+      "do": "Write, as a process record, the rule for admitting work to the portfolio and for stopping it: who may start a piece of work, what a piece must name before it starts, how many may run at once, and when a stalled piece is stopped.",
+      "skill": "manage-portfolio-program-and-project",
+      "activity": "13.2.1.2",
+      "writes": ["capabilities/processes/[id]"],
+      "consider": {
+        "why": "A rule for starting and stopping work keeps a small team from carrying more in flight than it can finish.",
+        "when": "More than three pieces of work are in flight at once, or work is regularly started and abandoned."
+      }
+    },
+    {
+      "id": "monitor-and-control-portfolio",
+      "do": "For each piece in flight, report days since its last evidence, whether it is blocked and on what, and name the pieces that should be stopped or paused so the rest can finish.",
+      "skill": "manage-portfolio-program-and-project",
+      "activity": "13.2.1.3",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Raise to the strategy lead the order of the portfolio for this cycle, naming what to carry on, what to pause and what to stop, each with the goal it serves or fails to serve.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "every-piece-has-a-goal", "kind": "review", "check": "Does every piece of work in flight name the live goal and measure it serves, and is each piece that names none proposed for stopping?", "reviewer": "strategy-lead" }
+  ]
+}

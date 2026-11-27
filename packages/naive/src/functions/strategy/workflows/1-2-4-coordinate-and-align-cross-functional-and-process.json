@@ -1,0 +1,61 @@
+{
+  "id": "1-2-4-coordinate-and-align-cross-functional-and-process",
+  "function": "strategy",
+  "process": "1.2.4",
+  "title": "Coordinate and align cross-functional and process strategies",
+  "goal": "Every function's plan is read against the venture's goals and against the other functions' plans, and each place where two plans pull against each other stands as one decision with the options named.",
+  "measures": ["impact"],
+  "trigger": { "kind": "request" },
+  "requires": {
+    "meetings": ["strategy/intake"]
+  },
+  "reads": [
+    "venture",
+    "foundation/goals",
+    "foundation/telos",
+    "foundation/requirements",
+    "operations/lead",
+    "operations/department",
+    "operations/activity-briefing",
+    "operations/handoff",
+    "operations/time-box",
+    "system/phase-gate",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "read-function-plans",
+      "do": "Read each lead plan, the open handoffs and the time boxes now open, and write one line per function saying what it is working toward this phase and which goal measure that moves.",
+      "skill": "develop-business-strategy"
+    },
+    {
+      "id": "name-the-conflicts",
+      "do": "Compare the lines and write down every place two functions want the same week, the same money or opposite things from the same record, naming both sides and what each would lose, without choosing.",
+      "skill": "develop-business-strategy"
+    },
+    {
+      "id": "check-against-goals",
+      "do": "Check each function's line against the live goals and the current phase gate, and name any work that serves no live goal and any goal no function is working on, quoting the goal id in both cases.",
+      "skill": "develop-business-strategy"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Open one decision per conflict carrying both options with what each costs, attach the unserved goals and the unmoored work as evidence, and recommend to the strategy lead the order in which they are settled.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities", "contradicts-ledger"]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "every-conflict-is-one-decision",
+      "kind": "review",
+      "check": "Is every conflict between two functions' plans open as a single decision with both sides and their costs, and is every live goal either worked on by a function or named as unserved?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

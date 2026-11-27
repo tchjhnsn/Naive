@@ -1,0 +1,22 @@
+{
+  "id": "8-1-2-identify-it-customer-transformation-needs",
+  "function": "it",
+  "process": "8.1.2",
+  "title": "Identify IT customer transformation needs",
+  "goal": "Each live goal and requirement that needs an outside system is matched to the capability it needs, every system the venture has today is mapped against those capabilities, and each capability nothing covers is on the handoff with the decision it raises.",
+  "measures": ["cost_or_time_saved", "compliance_met"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["it/intake"] },
+  "reads": ["venture", "foundation/goals", "foundation/requirements", "foundation/telos", "product", "product/capabilities", "it/connections", "finance/spend", "decisions/*"],
+  "steps": [
+    { "id": "understand-business-requirements-for-it-capabilities", "do": "Read the live goals, the requirements that derive from them and the product capabilities, and write on the handoff one line per requirement naming the capability cluster it needs (identity and secrets, records, money, and the rest of the cluster catalog) and what would be impossible without it.", "skill": "develop-and-manage-it-customer-relationships", "activity": "8.1.2.1" },
+    { "id": "understand-it-landscape", "do": "List every system the venture connects today with its capability cluster, what it is authoritative for, who holds access and what it costs in the spend register, and mark on each connection which needed capability it covers.", "skill": "develop-and-manage-it-customer-relationships", "activity": "8.1.2.2", "writes": ["it/connections/[id]"] },
+    { "id": "develop-it-visioning", "do": "Draft on the handoff, in one page, the shape the venture's systems should have a year out: which clusters it owns in its own code and records, which it rents, which it does without, and what evidence would change that.", "skill": "develop-and-manage-it-customer-relationships", "activity": "8.1.2.3", "consider": { "why": "A year-out shape stops the venture renting a cluster it is about to own, and renting three tools where one would do.", "when": "The business is past Validation or pays for more than three outside systems." } },
+    { "id": "outline-it-service-expectations", "do": "For each connection, write what the venture expects of it (when it must be reachable, how long a restore of its records may take, what happens while it is down) and mark every expectation an assumption until the provider's own published terms say it, naming the page and the date you read it.", "skill": "develop-and-manage-it-customer-relationships", "activity": "8.1.2.4", "writes": ["it/connections/[id]"] },
+    { "id": "feed-decisions", "do": "For each capability nothing covers, open or update the decision that would close it with the options, what each would cost and your recommendation, and propose the order of the gaps to the product lead.", "skill": "develop-and-manage-it-customer-relationships", "writes": ["decisions/*"], "raises": ["set-priorities", "new-dependency-free", "spend-money"] }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "gaps-traced", "kind": "review", "check": "Does every capability a live requirement needs name either the connection that covers it or the open decision that would close the gap, and is every service expectation either cited to the provider's own terms or marked an assumption?", "reviewer": "product-lead" }
+  ]
+}

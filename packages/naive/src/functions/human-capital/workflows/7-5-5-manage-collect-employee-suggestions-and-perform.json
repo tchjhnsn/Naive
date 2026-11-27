@@ -1,0 +1,78 @@
+{
+  "id": "7-5-5-manage-collect-employee-suggestions-and-perform",
+  "function": "human-capital",
+  "process": "7.5.5",
+  "title": "Manage/Collect employee suggestions and perform employee research",
+  "goal": "Everyone who works on the venture has one place to put a suggestion, each suggestion has an answer or a recorded reason there is none, and the questions the records could not answer have been asked by the founder.",
+  "measures": [
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "human-capital/intake"
+    ]
+  },
+  "reads": [
+    "people",
+    "people/founders",
+    "foundation/goals",
+    "capabilities/processes",
+    "capabilities/postmortems",
+    "operations/handoff",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "open-the-channel",
+      "do": "Set up the one place a suggestion goes, say who reads it and how fast an answer comes, and draft the note the founder sends to tell everyone who works on the venture that it exists.",
+      "skill": "reward-and-retain-employees"
+    },
+    {
+      "id": "collect-the-suggestions",
+      "do": "Record each suggestion as it arrives with its date and who made it, or without a name where the person asked for that, and group the ones that say the same thing.",
+      "skill": "reward-and-retain-employees"
+    },
+    {
+      "id": "answer-or-say-why-not",
+      "do": "For each group, write what the venture will do about it, what it will not do and why, and hand the answers to the founder to give, because the answer comes from the venture and not from you.",
+      "skill": "reward-and-retain-employees"
+    },
+    {
+      "id": "ask-what-records-cannot-answer",
+      "do": "Where the records cannot answer something the venture needs to know about its own work, draft the few questions to put to the people who do it and hand them to the founder to ask.",
+      "skill": "reward-and-retain-employees",
+      "consider": {
+        "why": "Asking people questions costs their time, so it is worth it only when a record cannot answer.",
+        "when": "A live decision turns on something no record holds."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Open a decision for each suggestion the venture would act on that costs money or changes a commitment, attach the grouped suggestions as evidence, and recommend to the strategy lead which one to act on first.",
+      "skill": "reward-and-retain-employees",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities",
+        "spend-money"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "every-suggestion-answered",
+      "kind": "review",
+      "check": "Does every suggestion group have either an answer the founder gave or a recorded reason there is none?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

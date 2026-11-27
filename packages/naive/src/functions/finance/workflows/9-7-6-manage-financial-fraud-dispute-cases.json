@@ -1,0 +1,86 @@
+{
+  "id": "9-7-6-manage-financial-fraud-dispute-cases",
+  "function": "finance",
+  "process": "9.7.6",
+  "title": "Manage financial fraud/dispute cases",
+  "goal": "Every unrecognized charge, suspected fraud and disputed transaction has a case with its evidence, the amount recovered or lost recorded against the account, and the control that would have caught it named.",
+  "measures": [
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "finance/intake"
+    ]
+  },
+  "reads": [
+    "money",
+    "money/[id]",
+    "finance/spend",
+    "finance/spend/[id]",
+    "purpose/money/summary",
+    "it/connections",
+    "legal/risks",
+    "legal/obligations",
+    "supply-chain/suppliers",
+    "customers"
+  ],
+  "steps": [
+    {
+      "id": "open-the-case",
+      "do": "Open a case for each unrecognized charge, suspected fraud or disputed transaction with the amount, the date, the account, how it was noticed and the statement line that proves it, and put it on the handoff.",
+      "skill": "manage-treasury-operations"
+    },
+    {
+      "id": "gather-evidence",
+      "do": "Gather what the dispute turns on, the order, the bill, the agreed price, the delivery record and the payee details already on file, and say plainly which side the records support.",
+      "skill": "manage-treasury-operations"
+    },
+    {
+      "id": "hand-to-the-founder",
+      "do": "Hand the founder the case with the amount, the deadline the bank or provider sets, what they need to say and what the venture gives up either way; only they contact a bank, a provider, a supplier or a customer about it.",
+      "skill": "manage-treasury-operations",
+      "ask": true,
+      "raises": [
+        "legal-or-terms"
+      ]
+    },
+    {
+      "id": "close-and-fix",
+      "do": "Record what was recovered or lost, correct the account balance and the spend entry from the statement, and then name the control that would have caught it and what is missing today.",
+      "skill": "manage-treasury-operations",
+      "writes": [
+        "money/[id]",
+        "finance/spend/[id]"
+      ],
+      "raises": [
+        "domain-fact"
+      ]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Raise the missing control as a decision for the founder with what it would cost to put in place, and tell the finance lead how much the period's cases cost in total.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "cases-closed-with-cause",
+      "kind": "review",
+      "check": "Does every case carry its evidence, the amount recovered or lost, and the control that would have caught it?",
+      "reviewer": "finance-lead"
+    }
+  ]
+}

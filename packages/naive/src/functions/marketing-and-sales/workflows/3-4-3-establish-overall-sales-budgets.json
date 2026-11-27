@@ -1,0 +1,104 @@
+{
+  "id": "3-4-3-establish-overall-sales-budgets",
+  "function": "marketing-and-sales",
+  "process": "3.4.3",
+  "title": "Establish overall sales budgets",
+  "goal": "The venture knows for each product what it sells, what each sale costs it and what is left, and the sales budget for the period is a recommendation finance can put in the books.",
+  "measures": [
+    "revenue"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "marketing-and-sales/intake"
+    ]
+  },
+  "reads": [
+    "venture",
+    "product",
+    "sales/opportunities",
+    "customers",
+    "money",
+    "finance/spend",
+    "finance/budget",
+    "markets",
+    "service-delivery/offers",
+    "people/team-plan",
+    "foundation/goals",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "calculate-product-market-share",
+      "do": "Set each product's revenue against the serviceable market on the market record, state the share with both inputs and their dates, and say plainly that it is an estimate when the market figure is estimated.",
+      "skill": "develop-sales-strategy",
+      "consider": {
+        "why": "Share is only meaningful once the market size rests on something better than a guess.",
+        "when": "The market record's serviceable market cell is known rather than unknown."
+      },
+      "activity": "3.4.3.1"
+    },
+    {
+      "id": "calculate-product-revenue",
+      "do": "Count revenue per product for the period from the closed opportunities and the money records, reconcile the two and report the difference rather than choosing one silently.",
+      "skill": "develop-sales-strategy",
+      "activity": "3.4.3.2"
+    },
+    {
+      "id": "determine-variable-costs",
+      "do": "List what each sale costs the venture, the payment fees, the delivery, the hours someone must spend and any partner margin, and give the cost per sale with the record each input came from.",
+      "skill": "develop-sales-strategy",
+      "activity": "3.4.3.3"
+    },
+    {
+      "id": "determine-overhead-and-fixed-costs",
+      "do": "List what selling costs the venture whatever it sells, the tools, the subscriptions and the committed spend, from the spend and budget records, and spread each over the period being budgeted.",
+      "skill": "develop-sales-strategy",
+      "activity": "3.4.3.4"
+    },
+    {
+      "id": "calculate-net-profit",
+      "do": "Subtract the variable and fixed costs from product revenue, show the arithmetic per product and in total, and name the one input that would change the answer most if it is wrong.",
+      "skill": "develop-sales-strategy",
+      "activity": "3.4.3.5"
+    },
+    {
+      "id": "create-budget",
+      "do": "Draft the sales budget for the period line by line with the amount, the month and the goal each line serves, and open a handoff to finance to put it in the books.",
+      "skill": "develop-sales-strategy",
+      "writes": [
+        "operations/handoff/[id]"
+      ],
+      "raises": [
+        "spend-money"
+      ],
+      "activity": "3.4.3.6"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Put the budget to the founder as one spend decision with the profit arithmetic behind it, and add the per product numbers to the goal they bear on.",
+      "skill": "develop-sales-strategy",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "spend-money"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "budget-rests-on-counted-costs",
+      "kind": "review",
+      "check": "Does the budget rest on a counted cost per sale and a counted fixed cost, each citing its records, and is the revenue reconciled between the opportunities and the money records?",
+      "reviewer": "growth-lead"
+    }
+  ]
+}

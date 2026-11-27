@@ -1,0 +1,21 @@
+{
+  "id": "12-5-1-manage-community-relations",
+  "function": "external-relationships",
+  "process": "12.5.1",
+  "title": "Manage community relations",
+  "goal": "Every community the venture is part of is named with who speaks there for it and what it has already said, what the venture contributes is the founder's choice on the record, and nothing goes out that a person has not approved.",
+  "measures": ["learning","compliance_met"],
+  "trigger": {"kind":"request"},
+  "requires": {"meetings":["external-relationships/intake"]},
+  "reads": ["governance/publication-policy","governance/publications","marketing/voice","marketing/message","customers","support/cases","foundation/icp","foundation/goals","decisions/*"],
+  "steps": [
+    {"id":"list-the-communities","do":"Read the publication policy, the publications record and the support cases and list each community the venture is already in, a forum, a user group, a local or open source community, with who speaks there for it today and what it has already said there.","skill":"manage-public-relations-program","writes":["operations/handoff/[id]"]},
+    {"id":"propose-what-the-venture-contributes","do":"Propose the one or two things the venture would do in a community that it would still do if nobody noticed, answering questions, fixing a bug, publishing data it already holds, with the hours each costs a week, and leave the choice to the founder.","skill":"manage-public-relations-program","writes":["decisions/*"],"raises":["set-priorities"]},
+    {"id":"prepare-every-post-for-approval","do":"Draft each post or answer from approved records and the voice record, with the record behind every claim and nothing about a raise while the venture relies on an exemption that forbids it, and leave the posting to a person.","skill":"manage-public-relations-program","writes":["operations/handoff/[id]"],"raises":["public-commitment"]},
+    {"id":"feed-decisions","do":"Name the open decision each thing learned in a community bears on and add it there as evidence, and propose to the strategy lead which community is worth the founder's hours.","skill":"manage-public-relations-program","writes":["decisions/*"],"raises":["set-priorities"]}
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "who-speaks-where", "kind": "review", "check": "Does every community in the list name who speaks there for the venture, and is every post still a draft or approved by a person?", "reviewer": "strategy-lead" }
+  ]
+}

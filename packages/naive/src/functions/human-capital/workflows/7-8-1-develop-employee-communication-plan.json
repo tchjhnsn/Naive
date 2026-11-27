@@ -1,0 +1,75 @@
+{
+  "id": "7-8-1-develop-employee-communication-plan",
+  "function": "human-capital",
+  "process": "7.8.1",
+  "title": "Develop employee communication plan",
+  "goal": "The venture has a one-page plan for what it tells the people who work on it, how often, through which channel and who says it, adopted by the founder, with anything the law requires named.",
+  "measures": [
+    "cost_or_time_saved",
+    "compliance_met"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "human-capital/intake"
+    ]
+  },
+  "reads": [
+    "people",
+    "people/founders",
+    "people/team-plan",
+    "foundation/goals",
+    "governance/internal-terms",
+    "governance/publication-policy",
+    "legal/obligations",
+    "marketing/brand",
+    "operations/handoff",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "list-what-must-be-said",
+      "do": "List what the people who work on the venture must be told and how often: what changed in the goals, what was decided and why, what is expected of them, and anything the law where each person works requires the venture to tell them.",
+      "skill": "manage-employee-communication",
+      "raises": [
+        "legal-or-terms"
+      ]
+    },
+    {
+      "id": "choose-channel-and-cadence",
+      "do": "For each of those, name the channel, the cadence and the person who says it, keeping the channels to the fewest the venture can actually keep up, and say what happens when a cadence is missed.",
+      "skill": "manage-employee-communication"
+    },
+    {
+      "id": "draft-the-plan",
+      "do": "Write the plan as one page, naming for each message who decides it and who delivers it, and hand it to the founder to adopt, because what the venture tells its people is the founder's to commit to.",
+      "skill": "manage-employee-communication"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Open a decision for the plan's adoption and for any message the law requires that the venture does not yet send, and tell the strategy lead which message is most overdue.",
+      "skill": "manage-employee-communication",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "plan-names-who-says-each",
+      "kind": "review",
+      "check": "Does the plan name, for every message, its channel, its cadence and the person who says it, and is it adopted by the founder?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

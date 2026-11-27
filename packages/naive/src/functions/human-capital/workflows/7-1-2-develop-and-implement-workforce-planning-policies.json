@@ -1,0 +1,215 @@
+{
+  "id": "7-1-2-develop-and-implement-workforce-planning-policies",
+  "function": "human-capital",
+  "process": "7.1.2",
+  "title": "Develop and implement workforce planning, policies, and strategies",
+  "goal": "The venture has a workforce plan the founder decided on, pay, benefits and policies drafted only for roles that exist, a job description for each role the plan keeps, and every unsettled piece standing as an open decision.",
+  "measures": [
+    "cost_or_time_saved",
+    "compliance_met"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "human-capital/intake"
+    ]
+  },
+  "reads": [
+    "venture",
+    "people",
+    "people/team-plan",
+    "people/founders",
+    "foundation/goals",
+    "foundation/telos",
+    "foundation/constraints",
+    "operations/activity-assignments",
+    "capabilities/processes",
+    "governance/decision-rights",
+    "governance/delegation",
+    "governance/internal-terms",
+    "finance/budget",
+    "purpose/money/summary",
+    "legal/obligations",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "perform-strategic-workforce-planning",
+      "do": "Project quarter by quarter against `foundation/goals` how much work each function will carry and what will do it, agent or person, write it as a proposed change to `people/team-plan` for the founder, since only a person writes that plan, and after each quarter record where the last projection was wrong and by how much.",
+      "activity": "7.1.2.1",
+      "skill": "develop-and-manage-human-resources-hr-planning",
+      "raises": [
+        "set-priorities"
+      ]
+    },
+    {
+      "id": "develop-total-compensation-strategy",
+      "do": "Draft what the venture would pay a person in each planned role as cash, as equity and as benefits, with public comparable ranges cited and dated, plus what it would pay on an early end of the engagement, and hand the founder the choice, because pay commits money and equity commits ownership.",
+      "activity": "7.1.2.2",
+      "skill": "develop-and-manage-human-resources-hr-planning",
+      "raises": [
+        "spend-money",
+        "ownership-or-control"
+      ],
+      "consider": {
+        "why": "Pay ranges drafted before a role is open are a guess that later anchors a real offer.",
+        "when": "The founder has approved an open person role or is renegotiating an existing engagement."
+      }
+    },
+    {
+      "id": "develop-succession-plan",
+      "do": "For each thing only one person can do, name what happens to it if that person stops, and record the one written step, a procedure, an access grant or a handover note, that would let someone else pick it up.",
+      "activity": "7.1.2.3",
+      "skill": "develop-and-manage-human-resources-hr-planning",
+      "consider": {
+        "why": "A venture of one founder has a single point of failure in almost everything, and naming the few that would actually sink it is worth an hour.",
+        "when": "The founder asks, or someone other than the founders holds work nobody else can do."
+      }
+    },
+    {
+      "id": "develop-leadership-programs",
+      "do": "Write what growing into a lead role would mean in this venture, which competencies and which decision rights from `governance/delegation` it adds, for the roles the plan says the venture will need.",
+      "activity": "7.1.2.4",
+      "skill": "develop-and-manage-human-resources-hr-planning",
+      "consider": {
+        "why": "A path into leading matters once more than one person does the work.",
+        "when": "The venture has at least two people other than the founders, or a lead role is in the plan."
+      }
+    },
+    {
+      "id": "develop-dei-plan",
+      "do": "Draft how the venture will widen where it looks for people and keep selection to evidence of the work, with the specific channels it would add, and hand it to the founder, whose statement it is.",
+      "activity": "7.1.2.5",
+      "skill": "develop-and-manage-human-resources-hr-planning",
+      "raises": [
+        "public-commitment"
+      ],
+      "consider": {
+        "why": "A plan for how the venture looks for people is worth writing when it starts looking.",
+        "when": "The founder has approved an open person role."
+      }
+    },
+    {
+      "id": "implement-dei-plan",
+      "do": "Apply the plan the founder adopted to each open search and record, in counts only, where the role was posted, how many applied from each channel and how many advanced at each step, with nothing inferred about any individual.",
+      "activity": "7.1.2.6",
+      "skill": "develop-and-manage-human-resources-hr-planning",
+      "consider": {
+        "why": "Counts show whether widening the search actually widened it, and only a run search produces them.",
+        "when": "A search is open and the founder has adopted the plan."
+      }
+    },
+    {
+      "id": "design-talent-acquisition-program",
+      "do": "Write the venture's way of filling a role once, the brief, where to look, how candidates are screened, who talks to them, what the work sample is and how long each step takes, so the next search reuses it instead of inventing it.",
+      "activity": "7.1.2.7",
+      "skill": "develop-and-manage-human-resources-hr-planning"
+    },
+    {
+      "id": "design-talent-development-program",
+      "do": "Write how someone already here gains what the next piece of work needs: which competencies the plan will demand, how each is practised on real work, and what the venture will pay for.",
+      "activity": "7.1.2.8",
+      "skill": "develop-and-manage-human-resources-hr-planning",
+      "consider": {
+        "why": "Development matters once the venture has someone to develop.",
+        "when": "Someone other than the founders works on the venture."
+      }
+    },
+    {
+      "id": "develop-other-hr-programs",
+      "do": "Draft any further people programme the founder names that the other steps do not cover, with its purpose, its cost and the obligation it creates, and say if an existing programme already covers it.",
+      "activity": "7.1.2.9",
+      "skill": "develop-and-manage-human-resources-hr-planning",
+      "consider": {
+        "why": "A programme nobody asked for is work the venture will not use.",
+        "when": "The founder names a people programme the other steps do not cover."
+      }
+    },
+    {
+      "id": "develop-hr-policies",
+      "do": "Draft the few policies the venture actually needs now, each in one page: hours and availability, expenses, confidentiality and assignment of what people make, and acceptable use of the venture's accounts and models, and hand them to the founder, because a policy binds the venture.",
+      "activity": "7.1.2.10",
+      "skill": "develop-and-manage-human-resources-hr-planning",
+      "raises": [
+        "legal-or-terms"
+      ]
+    },
+    {
+      "id": "administer-hr-policies",
+      "do": "Keep the adopted policies in one place with the date each was adopted and who it applies to, and flag every policy the venture's actual practice no longer matches, quoting both.",
+      "activity": "7.1.2.11",
+      "skill": "develop-and-manage-human-resources-hr-planning"
+    },
+    {
+      "id": "plan-employee-benefits",
+      "do": "Separate the benefits the law requires where the venture employs someone from the ones it would choose, cost each one per person per year against `finance/budget`, and put the list to the founder.",
+      "activity": "7.1.2.12",
+      "skill": "develop-and-manage-human-resources-hr-planning",
+      "raises": [
+        "spend-money",
+        "legal-or-terms"
+      ],
+      "consider": {
+        "why": "Benefits planning follows employment, and a venture with only contractors has little to plan.",
+        "when": "The venture employs someone or the founder has decided to."
+      }
+    },
+    {
+      "id": "develop-workforce-strategy-models",
+      "do": "Write the two or three shapes the venture's workforce could take, agents only, agents with contractors, or agents with employees, each with its monthly cost, how fast it can change size, and the obligations it carries.",
+      "activity": "7.1.2.13",
+      "skill": "develop-and-manage-human-resources-hr-planning"
+    },
+    {
+      "id": "implement-workforce-strategy-models",
+      "do": "Once the founder has chosen a shape, record which roles it creates, in which order, on what terms, and hand the first one to the requisition workflow with its cost and its agent alternative attached.",
+      "activity": "7.1.2.14",
+      "skill": "develop-and-manage-human-resources-hr-planning",
+      "raises": [
+        "set-priorities"
+      ]
+    },
+    {
+      "id": "manage-job-families",
+      "do": "Group the roles the plan names into families with a level in each, so that pay ranges and expectations are comparable across roles instead of negotiated one at a time.",
+      "activity": "7.1.2.15",
+      "skill": "develop-and-manage-human-resources-hr-planning",
+      "consider": {
+        "why": "Families are a tool for comparing many roles, and a handful of roles are better compared directly.",
+        "when": "The venture has more than two people doing similar work."
+      }
+    },
+    {
+      "id": "maintain-job-descriptions",
+      "do": "For each role the plan keeps, write what the role is for, what it decides, what it must be able to do, what it is measured by and why an agent cannot do it, and update the description whenever the work changes.",
+      "activity": "7.1.2.16",
+      "skill": "develop-and-manage-human-resources-hr-planning"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Attach each drafted plan, policy, range and description to the open decision it belongs to, open a decision for every one the founder must adopt, and recommend to the strategy lead which of them to settle first.",
+      "skill": "develop-and-manage-human-resources-hr-planning",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "plan-and-policies-decided",
+      "kind": "review",
+      "check": "Is every pay range, policy and planned role either adopted by the founder or open as a decision with its cost and its obligations named?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

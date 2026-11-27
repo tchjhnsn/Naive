@@ -1,0 +1,105 @@
+{
+  "id": "3-3-6-analyze-and-respond-to-customer-insight",
+  "function": "marketing-and-sales",
+  "process": "3.3.6",
+  "title": "Analyze and respond to customer insight",
+  "goal": "What customers and visitors actually did is counted from the records the venture keeps, each pattern worth acting on is named with its evidence, and every reply or personalized offer is a draft a person approved.",
+  "measures": [
+    "usage_or_adoption",
+    "revenue"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "marketing-and-sales/intake"
+    ]
+  },
+  "reads": [
+    "venture",
+    "customers",
+    "sales/opportunities",
+    "support/cases",
+    "product",
+    "governance/analytics",
+    "operations/site-presence",
+    "marketing/sitemap",
+    "marketing/message",
+    "governance/publication-policy",
+    "validation/feedback",
+    "foundation/icp",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "monitor-and-respond-to-social-media-activity",
+      "do": "Read the public posts and comments that name the venture or its product since the last run, sort them into a question, a complaint, a compliment and a factual error, draft the reply to each for the founder, and route a service complaint to customer service as a handoff.",
+      "skill": "develop-and-manage-marketing-plans",
+      "writes": [
+        "operations/handoff/[id]"
+      ],
+      "raises": [
+        "public-commitment",
+        "defer-or-route"
+      ],
+      "activity": "3.3.6.1"
+    },
+    {
+      "id": "analyze-customer-website-activity",
+      "do": "Read the site activity the venture records, count for each page the visits, the people who went on to the next step and the people who left, name the page that loses the most, and say plainly when the venture records no site activity at all.",
+      "skill": "develop-and-manage-marketing-plans",
+      "activity": "3.3.6.2"
+    },
+    {
+      "id": "analyze-customer-purchase-patterns",
+      "do": "Count from the customer and opportunity records what is bought together, what is bought first, how long a buyer waits before buying again and which first purchase leads to a second one.",
+      "skill": "develop-and-manage-marketing-plans",
+      "activity": "3.3.6.3"
+    },
+    {
+      "id": "develop-business-rules-to-provide-personalized-offers",
+      "do": "Write each rule as a plain condition and the offer it triggers, naming the record field the condition reads, and leave out any rule that would use something a customer has not agreed to the venture using.",
+      "skill": "develop-and-manage-marketing-plans",
+      "consider": {
+        "why": "An offer aimed with a rule nobody wrote down is an offer nobody can correct.",
+        "when": "The venture has enough purchase records for a condition to separate one group of customers from another."
+      },
+      "activity": "3.3.6.4"
+    },
+    {
+      "id": "monitor-effectiveness-of-personalized-offers-and-adjust-offers-accordingly",
+      "do": "Count for each rule how many offers it sent and how many were taken, compare that with customers who got no offer, and propose keeping, changing or dropping the rule with the counts behind it.",
+      "skill": "develop-and-manage-marketing-plans",
+      "consider": {
+        "why": "A rule that fires often and sells nothing costs attention the venture cannot buy back.",
+        "when": "A personalized offer rule has been running long enough to have sent offers."
+      },
+      "activity": "3.3.6.5"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Name for each pattern the open decision or goal it bears on and add it there as evidence, and recommend to the growth lead the one page or one customer group to work on next.",
+      "skill": "develop-and-manage-marketing-plans",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "patterns-evidenced-and-replies-approved",
+      "kind": "review",
+      "check": "Does every pattern named this run cite the records it was counted from, and did a person approve every reply and offer before it reached a customer?",
+      "reviewer": "growth-lead"
+    }
+  ]
+}

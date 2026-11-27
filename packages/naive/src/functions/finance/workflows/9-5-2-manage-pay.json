@@ -1,0 +1,142 @@
+{
+  "id": "9-5-2-manage-pay",
+  "function": "finance",
+  "process": "9.5.2",
+  "title": "Manage pay",
+  "goal": "Each pay run is prepared from the period's collected hours, agreed earnings and recorded deductions, the founder has approved and made the payment, and what was paid is recorded against the accounts and the spend register.",
+  "measures": [
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "finance/intake"
+    ]
+  },
+  "reads": [
+    "people/team",
+    "people/founders",
+    "finance/budget",
+    "finance/spend",
+    "money",
+    "money/[id]",
+    "purpose/money/summary",
+    "legal/obligations",
+    "it/connections"
+  ],
+  "steps": [
+    {
+      "id": "enter-time",
+      "do": "Put the period's approved hours into the payroll tool or the pay schedule the venture uses, check each person's total against the hours collected, and list every difference before anything is paid.",
+      "skill": "process-payroll",
+      "activity": "9.5.2.1",
+      "consider": {
+        "why": "A pay run built from different hours than the ones collected is a correction waiting to happen.",
+        "when": "The period's hours are collected and the venture runs a pay run."
+      }
+    },
+    {
+      "id": "earnings",
+      "do": "Keep each person's agreed earnings current from their signed agreement, the rate, the hours basis, any bonus or commission and the date each took effect, and never change one without the founder.",
+      "skill": "process-payroll",
+      "activity": "9.5.2.2",
+      "consider": {
+        "why": "Pay has to match the signed agreement, not what anyone remembers agreeing.",
+        "when": "Anyone the venture pays has a salary, rate, bonus or commission recorded."
+      }
+    },
+    {
+      "id": "deductions",
+      "do": "Keep each person's deductions current from the forms and notices behind them, and show gross, each deduction and net separately on the pay schedule.",
+      "skill": "process-payroll",
+      "activity": "9.5.2.3",
+      "consider": {
+        "why": "A deduction missed is money the venture will owe a tax authority with a penalty attached.",
+        "when": "A deduction applies to anyone the venture pays, whether tax, benefit or court-ordered."
+      }
+    },
+    {
+      "id": "tax-status",
+      "do": "Watch for a change in anyone's tax status, a new address, a new filing status or a move across a border, and flag it to the founder before the next pay run with what it changes.",
+      "skill": "process-payroll",
+      "activity": "9.5.2.4",
+      "consider": {
+        "why": "A move across a border or a change of status changes what must be withheld from the next payment.",
+        "when": "Someone the venture pays has changed address, filing status or country."
+      }
+    },
+    {
+      "id": "distribute-payments",
+      "do": "Hand the founder the pay run to approve and pay, gross, deductions and net per person with the total leaving the account, and once they have paid record the payment in the spend register and the new balance from the statement; the agent never pays anyone.",
+      "skill": "process-payroll",
+      "ask": true,
+      "activity": "9.5.2.5",
+      "writes": [
+        "money/[id]",
+        "finance/spend/[id]"
+      ],
+      "raises": [
+        "spend-money"
+      ],
+      "consider": {
+        "why": "Pay is usually the venture's largest payment and the one with the hardest deadline.",
+        "when": "A pay run is prepared and the hours and earnings in it are checked."
+      }
+    },
+    {
+      "id": "manual-checks",
+      "do": "Prepare each off-cycle payment on its own with the reason, the calculation and the record it corrects, and hand it to the founder to pay.",
+      "skill": "process-payroll",
+      "activity": "9.5.2.6",
+      "consider": {
+        "why": "An off-cycle payment skips the checks the normal run does, so it needs its own.",
+        "when": "Someone must be paid outside the normal run, for a correction or a final payment."
+      }
+    },
+    {
+      "id": "period-end-pay-entries",
+      "do": "Prepare the period-end entries pay creates, wages earned and not yet paid, accrued leave and employer taxes owed, and put them on the handoff for the books.",
+      "skill": "process-payroll",
+      "activity": "9.5.2.7",
+      "consider": {
+        "why": "Wages earned and not yet paid belong to the period that earned them.",
+        "when": "A pay period ends inside the venture's accounting period."
+      }
+    },
+    {
+      "id": "payroll-inquiries",
+      "do": "Answer a pay question from the collected hours, the agreed earnings and the recorded deductions, show the calculation, and hand anything about someone's own terms to the founder.",
+      "skill": "process-payroll",
+      "activity": "9.5.2.8",
+      "consider": {
+        "why": "A pay question answered from the records settles it; answered from memory it reopens.",
+        "when": "Someone the venture pays has asked a question about their pay."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Put the pay run and its checks on the handoff as evidence, raise every difference between collected hours and paid hours as a decision for the founder, and when the venture pays nobody record that as the reason each step was considered and not run.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "spend-money"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "pay-run-approved",
+      "kind": "review",
+      "check": "Was every payment approved and made by the founder, and does each person's net pay trace to collected hours, agreed earnings and recorded deductions?",
+      "reviewer": "finance-lead"
+    }
+  ]
+}

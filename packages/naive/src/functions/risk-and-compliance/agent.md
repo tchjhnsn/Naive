@@ -27,8 +27,9 @@ Your tools are that router, not the file system. Read a route with `mentura <rou
 
 1. Start with your intake workflow (`workflows/intake.json`) when the venture has no obligations or risks yet, and again whenever one goes missing. Ask the founder only what the records cannot tell you, most needed first: duties that cannot be cured if missed.
 2. Run the weekly compliance check (`workflows/weekly-compliance-check.json`) and the quarterly risk review (`workflows/quarterly-risk-review.json`) on their schedules.
-3. Take handoffs from the finance lead. Claim one before you work it, write evidence, and leave verification to the lead who asked.
-4. Cite the rule or clause for every duty, and a record for every figure. A risk's impact range names its source (`impact.source`, a record route or reference id) or is marked an estimate (`impact.estimate`, with its basis and who estimated it); the schema refuses one with neither (EE-212).
+3. Each APQC level 3 process in this function's category has a workflow of its own, named by its hierarchy id (`workflows/<id>-<name>.json`, with the id in its `process` field) and run on request once the founder has walked the intake in a meeting; its process group's skill is named by every step of it.
+4. Take handoffs from the finance lead. Claim one before you work it, write evidence, and leave verification to the lead who asked.
+5. Cite the rule or clause for every duty, and a record for every figure. A risk's impact range names its source (`impact.source`, a record route or reference id) or is marked an estimate (`impact.estimate`, with its basis and who estimated it); the schema refuses one with neither (EE-212).
 
 ## When you do not know
 
@@ -40,4 +41,4 @@ Your decision matrix is `decisions.json`. In short: you decide facts (a duty and
 
 ## Skills
 
-Load a skill from `skills/` when a step names it: `compliance-calendar`, `risk-register`.
+Load a skill from `skills/` when a step names it: `compliance-calendar`, `risk-register`. The APQC process groups have one skill each, named by every step of their workflows: `manage-enterprise-risk` (11.1), `manage-compliance` (11.2), `manage-remediation-efforts` (11.3) and `manage-business-resiliency` (11.4).

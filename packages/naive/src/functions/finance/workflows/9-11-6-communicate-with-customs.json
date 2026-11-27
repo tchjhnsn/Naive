@@ -1,0 +1,90 @@
+{
+  "id": "9-11-6-communicate-with-customs",
+  "function": "finance",
+  "process": "9.11.6",
+  "title": "Communicate with customs",
+  "goal": "Every declaration, query and audit request has its facts, documents and timeline assembled with the gaps listed, and the founder or a licensed customs broker made every filing and every statement to the authority.",
+  "measures": [
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "finance/intake"
+    ]
+  },
+  "reads": [
+    "product",
+    "product/[id]",
+    "supply-chain/purchase-orders",
+    "supply-chain/suppliers",
+    "customers",
+    "finance/spend",
+    "money",
+    "legal/obligations",
+    "legal/risks"
+  ],
+  "steps": [
+    {
+      "id": "assemble-the-declaration",
+      "do": "Assemble everything the declaration needs, the classification, the value, the origin, the parties, the delivery term and any licence, and list every field no document supports.",
+      "skill": "perform-global-trade-services",
+      "consider": {
+        "why": "A declaration is a statement to a government, and every field in it has to come from a document.",
+        "when": "A shipment requires a customs declaration."
+      }
+    },
+    {
+      "id": "hand-to-the-broker",
+      "do": "Hand the assembled declaration to the founder or the licensed customs broker, who files and signs it; the agent never files with a customs authority and never writes to one.",
+      "skill": "perform-global-trade-services",
+      "ask": true,
+      "raises": [
+        "legal-or-terms"
+      ],
+      "consider": {
+        "why": "Filing is a regulated act, and in most places only the importer of record or a licensed broker may do it.",
+        "when": "A declaration is assembled and must be filed."
+      }
+    },
+    {
+      "id": "answer-a-query",
+      "do": "Assemble the facts, documents and dated timeline the query asks about, say plainly what cannot be produced, and hand it to the founder and the broker, who reply.",
+      "skill": "perform-global-trade-services",
+      "ask": true,
+      "raises": [
+        "legal-or-terms"
+      ],
+      "consider": {
+        "why": "A query has its own deadline, and the first reply sets what the rest of the matter argues about.",
+        "when": "A customs authority has raised a query, a hold or an audit request."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Raise each field no document supports and each query deadline as a decision for the founder, with what a wrong or late answer would cost.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "legal-or-terms",
+        "spend-money"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "broker-filed-everything",
+      "kind": "review",
+      "check": "Was every declaration and every reply filed by the founder or a licensed broker, and does each one list the fields no document supports?",
+      "reviewer": "finance-lead"
+    }
+  ]
+}

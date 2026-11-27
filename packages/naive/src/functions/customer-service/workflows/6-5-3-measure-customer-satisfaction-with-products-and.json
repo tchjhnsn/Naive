@@ -1,0 +1,113 @@
+{
+  "id": "6-5-3-measure-customer-satisfaction-with-products-and",
+  "function": "customer-service",
+  "process": "6.5.3",
+  "title": "Measure customer satisfaction with products and services",
+  "goal": "What customers say about the product and the service after buying is gathered in one place, counted with a quote behind each finding, and handed to the function that can act on it.",
+  "measures": [
+    "usage_or_adoption",
+    "revenue"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "customer-service/intake"
+    ]
+  },
+  "reads": [
+    "support/cases",
+    "customers",
+    "validation/feedback",
+    "validation/interviews",
+    "product",
+    "product/bugs",
+    "marketing/content",
+    "deals"
+  ],
+  "steps": [
+    {
+      "id": "gather-post-sale-feedback",
+      "activity": "6.5.3.1",
+      "do": "Collect what customers have already said about the product and the service, from the cases, the feedback and interview records and public reviews, and draft one question for the founder to send to the customers who have said nothing.",
+      "raises": [
+        "public-commitment"
+      ],
+      "skill": "evaluate-customer-service-operations-and-customer"
+    },
+    {
+      "id": "ask-ad-effectiveness",
+      "activity": "6.5.3.2",
+      "do": "Draft one question asking where the customer first heard of the venture and what they expected, for the founder to add to a closing reply, and pass the answers to marketing and sales.",
+      "raises": [
+        "public-commitment"
+      ],
+      "consider": {
+        "why": "Where a customer first heard of the venture is cheap to ask while helping them and expensive to learn later.",
+        "when": "The venture is running a campaign or paying for reach."
+      },
+      "skill": "evaluate-customer-service-operations-and-customer"
+    },
+    {
+      "id": "ask-cross-channel",
+      "activity": "6.5.3.3",
+      "do": "Draft one question to the customers whose case crossed channels, asking what they had to repeat, and record their answers against those cases.",
+      "writes": [
+        "support/cases/[id]"
+      ],
+      "raises": [
+        "public-commitment"
+      ],
+      "consider": {
+        "why": "A customer handed from chat to email to a call usually repeats themselves, and only they can say what was lost.",
+        "when": "The venture answers customers on more than one channel."
+      },
+      "skill": "evaluate-customer-service-operations-and-customer"
+    },
+    {
+      "id": "analyze-satisfaction",
+      "activity": "6.5.3.4",
+      "do": "Read the gathered answers alongside the cases and name what customers say is missing, broken or not worth the price, with a count and one quote behind each, keeping what one customer said apart from what many did.",
+      "raises": [
+        "set-priorities"
+      ],
+      "skill": "evaluate-customer-service-operations-and-customer"
+    },
+    {
+      "id": "feed-the-teams",
+      "activity": "6.5.3.5",
+      "do": "Open one handoff per receiving function, products, marketing and sales, and service delivery, each carrying only the findings that function can act on, with the counts and the quotes.",
+      "writes": [
+        "operations/handoff/[id]"
+      ],
+      "raises": [
+        "defer-or-route"
+      ],
+      "skill": "evaluate-customer-service-operations-and-customer"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Name the open decision each finding confirms or changes and add it there as evidence, and recommend to the growth lead which finding to act on first.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "satisfaction-gathered",
+      "kind": "review",
+      "check": "Is every finding about the product or the service backed by a count and a customer's own words, and has each one gone to the function that can act on it?",
+      "reviewer": "growth-lead"
+    }
+  ]
+}

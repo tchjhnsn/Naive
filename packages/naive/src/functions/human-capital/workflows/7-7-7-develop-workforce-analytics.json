@@ -1,0 +1,94 @@
+{
+  "id": "7-7-7-develop-workforce-analytics",
+  "function": "human-capital",
+  "process": "7.7.7",
+  "title": "Develop workforce analytics",
+  "goal": "Each analysis has a decision and a date behind it, answerable questions written down, a method the founder chose, named data sources, and the data gathered as of one date with where each piece came from.",
+  "measures": [
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "human-capital/intake"
+    ]
+  },
+  "reads": [
+    "people",
+    "people/founders",
+    "people/team-plan",
+    "foundation/goals",
+    "operations/activity-summary",
+    "finance/spend",
+    "it/connections",
+    "legal/obligations",
+    "operations/handoff",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "determine-stakeholder-requirements",
+      "do": "Ask the founder and the strategy lead which decision the analysis is for and the date it is needed by, write both down, and when there is no decision behind it say so and stop rather than producing a report nobody uses.",
+      "activity": "7.7.7.1",
+      "skill": "manage-employee-information-and-analytics",
+      "ask": true
+    },
+    {
+      "id": "identify-research-questions",
+      "do": "Turn that decision into the few questions the analysis must answer, each one answerable from data the venture has or can honestly get, and drop every question that would not change the decision.",
+      "activity": "7.7.7.2",
+      "skill": "manage-employee-information-and-analytics"
+    },
+    {
+      "id": "select-workforce-analysis-methodology",
+      "do": "Put the two or three ways the questions could be answered to the founder, with what each needs, what each would miss and the chance it says nothing at the venture's size, and record the founder's choice as the method for this analysis.",
+      "activity": "7.7.7.3",
+      "skill": "manage-employee-information-and-analytics",
+      "ask": true,
+      "raises": [
+        "set-priorities"
+      ]
+    },
+    {
+      "id": "identify-workforce-data-sources",
+      "do": "For each question, name the record, the system or the person that holds the data, how current it is and whether the venture may use it for this purpose, and mark the questions nothing answers.",
+      "activity": "7.7.7.4",
+      "skill": "manage-employee-information-and-analytics"
+    },
+    {
+      "id": "gather-workforce-data",
+      "do": "Collect the named data as of one date, keep it to what the questions need, record where each piece came from and when, and aggregate anything about an identifiable person before it leaves its record.",
+      "activity": "7.7.7.5",
+      "skill": "manage-employee-information-and-analytics",
+      "raises": [
+        "legal-or-terms"
+      ]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Record the decision this analysis serves and the method chosen against it, open a decision where a question cannot be answered at all, and tell the strategy lead whether the analysis is worth running.",
+      "skill": "manage-employee-information-and-analytics",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "analysis-tied-to-a-decision",
+      "kind": "review",
+      "check": "Does the analysis name the decision and date it serves, the method the founder chose, and a source for every question or a note that nothing answers it?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

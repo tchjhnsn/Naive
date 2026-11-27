@@ -1,0 +1,114 @@
+{
+  "id": "9-7-1-manage-treasury-policies-and-procedures",
+  "function": "finance",
+  "process": "9.7.1",
+  "title": "Manage treasury policies and procedures",
+  "goal": "The venture has written rules and procedures for who may touch its money, how much may sit in one place and how a payment, a payee or a bank detail is approved, the founder has approved them, and every way money can leave names a control.",
+  "measures": [
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "finance/intake"
+    ]
+  },
+  "reads": [
+    "venture",
+    "money",
+    "money/[id]",
+    "finance/spend",
+    "finance/budget",
+    "purpose/money/summary",
+    "governance/decision-rights",
+    "governance/delegation",
+    "it/connections",
+    "legal/obligations",
+    "legal/risks",
+    "people/team"
+  ],
+  "steps": [
+    {
+      "id": "scope-and-governance",
+      "do": "Write what treasury covers in this venture, every account, card and payment service it holds, who may see each one, who may move money from it and whose instructions the bank will take, and list anything nobody owns.",
+      "skill": "manage-treasury-operations",
+      "activity": "9.7.1.1"
+    },
+    {
+      "id": "treasury-policies",
+      "do": "Draft the treasury rules, the most that may sit in one institution, the minimum cash to hold, which currencies are held, who approves a payment at each size and what happens when the founder is unreachable, and bring them to the founder.",
+      "skill": "manage-treasury-operations",
+      "ask": true,
+      "activity": "9.7.1.2",
+      "raises": [
+        "legal-or-terms"
+      ]
+    },
+    {
+      "id": "treasury-procedures",
+      "do": "Write the step-by-step procedure for each money action the venture actually takes, making a payment, opening or closing an account, adding a payee and changing a bank detail, naming who does each step and what evidence it leaves behind.",
+      "skill": "manage-treasury-operations",
+      "activity": "9.7.1.3"
+    },
+    {
+      "id": "monitor-procedures",
+      "do": "Check what actually happened against the written procedure for the period, every payment made, payee added and bank detail changed, and list each one that skipped a step.",
+      "skill": "manage-treasury-operations",
+      "activity": "9.7.1.4"
+    },
+    {
+      "id": "audit-procedures",
+      "do": "Take a sample of the period's money movements and trace each one from its approval to its statement line, and report every movement that could not be traced.",
+      "skill": "manage-treasury-operations",
+      "activity": "9.7.1.5",
+      "consider": {
+        "why": "Tracing a sample end to end is the only way to find a step that is written down and never done.",
+        "when": "The venture has held more than one account or payment service for a full quarter."
+      }
+    },
+    {
+      "id": "revise-procedures",
+      "do": "Revise the procedures for what the monitoring found, keeping the date each version took effect, and name for each exception the change that would have prevented it.",
+      "skill": "manage-treasury-operations",
+      "activity": "9.7.1.6"
+    },
+    {
+      "id": "internal-controls",
+      "do": "Name the control standing behind each way money could leave the venture by mistake or without approval, say who or what performs it and what evidence it leaves, and mark every control no person or record performs today.",
+      "skill": "manage-treasury-operations",
+      "activity": "9.7.1.7"
+    },
+    {
+      "id": "security-requirements",
+      "do": "State what protects access to the money, who holds which credential by its variable name only and never its value, where multi-factor authentication is required, and which connections can start a payment rather than only read one.",
+      "skill": "manage-treasury-operations",
+      "activity": "9.7.1.8"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Raise each missing control and each unapproved rule as a decision for the founder, and tell the finance lead which gap exposes the most cash.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "legal-or-terms",
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "money-controls-named",
+      "kind": "review",
+      "check": "Does every way money can leave the venture name an approval step, a control and who performs it, and has the founder approved the treasury rules?",
+      "reviewer": "finance-lead"
+    }
+  ]
+}

@@ -1,0 +1,81 @@
+{
+  "id": "3-5-6-perform-sales-at-physical-outlets",
+  "function": "marketing-and-sales",
+  "process": "3.5.6",
+  "title": "Perform sales at physical outlets",
+  "goal": "Every sale made at a physical outlet reaches the venture's records with its outlet, its amount and its buyer where known, and what the outlet needs to sell correctly is written down.",
+  "measures": [
+    "revenue"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "marketing-and-sales/intake"
+    ]
+  },
+  "reads": [
+    "venture",
+    "product",
+    "sales/opportunities",
+    "customers",
+    "money",
+    "marketing/message",
+    "marketing/brand",
+    "validation/pricing",
+    "legal/obligations",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "list-the-outlets",
+      "do": "Name each physical place the venture sells from, what is sold there, who is behind the counter and the hours it is open, and when there is none say so and run no further steps.",
+      "skill": "develop-and-manage-sales-plans"
+    },
+    {
+      "id": "record-the-sales",
+      "do": "From the receipts and takings the person hands over, write each sale as an opportunity closed won with the outlet as its source, the amount and the buyer where they are known, and reconcile the total with the money records.",
+      "skill": "develop-and-manage-sales-plans",
+      "writes": [
+        "sales/opportunities/[id]",
+        "customers/[id]"
+      ],
+      "raises": [
+        "domain-fact"
+      ]
+    },
+    {
+      "id": "prepare-what-the-outlet-needs",
+      "do": "Draft what the outlet needs to sell correctly, the price list, the words to use about the offering, the answers to the questions buyers keep asking and the receipt or form wording, and hand it to the founder to approve.",
+      "skill": "develop-and-manage-sales-plans",
+      "raises": [
+        "public-commitment"
+      ]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Add the outlet's takings and what buyers asked for to the decision or goal it bears on, and tell the growth lead whether the outlet earns the time it costs.",
+      "skill": "develop-and-manage-sales-plans",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "outlet-sales-in-the-records",
+      "kind": "review",
+      "check": "Does every sale taken at an outlet since the last run exist as a record with its outlet and amount, reconciled with the money records?",
+      "reviewer": "growth-lead"
+    }
+  ]
+}

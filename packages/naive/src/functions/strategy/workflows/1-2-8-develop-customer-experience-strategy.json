@@ -1,0 +1,78 @@
+{
+  "id": "1-2-8-develop-customer-experience-strategy",
+  "function": "strategy",
+  "process": "1.2.8",
+  "title": "Develop customer experience strategy",
+  "goal": "What the customer meets at each point of contact is written down as it is today and as the venture means it to be, the customer profiles carry the jobs and the places they are reached, and the capabilities that gap would need are handed to the functions that own them.",
+  "measures": ["impact", "learning"],
+  "trigger": { "kind": "request" },
+  "requires": {
+    "records": ["foundation/pre-registration"],
+    "meetings": ["strategy/intake"]
+  },
+  "reads": [
+    "foundation/icp",
+    "foundation/problem",
+    "validation/interviews",
+    "validation/feedback",
+    "validation/product-market-fit",
+    "validation/go-to-market",
+    "product",
+    "product/bugs",
+    "product/capabilities",
+    "marketing/brand",
+    "marketing/sitemap",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "assess-customer-experience",
+      "do": "List every point where the customer meets the venture, from first hearing of it to asking for help, read the interviews, the beta feedback and the open bugs at each one, and for the worst two or three write what the cause actually was rather than the symptom, putting the list on the handoff as evidence.",
+      "skill": "develop-business-strategy",
+      "activity": "1.2.8.1"
+    },
+    {
+      "id": "design-customer-experience",
+      "do": "Write each customer profile's jobs, traits, where they are found and how they are reached from what the interviews say, keep one profile primary, and draft the step-by-step path the venture means the customer to take, leaving any check with real customers to the founder to run.",
+      "skill": "develop-business-strategy",
+      "activity": "1.2.8.2",
+      "writes": ["foundation/icp/[id]"]
+    },
+    {
+      "id": "design-customer-experience-support-structure",
+      "do": "Name the capabilities the intended path needs that the venture does not have today, read `product/capabilities` for what exists, and say for each which function would own it and which of its processes would change.",
+      "skill": "develop-business-strategy",
+      "activity": "1.2.8.3"
+    },
+    {
+      "id": "develop-customer-experience-roadmap",
+      "do": "Put the missing capabilities in the order the evidence supports, each with the measure it would move and the point of contact it fixes, and open one handoff per capability to the function that owns it rather than scheduling the work here.",
+      "skill": "develop-business-strategy",
+      "activity": "1.2.8.4",
+      "writes": ["operations/handoff/[id]"],
+      "consider": {
+        "why": "A list of gaps without an order becomes a list nobody works from.",
+        "when": "At least two capabilities are missing and a function exists to own them."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Attach each assessed point of contact to the decision or goal it bears on, raise to the founder any change that would alter whom the venture serves, and recommend to the strategy lead which point of contact to fix first.",
+      "writes": ["decisions/*"],
+      "raises": ["strategy-or-constitution", "set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "experience-grounded-in-customer-words",
+      "kind": "review",
+      "check": "Does every job, trait and point of contact written in this run cite an interview, a feedback record or a bug, with anything else marked as a guess?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}
