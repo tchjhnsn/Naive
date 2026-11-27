@@ -1,0 +1,103 @@
+{
+  "id": "9-6-2-process-expense-reimbursements",
+  "function": "finance",
+  "process": "9.6.2",
+  "title": "Process expense reimbursements",
+  "goal": "The rule for reimbursing an expense is written and approved, every claim carries its receipt and the rule it falls under, and what was reimbursed is recorded in the right spend category with the new balance.",
+  "measures": [
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "finance/intake"
+    ]
+  },
+  "reads": [
+    "people/team",
+    "people/founders",
+    "finance/spend",
+    "finance/budget",
+    "money",
+    "money/[id]",
+    "purpose/money/summary",
+    "legal/obligations"
+  ],
+  "steps": [
+    {
+      "id": "reimbursement-policy",
+      "do": "Draft the expense rule, what the venture pays for, the limits, the receipt required, the days to claim and the amount above which the founder must approve, and bring it to them to set.",
+      "skill": "process-accounts-payable-and-expense",
+      "ask": true,
+      "activity": "9.6.2.1",
+      "raises": [
+        "spend-money"
+      ]
+    },
+    {
+      "id": "expense-tax-data",
+      "do": "Capture the tax on each claim, which tax it is, whether it can be reclaimed and whether the expense is reportable as a benefit, and keep the receipt that proves it.",
+      "skill": "process-accounts-payable-and-expense",
+      "activity": "9.6.2.2",
+      "consider": {
+        "why": "Some reimbursed costs carry reclaimable tax and some count as pay, and the receipt is what decides which.",
+        "when": "A reimbursed expense carries recoverable tax or must be reported as a benefit."
+      }
+    },
+    {
+      "id": "approve-claims",
+      "do": "Hand the founder each claim with its receipt, the rule it falls under and the amount, and record which ones they approve; a claim with no receipt is flagged and never approved by the agent.",
+      "skill": "process-accounts-payable-and-expense",
+      "ask": true,
+      "activity": "9.6.2.3",
+      "raises": [
+        "spend-money"
+      ]
+    },
+    {
+      "id": "process-reimbursements",
+      "do": "Prepare the approved reimbursements and advances for the founder to pay, and once paid record each one against the right spend category and set the account balance from the statement.",
+      "skill": "process-accounts-payable-and-expense",
+      "activity": "9.6.2.4",
+      "writes": [
+        "money/[id]",
+        "finance/spend/[id]"
+      ]
+    },
+    {
+      "id": "personnel-accounts",
+      "do": "Keep each person's running position, what they have claimed, what has been paid and what advance is still outstanding, and flag every advance not yet cleared by a claim.",
+      "skill": "process-accounts-payable-and-expense",
+      "activity": "9.6.2.5",
+      "consider": {
+        "why": "An advance that is never cleared by a claim is a loan nobody agreed to.",
+        "when": "Someone other than the founder claims expenses or holds an advance."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Raise each claim outside the rule and each uncleared advance as a decision for the founder, and attach the period's claims to the budget line they belong to as evidence.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "spend-money"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "claims-have-receipts",
+      "kind": "review",
+      "check": "Does every reimbursed claim carry a receipt, the rule it falls under and the founder's approval, and is each one recorded in the right spend category?",
+      "reviewer": "finance-lead"
+    }
+  ]
+}

@@ -1,0 +1,66 @@
+{
+  "id": "13-3-1-establish-quality-requirements",
+  "function": "capabilities",
+  "process": "13.3.1",
+  "title": "Establish quality requirements",
+  "goal": "For the work in scope, what the customer counts as good is written as a short list of characteristics with a line for each, the checks that keep defects from happening are steps of the process record, and the plan says how each characteristic is measured and who can judge it.",
+  "measures": ["cost_or_time_saved", "flow_and_lead_time"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["capabilities/intake"] },
+  "reads": [
+    "capabilities/processes",
+    "foundation/requirements",
+    "support/cases",
+    "product/bugs",
+    "validation/interviews",
+    "legal/obligations"
+  ],
+  "steps": [
+    {
+      "id": "define-critical-to-quality-characteristics",
+      "do": "Turn what customers and obligations ask for into a short list of characteristics of the output that can be checked, each with the line that separates acceptable from not, taken from interviews, support cases and bugs rather than from preference.",
+      "skill": "manage-enterprise-quality",
+      "activity": "13.3.1.1",
+      "writes": ["capabilities/processes/[id]"]
+    },
+    {
+      "id": "define-preventive-quality-activities",
+      "do": "For each characteristic, write the step that keeps the defect from being made in the first place, a template, a fixed order of work or an input check, and put it in the process record ahead of the step where the defect used to appear.",
+      "skill": "manage-enterprise-quality",
+      "activity": "13.3.1.2",
+      "writes": ["capabilities/processes/[id]"]
+    },
+    {
+      "id": "develop-quality-controls",
+      "do": "For each characteristic that still needs checking, mark the step of the process where it is checked, say how many runs or items are checked and how often, how the check is made and what counts as a pass, and what skill or access the checker needs.",
+      "skill": "manage-enterprise-quality",
+      "activity": "13.3.1.3",
+      "writes": ["capabilities/processes/[id]"]
+    },
+    {
+      "id": "prove-capability-to-assess-compliance",
+      "do": "Run each check once on work already done, with a known good and a known bad case, and record whether the check caught the bad one, so a check that cannot tell them apart is fixed before it is relied on.",
+      "skill": "manage-enterprise-quality",
+      "activity": "13.3.1.4",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "finalize-quality-plan",
+      "do": "Bring the founder the finished list of characteristics, lines and checks for the one yes or no it needs, and on approval set the process record active with the checks in place as control points.",
+      "skill": "manage-enterprise-quality",
+      "activity": "13.3.1.5",
+      "ask": true,
+      "writes": ["capabilities/processes/[id]"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Record the plan and its proving runs as evidence on the handoff, and raise any line that a contract or a regulation fixes rather than the venture.",
+      "writes": ["decisions/*"],
+      "raises": ["legal-or-terms"]
+    }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "lines-and-checks-real", "kind": "review", "check": "Does every characteristic have a line that can be judged the same way twice, and was every check proved on a known good and a known bad case before it was made a control point?", "reviewer": "strategy-lead" }
+  ]
+}

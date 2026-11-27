@@ -1,0 +1,42 @@
+{
+  "id": "13-1-2-define-and-manage-process-frameworks",
+  "function": "capabilities",
+  "process": "13.1.2",
+  "title": "Define and manage process frameworks",
+  "goal": "Every process record sits under the APQC process group it belongs to, the processes that cross functions are named as such with each function they touch, and the handoff points between those functions are written down.",
+  "measures": ["flow_and_lead_time"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["capabilities/intake"] },
+  "reads": [
+    "capabilities/processes",
+    "operations/department",
+    "operations/handoff",
+    "operations/activity-briefing/capabilities"
+  ],
+  "steps": [
+    {
+      "id": "establish-process-framework",
+      "do": "Place each process record under the APQC process group that matches the work it does, read from the venture's activity briefing, and note on the record which group it sits in so two names for the same work are found and merged.",
+      "skill": "manage-business-processes",
+      "activity": "13.1.2.1",
+      "writes": ["capabilities/processes/[id]"]
+    },
+    {
+      "id": "identify-cross-functional-processes",
+      "do": "Find the processes whose steps are done by more than one function, from the handoffs each run produced, fill the record's functions field with every function it touches, and write the point where work passes from one to the next as a step with a control point.",
+      "skill": "manage-business-processes",
+      "activity": "13.1.2.2",
+      "writes": ["capabilities/processes/[id]"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Record the framework as it now stands on the handoff as evidence, and raise to the strategy lead which uncovered process group the venture should write a process for next.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "crossings-named", "kind": "review", "check": "Does every process that more than one function works name each of those functions and the step where work passes between them?", "reviewer": "strategy-lead" }
+  ]
+}

@@ -1,0 +1,72 @@
+{
+  "id": "11-4-5-share-knowledge-of-specific-risks-across-other",
+  "function": "risk-and-compliance",
+  "process": "11.4.5",
+  "title": "Share knowledge of specific risks across other parts of the organization",
+  "goal": "Each function that owns a record or a dependency a live risk names has been sent that risk with what is needed back, and every answer is recorded on the risk with who said it and when.",
+  "measures": [
+    "compliance_met"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "risk-and-compliance/intake"
+    ]
+  },
+  "reads": [
+    "legal/risks",
+    "legal/obligations",
+    "operations/department",
+    "operations/handoff",
+    "it/connections",
+    "evidence"
+  ],
+  "steps": [
+    {
+      "id": "pick-what-is-worth-sharing",
+      "do": "Choose the few risks and test results another function must know because it owns a record or a dependency the risk names, and leave the rest of the register where it is instead of sending all of it.",
+      "skill": "manage-business-resiliency"
+    },
+    {
+      "id": "send-it-to-each-owner",
+      "do": "Send each of those functions one handoff carrying the risk, why it touches that function's records, the treatment owner, the review date and the one thing you need back from it.",
+      "skill": "manage-business-resiliency",
+      "writes": [
+        "operations/handoff/[id]"
+      ]
+    },
+    {
+      "id": "record-what-came-back",
+      "do": "Record each answer on the risk it changes with who said it and when, move the range only when the answer is evidence rather than an opinion, and close the handoff with what it produced.",
+      "skill": "manage-business-resiliency",
+      "writes": [
+        "legal/risks/[id]"
+      ]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Add each answer that changed a range to the decision the risk bears on, and raise to the finance lead any function that answered nothing on a risk it owns.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "shared-and-answered",
+      "kind": "review",
+      "check": "Did every function that owns a record a shared risk names get one handoff, and is each answer recorded on the risk with who said it and when?",
+      "reviewer": "finance-lead"
+    }
+  ]
+}

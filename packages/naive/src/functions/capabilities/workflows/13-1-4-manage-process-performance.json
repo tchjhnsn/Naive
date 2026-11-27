@@ -1,0 +1,54 @@
+{
+  "id": "13-1-4-manage-process-performance",
+  "function": "capabilities",
+  "process": "13.1.4",
+  "title": "Manage process performance",
+  "goal": "Every active process record carries runs, cycle time, rework rate and first-pass yield as of today, cited to the handoffs they came from, and whoever runs the work has what they need to run it the written way.",
+  "measures": ["flow_and_lead_time"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["capabilities/intake"] },
+  "reads": [
+    "capabilities/processes",
+    "operations/handoff",
+    "evidence",
+    "people/team-plan"
+  ],
+  "steps": [
+    {
+      "id": "provide-process-training",
+      "do": "For each active process, give the role that runs it the record's steps and control points in the order it will meet them, and note on the record the date and the person or agent that was walked through it.",
+      "skill": "manage-business-processes",
+      "activity": "13.1.4.1",
+      "writes": ["capabilities/processes/[id]"],
+      "consider": {
+        "why": "A procedure nobody has been walked through is run from memory, and the record then stops matching the work.",
+        "when": "Someone other than the person who wrote the process now runs it."
+      }
+    },
+    {
+      "id": "support-process-execution",
+      "do": "Answer the questions a run raises by reading the record rather than by changing it, and list each place where the record was silent or wrong so the next definition run can fix it.",
+      "skill": "manage-business-processes",
+      "activity": "13.1.4.2",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "measure-and-report-process-performance",
+      "do": "Count this window's runs from the handoffs, compute median cycle time from trigger to done, the share of runs reopened and the share whose done criteria passed on the first try, write them with the as-of date, and name any further measure the process needs that the record has no field for.",
+      "skill": "manage-business-processes",
+      "activity": "13.1.4.3",
+      "writes": ["capabilities/processes/[id]"],
+      "raises": ["domain-fact"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Report each process as faster, slower or unchanged since the last window with the handoffs behind the number, and raise to the strategy lead the one process whose measures say it should be worked on next.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "measures-cited", "kind": "review", "check": "Does every measure written in this run name the handoffs it was counted from and the date it is as of, with no number carried over unchanged from an earlier window?", "reviewer": "strategy-lead" }
+  ]
+}

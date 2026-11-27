@@ -1,0 +1,95 @@
+{
+  "id": "4-3-1-schedule-production",
+  "function": "supply-chain",
+  "process": "4.3.1",
+  "title": "Schedule production",
+  "goal": "Each production run is scheduled with its quantity, its lot, the materials that must be on hand by a date and the maintenance that must happen first, and it is released only after a person has approved what it commits.",
+  "measures": ["flow_and_lead_time", "cost_or_time_saved"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["supply-chain/intake"] },
+  "reads": [
+    "product",
+    "supply-chain/suppliers",
+    "supply-chain/purchase-orders",
+    "deals",
+    "assets/register",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "model-and-simulate-plant",
+      "do": "Model the line or bench as stations with their cycle times and buffers, run the planned quantity through it and report the output per day, the station that limits it and what one more pair of hands or one more fixture would change.",
+      "skill": "produce-assemble-test-product",
+      "activity": "4.3.1.1",
+      "consider": {
+        "why": "Finding the limiting station on paper is cheaper than finding it halfway through a run.",
+        "when": "The venture assembles in more than two steps or plans to add people or fixtures."
+      }
+    },
+    {
+      "id": "generate-line-level-plan",
+      "do": "Turn the master schedule into a plan per line or bench for the period, how many units each one builds in each week and in what order the products run, and name the changeovers that cost time.",
+      "skill": "produce-assemble-test-product",
+      "activity": "4.3.1.2"
+    },
+    {
+      "id": "generate-detailed-schedule",
+      "do": "Break the line plan down to days, with the hours each build needs, who is doing it and the materials and tools that must be at hand by the morning it starts, and list anything missing with the date it must arrive.",
+      "skill": "produce-assemble-test-product",
+      "activity": "4.3.1.3"
+    },
+    {
+      "id": "schedule-production-orders-and-create-lots",
+      "do": "Write each build as a production order with its product, quantity, planned dates and lot number under the venture's numbering rule, and record which purchase orders supply its materials so the lot can be traced back later.",
+      "skill": "produce-assemble-test-product",
+      "activity": "4.3.1.4"
+    },
+    {
+      "id": "plan-for-preventive-maintenance",
+      "do": "List the equipment, tooling and test gear the schedule depends on, with the service, calibration or consumable each needs and when it is next due, and place that work in the schedule where it does not block a build.",
+      "skill": "produce-assemble-test-product",
+      "activity": "4.3.1.5",
+      "consider": {
+        "why": "A mould, a press or a test rig that fails mid-run stops everything downstream and is usually due for service when it does.",
+        "when": "The venture owns or hires equipment or tooling that a build depends on."
+      }
+    },
+    {
+      "id": "request-unplanned-maintenance",
+      "do": "When something breaks, write the request with what failed, what it blocks, when it is needed back and the quote or rate you have for fixing it, and put it to the founder as a spend decision with the cost of the delay beside it.",
+      "skill": "produce-assemble-test-product",
+      "activity": "4.3.1.6",
+      "raises": ["spend-money"],
+      "consider": {
+        "why": "The cost of a repair is judged against the cost of the builds it is holding up, which only the schedule shows.",
+        "when": "Equipment or tooling a scheduled build depends on has failed."
+      }
+    },
+    {
+      "id": "release-production-orders-and-create-lots",
+      "do": "Release a production order only when its materials are on hand, its procedure and acceptance standard are current and the founder has approved what the run commits in money and parts, then record the release date, the lot and what was authorised.",
+      "skill": "produce-assemble-test-product",
+      "activity": "4.3.1.7",
+      "raises": ["spend-money", "public-commitment"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Add a decision for each run waiting on an approval, a part or a repair, with the quantity at stake, the cost and the days the delay adds, and hand the order of that work to the product lead.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "nothing-released-without-materials-or-approval",
+      "kind": "review",
+      "check": "Does every released production order have its materials on hand, a lot number and a person's approval recorded, and does every unreleased run say what it is waiting for?",
+      "reviewer": "product-lead"
+    }
+  ]
+}

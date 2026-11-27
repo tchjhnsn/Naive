@@ -1,0 +1,79 @@
+{
+  "id": "7-5-3-manage-employee-assistance-and-retention",
+  "function": "human-capital",
+  "process": "7.5.3",
+  "title": "Manage employee assistance and retention",
+  "goal": "How the venture actually works is written down, hours, place, time off and how flexibility is asked for and agreed, and the support it can honestly offer when something goes wrong in a person's life is written with its cost and its limit.",
+  "measures": [
+    "cost_or_time_saved",
+    "compliance_met"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "human-capital/intake"
+    ]
+  },
+  "reads": [
+    "people",
+    "people/founders",
+    "people/team-plan",
+    "governance/internal-terms",
+    "legal/obligations",
+    "finance/budget",
+    "purpose/money/summary",
+    "operations/handoff",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "deliver-work-life-balance-programs",
+      "do": "Write how the venture actually works, the hours it expects, where people work from, how time off is taken, how flexible working is asked for and agreed, and any travel or commuting support it gives, and hand it to the founder to adopt.",
+      "activity": "7.5.3.1",
+      "skill": "reward-and-retain-employees",
+      "raises": [
+        "legal-or-terms"
+      ]
+    },
+    {
+      "id": "develop-employee-and-family-support",
+      "do": "List the support the venture can honestly offer when something goes wrong in a person's life, unpaid or paid leave, an advance, a pointer to an outside service, each with its cost and its limit, and leave every offer to the founder to make.",
+      "activity": "7.5.3.2",
+      "skill": "reward-and-retain-employees",
+      "raises": [
+        "spend-money"
+      ],
+      "consider": {
+        "why": "Support promised and then withdrawn is worse than support never offered, and an early venture's limits are tight.",
+        "when": "Someone other than the founders works on the venture, or the founder asks."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Open a decision for anything the working pattern or the support list commits the venture to, attach what the law where each person works requires as evidence, and tell the strategy lead which commitment is the most expensive.",
+      "skill": "reward-and-retain-employees",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities",
+        "spend-money"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "working-pattern-adopted",
+      "kind": "review",
+      "check": "Is the venture's working pattern written down and adopted by the founder, and does every support offer state its cost and its limit?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

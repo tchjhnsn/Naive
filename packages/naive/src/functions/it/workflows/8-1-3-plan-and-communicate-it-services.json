@@ -1,0 +1,23 @@
+{
+  "id": "8-1-3-plan-and-communicate-it-services",
+  "function": "it",
+  "process": "8.1.3",
+  "title": "Plan and communicate IT services",
+  "goal": "Everyone who depends on the venture's systems knows what they can rely on, what is coming and what is not coming, and each service the venture plans to offer its own functions has an indicator that says whether it is working.",
+  "measures": ["cost_or_time_saved", "compliance_met"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["it/intake"] },
+  "reads": ["venture", "it/connections", "people/team-plan", "foundation/goals", "operations/handoff", "decisions/*"],
+  "steps": [
+    { "id": "manage-it-customer-expectations", "do": "Write on the handoff, for each person and agent role that depends on a system, what it can rely on today and what it cannot, and name every expectation you found that the records do not support so nobody plans on it.", "skill": "develop-and-manage-it-customer-relationships", "activity": "8.1.3.1" },
+    { "id": "define-future-it-services", "do": "List the services the venture's own functions will need next from IT (a credential of their own, a scoped agent token, a restore they can test, a connection to a system they do not have yet), each with the capability cluster it belongs to and the connection it would run on.", "skill": "develop-and-manage-it-customer-relationships", "activity": "8.1.3.2" },
+    { "id": "determine-it-performance-indicators", "do": "For each service, name the one indicator that would show it is working and where that number can be read without asking anyone (the provider's own status page, the connection's last sync date, the spend register), and say plainly where no such number exists yet.", "skill": "develop-and-manage-it-customer-relationships", "activity": "8.1.3.3", "writes": ["it/connections/[id]"] },
+    { "id": "create-it-marketing-messages", "do": "Draft the short internal note that tells the venture's functions and their agents what each system is for, what it is authoritative for and what they must never do with it, and hand it to the founder, who decides whether any of it is said outside the venture.", "skill": "develop-and-manage-it-customer-relationships", "activity": "8.1.3.4", "consider": { "why": "An agent that does not know which system is authoritative writes the same fact in two places.", "when": "The venture has more than one person or more than three agent roles reaching outside systems." } },
+    { "id": "create-it-service-marketing-plan", "do": "Draft on the handoff when and how each note reaches the people and agent roles that need it (with the brief, in the intake meeting, in the workflow step that names the system) and hand the plan to the founder, who decides what is announced and when.", "skill": "develop-and-manage-it-customer-relationships", "activity": "8.1.3.5", "ask": true, "consider": { "why": "A note nobody reads at the moment they need it changes nothing.", "when": "The founder has approved an internal note from the step before." } },
+    { "id": "feed-decisions", "do": "Add each service with no indicator and each expectation the records do not support to the decision it bears on as evidence, and propose to the product lead which service to make real first.", "skill": "develop-and-manage-it-customer-relationships", "writes": ["decisions/*"], "raises": ["set-priorities", "domain-fact"] }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "services-measurable", "kind": "review", "check": "Does every planned IT service name one indicator and where its number is read, or say plainly that no such number exists, and has the founder approved anything that would be said outside the venture?", "reviewer": "product-lead" }
+  ]
+}

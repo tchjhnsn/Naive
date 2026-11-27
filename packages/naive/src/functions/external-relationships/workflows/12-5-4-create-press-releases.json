@@ -1,0 +1,22 @@
+{
+  "id": "12-5-4-create-press-releases",
+  "function": "external-relationships",
+  "process": "12.5.4",
+  "title": "Create press releases",
+  "goal": "The release says one thing that happened, with the record behind every figure, one quote the founder actually approved, and no line that fails the publication policy or the rule that nothing public may say the venture is raising while its exemption forbids it.",
+  "measures": ["compliance_met","learning"],
+  "trigger": {"kind":"request"},
+  "requires": {"meetings":["external-relationships/intake"]},
+  "reads": ["governance/publication-policy","marketing/voice","marketing/brand","marketing/message","product","purpose/money/summary","investor-relations/raises","customers","decisions/*"],
+  "steps": [
+    {"id":"name-what-happened","do":"Name the thing that happened with the record that shows it happened and its date, and when nothing has happened say so and write no release.","skill":"manage-public-relations-program"},
+    {"id":"draft-the-release","do":"Draft it from the records and the voice record, what happened, when, who it is for and the facts a reader can check with each figure naming its record, and ask the founder for the one quote rather than writing words in their mouth.","ask":true,"skill":"manage-public-relations-program","writes":["operations/handoff/[id]"]},
+    {"id":"check-every-line-against-the-gates","do":"Check every claim against the publication policy and the record behind it, and against the rule that nothing public may say the venture is raising while it relies on an exemption that forbids it, and list each line that fails with the reason.","skill":"manage-public-relations-program","writes":["operations/handoff/[id]"]},
+    {"id":"hand-it-over-for-approval","do":"Raise the decision for the founder to approve the exact text, and change not one word after approval without raising it again.","skill":"manage-public-relations-program","writes":["decisions/*"],"raises":["public-commitment"]},
+    {"id":"feed-decisions","do":"Add the approved release to the decision it serves as evidence, and propose to the strategy lead whether the next thing that happens is worth a release at all.","skill":"manage-public-relations-program","writes":["decisions/*"],"raises":["set-priorities"]}
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "release-checkable", "kind": "review", "check": "Does every figure in the release name the record it came from, is the quote one the founder approved, and does no line fail the publication policy or the raise exemption?", "reviewer": "strategy-lead" }
+  ]
+}

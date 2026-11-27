@@ -1,0 +1,91 @@
+{
+  "id": "7-1-3-monitor-and-update-hr-strategies-plans-and",
+  "function": "human-capital",
+  "process": "7.1.3",
+  "title": "Monitor and update HR strategies, plans, and policies",
+  "goal": "Every people measure the venture set has a current reading with its source, each goal says what the people work changed about it, and the changes the readings call for stand as proposed changes to the plan.",
+  "measures": [
+    "cost_or_time_saved",
+    "compliance_met"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "human-capital/intake"
+    ]
+  },
+  "reads": [
+    "people",
+    "people/team-plan",
+    "people/founders",
+    "foundation/goals",
+    "foundation/telos",
+    "operations/activity-summary",
+    "finance/spend",
+    "purpose/money/summary",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "measure-realization-of-objectives",
+      "do": "Read each people measure the strategy set against the records it is defined on, report the number, the period and the record it came from, and say plainly which measures the records cannot yet produce.",
+      "activity": "7.1.3.1",
+      "skill": "develop-and-manage-human-resources-hr-planning"
+    },
+    {
+      "id": "measure-contribution-to-business-strategy",
+      "do": "For each goal in `foundation/goals`, say what the people work changed about it in time saved, money saved or an obligation met, with the arithmetic, and say where it changed nothing.",
+      "activity": "7.1.3.2",
+      "skill": "develop-and-manage-human-resources-hr-planning"
+    },
+    {
+      "id": "communicate-plans-and-updates",
+      "do": "Draft the update for the people who work on the venture and, where one is owed, for the board or investors from `governance/board` and `investor-relations/updates`, and hand it to the founder, who sends anything that leaves the venture.",
+      "activity": "7.1.3.3",
+      "skill": "develop-and-manage-human-resources-hr-planning",
+      "consider": {
+        "why": "An update is owed only to someone who is waiting for one.",
+        "when": "Someone other than the founders works on the venture, or a board or investor update is due."
+      }
+    },
+    {
+      "id": "review-and-revise-hr-plans",
+      "do": "Propose the changes to the workforce plan, the policies and the measures that these readings call for, each with what it costs and what it stops, as a decision for the founder, since only a person writes `people/team-plan`.",
+      "activity": "7.1.3.4",
+      "skill": "develop-and-manage-human-resources-hr-planning",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "strategy-or-constitution",
+        "set-priorities"
+      ]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Add each reading as evidence to the decision it bears on, close out any decision the readings have answered, and tell the strategy lead which measure moved least and what you would change first.",
+      "skill": "develop-and-manage-human-resources-hr-planning",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "readings-sourced",
+      "kind": "review",
+      "check": "Does every reading in this run name the record and period it came from, and does every proposed change to the plan say what it costs and what it stops?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

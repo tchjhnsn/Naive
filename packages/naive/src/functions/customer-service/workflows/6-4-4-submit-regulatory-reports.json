@@ -1,0 +1,77 @@
+{
+  "id": "6-4-4-submit-regulatory-reports",
+  "function": "customer-service",
+  "process": "6.4.4",
+  "title": "Submit regulatory reports",
+  "goal": "Which report a regulator is owed, to whom and by when is answered in writing, and any report owed is drafted with its facts and held for the founder and counsel.",
+  "measures": [
+    "usage_or_adoption"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "customer-service/intake"
+    ]
+  },
+  "reads": [
+    "legal/obligations",
+    "legal/risks",
+    "support/cases",
+    "customers",
+    "product",
+    "product/bugs"
+  ],
+  "steps": [
+    {
+      "id": "name-the-duty",
+      "do": "Read the obligation records and say which report this incident or recall owes, to which body, in what form and inside how many days from which date, or that none is owed.",
+      "skill": "manage-product-recalls-and-regulatory-audits"
+    },
+    {
+      "id": "assemble-the-facts",
+      "do": "Assemble what the report asks for from the cases, the bugs and the recall decision, the timeline, the units and customers affected, the hazard and what the venture did, with no personal detail the duty does not require.",
+      "consider": {
+        "why": "A report assembled from the records is defensible, and one assembled from memory is not.",
+        "when": "An obligation names a report this incident owes."
+      },
+      "skill": "manage-product-recalls-and-regulatory-audits"
+    },
+    {
+      "id": "draft-and-hold",
+      "do": "Draft the report in the form the duty asks for and hand it to the founder and counsel to file, naming the deadline and what is still missing; never file it.",
+      "raises": [
+        "legal-or-terms"
+      ],
+      "consider": {
+        "why": "A regulator reads a filing as the venture's own words, so only the founder and counsel may send one.",
+        "when": "An obligation names a report this incident owes."
+      },
+      "skill": "manage-product-recalls-and-regulatory-audits"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Record which duty was read, the verdict on each and the deadline it carries, and name the decision the filing bears on.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "domain-fact"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "duty-answered",
+      "kind": "review",
+      "check": "Is there a written answer naming the body, the form and the deadline of every report owed, or saying none is owed, and is any draft held for the founder and counsel rather than filed?",
+      "reviewer": "growth-lead"
+    }
+  ]
+}

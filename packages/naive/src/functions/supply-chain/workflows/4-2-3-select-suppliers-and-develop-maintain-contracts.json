@@ -1,0 +1,70 @@
+{
+  "id": "4-2-3-select-suppliers-and-develop-maintain-contracts",
+  "function": "supply-chain",
+  "process": "4.2.3",
+  "title": "Select suppliers and develop/maintain contracts",
+  "goal": "Each item the venture buys has a chosen supplier with the comparison behind the choice on its record, an approval by a person, and the agreed terms and dates written where the next order can read them.",
+  "measures": ["cost_or_time_saved", "flow_and_lead_time"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["supply-chain/intake"] },
+  "reads": [
+    "supply-chain/suppliers",
+    "supply-chain/purchase-orders",
+    "product",
+    "legal/obligations",
+    "legal/risks",
+    "finance/budget",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "select-suppliers",
+      "do": "Put the candidates for an item side by side on unit price at the quantity the venture will buy, minimum order, lead time, certifications, country and what the venture would lose if that supplier stopped, then bring the comparison to the founder with your recommendation and record the choice the founder makes.",
+      "skill": "procure-materials-and-services",
+      "activity": "4.2.3.1",
+      "writes": ["supply-chain/suppliers/[id]"],
+      "raises": ["legal-or-terms"]
+    },
+    {
+      "id": "certify-and-validate-suppliers",
+      "do": "Collect the evidence that the chosen supplier can do what it claims, its certifications with their expiry, a sample or first article checked against the acceptance standard, its business registration and its references, and write each one on the supplier record with the date, leaving approval to the founder.",
+      "skill": "procure-materials-and-services",
+      "activity": "4.2.3.2",
+      "writes": ["supply-chain/suppliers/[id]"]
+    },
+    {
+      "id": "negotiate-and-establish-contracts",
+      "do": "Draft what the founder negotiates from, the price at each quantity, the deposit and balance split, the Incoterms rule and named place, the lead time and the remedy for a late or failing lot, with the walk-away point marked, and record the agreed terms on the supplier record once the founder has agreed and signed them.",
+      "skill": "procure-materials-and-services",
+      "activity": "4.2.3.3",
+      "writes": ["supply-chain/suppliers/[id]"],
+      "raises": ["legal-or-terms"]
+    },
+    {
+      "id": "manage-contracts",
+      "do": "Keep each agreement live on the supplier record, the price validity, the renewal and expiry dates, any minimum the venture has committed to and how much of it is used, and tell the founder a month before anything expires or a commitment will be missed.",
+      "skill": "procure-materials-and-services",
+      "activity": "4.2.3.4",
+      "writes": ["supply-chain/suppliers/[id]"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Add a decision for every supplier awaiting approval and every term the founder must accept, each with the comparison, the evidence collected and what the venture gives up by choosing it, and hand the order of that work to the product lead.",
+      "writes": ["decisions/*"],
+      "raises": ["legal-or-terms", "set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "choice-evidenced-and-approved",
+      "kind": "review",
+      "check": "Does every chosen supplier carry the comparison it was chosen on, its validated certifications and its agreed terms, and was it approved by a person rather than by the agent?",
+      "reviewer": "product-lead"
+    }
+  ]
+}

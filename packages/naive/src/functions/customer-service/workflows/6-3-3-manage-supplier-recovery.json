@@ -1,0 +1,77 @@
+{
+  "id": "6-3-3-manage-supplier-recovery",
+  "function": "customer-service",
+  "process": "6.3.3",
+  "title": "Manage supplier recovery",
+  "goal": "Each fault that traces to a supplier is gathered into one claim with its evidence and its amount, and the founder has the position to negotiate from.",
+  "measures": [
+    "revenue"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "customer-service/intake"
+    ]
+  },
+  "reads": [
+    "support/cases",
+    "supply-chain/suppliers",
+    "supply-chain/purchase-orders",
+    "product/bugs",
+    "finance/spend",
+    "legal/obligations"
+  ],
+  "steps": [
+    {
+      "id": "create-claims",
+      "activity": "6.3.3.1",
+      "do": "Group the cases and claims whose cause traces to one supplier, draft the recovery claim with the units affected, what each cost the venture and the term of the purchase order it relies on, and record it on the handoff.",
+      "writes": [
+        "operations/handoff/[id]"
+      ],
+      "consider": {
+        "why": "Costs the venture carried for a supplier's fault are recoverable only while the evidence is still together.",
+        "when": "A warranty claim or a defect traces to a part or a service the venture bought."
+      },
+      "skill": "service-products-after-sales"
+    },
+    {
+      "id": "negotiate-recoveries",
+      "activity": "6.3.3.2",
+      "do": "Prepare the founder's position, the amount claimed, the evidence, the term relied on and what would be acceptable, and leave the conversation with the supplier and any settlement to the founder.",
+      "raises": [
+        "legal-or-terms"
+      ],
+      "consider": {
+        "why": "Talking terms with a supplier commits the venture, and only a person does that.",
+        "when": "A recovery claim is ready and the founder is willing to raise it."
+      },
+      "skill": "service-products-after-sales"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Record what each recovery claim is worth and what it rests on, name the decision it bears on, and recommend to the growth lead whether the supplier, the part or the term is the thing to change.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "recovery-evidenced",
+      "kind": "review",
+      "check": "Does each recovery claim name the supplier, the units, the cost to the venture and the purchase order term it relies on, and is the negotiation left to the founder?",
+      "reviewer": "growth-lead"
+    }
+  ]
+}

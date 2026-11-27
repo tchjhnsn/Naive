@@ -1,0 +1,140 @@
+{
+  "id": "5-2-1-manage-service-delivery-resource-demand",
+  "function": "service-delivery",
+  "process": "5.2.1",
+  "title": "Manage service delivery resource demand",
+  "goal": "The venture has one agreed forecast of delivery work for the next quarter, week by week, with the skills each forecast order needs and the gaps named, and the error of the last forecast measured and kept.",
+  "measures": [
+    "revenue",
+    "flow_and_lead_time"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "service-delivery/intake"
+    ]
+  },
+  "reads": [
+    "sales/opportunities",
+    "service-delivery/engagements",
+    "service-delivery/offers",
+    "customers",
+    "operations/handoff",
+    "operations/activity",
+    "people/team",
+    "people/team-plan",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "monitor-pipeline",
+      "do": "Read the open opportunities and list each one that would become delivery work, with the offer it would run, the start the sales record expects, the hours it would take at that offer's usual duration and the probability the record carries, on the handoff.",
+      "skill": "manage-service-delivery-resources",
+      "activity": "5.2.1.1",
+      "writes": [
+        "operations/handoff/[id]"
+      ]
+    },
+    {
+      "id": "baseline-forecast",
+      "do": "Build the baseline week by week for the next quarter from the signed engagements' remaining hours plus each pipeline opportunity's hours weighted by its own probability, and show the arithmetic so the founder can change one number and see what it does.",
+      "skill": "manage-service-delivery-resources",
+      "activity": "5.2.1.2",
+      "writes": [
+        "operations/handoff/[id]"
+      ]
+    },
+    {
+      "id": "collaborate-with-customers",
+      "do": "Draft the short question that asks each client with agreed but unscheduled work, or a retainer coming up for renewal, when they expect it to start and how big it is, for the founder to send, and record each answer against that client's line in the forecast.",
+      "skill": "manage-service-delivery-resources",
+      "activity": "5.2.1.3",
+      "ask": true,
+      "writes": [
+        "operations/handoff/[id]"
+      ],
+      "raises": [
+        "public-commitment"
+      ],
+      "consider": {
+        "why": "A client's own expected start is better than a guess from the pipeline, and only the founder may ask for it.",
+        "when": "A client has work that is agreed but not scheduled, or a retainer due for renewal inside the forecast window."
+      }
+    },
+    {
+      "id": "consensus-forecast",
+      "do": "Put the baseline next to what the founder expects, ask about every week where the two differ by more than a quarter, and write the one agreed number per week with the reason for each departure from the baseline.",
+      "skill": "manage-service-delivery-resources",
+      "activity": "5.2.1.4",
+      "ask": true,
+      "writes": [
+        "operations/handoff/[id]"
+      ]
+    },
+    {
+      "id": "skills-for-orders",
+      "do": "For every signed and forecast order, list the skills its deliverables need from the offer's procedure, mark each one held by the founder, done by a named agent or missing, and name the orders the venture could not deliver today.",
+      "skill": "manage-service-delivery-resources",
+      "activity": "5.2.1.5",
+      "writes": [
+        "operations/handoff/[id]"
+      ]
+    },
+    {
+      "id": "monitor-against-forecast",
+      "do": "Compare the hours actually delivered since the last run, taken from the closed handoffs and the activity log, with what the forecast said for those weeks, and revise the remaining weeks wherever the difference carries into them.",
+      "skill": "manage-service-delivery-resources",
+      "activity": "5.2.1.6",
+      "writes": [
+        "operations/handoff/[id]"
+      ]
+    },
+    {
+      "id": "evaluate-approach",
+      "do": "Look across the forecasts made so far, say which part carried the error (the pipeline probabilities, the hours assumed per offer or the start dates), change that part of the method and write what changed and why.",
+      "skill": "manage-service-delivery-resources",
+      "activity": "5.2.1.7",
+      "writes": [
+        "operations/handoff/[id]"
+      ],
+      "consider": {
+        "why": "The method is worth changing only once there are enough past forecasts to say where it goes wrong.",
+        "when": "Three or more forecasts have been compared with what was delivered."
+      }
+    },
+    {
+      "id": "forecast-accuracy",
+      "do": "Compute the last forecast's error as the absolute percentage difference between forecast and delivered hours for each week it covered, and keep the series on the handoff so the error can be read over time.",
+      "skill": "manage-service-delivery-resources",
+      "activity": "5.2.1.8",
+      "writes": [
+        "operations/handoff/[id]"
+      ]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Name the open decision each gap bears on, add the forecast and the skills gap there as evidence, and recommend to the product lead which order to take and which to decline or delay.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "one-forecast-the-founder-stands-behind",
+      "kind": "review",
+      "check": "Is there one agreed hours-per-week forecast for the next quarter, with every departure from the baseline explained and the last forecast's error measured?",
+      "reviewer": "product-lead"
+    }
+  ]
+}

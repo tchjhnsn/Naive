@@ -1,0 +1,122 @@
+{
+  "id": "8-7-5-define-service-support-planning",
+  "function": "it",
+  "process": "8.7.5",
+  "title": "Define service support planning",
+  "goal": "Support is planned against what actually arrives: the demand is counted, the hours and skills needed are named, the answers are written down once, escalation is defined, and the performance of the whole is measured.",
+  "measures": ["cost_or_time_saved", "compliance_met"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["it/intake"] },
+  "reads": [
+    "support/cases",
+    "support/policy",
+    "product/bugs",
+    "it/connections",
+    "people/team-plan",
+    "people/team",
+    "supply-chain/suppliers",
+    "capabilities/postmortems",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "demand-patterns",
+      "do": "Count the support requests of the last period by kind, by hour and by what caused them, and name the three causes behind the largest share, since those are the ones worth fixing rather than staffing.",
+      "skill": "create-and-manage-support-services-solutions",
+      "activity": "8.7.5.1",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "resource-levels",
+      "do": "From that count, say how many hours of a person's time and which agent roles support needs each week, what each is responsible for, and which skill the venture does not have.",
+      "skill": "create-and-manage-support-services-solutions",
+      "activity": "8.7.5.2",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "knowledge-repository",
+      "do": "Write one short answer for each request the venture has now seen twice, with the symptom, the cause and the steps, keep it next to the support tool where whoever answers will find it, and delete the answers that no longer hold.",
+      "skill": "create-and-manage-support-services-solutions",
+      "activity": "8.7.5.3",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "support-learning",
+      "do": "After each closed case that took longer than its rating allows, write what the venture learned and which written answer, check or product fix it changes, and feed the change back into the repository.",
+      "skill": "create-and-manage-support-services-solutions",
+      "activity": "8.7.5.4",
+      "writes": ["operations/handoff/[id]"],
+      "consider": {
+        "why": "Support that learns nothing answers the same question forever.",
+        "when": "At least one case has taken longer than its rating allows since the last run."
+      }
+    },
+    {
+      "id": "communicate-needs",
+      "do": "Tell the founder in one message what support will take next period, the hours, the gaps and the fixes that would remove the most requests, and say plainly what will not be answered if it stays as it is.",
+      "skill": "create-and-manage-support-services-solutions",
+      "activity": "8.7.5.5",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "escalation-mechanisms",
+      "do": "Write when a request leaves whoever is holding it and goes up: the ratings, the time limits, who it goes to, how they are reached outside hours, and what the asker is told as it moves.",
+      "skill": "create-and-manage-support-services-solutions",
+      "activity": "8.7.5.6",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "manage-support-resources",
+      "do": "Keep the support rota and the access it needs current: who is on, which agent role covers which channel, what each may do without asking, and revoke the access of anyone no longer on it.",
+      "skill": "create-and-manage-support-services-solutions",
+      "activity": "8.7.5.7",
+      "writes": ["it/connections/[id]"],
+      "raises": ["security-tightening"]
+    },
+    {
+      "id": "external-providers",
+      "do": "Prepare what the founder needs for each outside provider the venture depends on for support, the response time its terms promise, the way to raise a ticket, the account and the renewal date, and leave every conversation and every commitment with the provider to the founder.",
+      "skill": "create-and-manage-support-services-solutions",
+      "activity": "8.7.5.8",
+      "writes": ["it/connections/[id]"],
+      "raises": ["legal-or-terms"],
+      "consider": {
+        "why": "A promise from a provider only matters when the venture knows how to invoke it and who may speak to them.",
+        "when": "The venture pays an outside provider for support or depends on one to keep a service running."
+      }
+    },
+    {
+      "id": "triage-incidents",
+      "do": "Write and keep current the rule for sorting an incoming incident: how its rating is read from what it stops and how many it affects, which first step each rating takes, and when it becomes an outage the founder is woken for.",
+      "skill": "create-and-manage-support-services-solutions",
+      "activity": "8.7.5.9",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "monitor-support-performance",
+      "do": "Report, for the period, how long first answers took against the promise, how many cases were reopened, how many went up an escalation, and what the askers said, and name the one number to improve next.",
+      "skill": "create-and-manage-support-services-solutions",
+      "activity": "8.7.5.10",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Add the demand count and the performance figures as evidence to the decision they bear on, and raise to the product lead whether to fix the cause, write the answer down or buy the hours.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "planned-against-real-demand",
+      "kind": "review",
+      "check": "Is the support plan built on a count of what actually arrived rather than a guess, does every request seen twice have a written answer, and does escalation name who is reached, how and within what time?",
+      "reviewer": "product-lead"
+    }
+  ]
+}

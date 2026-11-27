@@ -1,0 +1,76 @@
+{
+  "id": "6-3-1-register-products",
+  "function": "customer-service",
+  "process": "6.3.1",
+  "title": "Register products",
+  "goal": "What every customer bought, which version and when, is either known from the records or asked of the founder, and every open case names the product it is about.",
+  "measures": [
+    "usage_or_adoption"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "customer-service/intake"
+    ]
+  },
+  "reads": [
+    "customers",
+    "deals",
+    "product",
+    "money",
+    "support/cases",
+    "support/policy"
+  ],
+  "steps": [
+    {
+      "id": "list-what-was-bought",
+      "do": "Read the customer, deal and product records and write, per customer, what they bought, which version and when, naming every customer whose purchase the records cannot say.",
+      "skill": "service-products-after-sales"
+    },
+    {
+      "id": "ask-the-gaps",
+      "do": "Ask the founder what the unknown customers bought and when, taking the ones with an open case first, and record each answer on its case rather than guessing a version.",
+      "ask": true,
+      "writes": [
+        "support/cases/[id]"
+      ],
+      "skill": "service-products-after-sales"
+    },
+    {
+      "id": "name-the-product-on-cases",
+      "do": "On every open case record the product and the version the contact is about, so a contact reason can later be counted per version instead of per customer.",
+      "writes": [
+        "support/cases/[id]"
+      ],
+      "raises": [
+        "domain-fact"
+      ],
+      "skill": "service-products-after-sales"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Report how many customers have a known purchase and how many do not, name the decision this bears on, and recommend to the growth lead whether keeping a purchase record is worth the founder's time yet.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "purchases-known",
+      "kind": "review",
+      "check": "Does every open case name the product and version it is about, and is every customer whose purchase is unknown listed for the founder?",
+      "reviewer": "growth-lead"
+    }
+  ]
+}

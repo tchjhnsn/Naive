@@ -53,6 +53,250 @@
     {
       "id": "postmortem",
       "path": "packages/naive/src/functions/capabilities/skills/postmortem/SKILL.md"
+    },
+    {
+      "id": "design-and-construct-assets",
+      "path": "packages/naive/src/functions/assets/skills/design-and-construct-assets/SKILL.md"
+    },
+    {
+      "id": "maintain-assets",
+      "path": "packages/naive/src/functions/assets/skills/maintain-assets/SKILL.md"
+    },
+    {
+      "id": "manage-asset-end-of-life",
+      "path": "packages/naive/src/functions/assets/skills/manage-asset-end-of-life/SKILL.md"
+    },
+    {
+      "id": "plan-and-acquire-assets",
+      "path": "packages/naive/src/functions/assets/skills/plan-and-acquire-assets/SKILL.md"
+    },
+    {
+      "id": "develop-and-manage-enterprise-wide-knowledge",
+      "path": "packages/naive/src/functions/capabilities/skills/develop-and-manage-enterprise-wide-knowledge/SKILL.md"
+    },
+    {
+      "id": "develop-manage-and-deliver-analytics",
+      "path": "packages/naive/src/functions/capabilities/skills/develop-manage-and-deliver-analytics/SKILL.md"
+    },
+    {
+      "id": "manage-business-processes",
+      "path": "packages/naive/src/functions/capabilities/skills/manage-business-processes/SKILL.md"
+    },
+    {
+      "id": "manage-change",
+      "path": "packages/naive/src/functions/capabilities/skills/manage-change/SKILL.md"
+    },
+    {
+      "id": "manage-content",
+      "path": "packages/naive/src/functions/capabilities/skills/manage-content/SKILL.md"
+    },
+    {
+      "id": "manage-enterprise-quality",
+      "path": "packages/naive/src/functions/capabilities/skills/manage-enterprise-quality/SKILL.md"
+    },
+    {
+      "id": "manage-environmental-health-and-safety-ehs",
+      "path": "packages/naive/src/functions/capabilities/skills/manage-environmental-health-and-safety-ehs/SKILL.md"
+    },
+    {
+      "id": "manage-portfolio-program-and-project",
+      "path": "packages/naive/src/functions/capabilities/skills/manage-portfolio-program-and-project/SKILL.md"
+    },
+    {
+      "id": "manage-sustainability",
+      "path": "packages/naive/src/functions/capabilities/skills/manage-sustainability/SKILL.md"
+    },
+    {
+      "id": "measure-and-benchmark",
+      "path": "packages/naive/src/functions/capabilities/skills/measure-and-benchmark/SKILL.md"
+    },
+    {
+      "id": "develop-customer-service-strategy",
+      "path": "packages/naive/src/functions/customer-service/skills/develop-customer-service-strategy/SKILL.md"
+    },
+    {
+      "id": "evaluate-customer-service-operations-and-customer",
+      "path": "packages/naive/src/functions/customer-service/skills/evaluate-customer-service-operations-and-customer/SKILL.md"
+    },
+    {
+      "id": "manage-product-recalls-and-regulatory-audits",
+      "path": "packages/naive/src/functions/customer-service/skills/manage-product-recalls-and-regulatory-audits/SKILL.md"
+    },
+    {
+      "id": "plan-and-manage-customer-service-contacts",
+      "path": "packages/naive/src/functions/customer-service/skills/plan-and-manage-customer-service-contacts/SKILL.md"
+    },
+    {
+      "id": "service-products-after-sales",
+      "path": "packages/naive/src/functions/customer-service/skills/service-products-after-sales/SKILL.md"
+    },
+    {
+      "id": "manage-fixed-asset-project-accounting",
+      "path": "packages/naive/src/functions/finance/skills/manage-fixed-asset-project-accounting/SKILL.md"
+    },
+    {
+      "id": "manage-internal-controls",
+      "path": "packages/naive/src/functions/finance/skills/manage-internal-controls/SKILL.md"
+    },
+    {
+      "id": "manage-international-funds-consolidation",
+      "path": "packages/naive/src/functions/finance/skills/manage-international-funds-consolidation/SKILL.md"
+    },
+    {
+      "id": "manage-taxes",
+      "path": "packages/naive/src/functions/finance/skills/manage-taxes/SKILL.md"
+    },
+    {
+      "id": "manage-treasury-operations",
+      "path": "packages/naive/src/functions/finance/skills/manage-treasury-operations/SKILL.md"
+    },
+    {
+      "id": "perform-general-accounting-and-reporting",
+      "path": "packages/naive/src/functions/finance/skills/perform-general-accounting-and-reporting/SKILL.md"
+    },
+    {
+      "id": "perform-global-trade-services",
+      "path": "packages/naive/src/functions/finance/skills/perform-global-trade-services/SKILL.md"
+    },
+    {
+      "id": "perform-planning-and-management-accounting",
+      "path": "packages/naive/src/functions/finance/skills/perform-planning-and-management-accounting/SKILL.md"
+    },
+    {
+      "id": "perform-revenue-accounting",
+      "path": "packages/naive/src/functions/finance/skills/perform-revenue-accounting/SKILL.md"
+    },
+    {
+      "id": "process-accounts-payable-and-expense",
+      "path": "packages/naive/src/functions/finance/skills/process-accounts-payable-and-expense/SKILL.md"
+    },
+    {
+      "id": "process-payroll",
+      "path": "packages/naive/src/functions/finance/skills/process-payroll/SKILL.md"
+    },
+    {
+      "id": "develop-and-manage-human-resources-hr-planning",
+      "path": "packages/naive/src/functions/human-capital/skills/develop-and-manage-human-resources-hr-planning/SKILL.md"
+    },
+    {
+      "id": "manage-employee-communication",
+      "path": "packages/naive/src/functions/human-capital/skills/manage-employee-communication/SKILL.md"
+    },
+    {
+      "id": "manage-employee-information-and-analytics",
+      "path": "packages/naive/src/functions/human-capital/skills/manage-employee-information-and-analytics/SKILL.md"
+    },
+    {
+      "id": "manage-employee-onboarding-training-and",
+      "path": "packages/naive/src/functions/human-capital/skills/manage-employee-onboarding-training-and/SKILL.md"
+    },
+    {
+      "id": "manage-employee-relations",
+      "path": "packages/naive/src/functions/human-capital/skills/manage-employee-relations/SKILL.md"
+    },
+    {
+      "id": "recruit-source-and-select-employees",
+      "path": "packages/naive/src/functions/human-capital/skills/recruit-source-and-select-employees/SKILL.md"
+    },
+    {
+      "id": "redeploy-and-retire-employees",
+      "path": "packages/naive/src/functions/human-capital/skills/redeploy-and-retire-employees/SKILL.md"
+    },
+    {
+      "id": "reward-and-retain-employees",
+      "path": "packages/naive/src/functions/human-capital/skills/reward-and-retain-employees/SKILL.md"
+    },
+    {
+      "id": "create-and-manage-support-services-solutions",
+      "path": "packages/naive/src/functions/it/skills/create-and-manage-support-services-solutions/SKILL.md"
+    },
+    {
+      "id": "deploy-services-solutions",
+      "path": "packages/naive/src/functions/it/skills/deploy-services-solutions/SKILL.md"
+    },
+    {
+      "id": "develop-and-manage-it-business-strategy",
+      "path": "packages/naive/src/functions/it/skills/develop-and-manage-it-business-strategy/SKILL.md"
+    },
+    {
+      "id": "develop-and-manage-it-customer-relationships",
+      "path": "packages/naive/src/functions/it/skills/develop-and-manage-it-customer-relationships/SKILL.md"
+    },
+    {
+      "id": "develop-and-manage-it-resilience-and-risk",
+      "path": "packages/naive/src/functions/it/skills/develop-and-manage-it-resilience-and-risk/SKILL.md"
+    },
+    {
+      "id": "develop-and-manage-services-solutions",
+      "path": "packages/naive/src/functions/it/skills/develop-and-manage-services-solutions/SKILL.md"
+    },
+    {
+      "id": "manage-information",
+      "path": "packages/naive/src/functions/it/skills/manage-information/SKILL.md"
+    },
+    {
+      "id": "develop-and-manage-marketing-plans",
+      "path": "packages/naive/src/functions/marketing-and-sales/skills/develop-and-manage-marketing-plans/SKILL.md"
+    },
+    {
+      "id": "develop-and-manage-sales-plans",
+      "path": "packages/naive/src/functions/marketing-and-sales/skills/develop-and-manage-sales-plans/SKILL.md"
+    },
+    {
+      "id": "develop-marketing-strategy",
+      "path": "packages/naive/src/functions/marketing-and-sales/skills/develop-marketing-strategy/SKILL.md"
+    },
+    {
+      "id": "develop-sales-strategy",
+      "path": "packages/naive/src/functions/marketing-and-sales/skills/develop-sales-strategy/SKILL.md"
+    },
+    {
+      "id": "understand-markets-customers-and-capabilities",
+      "path": "packages/naive/src/functions/marketing-and-sales/skills/understand-markets-customers-and-capabilities/SKILL.md"
+    },
+    {
+      "id": "develop-products-and-services",
+      "path": "packages/naive/src/functions/products/skills/develop-products-and-services/SKILL.md"
+    },
+    {
+      "id": "generate-and-define-new-product-service-ideas",
+      "path": "packages/naive/src/functions/products/skills/generate-and-define-new-product-service-ideas/SKILL.md"
+    },
+    {
+      "id": "govern-and-manage-product-service-development",
+      "path": "packages/naive/src/functions/products/skills/govern-and-manage-product-service-development/SKILL.md"
+    },
+    {
+      "id": "deliver-service-to-customer",
+      "path": "packages/naive/src/functions/service-delivery/skills/deliver-service-to-customer/SKILL.md"
+    },
+    {
+      "id": "establish-service-delivery-governance-and",
+      "path": "packages/naive/src/functions/service-delivery/skills/establish-service-delivery-governance-and/SKILL.md"
+    },
+    {
+      "id": "manage-and-operate-service-delivery-system",
+      "path": "packages/naive/src/functions/service-delivery/skills/manage-and-operate-service-delivery-system/SKILL.md"
+    },
+    {
+      "id": "manage-service-delivery-resources",
+      "path": "packages/naive/src/functions/service-delivery/skills/manage-service-delivery-resources/SKILL.md"
+    },
+    {
+      "id": "manage-logistics-and-warehousing",
+      "path": "packages/naive/src/functions/supply-chain/skills/manage-logistics-and-warehousing/SKILL.md"
+    },
+    {
+      "id": "plan-for-and-align-supply-chain-resources",
+      "path": "packages/naive/src/functions/supply-chain/skills/plan-for-and-align-supply-chain-resources/SKILL.md"
+    },
+    {
+      "id": "procure-materials-and-services",
+      "path": "packages/naive/src/functions/supply-chain/skills/procure-materials-and-services/SKILL.md"
+    },
+    {
+      "id": "produce-assemble-test-product",
+      "path": "packages/naive/src/functions/supply-chain/skills/produce-assemble-test-product/SKILL.md"
     }
   ],
   "records": [

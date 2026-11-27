@@ -1,0 +1,82 @@
+{
+  "id": "6-4-6-manage-recall-termination",
+  "function": "customer-service",
+  "process": "6.4.6",
+  "title": "Manage recall termination",
+  "goal": "The recall is closed with its exit test answered by the founder, its cases resolved or their remainder named, and the change that would prevent a repeat proposed.",
+  "measures": [
+    "usage_or_adoption"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "customer-service/intake"
+    ]
+  },
+  "reads": [
+    "support/cases",
+    "support/policy",
+    "customers",
+    "legal/obligations",
+    "product",
+    "product/bugs"
+  ],
+  "steps": [
+    {
+      "id": "test-the-exit",
+      "do": "Lay out the exit test the recall was started with, how the counts stand against it and anything an obligation still requires, and ask the founder and counsel whether the recall may end.",
+      "ask": true,
+      "raises": [
+        "legal-or-terms"
+      ],
+      "skill": "manage-product-recalls-and-regulatory-audits"
+    },
+    {
+      "id": "close-the-cases",
+      "do": "Resolve every case the recall opened with its outcome, leave open the ones where a customer is still owed something, and record the recall's end date and its final counts.",
+      "writes": [
+        "support/cases/[id]"
+      ],
+      "raises": [
+        "domain-fact"
+      ],
+      "skill": "manage-product-recalls-and-regulatory-audits"
+    },
+    {
+      "id": "carry-the-lesson",
+      "do": "Propose the one product, process or policy change that would stop this recall happening again, with the cases that justify it, and draft the policy part of it for the founder.",
+      "writes": [
+        "support/policy"
+      ],
+      "raises": [
+        "set-priorities"
+      ],
+      "skill": "manage-product-recalls-and-regulatory-audits"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Record the end of the recall with the founder's answer to the exit test, name the decision the proposed change bears on, and leave the final counts as evidence on the handoff.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "domain-fact"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "recall-closed",
+      "kind": "review",
+      "check": "Has the founder answered the exit test, is every recall case resolved or its remainder named, and is a preventing change proposed?",
+      "reviewer": "growth-lead"
+    }
+  ]
+}

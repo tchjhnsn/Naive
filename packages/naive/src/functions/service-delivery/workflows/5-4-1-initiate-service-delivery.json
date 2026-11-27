@@ -1,0 +1,126 @@
+{
+  "id": "5-4-1-initiate-service-delivery",
+  "function": "service-delivery",
+  "process": "5.4.1",
+  "title": "Initiate service delivery",
+  "goal": "The signed engagement is ready to work: its terms, dates and payment points are on the record, every deliverable has an acceptance test and a performer, the approved plan and the engagement rules are written, and the first week's handoffs are open.",
+  "measures": [
+    "revenue",
+    "flow_and_lead_time"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "service-delivery/intake"
+    ]
+  },
+  "reads": [
+    "service-delivery/engagements",
+    "service-delivery/offers",
+    "customers",
+    "sales/opportunities",
+    "legal/obligations",
+    "operations/handoff",
+    "people/team",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "review-contract-and-terms",
+      "do": "Read the signed statement of work the founder provides, write onto the engagement its deliverables, dates, payment points, limits and the date it was signed, and name every deliverable with no acceptance test and every term the venture cannot meet as it stands; you never sign anything.",
+      "skill": "deliver-service-to-customer",
+      "activity": "5.4.1.1",
+      "writes": [
+        "service-delivery/engagements/[id]"
+      ],
+      "raises": [
+        "legal-or-terms"
+      ]
+    },
+    {
+      "id": "understand-requirements",
+      "do": "Write what each deliverable must do, from the statement of work and the sales records, draft the approach for each one, mark as a guess anything no record supports, and give the founder the questions only the client can answer.",
+      "skill": "deliver-service-to-customer",
+      "activity": "5.4.1.2",
+      "ask": true,
+      "writes": [
+        "service-delivery/engagements/[id]"
+      ]
+    },
+    {
+      "id": "approve-project-plan",
+      "do": "Draft the plan deliverable by deliverable with its dates, its order and what the client must provide and when, give it to the founder to approve and send, and record the approved version and the date it was approved on the engagement.",
+      "skill": "deliver-service-to-customer",
+      "activity": "5.4.1.3",
+      "writes": [
+        "service-delivery/engagements/[id]"
+      ],
+      "raises": [
+        "public-commitment"
+      ]
+    },
+    {
+      "id": "review-customer-objectives",
+      "do": "Write what the client is trying to achieve and how they will judge it, taken from the statement of work, the customer record and the opportunity's own words, and say for each deliverable which objective it serves.",
+      "skill": "deliver-service-to-customer",
+      "activity": "5.4.1.4",
+      "writes": [
+        "service-delivery/engagements/[id]"
+      ]
+    },
+    {
+      "id": "confirm-environmental-readiness",
+      "do": "Check that every prerequisite the offer names is in place (access, data, a named contact on the client's side, the environment, the tools), list what is missing with who must provide it, and say which deliverable cannot start until it arrives.",
+      "skill": "deliver-service-to-customer",
+      "activity": "5.4.1.5",
+      "writes": [
+        "operations/handoff/[id]"
+      ]
+    },
+    {
+      "id": "assign-resources",
+      "do": "Assign each deliverable to the founder, a named agent or a named supplier with its hours and what that performer is accountable for, and write the engagement rules on the record: who the client contacts, the response time, the meeting cadence and how a change is raised.",
+      "skill": "deliver-service-to-customer",
+      "activity": "5.4.1.6",
+      "writes": [
+        "service-delivery/engagements/[id]",
+        "operations/handoff/[id]"
+      ]
+    },
+    {
+      "id": "plan-for-service-delivery",
+      "do": "Lay the assigned deliverables into weeks against the hours each performer has, name the first week's work, and open one handoff per deliverable with its acceptance test as the done criteria and its id listed on the engagement.",
+      "skill": "deliver-service-to-customer",
+      "activity": "5.4.1.7",
+      "writes": [
+        "operations/handoff/[id]",
+        "service-delivery/engagements/[id]"
+      ]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Put every deliverable without an acceptance test, every unmet prerequisite and every term the venture cannot meet in front of the founder as a decision, and recommend to the product lead the order of the first weeks.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "engagement-ready-to-work",
+      "kind": "review",
+      "check": "Does every deliverable on this engagement have an acceptance test, a performer, a date and an open handoff where it is due soon, and are the engagement rules and the approved plan on the record?",
+      "reviewer": "product-lead"
+    }
+  ]
+}

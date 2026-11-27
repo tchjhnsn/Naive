@@ -1,0 +1,21 @@
+{
+  "id": "12-4-3-develop-and-perform-preventive-law-programs",
+  "function": "external-relationships",
+  "process": "12.4.3",
+  "title": "Develop and perform preventive law programs",
+  "goal": "The few places the venture would most likely end up in a dispute are named by what each would cost, each with the one habit or standard document that prevents it and the function that owns that habit.",
+  "measures": ["compliance_met","learning"],
+  "trigger": {"kind":"request"},
+  "requires": {"meetings":["external-relationships/intake"]},
+  "reads": ["legal/risks","legal/obligations","deals","service-delivery/offers","service-delivery/engagements","support/cases","marketing/message","marketing/content","customers","decisions/*"],
+  "steps": [
+    {"id":"find-where-a-dispute-would-start","do":"Read the risk register, the deals, the offers and engagements and the support cases and list the few places a dispute would most likely start, work done with no signed scope, a promise the product does not keep, data held with no stated basis, ordered by what each would cost.","skill":"manage-legal-and-ethical-issues","writes":["operations/handoff/[id]"]},
+    {"id":"name-the-habit-that-prevents-each","do":"For each place write the one habit or standard document that would prevent it, a signed scope before work starts, a claim checked against a record before it is published, a retention limit on data, and hand it to the function whose work it is.","skill":"manage-legal-and-ethical-issues","writes":["operations/handoff/[id]"]},
+    {"id":"check-the-public-claims","do":"Read the marketing messages and content and list each public claim with no record behind it, the cheapest dispute the venture can prevent, and hand the list to marketing and sales.","skill":"manage-legal-and-ethical-issues","writes":["operations/handoff/[id]"],"consider":{"why":"A claim nobody can check is the dispute that arrives with no warning.","when":"The venture has published a page, a message or a piece of content."}},
+    {"id":"feed-decisions","do":"Name the open decision each prevented dispute bears on and add it there as evidence, and propose to the strategy lead which habit to start this month, worst cost first.","skill":"manage-legal-and-ethical-issues","writes":["decisions/*"],"raises":["set-priorities"]}
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "each-risk-has-one-habit", "kind": "review", "check": "Does every place a dispute would start carry one habit that prevents it and one function that owns that habit?", "reviewer": "strategy-lead" }
+  ]
+}

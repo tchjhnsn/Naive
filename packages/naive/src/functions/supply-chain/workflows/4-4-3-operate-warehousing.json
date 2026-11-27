@@ -1,0 +1,99 @@
+{
+  "id": "4-4-3-operate-warehousing",
+  "function": "supply-chain",
+  "process": "4.4.3",
+  "title": "Operate warehousing",
+  "goal": "The venture knows how many of each item it holds and where, how many it can sell today, and the size of the difference between the record and the last physical count.",
+  "measures": ["flow_and_lead_time", "cost_or_time_saved"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["supply-chain/intake"] },
+  "reads": [
+    "product",
+    "supply-chain/purchase-orders",
+    "supply-chain/suppliers",
+    "deals",
+    "finance/spend",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "manage-and-track-inventory-deployment",
+      "do": "Keep one list of what is held where, parts, work in progress and finished units, at the founder's place, the assembler and any fulfilment partner, and say for each line how it was counted and when.",
+      "skill": "manage-logistics-and-warehousing",
+      "activity": "4.4.3.1"
+    },
+    {
+      "id": "receive-inspect-and-store-inbound-deliveries",
+      "do": "On arrival count the goods against the purchase order, check them against the acceptance standard, put them away in a named place and record the quantity received, the quantity rejected and where each went.",
+      "skill": "manage-logistics-and-warehousing",
+      "activity": "4.4.3.2",
+      "writes": ["supply-chain/purchase-orders/[id]"],
+      "raises": ["domain-fact"]
+    },
+    {
+      "id": "track-product-availability",
+      "do": "Report how many units of each product can be sold today and from which place, separating stock that is already committed to an order and stock held back as samples or returns.",
+      "skill": "manage-logistics-and-warehousing",
+      "activity": "4.4.3.3"
+    },
+    {
+      "id": "pick-pack-and-ship-product-for-delivery",
+      "do": "Pick each order against its lines, pack it to the written packing standard with its lot recorded, hand it to the carrier and record the shipment, the tracking reference and the shipping cost actually paid.",
+      "skill": "manage-logistics-and-warehousing",
+      "activity": "4.4.3.4"
+    },
+    {
+      "id": "track-inventory-accuracy",
+      "do": "Count a part of the stock on a regular cycle rather than everything once a year, compare the count with the record, report the difference by item and by value and correct the record with the count noted as its source.",
+      "skill": "manage-logistics-and-warehousing",
+      "activity": "4.4.3.5",
+      "raises": ["domain-fact"]
+    },
+    {
+      "id": "track-third-party-logistics-storage-and-shipping-performance",
+      "do": "Check the fulfilment partner's own numbers against the venture's records, units received and held, orders shipped on time, damage and the fees charged per order, and record the difference on that supplier's record.",
+      "skill": "manage-logistics-and-warehousing",
+      "activity": "4.4.3.6",
+      "writes": ["supply-chain/suppliers/[id]"],
+      "consider": {
+        "why": "A partner's invoice and its stock figure are both worth checking, because an error in either is paid for every month.",
+        "when": "A third party stores or ships the venture's goods."
+      }
+    },
+    {
+      "id": "manage-physical-finished-goods-inventory",
+      "do": "Look after the finished stock itself, how it is stacked and labelled, how old each lot is, what is at risk of damage or expiry and what has not moved, and name the units that should be sold, discounted or written off first.",
+      "skill": "manage-logistics-and-warehousing",
+      "activity": "4.4.3.7"
+    },
+    {
+      "id": "manage-warehouse-transfers",
+      "do": "Record each movement of stock between places as a transfer with its quantity, its date, its cost and the stock counts on both sides after it, so no unit is counted twice or lost in transit.",
+      "skill": "manage-logistics-and-warehousing",
+      "activity": "4.4.3.8",
+      "consider": {
+        "why": "Stock in transit between two places of the venture's own is where inventory records usually go wrong.",
+        "when": "The venture holds stock in more than one place."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Add a decision for each thing the stock position forces, write off what cannot be sold, discount what has not moved, hold less of what is overstocked or rent more room, each with the cash it frees or costs, and hand the order of that work to the product lead.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities", "spend-money"]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "stock-counted-and-committed-separated",
+      "kind": "review",
+      "check": "Does the stock position say how many units can be sold today from each place, is committed stock shown apart from free stock, and is the last count's difference from the record stated by item and value?",
+      "reviewer": "product-lead"
+    }
+  ]
+}

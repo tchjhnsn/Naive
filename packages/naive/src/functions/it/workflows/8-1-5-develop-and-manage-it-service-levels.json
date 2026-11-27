@@ -1,0 +1,26 @@
+{
+  "id": "8-1-5-develop-and-manage-it-service-levels",
+  "function": "it",
+  "process": "8.1.5",
+  "title": "Develop and manage IT service levels",
+  "goal": "Every service the venture relies on or offers has a written level with the number, the window and the consequence, the founder has agreed each one that binds the venture, and the catalog of services says who holds each.",
+  "measures": ["compliance_met", "cost_or_time_saved"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["it/intake"] },
+  "reads": ["venture", "it/connections", "finance/spend", "legal/obligations", "support/policy", "service-delivery/offers", "people/team-plan", "decisions/*"],
+  "steps": [
+    { "id": "understand-it-service-requirements", "do": "For each system, write what the work actually needs of it: how long the venture can run without it, how much data it can afford to lose, and how fast a question about it must be answered, taking each number from a live goal or the founder rather than from habit.", "skill": "develop-and-manage-it-customer-relationships", "activity": "8.1.5.1", "ask": true },
+    { "id": "forecast-it-service-demand", "do": "Estimate the next quarter's load on each paid system (seats, records, requests, storage) from this quarter's use in the spend register and the venture's plan, and name the system that would cross a plan limit first.", "skill": "develop-and-manage-it-customer-relationships", "activity": "8.1.5.2" },
+    { "id": "maintain-it-services-catalog", "do": "Keep the catalog on the connection records current: one entry per system with what it is authoritative for, the cluster it serves, who holds access, its published availability and its plan limits, and strike every entry whose system the venture no longer uses.", "skill": "develop-and-manage-it-customer-relationships", "activity": "8.1.5.3", "writes": ["it/connections/[id]"] },
+    { "id": "define-service-level-agreement", "do": "Draft each service level as a number, a window and a consequence (the restore is tested every quarter, the records are exported monthly, a question is answered in one business day) and hand the draft to the founder, who decides what the venture commits to; you commit to nothing.", "skill": "develop-and-manage-it-customer-relationships", "activity": "8.1.5.4", "ask": true, "raises": ["legal-or-terms"] },
+    { "id": "maintain-it-customer-contracts", "do": "Record on each connection which plan the venture is on, which terms it accepted, the date it accepted them and the notice needed to leave, citing the provider's own page and the date you read it, and flag every term that has changed since.", "skill": "develop-and-manage-it-customer-relationships", "activity": "8.1.5.5", "writes": ["it/connections/[id]"], "raises": ["legal-or-terms"] },
+    { "id": "negotiate-and-establish-service-level-agreements", "do": "Prepare what the founder needs to ask a provider or a customer for (the level, the fallback and what the venture will accept), and leave the conversation and the agreement to the founder; you never contact a provider or a customer.", "skill": "develop-and-manage-it-customer-relationships", "activity": "8.1.5.6", "ask": true, "raises": ["legal-or-terms", "spend-money"], "consider": { "why": "A level the venture only hopes for is worth asking a provider or a customer to put in writing.", "when": "A system the venture cannot run without has no published level, or a customer has asked for one." } },
+    { "id": "develop-and-maintain-improvement-processes", "do": "After each missed level, write on the handoff what was missed, what it cost in hours or money, the one change that would stop it and whether that change is yours to make or the founder's.", "skill": "develop-and-manage-it-customer-relationships", "activity": "8.1.5.7", "consider": { "why": "A level that is missed twice for the same reason is a process problem, not an accident.", "when": "A service level has been missed since the last run of this workflow." } },
+    { "id": "feed-decisions", "do": "Add each level the founder agreed and each term that changed to the decision it bears on as evidence, and propose to the product lead which missing level to close first.", "skill": "develop-and-manage-it-customer-relationships", "writes": ["decisions/*"], "raises": ["set-priorities", "domain-fact"] }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "connections-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-connections.ts \"$NAIVE_VENTURE\"" },
+    { "id": "levels-agreed", "kind": "review", "check": "Does every service level name a number, a window and a consequence, and has the founder agreed in a decision every level that binds the venture or accepts a provider's terms?", "reviewer": "product-lead" }
+  ]
+}

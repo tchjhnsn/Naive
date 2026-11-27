@@ -1,0 +1,137 @@
+{
+  "id": "1-2-3-set-develop-long-term-enterprise-strategy",
+  "function": "strategy",
+  "process": "1.2.3",
+  "title": "Set/Develop long-term enterprise strategy",
+  "goal": "The standing answers the venture needs beyond this quarter, how it ends for its owners and whichever of partners, sustainability, innovation, places, shared work and improvement the venture actually faces, are written with the evidence behind each, and the rest are named as not needed yet.",
+  "measures": [
+    "learning",
+    "impact"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "records": [
+      "foundation/pre-registration"
+    ],
+    "meetings": [
+      "strategy/intake"
+    ]
+  },
+  "reads": [
+    "foundation/telos",
+    "foundation/goals",
+    "foundation/constraints",
+    "foundation/bets",
+    "governance/ownership",
+    "governance/exit",
+    "identity/venture-anatomy",
+    "industries",
+    "ideas/graph",
+    "product",
+    "purpose/competitor",
+    "purpose/money/summary",
+    "validation/go-to-market",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "develop-partner-alliance-strategy",
+      "do": "Write the standing rule for partners: what the venture will let a partner do, what it will never hand over, who owns the customer relationship in each case, and what ends a partnership, then put it on the handoff and open the rule itself as a decision for the founder.",
+      "skill": "develop-business-strategy",
+      "activity": "1.2.3.1",
+      "raises": [
+        "strategy-or-constitution"
+      ],
+      "consider": {
+        "why": "A rule written before the first partner asks saves the venture from agreeing to the first thing offered.",
+        "when": "A channel in the go-to-market record depends on another company, or a partnership has been proposed."
+      }
+    },
+    {
+      "id": "develop-sustainability-strategy",
+      "do": "Write what the venture will and will not claim about its effect on energy, materials and waste, which claim it can evidence today, and which it would have to measure first, and keep it on the handoff because a public claim is marketing's to publish.",
+      "skill": "develop-business-strategy",
+      "activity": "1.2.3.2",
+      "consider": {
+        "why": "An unevidenced claim here is the kind a regulator and a customer both punish.",
+        "when": "The industry record's regulation cell is licensed or heavy, or a buyer or lender has asked."
+      }
+    },
+    {
+      "id": "develop-merger-demerger-acquisition-exit-strategy",
+      "do": "Write into the telos owner_outcome what the owners mean to happen when the end state is reached, hold, sell, hand on or wind down, with what each would require of the venture and what it rules out, and leave the choice itself to the founder.",
+      "skill": "develop-business-strategy",
+      "activity": "1.2.3.3",
+      "ask": true,
+      "raises": [
+        "strategy-or-constitution"
+      ]
+    },
+    {
+      "id": "develop-innovation-strategy",
+      "do": "Write how new ideas enter and leave the venture: where an idea is captured, who judges it, what must be true before it is built and what happens to the rest, reading the idea graph for how that has actually worked so far.",
+      "skill": "develop-business-strategy",
+      "activity": "1.2.3.4",
+      "consider": {
+        "why": "Without a rule, every new idea either stops the current work or is lost.",
+        "when": "The idea graph holds ideas that are neither routed nor dropped."
+      }
+    },
+    {
+      "id": "develop-global-support-strategy",
+      "do": "Write which places the venture will serve and in what order, what each adds in language, currency, support hours and local obligation, and what it will refuse for now, citing the industry and customer records.",
+      "skill": "develop-business-strategy",
+      "activity": "1.2.3.5",
+      "consider": {
+        "why": "Serving a place the venture cannot support costs more than the revenue it brings.",
+        "when": "A customer profile, a channel or a live customer sits outside the venture's own country."
+      }
+    },
+    {
+      "id": "develop-shared-services-strategy",
+      "do": "Write which work is done once for every line the venture runs, the records and tools it shares and who owns each, so a second line reuses the first instead of rebuilding it.",
+      "skill": "develop-business-strategy",
+      "activity": "1.2.3.6",
+      "consider": {
+        "why": "Shared work is the only way a small team runs more than one line.",
+        "when": "The venture runs more than one product or nested venture."
+      }
+    },
+    {
+      "id": "develop-lean-continuous-improvement-strategy",
+      "do": "Write the standing habit for improving the venture's own work: which measure is watched, how often a stall is reviewed, who may change a workflow and what evidence a change must show, citing the baselines from the internal assessment.",
+      "skill": "develop-business-strategy",
+      "activity": "1.2.3.7",
+      "consider": {
+        "why": "Improvement that is nobody's habit happens only after something breaks.",
+        "when": "The internal assessment has written baselines the venture can be measured against."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Open one decision per standing answer the founder must set, say for each which records would have to change if the answer changed, name the answers you judged not needed yet and why, and recommend to the strategy lead which to settle first.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "strategy-or-constitution",
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "standing-answers-or-named-gaps",
+      "kind": "review",
+      "check": "Is every standing answer either written with its evidence or named as not needed yet with the reason, and was the owner outcome set by the founder?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

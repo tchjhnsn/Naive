@@ -1,0 +1,98 @@
+{
+  "id": "2-3-2-test-market-for-new-or-revised-products-and",
+  "function": "products",
+  "process": "2.3.2",
+  "title": "Test market for new or revised products and services",
+  "goal": "The product has been put in front of real people before the rest of it is built: the market study is on record, every session's words and what the person did are recorded against the design, and the product's characteristics, its business case and its technical requirements are settled or named as still open.",
+  "measures": [
+    "learning",
+    "usage_or_adoption"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "products/intake"
+    ]
+  },
+  "reads": [
+    "product",
+    "product/capabilities",
+    "foundation/icp",
+    "foundation/problem",
+    "foundation/requirements",
+    "validation/plan",
+    "validation/interviews",
+    "validation/feedback",
+    "validation/pricing",
+    "validation/product-market-fit",
+    "purpose/competitor",
+    "markets",
+    "customers",
+    "deals",
+    "decisions"
+  ],
+  "steps": [
+    {
+      "id": "market-study",
+      "do": "Write the study for this product: who the buyers and users are and how many of them the records can account for, what they do today instead, what they pay for it, and which of those numbers come from a source and which are the venture's own estimate, each estimate marked as one.",
+      "skill": "develop-products-and-services",
+      "activity": "2.3.2.1",
+      "writes": [
+        "operations/handoff/[id]"
+      ]
+    },
+    {
+      "id": "customer-tests-and-interviews",
+      "do": "Prepare the session the founder will run: who to ask, the tasks to watch them attempt without help, the questions about what they do today and never a question that asks them to predict what they would buy, then sit in, write down what each person did and said in their own words, and hand the notes to the founder for the interview record, since the conversation with a customer is the founder's.",
+      "skill": "develop-products-and-services",
+      "activity": "2.3.2.2",
+      "writes": [
+        "operations/handoff/[id]"
+      ]
+    },
+    {
+      "id": "finalize-characteristics-and-business-case",
+      "do": "Settle what the product is after the sessions: which capabilities stay, which are cut and which change, with the session that caused each change, and redo the business case with what the sessions said about what people would pay and how long they took to get value, bringing any change to the product's direction to the founder.",
+      "skill": "develop-products-and-services",
+      "activity": "2.3.2.3",
+      "writes": [
+        "product/[id]"
+      ],
+      "raises": [
+        "change-direction"
+      ]
+    },
+    {
+      "id": "finalize-technical-requirements",
+      "do": "Turn what the sessions changed into final technical requirements for the build: the ones that are settled, the ones still assumed with what would settle each, and the ones dropped with why, and record them against the capabilities the build will touch.",
+      "skill": "develop-products-and-services",
+      "activity": "2.3.2.4"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Attach each session's finding to the open decision it confirms or changes, say plainly if the evidence contradicts the direction the venture is on, and raise to the product lead what to build and what to test next.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities",
+        "continue-or-stop"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "tested-with-real-people",
+      "kind": "review",
+      "check": "Does every change to the product's characteristics name the session that caused it, and is every number in the market study either sourced or marked as the venture's estimate?",
+      "reviewer": "product-lead"
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "id": "12-5-5-issue-press-releases",
+  "function": "external-relationships",
+  "process": "12.5.5",
+  "title": "Issue press releases",
+  "goal": "The approved text goes out unchanged, to a list of places each with the person who posts it, and every place it was published is recorded with its url and date and handed to marketing and sales for the publications record.",
+  "measures": ["compliance_met","learning"],
+  "trigger": {"kind":"request"},
+  "requires": {"meetings":["external-relationships/intake"]},
+  "reads": ["governance/publication-policy","governance/publications","marketing/content","operations/site-presence","decisions/*"],
+  "steps": [
+    {"id":"confirm-the-text-is-the-approved-one","do":"Check that the text to go out is word for word the one the founder approved, name the decision that approved it, and stop the run when the two differ.","skill":"manage-public-relations-program","writes":["operations/handoff/[id]"]},
+    {"id":"prepare-the-distribution-list","do":"List every place it goes, the venture's own site, each named journalist, each community it already belongs to, with the person who posts each one and the time it goes, and raise any paid wire or agency as a cost for the founder to approve.","skill":"manage-public-relations-program","writes":["operations/handoff/[id]"],"raises":["spend-money"]},
+    {"id":"hand-it-to-the-person-who-sends-it","do":"Hand the approved text and the list to the founder or the person they name, and send nothing and contact nobody yourself.","skill":"manage-public-relations-program","writes":["operations/handoff/[id]"],"raises":["public-commitment"]},
+    {"id":"record-where-it-went","do":"After it has gone out, record each place it was published with its url and the date, and hand the list to marketing and sales, which owns the publications record.","skill":"manage-public-relations-program","writes":["operations/handoff/[id]"]},
+    {"id":"feed-decisions","do":"Add where it was published to the decision that approved it as evidence, and propose to the strategy lead what the next release should reach that this one did not.","skill":"manage-public-relations-program","writes":["decisions/*"],"raises":["set-priorities"]}
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "sent-as-approved", "kind": "review", "check": "Did the text go out exactly as the founder approved it, and is every place it was published recorded with its url and date?", "reviewer": "strategy-lead" }
+  ]
+}

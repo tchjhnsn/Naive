@@ -1,0 +1,22 @@
+{
+  "id": "12-3-2-report-audit-findings",
+  "function": "external-relationships",
+  "process": "12.3.2",
+  "title": "Report audit findings",
+  "goal": "Every audit or review finding since the last board report is on one page with what was checked, what failed, who owns the fix and its date, ordered by the cost of doing nothing, and the board hears it from the venture before it hears it elsewhere.",
+  "measures": ["compliance_met","learning"],
+  "trigger": {"kind":"request"},
+  "requires": {"meetings":["external-relationships/intake"]},
+  "reads": ["governance/board","evidence","legal/risks","legal/obligations","operations/handoff","investor-relations/updates","decisions/*"],
+  "steps": [
+    {"id":"collect-the-findings","do":"Read the evidence records, the risk register and the obligations register and list every finding since the last board report, what was checked, what failed, the date it was found and who owns the fix, and ask the founder for any audit or review the records do not hold.","ask":true,"skill":"manage-relations-with-board-of-directors","writes":["operations/handoff/[id]"]},
+    {"id":"rate-each-finding","do":"For each finding write what it costs if nothing changes and what the fix costs, taking the likelihood and impact ranges from the risk register where it holds them, order them by the cost of doing nothing, and soften nothing.","skill":"manage-relations-with-board-of-directors","writes":["operations/handoff/[id]"]},
+    {"id":"draft-the-report","do":"Draft the update for the board audience whose lowlights are the findings in that order, each with its owner and the date its fix is due, and whose asks are only the decisions the board itself must take.","skill":"manage-relations-with-board-of-directors","writes":["investor-relations/updates/[id]"],"consider":{"why":"A board that hears a finding from the venture first can still help with it.","when":"The venture has a board record with at least one seat, or an investor whose agreement gives information rights."}},
+    {"id":"ask-to-send","do":"Raise the decision for the founder to approve and send the findings report, and set its status to sent only after the founder has sent it, with the date.","skill":"manage-relations-with-board-of-directors","writes":["decisions/*","investor-relations/updates/[id]"],"raises":["public-commitment"],"consider":{"why":"Nothing goes to a board without the founder approving the exact words.","when":"A findings report has been drafted."}},
+    {"id":"feed-decisions","do":"Name the open decision each unfixed finding bears on and add it there as evidence, and propose to the strategy lead which finding to fix first, worst cost of doing nothing first.","skill":"manage-relations-with-board-of-directors","writes":["decisions/*"],"raises":["set-priorities"]}
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "findings-owned-and-ordered", "kind": "review", "check": "Does every finding name what was checked, what failed, its owner and the date the fix is due, and are they ordered by the cost of doing nothing?", "reviewer": "strategy-lead" }
+  ]
+}

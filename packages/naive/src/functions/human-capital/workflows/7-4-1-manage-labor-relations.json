@@ -1,0 +1,81 @@
+{
+  "id": "7-4-1-manage-labor-relations",
+  "function": "human-capital",
+  "process": "7.4.1",
+  "title": "Manage labor relations",
+  "goal": "The venture has a dated list of the labour obligations that reach it, for each place it has someone working, with what each one requires and which questions only counsel can answer.",
+  "measures": [
+    "compliance_met"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "human-capital/intake"
+    ]
+  },
+  "reads": [
+    "people",
+    "people/founders",
+    "people/team-plan",
+    "governance/internal-terms",
+    "legal/obligations",
+    "legal/risks",
+    "knowledge/knowledge-sources",
+    "operations/handoff",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "read-the-workforce",
+      "do": "Read `people` and `governance/internal-terms` and list everyone who works on the venture with their classification, how they are paid and the place they work from, since the obligations follow those three facts.",
+      "skill": "manage-employee-relations"
+    },
+    {
+      "id": "find-what-applies",
+      "do": "From that list, name the labour obligations that reach the venture at its size and in each of those places, citing the statute or authority and the date you read it, and say plainly where you cannot tell.",
+      "skill": "manage-employee-relations",
+      "raises": [
+        "legal-or-terms"
+      ]
+    },
+    {
+      "id": "say-what-it-requires",
+      "do": "For each obligation, write in one sentence what the venture must do, by when and what it costs, and mark the ones that depend on how a person is classified.",
+      "skill": "manage-employee-relations"
+    },
+    {
+      "id": "hand-the-hard-ones-over",
+      "do": "Write the question for the founder and counsel wherever the answer turns on a classification, a termination, a collective obligation or a place the venture has not employed anyone before, and stop there: you give no legal advice and you contact no authority.",
+      "skill": "manage-employee-relations",
+      "raises": [
+        "legal-or-terms"
+      ]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Open a decision for each obligation the venture is not meeting and each question counsel must answer, attach the citations as evidence, and tell the strategy lead which one carries the nearest date.",
+      "skill": "manage-employee-relations",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "obligations-cited-and-dated",
+      "kind": "review",
+      "check": "Does every labour obligation in this run cite the statute or authority and the date it was read, and is every question for counsel written out rather than answered?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

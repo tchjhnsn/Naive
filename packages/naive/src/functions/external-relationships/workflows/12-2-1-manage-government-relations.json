@@ -1,0 +1,24 @@
+{
+  "id": "12-2-1-manage-government-relations",
+  "function": "external-relationships",
+  "process": "12.2.1",
+  "title": "Manage government relations",
+  "goal": "Every government body whose rules reach the venture is named with what it decides about the venture, who may speak to it and the next date that matters, and every change in its guidance is handed to the function that owns the obligation it affects.",
+  "measures": ["compliance_met","learning"],
+  "trigger": {"kind":"request"},
+  "requires": {"meetings":["external-relationships/intake"]},
+  "reads": ["venture","legal/obligations","legal/risks","industries","markets","governance/delegation","people/founders","people/team","knowledge/knowledge-sources","raw/sources","decisions/*"],
+  "steps": [
+    {"id":"assess-relationships","do":"From the obligations register and the venture's industry and places of business, put on the handoff every government body whose rules, licences or filings reach the venture, with what it decides about the venture, the harm if it decided against, and whether the venture has any contact there today.","skill":"manage-government-and-industry-relationships","activity":"12.2.1.1","writes":["operations/handoff/[id]"]},
+    {"id":"appoint-responsible-executives","do":"Ask the founder who may speak to each body and sign what it asks for, propose the delegation that matches the venture's size, which for one founder is the founder alone, and raise it as a decision rather than writing it into the delegation record yourself.","ask":true,"skill":"manage-government-and-industry-relationships","activity":"12.2.1.2","writes":["decisions/*"],"raises":["strategy-or-constitution"]},
+    {"id":"monitor-relationships","do":"Read each body's public rulemaking, guidance and deadline pages on the day the run happens, record every change against the obligation it affects with its source and the date read, and hand each change that moves a deadline to the function that owns that obligation.","skill":"manage-government-and-industry-relationships","activity":"12.2.1.3","writes":["operations/handoff/[id]"]},
+    {"id":"receive-input-from-internal-advisors","do":"Ask each founder and each person on the team what they already know about a body, a prior filing, a conversation, a question still open, and write what they say with the date, so a contact the venture already has is not approached cold.","ask":true,"skill":"manage-government-and-industry-relationships","activity":"12.2.1.4","writes":["operations/handoff/[id]"]},
+    {"id":"receive-input-from-external-advisors","do":"Read the written guidance the venture already holds from counsel or an outside advisor, summarise what it tells the venture about each body with its source and the date read, and ask an outside advisor nothing yourself.","skill":"manage-government-and-industry-relationships","activity":"12.2.1.5","writes":["operations/handoff/[id]"],"consider":{"why":"An advisor's written answer the venture has already paid for is cheaper than asking again.","when":"The venture holds written guidance from counsel or an outside advisor about a body in the assessment."}},
+    {"id":"liaise-with-authorities","do":"Prepare the contact for the founder, the one question, the records that answer it, the form or filing it belongs on and the wording, and leave the call, the letter and the filing to the founder, who speaks for the venture.","skill":"manage-government-and-industry-relationships","activity":"12.2.1.6","writes":["operations/handoff/[id]"],"raises":["public-commitment"],"consider":{"why":"A question a body's published guidance does not answer has to be asked by a person who can be held to the answer.","when":"A filing or a deadline cannot be settled from the body's published guidance."}},
+    {"id":"feed-decisions","do":"Name the open decision each change in guidance bears on and add it there as evidence, and propose to the strategy lead which body matters most this quarter, nearest deadline and worst harm first.","skill":"manage-government-and-industry-relationships","writes":["decisions/*"],"raises":["set-priorities"]}
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "bodies-named-and-owned", "kind": "review", "check": "Does every government body in the assessment name what it decides about the venture, who may speak to it and the next date that matters, and was every change in guidance handed to the owner of the obligation it affects?", "reviewer": "strategy-lead" }
+  ]
+}

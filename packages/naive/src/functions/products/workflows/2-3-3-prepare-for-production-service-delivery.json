@@ -1,0 +1,83 @@
+{
+  "id": "2-3-3-prepare-for-production-service-delivery",
+  "function": "products",
+  "process": "2.3.3",
+  "title": "Prepare for production/service delivery",
+  "goal": "The way this product will be produced and delivered has been set up and run for real before launch: what it needs is in place or named as missing, each change to the existing way of working is requested and recorded, the first runs are watched, and the launch steps have been walked through with their rollback.",
+  "measures": ["flow_and_lead_time", "usage_or_adoption"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["products/intake"] },
+  "reads": [
+    "product",
+    "product/capabilities",
+    "product/bugs",
+    "capabilities/processes",
+    "it/connections",
+    "assets/register",
+    "supply-chain/suppliers",
+    "supply-chain/purchase-orders",
+    "finance/budget",
+    "validation/operations-readiness",
+    "support/policy",
+    "operations/handoff",
+    "decisions"
+  ],
+  "steps": [
+    {
+      "id": "obtain-capabilities-and-equipment",
+      "do": "List what producing and delivering this product needs that the venture does not have yet (a tool or account, a service it depends on, equipment, materials, a skill nobody has), say for each whether to buy, rent, build or do without, and put what costs money to the founder with the figure.",
+      "skill": "develop-products-and-services",
+      "activity": "2.3.3.1",
+      "ask": true,
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "identify-process-changes",
+      "do": "Compare the way the venture works today with what this product needs and name each change: a step added, a step that must become faster or repeatable, a hand-off that must stop being a person remembering, with what each change would cost in time.",
+      "skill": "develop-products-and-services",
+      "activity": "2.3.3.2",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "request-process-change",
+      "do": "Write each change as a request the function that owns it can act on: what changes, why, what breaks if it is not done, who has to approve it, and the date it is needed by, and hand it to that function rather than changing their work yourself.",
+      "skill": "develop-products-and-services",
+      "activity": "2.3.3.3",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "install-and-validate-the-process",
+      "do": "Set the delivery path up for real and run it on the first units or the first sessions, watching those initial runs: record how long each step took, what needed a person, what failed, and whether the output met the quality document, and raise anything that cannot be run twice the same way.",
+      "skill": "develop-products-and-services",
+      "activity": "2.3.3.4",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "validate-launch-procedures",
+      "do": "Walk the launch steps through on a rehearsal: what is switched on in what order, who watches what for the first hours, what tells the venture it has gone wrong, how it is turned back, and who answers the first customer, and bring the result to the founder, since only the founder says when it goes live.",
+      "skill": "develop-products-and-services",
+      "activity": "2.3.3.5",
+      "writes": ["decisions/*"],
+      "raises": ["production-ship"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "List what is still missing before this can be produced or delivered, most blocking first, attach each item to the decision or handoff it blocks, and give the product lead the order to clear them in.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "delivery-path-run",
+      "kind": "review",
+      "check": "Has the delivery path been run end to end for real at least once with its timings and failures recorded, and do the launch steps name what tells the venture it has gone wrong and how it is turned back?",
+      "reviewer": "product-lead"
+    }
+  ]
+}

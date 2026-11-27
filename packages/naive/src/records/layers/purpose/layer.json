@@ -38,6 +38,22 @@
       "id": "validation-score",
       "path": "packages/naive/src/functions/strategy/kits/validation/skills/validation-score/SKILL.md",
       "why": "Held (EE-050). A package has at most one skill, so the score skill stays on the purpose layer. The problem-validation skill is the validation package's skill."
+    },
+    {
+      "id": "define-the-business-concept-and-long-term-vision",
+      "path": "packages/naive/src/functions/strategy/skills/define-the-business-concept-and-long-term-vision/SKILL.md"
+    },
+    {
+      "id": "develop-and-maintain-business-models",
+      "path": "packages/naive/src/functions/strategy/skills/develop-and-maintain-business-models/SKILL.md"
+    },
+    {
+      "id": "develop-and-measure-strategic-initiatives",
+      "path": "packages/naive/src/functions/strategy/skills/develop-and-measure-strategic-initiatives/SKILL.md"
+    },
+    {
+      "id": "develop-business-strategy",
+      "path": "packages/naive/src/functions/strategy/skills/develop-business-strategy/SKILL.md"
     }
   ],
   "records": [

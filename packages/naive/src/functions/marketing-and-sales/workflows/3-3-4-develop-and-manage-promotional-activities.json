@@ -1,0 +1,124 @@
+{
+  "id": "3-3-4-develop-and-manage-promotional-activities",
+  "function": "marketing-and-sales",
+  "process": "3.3.4",
+  "title": "Develop and manage promotional activities",
+  "goal": "Each promotion has a written objective, a named audience, messages a person approved, a result counted against the objective, and what it taught carried into the next one.",
+  "measures": [
+    "revenue",
+    "usage_or_adoption"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "marketing-and-sales/intake"
+    ]
+  },
+  "reads": [
+    "venture",
+    "foundation/icp",
+    "foundation/goals",
+    "customers",
+    "sales/opportunities",
+    "markets",
+    "marketing/brand",
+    "marketing/message",
+    "marketing/publish-terms",
+    "marketing/sitemap",
+    "governance/publication-policy",
+    "governance/analytics",
+    "operations/time-box",
+    "finance/budget",
+    "finance/spend",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "define-promotional-concepts-and-objectives",
+      "do": "Write what the promotion is for in one sentence, the one number it must move, the target and the date it is judged on, and the goal record it serves, and refuse to start a promotion with no number.",
+      "skill": "develop-and-manage-marketing-plans",
+      "activity": "3.3.4.1"
+    },
+    {
+      "id": "develop-marketing-messages",
+      "do": "Draft each message element the promotion needs as its own record, the headline, the offer, the call to action and its destination, each citing the records its claims rest on and following the brand's voice rules.",
+      "skill": "develop-and-manage-marketing-plans",
+      "writes": [
+        "marketing/message/[id]"
+      ],
+      "raises": [
+        "public-commitment"
+      ],
+      "activity": "3.3.4.2"
+    },
+    {
+      "id": "define-target-audience",
+      "do": "Name exactly who receives it, by ICP profile and by the records that identify them, say how many they are, and say where the list came from and what consent it carries.",
+      "skill": "develop-and-manage-marketing-plans",
+      "activity": "3.3.4.3"
+    },
+    {
+      "id": "plan-and-test-promotional-activities",
+      "do": "Write the plan as dated steps with the channel for each, test the words and the links with a person before anything goes out, and run the publish check on every piece so no uncited claim or private name is in it.",
+      "skill": "develop-and-manage-marketing-plans",
+      "activity": "3.3.4.4"
+    },
+    {
+      "id": "execute-promotional-activities",
+      "do": "Prepare each piece in its final form with its recipients and its date, hand it to the founder to send or publish, and write afterwards what actually went out, to whom and when; you send nothing and publish nothing.",
+      "skill": "develop-and-manage-marketing-plans",
+      "raises": [
+        "public-commitment",
+        "spend-money"
+      ],
+      "activity": "3.3.4.5"
+    },
+    {
+      "id": "evaluate-promotional-performance-metrics",
+      "do": "Count what the promotion produced, the replies, the opportunities created with its campaign as their source and the sales closed, set each against the objective, and count the spend against it.",
+      "skill": "develop-and-manage-marketing-plans",
+      "writes": [
+        "sales/opportunities/[id]"
+      ],
+      "activity": "3.3.4.6"
+    },
+    {
+      "id": "refine-promotional-performance-metrics",
+      "do": "Say which of the measures told the venture something and which did not, drop the ones that moved whatever happened, and name the one measure the next promotion should be judged on.",
+      "skill": "develop-and-manage-marketing-plans",
+      "activity": "3.3.4.7"
+    },
+    {
+      "id": "incorporate-learning-into-future-planned-consumer-promotions",
+      "do": "Write what the result changes about the audience, the offer, the words or the channel, in one line each with the evidence, and attach it where the next promotion's plan will be read.",
+      "skill": "develop-and-manage-marketing-plans",
+      "activity": "3.3.4.8"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Add the promotion's result to the goal and the open decisions it bears on, and recommend to the growth lead whether to run it again, change it or stop.",
+      "skill": "develop-and-manage-marketing-plans",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "promotion-judged-against-its-objective",
+      "kind": "review",
+      "check": "Did every piece that went out come from a message record a person approved, and is the result counted against the objective that was written before it started?",
+      "reviewer": "growth-lead"
+    }
+  ]
+}

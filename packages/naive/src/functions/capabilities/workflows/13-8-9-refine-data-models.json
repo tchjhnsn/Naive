@@ -1,0 +1,46 @@
+{
+  "id": "13-8-9-refine-data-models",
+  "function": "capabilities",
+  "process": "13.8.9",
+  "title": "Refine data models",
+  "goal": "The objections that would change the answer have been worked into the model one at a time, each change is recorded with what it did to the error, and the model is either good enough to act on or declared not good enough.",
+  "measures": ["cost_or_time_saved"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["capabilities/intake"] },
+  "reads": [
+    "operations/handoff",
+    "evidence",
+    "capabilities/processes"
+  ],
+  "steps": [
+    {
+      "id": "take-the-objections-in-order",
+      "do": "Work the objections in the order of how much they could change the answer, changing one thing at a time and keeping the previous version readable.",
+      "skill": "develop-manage-and-deliver-analytics",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "measure-each-change",
+      "do": "After each change, run the model again on the unseen data and record what the error did, and undo any change that made it worse.",
+      "skill": "develop-manage-and-deliver-analytics",
+      "writes": ["operations/handoff/[id]"],
+      "raises": ["domain-fact"]
+    },
+    {
+      "id": "say-whether-it-is-good-enough",
+      "do": "Say whether the refined model now answers the question well enough for the decision it was built for, and when it does not, say what would be needed instead of refining further.",
+      "skill": "develop-manage-and-deliver-analytics",
+      "writes": ["operations/handoff/[id]"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Attach the refinement history and the final error to the handoff as evidence, and raise to the strategy lead whether to stop here.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "one-change-at-a-time", "kind": "review", "check": "Was every refinement made one at a time with its effect on the error recorded, and is the verdict on whether the model is good enough written down?", "reviewer": "strategy-lead" }
+  ]
+}

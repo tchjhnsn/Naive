@@ -1,0 +1,48 @@
+{
+  "id": "10-2-1-manage-capital-program-for-assets",
+  "function": "assets",
+  "process": "10.2.1",
+  "title": "Manage capital program for assets",
+  "goal": "The venture has one list of the asset purchases the next twelve months need, with the cost, month and goal behind each, what has already been spent against it, and a costed way to pay for anything the cash on hand will not cover.",
+  "measures": ["cost_or_time_saved", "compliance_met"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["assets/intake"] },
+  "reads": ["venture", "assets/register", "assets/leases", "finance/budget", "finance/spend", "foundation/goals", "people/team-plan", "decisions"],
+  "steps": [
+    {
+      "id": "define-capital-investment-plan",
+      "do": "Build one list of the asset purchases the next twelve months need, taken from the live goals, the team plan and the register's worn-out and out-of-warranty items, each line with what it is, what it costs, the month it is needed and the goal it serves, and put the list on the handoff for the founder to approve as the plan.",
+      "skill": "design-and-construct-assets",
+      "activity": "10.2.1.1",
+      "raises": ["set-priorities"]
+    },
+    {
+      "id": "monitor-capital-program",
+      "do": "Compare the spend register's equipment and facilities lines with the plan line by line and report what is over its figure, what has not been bought yet and is now late, and what the venture no longer needs because a goal changed.",
+      "skill": "design-and-construct-assets",
+      "activity": "10.2.1.2",
+      "raises": ["set-priorities"]
+    },
+    {
+      "id": "secure-construction-financing",
+      "do": "When a planned purchase or build is larger than the cash the budget leaves for it, put the ways to pay for it side by side (cash, equipment finance, a lease, buying used, renting, deferring) with the total cost of each over the same period and what each one commits the venture to, and raise it to the founder, who decides and signs.",
+      "skill": "design-and-construct-assets",
+      "activity": "10.2.1.3",
+      "raises": ["spend-money", "legal-or-terms"],
+      "consider": {
+        "why": "Equipment finance and leases commit the venture for years and often ask a founder to guarantee them, which a cash purchase does not.",
+        "when": "A planned purchase or build costs more than the cash the budget leaves for it in the month it is needed."
+      }
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Attach the plan, what has been spent against it and the financing options to the decisions they settle, and recommend to the finance lead which purchases to defer while runway is short and which cannot wait.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "every-line-serves-a-goal", "kind": "review", "check": "Does every line of the asset purchase plan name the goal it serves, its cost and the month it is needed, and is actual spend reported against each line from the spend register rather than from memory?", "reviewer": "finance-lead" }
+  ]
+}

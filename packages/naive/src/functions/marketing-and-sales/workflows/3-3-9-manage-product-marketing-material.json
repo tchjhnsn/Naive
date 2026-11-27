@@ -1,0 +1,76 @@
+{
+  "id": "3-3-9-manage-product-marketing-material",
+  "function": "marketing-and-sales",
+  "process": "3.3.9",
+  "title": "Manage product marketing material",
+  "goal": "Every image and every line of copy the venture's public pages use is accounted for: where it came from, whether it is licensed, whether it shows or says what is true today, and whether a person approved it.",
+  "measures": [
+    "usage_or_adoption"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "marketing-and-sales/intake"
+    ]
+  },
+  "reads": [
+    "venture",
+    "product",
+    "marketing/sitemap",
+    "marketing/message",
+    "marketing/content",
+    "marketing/brand",
+    "marketing/publish-terms",
+    "public/assets",
+    "public/assets/facts",
+    "governance/publication-policy",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "manage-product-images",
+      "do": "List every image the planned pages use with where it came from, the licence it carries and whether it shows the product as it is today, record each image against the sitemap section that uses it, and name every image with no licence or no record of its origin so it can be removed.",
+      "skill": "develop-and-manage-marketing-plans",
+      "activity": "3.3.9.1"
+    },
+    {
+      "id": "manage-product-copy",
+      "do": "Run the copy gap report, list element by element which record holds the words and which record upstream of it is missing, held or undecided, draft the missing elements as message records citing their sources, and bring each to the founder to choose.",
+      "skill": "develop-and-manage-marketing-plans",
+      "writes": [
+        "marketing/message/[id]"
+      ],
+      "raises": [
+        "public-commitment"
+      ],
+      "activity": "3.3.9.2"
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Put each unapproved element and each unlicensed image to the founder as a decision with what the page would say or show without it, and tell the growth lead how many elements are still waiting.",
+      "skill": "develop-and-manage-marketing-plans",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "public-commitment",
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "material-accounted-for",
+      "kind": "review",
+      "check": "Does every image on a planned page have a recorded origin and licence, and does every line of copy have a message record a person approved?",
+      "reviewer": "growth-lead"
+    }
+  ]
+}

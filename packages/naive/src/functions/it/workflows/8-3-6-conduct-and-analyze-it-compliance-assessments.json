@@ -1,0 +1,24 @@
+{
+  "id": "8-3-6-conduct-and-analyze-it-compliance-assessments",
+  "function": "it",
+  "process": "8.3.6",
+  "title": "Conduct and analyze IT compliance assessments",
+  "goal": "Each IT compliance requirement has been tested against the evidence, the failures are written with what it would take to fix them, and the founder has seen one report naming what is not met and what is being asked of the venture from outside.",
+  "measures": ["compliance_met", "cost_or_time_saved"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["it/intake"] },
+  "reads": ["venture", "it/connections", "legal/obligations", "legal/risks", "operations/handoff", "system/provenance", "evidence", "decisions/*"],
+  "steps": [
+    { "id": "conduct-projects-to-enhance-it-compliance-and-remediate-risk", "do": "Take the open compliance failures in the order the product lead set, do the part that is yours (narrow a scope, turn on a setting the founder already approved, write the missing record), and leave each remaining step named with who must do it.", "skill": "develop-and-manage-it-resilience-and-risk", "activity": "8.3.6.1", "writes": ["it/connections/[id]"], "raises": ["security-tightening"] },
+    { "id": "conduct-it-compliance-control-auditing-of-internal-and-external-services", "do": "Test each control on a date against evidence rather than intention: read the system's own settings, the connection record and the provenance log, and write for every control what you looked at, what you found and whether it passes.", "skill": "develop-and-manage-it-resilience-and-risk", "activity": "8.3.6.2", "writes": ["it/connections/[id]"] },
+    { "id": "perform-it-compliance-reporting", "do": "Write one report: each requirement, its control, its result, its evidence and its date, with a plain list at the top of what is not met today.", "skill": "develop-and-manage-it-resilience-and-risk", "activity": "8.3.6.3" },
+    { "id": "identify-and-escalate-it-compliance-issues-and-remediation-requirements", "do": "For each failure, write what it would take to fix it and what it would cost, mark the ones you may fix yourself, and raise the rest to the founder with your recommendation; never report a control as met because the fix is planned.", "skill": "develop-and-manage-it-resilience-and-risk", "activity": "8.3.6.4", "writes": ["decisions/*"], "raises": ["set-priorities", "spend-money", "security-loosening", "legal-or-terms"] },
+    { "id": "support-external-audits-and-reports", "do": "Assemble what an outside auditor, a customer's security questionnaire or an insurer asks for from the records, flag every answer that would be a guess, and hand the pack to the founder, who answers and signs; you never send it and never speak for the venture.", "skill": "develop-and-manage-it-resilience-and-risk", "activity": "8.3.6.5", "ask": true, "consider": { "why": "Someone outside the venture has to ask before there is anything to assemble.", "when": "An auditor, a customer, an insurer or a regulator has asked the venture for evidence." } },
+    { "id": "feed-decisions", "do": "Record the report and every failure as evidence on the decision it bears on, and name on the handoff each requirement the venture is choosing not to meet yet, with the date that choice was made.", "skill": "develop-and-manage-it-resilience-and-risk", "writes": ["decisions/*"], "raises": ["domain-fact", "set-priorities"] }
+  ],
+  "done_criteria": [
+    { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },
+    { "id": "connections-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-connections.ts \"$NAIVE_VENTURE\"" },
+    { "id": "results-are-evidence", "kind": "review", "check": "Does every control carry a dated result and the evidence it was tested against, is no control reported as met because a fix is planned, and did the founder answer anything sent outside the venture?", "reviewer": "product-lead" }
+  ]
+}

@@ -1,0 +1,99 @@
+{
+  "id": "1-4-1-develop-business-models",
+  "function": "strategy",
+  "process": "1.4.1",
+  "title": "Develop business models",
+  "goal": "The venture has one assembled business model whose every box points at a record, the boxes the records cannot fill are named as holes, and the founder has adopted it or sent it back.",
+  "measures": [
+    "learning",
+    "impact"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "records": [
+      "foundation/problem",
+      "foundation/icp"
+    ],
+    "meetings": [
+      "strategy/intake"
+    ]
+  },
+  "reads": [
+    "identity/lean-canvas",
+    "identity/venture-anatomy/business-model",
+    "foundation/problem",
+    "foundation/icp",
+    "foundation/constraints",
+    "product",
+    "validation/plan",
+    "validation/solution",
+    "validation/pricing",
+    "validation/go-to-market",
+    "finance/budget",
+    "purpose/money/summary",
+    "purpose/competitor",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "assemble-business-model-information",
+      "do": "Read the lean canvas and fill the boxes this function owns, the solution and what makes it different, who pays and on what model, and the channels that reach the segment, each from the interviews or public sources behind it, and report every remaining box as a hole with the function that owns it rather than filling it in.",
+      "skill": "develop-and-maintain-business-models",
+      "activity": "1.4.1.1"
+    },
+    {
+      "id": "secure-appropriate-approvals",
+      "do": "List who has to agree before this model binds the venture, the founder for the price and the name of the model, finance for the cost structure and a cofounder where an agreement requires it, and open one handoff per approver with the box they must answer for.",
+      "skill": "develop-and-maintain-business-models",
+      "activity": "1.4.1.2",
+      "writes": [
+        "operations/handoff/[id]"
+      ]
+    },
+    {
+      "id": "identify-integration-points-with-existing-models",
+      "do": "Compare the model with the models the venture's other products already run and name every place they share a customer, a channel, a price point or a cost, and every place they would undercut each other.",
+      "skill": "develop-and-maintain-business-models",
+      "activity": "1.4.1.3"
+    },
+    {
+      "id": "adopt-the-business-model",
+      "do": "Bring the founder the assembled model with its holes, the named pattern from the controlled vocabulary and the one assumption it rests on most, ask them to adopt it or send it back, and hand the product's business_model field to the products function to write.",
+      "skill": "develop-and-maintain-business-models",
+      "activity": "1.4.1.4",
+      "ask": true,
+      "writes": [
+        "decisions/*",
+        "operations/handoff/[id]"
+      ],
+      "raises": [
+        "strategy-or-constitution"
+      ]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Record the adoption as a decision with the model's holes listed, open a decision for each box no record can fill yet, and recommend to the strategy lead which hole to close first.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "every-box-a-record-or-a-hole",
+      "kind": "review",
+      "check": "Does every box of the assembled model point at a record with its evidence or stand reported as a hole with its owning function, and did the founder adopt the model rather than the agent?",
+      "reviewer": "strategy-lead"
+    }
+  ]
+}

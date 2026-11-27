@@ -1,0 +1,93 @@
+{
+  "id": "2-3-4-define-warranty-claims",
+  "function": "products",
+  "process": "2.3.4",
+  "title": "Define warranty claims",
+  "goal": "What the venture stands behind on this product is written down and decided by the founder: the policy and what voids it, the kinds of claim and what each one is answered with, who pays when a supplier's part is at fault, and the words customers are told, with nothing promised that the venture cannot deliver.",
+  "measures": ["usage_or_adoption", "learning"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["products/intake"] },
+  "reads": [
+    "product",
+    "product/bugs",
+    "support/policy",
+    "support/cases",
+    "legal/obligations",
+    "legal/risks",
+    "validation/pricing",
+    "finance/spend",
+    "supply-chain/suppliers",
+    "marketing/message",
+    "decisions"
+  ],
+  "steps": [
+    {
+      "id": "determine-warranty-policies",
+      "do": "Draft what the venture stands behind for this product: what is covered and for how long, what the customer gets when it fails (a fix, a replacement, a refund, credit), what voids it, and what is excluded, with the cost of each promise estimated from the bug and support records, and bring it to the founder to settle, since a promise to a customer is the founder's.",
+      "skill": "develop-products-and-services",
+      "activity": "2.3.4.1",
+      "writes": ["decisions/*"],
+      "raises": ["strategy-or-constitution"]
+    },
+    {
+      "id": "warranty-rules-and-claim-codes",
+      "do": "Turn the settled policy into the kinds of claim the venture will see, one code each, with what counts as that kind, the evidence a customer must give, what it is answered with and who may answer it without asking the founder, and keep the list beside the product card.",
+      "skill": "develop-products-and-services",
+      "activity": "2.3.4.2",
+      "writes": ["product/[id]"],
+      "consider": {
+        "why": "Named kinds of claim are what lets anyone but the founder answer one, and what makes the cost of the promise countable later.",
+        "when": "The venture has answered more than a handful of claims, or someone other than the founder answers them."
+      }
+    },
+    {
+      "id": "supplier-warranty-responsibilities",
+      "do": "Prepare the position for each supplier or service the product depends on: which failures are theirs, what their own terms already promise, what the venture would ask them to cover and what it will absorb, with the clause and the cost for each, for the founder to agree with them, since an agreement with a supplier is the founder's to make.",
+      "skill": "develop-products-and-services",
+      "activity": "2.3.4.3",
+      "writes": ["operations/handoff/[id]"],
+      "consider": {
+        "why": "A failure caused by a supplier is still the venture's to answer unless who pays was agreed beforehand.",
+        "when": "The product depends on a supplier or a paid service whose failure the customer would feel."
+      }
+    },
+    {
+      "id": "warranty-related-offerings",
+      "do": "Say which warranty-related offerings are worth putting in front of customers (a longer cover, a faster response, a maintenance plan), what each would cost the venture to honour against the support records, and what it could be priced at, and hand the pricing question to marketing and sales with the cost.",
+      "skill": "develop-products-and-services",
+      "activity": "2.3.4.4",
+      "writes": ["operations/handoff/[id]"],
+      "consider": {
+        "why": "A cover customers would pay for can carry the cost of the standard promise, and one priced below its cost quietly loses money.",
+        "when": "Customers have asked for a longer or faster promise, or the standard promise is already costing the venture more than it earns."
+      }
+    },
+    {
+      "id": "communicate-warranty-policies",
+      "do": "Draft the words customers will read, in the venture's own voice and with no promise the policy does not make, say where they will appear (the site, the terms, the first email, the support reply) and bring the draft to the founder, since publishing what the venture promises is the founder's.",
+      "skill": "develop-products-and-services",
+      "activity": "2.3.4.5",
+      "writes": ["decisions/*"],
+      "raises": ["public-commitment"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Attach the policy and each claim kind to the decision that settled it, name every promise the venture cannot keep with what it would take to keep it, and raise to the product lead what to fix first so the promise costs less.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "promises-decided-and-costed",
+      "kind": "review",
+      "check": "Did the founder decide every promise the venture makes about this product, and does each one carry an estimate of what it costs to honour from the bug and support records?",
+      "reviewer": "product-lead"
+    }
+  ]
+}

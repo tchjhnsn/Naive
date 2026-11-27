@@ -1,0 +1,89 @@
+{
+  "id": "8-7-7-manage-infrastructure-resource-administration",
+  "function": "it",
+  "process": "8.7.7",
+  "title": "Manage infrastructure resource administration",
+  "goal": "Every machine, service, licence and domain the venture holds is on one list with its configuration, its renewal date and who holds it, the updates it owes are applied, and nothing the venture depends on is unaccounted for.",
+  "measures": ["compliance_met", "cost_or_time_saved"],
+  "trigger": { "kind": "request" },
+  "requires": { "meetings": ["it/intake"] },
+  "reads": [
+    "it/connections",
+    "assets/register",
+    "finance/spend",
+    "legal/obligations",
+    "people/team-plan",
+    "decisions/*"
+  ],
+  "steps": [
+    {
+      "id": "manage-configuration",
+      "do": "Record the configuration each system actually runs under, the versions, the settings that differ from the default, the environment variables by name only, and where that configuration is kept, and name every setting that exists only in a console and in nobody's notes.",
+      "skill": "create-and-manage-support-services-solutions",
+      "activity": "8.7.7.1",
+      "writes": ["it/connections/[id]"]
+    },
+    {
+      "id": "component-maintenance",
+      "do": "Apply the updates each system owes, taking the critical and high security updates first, and record for each one what version it is now on and what was deliberately left behind with the reason.",
+      "skill": "create-and-manage-support-services-solutions",
+      "activity": "8.7.7.2",
+      "writes": ["it/connections/[id]"]
+    },
+    {
+      "id": "install-and-upgrade",
+      "do": "Install, configure or upgrade the components the plans call for, one at a time and with a way back from each, and record the version before and after and the check that proved it still works.",
+      "skill": "create-and-manage-support-services-solutions",
+      "activity": "8.7.7.3",
+      "writes": ["it/connections/[id]"]
+    },
+    {
+      "id": "asset-records",
+      "do": "Keep the list of what the venture holds current, the machines, accounts, domains, certificates and repositories, each with who holds it, what it costs, when it renews and what stops if it lapses, and name anything found running that the list does not have.",
+      "skill": "create-and-manage-support-services-solutions",
+      "activity": "8.7.7.4",
+      "writes": ["it/connections/[id]"],
+      "raises": ["domain-fact"]
+    },
+    {
+      "id": "administer-licences",
+      "do": "Check each licence and user agreement the venture is under against how it is actually used, the seat count, the permitted use and whether an agent acting for the venture is allowed at all, and bring every renewal, overage and term change to the founder.",
+      "skill": "create-and-manage-support-services-solutions",
+      "activity": "8.7.7.5",
+      "writes": ["it/connections/[id]"],
+      "raises": ["legal-or-terms", "cancel-or-downgrade", "spend-money"]
+    },
+    {
+      "id": "provide-infrastructure",
+      "do": "Give each person and agent role the infrastructure its work needs, the account, the environment, the scoped credential and the quota, at the narrowest scope that does the work, and record what was provided to whom.",
+      "skill": "create-and-manage-support-services-solutions",
+      "activity": "8.7.7.6",
+      "writes": ["it/connections/[id]"],
+      "raises": ["security-loosening", "security-tightening"]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "Add the asset list, the pending updates and the renewal dates as evidence to the decision each bears on, and raise to the product lead what to renew, patch or drop first.",
+      "writes": ["decisions/*"],
+      "raises": ["set-priorities"]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "connections-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-connections.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "nothing-unaccounted-for",
+      "kind": "review",
+      "check": "Does every machine, account, domain and licence the venture depends on appear with its holder and its renewal date, are the critical security updates applied or named with a reason, and was no secret's value written into a record?",
+      "reviewer": "product-lead"
+    }
+  ]
+}

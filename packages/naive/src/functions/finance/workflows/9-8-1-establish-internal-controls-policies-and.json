@@ -1,0 +1,103 @@
+{
+  "id": "9-8-1-establish-internal-controls-policies-and",
+  "function": "finance",
+  "process": "9.8.1",
+  "title": "Establish internal controls, policies, and procedures",
+  "goal": "The venture has written down who oversees its money, the lines the founder will not cross, who performs and who checks each control, what each money process risks, and the tolerances the founder set as numbers.",
+  "measures": [
+    "cost_or_time_saved"
+  ],
+  "trigger": {
+    "kind": "request"
+  },
+  "requires": {
+    "meetings": [
+      "finance/intake"
+    ]
+  },
+  "reads": [
+    "venture",
+    "governance/board",
+    "governance/decision-rights",
+    "governance/delegation",
+    "governance/ownership",
+    "governance/pillar",
+    "capabilities/processes",
+    "legal/risks",
+    "legal/obligations",
+    "people/team",
+    "people/founders",
+    "foundation/constraints",
+    "foundation/telos"
+  ],
+  "steps": [
+    {
+      "id": "board-and-audit-committee",
+      "do": "Prepare what a board or an audit committee would need, who would sit on it, what it would decide, how often it would meet and what it would see each time, and hand it to the founder, who appoints anyone; the agent appoints nobody.",
+      "skill": "manage-internal-controls",
+      "ask": true,
+      "activity": "9.8.1.1",
+      "raises": [
+        "ownership-or-control"
+      ],
+      "consider": {
+        "why": "Once someone else's money is in the venture, somebody other than the founder has to be able to see the books.",
+        "when": "The venture has outside investors, a lender or more than one owner."
+      }
+    },
+    {
+      "id": "code-of-ethics",
+      "do": "Draft from the venture's purpose and constraints the lines it will not cross about money, a page at most, and ask the founder to put it in their own words, because it is their standard and not yours.",
+      "skill": "manage-internal-controls",
+      "ask": true,
+      "activity": "9.8.1.2"
+    },
+    {
+      "id": "control-roles",
+      "do": "Read the venture's decision rights and delegation and propose for each money control who performs it and who checks it, naming every control with the same person on both sides, and leave the assignment to the founder.",
+      "skill": "manage-internal-controls",
+      "ask": true,
+      "activity": "9.8.1.3"
+    },
+    {
+      "id": "process-objectives-and-risks",
+      "do": "For each money process the venture runs, write what it is meant to achieve and the two or three ways it could go wrong, with what each would cost if it did, and list the ones with no control behind them.",
+      "skill": "manage-internal-controls",
+      "activity": "9.8.1.4"
+    },
+    {
+      "id": "risk-tolerances",
+      "do": "Ask the founder for the numbers that mark their limits, the smallest cash balance, the most that may be owed by one customer, the largest spend nobody need approve and the longest an account may sit unreconciled, and record the answers they give.",
+      "skill": "manage-internal-controls",
+      "ask": true,
+      "activity": "9.8.1.5",
+      "raises": [
+        "set-priorities"
+      ]
+    },
+    {
+      "id": "feed-decisions",
+      "do": "File each unassigned control and each uncovered risk as a decision for the founder with what it would take to close it, and tell the finance lead which gap is widest against the tolerances they set.",
+      "writes": [
+        "decisions/*"
+      ],
+      "raises": [
+        "set-priorities",
+        "legal-or-terms"
+      ]
+    }
+  ],
+  "done_criteria": [
+    {
+      "id": "records-valid",
+      "kind": "conformance",
+      "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\""
+    },
+    {
+      "id": "controls-have-owners",
+      "kind": "review",
+      "check": "Does every money control name who performs it and who checks it, and are the risk tolerances numbers the founder actually gave?",
+      "reviewer": "finance-lead"
+    }
+  ]
+}
