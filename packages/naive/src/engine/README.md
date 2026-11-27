@@ -272,3 +272,9 @@ Since EE-226 the shipped modules hold one process workflow per APQC process, so 
 ## Agents
 
 The function and lead agent specs live in [`agents/`](./agents/README.md) (EE-124).
+
+## Fail closed on what is not there
+
+- `publish-lint.ts check <path>` reports a path that does not exist as a `missing-path` error and exits 1. A mistyped path never reads as a clean pass.
+- `render-document.ts` judges the live rung's requirements. A required meeting is judged as a workflow's is (`prerequisites.ts`). A required decision class is met only by a decided decision of that class whose `applies_to` names one of the document's own artifacts (`artifacts/<kind>-...`). A decision about another document, or one still open, unlocks nothing.
+- `init-venture.ts --layout src` makes each layer folder's README where the folder's path resolves, so a venture can start on the src layout at any phase.

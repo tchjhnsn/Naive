@@ -40,3 +40,7 @@ The ways a person, or an agent, works with a venture: the `naive` and `mentura` 
 `naive upgrade --framework` moves a git pin (`git+https://...#<sha>`, which create-venture writes from a clone) to the commit of the Naive running it and installs from that clone with `npm install --no-save`, so the update needs no network. The clone is `PACKAGE_ROOT` from [`core/scripts.mjs`](../core/scripts.ts), the folder above `dist/` when the CLI runs compiled (EE-159).
 
 `naive copy gaps|draft|check|one-shot` (EE-216) is dispatched from `cli/naive.ts` to [`copy.ts`](../functions/marketing-and-sales/marketing/copy.ts): a public page's words are `marketing-message` records a person approves before any design is built.
+
+## naive check
+
+`naive check` runs every checker in [`../checks/`](../checks/README.md) that reads a venture folder, on the venture you are in. A checker of Naive's own files (the data model, the nouns, the docs) is not run here: `node test.ts` runs those. A checker a venture names under `checks.off` in `naive.config.json`, by its path (`packages/naive/src/checks/check-telos.ts`), is skipped and shown as off. One under `checks.warn` is run and reported and does not fail the command. `tests/naive-cli-test.ts` fails when a checker that reads a venture is added to the folder and left out of the command.
