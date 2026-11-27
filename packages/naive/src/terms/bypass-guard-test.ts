@@ -55,6 +55,8 @@ export const REGISTRY: Registry = {
   "packages/naive/src/checks/check-visibility-rubric-test.ts": plain("breaks each rule of check-visibility-rubric.ts on copies and temp ventures"),
   "packages/naive/src/checks/check-documents.ts": plain("the document catalog and the ladder (EE-218): formats, kinds and rungs that resolve, and a rung built only above an approved one; it compares ids and reads approved_by, not a term"),
   "packages/naive/src/checks/check-documents-test.ts": plain("breaks each rule of check-documents.ts on copies and temp ventures"),
+  "packages/naive/src/checks/check-problems.ts": plain("the problem tree (EE-219): parents and causes resolve without a cycle, one target, a core problem per profile, and nothing downstream written before them; it compares ids and statuses, not a term"),
+  "packages/naive/src/checks/check-problems-test.ts": plain("breaks each rule of check-problems.ts on copies and temp ventures"),
   "packages/naive/src/checks/check-assets.ts": plain("each public asset has a source, a license, a credit and alt text"),
   "packages/naive/src/checks/check-boundary.ts": plain("path text: no code names a module of an app that uses Naive, and registered connectors work offline"),
   "packages/naive/src/checks/check-brand.ts": plain("brand records: colors, licensed typefaces, marks and voice rules against fixed lists"),

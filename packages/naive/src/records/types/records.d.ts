@@ -2827,6 +2827,8 @@ export type IcpProfile = {
   jobs?: string[];
   /** Ids of the problem record's forms they have */
   problem_forms?: string[];
+  /** The one problem of this profile's that the venture exists to solve (EE-219): the core problem of its problem tree, after the Logical Framework Approach. One per profile, so this field is single, and it names a form in problem_forms. Only a person sets it, since the profile is gated like the telos */
+  core_problem?: string;
   /** Where to reach them: communities, channels, events */
   where_to_find?: string[];
   /** Who is out of scope, and why */
@@ -4074,6 +4076,16 @@ export type NaiveConfig = {
     threshold?: number;
     stale_hours?: number;
   };
+  /** The venture's own weights for ranking its customer problems (EE-219), in place of the unvalidated priors in packages/naive/src/functions/strategy/problem-priority.json. A weight left out keeps the prior, and a person sets them (set_by), because what counts as evidence of a problem is a judgment. */
+  problems?: {
+    weights: {
+      raised_unprompted?: number;
+      ranked_first?: number;
+      pays_for_workaround?: number;
+    };
+    /** The person who set these weights */
+    set_by: string;
+  };
   /** The premise-attack linter (packages/naive/src/checks/premise-lint.ts): each rule, one per aspect, is off, warn (the default) or error */
   premise_lint?: {
     rules?: {
@@ -4971,6 +4983,38 @@ export type Postmortem = {
   status: "draft" | "reviewed" | "closed";
   reviewed_by?: string;
   note?: string;
+};
+
+/** How the framework ranks a venture's customer problems and what holds its problem tree together (EE-219), at packages/naive/src/functions/strategy/problem-priority.json. The weights are unvalidated priors a venture replaces under problems in naive.config.json; the labels are a view of the computed order and are never stored on a problem. */
+export type ProblemPriority = {
+  version: string;
+  note?: string;
+  standards?: {
+    name: string;
+    source: string;
+    /** What in Naive this standard governs, so a reader can tell the parts apart */
+    used_for: string;
+  }[];
+  /** The weight on each evidence count from the validation interviews (validation-interview.schema.json problems). Unvalidated priors. */
+  weights: {
+    raised_unprompted: number;
+    ranked_first: number;
+    pays_for_workaround: number;
+  };
+  weights_why?: string;
+  /** The statuses a problem must have to be in the ranking; one with any other status is listed with its status and no rank */
+  ranked_statuses: ("open" | "target" | "parked" | "dropped")[];
+  /** The label for each rank, from that rank onward: primary at 1, secondary at 2, tertiary at 3 and below */
+  labels: {
+    from: number;
+    label: string;
+  }[];
+  /** The record types that are written only once the primary profile's core problem and the venture's target problem exist. The fail-closed rule of packages/naive/src/checks/check-problems.ts */
+  requires_target?: {
+    /** Record types in data-model.json, whose venture paths say which files wait */
+    records: string[];
+    why: string;
+  };
 };
 
 /** One recurring business process in the venture's process catalog, at capabilities/processes/<id>.json (route capabilities/processes/[id]): its purpose and one owner, what starts it, its suppliers, inputs, outputs and customers (SIPOC), its working procedure as steps with the control points marked, and three health measures (cycle time, rework rate, first-pass yield). It follows APQC PCF 13.1 (manage business processes: assign process ownership 13.1.1, define processes and control points 13.1.3, measure process performance 13.1.4). The capabilities function owns it, and only its agent (capabilities-agent) or a person writes it (writer function). A process that crosses functions names each one. */
@@ -6914,6 +6958,19 @@ export type ValidationInterview = {
   }[];
   /** The one bottleneck the person chose to work on */
   chosen_problem?: string;
+  /** What this interview says about the venture's problem tree (EE-219): one entry per form of foundation/problem.json the interview bears on, coded from the transcript the way qualitative research codes to a codebook, so the ranking counts evidence instead of guessing from words. The counts are what packages/naive/src/engine/problems.ts ranks by, and nothing here is a score. */
+  problems?: {
+    /** The form's id in foundation/problem.json forms */
+    problem: string;
+    /** unprompted: they named it before the interviewer did, answering an open question about last week. prompted: they agreed once asked, which is weaker evidence */
+    raised: "unprompted" | "prompted";
+    /** They put this problem first when asked which one to fix; at most one problem per interview */
+    ranked_first?: boolean;
+    /** They already spend money or someone's time working around it, the strongest of the three counts */
+    pays_for_workaround?: boolean;
+    /** What in the transcript the coding rests on */
+    note?: string;
+  }[];
   prediction?: {
     /** What the interviewer predicts happens with Naive */
     with_naive: string;
@@ -7017,7 +7074,7 @@ export type ValidationPricing = {
   };
 };
 
-/** The problem sub-score (EE-026), at <venture>/purpose/validation/problem.json: the problem, who has it, how they cope today, and the cited evidence that it is real. A statement alone is the weakest form of this record; packages/naive/src/checks/check-validation.ts grades it from its evidence. */
+/** The problem sub-score (EE-026), at <venture>/purpose/validation/problem.json: the problem, who has it, how they cope today, and the cited evidence that it is real. A statement alone is the weakest form of this record; packages/naive/src/checks/check-validation.ts grades it from its evidence. forms holds the customer problem tree (EE-219): one root problem in statement, each form below it either a narrower case (parent) or a cause (cause_of), one form at a time the target, and each ICP's core problem named by that profile (icp-profile.schema.json core_problem). packages/naive/src/checks/check-problems.ts checks the tree and packages/naive/src/engine/problems.ts ranks it from the interviews. */
 export type ValidationProblem = {
   venture: string;
   /**
@@ -7036,13 +7093,19 @@ export type ValidationProblem = {
   workarounds?: string[];
   /** What has changed that makes the problem solvable or urgent now (EE-050) */
   why_now?: string;
-  /** The forms the problem takes (EE-050): one root problem in statement, and each form a narrower problem with its own segment and evidence, assessed on its own so it can be validated or dropped without touching the root */
+  /** The customer problem tree (EE-050, EE-219): one root problem in statement, and each form a problem below it, assessed on its own so it can be validated or dropped without touching the root. Two relations hold the tree together, and they say different things: parent, a narrower case of the same problem (the opportunity solution tree, Torres 2021), and cause_of, a different problem that produces another (problem tree analysis in the Logical Framework Approach). The order the founder lists them in is their own order, which the ranking falls back to as a hypothesis before any interview codes them (packages/naive/src/engine/problems.ts). These are the customer's problems; the business's own problems are decisions, seams and handoffs, never forms here */
   forms?: {
+    /** Unique among the forms, and never root, which names the record's own statement */
     id: string;
     statement: string;
     /** Only when narrower than the root's */
     segment?: string;
-    status?: "open" | "dropped";
+    /** The form this one is a narrower case of (Torres's opportunity solution tree): the same problem for fewer people, or in one situation. Left out, the form sits directly under the record's statement, so a flat list of forms is a tree one level deep */
+    parent?: string;
+    /** The forms this problem is a cause of (the Logical Framework Approach's problem tree): a different problem that produces them. Never the same form as parent: a narrower case is one shape of the same problem, a cause is another problem behind it */
+    cause_of?: string[];
+    /** open, a live problem; target, the one problem being worked on now, which at most one form carries and only a person sets (the record is gated, so an agent's write is a draft a person accepts); parked, live but deliberately not now; dropped, ruled out by evidence. Primary, secondary and tertiary are not statuses: they are the computed ranking's labels (packages/naive/src/engine/problems.ts) */
+    status?: "open" | "target" | "parked" | "dropped";
   }[];
   evidence: ValidationEvidence[];
   /** The Jev probability that the problem is real and worth solving for this segment; the evidence grade weighs it in the validation score */
@@ -7109,6 +7172,8 @@ export type ValidationSolution = {
   updated?: string;
   /** How it solves the problem, in one or two sentences */
   statement: string;
+  /** The form of the problem tree this solution solves (EE-219), normally the venture's target problem: foundation/problem.json forms, by id */
+  problem?: string;
   /** Product id, if one product carries the solution */
   product?: string;
   /** What people use instead today, including doing nothing */

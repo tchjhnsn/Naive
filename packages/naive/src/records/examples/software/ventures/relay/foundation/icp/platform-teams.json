@@ -7,5 +7,10 @@
   "customer": "b2b",
   "jobs": [
     "Hand other teams an internal tool that installs in one step"
-  ]
+  ],
+  "problem_forms": [
+    "first-run",
+    "internal-tool-handover"
+  ],
+  "core_problem": "internal-tool-handover"
 }
