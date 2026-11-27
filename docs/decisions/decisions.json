@@ -3327,6 +3327,121 @@
       ]
     },
     {
+      "id": "EE-220",
+      "date": "2026-11-26",
+      "status": "in-force",
+      "decision": "A pre-registration is a durable object of the strategy function, and it comes before the mission, the vision and the other strategy documents. The record type pre-registration (route foundation/pre-registration/[id], owned by strategy, suggested from Discovery) holds a thesis written so it can fail, the assumptions under it with how critical and how uncertain each is, the method (who, how many, how recruited, what is asked or observed), the measures each with a threshold and the date it is judged by, what does not count as evidence, and the action on a pass and on a fail. A person registers it. From registration on the thesis, assumptions, method, measures, thresholds, judged-by dates, exclusions, decision rules and who registered it when never change, for a person either: a departure is appended to deviations with the date, what changed, why and who, and a real change is a new pre-registration that supersedes the old one with a reason, so both what was promised and what happened stay readable. A verdict is written once and is a person's; a measure's pass or fail is its observed value against its registered threshold, which is arithmetic. Naive ships no threshold and no sample size: each is the venture's own, asked for or raised as a strategy-or-constitution decision, and the shipped template labels every number in it an example. Two layers hold the freeze: packages/naive/src/engine/pre-registration.ts is the pure rule the router applies to every write, and packages/naive/src/checks/check-pre-registration.ts compares each registered field with the version in the venture's blob store, which catches a hand edit that never went through the router. Blobs are not backfilled, so a record registered before the blob store existed is reported unverifiable and does not fail.",
+      "why": "Torian decided this on 2026-11-26: add pre-registration into the workflow as one of the durable objects that comes before another set of durable objects such as mission statement, vision and other strategy docs, with the record frozen once a person approves it (claim, assumptions, measures, thresholds, dates and decision rules), deviations appended beside it rather than edited into it, and a full supersede to a new version allowed with a reason. A mission and a vision written before anything has been tested are claims nobody can lose an argument with, because the standard of proof is then set after the evidence arrives. The practice and its words are standard: preregistration in science (Nosek et al. 2018), discovery-driven planning's assumption checklist and milestones (McGrath and MacMillan 1995), the Test Card's metric and criterion (Bland and Osterwalder 2019), and HARKing (Kerr 1998) for why the exclusions are fixed in advance.",
+      "related": [
+        "EE-023",
+        "EE-050",
+        "EE-051",
+        "EE-058",
+        "EE-156"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/records/pre-registration.schema.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/pre-registration.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/router/pre-registration.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/checks/check-pre-registration.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/functions/strategy/skills/pre-registration/SKILL.md",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "record",
+          "target": "pre-registration",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
+      "id": "EE-221",
+      "date": "2026-11-26",
+      "status": "in-force",
+      "decision": "A strategic claim is written the way a requirement is written, and it is a record. The record type bet (route foundation/bets/[id], owned by the strategy function, decision class strategy-or-constitution, suggested from Discovery) holds one claim of one kind: empirical, forecast, causal, premise, or selection-rule. A claim names its population with what is left in and out, its measure, its comparator, its threshold, the date it is judged on, the source the value is read from and, when it is tested by counting cases, the denominator; statementForm renders the fixed sentence for the kind from those parts, after EARS, so the parts are what is written and the sentence is rendered beside the founder's own wording for them to confirm. A selection rule says whom the venture backs and whom it does not, with an observable test; it is a value, not a claim, so it is never resolved by evidence and never scored. Every bet says what would show it wrong, names the premises it rests on as bets of kind premise with their own ids, and names at least one rival with the observation that would tell the two apart. Evidence is appended for and against and is never removed, and a bet reported supported while a premise of it is refuted is an error. A person registers a bet, a person alone puts odds on it with who set them and what they had already seen from the OSF template's five answers, and a person alone resolves it; an agent's write of a status, a probability, a resolution or the registration fields is refused before the gate and the refusal names the person's command. Naive ships no line, no date and no probability: each is the founder's, asked for or raised as a strategy-or-constitution decision. From registration on the claim never changes, for a person either: a narrowed or corrected claim is a new bet whose supersedes names the old one with a reason, so the old claim and its outcome stay readable. A registered pre-registration (EE-220) that names a bet in its tests freezes that bet's claim even while the bet is still proposed, so a claim cannot be widened after the search starts. The freeze is held in two layers as the pre-registration's is: packages/naive/src/engine/bets.ts is the pure rule the router applies to every write, and packages/naive/src/checks/check-bets.ts compares each frozen field with the version in the venture's blob store, which catches a hand edit that never went through the router, and reports a bet registered before the blob store existed as unverifiable rather than failed. The one contradiction a machine settles is two registered lines over the same population, measure, unit and date that cannot both hold; whether a claim is true is evidence and a person's judgment, and the register is never called verified or proved. Attacking a bet is premise-lint's work, not a new linter: bets are a sixth kind in packages/naive/src/checks/premise-lint.ts with one new aspect, no-counter-evidence, for a claim with no evidence against it and no rival. A resolved forecast is scored with its prior by the Brier score, because every later probability saw the evidence; a mixed or unresolvable outcome is not scored rather than guessed at, and a bet the venture is working to make true carries intends_to_cause and is reported apart and never as foresight.",
+      "why": "Torian decided this on 2026-11-26: create a list of bets similar to how we would create system requirements, a bet being the same thing for strategy, with a research flow for testing them, and we would have to try to disprove our bets and attack the premise of our bets, which is the pre-registration's purpose, plus skills for writing them and lints over the writing. A strategy written as prose cannot be wrong, because nothing in it says what would count against it. The practice and its words are standard: the characteristics of one requirement (ISO/IEC/IEEE 29148:2018) and a fixed sentence template per kind (Mavin et al., EARS, 2009) for how a claim is written; Popper (1959) for the counter-observation and Duke (Quit, 2022) for pairing it with a date; Dewar (Assumption-Based Planning, 2002) and Toulmin (1958) for the premises a claim rests on; Platt (strong inference, 1964) for the rival and the test that tells them apart; Heuer (1999) for evidence against deciding; Nosek et al. (PNAS 2018) and the OSF Preregistration template for keeping prediction apart from postdiction and for the five answers to what had already been seen; and Tetlock and Gardner (2015) with Brier (1950) for a probability, a date and a score afterwards. The mechanism is what Naive ships: no bet of the founder's is shipped as content, and no number in one is an agent's.",
+      "related": [
+        "EE-050",
+        "EE-051",
+        "EE-156",
+        "EE-181",
+        "EE-217",
+        "EE-220"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/records/bet.schema.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/bets.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/router/bets.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/checks/check-bets.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/router/orchestration/bets.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/functions/strategy/workflows/bet-review.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/functions/strategy/skills/bet-writing/SKILL.md",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "record",
+          "target": "bet",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
       "id": "EE-223",
       "date": "2026-11-26",
       "status": "in-force",
@@ -3386,6 +3501,31 @@
         {
           "kind": "path",
           "target": "packages/naive/src/core/code-over-docs.ts",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
+      "id": "EE-226",
+      "date": "2026-11-27",
+      "status": "in-force",
+      "decision": "Every element of APQC's PCF 8.0 is covered by its function's module, and a check says which are not. A level 3 process is covered by one workflow of the module whose optional `process` field names it, with one step per level 4 activity under it, each naming the activity; a level 2 process group by one skill whose SKILL.md frontmatter names it as `process_group`; a category by a module with an agent and a workflow. A level 5 task is never a step of its own and is counted under its covered activity. packages/naive/src/checks/check-pcf-coverage.ts reports coverage per level and per category, lists the gaps with --gaps, fails on a claim with the wrong structure, and fails on any gap with --complete. The process workflows run on request and wait on their function's intake meeting.",
+      "why": "Torian asked long ago for every PCF element to be audited and given detailed skills and workflows. On 2026-11-27 the 35 shipped workflows touched 6 of 1,352 activities and no process or process group, and no check made the gap visible. Torian on 2026-11-27: \"that work needs to be done and it needs to be done immediately.\"",
+      "related": [
+        "EE-165",
+        "EE-168",
+        "EE-176",
+        "EE-179",
+        "EE-180",
+        "EE-181",
+        "EE-199",
+        "EE-217"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/checks/check-pcf-coverage.ts",
           "root": "repo",
           "expect": "exists"
         }
