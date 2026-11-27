@@ -147,5 +147,6 @@ function start(b: AgentBrief, task: string, dir: string | null, rest: string[]):
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  try { process.exit(main(process.argv.slice(2))); } catch (e) { console.error((e as Error).message); process.exit(1); }
+  // exitCode, not process.exit: exiting at once cuts a long brief written to a pipe (--json passes 146 KB).
+  try { process.exitCode = main(process.argv.slice(2)); } catch (e) { console.error((e as Error).message); process.exitCode = 1; }
 }
