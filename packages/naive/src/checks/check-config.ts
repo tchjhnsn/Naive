@@ -33,7 +33,8 @@ import { functionsOf } from "../engine/research-programs.ts";
 import { runSync } from "../core/effect/run.ts";
 import { teamPlan } from "../engine/access.ts";
 import { gateOf, repo, resolve, routes } from "../records/routes/routes.ts";
-import { agentFromEnv, record } from "../core/provenance.ts";
+import { agentFromEnv } from "../core/provenance.ts";
+import { writeRecord } from "../store/record-write.ts";
 import { ventureFile } from "../core/venture-paths.ts";
 import { validateFile } from "../records/validate.ts";
 import type { NaiveConfig } from "../records/types/records.d.ts";
@@ -104,8 +105,7 @@ export function pin(dir: string, names?: string[]): NaiveConfig["packages"] {
   const unknown = chosen.filter((n) => !have[n]);
   if (unknown.length) throw new Error(`not installed: ${unknown.join(", ")}`);
   raw.packages = { ...(raw.packages ?? {}), ...Object.fromEntries(chosen.map((n) => [n, have[n]])) };
-  writeFileSync(ventureFile(dir, CONFIG), JSON.stringify(raw, null, 2) + "\n");
-  record(dir, { entity: CONFIG, route: "system/naive-config", activity: "write", agent: agentFromEnv("person", "cli"), note: `pinned ${chosen.join(", ")} at the installed versions` } as Parameters<typeof record>[1]);
+  writeRecord(dir, CONFIG, raw, { route: "system/naive-config", activity: "write", agent: agentFromEnv("person", "cli"), note: `pinned ${chosen.join(", ")} at the installed versions` });
   return raw.packages;
 }
 
