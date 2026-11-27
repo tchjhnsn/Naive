@@ -51,6 +51,24 @@ try {
   writeFileSync(f, JSON.stringify({ ...open, duplicate_of: "nobody" }, null, 2));
   const errs = decisions(dir).errors.join("\n");
   expect("an open decision marked as a duplicate, of a decision that does not exist, is reported", /a duplicate is withdrawn/.test(errs) && /which is no decision here/.test(errs), errs);
+  // Proposing an id again is not a way around a person (the audit of 2026-11-27).
+  const dup = decisions(dir).decisions.find((d) => d.status === "withdrawn");
+  if (dup) {
+    const again = propose(dir, { id: dup.id, question: "Asked again?" }, { agentId: "finance-agent" });
+    const still = JSON.parse(readFileSync(ventureFile(dir, `governance/decisions/${dup.id}.decision.json`), "utf8"));
+    expect("an agent cannot reopen a withdrawn decision by proposing its id again", !again.ok && /only a person reopens/.test(again.error ?? "") && still.status === "withdrawn", again);
+  } else expect("a withdrawn decision to test with", false);
+  // A decision a person wrote: an agent may reword it, and may not change who decides it or what it writes to.
+  const personFile = ventureFile(dir, "governance/decisions/price-floor.decision.json");
+  writeFileSync(personFile, JSON.stringify({ id: "price-floor", question: "What is the lowest price?", status: "open", class: "pricing", applies_to: [{ file: "finance/pricing.json", field: "floor" }] }, null, 2) + "\n");
+  const widen = propose(dir, { id: "price-floor", question: "What is the lowest price?", class: "ownership-or-control", applies_to: [{ file: "venture.json", field: "owner" }] }, { agentId: "finance-agent" });
+  const kept = JSON.parse(readFileSync(personFile, "utf8"));
+  expect("an agent cannot change the class or the targets of a decision a person wrote", !widen.ok && /class, applies_to/.test(widen.error ?? "") && kept.class === "pricing" && kept.applies_to[0].file === "finance/pricing.json", widen);
+  const reword = propose(dir, { id: "price-floor", question: "What is the lowest price we will accept?" }, { agentId: "finance-agent" });
+  const reworded = JSON.parse(readFileSync(personFile, "utf8"));
+  expect("an agent may still reword it, and the rest is kept", reword.ok && reworded.question.endsWith("accept?") && reworded.class === "pricing" && reworded.applies_to[0].file === "finance/pricing.json", reword);
+  const own = propose(dir, { at: "governance", id: "finance-who-owns", question: "Who owns the business?", class: "ownership-or-control", unlocks: [] }, { agentId: "finance-agent" });
+  expect("an agent may still correct a draft an agent wrote", own.ok, own);
 } finally {
   rmSync(ws, { recursive: true, force: true });
 }

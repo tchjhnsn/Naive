@@ -71,4 +71,4 @@ flowchart TD
 - **Who someone is.** A role and a session are declared through environment variables, so a process that sets another role's id can write as that role. The router's reach rules limit what any role writes, and the provenance chain catches an edit after the fact, but signed identity is not built (the code audit of 2026-11-27 names it).
 - **A meeting record's own provenance.** An intake settled by a meeting is read from the meeting record as it stands, as EE-217's prerequisites read it.
 - **Older runs.** A run that only names step ids proves nothing and is reported that way; it is not rewritten.
-- **The router write path on Effect.** The verifier and the runner are Effect code, but most of the router's write path is still plain async code with Effect at the gate and provenance. Moving the rest is a separate change.
+

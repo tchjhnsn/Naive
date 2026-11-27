@@ -83,10 +83,10 @@ if (layout === "src") {
 for (const layer of structured ? [] : ALL) {
   if (!on.includes(layer)) { if (only !== null || !["governance", "interface"].includes(layer)) ventureLayers[layer] = false; continue; }
   mkdirSync(ventureFile(dir, layer), { recursive: true });
-  writeFileSync(join(dir, layer, "README.md"), `# ${layer}\n\n${readme[layer]}\n`);
+  writeFileSync(join(ventureFile(dir, layer), "README.md"), `# ${layer}\n\n${readme[layer]}\n`);
   ventureLayers[layer] = { location: `${layer}/` };
 }
-if (!structured) for (const sub of ["products", "accounts"]) { mkdirSync(ventureFile(dir, sub), { recursive: true }); writeFileSync(join(dir, sub, ".gitkeep"), ""); }
+if (!structured) for (const sub of ["products", "accounts"]) { mkdirSync(ventureFile(dir, sub), { recursive: true }); writeFileSync(join(ventureFile(dir, sub), ".gitkeep"), ""); }
 // The package folder layout (EE-070). Old layer folders above stay for one release.
 // A typed venture gets its type's packages; the rest stay out until need-now suggests them.
 for (const sub of ["raw/dump", "raw/sources", "ideas", ...packageDirs, "decisions", "evidence", ...(structured ? [] : ["public"]), "_private", "_drafts", ".release"]) {
