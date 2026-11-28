@@ -39,7 +39,7 @@
     },
     {
       "id": "ask-telos",
-      "do": "Once a pre-registration is registered, ask what the venture is for when it has done its job and how anyone would know, and draft the venture goal telos (the end and its measures) for the founder to confirm. The mission and the vision read differently once there is something they have to survive.",
+      "do": "Once a pre-registration record is live (registering it is the founder's next step, and this lock does not wait for it), ask what the venture is for when it has done its job and how anyone would know, and draft the venture goal telos (the end and its measures) for the founder to confirm. The mission and the vision read differently once there is something they have to survive.",
       "requires": {
         "records": [
           "foundation/pre-registration"

@@ -13,8 +13,9 @@
     },
     {
       "id": "fill-the-holes",
-      "do": "For each hole the reading copy shows, write the record it names or raise the question, then render again, so the copy is a view of records and not a draft of its own.",
-      "raises": ["domain-fact"]
+      "do": "For each hole the reading copy shows, hand the record it names to the function that owns it (the problem and the customer profiles are strategy's, and the promise and what the venture will not claim sit in venture.json, which no route writes, so raise those for the founder) or raise the question, then render again once that record is live, so the copy is a view of records and not a draft of its own.",
+      "writes": ["operations/handoff/[id]", "decisions/*"],
+      "raises": ["defer-or-route"]
     },
     {
       "id": "hand-it-over",
