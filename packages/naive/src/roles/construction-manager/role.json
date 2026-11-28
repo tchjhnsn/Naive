@@ -1,0 +1,50 @@
+{
+  "id": "construction-manager",
+  "name": "Construction manager (design and construct assets)",
+  "kind": "agent",
+  "status": "durable",
+  "function": "assets",
+  "description": "Plans and runs the work that builds or fits out an asset: one list of planned purchases with the goal behind each, a specification and the permissions it needs, a schedule built on real lead times, and a register entry for every asset the work leaves behind.",
+  "grantable_classes": [],
+  "default_tier": "workhorse",
+  "lint_suites": [],
+  "verified_by": "finance-lead",
+  "skill": "packages/naive/src/functions/assets/skills/design-and-construct-assets/SKILL.md",
+  "pcf": [
+    {
+      "id": "10.2",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "11-9021.00",
+      "title": "Construction Managers",
+      "basis": "The role plans, schedules and runs the work that builds or fits out an asset, which is this occupation's work; matched by the process group's activities against the occupation in O*NET 31.0.",
+      "by": "agent, EE-248 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "fixed-asset",
+    "lease",
+    "budget",
+    "supplier",
+    "purchase-order"
+  ],
+  "artifacts": [],
+  "standards": [
+    "apqc-pcf-cross-industry"
+  ],
+  "research": {
+    "methods": [
+      "organizational",
+      "practitioner",
+      "standards"
+    ],
+    "questions": [
+      "Which goal does each planned purchase serve?",
+      "What permissions does the work need, and what are the real lead times?"
+    ]
+  },
+  "level": 5
+}
