@@ -10,6 +10,7 @@
       ],
       "year": 2024,
       "kind": "article",
+      "method": "practitioner",
       "summary": "Agentic systems split into workflows, where LLMs and tools are orchestrated through predefined code paths, and agents, where LLMs dynamically direct their own processes and tool usage, keeping control over how they accomplish a task.",
       "url": "https://www.anthropic.com/engineering/building-effective-agents",
       "checked": "2026-10-27",
