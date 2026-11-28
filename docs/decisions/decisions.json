@@ -4132,6 +4132,50 @@
       ]
     },
     {
+      "id": "EE-244",
+      "date": "2026-11-28",
+      "status": "in-force",
+      "decision": "The role library gains one role per APQC PCF level 2 process group of customer service that no role was responsible or accountable for (6.1 to 6.5): customer-service-management-analyst (6.1), customer-service-representative (6.2), claims-adjuster (6.3), regulatory-affairs-specialist (6.4) and survey-researcher (6.5). Each is a durable library role at packages/naive/src/roles/<id>/ with a role.json and a SKILL.md, in function customer-service, accountable for its process group, named after its best O*NET 31.0 occupation with the match recorded as an agent's and not yet reviewed by a person, verified by growth-lead, the lead whose portfolio covers customer-service, granted no decision class by default, and pointing at the function's skill for that process group. O*NET has no customer service manager occupation, so 6.1 is matched by its work to Management Analysts, and its id names the function because the strategy function's process group 1.2 role is management-analyst (EE-239). The representative makes support cases and the management analyst the support policy; the other three read them and make no record of their own yet. pcf-roles.json is regenerated. This is step 11 of the roles as agents plan for customer-service (docs/design/ROLES_AS_AGENTS_2026-11-28.md).",
+      "why": "Torian on 2026-11-28 decided that the first cut of business rows is one role per level 2 process group that no role answers for, named after the best O*NET match, one function per pull request, so check-roles --complete shows every process group of a function covered and each role a person can review.",
+      "related": [
+        "EE-229",
+        "EE-232",
+        "EE-233"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/roles/customer-service-management-analyst/role.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/roles/customer-service-representative/role.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/roles/claims-adjuster/role.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/roles/regulatory-affairs-specialist/role.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/roles/survey-researcher/role.json",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
       "id": "EE-153",
       "date": "2026-11-19",
       "status": "in-force",

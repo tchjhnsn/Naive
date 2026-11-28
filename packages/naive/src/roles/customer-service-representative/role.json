@@ -1,0 +1,52 @@
+{
+  "id": "customer-service-representative",
+  "name": "Customer service representative",
+  "kind": "agent",
+  "status": "durable",
+  "function": "customer-service",
+  "description": "Runs the venture's customer contacts: forecasts the volume and hours, works questions, problems, requests and complaints into support cases, processes returns, and says in writing whether a case may be reportable to a regulator.",
+  "grantable_classes": [],
+  "default_tier": "workhorse",
+  "lint_suites": [],
+  "verified_by": "growth-lead",
+  "skill": "packages/naive/src/functions/customer-service/skills/plan-and-manage-customer-service-contacts/SKILL.md",
+  "pcf": [
+    {
+      "id": "6.2",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "43-4051.00",
+      "title": "Customer Service Representatives",
+      "basis": "The role works questions, problems, requests and complaints into cases and answers them from what the venture has published, which is this occupation's core work; matched by the process group's activities against the occupation title and tasks in O*NET 31.0.",
+      "by": "agent, EE-244 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "support-policy",
+    "support-case",
+    "customer",
+    "product"
+  ],
+  "artifacts": [
+    {
+      "record_type": "support-case"
+    }
+  ],
+  "standards": [
+    "apqc-pcf-cross-industry"
+  ],
+  "research": {
+    "methods": [
+      "organizational",
+      "practitioner"
+    ],
+    "questions": [
+      "What does the support policy say this case is owed, and by when?",
+      "Which contact reasons came up most this week, and what would remove the cause?"
+    ]
+  },
+  "level": 4
+}
