@@ -36,7 +36,8 @@
     "benchmark",
     "agent-capability",
     "bug",
-    "telemetry-event"
+    "telemetry-event",
+    "lint-finding"
   ],
   "reads": [
     "handoff",
