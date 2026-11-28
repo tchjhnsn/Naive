@@ -1,0 +1,46 @@
+{
+  "id": "controller",
+  "name": "Controller",
+  "kind": "agent",
+  "status": "durable",
+  "function": "finance",
+  "description": "Manages international funds and consolidation (APQC 9.10): watches exchange rates and currency exposure, records transactions between entities and consolidates the results into one report.",
+  "grantable_classes": [],
+  "default_tier": "frontier",
+  "lint_suites": [],
+  "verified_by": "finance-lead",
+  "skill": "packages/naive/src/functions/finance/skills/manage-international-funds-consolidation/SKILL.md",
+  "pcf": [
+    {
+      "id": "9.10",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "11-3031.01",
+      "title": "Treasurers and Controllers",
+      "basis": "APQC 9.10 ends in consolidating and reporting results across entities and currencies, the controller's part of O*NET's treasurers and controllers; chosen over the --complete suggestions, which are education and science managers.",
+      "by": "agent, EE-247 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "money-account",
+    "money-summary"
+  ],
+  "artifacts": [],
+  "standards": [
+    "apqc-pcf-cross-industry"
+  ],
+  "research": {
+    "methods": [
+      "standards",
+      "organizational"
+    ],
+    "questions": [
+      "How much of cash is held in each currency?",
+      "Do transactions between entities net to zero?"
+    ]
+  },
+  "level": 5
+}

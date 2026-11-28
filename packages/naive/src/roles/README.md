@@ -33,6 +33,9 @@ Process group roles for human-capital (EE-245), one accountable for each of 7.3 
 
 Process group roles for it (EE-246), one accountable for each of 8.1 to 8.7: `computer-systems-analyst`, `information-security-analyst`, `database-architect`, `computer-systems-engineer`, `information-technology-project-manager` and `network-and-computer-systems-administrator` are agent roles; `computer-and-information-systems-manager` is either.
 
+Process group roles for assets (EE-248), one accountable for each of 10.1 to 10.4: `construction-manager` and `first-line-supervisor-of-mechanics-installers-and-repairers` are agent roles; `facilities-manager` and `appraiser-of-personal-and-business-property` are either.
+Process group roles for finance (EE-247, roles plan step 11), each accountable for one APQC level 2 process group and named after its O*NET match: `budget-analyst`, `billing-and-posting-clerk`, `accountant`, `financial-analyst`, `payroll-clerk`, `bookkeeping-clerk`, `treasurer`, `auditor`, `tax-preparer`, `controller` and `customs-broker`.
+
 ## Role programs
 
 Every role has a program (EE-237, [`role-program.ts`](../checks/role-program.ts)): deterministic checks of what the role makes, each an Effect over `VentureFs` that fails only with Naive's tagged errors. The default program comes from `role.json`:
