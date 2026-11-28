@@ -12,5 +12,23 @@
     "marketing/brand-lint"
   ],
   "verified_by": "chief-of-staff",
-  "skill": "packages/naive/library/packages/marketing/skill/SKILL.md"
+  "skill": "packages/naive/library/packages/marketing/skill/SKILL.md",
+  "pcf": [
+    {
+      "id": "3.0",
+      "raci": "responsible"
+    },
+    {
+      "id": "3.2",
+      "raci": "responsible"
+    }
+  ],
+  "onet": [
+    {
+      "code": "11-2021.00",
+      "title": "Marketing Managers",
+      "basis": "The role owns positioning, copy and what the venture says in public; matched by the role's description against the occupation title in O*NET 31.0.",
+      "by": "agent, EE-232 step 4 (not yet reviewed by a person)"
+    }
+  ]
 }
