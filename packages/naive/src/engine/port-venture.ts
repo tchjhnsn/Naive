@@ -24,6 +24,7 @@ import { createHash } from "node:crypto";
 import { type Dirent, existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, readlinkSync, realpathSync, renameSync, statSync, writeFileSync } from "node:fs";
 import { basename, dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { agentFromEnv, record } from "../core/provenance.ts";
+import { writeRecord } from "../store/record-write.ts";
 import { CODEBASE, ventureFile } from "../core/venture-paths.ts";
 import { envCommand, git as runGit, hostHook, refusedBy } from "../core/runtime.ts";
 import type { KnowledgeSources } from "../records/types/records.d.ts";
@@ -185,8 +186,7 @@ export function apply(dir: string, p: PortPlan, { agent = agentFromEnv("person",
     const map = readMap(dir);
     const root = inside(i.to, real(dir)) ? relative(real(dir), i.to) : i.to;
     map.sources.push({ id: i.source, connector: "filesystem", writes: "none", root, note: `source of truth, moved here unchanged from ${i.from} by naive port` });
-    mkdirSync(dirname(ventureFile(dir, MAP)), { recursive: true });
-    writeFileSync(ventureFile(dir, MAP), JSON.stringify(map, null, 2) + "\n");
+    writeRecord(dir, MAP, map, { agent, activity: existsSync(ventureFile(dir, MAP)) ? "write" : "create", note: `named ${root} as source ${i.source}, moved here by naive port` });
     record(dir, ({ entity: root, activity: "port", agent, derived_from: [`file://${i.from}`], sha256: measure(i.to).manifest, note: `moved unchanged (${i.files} files); named in sources.json as source ${i.source}` }) as Parameters<typeof record>[1]);
     i.done = new Date().toISOString();
     done.push(i);

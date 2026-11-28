@@ -38,7 +38,7 @@ export const steps: Step[] = [
   [/^the run exits (\d)$/, (w, code) => ok(w.status === Number(code), `exit ${w.status}: ${w.out}`)],
   [/^the output says "([^"]+)"$/, (w, text) => ok(w.out.includes(text), `output: ${w.out}`)],
   [/^a handoff "([a-z0-9-]+)" whose criterion "([a-z0-9-]+)" runs the effect "([^"]+)"$/, (w, id, c, file) => {
-    put(w, `operations/handoffs/${id}.json`, JSON.stringify({ id, done_criteria: [{ id: c, kind: "conformance", runs: "effect", check: file }] }, null, 2) + "\n");
+    put(w, `operations/handoffs/${id}.json`, JSON.stringify({ id, title: "A handoff with an effect criterion", venture: "v", role: "builder", brief: "h.md", decision_classes: ["implementation-detail"], status: "ready", attempts: 0, max_attempts: 3, run_cap: "2h", done_criteria: [{ id: c, kind: "conformance", runs: "effect", check: file }] }, null, 2) + "\n");
   }],
   [/^Naive is hosted with no sandbox hook$/, (w) => { w.hosted = true; }],
   [/^the handoff "([a-z0-9-]+)" runs$/, (w, id) => {

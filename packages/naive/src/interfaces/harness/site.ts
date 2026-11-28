@@ -11,10 +11,12 @@
 //   node packages/naive/src/interfaces/harness/site.ts <url> [--venture <dir>] [--raising] [--hiring] [--contributors] [--pages 10] [--json]
 
 import { spawn } from "node:child_process";
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 import { judgeCommand } from "../../engine/caching.ts";
 import { envCommand, hostHook, isHosted, missingHook } from "../../core/runtime.ts";
+import { ventureFile } from "../../core/venture-paths.ts";
+import { writeRecord, programWriter } from "../../store/record-write.ts";
 import { factsOf, icpOf, request, score, PRESENCE, type Site } from "../../functions/marketing-and-sales/marketing/site/presence.ts";
 
 /** A command's answer: its exit code and what it printed. */
@@ -54,7 +56,7 @@ export async function scan(url: string, { venture = null, flags = {}, pages = 10
   } else log("no judge (NAIVE_JUDGE_CMD): judging by keywords, which is rougher");
   const facts = factsOf(venture, flags);
   const result = score(site, { answers, facts, icp, venture: venture ? JSON.parse(readFileSync(join(venture, "venture.json"), "utf8")).id : null });
-  if (venture) { mkdirSync(join(venture, dirname(PRESENCE)), { recursive: true }); writeFileSync(join(venture, PRESENCE), JSON.stringify(result, null, 2) + "\n"); }
+  if (venture) writeRecord(venture, PRESENCE, result, { agent: programWriter("naive-site-presence", "harness"), activity: existsSync(ventureFile(venture, PRESENCE)) ? "write" : "create", note: `scored the site presence of ${result.site} (${result.judged_by})` });
   return result;
 }
 

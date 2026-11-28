@@ -26,9 +26,9 @@ import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSy
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { agentFromEnv, record } from "../core/provenance.ts";
+import { agentFromEnv } from "../core/provenance.ts";
+import { writeRecord } from "../store/record-write.ts";
 import { phase as changePhase } from "./freshness.ts";
-import { ventureFile } from "../core/venture-paths.ts";
 import { exitCriteria } from "./canonical.ts";
 import { validateFile } from "../records/validate.ts";
 import { runSync } from "../core/effect/run.ts";
@@ -118,9 +118,7 @@ export function meet(dir: string, id: string, { evidence, by }: { evidence?: str
   const ok = validateFile(schema, join(scratch, "record.json"));
   rmSync(scratch, { recursive: true, force: true });
   if (ok.status !== 0) return { ok: false, error: `the record would not match its schema:\n${(ok.stdout + ok.stderr).trim()}` };
-  const tf = ventureFile(dir, ec.file);
-  writeFileSync(tf, JSON.stringify(rec, null, 2) + "\n");
-  record(dir, { entity: ec.file, route: ec.source === "telos" ? "foundation/telos" : `foundation/exit-criteria/${v.phase}`, activity: "confirm", agent, note: `exit criterion ${v.phase}/${id} met${evidence ? `: ${evidence}` : ""}` });
+  writeRecord(dir, ec.file, rec, { route: ec.source === "telos" ? "foundation/telos" : `foundation/exit-criteria/${v.phase}`, activity: "confirm", agent, note: `exit criterion ${v.phase}/${id} met${evidence ? `: ${evidence}` : ""}` });
   return { ok: true, result: lifecycle(dir) };
 }
 

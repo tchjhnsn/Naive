@@ -12,12 +12,13 @@
 // every item passes. check-execution.ts refuses an in-progress handoff without one.
 
 import { execSync, spawnSync } from "node:child_process";
-import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { ventureFile } from "../core/venture-paths.ts";
 import { checkMethod } from "./method-contract.ts";
 import { knownRoles } from "../engine/agents/roles.ts";
 import { reviewIsIndependent } from "./verify.ts";
+import { writeRecord, writerFromEnv } from "../store/record-write.ts";
 import type { Decision, DecisionRights, Handoff } from "../records/types/records.d.ts";
 
 const args = process.argv.slice(2).filter((a, i) => !a.startsWith("--") && process.argv.slice(2)[i - 1] !== "--by");
@@ -113,7 +114,7 @@ if (process.argv.includes("--record")) {
   const version = execSync("git rev-parse --short HEAD", { cwd: root, encoding: "utf8" }).trim();
   h.ready_check = { at: new Date().toISOString().replace(/\.\d+Z$/, "Z"), by, version, items: items.length };
   if (h.status === "draft") h.status = "ready";
-  writeFileSync(hPath, JSON.stringify(h, null, 2) + "\n");
+  writeRecord(dir, `operations/handoffs/${id}.json`, h, { agent: writerFromEnv("cli", by), note: `recorded the ready check of handoff ${h.id}` });
   console.log(`recorded in ${hPath}`);
 }
 process.exit(ready ? 0 : 1);

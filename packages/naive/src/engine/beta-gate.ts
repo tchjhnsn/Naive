@@ -23,6 +23,7 @@ import { patternRe } from "./gate.ts";
 import { ventureFile } from "../core/venture-paths.ts";
 import { route as routeFeedback } from "./feedback-route.ts";
 import type { BetaCapabilities, ValidationFeedback } from "../records/types/records.d.ts";
+import { writeRecord, writerFromEnv } from "../store/record-write.ts";
 
 /** One capability in the manifest. */
 export type Capability = BetaCapabilities["capabilities"][number];
@@ -145,8 +146,7 @@ export async function giveFeedback(dir: string, capId: string, answers: Answers,
   const r = await routeFeedback({ capability: capId, answers: clean }, { dir, ...routing, send: jevConsented(dir) });
   const rec: ValidationFeedback = { id, at: now.toISOString(), tester: t, capability: capId, checkpoint: cap.checkpoint.id, answers: clean, routed_to: r.destination, routing: { model: r.model, confidence: r.confidence, fallback: r.fallback } };
   const f = ventureFile(dir, `validation/feedback/${id}.json`);
-  mkdirSync(dirname(f), { recursive: true });
-  writeFileSync(f, JSON.stringify(rec, null, 2) + "\n");
+  writeRecord(dir, `validation/feedback/${id}.json`, rec, { agent: writerFromEnv("cli"), activity: "create", note: `beta feedback on ${capId} from tester ${t}` });
   return { ok: true, written: f, record: rec, next: next(dir, t, m) };
 }
 

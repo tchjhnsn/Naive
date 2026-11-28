@@ -13,10 +13,12 @@
 //   node packages/naive/src/engine/visibility.ts <venture dir> <record path> [--json]   each field's visibility
 
 import { createHash } from "node:crypto";
-import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { frontmatter } from "./frontmatter.ts";
 import { ventureFile } from "../core/venture-paths.ts";
+import { agentFromEnv } from "../core/provenance.ts";
+import { writeRecord } from "../store/record-write.ts";
 
 /** One field's entry in a record's visibility sidecar. */
 export type SidecarField = { visibility?: string, level?: string, sha256?: string, approved_by?: string, approved_at?: string, proposed?: { visibility: string, sha256: string, by: string, at: string } };
@@ -80,7 +82,10 @@ export function setPublic(dir: string, rel: string, field: string, { by, propose
     if (!isPerson(dir, by)) return { ok: false, error: by ? `${by} is not a person in people/people.json: only a person approves a field as public; an agent proposes (--propose)` : "approving a field as public needs the person's name (--by)" };
     fields[field] = { visibility: "public", sha256: hash(value), approved_by: by, approved_at: at };
   }
-  writeFileSync(sf, JSON.stringify({ ...side, fields }, null, 2) + "\n");
+  writeRecord(dir, rel.replace(/\.json$/, ".visibility.json"), { ...side, fields }, {
+    agent: propose ? agentFromEnv("agent", "cli", { id: agentId ?? "agent" }) : agentFromEnv("person", "cli", { id: by }),
+    note: propose ? `proposed ${field} of ${rel} as public` : `approved ${field} of ${rel} as public`,
+  });
   return { ok: true, result: { record: rel, field, ...fields[field] } };
 }
 
