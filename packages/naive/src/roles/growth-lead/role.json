@@ -20,5 +20,15 @@
   "default_tier": "frontier",
   "lint_suites": [],
   "verified_by": "founder",
-  "skill": "packages/naive/src/interfaces/skills/lead/SKILL.md"
+  "skill": "packages/naive/src/interfaces/skills/lead/SKILL.md",
+  "pcf": [
+    {
+      "id": "3.0",
+      "raci": "accountable"
+    },
+    {
+      "id": "6.0",
+      "raci": "accountable"
+    }
+  ]
 }

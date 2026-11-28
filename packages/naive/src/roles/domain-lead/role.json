@@ -10,5 +10,15 @@
   "default_tier": "frontier",
   "lint_suites": [],
   "verified_by": "chief-of-staff",
-  "skill": "packages/naive/src/functions/capabilities/skills/find-reference/SKILL.md"
+  "skill": "packages/naive/src/functions/capabilities/skills/find-reference/SKILL.md",
+  "pcf": [
+    {
+      "id": "13.0",
+      "raci": "responsible"
+    },
+    {
+      "id": "13.5",
+      "raci": "responsible"
+    }
+  ]
 }

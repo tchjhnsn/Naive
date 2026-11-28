@@ -92,6 +92,28 @@
       }
     },
     {
+      "id": "onet-database",
+      "title": "O*NET Database, text release",
+      "authors": [
+        "US Department of Labor, Employment and Training Administration"
+      ],
+      "year": 2026,
+      "kind": "dataset",
+      "summary": "The O*NET database as tab-delimited files, one release at a time: release 31.0 (August 2026) has 1,016 occupations by O*NET-SOC code and title in Occupation Data.txt, 2,087 detailed work activities (DWAs) under 332 intermediate and 41 generalized work activities in GWAs to IWAs to DWAs.txt, and the links from each occupation's task statements to DWAs in Tasks to DWAs.txt. Licensed under CC BY 4.0 (https://www.onetcenter.org/license_db.html), which asks a copy to say it includes information from the O*NET database by USDOL/ETA, used under CC BY 4.0, and, when modified, that USDOL/ETA has not approved, endorsed, or tested the modifications.",
+      "url": "https://www.onetcenter.org/database.html",
+      "checked": "2026-11-28",
+      "informs": [
+        "field:onet.occupations",
+        "field:onet.dwas",
+        "field:role.onet"
+      ],
+      "stance": {
+        "is": "adopted",
+        "why": "O*NET is the reference for which roles are missing (EE-232): Naive carries each occupation's code and title and its work activity links, with O*NET's attribution, and suggests occupations for a PCF element no role answers for. A role's onet field names an occupation from it with who matched it and on what basis."
+      },
+      "method": "standards"
+    },
+    {
       "id": "parshall-lopez-luzuriaga-2026-cdr",
       "title": "Measuring AI's Economic Reach: A Multi-Dimensional Task Taxonomy",
       "authors": [

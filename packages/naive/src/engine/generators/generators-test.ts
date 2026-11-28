@@ -17,6 +17,7 @@ import * as activityCatalog from "./activity-catalog.ts";
 import * as activityAssignments from "./activity-assignments.ts";
 import * as elementOwners from "./element-owners.ts";
 import * as pcf from "./pcf.ts";
+import * as onet from "./onet.ts";
 import * as toolCatalog from "./tool-catalog.ts";
 import * as languageRubric from "./language-rubric.ts";
 import * as leadPlan from "./lead-plan.ts";
@@ -193,6 +194,13 @@ t("pcf: the hierarchy replaces the elements, sorted, under the file's header, an
 t("pcf: format writes one element per line", pc.ok && !!pc.draft && pcf.format(pc.draft).includes('\n    {"id": "1.0", "name": "Develop Vision and Strategy", "pcf": 10002, "level": 1},\n'));
 t("pcf: no elements is refused", !pcf.draft({ elements: [] }).ok);
 t("pcf: a root with no pcf.json is refused", !pcf.draft({ elements: [{ id: "1.0", name: "Develop Vision and Strategy", pcf: 10002, level: 1 }] }, { root: mkdtempSync(join(tmpdir(), "pcf-")) }).ok);
+const on = onet.draft({ release: "31.0", dwas: [{ id: "4.A.2.b.4.a.1", title: "Direct organizational operations, projects, or services." }, { id: "4.A.2.a.4.g.9", title: "Analyze financial records or reports." }], occupations: [{ code: "11-3031.00", title: "Financial Managers", dwas: ["4.A.2.a.4.g.9"] }, { code: "11-1011.00", title: "Chief Executives", dwas: ["4.A.2.b.4.a.1", "4.A.2.a.4.g.9", "4.A.2.b.4.a.1"] }] });
+t("onet: occupations and activities are sorted, links deduplicated, the attribution names the release, and it passes the schema", on.ok && on.draft?.occupations.map((o) => o.code).join(" ") === "11-1011.00 11-3031.00" && on.draft?.occupations[0].dwas.join(" ") === "4.A.2.a.4.g.9 4.A.2.b.4.a.1" && on.draft?.attribution.includes("O*NET 31.0 Database"));
+t("onet: format writes one occupation per line", on.ok && !!on.draft && onet.format(on.draft).includes('\n    {"code": "11-1011.00", "title": "Chief Executives", "dwas": ["4.A.2.a.4.g.9","4.A.2.b.4.a.1"]},\n'));
+const empty = onet.draft({ release: "31.0" });
+t("onet: an empty reference is valid", empty.ok && !!empty.draft && onet.format(empty.draft).includes('"dwas": [],'));
+t("onet: no release is refused", !onet.draft({}).ok);
+t("onet: a link to an activity the release lacks is refused", !onet.draft({ release: "31.0", dwas: [], occupations: [{ code: "11-1011.00", title: "Chief Executives", dwas: ["4.A.1.a.1.a.1"] }] }).ok);
 
 const op = opportunity.draft({ title: "Corner Bakery POS", source: "inbound", created: "2026-11-20T15:00:00Z", value: { amount: 600, currency: "USD", cadence: "annual" } });
 t("opportunity: draft starts at lead with no reply yet and passes the schema", op.ok && op.route === "sales/opportunities/corner-bakery-pos" && op.draft.pipeline_stage === "lead" && op.draft.first_response === null);
