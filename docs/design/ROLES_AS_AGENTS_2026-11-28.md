@@ -1,6 +1,6 @@
 # Roles as agents, linked to the PCF
 
-Date: 2026-11-28. Decisions: EE-229 (step 1), EE-230 (step 2), EE-231 (step 3), EE-232 (step 4), EE-233 (step 5) and EE-235 (step 7) are built; EE-234 and EE-236 to EE-239 (steps 6 and 8 to 11) are decided and not built.
+Date: 2026-11-28. Decisions: EE-229 (step 1), EE-230 (step 2), EE-231 (step 3), EE-232 (step 4), EE-233 (step 5), EE-235 (step 7) and EE-237 (step 9) are built; EE-234, EE-236, EE-238 and EE-239 (steps 6, 8, 10 and 11) are decided and not built.
 
 ## The ask
 
@@ -34,7 +34,7 @@ flowchart LR
   subgraph Library["Role library: packages/naive/src/roles/&lt;id&gt;/"]
     RJ["role.json<br/>kind person, agent or either"]
     SK["SKILL.md<br/>how to act in the role"]
-    RP["role.ts, step 9<br/>RoleProgram checks"]
+    RP["role.ts, step 9, built<br/>RoleProgram checks"]
   end
   VO["Venture overlay<br/>governance/roles/&lt;id&gt;/role.json"] -- "replaces by id" --> RJ
   NA["Naive's own roles<br/>agents/&lt;id&gt;/, step 10"] -. "same shape" .-> RJ
@@ -101,7 +101,7 @@ flowchart LR
   RJ --> CR
 ```
 
-## Steps 2 to 11 (steps 2 to 5 and 7 built, the rest not built)
+## Steps 2 to 11 (steps 2 to 5, 7 and 9 built, the rest not built)
 
 Each step is one pull request with its decision id assigned.
 
@@ -112,11 +112,20 @@ Each step is one pull request with its decision id assigned.
 6. **EE-234 Roles in the graph.** `naive graph` gains role nodes and the derived depends-on edges, and `naive graph --role`.
 7. **EE-235 Digital workers (built).** The deployment record, its statechart with a Lean model, and `naive workers`. Specialists are migrated, leads write temporary roles and merges, and promotion is proposed as a decision only a person accepts. Built in `packages/naive/src/engine/agents/workers.ts`, `packages/naive/src/engine/agents/worker-state.ts` and `packages/naive/lean/Naive/Workers.lean`; see `packages/naive/src/engine/agents/README.md` for the statechart. A worker goes active only when a person activates it, which is the hook step 8 uses.
 8. **EE-236 Staffing gate.** SAD's gate questions run as checks. After 1B a lead drafts a staffing plan from the specs as one decision with EE-211 candidates. Deployments go active only once a person decides, and the gate fails closed (EE-217).
-9. **EE-237 Role programs on Effect.** The `RoleProgram` interface and `naive role check <role>`, which run deterministic checks of a role's artifacts.
+9. **EE-237 Role programs on Effect (built).** The `RoleProgram` interface and `naive role check <role>`, which run deterministic checks of a role's artifacts. See the step 9 section below.
 10. **EE-238 Rows for Naive.** `agents/<role>/` for the six Naive roles.
 11. **EE-239 and after: rows for businesses.** One function per pull request. The first cut is one role per PCF level 2 process group (74), named after its best O*NET match.
 
+## Step 9: role programs (EE-237, built)
+
+- `packages/naive/src/checks/role-program.ts` defines `RoleProgram` (`id`, `checks`), `RoleCheck` (`id`, `description`, `run(ctx)`, an Effect over `VentureFs` that fails only with the tagged errors in `packages/naive/src/core/effect/errors.ts`) and `RoleFinding` (rule, family protocol or design, severity, message, artifact, kind).
+- Every role has the default program derived from its `role.json`: `artifact-types` (artifactKind on each artifact, and `lintArtifact` on each venture artifact record of a kind the role names), `reads` and `lint-suites`.
+- A library role adds checks in `role.ts` beside `role.json`. They run after the default checks and may not reuse a default id. The architect's requires every `adr` artifact to be built from a decision record the venture has, and the product and design lead's requires each live or building capability to name goals the venture holds.
+- A venture's `role.ts` is never loaded: the venture folder is data agents write and sync copies. `check-roles.ts` fails on one, and holds each library `role.ts` to a valid program for its role.
+- `naive role check <role> | --all [--venture <dir>] [--json]` runs the programs, appends every finding to `.naive/lint-findings.jsonl` with lint `role`, and exits 1 on any error.
+- The module sits in `packages/naive/src/checks/`, not `engine/agents/`, because it builds on the artifact lint and the engine never imports a check.
+
 ## Not built
 
-- Everything in steps 6 and 8 to 11. The step 1 schema holds their optional fields, and every role leaves them empty except `pcf` and `onet`, which step 4 filled.
+- Everything in steps 6, 8, 10 and 11. The step 1 schema holds their optional fields, which every role leaves empty except `pcf` and `onet` (step 4) and the `reads` and `artifacts` of the architect and the product and design lead (step 9).
 - Vault wikilinks to the archived `roles/ceo` and `roles/cto` remain in a few skills and the venture template's `index.md` and `pillars/product.md`. They pointed at vault paths that were already broken, and are left for the step that writes those rows.
