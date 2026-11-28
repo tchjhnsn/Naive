@@ -1,6 +1,6 @@
 # Roles as agents, linked to the PCF
 
-Date: 2026-11-28. Decisions: EE-229 (step 1), EE-230 (step 2), EE-231 (step 3), EE-232 (step 4), EE-233 (step 5), EE-234 (step 6), EE-235 (step 7), EE-237 (step 9) and EE-238 (step 10) are built; EE-236 and EE-239 (steps 8 and 11) are decided and not built.
+Date: 2026-11-28. Decisions: EE-229 (step 1), EE-230 (step 2), EE-231 (step 3), EE-232 (step 4), EE-233 (step 5), EE-234 (step 6), EE-235 (step 7), EE-236 (step 8), EE-237 (step 9) and EE-238 (step 10) are built; EE-239 (step 11) is decided and not built.
 
 ## The ask
 
@@ -47,7 +47,7 @@ flowchart LR
   DW -- "writes never wider than" --> RJ
   RT -. "depends-on derived, step 6" .-> GR["naive graph --role"]
   AR -. "depends-on derived, step 6" .-> GR
-  SG["Staffing gate, step 8"] -- "a person decides" --> DW
+  SG["Staffing gate, step 8, built"] -- "a person decides" --> DW
 ```
 
 A role module is a folder. Its `role.json` is a record that `packages/naive/src/records/role.schema.json` governs:
@@ -140,7 +140,7 @@ flowchart LR
 - `check-roles.ts` also checks, for every scope, that each artifact is a record type or a document kind (EE-230) and each standard is a reference id. The references for ISO/IEC/IEEE 29148, 26514 and 12207 were added with method `standards`.
 - `functions/pcf-roles.json` keeps the library's links only: `agents/` is not in the package's `files`, and the file is the map a venture reads.
 
-## Steps 2 to 11 (steps 2 to 7, 9 and 10 built, the rest not built)
+## Steps 2 to 11 (steps 2 to 10 built, step 11 not built)
 
 Each step is one pull request with its decision id assigned.
 
@@ -150,10 +150,51 @@ Each step is one pull request with its decision id assigned.
 5. **EE-233 Research methods.** The method enum: references record their method, and the find-reference and research skills take a method.
 6. **EE-234 Roles in the graph.** `naive graph` gains role nodes and the derived depends-on edges, and `naive graph --role`.
 7. **EE-235 Digital workers (built).** The deployment record, its statechart with a Lean model, and `naive workers`. Specialists are migrated, leads write temporary roles and merges, and promotion is proposed as a decision only a person accepts. Built in `packages/naive/src/engine/agents/workers.ts`, `packages/naive/src/engine/agents/worker-state.ts` and `packages/naive/lean/Naive/Workers.lean`; see `packages/naive/src/engine/agents/README.md` for the statechart. A worker goes active only when a person activates it, which is the hook step 8 uses.
-8. **EE-236 Staffing gate.** SAD's gate questions run as checks. After 1B a lead drafts a staffing plan from the specs as one decision with EE-211 candidates. Deployments go active only once a person decides, and the gate fails closed (EE-217).
+8. **EE-236 Staffing gate (built).** SAD's gate questions run as checks. After 1B a lead drafts a staffing plan from the specs as one decision with EE-211 candidates. Deployments go active only once a person decides, and the gate fails closed (EE-217). See the step 8 section below.
 9. **EE-237 Role programs on Effect (built).** The `RoleProgram` interface and `naive role check <role>`, which run deterministic checks of a role's artifacts. See the step 9 section below.
 10. **EE-238 Rows for Naive (built, above).** `agents/<role>/` for the six Naive roles.
 11. **EE-239 and after: rows for businesses.** One function per pull request. The first cut is one role per PCF level 2 process group (74), named after its best O*NET match.
+
+## Step 8: the staffing gate (EE-236, built)
+
+SAD's gate questions are asked of the venture's own records. SAD's documents are never read, so EE-036 stands, and this is its clause that SAD's surviving rules become checks.
+
+- The gates are data in `packages/naive/src/phases/spec-gates.json`, governed by `packages/naive/src/records/spec-gates.schema.json`. Its generator refuses a record type the data model lacks or one with no venture paths.
+- Each gate is named by its question. Each question names the record type that answers it, the field read on each record and the values that count. Where in the records each answer lives is cited in every report as `path#field`.
+- A question no record type answers is a hole, reported as not built, and it never blocks. Today there are two: the research synthesis (0B) and the venture's own data model (1B).
+- A gate passes when its other questions hold. It is reached when it and every gate before it pass.
+
+| Gate | Its question | Answered by |
+|---|---|---|
+| 0A | Are the founder's ideas out of their head and in the records? | an idea dump, raw dump or idea map; the idea graph's `root` |
+| 0B | Is the problem researched rather than assumed? | the problem's `statement` and `segment`; an interview or the problem's `evidence`; a market anatomy or a competitor; the synthesis is a hole |
+| 0C | Is the vision stated, and is the thesis under it written so it can fail? | the telos's `end_state`; `venture.json` `core.promise`; an ICP profile; a pre-registration whose `status` is registered or judged |
+| 1A | Is the scope of this version committed? | a goal whose `status` is active; exit criteria's `criteria`; constraints' `must_not`; a product's `name` |
+| 1B | Is the version specified well enough to staff? | a capability building or live; every such capability naming `goals`; every requirement naming `verified_by`; an artifact whose `document_kind` is spec or adr; no open or deferred decision on a goal, requirement, constraint, exit criterion or capability; the data model is a hole |
+
+After 1B is reached, the staffing gate follows.
+
+- `naive staffing draft` is refused until 1B is reached. The refusal names every missing question, and nothing is written. This is EE-217's fail-closed rule.
+- Once 1B is reached, the lead whose portfolio holds human capital (the strategy lead today) files one open decision, `staffing-plan`. It asks "Would you like to begin deploying agents?".
+- Its EE-211 candidates are the distinct sets of proposed workers for the functions the specs name. Those are the functions a requirement constrains and the functions of the record types that answer 1B, kept to the venture's departments. `function-agents` proposes each function's own agent. `library-roles` proposes the library's agent roles that serve each function, never a lead or a person, and the function's agent where none does.
+- Every deployment is checked with `deployPlan` before anything is written. Each worker is then written proposed and durable, with `plan` naming the decision and the candidate. It is proposed in the name of the lead whose portfolio holds its function, so its writes are never wider than that lead's portfolio or its role.
+- A person decides with `naive decide staffing-plan --by <person> --answer <candidate>`. `naive staffing apply --by <person>` then activates the chosen candidate's workers through the worker activate path, with the decision, and ends the other candidates' proposed workers. Apply refuses an acting agent, an undecided plan, and specs that no longer reach 1B.
+- The plan's state is derived from the gates, the decision and its workers, so there is no new statechart and no Lean model. The worker statechart of step 7 is still the one that decides who activates.
+
+```mermaid
+flowchart TD
+  R["Venture records"] --> E["spec-gates.ts<br/>0A, 0B, 0C, 1A, 1B by question"]
+  G["phases/spec-gates.json"] --> E
+  E -- "a question missing" --> X["draft refused, naming each one<br/>nothing written"]
+  E -- "1B reached" --> L["human-capital lead drafts<br/>one decision: staffing-plan"]
+  L --> C1["candidate function-agents<br/>proposed workers"]
+  L --> C2["candidate library-roles<br/>proposed workers"]
+  C1 --> P{"A person decides:<br/>Would you like to begin deploying agents?"}
+  C2 --> P
+  P --> A["naive staffing apply --by person"]
+  A -- "chosen candidate" --> W["workers activated<br/>with the decision"]
+  A -- "other candidates" --> N["proposed workers ended"]
+```
 
 ## Step 9: role programs (EE-237, built)
 
@@ -166,5 +207,7 @@ Each step is one pull request with its decision id assigned.
 
 ## Not built
 
-- Everything in steps 8 and 11. The step 1 schema holds their optional fields, which every library role leaves empty except `pcf` and `onet` (step 4) and the `reads` and `artifacts` of the architect and the product and design lead (step 9); Naive's own roles under `agents/` fill them (step 10).
+- Everything in step 11.
+- In step 8: a record type for the research synthesis and one for the venture's own data model, so their gate questions stop being holes; and a temporary worker in a staffing plan, whose expiry would run from the draft rather than the decision.
+- The step 1 schema holds their optional fields, which every library role leaves empty except `pcf` and `onet` (step 4) and the `reads` and `artifacts` of the architect and the product and design lead (step 9); Naive's own roles under `agents/` fill them (step 10).
 - Vault wikilinks to the archived `roles/ceo` and `roles/cto` remain in a few skills and the venture template's `index.md` and `pillars/product.md`. They pointed at vault paths that were already broken, and are left for the step that writes those rows.
