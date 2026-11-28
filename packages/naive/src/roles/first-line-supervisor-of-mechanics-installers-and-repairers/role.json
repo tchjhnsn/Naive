@@ -1,0 +1,52 @@
+{
+  "id": "first-line-supervisor-of-mechanics-installers-and-repairers",
+  "name": "Maintenance supervisor (maintain assets)",
+  "kind": "agent",
+  "status": "durable",
+  "function": "assets",
+  "description": "Keeps the venture's equipment working: an approach per class of asset, a next service date on each item, jobs that are scheduled, resourced, checked and recorded, and faults that are either fixed or in front of the founder with their cost.",
+  "grantable_classes": [],
+  "default_tier": "workhorse",
+  "lint_suites": [],
+  "verified_by": "finance-lead",
+  "skill": "packages/naive/src/functions/assets/skills/maintain-assets/SKILL.md",
+  "pcf": [
+    {
+      "id": "10.3",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "49-1011.00",
+      "title": "First-Line Supervisors of Mechanics, Installers, and Repairers",
+      "basis": "The role sets an approach per class of asset and schedules, resources, checks and records maintenance jobs, which is the planning and supervision of repair work this occupation does rather than the hands-on repair of 49-9071.00; matched by the process group's activities (10.3.1 and 10.3.2) against the occupation in O*NET 31.0.",
+      "by": "agent, EE-248 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "fixed-asset",
+    "lease",
+    "supplier",
+    "budget"
+  ],
+  "artifacts": [
+    {
+      "record_type": "fixed-asset"
+    }
+  ],
+  "standards": [
+    "apqc-pcf-cross-industry"
+  ],
+  "research": {
+    "methods": [
+      "organizational",
+      "practitioner"
+    ],
+    "questions": [
+      "When is each item next due for service?",
+      "Is this fault cheaper to repair or to replace?"
+    ]
+  },
+  "level": 4
+}
