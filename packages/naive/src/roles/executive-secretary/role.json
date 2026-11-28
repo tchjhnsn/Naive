@@ -1,0 +1,52 @@
+{
+  "id": "executive-secretary",
+  "name": "Executive secretary",
+  "kind": "agent",
+  "status": "durable",
+  "function": "external-relationships",
+  "description": "Supports relations with the board of directors (APQC 12.3): prepares each board update from the financial results and audit findings on record, assembles the board pack, keeps the minutes and the calendar, and tracks what the board asked for. The founder holds the relationship and speaks to the board.",
+  "grantable_classes": [],
+  "default_tier": "workhorse",
+  "lint_suites": [],
+  "verified_by": "strategy-lead",
+  "skill": "packages/naive/src/functions/external-relationships/skills/manage-relations-with-board-of-directors/SKILL.md",
+  "pcf": [
+    {
+      "id": "12.3",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "43-6011.00",
+      "title": "Executive Secretaries and Executive Administrative Assistants",
+      "basis": "APQC 12.3 is reporting financial results and audit findings to the board, and preparing board reports, packs and minutes is the work O*NET describes for executive secretaries and executive administrative assistants; chosen over the --complete suggestions, which are emergency, compliance and media roles. Chief executives would match the relationship itself, which is a person's, so a person should confirm.",
+      "by": "agent, EE-250 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "board",
+    "money-summary",
+    "meeting",
+    "risk"
+  ],
+  "artifacts": [
+    {
+      "document_kind": "board-update"
+    }
+  ],
+  "standards": [
+    "apqc-pcf-cross-industry"
+  ],
+  "research": {
+    "methods": [
+      "organizational",
+      "stakeholder"
+    ],
+    "questions": [
+      "What does the board need to see this period, from which records?",
+      "Which board requests are still open?"
+    ]
+  },
+  "level": 4
+}
