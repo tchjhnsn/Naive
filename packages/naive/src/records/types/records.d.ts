@@ -5878,6 +5878,10 @@ export type PublicationPolicy = {
     rules: {
       /** The kind of content, e.g. methodology pages, release notes, a funding announcement */
       content: string;
+      /** Who the venture or person speaks as when publishing this content on this channel, such as founder, company or maintainer (EE-129, who acts). It names a voice, not a role id: drafters and approvers name roles from the role registry. */
+      role?: string;
+      /** What publishing this content on this channel is for, such as helping prospective customers decide or keeping investors informed (EE-129, for what end). check-publication.ts warns when a rule has none. */
+      end?: string;
       /** The layers whose records it may publish */
       from_layers?: ("purpose" | "knowledge" | "operations" | "evidence" | "governance" | "interface")[];
       /** Role or team ids; agents may draft */

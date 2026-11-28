@@ -51,6 +51,8 @@ Start from the destination, not the content. The same paragraph is held to diffe
 
 Each channel has rules: a kind of content, the layers whose records it may draw on, who drafts and who approves. Approvers are roles or teams (a governance team, a marketing team). `check-publication.ts` fails a rule with no person approving, and fails any agent role named as an approver.
 
+A rule may also say who the venture speaks as there (`role`, such as founder, company or maintainer) and what publishing that content there is for (`end`, such as helping prospective customers decide). These are two of Aristotle's circumstances of action, who acts and for what end (Nicomachean Ethics III.1), and they give the approver something to judge the draft against. `role` names a voice, not a role id; drafters and approvers name role ids. Both are optional, and `check-publication.ts` warns, without failing, when a rule has no `end` (EE-129, proposed).
+
 | Venture | A common shape |
 | --- | --- |
 | Solo founder | One approver, the founder, on every channel |

@@ -170,6 +170,16 @@
                   "type": "string",
                   "description": "The kind of content, e.g. methodology pages, release notes, a funding announcement"
                 },
+                "role": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Who the venture or person speaks as when publishing this content on this channel, such as founder, company or maintainer (EE-129, who acts). It names a voice, not a role id: drafters and approvers name roles from the role registry."
+                },
+                "end": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "What publishing this content on this channel is for, such as helping prospective customers decide or keeping investors informed (EE-129, for what end). check-publication.ts warns when a rule has none."
+                },
                 "from_layers": {
                   "type": "array",
                   "items": {
