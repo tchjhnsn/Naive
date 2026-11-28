@@ -1,0 +1,51 @@
+{
+  "id": "database-architect",
+  "name": "Database architect (information management)",
+  "kind": "agent",
+  "status": "durable",
+  "function": "it",
+  "description": "Keeps the venture's information in order: names the questions its records must answer, says which system is authoritative for each field, writes the rule for how long each kind of record is kept and who may reach it, and keeps the feeds running.",
+  "grantable_classes": [],
+  "default_tier": "frontier",
+  "lint_suites": [],
+  "verified_by": "product-lead",
+  "skill": "packages/naive/src/functions/it/skills/manage-information/SKILL.md",
+  "pcf": [
+    {
+      "id": "8.4",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "15-1243.00",
+      "title": "Database Architects",
+      "basis": "The role says which system is authoritative for each field, designs how the venture's information is structured and kept, and keeps the feeds running, which is the design of data strategies this occupation does; matched by the process group's activities against the occupation in O*NET 31.0.",
+      "by": "agent, EE-246 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "knowledge-sources",
+    "where-used",
+    "data-model",
+    "connection",
+    "freshness-profiles"
+  ],
+  "artifacts": [],
+  "standards": [
+    "apqc-pcf-cross-industry",
+    "json-schema-2020-12",
+    "gdpr-2016-679"
+  ],
+  "research": {
+    "methods": [
+      "standards",
+      "organizational"
+    ],
+    "questions": [
+      "Which system is the source of truth for this field, and does any other claim it?",
+      "How long must this kind of record be kept, and who may reach it?"
+    ]
+  },
+  "level": 5
+}
