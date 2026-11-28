@@ -4224,6 +4224,62 @@
           "expect": "exists"
         }
       ]
+    },
+    {
+      "id": "EE-246",
+      "date": "2026-11-28",
+      "status": "in-force",
+      "decision": "The role library gains one role per APQC PCF level 2 process group of IT that no role was responsible or accountable for (8.1 to 8.7): computer-systems-analyst (8.1), computer-and-information-systems-manager (8.2), information-security-analyst (8.3), database-architect (8.4), computer-systems-engineer (8.5), information-technology-project-manager (8.6) and network-and-computer-systems-administrator (8.7). Each is a durable library role at packages/naive/src/roles/<id>/ with a role.json and a SKILL.md, in function it, accountable for its process group, named after its best O*NET 31.0 occupation with the match recorded as an agent's and not yet reviewed by a person, verified by product-lead, the lead whose portfolio covers it, granted no decision class by default, and pointing at the function's skill for that process group. The IT strategy role is either, since adopting a strategy and spending on systems are a person's. The computer systems engineer names the same O*NET occupation as the architect, for IT solutions rather than product structure. Naive's own release manager stays accountable for 8.6.3 under agents/. The administrator makes connection records. pcf-roles.json is regenerated. This is step 11 of the roles as agents plan for it (docs/design/ROLES_AS_AGENTS_2026-11-28.md).",
+      "why": "Torian on 2026-11-28 decided that the first cut of business rows is one role per level 2 process group that no role answers for, named after the best O*NET match, one function per pull request, so check-roles --complete shows every process group of a function covered and each role a person can review.",
+      "related": [
+        "EE-229",
+        "EE-232",
+        "EE-233"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/roles/computer-systems-analyst/role.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/roles/computer-and-information-systems-manager/role.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/roles/information-security-analyst/role.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/roles/database-architect/role.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/roles/computer-systems-engineer/role.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/roles/information-technology-project-manager/role.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/roles/network-and-computer-systems-administrator/role.json",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
     }
   ]
 }
