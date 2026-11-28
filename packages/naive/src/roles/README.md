@@ -41,6 +41,8 @@ Process group roles for risk and compliance (EE-249, roles plan step 11), each a
 
 Process group roles for external relationships (EE-250, roles plan step 11), each accountable for one APQC level 2 process group and named after its O*NET match: `fundraising-manager`, `public-relations-manager`, `executive-secretary` and `public-relations-specialist`.
 
+Process group roles for capabilities (EE-251, roles plan step 11), each accountable for one APQC level 2 process group and named after its O*NET match: `industrial-engineer`, `portfolio-project-management-specialist`, `quality-control-systems-manager`, `industrial-organizational-psychologist`, `document-management-specialist`, `statistician`, `data-scientist`, `occupational-health-and-safety-specialist` and `sustainability-specialist`.
+
 ## Role programs
 
 Every role has a program (EE-237, [`role-program.ts`](../checks/role-program.ts)): deterministic checks of what the role makes, each an Effect over `VentureFs` that fails only with Naive's tagged errors. The default program comes from `role.json`:
@@ -93,7 +95,7 @@ flowchart LR
   GAP -- "suggested occupations,<br/>a person names the role" --> RJ
 ```
 
-Today the four leads are accountable for the categories in their portfolios, each function role is responsible for its function's category and for the process groups its description plainly covers, and six roles name the O*NET occupation their title matches, each with its basis and who matched it. `--complete` reports 67 of the 74 process groups as gaps; every category has an accountable role.
+Today the four leads are accountable for the categories in their portfolios, each function role is responsible for its function's category and for the process groups its description plainly covers, and each process group role (step 11 of the roles plan, EE-239 to EE-251) is accountable for its process group and names the O*NET occupation it is named after, with its basis and who matched it. `--complete` reports no gaps at levels 1 and 2.
 
 - Read through [`loadRoles`, `knownRoles` and `isPersonRole`](../engine/agents/roles.ts), the one loader. Every reader goes through it: delegation, team plans, lead plans, the routing rule, element owners, the decision queue, detectors, publication and people checks.
 - Records that name a role: decision rights owners, delegation grants, team plans, lead plans (`operations/lead/[id]`), element owners (`operations/element-owners`), handoffs and detectors.
@@ -101,6 +103,6 @@ Today the four leads are accountable for the categories in their portfolios, eac
 ## Not built
 
 - The fields later steps fill (`reads`, `artifacts`, `standards`, `research`, `level`) are in the schema and empty in every library role, except the `reads` and `artifacts` of the architect and the product and design lead (EE-237); Naive's own roles under `agents/` fill them (EE-238), and `check-roles.ts` checks each artifact, the kinds only one role makes (`made_by` in `documents.json`) and each standard. Linking roles to deployments is not built.
-- A role for each of the 67 process groups with no responsible or accountable role is not built (step 11 of the roles plan). The person roles link to no PCF element.
+- Roles for APQC elements below level 2 are not built. The person roles link to no PCF element.
 - Setting a role program's own design rules (`reads-present`, a `role.ts` warning) off, warn or error is not built: they always warn. The artifact lint's design rules follow `artifact_lint.rules`, and a lint suite's findings follow that suite's own rule modes.
 - `recordsOf`, which a `role.ts` uses to read a record type's files, reads only paths whose folder has no wildcard.

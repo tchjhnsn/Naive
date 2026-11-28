@@ -1,0 +1,52 @@
+{
+  "id": "data-scientist",
+  "name": "Data scientist",
+  "kind": "agent",
+  "status": "durable",
+  "function": "capabilities",
+  "description": "Develops and delivers analytics (APQC 13.8): takes a question from a stakeholder, scopes the analysis, states its hypotheses, collects and prepares the data, builds and reviews the model and reports what the data shows in a brief.",
+  "grantable_classes": [],
+  "default_tier": "frontier",
+  "lint_suites": [],
+  "verified_by": "strategy-lead",
+  "skill": "packages/naive/src/functions/capabilities/skills/develop-manage-and-deliver-analytics/SKILL.md",
+  "pcf": [
+    {
+      "id": "13.8",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "15-2051.00",
+      "title": "Data Scientists",
+      "basis": "APQC 13.8 runs from stakeholder needs through hypotheses, data preparation and models to reporting, which is the work O*NET describes for data scientists; chosen over the --complete suggestions, which are clinical and science roles. Business intelligence analysts also fit the reporting half.",
+      "by": "agent, EE-251 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "telemetry-event",
+    "goal",
+    "evidence"
+  ],
+  "artifacts": [
+    {
+      "document_kind": "brief"
+    }
+  ],
+  "standards": [
+    "apqc-pcf-cross-industry"
+  ],
+  "research": {
+    "methods": [
+      "scientific",
+      "organizational",
+      "practitioner"
+    ],
+    "questions": [
+      "What decision will this analysis inform?",
+      "What would the data look like if the hypothesis were wrong?"
+    ]
+  },
+  "level": 5
+}

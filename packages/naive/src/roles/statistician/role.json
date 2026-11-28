@@ -1,0 +1,48 @@
+{
+  "id": "statistician",
+  "name": "Statistician",
+  "kind": "agent",
+  "status": "durable",
+  "function": "capabilities",
+  "description": "Measures and benchmarks (APQC 13.7): proposes the organizational performance measures, benchmarks them against comparable ventures and published figures, and evaluates performance with the uncertainty stated.",
+  "grantable_classes": [],
+  "default_tier": "frontier",
+  "lint_suites": [],
+  "verified_by": "strategy-lead",
+  "skill": "packages/naive/src/functions/capabilities/skills/measure-and-benchmark/SKILL.md",
+  "pcf": [
+    {
+      "id": "13.7",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "15-2041.00",
+      "title": "Statisticians",
+      "basis": "APQC 13.7 is defining performance measures, benchmarking and evaluating performance, which rests on the design of measures and the analysis of data O*NET describes for statisticians; chosen over the --complete suggestions, which are market research, device and community service roles. A person should confirm.",
+      "by": "agent, EE-251 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "goal",
+    "evidence",
+    "telemetry-event"
+  ],
+  "artifacts": [],
+  "standards": [
+    "apqc-pcf-cross-industry"
+  ],
+  "research": {
+    "methods": [
+      "scientific",
+      "standards",
+      "organizational"
+    ],
+    "questions": [
+      "Does every goal's measure have a baseline and a comparison?",
+      "Is the difference real, or inside the noise?"
+    ]
+  },
+  "level": 5
+}

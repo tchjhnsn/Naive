@@ -1,0 +1,47 @@
+{
+  "id": "document-management-specialist",
+  "name": "Document management specialist",
+  "kind": "agent",
+  "status": "durable",
+  "function": "capabilities",
+  "description": "Manages content (APQC 13.6): proposes the content strategy, keeps the taxonomies and glossaries, says where each kind of content is kept and which system holds its record, and keeps the venture's documents findable.",
+  "grantable_classes": [],
+  "default_tier": "workhorse",
+  "lint_suites": [],
+  "verified_by": "strategy-lead",
+  "skill": "packages/naive/src/functions/capabilities/skills/manage-content/SKILL.md",
+  "pcf": [
+    {
+      "id": "13.6",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "15-1299.03",
+      "title": "Document Management Specialists",
+      "basis": "APQC 13.6 is content strategy, taxonomies, systems of record and content infrastructure, which is the work O*NET describes for document management specialists; a --complete suggestion for 13.3.",
+      "by": "agent, EE-251 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "glossary",
+    "reference",
+    "knowledge-sources"
+  ],
+  "artifacts": [],
+  "standards": [
+    "apqc-pcf-cross-industry"
+  ],
+  "research": {
+    "methods": [
+      "standards",
+      "organizational"
+    ],
+    "questions": [
+      "Which content has no system of record?",
+      "Which term is used in two senses?"
+    ]
+  },
+  "level": 4
+}

@@ -80,6 +80,15 @@
     {"id": "12.4", "roles": [{"role": "counsel", "raci": "responsible"}]},
     {"id": "12.5", "roles": [{"role": "public-relations-specialist", "raci": "accountable"}]},
     {"id": "13.0", "roles": [{"role": "strategy-lead", "raci": "accountable"}, {"role": "chief-of-staff", "raci": "responsible"}, {"role": "domain-lead", "raci": "responsible"}]},
-    {"id": "13.5", "roles": [{"role": "domain-lead", "raci": "responsible"}]}
+    {"id": "13.1", "roles": [{"role": "industrial-engineer", "raci": "accountable"}]},
+    {"id": "13.2", "roles": [{"role": "portfolio-project-management-specialist", "raci": "accountable"}]},
+    {"id": "13.3", "roles": [{"role": "quality-control-systems-manager", "raci": "accountable"}]},
+    {"id": "13.4", "roles": [{"role": "industrial-organizational-psychologist", "raci": "accountable"}]},
+    {"id": "13.5", "roles": [{"role": "domain-lead", "raci": "responsible"}]},
+    {"id": "13.6", "roles": [{"role": "document-management-specialist", "raci": "accountable"}]},
+    {"id": "13.7", "roles": [{"role": "statistician", "raci": "accountable"}]},
+    {"id": "13.8", "roles": [{"role": "data-scientist", "raci": "accountable"}]},
+    {"id": "13.9", "roles": [{"role": "occupational-health-and-safety-specialist", "raci": "accountable"}]},
+    {"id": "13.10", "roles": [{"role": "sustainability-specialist", "raci": "accountable"}]}
   ]
 }

@@ -1,0 +1,46 @@
+{
+  "id": "occupational-health-and-safety-specialist",
+  "name": "Occupational health and safety specialist",
+  "kind": "agent",
+  "status": "durable",
+  "function": "capabilities",
+  "description": "Manages environmental health and safety (APQC 13.9): determines the venture's EHS impacts, drafts the EHS program and its obligations, and monitors the program against them.",
+  "grantable_classes": [],
+  "default_tier": "workhorse",
+  "lint_suites": [],
+  "verified_by": "strategy-lead",
+  "skill": "packages/naive/src/functions/capabilities/skills/manage-environmental-health-and-safety-ehs/SKILL.md",
+  "pcf": [
+    {
+      "id": "13.9",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "19-5011.00",
+      "title": "Occupational Health and Safety Specialists",
+      "basis": "APQC 13.9 is determining EHS impacts and developing and monitoring the EHS program, the work O*NET describes for occupational health and safety specialists; chosen over the --complete suggestions, which are compliance, security and loss prevention managers.",
+      "by": "agent, EE-251 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "obligation",
+    "risk"
+  ],
+  "artifacts": [],
+  "standards": [
+    "apqc-pcf-cross-industry"
+  ],
+  "research": {
+    "methods": [
+      "standards",
+      "practitioner"
+    ],
+    "questions": [
+      "What can harm a person or the environment in the venture's work?",
+      "Which EHS obligation applies where the venture operates?"
+    ]
+  },
+  "level": 4
+}

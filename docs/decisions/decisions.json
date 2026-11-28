@@ -4477,6 +4477,75 @@
           "expect": "exists"
         }
       ]
+    },
+    {
+      "id": "EE-251",
+      "date": "2026-11-28",
+      "status": "in-force",
+      "decision": "The role library gains one durable role per APQC PCF level 2 process group of the capabilities function that no role was responsible or accountable for (roles plan step 11, first cut): industrial-engineer (13.1, O*NET 17-2112.00, agent); portfolio-project-management-specialist (13.2, O*NET 13-1082.00, agent); quality-control-systems-manager (13.3, O*NET 11-3051.01, agent); industrial-organizational-psychologist (13.4, O*NET 19-3032.00, agent); document-management-specialist (13.6, O*NET 15-1299.03, agent); statistician (13.7, O*NET 15-2041.00, agent); data-scientist (13.8, O*NET 15-2051.00, agent); occupational-health-and-safety-specialist (13.9, O*NET 19-5011.00, agent); sustainability-specialist (13.10, O*NET 13-1199.05, agent). Each is accountable for its process group, named after the best O*NET 31.0 match judged from check-roles --complete's suggestions, verified by strategy-lead, draws on the function's skill for its process group, reads and makes only data-model record types or document kinds, works to apqc-pcf-cross-industry and lists no grantable class. Each O*NET match is marked by an agent and not yet reviewed by a person. check-roles --complete reports no gap under capabilities.",
+      "why": "Torian on 2026-11-28 (roles plan, step 11): a business needs a row for every process group it runs, and the first cut is one role per uncovered level 2 group named after its O*NET match, one function per pull request.",
+      "related": [
+        "EE-229",
+        "EE-232",
+        "EE-233",
+        "EE-238"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/roles/industrial-engineer/role.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/roles/portfolio-project-management-specialist/role.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/roles/quality-control-systems-manager/role.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/roles/industrial-organizational-psychologist/role.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/roles/document-management-specialist/role.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/roles/statistician/role.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/roles/data-scientist/role.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/roles/occupational-health-and-safety-specialist/role.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/roles/sustainability-specialist/role.json",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
     }
   ]
 }

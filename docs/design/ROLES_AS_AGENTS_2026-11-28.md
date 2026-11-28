@@ -1,6 +1,6 @@
 # Roles as agents, linked to the PCF
 
-Date: 2026-11-28. Decisions: EE-229 (step 1), EE-230 (step 2), EE-231 (step 3), EE-232 (step 4), EE-233 (step 5), EE-234 (step 6), EE-235 (step 7), EE-236 (step 8), EE-237 (step 9) and EE-238 (step 10) are built; EE-239 (step 11) is decided and not built.
+Date: 2026-11-28. Decisions: EE-229 (step 1), EE-230 (step 2), EE-231 (step 3), EE-232 (step 4), EE-233 (step 5), EE-234 (step 6), EE-235 (step 7), EE-236 (step 8), EE-237 (step 9), EE-238 (step 10) and EE-239 to EE-251 (step 11, one per function) are built.
 
 ## The ask
 
@@ -140,7 +140,7 @@ flowchart LR
 - `check-roles.ts` also checks, for every scope, that each artifact is a record type or a document kind (EE-230) and each standard is a reference id. The references for ISO/IEC/IEEE 29148, 26514 and 12207 were added with method `standards`.
 - `functions/pcf-roles.json` keeps the library's links only: `agents/` is not in the package's `files`, and the file is the map a venture reads.
 
-## Steps 2 to 11 (steps 2 to 10 built, step 11 not built)
+## Steps 2 to 11 (built)
 
 Each step is one pull request with its decision id assigned.
 
@@ -207,7 +207,7 @@ flowchart TD
 
 ## Not built
 
-- Everything in step 11.
+- In step 11: roles for APQC elements below level 2.
 - In step 8: a record type for the research synthesis and one for the venture's own data model, so their gate questions stop being holes; and a temporary worker in a staffing plan, whose expiry would run from the draft rather than the decision.
 - The step 1 schema holds their optional fields, which every library role leaves empty except `pcf` and `onet` (step 4) and the `reads` and `artifacts` of the architect and the product and design lead (step 9); Naive's own roles under `agents/` fill them (step 10).
 - Vault wikilinks to the archived `roles/ceo` and `roles/cto` remain in a few skills and the venture template's `index.md` and `pillars/product.md`. They pointed at vault paths that were already broken, and are left for the step that writes those rows.
