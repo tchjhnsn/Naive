@@ -21,5 +21,11 @@
   "default_tier": "frontier",
   "lint_suites": [],
   "verified_by": "founder",
-  "skill": "packages/naive/src/functions/strategy/skills/chief-of-staff/SKILL.md"
+  "skill": "packages/naive/src/functions/strategy/skills/chief-of-staff/SKILL.md",
+  "pcf": [
+    {
+      "id": "13.0",
+      "raci": "responsible"
+    }
+  ]
 }

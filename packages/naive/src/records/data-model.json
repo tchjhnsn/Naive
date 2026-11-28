@@ -1121,6 +1121,37 @@
       "note": "APQC's Process Classification Framework 8.0, cross-industry, levels 1 to 5 (EE-165): each element's hierarchy id, name verbatim from APQC and element id, with the attribution APQC's licence requires. Written by scripts/import-pcf.ts"
     },
     {
+      "id": "onet",
+      "layer": "operations",
+      "function": null,
+      "level": "method",
+      "schema": "packages/naive/src/records/onet.schema.json",
+      "generator": "packages/naive/src/engine/generators/onet.ts",
+      "paths": [
+        "packages/naive/src/functions/onet.json"
+      ],
+      "refs": [
+        { "field": "source", "to": "reference", "checked_by": "packages/naive/src/checks/check-roles.ts" }
+      ],
+      "note": "A compact O*NET reference (EE-232): one release's occupations by code and title, its detailed work activities and each occupation's activity links, with the attribution O*NET's CC BY 4.0 licence asks for. Written by scripts/import-onet.ts; check-roles.ts --complete reads it to suggest occupations for a PCF element no role answers for"
+    },
+    {
+      "id": "pcf-roles",
+      "layer": "operations",
+      "function": null,
+      "level": "method",
+      "schema": "packages/naive/src/records/pcf-roles.schema.json",
+      "generator": "packages/naive/src/engine/generators/pcf-roles.ts",
+      "paths": [
+        "packages/naive/src/functions/pcf-roles.json"
+      ],
+      "refs": [
+        { "field": "elements[].id", "to": "pcf", "checked_by": "packages/naive/src/engine/generators/pcf-roles.ts" },
+        { "field": "elements[].roles[].role", "to": "role", "checked_by": "packages/naive/src/engine/generators/pcf-roles.ts" }
+      ],
+      "note": "The PCF side of the link between roles and APQC's framework (EE-232): for each element some library role names in its pcf field, those roles with their RACI part. Generated from the role library by packages/naive/src/engine/generators/pcf-roles.ts, never written by hand, so the link is held both ways and cannot drift; --check fails when it is stale"
+    },
+    {
       "id": "activity-assignments",
       "layer": "operations",
       "function": null,
@@ -1741,9 +1772,19 @@
           "field": "grantable_classes",
           "to": "decision-rights",
           "checked_by": "packages/naive/src/checks/check-delegation.ts"
+        },
+        {
+          "field": "pcf[].id",
+          "to": "pcf",
+          "checked_by": "packages/naive/src/checks/check-roles.ts"
+        },
+        {
+          "field": "onet[].code",
+          "to": "onet",
+          "checked_by": "packages/naive/src/checks/check-roles.ts"
         }
       ],
-      "note": "One role module in the role library (EE-229), beside its SKILL.md: a person, agent or either role with its function, portfolio, grantable decision classes, default tier, lint suites, verifier (never itself) and skill. A venture's own roles at governance/roles/<id>/role.json overlay it by id"
+      "note": "One role module in the role library (EE-229), beside its SKILL.md: a person, agent or either role with its function, portfolio, grantable decision classes, default tier, lint suites, verifier (never itself) and skill, and the APQC PCF elements it answers for with their RACI part and the O*NET occupations it matches (EE-232). A venture's own roles at governance/roles/<id>/role.json overlay it by id"
     },
     {
       "id": "pillar",

@@ -3781,6 +3781,45 @@
       ]
     },
     {
+      "id": "EE-232",
+      "date": "2026-11-28",
+      "status": "in-force",
+      "decision": "Roles link to APQC's Process Classification Framework both ways, and O*NET is the reference for which roles are missing. A role's pcf field names the PCF elements it answers for, each with its RACI part, and is the source; scripts/pcf-roles.ts writes packages/naive/src/functions/pcf-roles.json, each linked element with its roles, from those fields through the pcf-roles generator, and its --check, run by node test.ts, fails when the element side is stale. packages/naive/src/checks/check-roles.ts checks that each pcf id is a hierarchy id in pcf.json, that at most one role is accountable for an element, that an accountable role is in the element's function or a lead whose portfolio covers it, and that each onet code is an occupation in packages/naive/src/functions/onet.json with the same title; --complete fails on each element of levels 1 to 2 under a function the business runs with no responsible or accountable role and suggests O*NET occupations for it by word overlap (packages/naive/src/engine/onet-match.ts), a lead for a person and never a match. scripts/import-onet.ts writes the O*NET reference from one O*NET text release: occupations by code and title, the detailed work activities and each occupation's activity links, with O*NET's CC BY 4.0 attribution; release 31.0 is committed. The four leads are accountable for their portfolio categories and each function role is responsible for its category; an onet entry names who matched it and on what basis. This is step 4 of the roles as agents plan (docs/design/ROLES_AS_AGENTS_2026-11-28.md).",
+      "why": "Torian on 2026-11-28 decided that roles link to PCF elements and that PCF elements a business runs with no responsible role are matched to O*NET occupations to suggest a role. A link typed on both sides drifts, so one side is generated from the other and checked for staleness. RACI allows one accountable party per element, and an accountable role outside the element's function or its lead's portfolio would answer for work it cannot reach.",
+      "related": [
+        "EE-165",
+        "EE-187",
+        "EE-226",
+        "EE-229"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/functions/pcf-roles.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/functions/onet.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "scripts/import-onet.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "scripts/pcf-roles.ts",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
       "id": "EE-152",
       "date": "2026-11-19",
       "status": "in-force",
