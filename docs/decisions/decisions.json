@@ -3594,6 +3594,31 @@
           "expect": "exists"
         }
       ]
+    },
+    {
+      "id": "EE-233",
+      "date": "2026-11-28",
+      "status": "in-force",
+      "decision": "Research follows a fixed list of methods, and every reference says which method found it. packages/naive/src/records/research-method.schema.json holds the list in the order it is worked: standards (a standards body such as ISO, IEEE, NIST, APQC, W3C or IETF, or a law, cited by its own term, version and clause, EE-014), scientific (peer-reviewed literature and systematic reviews, graded high to very low after GRADE), organizational (the business's own records, cited by record and hash), practitioner (practitioner and grey literature such as vendor docs, books, talks and open-source code, saying who wrote it and what they sell, never the only support for a default) and stakeholder (the person and customers: interviews, decisions, values; only a person states a value). A schema that needs a method refers to that file with $ref, and code reads the list as RESEARCH_METHODS from packages/naive/src/records/research-methods.ts. reference.schema.json requires method on every reference, so a reference with none fails validate.ts. scripts/reference-methods.ts filled it on the 56 references written before, from each one's kind (standard and law as standards, paper as scientific, book and article as practitioner, conversation as stakeholder) or, for a dataset, its id, and fails on a reference no rule places. The find-reference skill says how to work each method and the generic research skill names them. kind says what a source is and method how it was found.",
+      "why": "Torian on 2026-11-28 (roles plan, step 5): research in Naive follows a fixed enumeration of methods instead of hand-typed reference lists, so a role's research field and every reference share one list. The basis is evidence-based management, which draws on four sources (scientific literature, organizational data, practitioners' expertise and stakeholders' values, after CEBMa), with Naive's standards-first rule ahead of them.",
+      "related": [
+        "EE-014",
+        "EE-099"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/records/research-method.schema.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "scripts/reference-methods.ts",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
     }
   ]
 }

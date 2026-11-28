@@ -152,6 +152,7 @@ const steps: Step[] = [
   ["vendored repositories match their pins (repos/effect is the installed effect version)", "node", ["scripts/vendored.ts"]],
   ["vendored check breaks on copies", "node", ["scripts/vendored-test.ts"]],
   ["to-ts: references to a converted module are rewritten, others left", "node", ["scripts/to-ts-test.ts"]],
+  ["reference-methods: every reference names the research method that found it, filled from its id or kind after kind, a rerun writes nothing, and a reference no rule places fails (EE-233)", "node", ["scripts/reference-methods-test.ts"]],
   ["import-pcf: APQC's PCF hierarchy is written to pcf.json sorted and one element per line, the same hierarchy always gives the same bytes, and the committed file is its output (EE-165)", "node", ["scripts/import-pcf-test.ts"]],
   ["activity proposals: a rule picks rated cross-industry activities whose scores meet every condition, under the functions the venture lists; propose files one open decision per rule and function once, a decided one is left alone, and a venture's own lines in naive.config.json turn a rule off or replace its lines and an activity for a NAICS industry applies to a venture in it and merging a decided answer writes who performs each activity (EE-169 to EE-172)", "node", ["packages/naive/src/engine/activity-proposals-test.ts"]],
   ["import-scinet: SciNet's tasks become activities with their statement, source and scores, a rerun writes the same bytes, and other activities are kept (EE-167)", "node", ["scripts/import-scinet-test.ts"]],

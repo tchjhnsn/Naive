@@ -9,6 +9,7 @@
       ],
       "year": 2013,
       "kind": "standard",
+      "method": "standards",
       "summary": "Certainty of evidence rated high, moderate, low or very low. Randomized trials start high and observational studies low; certainty drops for risk of bias, inconsistency, indirectness, imprecision and publication bias, and rises for a large effect or a dose-response gradient.",
       "url": "https://gdt.gradepro.org/app/handbook/handbook.html",
       "checked": "2026-10-27",
@@ -31,6 +32,7 @@
       ],
       "year": 2013,
       "kind": "book",
+      "method": "practitioner",
       "summary": "Ask about people's lives and past behavior, not about your idea; compliments, generalities and hypotheticals are not data, and commitment is the real signal.",
       "url": "https://www.momtestbook.com/",
       "checked": "2026-10-27",
@@ -52,6 +54,7 @@
       ],
       "year": 2026,
       "kind": "article",
+      "method": "practitioner",
       "summary": "Analysis of startup post-mortems; poor product-market fit was cited in 43% of failures (causes overlap).",
       "url": "https://www.cbinsights.com/research/report/startup-failure-reasons-top/",
       "checked": "2026-10-27",
@@ -71,6 +74,7 @@
       ],
       "year": 2018,
       "kind": "article",
+      "method": "practitioner",
       "summary": "Applies Sean Ellis's leading indicator: ask active users how they would feel if they could no longer use the product; 40% or more answering 'very disappointed' marks product-market fit. Segment the answers and work on the users who almost said very disappointed.",
       "url": "https://review.firstround.com/how-superhuman-built-an-engine-to-find-product-market-fit/",
       "checked": "2026-10-27",
@@ -91,6 +95,7 @@
       ],
       "year": 1976,
       "kind": "paper",
+      "method": "scientific",
       "summary": "Four questions (too cheap, cheap, expensive, too expensive) give an acceptable price range from stated responses.",
       "informs": [
         "field:validation-pricing.points"
@@ -108,6 +113,7 @@
       ],
       "year": 2012,
       "kind": "book",
+      "method": "practitioner",
       "summary": "Evidence on founding teams: when to add cofounders, the costs of founding with friends and family, splitting roles and equity.",
       "informs": [
         "field:validation-team.cofounder_sought",
