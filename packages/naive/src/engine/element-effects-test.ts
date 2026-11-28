@@ -6,9 +6,9 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { runPromise, runSync } from "../core/effect/run.ts";
-import { attachments, evidenceOf, report } from "./element-effects.ts";
+import { attachments, effectsGraph, evidenceOf, report } from "./element-effects.ts";
 import type { ElementReport } from "./element-effects.ts";
-import { buildGraph, shippedInput } from "./element-graph.ts";
+import { buildGraph, shippedInput, toJson } from "./element-graph.ts";
 import { causeKey } from "./element-state.ts";
 import type { ElementState } from "./element-state.ts";
 
@@ -19,7 +19,7 @@ const expect = (name: string, ok: boolean, detail: unknown = "") => { console.lo
 // process workflows (one per APQC process, EE-226) feed almost every element from many absent ones, which would hide
 // each rule under upstream causes; naive effects still reads the whole shipped graph, checked at the end.
 const full = runSync(shippedInput());
-const g = buildGraph({ ...full, workflows: full.workflows.filter((w) => !/^\d/.test(w.id)) });
+const g = effectsGraph({ ...full, workflows: full.workflows.filter((w) => !/^\d/.test(w.id)) });
 const att = attachments(g);
 expect("an activity's workflows and record types are those of the steps that perform it", JSON.stringify(att.get("1.1.1.1")) === JSON.stringify({ workflows: ["strategy/competitor-review"], records: ["competitor"] }) && JSON.stringify(att.get("3.5.1.6")) === JSON.stringify({ workflows: ["marketing-and-sales/weekly-pipeline-review"], records: ["opportunity"] }), [att.get("1.1.1.1"), att.get("3.5.1.6")]);
 expect("a function holds all its workflows and every record type they write", att.get("3.0")!.workflows.length === 5 && att.get("3.0")!.workflows.includes("marketing-and-sales/campaign-daily-review") && att.get("1.0")!.records.includes("competitor") && att.get("1.0")!.records.includes("goal") && !att.get("1.0")!.records.includes("telos"), att.get("1.0"));
@@ -72,12 +72,22 @@ try {
   const naive = (...a: string[]) => spawnSync(process.execPath, ["packages/naive/src/interfaces/cli/naive.ts", "effects", "--venture", dir, "--at", at(6), ...a], { encoding: "utf8", maxBuffer: 256 * 1024 * 1024 });
   const all = naive("--json");
   const parsed = JSON.parse(all.stdout) as { elements: ElementReport[] };
-  expect("naive effects --json lists every element with its state, level and why", all.status === 0 && parsed.elements.length === report(buildGraph(full), await runPromise(evidenceOf(dir, at(6))), at(6)).length && parsed.elements.length > 25 && parsed.elements.every((e) => e.why.length > 0 && typeof e.effective.level === "number"), all.stderr);
+  expect("naive effects --json lists every element with its state, level and why", all.status === 0 && parsed.elements.length === report(effectsGraph(full), await runPromise(evidenceOf(dir, at(6))), at(6)).length && parsed.elements.length > 25 && parsed.elements.every((e) => e.why.length > 0 && typeof e.effective.level === "number"), all.stderr);
   const one11 = naive("1.1.1.1", "--json");
   const w = JSON.parse(one11.stdout) as { what_if: { scenario: string, downstream: { id: string, changed: boolean, then: { state: ElementState, level: number } }[] }[] };
   const pipe = (s: string) => w.what_if.find((x) => x.scenario === s)!.downstream.find((d) => d.id === "3.5.1.6")!;
   expect("naive effects <element> gives the what-if: absent degrades the pipeline, strong changes nothing", one11.status === 0 && pipe("absent").changed && keys(pipe("absent").then.state).includes("upstream:1.1.1.1") && !pipe("strong").changed, one11.stderr);
   expect("the text form prints each element and the what-if", /^1\.0 strategy/.test(naive().stdout) && /If 1\.1\.1\.1 were absent/.test(naive("1.1.1.1").stdout));
+  // Roles (EE-234) take no state: a role whose RACI link reaches an element no workflow touches leaves effects as they were.
+  const rolesIn = { ...full, workflows: full.workflows.filter((w) => !/^\d/.test(w.id)) };
+  const plain = toJson(buildGraph({ ...rolesIn, roles: [] })).nodes.map((n) => n.key);
+  const loose = full.elements.find((e) => e.level === 2 && !plain.includes(`element:${e.id}`))!;
+  const withRole = { ...rolesIn, roles: [{ id: "tester", name: "Tester", kind: "agent" as const, pcf: [{ id: loose.id, raci: "responsible" as const }], reads: ["competitor"], artifacts: [{ record_type: "opportunity" }] }] };
+  const evidence = await runPromise(evidenceOf(dir, at(6)));
+  const ids = (rs: ElementReport[]) => JSON.stringify(rs.map((r) => [r.element.id, r.effective]));
+  expect("the graph with a role holds the role and the element only its RACI link reaches", toJson(buildGraph(withRole)).nodes.some((n) => n.key === "role:tester") && toJson(buildGraph(withRole)).nodes.some((n) => n.key === `element:${loose.id}`), loose.id);
+  expect("effects leave roles out: no role node and no element only a role reaches, and every report as without the role", !toJson(effectsGraph(withRole)).nodes.some((n) => n.kind === "role" || n.key === `element:${loose.id}`)
+    && ids(report(effectsGraph(withRole), evidence, at(6))) === ids(report(buildGraph({ ...rolesIn, roles: [] }), evidence, at(6))));
   expect("an unknown element or a stray argument cannot run", naive("99.9").status === 2 && naive("1.0", "extra").status === 2 && naive("--bogus").status === 2);
 } finally {
   rmSync(dir, { recursive: true, force: true });

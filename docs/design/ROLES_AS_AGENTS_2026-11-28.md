@@ -1,6 +1,6 @@
 # Roles as agents, linked to the PCF
 
-Date: 2026-11-28. Decisions: EE-229 (step 1), EE-230 (step 2), EE-231 (step 3), EE-232 (step 4), EE-233 (step 5), EE-235 (step 7), EE-237 (step 9) and EE-238 (step 10) are built; EE-234, EE-236 and EE-239 (steps 6, 8 and 11) are decided and not built.
+Date: 2026-11-28. Decisions: EE-229 (step 1), EE-230 (step 2), EE-231 (step 3), EE-232 (step 4), EE-233 (step 5), EE-234 (step 6), EE-235 (step 7), EE-237 (step 9) and EE-238 (step 10) are built; EE-236 and EE-239 (steps 8 and 11) are decided and not built.
 
 ## The ask
 
@@ -101,6 +101,23 @@ flowchart LR
   RJ --> CR
 ```
 
+## Step 6: roles in the graph (EE-234, built)
+
+- `packages/naive/src/engine/element-graph.ts` reads the role library and the document catalog. Each role is a node, and so is each document kind a role produces.
+- A role's `pcf` links are `raci` edges to elements, naming the RACI part; an element only a role names joins the graph with its ancestors.
+- Artifacts resolve through `artifactKind`: a `record_type` is a `produces` edge to a record type, a `document_kind` a `produces` edge to the document kind, and an unknown one is left out. A role's `reads` and a document kind's sources (the record types its sections' `from` paths match) are `reads` edges.
+- `depends-on` is derived: role A depends on role B when A reads a record type B produces, or produces a document kind rendered from one. Each edge names the record type and, when there is one, the document kind. A role reading what it produces itself is no dependency, and a cycle is reported, never refused.
+- `naive graph --role <id> [--json] [--mermaid]` gives what the role depends on, what depends on it, its elements by RACI part, its artifacts and the library's cycles. Without `--role` the text output is unchanged.
+- `naive effects` builds the graph without roles (`effectsGraph`), so no role takes a state.
+- In the library only the architect (reads decision-record, produces adr) and the product and design lead (reads goal, produces product-capability) fill `reads` and `artifacts`, and no library role produces what they read, so the shipped graph has 21 role nodes and no `depends-on` edge until step 11 writes the business rows. The graph reads the library only, not Naive's own roles under `agents/`.
+
+```mermaid
+flowchart LR
+  A["role A<br/>reads R, or produces document D from R"] -- "depends-on, evidence R (and D)" --> B["role B<br/>produces R"]
+  A -- "raci" --> E["APQC element"]
+  B -- "raci" --> E
+```
+
 ## Step 10: rows for Naive (EE-238, built)
 
 - Naive's own roles live at `agents/<id>/`, beside `agents/chief-of-staff/`: a `role.json` against `role.schema.json` and a SKILL.md, the shape of a role module. The chief of staff's folder holds an AGENTS.md and no `role.json`, because its role is in the library; a folder like it is a shipped agent of a library role, and `check-roles.ts` holds its name to one.
@@ -123,7 +140,7 @@ flowchart LR
 - `check-roles.ts` also checks, for every scope, that each artifact is a record type or a document kind (EE-230) and each standard is a reference id. The references for ISO/IEC/IEEE 29148, 26514 and 12207 were added with method `standards`.
 - `functions/pcf-roles.json` keeps the library's links only: `agents/` is not in the package's `files`, and the file is the map a venture reads.
 
-## Steps 2 to 11 (steps 2 to 5, 7, 9 and 10 built, the rest not built)
+## Steps 2 to 11 (steps 2 to 7, 9 and 10 built, the rest not built)
 
 Each step is one pull request with its decision id assigned.
 
@@ -149,5 +166,5 @@ Each step is one pull request with its decision id assigned.
 
 ## Not built
 
-- Everything in steps 6, 8 and 11. The step 1 schema holds their optional fields, which every library role leaves empty except `pcf` and `onet` (step 4) and the `reads` and `artifacts` of the architect and the product and design lead (step 9); Naive's own roles under `agents/` fill them (step 10).
+- Everything in steps 8 and 11. The step 1 schema holds their optional fields, which every library role leaves empty except `pcf` and `onet` (step 4) and the `reads` and `artifacts` of the architect and the product and design lead (step 9); Naive's own roles under `agents/` fill them (step 10).
 - Vault wikilinks to the archived `roles/ceo` and `roles/cto` remain in a few skills and the venture template's `index.md` and `pillars/product.md`. They pointed at vault paths that were already broken, and are left for the step that writes those rows.
