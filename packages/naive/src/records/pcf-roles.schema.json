@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "pcf-roles.schema.json",
+  "title": "PcfRoles",
+  "description": "The PCF side of the link between roles and APQC's Process Classification Framework (EE-232), at packages/naive/src/functions/pcf-roles.json: for each element some role in the role library names in its pcf field, every such role with its RACI part. The role side is the source: packages/naive/src/engine/generators/pcf-roles.ts writes this file from packages/naive/src/roles/<id>/role.json and its --check fails when the file is stale, so the link is held both ways and cannot drift. Never edited by hand. It names PCF hierarchy ids, so it carries APQC's attribution.",
+  "type": "object",
+  "required": ["pcf_version", "attribution", "elements"],
+  "additionalProperties": false,
+  "properties": {
+    "pcf_version": { "type": "string", "pattern": "^\\d+\\.\\d+$", "description": "The version of packages/naive/src/functions/pcf.json the hierarchy ids belong to." },
+    "attribution": { "type": "string", "minLength": 1, "description": "APQC's attribution, copied from pcf.json." },
+    "note": { "type": "string" },
+    "elements": {
+      "type": "array",
+      "description": "Every element some library role links to, sorted by hierarchy id.",
+      "items": {
+        "type": "object",
+        "required": ["id", "roles"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[0-9]+(\\.[0-9]+)*$", "description": "A hierarchy id in packages/naive/src/functions/pcf.json." },
+          "roles": {
+            "type": "array",
+            "minItems": 1,
+            "description": "The roles linked to the element: accountable first, then responsible, consulted and informed, each by role id.",
+            "items": {
+              "type": "object",
+              "required": ["role", "raci"],
+              "additionalProperties": false,
+              "properties": {
+                "role": { "type": "string", "pattern": "^[a-z0-9-]+$", "description": "A role id in the role library." },
+                "raci": { "enum": ["responsible", "accountable", "consulted", "informed"] }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1136,6 +1136,22 @@
       "note": "A compact O*NET reference (EE-232): one release's occupations by code and title, its detailed work activities and each occupation's activity links, with the attribution O*NET's CC BY 4.0 licence asks for. Written by scripts/import-onet.ts; check-roles.ts --complete reads it to suggest occupations for a PCF element no role answers for"
     },
     {
+      "id": "pcf-roles",
+      "layer": "operations",
+      "function": null,
+      "level": "method",
+      "schema": "packages/naive/src/records/pcf-roles.schema.json",
+      "generator": "packages/naive/src/engine/generators/pcf-roles.ts",
+      "paths": [
+        "packages/naive/src/functions/pcf-roles.json"
+      ],
+      "refs": [
+        { "field": "elements[].id", "to": "pcf", "checked_by": "packages/naive/src/engine/generators/pcf-roles.ts" },
+        { "field": "elements[].roles[].role", "to": "role", "checked_by": "packages/naive/src/engine/generators/pcf-roles.ts" }
+      ],
+      "note": "The PCF side of the link between roles and APQC's framework (EE-232): for each element some library role names in its pcf field, those roles with their RACI part. Generated from the role library by packages/naive/src/engine/generators/pcf-roles.ts, never written by hand, so the link is held both ways and cannot drift; --check fails when it is stale"
+    },
+    {
       "id": "activity-assignments",
       "layer": "operations",
       "function": null,

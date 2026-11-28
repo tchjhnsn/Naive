@@ -5069,6 +5069,26 @@ export type Ownership = {
   }[];
 };
 
+/** The PCF side of the link between roles and APQC's Process Classification Framework (EE-232), at packages/naive/src/functions/pcf-roles.json: for each element some role in the role library names in its pcf field, every such role with its RACI part. The role side is the source: packages/naive/src/engine/generators/pcf-roles.ts writes this file from packages/naive/src/roles/<id>/role.json and its --check fails when the file is stale, so the link is held both ways and cannot drift. Never edited by hand. It names PCF hierarchy ids, so it carries APQC's attribution. */
+export type PcfRoles = {
+  /** The version of packages/naive/src/functions/pcf.json the hierarchy ids belong to. */
+  pcf_version: string;
+  /** APQC's attribution, copied from pcf.json. */
+  attribution: string;
+  note?: string;
+  /** Every element some library role links to, sorted by hierarchy id. */
+  elements: {
+    /** A hierarchy id in packages/naive/src/functions/pcf.json. */
+    id: string;
+    /** The roles linked to the element: accountable first, then responsible, consulted and informed, each by role id. */
+    roles: {
+      /** A role id in the role library. */
+      role: string;
+      raci: "responsible" | "accountable" | "consulted" | "informed";
+    }[];
+  }[];
+};
+
 /** APQC's Process Classification Framework at packages/naive/src/functions/pcf.json (EE-165): one version and edition of the PCF, levels 1 to 5, as APQC publishes it, with the attribution APQC's licence requires. Each element has a hierarchy id (1.0 for a category, 1.1 for a process group, 1.1.1 for a process, then activities and tasks), its name verbatim from APQC and its five-digit element id. Hierarchy ids can change between PCF versions and element ids do not. Element ids are not unique within a version: APQC files a few elements at two hierarchy ids, so nothing here requires them to be. The elements are written by scripts/import-pcf.ts and checked across elements by packages/naive/src/checks/check-pcf.ts. */
 export type Pcf = {
   /** The PCF version, such as 8.0. */

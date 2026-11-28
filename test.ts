@@ -142,6 +142,8 @@ const steps: Step[] = [
   ["the docs site's marketing pages carry no internal text", "node", ["packages/naive/src/engine/check-leaks.ts", "site/content/marketing"]],
   ["roles: the role library (every role file valid against role.schema.json, its id its folder, every verifier a known role and never itself, ids and aliases unique, no person role with an agent tier) (EE-229)", "node", ["packages/naive/src/checks/check-roles.ts"]],
   ["roles check broken on copies of the role library and on a venture's own roles (EE-229)", "node", ["packages/naive/src/checks/check-roles-test.ts"]],
+  ["pcf-roles: packages/naive/src/functions/pcf-roles.json is what the role library's pcf fields generate, so the link between roles and PCF elements is held both ways (regenerate with node scripts/pcf-roles.ts) (EE-232)", "node", ["scripts/pcf-roles.ts", "--check"]],
+  ["pcf-roles generator: links turned around, sorted, stale and unknown elements refused, on copies of the library (EE-232)", "node", ["packages/naive/src/engine/generators/pcf-roles-test.ts"]],
   ["delegation: template (grants within the grantor's, chains reach the founder, no self-verification)", "node", ["packages/naive/src/checks/check-delegation.ts"]],
   ["delegation and the verification substrate (cases that must fail)", "node", ["packages/naive/src/interfaces/tests/delegation-test.ts"]],
   ["docs claim only what is built (commands, flags, files and routes in the docs, master docs and skills)", "node", ["packages/naive/src/checks/docs-claims-test.ts"]],
