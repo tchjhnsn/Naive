@@ -39,6 +39,8 @@ Process group roles for finance (EE-247, roles plan step 11), each accountable f
 
 Process group roles for risk and compliance (EE-249, roles plan step 11), each accountable for one APQC level 2 process group and named after its O*NET match: `financial-risk-specialist`, `compliance-manager`, `compliance-officer` and `business-continuity-planner`.
 
+Process group roles for external relationships (EE-250, roles plan step 11), each accountable for one APQC level 2 process group and named after its O*NET match: `fundraising-manager`, `public-relations-manager`, `executive-secretary` and `public-relations-specialist`.
+
 ## Role programs
 
 Every role has a program (EE-237, [`role-program.ts`](../checks/role-program.ts)): deterministic checks of what the role makes, each an Effect over `VentureFs` that fails only with Naive's tagged errors. The default program comes from `role.json`:
