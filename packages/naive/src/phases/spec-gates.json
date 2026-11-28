@@ -1,0 +1,162 @@
+{
+  "version": "0.1.0",
+  "note": "The specification gates and the staffing gate (EE-236). SAD's gate questions for 0A to 1B, asked of Naive's own records and never of SAD's documents (EE-036 stands: its surviving rules become checks). Each answer names the record type and field it is read from. A hole is a question no record type answers yet: it is reported as not built and never blocks. After 1B is reached, the human-capital lead drafts one staffing decision whose candidates are sets of proposed digital workers, and only a person's decision activates them.",
+  "gates": [
+    {
+      "id": "0a",
+      "sad": "0A",
+      "name": "Ideas captured",
+      "question": "Are the founder's ideas out of their head and in the records?",
+      "questions": [
+        {
+          "id": "ideas-written",
+          "question": "Are the founder's ideas written down?",
+          "any": true,
+          "answers": [{ "record": "idea-dump" }, { "record": "raw-dump" }, { "record": "idea-map" }]
+        },
+        {
+          "id": "ideas-mapped",
+          "question": "Are the ideas sorted into one map with a root?",
+          "answers": [{ "record": "idea-graph", "field": "root" }]
+        }
+      ]
+    },
+    {
+      "id": "0b",
+      "sad": "0B",
+      "name": "Problem researched",
+      "question": "Is the problem researched rather than assumed?",
+      "questions": [
+        {
+          "id": "problem-stated",
+          "question": "Is the problem stated for a named segment?",
+          "answers": [{ "record": "validation-problem", "field": "statement" }, { "record": "validation-problem", "field": "segment" }]
+        },
+        {
+          "id": "problem-evidence",
+          "question": "Does evidence from outside the founder back the problem?",
+          "any": true,
+          "answers": [{ "record": "validation-interview" }, { "record": "validation-problem", "field": "evidence" }]
+        },
+        {
+          "id": "alternatives-looked-at",
+          "question": "Have the market and the alternatives been looked at?",
+          "any": true,
+          "answers": [{ "record": "market-anatomy" }, { "record": "competitor" }]
+        },
+        {
+          "id": "research-synthesized",
+          "question": "Has the research been synthesized into findings?",
+          "hole": "Not built: no record type holds a research synthesis. Interviews, sources and the problem record hold the research itself, and nothing records what was concluded from all of it together."
+        }
+      ]
+    },
+    {
+      "id": "0c",
+      "sad": "0C",
+      "name": "Vision stated",
+      "question": "Is the vision stated, and is the thesis under it written so it can fail?",
+      "questions": [
+        {
+          "id": "end-stated",
+          "question": "What end does the venture serve?",
+          "answers": [{ "record": "telos", "field": "end_state" }]
+        },
+        {
+          "id": "promise-stated",
+          "question": "What does the venture promise?",
+          "answers": [{ "record": "venture", "field": "core.promise" }]
+        },
+        {
+          "id": "customer-named",
+          "question": "Who is the customer?",
+          "answers": [{ "record": "icp" }]
+        },
+        {
+          "id": "thesis-registered",
+          "question": "Is the thesis registered, so it can fail?",
+          "answers": [{ "record": "pre-registration", "field": "status", "in": ["registered", "judged"] }]
+        }
+      ]
+    },
+    {
+      "id": "1a",
+      "sad": "1A",
+      "name": "Version scoped",
+      "question": "Is the scope of this version committed?",
+      "questions": [
+        {
+          "id": "goals-active",
+          "question": "What does this version commit to?",
+          "answers": [{ "record": "goal", "field": "status", "in": ["active"] }]
+        },
+        {
+          "id": "done-defined",
+          "question": "How will the version be known to be done?",
+          "answers": [{ "record": "exit-criteria", "field": "criteria" }]
+        },
+        {
+          "id": "limits-stated",
+          "question": "What must the venture not do?",
+          "answers": [{ "record": "constraints", "field": "must_not" }]
+        },
+        {
+          "id": "product-named",
+          "question": "Which product is in scope?",
+          "answers": [{ "record": "product", "field": "name" }]
+        }
+      ]
+    },
+    {
+      "id": "1b",
+      "sad": "1B",
+      "name": "Version specified",
+      "question": "Is the version specified well enough to staff?",
+      "questions": [
+        {
+          "id": "capabilities-specified",
+          "question": "What does the product do?",
+          "answers": [{ "record": "product-capability", "field": "status", "in": ["building", "live"] }]
+        },
+        {
+          "id": "capabilities-traced",
+          "question": "Does every capability being built serve a goal?",
+          "answers": [{ "record": "product-capability", "where": { "field": "status", "in": ["building", "live"] }, "field": "goals", "every": true }]
+        },
+        {
+          "id": "requirements-verifiable",
+          "question": "What must hold, and how is each requirement verified?",
+          "answers": [{ "record": "requirement", "field": "verified_by", "every": true }]
+        },
+        {
+          "id": "design-written",
+          "question": "How will it be built?",
+          "answers": [{ "record": "artifact", "field": "document_kind", "in": ["spec", "adr"] }]
+        },
+        {
+          "id": "data-modelled",
+          "question": "What does the product store, and what rules bind it?",
+          "hole": "Not built: no record type holds a venture's own data model, its entities and their constraints. A spec artifact may describe it in words, which this gate cannot read as a model."
+        },
+        {
+          "id": "decisions-settled",
+          "question": "Are the decisions the specs rest on settled?",
+          "answers": [{ "record": "decision-record", "field": "status", "in": ["open", "deferred"], "none": true,
+            "touches": ["foundation/goals/", "foundation/requirements/", "foundation/constraints.json", "foundation/exit-criteria/", "product/capabilities/"] }]
+        }
+      ]
+    }
+  ],
+  "staffing": {
+    "after": "1b",
+    "decision": "staffing-plan",
+    "at": "operations",
+    "question": "Would you like to begin deploying agents?",
+    "drafted_by_function": "human-capital",
+    "mode": "durable",
+    "candidates": [
+      { "id": "function-agents", "label": "One worker per function the specs name, as that function's agent", "roles": "function-agent" },
+      { "id": "library-roles", "label": "The library's specialist roles for those functions, and the function's agent where none serves", "roles": "library" }
+    ]
+  }
+}

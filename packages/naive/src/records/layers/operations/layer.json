@@ -333,6 +333,7 @@
     "function-module",
     "phase-module",
     "phase-gate-policies",
+    "spec-gates",
     "gate-calibration",
     "function-workflow"
   ],

@@ -55,7 +55,7 @@ sources: []
 
 `type` is `tutorial`, `how-to`, `reference` or `explanation`. `status` is `draft`, `beta`, `stable` or `deprecated`. Every page stays `draft` until Torian has read it.
 
-`owner` is required and is always the site owner named in `content/owners.json` (`technical-writer`): one role owns every word on the site *(checked)*. `content/owners.json` also lists, per section, the roles that send the owner notes for their part, and every one must be a role in Naive's role library, `packages/naive/src/roles/<id>/` *(checked)*. Other roles send notes in `notes/`, never edits to a page.
+`owner` is required and is always the site owner named in `content/owners.json` (`technical-writer`): one role owns every word on the site *(checked)*. The site owner is one of Naive's own roles, `agents/<id>/role.json` (EE-238), and must name `docs-page` among its artifacts *(checked)*. `content/owners.json` also lists, per section, the roles that send the owner notes for their part, and every one must be a role in Naive's role library, `packages/naive/src/roles/<id>/` *(checked)*. Other roles send notes in `notes/`, never edits to a page.
 
 Marketing pages use `title`, `description`, `status`, `lastReviewed`, `owner`, plus `audience` (optional). The marketing schema has no Diátaxis `type`.
 

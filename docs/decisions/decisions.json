@@ -3920,6 +3920,46 @@
       ]
     },
     {
+      "id": "EE-236",
+      "date": "2026-11-28",
+      "status": "in-force",
+      "decision": "SAD's gate questions for 0A, 0B, 0C, 1A and 1B become checks over a venture's own Naive records, never over SAD's documents, which keeps EE-036 and is its clause that SAD's surviving rules become checks. The gates are data in packages/naive/src/phases/spec-gates.json (record type spec-gates, packages/naive/src/records/spec-gates.schema.json, with a generator that refuses a record type the data model lacks): each gate is named by its question, each question by the record type and field that answer it and the values that count, and a question no record type answers is a hole, reported as not built and never blocking (today the research synthesis and the venture's own data model). packages/naive/src/engine/spec-gates.ts evaluates them purely over the venture's records read by logical path; a gate is reached when it and every gate before it pass. After 1B a staffing gate follows (packages/naive/src/engine/staffing.ts, naive staffing [status|draft|apply]): the lead whose portfolio holds human capital drafts one open decision, staffing-plan, asking \"Would you like to begin deploying agents?\", whose EE-211 candidates are distinct sets of proposed digital workers (EE-235) for the functions the specs name, each candidate one set of deployments with its role, mode, level, writes and sponsor. Every worker is written proposed, with plan naming the decision and candidate, a field that never changes, in the name of the lead whose portfolio holds its function, so its writes are never wider than that lead's portfolio or its role. The gate fails closed (EE-217): while a question of 0A to 1B is missing nothing is drafted and the refusal names each one, and apply refuses when the specs no longer reach 1B. Only a person decides the decision, and only a person runs naive staffing apply, which activates the chosen candidate's workers through the worker activate path with the decision and ends the other candidates' proposed workers; an acting agent is refused. The shipped plan proposes durable workers, because a temporary worker's expiry would run from the draft rather than the decision.",
+      "why": "Step 8 of the roles plan decided on 2026-11-28: SAD's phases asked the right questions before a team was formed, but SAD left Naive (EE-036) and nothing in Naive asked them, and step 7 left the activation of workers to a person with no point at which a lead proposes a team from the specs. Asking the questions of the records Naive already keeps makes each answer citable, and a single decision with candidates lets the person choose a team rather than approve workers one by one.",
+      "related": [
+        "EE-036",
+        "EE-211",
+        "EE-217",
+        "EE-229",
+        "EE-235"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/phases/spec-gates.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/records/spec-gates.schema.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/spec-gates.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/staffing.ts",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
       "id": "EE-150",
       "date": "2026-11-19",
       "status": "in-force",

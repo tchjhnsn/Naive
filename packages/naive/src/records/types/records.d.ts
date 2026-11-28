@@ -6723,6 +6723,85 @@ export type SitePresence = {
   [key: string]: unknown;
 };
 
+/** The specification gates and the staffing gate (EE-236), packages/naive/src/phases/spec-gates.json. SAD's gate questions for its phases 0A, 0B, 0C, 1A and 1B, asked of Naive's own records and never of SAD's documents (EE-036 stands). Each gate is named by its question, and each question says which record type answers it, at which field, and what value counts; a question no record type can answer is a hole, named as not built, which is reported and never blocks. After the last gate passes, a lead drafts a staffing plan as one open decision whose candidates are sets of proposed digital workers (EE-211, EE-235), and only a person's decision and naive staffing apply make them active. packages/naive/src/engine/spec-gates.ts evaluates the gates; packages/naive/src/engine/staffing.ts drafts and applies the plan. */
+export type SpecGates = {
+  version: string;
+  note?: string;
+  /** The gates in order. A gate is reached when it and every gate before it pass */
+  gates: {
+    id: SpecGatesId;
+    /** The SAD phase whose gate this asks */
+    sad: "0A" | "0B" | "0C" | "1A" | "1B";
+    name: string;
+    /** The gate's question, its name in reports */
+    question: string;
+    questions: SpecGatesQuestion[];
+  }[];
+  /** The staffing gate: once the gate named in after is reached, a lead drafts one open decision with these candidates */
+  staffing: {
+    /** The gate that must be reached before anything is drafted */
+    after: SpecGatesId;
+    /** The decision's id */
+    decision: SpecGatesId;
+    /** The folder its decisions/ sits in */
+    at: string;
+    /** The question the decision poses */
+    question: string;
+    /** The function whose lead drafts the plan: the lead whose portfolio holds it */
+    drafted_by_function: string;
+    /** The mode each proposed worker is deployed in */
+    mode: "durable" | "temporary";
+    candidates: SpecGatesCandidate[];
+  };
+};
+
+export type SpecGatesId = string;
+
+export type SpecGatesScalar = string | number | boolean;
+
+/** Where in the records one answer lives: the records of one type in the venture, the field read on each, and what counts. Without none, the answer holds when at least min records count (each with the field filled and, with in, a value in it), and with every, when every record counts too. With none, the answer holds when no record matches: its field is in in and, with touches, it names a path under one of them in decides.path or applies_to. */
+export type SpecGatesAnswer = {
+  /** A record type id in packages/naive/src/records/data-model.json with venture paths */
+  record: string;
+  /** A dotted field read on each record, such as core.promise. Left out, the record's presence is the answer */
+  field?: string;
+  /** The values that count. An array field counts when any of its items is one of them */
+  in?: SpecGatesScalar[];
+  /** Only the records whose field is one of these values are read */
+  where?: {
+    field: string;
+    in: SpecGatesScalar[];
+  };
+  /** How many records must count */
+  min?: number;
+  /** Every record read must count, not only min of them */
+  every?: boolean;
+  /** The answer holds when no record matches: a blocker check, such as no open decision on a spec record */
+  none?: boolean;
+  /** With none: a record matches only when its decides.path or one of its applies_to files starts with one of these venture paths */
+  touches?: string[];
+};
+
+/** One gate question: answered by records, or a hole that no record type answers yet */
+export type SpecGatesQuestion = {
+  id: SpecGatesId;
+  /** The question, in plain words */
+  question: string;
+  answers?: SpecGatesAnswer[];
+  /** One answer is enough. Left out, every answer must hold */
+  any?: boolean;
+  /** Why no record type answers this yet, named as not built. A hole is reported and never blocks the gate */
+  hole?: string;
+} & unknown;
+
+/** One idea for the staffing plan: which roles serve the functions the specs name */
+export type SpecGatesCandidate = {
+  id: SpecGatesId;
+  label: string;
+  /** function-agent: each function's own agent. library: the library's agent roles that serve the function (leads left out), and the function's agent where none does */
+  roles: "function-agent" | "library";
+};
+
 /** One line of the spend register (lead agents design, "The spend register and the access matrix"): one paid service or recurring charge per record, at finance/spend/<id>.json (route finance/spend/[id]). The finance function owns it, and only the finance agent (role finance-agent) or a person writes it (writer function in packages/naive/src/records/data-model.json). Where each field is mastered is the access matrix: the source map's rules for spend-register (packages/naive/template/knowledge/sources.json), where the bank statement sync is the system of record for amount, currency and dates, finance owns status, and IT's tool record is the system of record for approval. The paying account is named by reference to a money record, never by a card or account number. */
 export type SpendRegister = {
   /** The line's id, the file name without .json */
@@ -8181,6 +8260,11 @@ export type Worker = {
    * @format date-time
    */
   expires?: string;
+  /** The staffing plan that proposed it (EE-236): the decision and the candidate this worker is part of. naive staffing apply activates the workers of the candidate a person chose, and nobody changes it once the worker is proposed */
+  plan?: {
+    decision: string;
+    candidate: string;
+  };
   /** Its place in the statechart. Only active has reach */
   status: "proposed" | "active" | "suspended" | "ended";
   /** Who deployed it: a person, a lead (its reach bounded by the lead's portfolio) or a function agent (bounded by its own reach). A worker never deploys another */

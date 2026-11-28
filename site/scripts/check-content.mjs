@@ -183,8 +183,8 @@ for (const collection of ["docs", "marketing"]) {
   }
 }
 
-// Page owners: every page's owner is the site owner, and every page has contributors whose
-// roles are in Naive's role library (packages/naive/src/roles/<id>/).
+// Page owners: every page's owner is the site owner, one of Naive's own roles that makes docs pages,
+// and every page has contributors whose roles are in Naive's role library (packages/naive/src/roles/<id>/).
 const owners = JSON.parse(readFileSync(join(root, "owners.json"), "utf8"));
 const rolesDir = new URL("../../packages/naive/src/roles/", import.meta.url).pathname;
 const roles = new Set(readdirSync(rolesDir).filter((name) => statSync(join(rolesDir, name)).isDirectory()));
@@ -192,6 +192,10 @@ for (const [key, list] of Object.entries(owners.contributors ?? {})) {
   if (!Array.isArray(list) || list.length === 0) fail("owners.json", `${key}: lists no role that sends notes`);
   for (const role of list) if (!roles.has(role)) fail("owners.json", `${key}: ${role} is not a role in the role library`);
 }
+// The site owner is one of Naive's own roles (agents/<id>/role.json, EE-238) and makes docs pages.
+const ownerRole = new URL(`../../agents/${owners.site_owner}/role.json`, import.meta.url).pathname;
+if (!statSync(ownerRole, { throwIfNoEntry: false })?.isFile()) fail("owners.json", `site owner ${owners.site_owner} is not a role in agents/`);
+else if (!(JSON.parse(readFileSync(ownerRole, "utf8")).artifacts ?? []).some((a) => a.document_kind === "docs-page")) fail("owners.json", `site owner ${owners.site_owner} does not make docs-page artifacts`);
 const contributorsOf = (rel) => {
   const keys = Object.keys(owners.contributors ?? {}).filter((key) => rel === key || rel.startsWith(`${key}/`));
   keys.sort((a, b) => b.length - a.length);
