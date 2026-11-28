@@ -1,0 +1,9 @@
+{
+  "id": "co-founder",
+  "name": "Co-founder",
+  "kind": "person",
+  "description": "One of two or more founders; owns the functions the team assigns",
+  "person_kind": "builder",
+  "founder": true,
+  "owns_when_solo": true
+}

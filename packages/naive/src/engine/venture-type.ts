@@ -14,6 +14,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { envCommand, HostedRefusal, isHosted } from "../core/runtime.ts";
+import { loadRoles, type Role } from "./agents/roles.ts";
 import type { VentureTypes } from "../records/types/records.d.ts";
 
 type VentureType = VentureTypes["types"][number];
@@ -26,8 +27,9 @@ export function types(): VentureType[] {
 }
 export const typeOf = (id: string) => types().find((t) => t.id === id) ?? null;
 
-export function roles() {
-  return JSON.parse(readFileSync(join(repo, "packages/naive/template/governance/roles/venture-roles.json"), "utf8")).roles;
+/** The roles a person can hold in a venture (EE-082): the role library's person and either roles (EE-229). */
+export function roles(): Role[] {
+  return [...loadRoles().values()].filter((r) => r.kind !== "agent");
 }
 
 /** The judge command, or null: MENTURA_TYPE_CMD, else NAIVE_JUDGE_CMD. */

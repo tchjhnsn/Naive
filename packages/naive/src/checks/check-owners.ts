@@ -8,7 +8,7 @@
 //   - operations/element-owners.json does not match element-owners.schema.json;
 //   - the record names an element that is not in packages/naive/src/functions/pcf.json, or one under a function the
 //     venture does not list;
-//   - an owner names a role that no role template has and that is not a function agent (<function>-agent);
+//   - an owner names a role that is in neither the role library nor the venture's roles and that is not a function agent (<function>-agent);
 //   - an owner names a role outside its reach: a lead outside its portfolio, a role of one function outside it;
 //   - the delegation root is not a role while an activity needs it;
 //   - an element under a function the venture lists has no owner.

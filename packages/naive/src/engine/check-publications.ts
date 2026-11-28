@@ -12,6 +12,7 @@ import { createHash } from "node:crypto";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ventureFile } from "../core/venture-paths.ts";
+import { isPersonRole, loadRoles } from "./agents/roles.ts";
 import { artifacts } from "./check-artifacts.ts";
 import type { Artifact, PublicationPolicy, Publications } from "../records/types/records.d.ts";
 
@@ -19,9 +20,8 @@ const load = (f: string | URL) => JSON.parse(readFileSync(f, "utf8"));
 const sha = (f: string) => createHash("sha256").update(readFileSync(f)).digest("hex");
 const ventures = (d: string): string[] => existsSync(join(d, "venture.json")) ? [d, ...sub(d)] : sub(d);
 const sub = (d: string): string[] => { try { return readdirSync(d, { withFileTypes: true }).filter((e) => e.isDirectory() && !e.name.startsWith(".") && e.name !== "node_modules").flatMap((e) => ventures(join(d, e.name))); } catch { return []; } };
-// agent-roles.json has no schema yet (the data model's role record type), so its shape is named here.
-const roleList: { roles: { id: string; tier?: string }[] } = load(new URL("../../template/governance/roles/agent-roles.json", import.meta.url));
-const agentRoles = new Set(roleList.roles.filter((r) => r.tier && r.tier !== "person").map((r) => r.id));
+// The agent roles: every role in the role library that is not a person role (EE-229).
+const agentRoles = new Set([...loadRoles().values()].filter((r) => !isPersonRole(r)).map((r) => r.id));
 
 /** { errors, warnings } for one venture. */
 export function checkVenture(dir: string) {

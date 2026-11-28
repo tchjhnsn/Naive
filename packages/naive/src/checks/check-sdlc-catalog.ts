@@ -14,10 +14,11 @@
 //   node packages/naive/src/checks/check-sdlc-catalog.ts [--refs] [--phase <id> [--processes a,b]]
 
 import { createHash } from "node:crypto";
-import { existsSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { SdlcCatalog } from "../records/types/records.d.ts";
+import { loadRoles } from "../engine/agents/roles.ts";
 
 const root = fileURLToPath(new URL("../../../..", import.meta.url));
 const read = (rel: string): unknown => JSON.parse(readFileSync(join(root, rel), "utf8"));
@@ -28,7 +29,8 @@ const functions = new Set((read("packages/naive/src/functions/departments.json")
 const PHASES = ["discovery", "validation", "beachhead", "scale", "platform"];
 const rights = read("packages/naive/template/governance/decision-rights.json") as { classes: { id: string }[] };
 const classes = new Set(rights.classes.map((c) => c.id));
-const isRole = (id: string): boolean => existsSync(join(root, "packages/naive/template/governance/roles", `${id}.json`));
+const library = loadRoles(undefined, root);
+const isRole = (id: string): boolean => library.has(id);
 
 const CLAUSE: Record<string, string> = { agreement: "6.1.", "organizational-project-enabling": "6.2.", "technical-management": "6.3.", technical: "6.4." };
 // Technical processes that MAD does not route: whether and why to build is the product function's (R-21).
@@ -45,7 +47,7 @@ for (const group of catalog.groups) {
     if (ids.has(p.id)) errors.push(`${p.id}: duplicate process id`);
     ids.add(p.id);
     if (!p.clause.startsWith(CLAUSE[group.id])) errors.push(`${p.id}: clause ${p.clause} is not in group ${group.id} (${CLAUSE[group.id]}x)`);
-    if (!isRole(p.owner_role)) errors.push(`${p.id}: owner role ${p.owner_role} is not a role template`);
+    if (!isRole(p.owner_role)) errors.push(`${p.id}: owner role ${p.owner_role} is not a role in the role library`);
     if (!functions.has(p.function)) errors.push(`${p.id}: function ${p.function} is not a department in packages/naive/src/functions/departments.json`);
     if (group.id === "technical") {
       if (p.mad_layer) errors.push(`${p.id}: a technical process names a MAD module, not a layer`);
@@ -57,7 +59,7 @@ for (const group of catalog.groups) {
       for (const t of a.tasks) {
         const where = `${p.id}/${a.id}/${t.id}`;
         for (const c of t.decision_classes) if (!classes.has(c)) errors.push(`${where}: decision class ${c} is not in the decision rights template`);
-        if (!isRole(t.owner_role)) errors.push(`${where}: owner role ${t.owner_role} is not a role template`);
+        if (!isRole(t.owner_role)) errors.push(`${where}: owner role ${t.owner_role} is not a role in the role library`);
         if (!p.mad_module) continue;
         const ref = `${p.mad_module}/${a.id}/${t.id}`;
         if (refs.has(ref)) errors.push(`${where}: reference ${ref} is also ${refs.get(ref)}`);

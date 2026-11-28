@@ -1,6 +1,6 @@
 # Site nav
 
-The header on the Naive site carries no links: the mark, search, the theme control and GitHub. The footer (`footerNav` in `site/components/shell/nav.ts`) names two places: About and Waitlist. Each one is a page. Neither is indexed.
+The header on the Naive site carries no links: the mark, search and the theme control. The footer (`footerNav` in `site/components/shell/nav.ts`) names two places: About and Waitlist. Each one is a page. Neither is indexed.
 
 | Rule | What the reader is promised |
 | --- | --- |

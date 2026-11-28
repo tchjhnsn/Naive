@@ -6,7 +6,7 @@ created: 2026-11-26T00:00:00Z
 source: hybrid
 name: lead
 description: >
-  Naive's one generic lead skill, for a lead agent (a role template with a
+  Naive's one generic lead skill, for a lead agent (a role in the role library with a
   portfolio: growth-lead, product-lead, finance-lead, strategy-lead): keep a
   lead plan that binds the measures the lead answers for, turn each bet into
   handoffs the portfolio's function agents can claim, verify the work others

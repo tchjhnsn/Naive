@@ -10,7 +10,7 @@ tags: [skill, chief-of-staff, operating-model, founder-session, handoffs, decisi
 
 # Chief of Staff
 
-Decided in the ratified operating-model decisions. Design: [[FOUNDER_OPERATING_MODEL_CAMPAIGN_2026-10-14]]. Roles and decision rights: `packages/naive/template/governance/AGENT_ROLES_AND_DECISION_RIGHTS.md`.
+Decided in the ratified operating-model decisions. Design: [[FOUNDER_OPERATING_MODEL_CAMPAIGN_2026-10-14]]. Roles: the role library, `packages/naive/src/roles/` (EE-229). Decision rights: `packages/naive/template/governance/decision-rights.json`.
 
 ## Which position you hold
 

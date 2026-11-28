@@ -12,7 +12,7 @@ import { join, relative } from "node:path";
 import { approve, decisions, mayMerge, merge, propose, rollback } from "../../engine/decisions.ts";
 import { decide } from "../../router/orchestration/setup.ts";
 import { independent, reviewIsIndependent, verificationErrors } from "../../checks/verify.ts";
-import type { Delegation, RoleTemplate } from "../../records/types/records.d.ts";
+import type { Delegation, Role } from "../../records/types/records.d.ts";
 
 const repo = new URL("../../../../..", import.meta.url).pathname;
 const template = join(repo, "packages/naive/template/governance");
@@ -26,7 +26,7 @@ let n = 0;
 function venture(edit: (d: Delegation, roles: string) => void = () => {}, today: string = "2026-10-29") {
   const dir = join(tmp, `v${n++}`), gov = join(dir, "governance");
   mkdirSync(gov, { recursive: true });
-  cpSync(join(template, "roles"), join(gov, "roles"), { recursive: true });
+  cpSync(join(repo, "packages/naive/src/roles"), join(gov, "roles"), { recursive: true });
   const d = structuredClone(base);
   edit(d, join(gov, "roles"));
   writeFileSync(join(gov, "delegation.json"), JSON.stringify(d, null, 2));
@@ -54,7 +54,7 @@ fails("a scope wider than the grantor's fails", (d) => { grant(d, "architect-to-
 fails("a scope that only shares a prefix with the grantor's fails (whole segments)", (d) => { grant(d, "chief-of-staff-to-architect").scope = "engineering"; grant(d, "architect-to-builder").scope = "engineering-secrets/"; }, /architect-to-builder: exceeds/);
 expect("a scope one segment deeper than the grantor's passes", venture((d) => { grant(d, "chief-of-staff-to-architect").scope = "engineering"; grant(d, "architect-to-builder").scope = "engineering/api/"; }).ok);
 fails("a role template missing verified_by is reported, not dropped", (_, roles) => {
-  const p = join(roles, "counsel.json"), r = JSON.parse(readFileSync(p, "utf8"));
+  const p = join(roles, "counsel/role.json"), r = JSON.parse(readFileSync(p, "utf8"));
   delete r.verified_by; writeFileSync(p, JSON.stringify(r));
 }, /role\/counsel: has no verified_by/);
 fails("may_merge beyond the grantor's fails", (d) => { grant(d, "architect-to-builder").may_merge = true; }, /architect-to-builder: exceeds/);
@@ -72,28 +72,28 @@ fails("a cycle never reaches the founder", (d) => {
 }, /grant\/a: exceeds/);
 fails("a class not grantable to the role fails", (d) => grant(d, "architect-to-builder").classes.push("new-structure"), /not grantable to builder/);
 fails("a role that verifies itself fails", (_, roles) => {
-  const p = join(roles, "builder.json"), r = JSON.parse(readFileSync(p, "utf8"));
+  const p = join(roles, "builder/role.json"), r = JSON.parse(readFileSync(p, "utf8"));
   writeFileSync(p, JSON.stringify({ ...r, verified_by: "builder" }));
 }, /role\/builder: may not verify its own work/);
 fails("only the chief delegator goes unverified", (_, roles) => {
-  const p = join(roles, "counsel.json"), r = JSON.parse(readFileSync(p, "utf8"));
+  const p = join(roles, "counsel/role.json"), r = JSON.parse(readFileSync(p, "utf8"));
   writeFileSync(p, JSON.stringify({ ...r, verified_by: null }));
 }, /only the chief delegator/);
 fails("a role whose function is not a departments.json id fails", (_, roles) => {
-  const p = join(roles, "counsel.json"), r = JSON.parse(readFileSync(p, "utf8"));
+  const p = join(roles, "counsel/role.json"), r = JSON.parse(readFileSync(p, "utf8"));
   writeFileSync(p, JSON.stringify({ ...r, function: "legal" }));
 }, /role\/counsel: function legal is not an id in packages\/naive\/src\/functions\/departments.json/);
 fails("function all is for the chief delegator only", (_, roles) => {
-  const p = join(roles, "builder.json"), r = JSON.parse(readFileSync(p, "utf8"));
+  const p = join(roles, "builder/role.json"), r = JSON.parse(readFileSync(p, "utf8"));
   writeFileSync(p, JSON.stringify({ ...r, function: "all" }));
 }, /role\/builder: function all is for the chief delegator and for a lead/);
 
 // Leads (lead agents build item 3): a role with a portfolio may span functions, holds no one-way door or
 // never-redelegated class, and the four portfolios cover the 13 functions once each.
 /** A lead's role template: a role template with a portfolio. */
-type Lead = RoleTemplate & { portfolio: string[] };
-const editRole = (roles: string, id: string, f: (r: Lead) => void) => { const p = join(roles, `${id}.json`), r = JSON.parse(readFileSync(p, "utf8")); f(r); writeFileSync(p, JSON.stringify(r)); };
-const lead = JSON.parse(readFileSync(join(template, "roles/growth-lead.json"), "utf8"));
+type Lead = Role & { portfolio: string[], grantable_classes: string[] };
+const editRole = (roles: string, id: string, f: (r: Lead) => void) => { const p = join(roles, id, "role.json"), r = JSON.parse(readFileSync(p, "utf8")); f(r); writeFileSync(p, JSON.stringify(r)); };
+const lead = JSON.parse(readFileSync(join(repo, "packages/naive/src/roles/growth-lead/role.json"), "utf8"));
 expect("a lead template has function all and a portfolio", lead.function === "all" && Array.isArray(lead.portfolio) && lead.portfolio.length > 0);
 fails("a lead whose function is not all fails", (_, roles) => editRole(roles, "growth-lead", (r) => { r.function = "marketing-and-sales"; }), /role\/growth-lead: has a portfolio, so it is a lead and its function is all/);
 fails("a portfolio function that is not a departments.json id fails", (_, roles) => editRole(roles, "growth-lead", (r) => { r.portfolio.push("sales"); }), /role\/growth-lead: portfolio function sales is not an id/);
@@ -128,7 +128,7 @@ function overlaid(write: (gov: string) => void) {
 }
 const partial = overlaid((gov) => writeFileSync(join(gov, "decision-rights.json"), JSON.stringify({ classes: [{ id: "implementation-detail", level: "act" }] })));
 expect("a venture's partial decision rights overlay the template's classes", partial.ok, partial.out);
-const oneRole = overlaid((gov) => cpSync(join(template, "roles/builder.json"), join(gov, "roles/builder.json")));
+const oneRole = overlaid((gov) => cpSync(join(repo, "packages/naive/src/roles/builder"), join(gov, "roles/builder"), { recursive: true }));
 expect("a venture with one role file keeps the template's other roles", oneRole.ok, oneRole.out);
 
 // extends fails closed: the template's lists bind, and a record that cannot honor extends is refused.

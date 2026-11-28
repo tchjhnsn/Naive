@@ -28,6 +28,9 @@ const renamed = [
   ["/reference/decisions", "/docs/reference/decisions"],
   ["/reference/file-formats", "/docs/reference/file-formats"],
   ["/reference/nouns", "/docs/reference/nouns"],
+  // The problem and Who it is for rendered no content: they read facts no record holds yet (removed 2026-11-27).
+  ["/why", "/"],
+  ["/for", "/"],
 ];
 
 // Every environment, previews included: public URLs stay out of search until a person approves a channel (EE-025, EE-034).
