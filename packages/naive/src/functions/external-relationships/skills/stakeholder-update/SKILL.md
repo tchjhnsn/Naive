@@ -44,7 +44,7 @@ A stakeholder update sized to the audience + cadence. Structure varies by type:
 - **Status** — green / yellow / red on key initiatives
 - **Highlights** — 3-5 bullets, mostly outcomes (shipped, achieved, decided)
 - **Risks + asks** — what's at risk + what the audience can help with
-- **Numbers** — relevant metrics (from [[../metrics-review/SKILL|metrics-review]] outputs)
+- **Numbers** — relevant metrics (from [[../../../strategy/skills/metrics-review/SKILL|metrics-review]] outputs)
 - Length: 1-2 paragraphs + scorecard
 
 ### Engineering detail (technical team / CTO)
@@ -154,7 +154,7 @@ Per [[../../_ideas/build-roadmap-and-html-orchestration-2026-05-12|§32]], stake
 Stakeholder-update runs in a **mode that matches the audience**:
 
 - **Executive / board / investor updates** — office-hours-mode posture. Sharp, evidence-driven, honest about risks.
-- **Customer / all-hands** — friend-mode posture. Generative, energetic, celebratory.
+- **Customer / all-hands** — warm posture. Generative, energetic, celebratory.
 - **Engineering** — office-hours-mode by default; engineers appreciate directness.
 
 The skill should declare its posture explicitly so the operator can adjust if needed.
@@ -167,9 +167,8 @@ The skill should declare its posture explicitly so the operator can adjust if ne
 
 ## Relationship to other skills
 
-- [[../metrics-review/SKILL|metrics-review]] — feeds the numbers section of most updates
-- [[../friend-mode/SKILL|friend-mode]] / [[../office-hours-mode/SKILL|office-hours-mode]] — posture per audience
-- [[../canonicalize/SKILL|canonicalize]] — recurring update types (weekly investor, monthly all-hands) have canonical formats
+- [[../../../strategy/skills/metrics-review/SKILL|metrics-review]] — feeds the numbers section of most updates
+- [[../../../strategy/skills/office-hours-mode/SKILL|office-hours-mode]] — posture for executive, board, investor and engineering updates
 
 ## Status
 
