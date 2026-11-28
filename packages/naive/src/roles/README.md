@@ -14,15 +14,43 @@ A venture's own roles live at `<venture>/governance/roles/<id>/role.json` and ov
 |---|---|
 | `<id>/role.json` | One role: id, name, kind, description and the fields for its kind |
 | `<id>/SKILL.md` | How an agent works in the role, or with the person in it |
+| `<id>/role.ts` | Optional: more checks of what the role makes, added to its program (EE-237). `architect/role.ts` and `product-design-lead/role.ts` are the two so far |
 
 The roles: `architect`, `builder`, `chief-of-staff`, `domain-lead`, `finance-agent`, `finance-lead`, `growth-lead`, `marketing-lead`, `people-lead`, `product-design-lead`, `product-lead`, `strategy-lead` and `validation-lead` are agent roles; `counsel` is either; `founder`, `co-founder`, `general-partner`, `limited-partner`, `operator`, `advisor` and `board-member` are person roles.
 
+## Role programs
+
+Every role has a program (EE-237, [`role-program.ts`](../checks/role-program.ts)): deterministic checks of what the role makes, each an Effect over `VentureFs` that fails only with Naive's tagged errors. The default program comes from `role.json`:
+
+- `artifact-types`: each of its `artifacts` is a record type or a document kind (`artifactKind`), and in a venture each artifact record of a kind the role names, made by it or by no named role, passes the artifact lint (`lintArtifact`) with that rule's family and level.
+- `reads`: each record type it reads is in the data model, and in a venture a record of it exists (a warning when none does).
+- `lint-suites`: each of its `lint_suites` is a command route, and in a venture each suite runs; its findings warn, or fail when the suite's rule is fail-closed.
+
+A library role may add checks in `role.ts`, a default export `{ id, checks }` whose id is the role's. They run after the default ones and may not reuse a default check's id, so `role.ts` extends the program and never replaces it. `architect/role.ts` requires every `adr` artifact to be built from a decision record the venture has. `product-design-lead/role.ts` warns on a live or building product capability that names no goal and fails on a goal it names that the venture lacks.
+
+Naive loads only the library's `role.ts`, never one in a venture's `governance/roles/<id>/`: the venture folder is data that agents write and sync copies, and importing its code would run it with the CLI's rights outside the gate. A venture role's program is the default one for its `role.json` plus the library's `role.ts` of the same id.
+
+```mermaid
+flowchart LR
+  RJ["role.json<br/>artifacts, reads, lint_suites"] --> DP["Default program<br/>artifact-types, reads, lint-suites"]
+  RT["role.ts in the library<br/>default export { id, checks }"] -- "extends, never replaces" --> P["RoleProgram"]
+  DP --> P
+  VT["role.ts in a venture"] -. "never loaded" .-> X["check-roles fails"]
+  P -- "each check: Effect over VentureFs" --> F["Findings<br/>protocol always error, design warn"]
+  AL["lintArtifact, EE-231"] --> DP
+  LS["lint suites<br/>command routes"] --> DP
+  F -- "lint: role" --> LOG[".naive/lint-findings.jsonl"]
+  LOG --> RPT["naive lint report --by role"]
+  F -- "any error" --> EXIT["naive role check exits 1"]
+```
+
 ## Run and test
 
-- `node packages/naive/src/checks/check-roles.ts [venture dir] [--json]` checks the library and, with a venture, its overlay: every file validates, its id matches its folder, `verified_by` and each `also_verified_by` name a known role and never the role itself, ids and aliases are unique, and a person role grants no agent tier.
+- `node packages/naive/src/checks/check-roles.ts [venture dir] [--json]` checks the library and, with a venture, its overlay: every file validates, its id matches its folder, `verified_by` and each `also_verified_by` name a known role and never the role itself, ids and aliases are unique, a person role grants no agent tier, each library `role.ts` exports a valid program whose id is its role's, and no venture role has a `role.ts`.
 - It also checks the links to APQC's framework and O*NET (EE-232): each `pcf[].id` is a hierarchy id in [`pcf.json`](../functions/pcf.json), named once per role; at most one role is accountable for an element, across the library and a venture's overlay; an accountable role is in the element's function or is a lead whose portfolio covers it; and each `onet[].code` is an occupation in [`onet.json`](../functions/onet.json) with the same title.
 - `node packages/naive/src/checks/check-roles.ts [venture dir] --complete [--level <n>]` also fails on each element of levels 1 to `--level` (2 by default) under a function the business runs (all 13, or the venture's `venture.json` departments) that no role is responsible or accountable for, and suggests three O*NET occupations for it by word overlap ([`onet-match.ts`](../engine/onet-match.ts)). A suggestion is a lead for a person, never a match.
 - `node scripts/pcf-roles.ts` writes [`pcf-roles.json`](../functions/pcf-roles.json), the element side of the links, from every role's `pcf` field; `node scripts/pcf-roles.ts --check` fails when it is stale.
+- `naive role check <role> [--venture <dir>] [--json]` and `naive role check --all` run programs (`node packages/naive/src/checks/role-check.ts <role> [<venture dir>] [--json]`), append every finding to `.naive/lint-findings.jsonl` with lint `role`, and exit 1 on any error. With no venture only the checks that need none run and nothing is logged. `node packages/naive/src/checks/role-program-test.ts` tests the programs over an in-memory `VentureFs`.
 - `node packages/naive/src/checks/check-roles-test.ts` breaks each rule on a copy of the library, and `node packages/naive/src/engine/generators/pcf-roles-test.ts` tests the element side. `node test.ts` runs them, the stale check included, and `naive check` runs the check on a venture.
 - `node packages/naive/src/checks/check-delegation.ts [venture dir]` checks what delegation needs from the roles: a verifier for every role that is not a person's, grantable classes, and leads' portfolios covering the 13 functions once each.
 
@@ -49,5 +77,7 @@ Today the four leads are accountable for the categories in their portfolios, eac
 
 ## Not built
 
-- The fields later steps fill (`reads`, `artifacts`, `standards`, `research`, `level`) are in the schema and empty in every role; linking roles to artifacts and deployments is not built.
+- The fields later steps fill (`standards`, `research`, `level`) are in the schema and empty in every role, and only the architect and the product and design lead fill `reads` and `artifacts`; linking roles to deployments is not built.
 - A role for each of the 67 process groups with no responsible or accountable role is not built (step 11 of the roles plan). The person roles link to no PCF element.
+- Setting a role program's own design rules (`reads-present`, a `role.ts` warning) off, warn or error is not built: they always warn. The artifact lint's design rules follow `artifact_lint.rules`, and a lint suite's findings follow that suite's own rule modes.
+- `recordsOf`, which a `role.ts` uses to read a record type's files, reads only paths whose folder has no wildcard.

@@ -49,13 +49,15 @@ description: 40 to 160 characters; used for SEO and llms.txt.
 type: tutorial
 status: draft
 lastReviewed: 2026-10-28
-owner: builder
+owner: technical-writer
 sources: []
 ```
 
 `type` is `tutorial`, `how-to`, `reference` or `explanation`. `status` is `draft`, `beta`, `stable` or `deprecated`. Every page stays `draft` until Torian has read it.
 
-Marketing pages use `title`, `description`, `status`, `lastReviewed`, plus `audience` (optional). The marketing schema has no Diátaxis `type`.
+`owner` is required and is always the site owner named in `content/owners.json` (`technical-writer`): one role owns every word on the site *(checked)*. `content/owners.json` also lists, per section, the roles that send the owner notes for their part, and every one must be a role in Naive's role library, `packages/naive/src/roles/<id>/` *(checked)*. Other roles send notes in `notes/`, never edits to a page.
+
+Marketing pages use `title`, `description`, `status`, `lastReviewed`, `owner`, plus `audience` (optional). The marketing schema has no Diátaxis `type`.
 
 ### Body rules
 
