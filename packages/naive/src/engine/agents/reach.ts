@@ -43,16 +43,17 @@ export function functionOfAgent(role: string | undefined | null): string | null 
  * The write globs of one function's agent: decisions/* (to raise a question), operations/handoff/* (to hand work to
  * another function, as its workflows do; the handoff claim rules then limit who edits it) plus every concrete write route of a
  * record type the data model gives this function, [id] as *, minus any route whose files include a team-plan file
- * (PLANS). The record type's function, not the folder its file sits in, decides. Derived once per process.
+ * (PLANS) and any route only the signal projector writes (writer projection, which writerRule refuses to every other
+ * actor). The record type's function, not the folder its file sits in, decides. Derived once per process.
  */
 export function functionWrites(fn: string): string[] {
   const hit = cache.get(fn);
   if (hit) return hit;
   const model: DataModel = readDataModel();
   const mine = new Set(model.records.filter((r) => r.function === fn).map((r) => r.id));
-  const all: { route: string; record?: string; actions?: string[]; files?: string[] }[] = routes();
+  const all: { route: string; record?: string; actions?: string[]; files?: string[]; writer?: string }[] = routes();
   const owned = all.filter((r) => r.actions?.includes("write") && r.files?.length && r.record && mine.has(r.record)
-    && !r.files.some((f) => PLANS.includes(f)));
+    && r.writer !== "projection" && !r.files.some((f) => PLANS.includes(f)));
   // Deduplicated: a function that owns the handoff record type would otherwise list operations/handoff/* twice.
   const writes = [...new Set(["decisions/*", "operations/handoff/*", ...[...new Set(owned.map((r) => r.route.replace("[id]", "*")))].sort()])];
   cache.set(fn, writes);
