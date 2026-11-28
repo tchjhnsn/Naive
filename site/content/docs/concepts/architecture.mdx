@@ -11,7 +11,7 @@ Naive keeps everything a business knows in one place, as files, and controls who
 
 ## A business is a folder of records
 
-A record is one file, usually JSON: a goal, a decision, a customer profile, a handoff. Most record types have a schema. A record type belongs to one function or is shared by all of them. There are 13 functions, the same 13 categories as the APQC process framework.
+A record is one file, usually JSON: a goal, a decision, a customer profile, a handoff. Most record types have a schema. A record type belongs to one function or is shared by several. There are 13 functions, the same 13 categories as the APQC process framework.
 
 ## Every change goes down one path
 
@@ -51,6 +51,6 @@ The rules for element states, and several others, are modelled in Lean and prove
 
 - It does not call a model on its own. The one exception is the design-coverage check, which calls a hosted model unless you pass `--quick`. Agents run in your own tool, such as Claude Code or Cursor, and reach Naive through the three ways in.
 - It does not verify identity. A role is declared by the environment, not signed.
-- It does not deploy a site or send anything for you.
+- It does not deploy a site or send messages for you.
 - It ships one store, the file system. A hosted store is the host's to provide.
-- Reading a record as it was works only for versions whose bytes were stored. Those are the writes through the router or the shared writer since the blob store was added.
+- Reading a record as it was works only for versions whose bytes were stored, which started when the blob store was added.
