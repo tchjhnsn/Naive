@@ -1,7 +1,7 @@
 // Checks each venture's team plan (operations/team-plan.json) against the agent capability register
 // (packages/naive/src/functions/human-capital/capabilities/agent-capabilities.json) and decision rights (EE-029). Rules:
-//   roles: ids unique; a role not in the registry has a name; an agent occupies only a role the
-//     registry gives to agents, or its own.
+//   roles: ids unique; a role not in the role library has a name; an agent occupies only a role the
+//     library does not give to a person, or its own.
 //   authority: each delegated class exists in the venture's decision rights; its owner is this
 //     role; no agent holds an escalate class (those stay with a person).
 //   human loops: every task cites a known capability. An agent's task that is cannot, not-allowed
@@ -9,7 +9,7 @@
 //   recruiting: an open person role needed by the current phase is a role to recruit now; it needs
 //     a recruiting entry, and the entry's brief exists (paths relative to the venture folder).
 //   routes (robots, EE-032): each glob a role lists matches at least one route.
-//   leads (lead agents design, 2026-11-08): a role whose template has a portfolio is a lead. An agent lead
+//   leads (lead agents design, 2026-11-08): a role with a portfolio is a lead. An agent lead
 //     lists write routes, and they reach only its own lead plan (operations/lead/<id>), decisions/* and
 //     operations/handoff/*, never a function's records. Every lead has a lead plan
 //     (operations/leads/<id>.json) that binds it to at least one telos measure; the plan's measures are
@@ -24,7 +24,8 @@ import { ventureFile } from "../core/venture-paths.ts";
 import { measures } from "../engine/canonical.ts";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
-import type { AgentCapability, DecisionRights, LeadPlan, RoleTemplate, TeamPlan, Venture } from "../records/types/records.d.ts";
+import type { AgentCapability, DecisionRights, LeadPlan, TeamPlan, Venture } from "../records/types/records.d.ts";
+import { isPersonRole, loadRoles } from "../engine/agents/roles.ts";
 
 const dir = process.argv[2];
 if (!dir) { console.error("usage: node packages/naive/src/checks/check-team.ts <workspace or venture dir>"); process.exit(2); }
@@ -33,7 +34,8 @@ const load = <T>(p: string): T => JSON.parse(readFileSync(p, "utf8")) as T;
 const walk = (d: string): string[] => readdirSync(d, { withFileTypes: true }).flatMap((e) => e.name === "node_modules" || e.name.startsWith(".") ? []
   : e.isDirectory() ? walk(join(d, e.name)) : e.name === "venture.json" ? [d] : []);
 const PHASES = ["discovery", "validation", "beachhead", "scale", "platform"];
-const registry = new Map(load<{ roles: { id: string, occupant?: string }[] }>(join(repo, "packages/naive/template/governance/roles/agent-roles.json")).roles.map((r) => [r.id, r]));
+// The role library (EE-229): a team plan role in it needs no name, and a person role there takes no agent.
+const registry = loadRoles();
 const template = load<DecisionRights>(join(repo, "packages/naive/template/governance/decision-rights.json"));
 const caps = load<AgentCapability>(join(repo, "packages/naive/src/functions/human-capital/capabilities/agent-capabilities.json"));
 const errors: string[] = [], warnings: string[] = [], recruitNow: string[] = [];
@@ -43,9 +45,6 @@ const routeList: string[] = routes().map((r: { route: string }) => r.route.repla
 const items: RegExp[] = routes().filter((r: { route: string }) => r.route.includes("[id]")).map((r: { route: string }) => new RegExp(`^${r.route.replace(/[.+^${}()|\\]/g, "\\$&").replace("[id]", "[a-z0-9-]+")}$`));
 const reachesRoute = (g: string) => routeList.some((x) => routeGlob(g).test(x)) || items.some((re) => re.test(g));
 
-// Role templates by id: the template's, overlaid by a venture's own governance/roles (as check-delegation.ts reads them).
-const rolesIn = (d: string): RoleTemplate[] => existsSync(d) ? readdirSync(d).filter((f) => f.endsWith(".json")).map((f) => load<RoleTemplate & { roles?: unknown }>(join(d, f))).filter((r) => r.id && !Array.isArray(r.roles)) : [];
-const templateRoles = rolesIn(join(repo, "packages/naive/template/governance/roles"));
 // What a lead may write: its own plan, decisions and handoffs. Checked against every route a glob reaches.
 const leadMayWrite = (id: string, route: string) => route === `operations/lead/${id}` || /^decisions(\/|$)/.test(route) || /^operations\/handoff(\/|$)/.test(route);
 const LEAD_WRITES = (id: string) => `its lead plan (operations/lead/${id}), decisions/* and operations/handoff/*`;
@@ -75,20 +74,21 @@ for (const root of walk(dir)) {
   const ids = plan.roles.map((r) => r.id);
   if (new Set(ids).size !== ids.length) errors.push(`${at}: duplicate role ids`);
   const persons = new Set(plan.roles.filter((r) => r.occupant === "person").map((r) => r.id));
-  const leads = new Map([...templateRoles, ...rolesIn(ventureFile(root, "governance/roles"))].map((r) => [r.id, r]));
+  // Roles by id: the role library, overlaid by the venture's own governance/roles (as check-delegation.ts reads them).
+  const leads = loadRoles(root);
   for (const [id, r] of leads) if (!r.portfolio) leads.delete(id);
   // Telos measures through the canonical core: the goals' measures, else the unmigrated telos's (telos-to-goals keeps the ids).
   const measureIds = new Set<string>(measures(root).map((m: { id: string }) => m.id));
   const leadsDir = ventureFile(root, "operations/leads");
   for (const f of existsSync(leadsDir) ? readdirSync(leadsDir).filter((f) => f.endsWith(".json")) : []) {
     const id = f.slice(0, -5);
-    if (!leads.has(id)) errors.push(`${v.id}/operations/leads/${f}: ${id} is not a lead (a role template with a portfolio)`);
+    if (!leads.has(id)) errors.push(`${v.id}/operations/leads/${f}: ${id} is not a lead (a role with a portfolio)`);
   }
   for (const r of plan.roles) {
     const reg = registry.get(r.id);
-    if (!reg && !r.name) errors.push(`${at}: ${r.id} is not in the role registry, so it needs a name`);
+    if (!reg && !r.name) errors.push(`${at}: ${r.id} is not in the role library, so it needs a name`);
     for (const g of [...(r.routes?.read ?? []), ...(r.routes?.write ?? [])]) if (!reachesRoute(g)) errors.push(`${at}: ${r.id} lists route ${g}, which matches no route`);
-    if (reg && reg.occupant === "person" && r.occupant === "agent") errors.push(`${at}: ${r.id} is a person's role in the registry; an agent cannot occupy it`);
+    if (isPersonRole(reg) && r.occupant === "agent") errors.push(`${at}: ${r.id} is a person's role in the role library; an agent cannot occupy it`);
     for (const a of r.authority ?? []) {
       const c = classes.get(a);
       if (!c) { errors.push(`${at}: ${r.id} holds unknown decision class ${a}`); continue; }

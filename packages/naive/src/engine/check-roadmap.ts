@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Decision roadmaps (packages/naive/src/records/decision-roadmap.schema.json): ordered frames, never answers. A roadmap is
 // rejected when its steps form a cycle, name a frame the library does not have, have no decider, name a
-// decider or merger that is not a role template, or
+// decider or merger that is not a role in the role library, or
 // delegate a one-way door away from the founder.
 //
 //   node packages/naive/src/engine/check-roadmap.ts [<roadmap file> ...]     every roadmap in packages/naive/library/packages/*/roadmaps when none is named
@@ -9,7 +9,8 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { frames } from "./frames.ts";
-import type { DecisionRoadmap, RoleTemplate } from "../records/types/records.d.ts";
+import type { DecisionRoadmap } from "../records/types/records.d.ts";
+import { loadRoles } from "./agents/roles.ts";
 
 const repo = new URL("../../../..", import.meta.url).pathname;
 const load = (p: string) => JSON.parse(readFileSync(p, "utf8"));
@@ -28,14 +29,12 @@ export function roadmaps(): LibraryRoadmap[] {
 }
 export const roadmapOf = (id: string) => roadmaps().find((r) => r.id === id) ?? null;
 
-/** The rules a schema cannot state. Returns a list of errors, empty when the roadmap passes. */
-const rolesDir = join(repo, "packages/naive/template/governance/roles");
-/** Role ids and aliases from the role templates (packages/naive/src/records/role-template.schema.json). */
+/** Role ids and aliases from the role library (packages/naive/src/roles/, EE-229). */
 export function roleIds(): Set<string> {
-  return new Set(readdirSync(rolesDir).filter((f) => f.endsWith(".json")).map((f): RoleTemplate => load(join(rolesDir, f)))
-    .filter((r) => r.id && r.grantable_classes).flatMap((r) => [r.id, ...(r.aliases ?? [])]));
+  return new Set([...loadRoles().values()].flatMap((r) => [r.id, ...(r.aliases ?? [])]));
 }
 
+/** The rules a schema cannot state. Returns a list of errors, empty when the roadmap passes. */
 export function check(r: Partial<FoundRoadmap>, known: Set<string> = new Set(frames().map((f: { id: string }) => f.id)), roles = roleIds()): string[] {
   const errors: string[] = [];
   const ids = new Set<string>();
@@ -47,7 +46,7 @@ export function check(r: Partial<FoundRoadmap>, known: Set<string> = new Set(fra
   for (const s of r.steps ?? []) {
     if (!known.has(s.frame)) errors.push(`${r.id}: step ${s.id} uses frame ${s.frame}, which the decision library does not have`);
     if (!s.decided_by?.trim()) errors.push(`${r.id}: step ${s.id} has no decider`);
-    for (const k of ["decided_by", "merged_by"] as const) if (s[k]?.trim() && !roles.has(s[k])) errors.push(`${r.id}: step ${s.id} ${k} ${s[k]} is not a role in packages/naive/template/governance/roles`);
+    for (const k of ["decided_by", "merged_by"] as const) if (s[k]?.trim() && !roles.has(s[k])) errors.push(`${r.id}: step ${s.id} ${k} ${s[k]} is not a role in the role library (packages/naive/src/roles/)`);
     if (s.door === "one-way" && s.decided_by !== FOUNDER) errors.push(`${r.id}: step ${s.id} is a one-way door delegated to ${s.decided_by || "no one"}; only the founder decides a one-way door`);
     for (const d of s.depends_on ?? []) if (!ids.has(d)) errors.push(`${r.id}: step ${s.id} depends on ${d}, which is not a step`);
   }

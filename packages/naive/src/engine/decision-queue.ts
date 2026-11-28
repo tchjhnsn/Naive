@@ -11,7 +11,7 @@
 //   4. themes (themesOf): decisions that touch the same record or the same handoff, grouped so the queue shows one
 //      item per theme. A theme is a plain grouping by shared keys, no model and no clustering library.
 //
-// The rules are pure functions. Reading what they need (phase weights, role templates, decision rights, the function
+// The rules are pure functions. Reading what they need (phase weights, the role library, decision rights, the function
 // matrices, lead plans, goals and handoffs) is an Effect through VentureFs (EE-125); rank() runs it with runSync.
 
 import { Effect } from "effect";
@@ -22,6 +22,7 @@ import { ventureFile } from "../core/venture-paths.ts";
 import { phaseGateRecords, phaseWeights, ROOT } from "../phases/phases.ts";
 import { readDataModel } from "../records/index.ts";
 import { recordOf } from "./decisions.ts";
+import { loadRoles } from "./agents/roles.ts";
 import type { NaiveError } from "../core/effect/errors.ts";
 import type { DataModel } from "../records/types/records.d.ts";
 
@@ -208,9 +209,9 @@ export const rankingContextEffect = (dir: string, phase: string, { root = ROOT }
   const weights = yield* phaseWeights(phase, { root }).pipe(Effect.catchTag("NotFound", () => Effect.succeed({} as Record<string, number>)));
   const gate = yield* phaseGateRecords(phase, { root }).pipe(Effect.catchTag("NotFound", () => Effect.succeed([] as string[])));
 
-  const roles = (yield* jsonFiles(join(root, "packages/naive/template/governance/roles"))).map((f) => f.value).filter(isObject);
-  const leads = roles.filter((r) => Array.isArray(r.portfolio)).map((r) => ({ id: String(r.id), portfolio: strings(r.portfolio) }));
-  const roleFunction = new Map(roles.filter((r) => typeof r.function === "string" && functions.includes(r.function as string)).map((r) => [String(r.id), r.function as string]));
+  const roles = [...loadRoles(undefined, root).values()];
+  const leads = roles.filter((r) => Array.isArray(r.portfolio)).map((r) => ({ id: r.id, portfolio: r.portfolio ?? [] }));
+  const roleFunction = new Map(roles.filter((r) => r.function !== undefined && functions.includes(r.function)).map((r) => [r.id, r.function as string]));
 
   // Classes: the owning role's function in decision rights (the venture's own, else the template's), else the one
   // function whose matrix lists the class.

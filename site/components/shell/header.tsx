@@ -5,8 +5,8 @@ import { setMenu, useMenu } from "nextra-theme-docs";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { GitHubIcon, Mark, MenuIcon } from "@/components/shell/icons";
-import { githubUrl, navCurrent, siteNav } from "@/components/shell/nav";
+import { Mark, MenuIcon } from "@/components/shell/icons";
+import { navCurrent, siteNav } from "@/components/shell/nav";
 import { ThemeControl } from "@/components/shell/theme-control";
 
 export function SiteHeader() {
@@ -32,9 +32,6 @@ export function SiteHeader() {
         <div className="site-tools">
           <Search className="site-search" placeholder="Search…" />
           <ThemeControl />
-          <a className="site-icon-button" href={githubUrl} aria-label="GitHub">
-            <GitHubIcon />
-          </a>
           <button
             type="button"
             className="site-icon-button site-mobile-toggle"
