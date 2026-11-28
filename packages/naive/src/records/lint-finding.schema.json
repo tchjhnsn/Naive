@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "lint-finding.schema.json",
+  "title": "Lint finding",
+  "description": "One finding of a lint run, one line of <venture>/.naive/lint-findings.jsonl, the log every lint appends to whatever the finding's severity (packages/naive/src/engine/lint-findings.ts). lint says which lint wrote it: publish (packages/naive/src/engine/publish-lint.ts, a page's copy) or artifact (packages/naive/src/checks/artifact-lint.ts, an artifact against its declared type, EE-231). A line with no lint was written by the publish lint before the field existed. naive lint report aggregates the log by rule, role or harness.",
+  "type": "object",
+  "required": ["at", "rule", "severity", "message"],
+  "additionalProperties": false,
+  "properties": {
+    "at": { "type": "string", "format": "date-time", "description": "When the run that found it started; one run's lines share it" },
+    "lint": { "enum": ["publish", "artifact"], "description": "The lint that wrote the line" },
+    "rule": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$", "description": "The rule's id within its lint" },
+    "family": { "enum": ["protocol", "design"], "description": "An artifact lint rule's family: a protocol rule is always an error; a design rule is off, warn or error under artifact_lint.rules in naive.config.json" },
+    "severity": { "enum": ["warn", "error"], "description": "The level the rule had when it ran; a rule set off writes nothing" },
+    "message": { "type": "string", "minLength": 1 },
+    "artifact": { "type": "string", "description": "The artifact linted, as a logical path in the venture (artifact lint)" },
+    "kind": { "type": "string", "description": "The type the artifact claims: a document kind in packages/naive/src/functions/documents.json or a record type in the data model (artifact lint)" },
+    "role": { "type": "string", "description": "The role that made the artifact, when it is known" },
+    "harness": { "type": "string", "description": "The harness adapter that rendered the artifact, when it is known" },
+    "file": { "type": "string", "description": "The file whose copy was linted (publish lint)" },
+    "field": { "type": "string", "description": "The field of a JSON record the copy came from (publish lint)" },
+    "line": { "type": "integer", "minimum": 1, "description": "The line the copy sits on (publish lint)" },
+    "text": { "type": "string", "description": "The words found (publish lint)" },
+    "published": { "type": "boolean", "description": "The file was already published (publish lint)" },
+    "waived": { "type": "boolean", "description": "A person waived the finding under publish_lint.waived (publish lint)" }
+  },
+  "allOf": [
+    {
+      "if": { "required": ["lint"], "properties": { "lint": { "const": "artifact" } } },
+      "then": { "required": ["family", "artifact", "kind"] }
+    }
+  ]
+}
