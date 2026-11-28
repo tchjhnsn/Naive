@@ -90,7 +90,7 @@ node packages/naive/src/interfaces/cli/mentura.ts steps payload --venture agents
   customers/summary/bo  draft  waits on customers/stage/bo
 ```
 
-The payload is the RSC Payload's counterpart: what code computed, a placeholder for each judgment still pending, and the state each one receives. `mentura system/steps run --venture agents-demo --json` returns it through the router. A question points at paths in that state, and the state holds only the named field:
+The payload is the RSC Payload's counterpart: what code computed, a placeholder for each judgment still pending, and the state each one receives. `naive system/steps run --venture agents-demo --json` returns it through the router. A question points at paths in that state, and the state holds only the named field:
 
 ```json
 {

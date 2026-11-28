@@ -52,6 +52,7 @@
     },
     {
       "id": "business-lead",
+      "name": "Business lead",
       "occupant": "agent",
       "needed_by": "validation",
       "status": "planned",

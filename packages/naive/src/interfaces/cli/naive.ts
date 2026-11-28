@@ -208,7 +208,7 @@ import { checksFor, configFor } from "../../engine/naive-config.ts";
 import { schemaNameOf } from "../../records/index.ts";
 import { naiveScript, PACKAGE_ROOT } from "../../core/scripts.ts";
 import { validateFile } from "../../records/validate.ts";
-import type { VentureRole, VentureTypes } from "../../records/types/records.d.ts";
+import type { VentureTypes } from "../../records/types/records.d.ts";
 import { blockingStdio } from "../../core/stdio.ts";
 import { programWriter, writeRecord, writerFromEnv } from "../../store/record-write.ts";
 
@@ -295,7 +295,7 @@ async function dev(dir: string): Promise<void> {
 // Every checker that takes a venture folder is here. A checker of Naive's own files (the data model, nouns, the docs)
 // is not: node test.ts runs those. checks.off and checks.warn in naive.config.json are honoured, by the checker's
 // path in Naive (packages/naive/src/checks/check-telos.ts), as the router's check action honours them.
-const CHECKS = ["check-ventures", "check-config", "check-people", "check-owners", "check-departments", "check-team", "check-delegation", "check-governance",
+const CHECKS = ["check-ventures", "check-config", "check-people", "check-owners", "check-departments", "check-team", "check-roles", "check-delegation", "check-governance",
   "check-provenance", "check-traces", "check-sources", "check-records", "check-data-packages", "check-where-used", "check-private", "check-connections", "check-signals",
   "check-telos", "check-goals", "check-runs", "check-problems", "check-validation", "check-pre-registration", "check-execution", "check-detectors", "check-documents",
   "check-bets", "check-reasons", "check-validation-study", "check-recipes", "check-assets", "check-brand", "check-publication", "check-citations",
@@ -378,7 +378,7 @@ else if (cmd === "check") process.exit(check(here()));
 else if (cmd === "types") {
   // What create-venture can make, for an agent to offer the founder: each type with its roles, by name.
   const { roles, types } = await import("../../engine/venture-type.ts");
-  const R = new Map((roles() as VentureRole["roles"]).map((r) => [r.id, r.name]));
+  const R = new Map(roles().map((r) => [r.id, r.name]));
   console.log(JSON.stringify((types() as VentureTypes["types"]).map((t) => ({ id: t.id, label: t.label, description: t.description, examples: t.examples, roles: t.roles.map((r) => ({ id: r, name: R.get(r) })), default_role: t.default_role, first_decisions: t.decisions })), null, 2));
 }
 else if (cmd === "mcp") {

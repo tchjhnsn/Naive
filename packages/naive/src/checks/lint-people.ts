@@ -11,7 +11,7 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join, relative } from "node:path";
 import { logical, ventureFile } from "../core/venture-paths.ts";
 import { roles as roleRegistry } from "../engine/venture-type.ts";
-import type { VentureRole } from "../records/types/records.d.ts";
+import type { Role } from "../records/types/records.d.ts";
 
 // A JSON object from a record that may be malformed: every field is unknown until checked. The generated record
 // types describe valid records, and this lint reads any.
@@ -20,7 +20,7 @@ type Loose = { readonly [key: string]: unknown };
 type Loaded = { status: "missing" } | { status: "malformed" } | { status: "ok", value: Loose };
 /** The fields this lint reads from a decision. */
 type DecisionFields = { status?: unknown, decided_by?: unknown, provenance?: { approved_by?: unknown, drafted_by?: { kind?: unknown, id?: unknown } } };
-type Registry = Map<string, VentureRole["roles"][number]>;
+type Registry = Map<string, Role>;
 /** One lint finding. */
 export type Finding = { rule: string, mode: string, file: string, message: string, suggestion: string };
 
@@ -28,7 +28,7 @@ const asArray = (x: unknown): unknown[] => Array.isArray(x) ? x : [];
 // The entries of an array read as objects; a primitive entry reads every field as undefined, as in JavaScript.
 const entries = (x: unknown) => asArray(x) as (Loose | null | undefined)[];
 const registry = (): Registry => {
-  try { return new Map((roleRegistry() as VentureRole["roles"]).map((r) => [r.id, r])); } catch { return new Map(); }
+  try { return new Map(roleRegistry().map((r) => [r.id, r])); } catch { return new Map(); }
 };
 
 export const RULES = [
@@ -108,7 +108,7 @@ function mustOwn(roleId: unknown, reg: Registry) {
 function isHireRole(roleId: string, reg: Registry) {
   const role = reg.get(roleId);
   if (!role) return true;
-  return !role.founder && role.kind === "operator";
+  return !role.founder && role.person_kind === "operator";
 }
 
 function namedRoles(plan: Loose) {

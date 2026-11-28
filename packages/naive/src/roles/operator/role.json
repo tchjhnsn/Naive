@@ -1,0 +1,9 @@
+{
+  "id": "operator",
+  "name": "Operator",
+  "kind": "person",
+  "description": "Runs one or more functions without founding the venture: an early employee or executive",
+  "person_kind": "operator",
+  "founder": false,
+  "owns_when_solo": false
+}
