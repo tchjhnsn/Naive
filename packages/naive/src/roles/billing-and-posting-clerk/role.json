@@ -1,0 +1,46 @@
+{
+  "id": "billing-and-posting-clerk",
+  "name": "Billing and posting clerk",
+  "kind": "agent",
+  "status": "durable",
+  "function": "finance",
+  "description": "Keeps revenue accounting (APQC 9.2): checks customer credit, prepares invoices, posts receipts against accounts receivable, follows up collections and records adjustments.",
+  "grantable_classes": [],
+  "default_tier": "workhorse",
+  "lint_suites": [],
+  "verified_by": "finance-lead",
+  "skill": "packages/naive/src/functions/finance/skills/perform-revenue-accounting/SKILL.md",
+  "pcf": [
+    {
+      "id": "9.2",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "43-3021.00",
+      "title": "Billing and Posting Clerks",
+      "basis": "APQC 9.2 is invoicing, accounts receivable, collections and adjustments, which is the work O*NET describes for billing and posting clerks (compile and post charges, prepare invoices, verify accounts); the first --complete suggestion.",
+      "by": "agent, EE-247 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "account",
+    "money-account"
+  ],
+  "artifacts": [],
+  "standards": [
+    "apqc-pcf-cross-industry"
+  ],
+  "research": {
+    "methods": [
+      "organizational",
+      "practitioner"
+    ],
+    "questions": [
+      "Which invoices are open past their due date?",
+      "Does each receipt match an invoice and an account?"
+    ]
+  },
+  "level": 3
+}
