@@ -6,7 +6,7 @@
 //   node packages/naive/src/checks/check-roles-test.ts
 
 import { spawnSync } from "node:child_process";
-import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { Role } from "../records/types/records.d.ts";
@@ -93,8 +93,11 @@ const complete = (root: string, venture?: string, extra: string[] = []) => {
   const r = spawnSync(process.execPath, [CHECK, ...(venture ? [venture] : []), "--complete", ...extra, "--root", root], { encoding: "utf8" });
   return { status: r.status, out: r.stdout + r.stderr };
 };
-const today = complete(repo);
-t("--complete fails on the library today, naming each process group with no responsible or accountable role", today.status === 1 && /GAP {3}PCF 1\.1 Define the business concept and long-term vision \(strategy\): no role is responsible or accountable/.test(today.out) && !/GAP {3}PCF 1\.0 /.test(today.out) && !/GAP {3}PCF 2\.3 /.test(today.out), today.out);
+// A copy of the library without the role accountable for process group 1.1 (EE-239), so the gap stays whatever other
+// process groups gain roles.
+const withoutRole = (id: string): string => { const root = join(tmp, `r-${++n}`); cpSync(join(repo, LIBRARY), join(root, LIBRARY), { recursive: true, filter: (f) => !/\/role\.(ts|mjs)$/.test(f) }); rmSync(join(root, LIBRARY, id), { recursive: true }); return root; };
+const today = complete(withoutRole("business-intelligence-analyst"));
+t("--complete fails on a library with a process group no role covers, naming each one with no responsible or accountable role", today.status === 1 && /GAP {3}PCF 1\.1 Define the business concept and long-term vision \(strategy\): no role is responsible or accountable/.test(today.out) && !/GAP {3}PCF 1\.0 /.test(today.out) && !/GAP {3}PCF 2\.3 /.test(today.out), today.out);
 t("--complete suggests O*NET occupations for a gap", /GAP {3}PCF 9\.5 Process payroll \(finance\): .*O\*NET 31\.0 suggests 43-3051\.00 Payroll and Timekeeping Clerks/.test(today.out), today.out);
 t("--complete never suggests an All Other occupation", !/All Other/.test(today.out));
 const strategyOnly = join(tmp, "strategy-only");
@@ -105,7 +108,7 @@ const covered = complete(repo, strategyOnly);
 t("--complete passes for a venture that runs only strategy and has a role for each of its process groups", covered.status === 0 && /every PCF element of levels 1 to 2 under 1 function\(s\)/.test(covered.out), covered.out);
 const deeper = complete(repo, strategyOnly, ["--level", "3"]);
 t("--complete --level 3 also asks for each process", deeper.status === 1 && /GAP {3}PCF 1\.1\.1 Assess the external environment/.test(deeper.out), deeper.out);
-const noSuggest = (() => { const root = join(tmp, `r-${++n}`); cpSync(join(repo, LIBRARY), join(root, LIBRARY), { recursive: true }); emptyOnet(join(root, LIBRARY), root); return complete(root); })();
+const noSuggest = (() => { const root = withoutRole("business-intelligence-analyst"); emptyOnet(join(root, LIBRARY), root); return complete(root); })();
 t("--complete with an empty O*NET reference reports gaps without suggestions", noSuggest.status === 1 && /GAP {3}PCF 1\.1 Define the business concept and long-term vision \(strategy\): no role is responsible or accountable\n/.test(noSuggest.out), noSuggest.out);
 
 // Naive's own roles at agents/<id>/ (EE-238): a scope that overlays the library for Naive, with extends, shipped agents,
@@ -113,7 +116,8 @@ t("--complete with an empty O*NET reference reports gaps without suggestions", n
 const naive = (r: Record<string, unknown>) => (lib: string, root: string) => { void lib; writeRole(join(root, "agents"), String(r.id), r); };
 const writer = { id: "technical-writer", name: "Technical writer", kind: "agent", function: "capabilities", description: "Writes the docs site.", grantable_classes: [], default_tier: "workhorse", lint_suites: [], verified_by: "founder", skill: "agents/technical-writer/SKILL.md", artifacts: [{ document_kind: "docs-page" }, { document_kind: "release-note" }, { document_kind: "changelog-entry" }] };
 const naiveScope = run(repo);
-t("Naive's own roles under agents/ pass, product-manager beside the library alias it extends", naiveScope.status === 0 && /27 role files/.test(naiveScope.out), naiveScope.out);
+const roleFiles = readdirSync(join(repo, LIBRARY)).filter((d) => existsSync(join(repo, LIBRARY, d, "role.json"))).length + readdirSync(join(repo, "agents")).filter((d) => existsSync(join(repo, "agents", d, "role.json"))).length;
+t("Naive's own roles under agents/ pass, product-manager beside the library alias it extends", naiveScope.status === 0 && new RegExp(`${roleFiles} role files`).test(naiveScope.out), naiveScope.out);
 t("a Naive role that extends a library role may leave out what it inherits", broken(naive({ id: "pm", name: "PM", kind: "agent", extends: "product-design-lead", description: "Naive's PM." })).status === 0);
 t("a Naive role whose id is the alias of the role it extends passes", broken(naive({ id: "product-manager", name: "PM", kind: "agent", extends: "product-design-lead", description: "Naive's PM." })).status === 0);
 fails("a Naive role whose id is another role's alias, without extending it, fails", naive({ id: "product-manager", name: "PM", kind: "agent", extends: "builder", description: "Naive's PM." }), /alias product-manager is already a role id/);

@@ -1,0 +1,67 @@
+{
+  "id": "business-intelligence-analyst",
+  "name": "Business intelligence analyst",
+  "kind": "agent",
+  "status": "durable",
+  "function": "strategy",
+  "description": "Answers for APQC process group 1.1, Define the business concept and long-term vision: scans who else serves the customer and what the industry does to anyone who tries, measures what the venture can actually do, and brings the founder the evidence to state the end state in their own words. The founder states the vision and chooses the customer.",
+  "grantable_classes": [],
+  "default_tier": "frontier",
+  "lint_suites": [],
+  "verified_by": "strategy-lead",
+  "skill": "packages/naive/src/functions/strategy/skills/define-the-business-concept-and-long-term-vision/SKILL.md",
+  "pcf": [
+    {
+      "id": "1.1",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "15-2051.01",
+      "title": "Business Intelligence Analysts",
+      "basis": "Most of process group 1.1 is assessing the external and internal environment and surveying the market (1.1.1 to 1.1.3), which is producing market and competitive intelligence from data and sources; matched by the group's processes against the occupation title in O*NET 31.0, from the suggestions check-roles --complete gave.",
+      "by": "agent, EE-239 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "competitor",
+    "competitor-signals",
+    "industry-anatomy",
+    "market-anatomy",
+    "icp",
+    "validation-interview",
+    "telos",
+    "product"
+  ],
+  "artifacts": [
+    {
+      "record_type": "competitor"
+    },
+    {
+      "record_type": "validation-problem"
+    },
+    {
+      "document_kind": "one-pager"
+    }
+  ],
+  "standards": [
+    "apqc-pcf-cross-industry",
+    "abell-1980-defining-the-business",
+    "porter-1979-five-forces",
+    "prahalad-hamel-1990-core-competence"
+  ],
+  "research": {
+    "methods": [
+      "standards",
+      "practitioner",
+      "stakeholder"
+    ],
+    "questions": [
+      "Which open decision does this scan inform, and by when?",
+      "Who else serves this customer, and what does the customer do instead?",
+      "What can the venture actually do today, by its own records?"
+    ]
+  },
+  "level": 5
+}
