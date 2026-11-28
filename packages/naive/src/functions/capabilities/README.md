@@ -14,7 +14,7 @@ The business capabilities function (APQC 13.0, Develop and Manage Business Capab
 | [agent.md](./agent.md) | The capabilities agent's instructions |
 | [decisions.json](./decisions.json) | The decision matrix |
 | [workflows/intake.json](./workflows/intake.json) | Workflow: learn how the venture works. Its steps for records need-now suggests only after Discovery, or never, are steps to consider that name the phase they start in (check-functions.ts). |
-| [workflows/postmortem.json](./workflows/postmortem.json) | Workflow: write a postmortem when work fails |
+| [workflows/postmortem.json](./workflows/postmortem.json) | Workflow: write a postmortem when work fails; its `check-trigger` step lists the same triggers as the postmortem schema, a security event included |
 | [workflows/weekly-process-review.json](./workflows/weekly-process-review.json) | Workflow: review process health each week |
 | [design-documents.registry.json](./design-documents.registry.json) | A record |
 | [handoff-v2.md](./handoff-v2.md) | Handoff v2: the handoff format |

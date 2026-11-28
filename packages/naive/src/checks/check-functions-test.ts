@@ -66,7 +66,7 @@ const cases: [string, (d: string) => void, RegExp][] = [
   ["an agent.md whose Writes line claims a route outside the reach fails", (d) => editText(d, `${FIN}/agent.md`, (t) => t.replace("Writes: ", "Writes: the team plan (`people/team-plan`), ")), /Writes line claims people\/team-plan, which is outside the function's write reach/],
   ["an agent.md whose Writes line leaves out a route fails", (d) => editText(d, `${FIN}/agent.md`, (t) => t.replace("exits (`governance/exit`) and", "exits and")), /Writes line leaves out governance\/exit/],
   ["an agent.md with no Writes line fails", (d) => editText(d, `${FIN}/agent.md`, (t) => t.replace("\nWrites: ", "\nIt writes ")), /has no "Writes: " line/],
-  ["an agent.md that never names a skill the module ships fails", (d) => editText(d, `${FIN}/agent.md`, (t) => t.replace(", `exit-planning`", "")), /never names skill exit-planning, which the module ships/],
+  ["an agent.md that never names a skill the module ships fails", (d) => editText(d, `${FIN}/agent.md`, (t) => t.replaceAll("`exit-planning`", "exit planning")), /never names skill exit-planning, which the module ships/],
   ["an agent.md naming a lead whose portfolio does not hold the function fails", (d) => editText(d, `${FIN}/agent.md`, (t) => t.replace("lead: finance-lead", "lead: growth-lead")), /names lead growth-lead, but finance-lead is the lead whose portfolio holds finance/],
 ];
 for (const [name, breakIt, want] of cases) {
