@@ -3859,6 +3859,39 @@
       ]
     },
     {
+      "id": "EE-238",
+      "date": "2026-11-28",
+      "status": "in-force",
+      "decision": "Naive's own roles live at agents/<id>/ in this repository, beside agents/chief-of-staff/, each a role.json against role.schema.json and a SKILL.md: product-manager, architect, requirements-engineer, release-manager, technical-writer and instruction-steward. They are a scope of their own: naiveRoles() in packages/naive/src/engine/agents/roles.ts overlays the library with them for Naive, ventures never see them, and packages/naive/src/checks/check-roles.ts checks them when no venture is given. A role in an overlay may name a library role in extends and leave out every field it inherits but its aliases, so product-manager extends product-design-lead and architect extends the library's architect, and the other four stand alone. A folder under agents/ with an AGENTS.md and no role.json is a shipped agent of a library role. check-roles.ts checks that each role's artifacts are record types or document kinds and its standards reference ids. The document catalog gains docs-page, a page of the docs site read from capability and decision records with holes where none exist and styled from the brand, and a kind's made_by names the one role that may list it: docs-page, release-note and changelog-entry are technical-writer's, and the release manager holds the release record they read. The instruction steward is memoryless, reads only the codebase and may propose deleting a stale instruction but never deletes one without a person; whether stale instructions may be deleted is not decided. pcf-roles.json keeps the library's links only. This is step 10 of the roles as agents plan (docs/design/ROLES_AS_AGENTS_2026-11-28.md).",
+      "why": "Torian on 2026-11-28 decided that Naive's own roles live at agents/<role>/ in the shape of a role module and are built before business rows. Copying a library role's fields into a Naive role would give one role two sources, so a role extends the library role it specializes. A page kind made by two roles has no one answerable for it, so the catalog names its maker and the check holds every role to it.",
+      "related": [
+        "EE-229",
+        "EE-230",
+        "EE-232",
+        "EE-233"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "agents/technical-writer/role.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "agents/instruction-steward/role.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "agents/README.md",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
       "id": "EE-150",
       "date": "2026-11-19",
       "status": "in-force",

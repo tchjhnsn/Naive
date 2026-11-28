@@ -1,6 +1,7 @@
 // Breaks check-roles on copies of the role library (EE-229). Each case copies packages/naive/src/roles/ into a temp
 // root, breaks one rule, and expects the check to name it; the library passes, and so does a venture whose own role
-// overlays a library role by id.
+// overlays a library role by id. Naive's own roles under agents/ (EE-238) are broken on copies too: extends, shipped agents,
+// artifacts, the kinds only one role makes and standards.
 //
 //   node packages/naive/src/checks/check-roles-test.ts
 
@@ -106,6 +107,32 @@ const deeper = complete(repo, strategyOnly, ["--level", "3"]);
 t("--complete --level 3 also asks for each process", deeper.status === 1 && /GAP {3}PCF 1\.1\.1 Assess the external environment/.test(deeper.out), deeper.out);
 const noSuggest = (() => { const root = join(tmp, `r-${++n}`); cpSync(join(repo, LIBRARY), join(root, LIBRARY), { recursive: true }); emptyOnet(join(root, LIBRARY), root); return complete(root); })();
 t("--complete with an empty O*NET reference reports gaps without suggestions", noSuggest.status === 1 && /GAP {3}PCF 1\.1 Define the business concept and long-term vision \(strategy\): no role is responsible or accountable\n/.test(noSuggest.out), noSuggest.out);
+
+// Naive's own roles at agents/<id>/ (EE-238): a scope that overlays the library for Naive, with extends, shipped agents,
+// artifacts and the kinds only one role makes.
+const naive = (r: Record<string, unknown>) => (lib: string, root: string) => { void lib; writeRole(join(root, "agents"), String(r.id), r); };
+const writer = { id: "technical-writer", name: "Technical writer", kind: "agent", function: "capabilities", description: "Writes the docs site.", grantable_classes: [], default_tier: "workhorse", lint_suites: [], verified_by: "founder", skill: "agents/technical-writer/SKILL.md", artifacts: [{ document_kind: "docs-page" }, { document_kind: "release-note" }, { document_kind: "changelog-entry" }] };
+const naiveScope = run(repo);
+t("Naive's own roles under agents/ pass, product-manager beside the library alias it extends", naiveScope.status === 0 && /27 role files/.test(naiveScope.out), naiveScope.out);
+t("a Naive role that extends a library role may leave out what it inherits", broken(naive({ id: "pm", name: "PM", kind: "agent", extends: "product-design-lead", description: "Naive's PM." })).status === 0);
+t("a Naive role whose id is the alias of the role it extends passes", broken(naive({ id: "product-manager", name: "PM", kind: "agent", extends: "product-design-lead", description: "Naive's PM." })).status === 0);
+fails("a Naive role whose id is another role's alias, without extending it, fails", naive({ id: "product-manager", name: "PM", kind: "agent", extends: "builder", description: "Naive's PM." }), /alias product-manager is already a role id/);
+fails("extending a role the library lacks fails", naive({ id: "pm", name: "PM", kind: "agent", extends: "wizard", description: "x" }), /agents\/pm\/role.json: extends wizard, which is not a library role/);
+fails("a Naive agent role with no extends must carry what delegation needs", naive({ id: "pm", name: "PM", kind: "agent", description: "x" }), /agents\/pm\/role.json: does not match role.schema.json/);
+fails("a library role that extends another fails", edit("builder", (r) => { r.extends = "architect"; }), /roles\/builder\/role.json: a library role extends nothing, but it extends architect/);
+t("a folder under agents/ with only an AGENTS.md names a library role", broken((lib, root) => { void lib; mkdirSync(join(root, "agents/chief-of-staff"), { recursive: true }); writeFileSync(join(root, "agents/chief-of-staff/AGENTS.md"), "# chief of staff\n"); }).status === 0);
+fails("a folder under agents/ with only an AGENTS.md that names no library role fails", (lib, root) => { void lib; mkdirSync(join(root, "agents/ghost"), { recursive: true }); writeFileSync(join(root, "agents/ghost/AGENTS.md"), "# ghost\n"); }, /agents\/ghost\/AGENTS.md: a folder with no role.json is a shipped agent of a library role, but ghost is not one/);
+fails("an artifact that is no record type fails", edit("builder", (r) => { r.artifacts = [{ record_type: "memo" }]; }), /builder\/role.json: artifact no record type memo in packages\/naive\/src\/records\/data-model.json/);
+fails("an artifact that is no document kind fails", edit("builder", (r) => { r.artifacts = [{ document_kind: "poem" }]; }), /builder\/role.json: artifact no document kind poem in packages\/naive\/src\/functions\/documents.json/);
+t("a record type and a document kind no one role makes pass as artifacts", broken(edit("architect", (r) => { r.artifacts = [{ document_kind: "adr" }, { record_type: "design-document" }]; })).status === 0);
+fails("a library role that names a site page kind fails", edit("marketing-lead", (r) => { r.artifacts = [{ document_kind: "docs-page" }]; }), /marketing-lead\/role.json: marketing-lead names document kind docs-page, which only technical-writer makes/);
+fails("a Naive role other than the technical writer that names a release note fails", naive({ id: "release-desk", name: "Release desk", kind: "agent", extends: "builder", description: "x", artifacts: [{ document_kind: "release-note" }] }), /agents\/release-desk\/role.json: release-desk names document kind release-note, which only technical-writer makes/);
+t("the technical writer naming the three site page kinds passes", broken(naive(writer)).status === 0);
+fails("a technical writer that leaves a site page kind out fails", naive({ ...writer, artifacts: [{ document_kind: "docs-page" }, { document_kind: "release-note" }] }), /agents\/technical-writer\/role.json: technical-writer makes document kind changelog-entry, but does not name it among its artifacts/);
+fails("a standard that is no reference id fails", edit("builder", (r) => { r.standards = ["iso-9999"]; }), /builder\/role.json: standard iso-9999 is not a reference id/);
+t("a standard that is a reference id passes", broken(edit("architect", (r) => { r.standards = ["iso-42010-2022-architecture-description"]; })).status === 0);
+const ventureOnly = run(repo, strategyOnly);
+t("a venture's check leaves Naive's own roles out", ventureOnly.status === 0 && !/agents\//.test(ventureOnly.out), ventureOnly.out);
 
 rmSync(tmp, { recursive: true, force: true });
 console.log(failed ? `\n${failed} failing` : "\nall passed");
