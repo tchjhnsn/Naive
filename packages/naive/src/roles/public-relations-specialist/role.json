@@ -1,0 +1,46 @@
+{
+  "id": "public-relations-specialist",
+  "name": "Public relations specialist",
+  "kind": "agent",
+  "status": "durable",
+  "function": "external-relationships",
+  "description": "Runs the public relations program (APQC 12.5): keeps media and community relations, drafts press releases and statements in the brand's voice, and readies each one for a person to approve under the publication policy.",
+  "grantable_classes": [],
+  "default_tier": "workhorse",
+  "lint_suites": [],
+  "verified_by": "strategy-lead",
+  "skill": "packages/naive/src/functions/external-relationships/skills/manage-public-relations-program/SKILL.md",
+  "pcf": [
+    {
+      "id": "12.5",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "27-3031.00",
+      "title": "Public Relations Specialists",
+      "basis": "APQC 12.5 is community and media relations and creating and issuing press releases, the work O*NET describes for public relations specialists; a --complete suggestion.",
+      "by": "agent, EE-250 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "marketing-brand",
+    "publication-policy"
+  ],
+  "artifacts": [],
+  "standards": [
+    "apqc-pcf-cross-industry"
+  ],
+  "research": {
+    "methods": [
+      "practitioner",
+      "stakeholder"
+    ],
+    "questions": [
+      "Which outlets and communities does the venture's customer read?",
+      "Does the statement say only what the venture's records support?"
+    ]
+  },
+  "level": 4
+}
