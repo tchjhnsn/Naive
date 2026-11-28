@@ -120,7 +120,7 @@ node packages/naive/src/interfaces/cli/mentura.ts system/need-now navigate --ven
 {"part":"budget","data":{"limit":6000,"used":2650,"over":false,"parts":{"head
 ```
 
-Over MCP, `mentura_read` is this navigation. When a call carries `_meta.progressToken`, the server sends each part of a read, and the progress of a `mentura_run`, as `notifications/progress`. `mentura batch` runs a list of calls and reports each one as it finishes:
+Over MCP, `mentura_read` is this navigation. When a call carries `_meta.progressToken`, the server sends each part of a read, and the progress of a `mentura_run`, as `notifications/progress`. `naive batch` runs a list of calls and reports each one as it finishes:
 
 ```sh
 printf '[{"route":"foundation/telos","action":"read"},{"route":"system/need-now","action":"run"}]' > ~/prefetch-demo-calls.json
