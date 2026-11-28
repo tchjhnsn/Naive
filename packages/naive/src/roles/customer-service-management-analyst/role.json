@@ -1,0 +1,53 @@
+{
+  "id": "customer-service-management-analyst",
+  "name": "Management analyst (customer service strategy)",
+  "kind": "either",
+  "status": "durable",
+  "function": "customer-service",
+  "description": "Drafts the venture's customer service strategy: the requirements support must meet, the experience a customer meets, the channels the venture answers, the policies support runs on and the target per segment, for a person to adopt.",
+  "grantable_classes": [],
+  "default_tier": "frontier",
+  "lint_suites": [],
+  "verified_by": "growth-lead",
+  "skill": "packages/naive/src/functions/customer-service/skills/develop-customer-service-strategy/SKILL.md",
+  "pcf": [
+    {
+      "id": "6.1",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "13-1111.00",
+      "title": "Management Analysts",
+      "basis": "The role studies how the venture supports its customers and writes the requirements, channels, policies and segment targets support runs on, which is the analysis of procedures and the design of systems this occupation does; O*NET has no customer service manager occupation, so the match is by the work, not the title.",
+      "by": "agent, EE-244 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "support-policy",
+    "support-case",
+    "customer",
+    "icp"
+  ],
+  "artifacts": [
+    {
+      "record_type": "support-policy"
+    }
+  ],
+  "standards": [
+    "apqc-pcf-cross-industry"
+  ],
+  "research": {
+    "methods": [
+      "organizational",
+      "stakeholder",
+      "practitioner"
+    ],
+    "questions": [
+      "Which channels do customers already use to reach the venture, by case count?",
+      "What response target can the venture keep for each segment with the people and agents it has?"
+    ]
+  },
+  "level": 5
+}
