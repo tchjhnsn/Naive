@@ -31,6 +31,8 @@ Process group roles for customer-service (EE-244), one accountable for each of 6
 
 Process group roles for human-capital (EE-245), one accountable for each of 7.3 to 7.8: `training-and-development-specialist` and `human-resources-assistant` are agent roles; `labor-relations-specialist`, `compensation-and-benefits-manager`, `human-resources-specialist` and `internal-public-relations-specialist` are either.
 
+Process group roles for it (EE-246), one accountable for each of 8.1 to 8.7: `computer-systems-analyst`, `information-security-analyst`, `database-architect`, `computer-systems-engineer`, `information-technology-project-manager` and `network-and-computer-systems-administrator` are agent roles; `computer-and-information-systems-manager` is either.
+
 ## Role programs
 
 Every role has a program (EE-237, [`role-program.ts`](../checks/role-program.ts)): deterministic checks of what the role makes, each an Effect over `VentureFs` that fails only with Naive's tagged errors. The default program comes from `role.json`:
