@@ -341,6 +341,7 @@
       "highest_rung": "reading-copy",
       "formats": ["md"],
       "why_format": "It is read once, on a screen, where the product is, and kept beside the release, so it stays Markdown; putting it on the site is the site's own ladder.",
+      "made_by": "technical-writer",
       "words_per_page": 300,
       "pages": 1,
       "style": [{ "record_type": "marketing-brand", "field": "name" }, { "record_type": "marketing-brand", "field": "voice" }],
@@ -360,6 +361,7 @@
       "highest_rung": "reading-copy",
       "formats": ["md"],
       "why_format": "A changelog is one Markdown file in the repository, newest version first, read in a terminal or on the forge, so it is never laid out.",
+      "made_by": "technical-writer",
       "words_per_page": 300,
       "pages": 1,
       "style": [{ "record_type": "marketing-brand", "field": "voice" }],
@@ -368,6 +370,29 @@
         { "id": "grouped", "title": "Added, changed and fixed", "hole": "Which capabilities were added or changed and which bugs were fixed in this version. That needs a release record, which no record type holds yet." },
         { "id": "capabilities", "title": "Capabilities on record", "from": "product/capabilities/*.json", "field": "name" },
         { "id": "bugs", "title": "Bugs on record", "from": "product/bugs/*.json", "field": "title", "optional": true }
+      ]
+    },
+    {
+      "id": "docs-page",
+      "title": "Docs page",
+      "function": "capabilities",
+      "purpose": "Let someone who uses the product learn what one capability does, whether it is ready and where it came from, on the docs site, with every fact traced to a record",
+      "audience": ["customer", "public", "team"],
+      "artifact_kind": "page",
+      "highest_rung": "live",
+      "formats": ["md", "html", "site"],
+      "why_format": "It is read on the docs site beside the product, so it climbs the whole ladder: the words as a reading copy a person approves, then one page to click through, then the live docs site through the publishing gate.",
+      "made_by": "technical-writer",
+      "words_per_page": 600,
+      "pages": 1,
+      "style": [{ "record_type": "marketing-brand", "field": "name" }, { "record_type": "marketing-brand", "field": "voice" }, { "record_type": "marketing-brand", "field": "fonts" }, { "record_type": "marketing-brand", "field": "typefaces" }, { "record_type": "marketing-brand", "field": "colors" }, { "record_type": "marketing-brand", "field": "marks" }, { "record_type": "marketing-design-system", "field": "components" }],
+      "sections": [
+        { "id": "what", "title": "What it does", "from": "product/capabilities/*.json", "field": "summary" },
+        { "id": "status", "title": "Is it ready", "from": "product/capabilities/*.json", "field": "status" },
+        { "id": "how", "title": "How to use it", "hole": "The commands, routes and flags that reach the capability. No record type holds them yet: they live in the code and the README beside it." },
+        { "id": "requirements", "title": "What it must do", "from": "product/capabilities/*.json", "field": "requirements", "optional": true },
+        { "id": "decisions", "title": "Why it works this way", "from": "decisions/*.decision.json", "field": "question", "optional": true },
+        { "id": "changes", "title": "What changed and when", "hole": "Which release added or changed the capability. A release record names no capabilities yet, so no record says this." }
       ]
     },
     {

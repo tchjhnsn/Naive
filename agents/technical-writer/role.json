@@ -1,0 +1,68 @@
+{
+  "id": "technical-writer",
+  "name": "Technical writer (Naive)",
+  "kind": "agent",
+  "function": "capabilities",
+  "description": "Owns the information on Naive's docs site: the docs pages, release notes and changelog entries, each read from records with a hole where no record holds a fact.",
+  "grantable_classes": [],
+  "default_tier": "workhorse",
+  "lint_suites": [],
+  "verified_by": "product-manager",
+  "also_verified_by": [
+    "release-manager"
+  ],
+  "skill": "agents/technical-writer/SKILL.md",
+  "pcf": [
+    {
+      "id": "13.6.5",
+      "raci": "accountable"
+    },
+    {
+      "id": "13.6.6",
+      "raci": "responsible"
+    }
+  ],
+  "onet": [
+    {
+      "code": "27-3042.00",
+      "title": "Technical Writers",
+      "basis": "The role writes the docs pages, release notes and changelog of a software product; its title is the occupation title in O*NET 31.0.",
+      "by": "agent, EE-238 step 10 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "product-capability",
+    "decision-record",
+    "release",
+    "bug",
+    "marketing-brand",
+    "marketing-design-system"
+  ],
+  "artifacts": [
+    {
+      "document_kind": "docs-page"
+    },
+    {
+      "document_kind": "release-note"
+    },
+    {
+      "document_kind": "changelog-entry"
+    }
+  ],
+  "standards": [
+    "iso-iec-ieee-26514-2022-information-for-users"
+  ],
+  "research": {
+    "methods": [
+      "organizational",
+      "standards",
+      "stakeholder",
+      "practitioner"
+    ],
+    "questions": [
+      "Which record says this, and is it live?",
+      "What does the reader need to do next?"
+    ]
+  },
+  "level": 4
+}
