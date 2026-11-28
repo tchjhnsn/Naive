@@ -1,0 +1,48 @@
+{
+  "id": "treasurer",
+  "name": "Treasurer",
+  "kind": "either",
+  "status": "durable",
+  "function": "finance",
+  "description": "Runs treasury (APQC 9.7): sets the treasury policies, manages cash and the bank accounts, debt and investments, and fraud or dispute cases, and recommends each move of money for a person to decide.",
+  "grantable_classes": [],
+  "default_tier": "frontier",
+  "lint_suites": [],
+  "verified_by": "finance-lead",
+  "skill": "packages/naive/src/functions/finance/skills/manage-treasury-operations/SKILL.md",
+  "pcf": [
+    {
+      "id": "9.7",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "11-3031.01",
+      "title": "Treasurers and Controllers",
+      "basis": "APQC 9.7 is treasury policy, cash, bank accounts, debt and investment, which is the treasurer's part of O*NET's treasurers and controllers; kind either because moving money is a commitment a person owns.",
+      "by": "agent, EE-247 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "money-account",
+    "money-summary",
+    "budget"
+  ],
+  "artifacts": [],
+  "standards": [
+    "apqc-pcf-cross-industry"
+  ],
+  "research": {
+    "methods": [
+      "organizational",
+      "standards",
+      "practitioner"
+    ],
+    "questions": [
+      "How many months of runway does cash cover at the current burn?",
+      "Which account holds idle cash, and at what risk?"
+    ]
+  },
+  "level": 5
+}
