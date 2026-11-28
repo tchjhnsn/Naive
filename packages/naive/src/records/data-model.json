@@ -1755,7 +1755,8 @@
       "level": "method",
       "schema": "packages/naive/src/records/role.schema.json",
       "paths": [
-        "packages/naive/src/roles/*/role.json"
+        "packages/naive/src/roles/*/role.json",
+        "agents/*/role.json"
       ],
       "refs": [
         {
@@ -1784,7 +1785,7 @@
           "checked_by": "packages/naive/src/checks/check-roles.ts"
         }
       ],
-      "note": "One role module in the role library (EE-229), beside its SKILL.md: a person, agent or either role with its function, portfolio, grantable decision classes, default tier, lint suites, verifier (never itself) and skill, and the APQC PCF elements it answers for with their RACI part and the O*NET occupations it matches (EE-232). A venture's own roles at governance/roles/<id>/role.json overlay it by id"
+      "note": "One role module in the role library (EE-229), beside its SKILL.md: a person, agent or either role with its function, portfolio, grantable decision classes, default tier, lint suites, verifier (never itself) and skill, and the APQC PCF elements it answers for with their RACI part and the O*NET occupations it matches (EE-232). A venture's own roles at governance/roles/<id>/role.json overlay it by id, and so do Naive's own roles at agents/<id>/role.json for Naive itself (EE-238); a role in either may extend a library role and leave out what it inherits"
     },
     {
       "id": "pillar",

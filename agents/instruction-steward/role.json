@@ -1,0 +1,40 @@
+{
+  "id": "instruction-steward",
+  "name": "Instruction steward (Naive)",
+  "kind": "agent",
+  "function": "capabilities",
+  "description": "Keeps the instructions agents read (AGENTS.md, CLAUDE.md and every SKILL.md) true against the code. It remembers nothing between sessions and reads only the codebase; it may propose deleting a stale instruction but never deletes one without a person.",
+  "grantable_classes": [],
+  "default_tier": "workhorse",
+  "lint_suites": [],
+  "verified_by": "founder",
+  "skill": "agents/instruction-steward/SKILL.md",
+  "pcf": [
+    {
+      "id": "13.6.4",
+      "raci": "accountable"
+    },
+    {
+      "id": "8.1.5.3",
+      "raci": "responsible"
+    }
+  ],
+  "artifacts": [
+    {
+      "record_type": "decision-record"
+    }
+  ],
+  "standards": [
+    "iso-iec-ieee-26514-2022-information-for-users"
+  ],
+  "research": {
+    "methods": [
+      "organizational"
+    ],
+    "questions": [
+      "Does the command, path or route this instruction names exist in the code?",
+      "Does the code still do what the instruction says?"
+    ]
+  },
+  "level": 3
+}
