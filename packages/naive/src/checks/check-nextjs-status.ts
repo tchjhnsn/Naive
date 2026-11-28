@@ -63,7 +63,7 @@ function page() {
     "type: reference",
     "status: draft",
     `lastReviewed: ${data.checked}`,
-    "owner: builder",
+    "owner: technical-writer",
     "---",
     "",
     `Use this page to tell what you can run today from what is designed but not built. Every concept in the Next.js translation ledger is listed, in the ledger's chapter order. It is generated from \`${STATUS}\` by \`node packages/naive/src/checks/check-nextjs-status.ts --write\`, and the test suite fails when the two disagree.`,

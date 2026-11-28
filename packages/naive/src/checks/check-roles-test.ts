@@ -28,7 +28,8 @@ const writeRole = (dir: string, id: string, r: unknown): void => { mkdirSync(joi
 /** A copy of the library with one change, run through the check. */
 function broken(change: (lib: string, root: string) => void) {
   const root = join(tmp, `r-${++n}`);
-  cpSync(join(repo, LIBRARY), join(root, LIBRARY), { recursive: true });
+  // A role.ts imports Naive by relative path, so it cannot load from a copy: role-program-test.ts checks role programs.
+  cpSync(join(repo, LIBRARY), join(root, LIBRARY), { recursive: true, filter: (f) => !/\/role\.(ts|mjs)$/.test(f) });
   change(join(root, LIBRARY), root);
   return run(root);
 }

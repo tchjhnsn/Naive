@@ -4,7 +4,7 @@ description: Decide what happens to every write before it lands, and set the ven
 type: how-to
 status: draft
 lastReviewed: 2026-10-29
-owner: builder
+owner: technical-writer
 ---
 
 Use this page to decide which writes an agent may make without you, who gets them instead, and which defaults your venture changes. It translates five Next.js concepts. The gate is Next.js's proxy (`proxy.ts`, once middleware): it runs before every write, not before every request. `naive.config.json` is `next.config.js`, and it also holds what `eslint.config.mjs` and the pinned versions in `package.json` hold. Who is acting plays the part of cookies in a Server Action.
