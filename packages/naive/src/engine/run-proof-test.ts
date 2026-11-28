@@ -47,8 +47,8 @@ for (const [name, over, why, blobs] of lies) {
   expect(`${name} does not prove the step`, v.verdict === "unproven" && v.problems.some((p) => why.test(p)), v);
 }
 expect("evidence that is no line of the log does not prove the step", /no line of this venture's provenance log/.test(verifyStep(step(), done(["zz"]), run, facts([line({})])).problems.join()));
-expect("a specialist of the runner's function stands for it",
-  verifyStep(step(), done(["h1"]), run, facts([line({ agent: { kind: "agent", via: "cli", id: "strategy-specialist-pricing", session: "run:r1/s" } })])).verdict === "proven");
+expect("a worker of the runner's function, migrated from a specialist (strategy-specialist-pricing) or new (strategy-worker-pricing), stands for it",
+  ["strategy-specialist-pricing", "strategy-worker-pricing"].every((id) => verifyStep(step(), done(["h1"]), run, facts([line({ agent: { kind: "agent", via: "cli", id, session: "run:r1/s" } })])).verdict === "proven"));
 expect("a held draft is evidence of work, marked held", verifyStep(step(), done(["h1"]), run, facts([line({ activity: "draft" })])).evidence[0].held);
 expect("with no declared writes, a write inside the function's reach fits", verifyStep(step({ writes: undefined }), done(["h1"]), run, facts([line({ route: "operations/handoff/x" })])).verdict === "proven");
 expect("a required step cannot be judged not needed", verifyStep(step(), { step: "s", status: "not-needed", why: "we are too early for this" }, run, facts([])).verdict === "not-allowed");

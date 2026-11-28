@@ -108,6 +108,32 @@ const rkEsc = rkUp.stdout.split("\n").filter((l) => /^escalate .*legal\/risks/.t
 expect("risk-impact-label escalates only the risk whose impact has neither a source nor an estimate", rkUp.status === 0 && rkEsc.length === 1 && /legal\/risks\/bare\.json/.test(rkEsc[0]), rkUp.stdout + rkUp.stderr);
 expect("risk-impact-label writes no risk and moves the legal pin to the installed package", ["sourced", "estimated", "bare"].every((f, i) => readFileSync(join(rk, `legal/risks/${f}.json`), "utf8") === rkBefore[i]) && json(join(rk, "naive.config.json")).packages.legal.version === reg.packages.legal.version);
 
+// The operations package's specialists-to-workers migration (EE-235): each temporary specialist becomes a temporary
+// digital worker, only a person's activation is kept, the old file is archived and the config key moves.
+const sw = make("staffed");
+const swCfg = existsSync(join(sw, "naive.config.json")) ? json(join(sw, "naive.config.json")) : {};
+writeFileSync(join(sw, "naive.config.json"), JSON.stringify({ ...swCfg, specialists: { default_ttl: "90 minutes" }, packages: { ...(swCfg.packages ?? {}), operations: { version: "0.3.0", channel: "experimental" } } }, null, 2));
+writeFileSync(join(sw, "people/people.json"), JSON.stringify({ venture: "staffed", mode: "solo", people: [{ id: "ana", name: "Ana", role: "founder" }] }, null, 2));
+mkdirSync(join(sw, "operations/specialists"), { recursive: true });
+const spec = (id: string, by: string, status: string, extra: Record<string, unknown> = {}) => writeFileSync(join(sw, `operations/specialists/${id}.json`), JSON.stringify({ id, parent: "strategy-agent", function: "strategy", task: "Read the pricing pages", skills: ["competitor-research"], writes: ["purpose/competitor/*"], spawned_at: "2026-11-01T00:00:00.000Z", spawned_by: by, expires: "2099-01-01T00:00:00.000Z", status, ...extra }, null, 2));
+spec("strategy-specialist-by-person", "Ana", "live");
+spec("strategy-specialist-by-agent", "strategy-agent", "live");
+spec("strategy-specialist-done", "strategy-agent", "finished", { finished_at: "2026-11-02T00:00:00.000Z" });
+spec("strategy-specialist-lapsed", "Ana", "live", { expires: "2026-11-01T04:00:00.000Z" });
+const swUp = naive(["upgrade", sw]);
+const worker = (id: string) => json(join(sw, `operations/workers/${id}.json`));
+expect("specialists-to-workers runs and leaves no specialist behind", swUp.status === 0 && !existsSync(join(sw, "operations/specialists")) && ["by-person", "by-agent", "done", "lapsed"].every((s) => existsSync(join(sw, `_private/archive/specialists/strategy-specialist-${s}.json`))), swUp.stdout + swUp.stderr);
+expect("each specialist is a temporary worker of its parent, sponsored by the founder, with its id kept",
+  ["by-person", "by-agent", "done", "lapsed"].every((s) => { const w = worker(`strategy-specialist-${s}`); return w.mode === "temporary" && w.role === "strategy-agent" && w.sponsor === "Ana" && w.writes.join() === "purpose/competitor/*" && w.started_at === "2026-11-01T00:00:00.000Z"; }));
+expect("only a person's activation is kept: an agent's live specialist waits as proposed",
+  worker("strategy-specialist-by-person").status === "active" && worker("strategy-specialist-by-person").activated_by === "Ana" && worker("strategy-specialist-by-agent").status === "proposed" && /naive workers activate/.test(swUp.stdout), swUp.stdout);
+expect("a finished specialist ends as finished and a lapsed one as expired",
+  worker("strategy-specialist-done").status === "ended" && worker("strategy-specialist-done").ended_how === "finished" && worker("strategy-specialist-lapsed").ended_how === "expired");
+const swAfter = json(join(sw, "naive.config.json"));
+expect("specialists.default_ttl moves to workers.default_ttl and the operations pin moves", swAfter.specialists === undefined && swAfter.workers?.default_ttl === "90 minutes" && swAfter.packages.operations.version === reg.packages.operations.version, JSON.stringify(swAfter));
+const swCheck = run("packages/naive/src/checks/check-records.ts", [sw]);
+expect("every worker it wrote validates against the worker schema", swCheck.status === 0, swCheck.stdout + swCheck.stderr);
+
 const c = make("conflict");
 mkdirSync(join(c, "foundation"), { recursive: true });
 writeFileSync(join(c, "foundation/problem.json"), "{}\n");

@@ -51,6 +51,10 @@ fails("an also_verified_by that is the role itself fails", edit("finance-agent",
 fails("an alias that is another role's id fails", edit("builder", (r) => { r.aliases = ["architect"]; }), /builder\/role.json: alias architect is already a role id/);
 fails("an alias two roles share fails", edit("builder", (r) => { r.aliases = ["cto"]; }), /builder\/role.json: alias cto is already an alias of architect/);
 fails("a person role with an agent tier fails", edit("advisor", (r) => { r.default_tier = "frontier"; }), /advisor\/role.json: a person role grants no agent tier, but its default_tier is frontier/);
+fails("a merged role naming a role that does not exist fails", edit("builder", (r) => { r.merged_from = ["architect", "wizard"]; }), /builder\/role.json: merged_from names wizard, which is not a known role/);
+fails("a merged role naming a person role fails", edit("builder", (r) => { r.merged_from = ["architect", "advisor"]; }), /builder\/role.json: merged_from names advisor, a person role/);
+fails("a temporary role that names no one who proposed it fails the schema", edit("builder", (r) => { r.status = "temporary"; }), /roles\/builder\/role.json: does not match role.schema.json/);
+t("a temporary role with who proposed it and when passes", broken(edit("builder", (r) => { Object.assign(r, { status: "temporary", proposed_by: "products-lead", created_at: "2026-11-28T00:00:00.000Z" }); })).status === 0);
 t("a function agent counts as a verifier", broken(edit("builder", (r) => { r.verified_by = "products-agent"; })).status === 0);
 
 // A venture's own roles overlay the library by id, and meet the same rules.

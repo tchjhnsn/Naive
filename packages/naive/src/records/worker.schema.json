@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "worker.schema.json",
+  "title": "Worker",
+  "description": "One digital worker (EE-235): a role from the role library, or a venture's own role, deployed as a running agent, at operations/workers/<id>.json (route operations/workers/[id]). The id is the role the agent acts as (MENTURA_ACTOR_ID). The record is the reach: the router gives the worker the globs in writes that its role's reach and its deployer's reach still cover, and only while its status is active and it has not expired (reachRefusal in packages/naive/src/engine/agents/reach.ts). Its status follows the statechart in packages/naive/src/engine/agents/worker-state.ts, modelled in packages/naive/lean/Naive/Workers.lean: proposed, then active only once a person activates it, suspended and resumed, and ended for good. A person role (kind person) is never deployed. A running agent is a digital worker, never an employee.",
+  "type": "object",
+  "required": ["id", "role", "mode", "level", "sponsor", "writes", "started_at", "status", "deployed_by"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*-(worker|specialist)-[a-z0-9-]+$",
+      "description": "The role the agent acts as and the file name without .json: <role stem>-worker-<slug>, where the stem is the role id less a trailing -agent. A worker migrated from a temporary specialist (EE-213) keeps its old id, <function>-specialist-<slug>, so its provenance still names it"
+    },
+    "role": { "type": "string", "pattern": "^[a-z0-9-]+$", "description": "The role deployed: an id in the role library or the venture's governance/roles, or <function>-agent. Never a person role" },
+    "mode": { "enum": ["temporary", "durable"], "description": "temporary: deployed for one task, with an expiry. durable: deployed to hold the role until it is ended" },
+    "level": { "type": "integer", "minimum": 1, "maximum": 7, "description": "The responsibility level it works at, on SFIA's scale of 1 to 7: the role's level unless the deployment names one, else the prior in packages/naive/src/engine/workers.json" },
+    "sponsor": { "type": "string", "minLength": 1, "description": "The person of the venture who answers for this worker" },
+    "writes": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 },
+      "description": "The write globs it was given, each inside its role's reach and its deployer's when it was deployed. The router narrows them to both again on every write, and no event widens them"
+    },
+    "task": { "type": "string", "minLength": 1, "description": "The one task a temporary worker was deployed for, in its deployer's words" },
+    "skills": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+      "description": "Skills from its role's function module to load, by name"
+    },
+    "started_at": { "type": "string", "format": "date-time", "description": "When it was deployed" },
+    "expires": { "type": "string", "format": "date-time", "description": "When its reach is gone: started_at plus the ttl. Required for a temporary worker. The default ttl is an unvalidated prior in packages/naive/src/engine/workers.json, overridden under workers in naive.config.json" },
+    "status": { "enum": ["proposed", "active", "suspended", "ended"], "description": "Its place in the statechart. Only active has reach" },
+    "deployed_by": { "type": "string", "minLength": 1, "description": "Who deployed it: a person, a lead (its reach bounded by the lead's portfolio) or a function agent (bounded by its own reach). A worker never deploys another" },
+    "activated_by": { "type": "string", "minLength": 1, "description": "The person who activated it. Only a person activates a worker" },
+    "activated_at": { "type": "string", "format": "date-time" },
+    "decision": { "type": "string", "pattern": "^[a-z0-9.-]+$", "description": "The decision a person decided that its activation follows, when there is one. The staffing gate (EE-236) activates workers this way" },
+    "ended_at": { "type": "string", "format": "date-time" },
+    "ended_by": { "type": "string", "minLength": 1, "description": "Who ended it: a person, its deployer, the worker's own run finishing, or the expiry sweep" },
+    "ended_how": { "enum": ["finished", "revoked", "expired"], "description": "finished: its run ended. revoked: someone ended it early. expired: its expiry passed" },
+    "run": { "type": "string", "minLength": 1, "description": "The run id it works under, when a workflow run deployed it" },
+    "session": { "type": "string", "minLength": 1, "description": "The session id of the agent process acting as it, when known" },
+    "note": { "type": "string" }
+  },
+  "allOf": [
+    { "if": { "properties": { "mode": { "const": "temporary" } } }, "then": { "required": ["expires"] } },
+    { "if": { "properties": { "status": { "const": "ended" } } }, "then": { "required": ["ended_at"] } },
+    { "if": { "properties": { "status": { "enum": ["active", "suspended"] } } }, "then": { "required": ["activated_by"] } }
+  ]
+}
