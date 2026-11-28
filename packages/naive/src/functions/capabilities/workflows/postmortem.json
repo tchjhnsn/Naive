@@ -18,7 +18,7 @@
   "steps": [
     {
       "id": "check-trigger",
-      "do": "Check whether the change meets a postmortem trigger: a handoff failed twice, a customer-visible failure, data loss, a reversed one-way door or a request."
+      "do": "Check whether the change meets a postmortem trigger: a handoff failed twice, a customer-visible failure, data loss, a reversed one-way door, a security event or a request."
     },
     {
       "id": "draft",

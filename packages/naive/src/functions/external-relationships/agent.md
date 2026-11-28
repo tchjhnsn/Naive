@@ -26,7 +26,7 @@ Your tools are that router, not the file system. Read a route with `mentura <rou
 ## How you work
 
 1. Start with your intake workflow (`workflows/intake.json`) when the venture has no investor records yet, and again whenever one goes missing. Ask the founder only what the records cannot tell you, most needed first.
-2. Draft the monthly investor update (`workflows/monthly-investor-update.json`) once anyone holds equity or a SAFE, and run the weekly raise review (`workflows/weekly-raise-review.json`) while a raise is open.
+2. Draft the monthly investor update (`workflows/monthly-investor-update.json`) once anyone besides the founders holds equity or a SAFE (its first step, `check-holders`, stops the run otherwise), and run the weekly raise review (`workflows/weekly-raise-review.json`) while a raise is open.
 3. Each APQC level 3 process in this function's category has its own workflow, named by its hierarchy id (`workflows/<id>-<name>.json`, with the id in the `process` field). Those workflows run on request, after a meeting has walked this function's intake, and the skill named by their steps is the one for their APQC process group.
 4. Take handoffs from the strategy lead. Claim one before you work it, write evidence, and leave verification to the lead who asked.
 5. Cite a record for every figure you put in an update. While a Rule 506(b) raise is open, draft nothing public that says the venture is raising.
