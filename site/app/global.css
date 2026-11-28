@@ -560,6 +560,28 @@ article td {
   text-decoration: none;
 }
 
+/* The code-drawn picture on each feature card (components/feature-art.tsx): a still until the card is hovered. */
+.naive-feature-art {
+  aspect-ratio: 5 / 4;
+  width: 100%;
+  overflow: hidden;
+  border-radius: var(--naive-radius-sm);
+  background: color-mix(in srgb, var(--header-text) 4%, transparent);
+  color: var(--header-text);
+  font-family: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  margin-bottom: 0.4rem;
+}
+
+.naive-feature-art > svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.naive-feature-highlight .naive-feature-art {
+  color: var(--naive-move-on);
+}
+
 .naive-feature strong {
   color: var(--header-text);
   font-size: 1.1rem;
