@@ -13,5 +13,23 @@
   "default_tier": "workhorse",
   "lint_suites": [],
   "verified_by": "architect",
-  "skill": "packages/naive/src/functions/human-capital/skills/team-design/SKILL.md"
+  "skill": "packages/naive/src/functions/human-capital/skills/team-design/SKILL.md",
+  "pcf": [
+    {
+      "id": "2.0",
+      "raci": "responsible"
+    },
+    {
+      "id": "2.3",
+      "raci": "responsible"
+    }
+  ],
+  "onet": [
+    {
+      "code": "15-1252.00",
+      "title": "Software Developers",
+      "basis": "The role implements handoffs and proves them done with conformance checks; matched by the role's description against the occupation title in O*NET 31.0.",
+      "by": "agent, EE-232 step 4 (not yet reviewed by a person)"
+    }
+  ]
 }
