@@ -15,6 +15,7 @@ import { configOf } from "../core/effect/config.ts";
 import { ParseError } from "../core/effect/errors.ts";
 import { runSync } from "../core/effect/run.ts";
 import { line } from "./detectors.ts";
+import { writeRecord, type WriteInput } from "../store/record-write.ts";
 import type { NaiveConfig, NaiveConfigRule } from "../records/types/records.d.ts";
 
 /** The resolved config: naive.config.json over the defaults, so the sections the defaults hold are always there. */
@@ -175,12 +176,17 @@ export function readConfig(dir: string): NaiveConfig {
   catch (e) { throw new Error(`${CONFIG} is not valid JSON: ${e instanceof ParseError && e.cause instanceof Error ? e.cause.message : e instanceof Error ? e.message : String(e)}`); }
 }
 
-/** Writes the config back, keys in a stable order: naive, packages, kits, triggers, gate, then the rest. */
-export function writeConfig(dir: string, cfg: NaiveConfig): NaiveConfig {
+/**
+ * Writes the config back, keys in a stable order: naive, packages, kits, triggers, gate, then the rest. With `log`, the
+ * write goes through the shared record writer, which checks the config against its schema and appends the provenance
+ * line. A caller that logs the write itself still passes no `log`, and the file is written directly as before.
+ */
+export function writeConfig(dir: string, cfg: NaiveConfig, log?: WriteInput): NaiveConfig {
   const order = ["naive", "packages", "kits", "triggers", "gate"];
   const fields: Record<string, unknown> = cfg;
   const out = Object.fromEntries([...order.filter((k) => fields[k] !== undefined).map((k) => [k, fields[k]]), ...Object.entries(cfg).filter(([k]) => !order.includes(k))]);
-  writeFileSync(ventureFile(dir, CONFIG), JSON.stringify(out, null, 2) + "\n");
+  if (log) writeRecord(dir, CONFIG, out, log);
+  else writeFileSync(ventureFile(dir, CONFIG), JSON.stringify(out, null, 2) + "\n");
   return out;
 }
 

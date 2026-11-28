@@ -1,0 +1,209 @@
+{
+  "says": "Files outside the router that still put bytes on disk without the shared record writer (packages/naive/src/store/record-write.ts), each with the number of write calls it makes and why. Most write no record of a venture: a cache or state under .naive/, an append to a log, a temporary file, a moved file, a generated file in this repository, or a file at the workspace level. An entry that says 'cannot move yet' writes a venture's record and names what must change first. The list only shrinks: packages/naive/src/checks/check-direct-writes.ts fails on a new file, on a new call in a listed file, and on an entry that is no longer needed.",
+  "files": {
+    "packages/naive/src/checks/check-config.ts": {
+      "writes": 1,
+      "why": "A copy of the config in a temporary folder, validated and then deleted"
+    },
+    "packages/naive/src/checks/check-nextjs-status.ts": {
+      "writes": 1,
+      "why": "A generated docs page in this repository"
+    },
+    "packages/naive/src/engine/adapters.ts": {
+      "writes": 2,
+      "why": "A harness adapter's entry files and skill copies in the harness folder, and the adapter state under .naive/"
+    },
+    "packages/naive/src/engine/add-department.ts": {
+      "writes": 1,
+      "why": "The README that explains the department's folder; no record"
+    },
+    "packages/naive/src/engine/beta-gate.ts": {
+      "writes": 1,
+      "why": "The beta unlock state under .naive/"
+    },
+    "packages/naive/src/engine/caching.ts": {
+      "writes": 2,
+      "why": "A cache entry under .naive/cache, written to a temporary name and renamed"
+    },
+    "packages/naive/src/engine/calendar.ts": {
+      "writes": 3,
+      "why": "The workspace's calendar files and an ICS export to a path the person names, outside any venture"
+    },
+    "packages/naive/src/engine/decision-index.ts": {
+      "writes": 2,
+      "why": "The decision index cache and its history log under .naive/"
+    },
+    "packages/naive/src/engine/decisions.ts": {
+      "writes": 2,
+      "why": "A temporary copy for the schema validator, and cannot move yet: the records a merged decision changes, because merge accepts a schema gap the target already had and refuses only errors the answer adds, which the writer would refuse; the merge line logs each"
+    },
+    "packages/naive/src/engine/docket.ts": {
+      "writes": 1,
+      "why": "Copies the venture into a temporary folder to rank a what-if, and writes nothing in the venture"
+    },
+    "packages/naive/src/engine/due.ts": {
+      "writes": 1,
+      "why": "An append to the workflow runs log under .naive/"
+    },
+    "packages/naive/src/engine/element-cases.ts": {
+      "writes": 1,
+      "why": "A generated Lean file in this repository"
+    },
+    "packages/naive/src/engine/founders.ts": {
+      "writes": 1,
+      "why": "Founder folders, the private person file and workspace.json at the workspace level, outside any venture"
+    },
+    "packages/naive/src/engine/freshness.ts": {
+      "writes": 5,
+      "why": "Two scratch files in the OS temp folder, an append to the freshness log, and the frozen copy written to an output folder outside the venture"
+    },
+    "packages/naive/src/engine/gate-drafts.ts": {
+      "writes": 4,
+      "why": "Held drafts under _drafts/ and their gate sidecars; a draft is not a live record, and the router logs it as a draft with fields this module does not have"
+    },
+    "packages/naive/src/engine/generators/generate.ts": {
+      "writes": 1,
+      "why": "A temporary file for validation, deleted straight after"
+    },
+    "packages/naive/src/engine/init-venture.ts": {
+      "writes": 7,
+      "why": "Template folders, folder READMEs, .gitkeep files and the root AGENTS.md, which are no records; and cannot move yet: the first venture.json of a structured or src venture, which its schema refuses (owners are null until a person names them, and a src venture has no layers at that point)"
+    },
+    "packages/naive/src/engine/lifecycle.ts": {
+      "writes": 1,
+      "why": "A temporary copy for the schema validator"
+    },
+    "packages/naive/src/engine/migrations/src-layout.ts": {
+      "writes": 2,
+      "why": "Cannot move yet: the rename that moves files to the new layout, and the layout field of venture.json, which the upgrade command logs after the migration returns; fold the two when that line moves into the migration"
+    },
+    "packages/naive/src/engine/migrations/structured-layout.ts": {
+      "writes": 2,
+      "why": "Cannot move yet: the rename that moves files to the new layout, and the layout field of venture.json, which the upgrade command logs after the migration returns; fold the two when that line moves into the migration"
+    },
+    "packages/naive/src/engine/naive-config.ts": {
+      "writes": 1,
+      "why": "Cannot move yet: writeConfig still writes directly for the two callers that pass no author (the loop, which logs the line itself, and the triggers runner, which logs nothing); each must pass its author first"
+    },
+    "packages/naive/src/engine/packages.ts": {
+      "writes": 3,
+      "why": "The regenerated package view under package/, a derived file the data model marks as derived"
+    },
+    "packages/naive/src/engine/port-venture.ts": {
+      "writes": 4,
+      "why": "The port plan and run trace under .release/, and the rename that moves the ported folder in, which the port line logs"
+    },
+    "packages/naive/src/engine/publish-lint.ts": {
+      "writes": 1,
+      "why": "An append to the lint findings log under .naive/"
+    },
+    "packages/naive/src/engine/publish.ts": {
+      "writes": 2,
+      "why": "The built output and its versioned copy under .release/, derived files that the publish line already names by sha256"
+    },
+    "packages/naive/src/engine/rename-relations.ts": {
+      "writes": 1,
+      "why": "A one-time rewrite of idea records at the workspace level, outside any venture"
+    },
+    "packages/naive/src/engine/research-programs.ts": {
+      "writes": 1,
+      "why": "Cannot move yet: copies a function's research program template into a venture once; the program is a record only a person writes, so the copy needs an author and a line of its own first"
+    },
+    "packages/naive/src/engine/stale.ts": {
+      "writes": 2,
+      "why": "The stale marks under .naive/"
+    },
+    "packages/naive/src/engine/sync-credentials.ts": {
+      "writes": 1,
+      "why": "The sign-in token in the user's config folder, outside any venture; a credential never goes through the writer, because its bytes must not reach the blob store"
+    },
+    "packages/naive/src/engine/sync.ts": {
+      "writes": 1,
+      "why": "The sync state under .naive/"
+    },
+    "packages/naive/src/engine/telemetry.ts": {
+      "writes": 3,
+      "why": "The telemetry salt, the telemetry log and the send cursor, all under .naive/"
+    },
+    "packages/naive/src/engine/upgrades.ts": {
+      "writes": 6,
+      "why": "A migration's file moves and .gitkeep files, the staged upgrade under .naive/upgrade/ and its copy back on accept, which the accept line logs; and cannot move yet: a migration's own writes, which upgrade() logs afterwards with the migration id and decision"
+    },
+    "packages/naive/src/engine/user-frameworks.ts": {
+      "writes": 4,
+      "why": "A person's framework files at the workspace level, and the publish bundle under .naive/"
+    },
+    "packages/naive/src/engine/workspace.ts": {
+      "writes": 10,
+      "why": "Workspace-level files outside any venture: the meta logs, raw captures, inbox chunks, workspace.json, AGENTS.md and .gitkeep files; and one untriaged chunk dropped into a venture's raw/inbox/, which no record type claims"
+    },
+    "packages/naive/src/functions/capabilities/skills/design-coverage/check.ts": {
+      "writes": 3,
+      "why": "The model-answer cache and the coverage report (JSON and Markdown) of a vault entity, written where the command says; no venture's record"
+    },
+    "packages/naive/src/functions/capabilities/skills/design-coverage/scan.ts": {
+      "writes": 1,
+      "why": "The status page at a vault's root, a workspace-level file"
+    },
+    "packages/naive/src/functions/capabilities/skills/fidelity-ladder-audit/ladder-census.ts": {
+      "writes": 1,
+      "why": "A census report of a component tree, written to the path the command names; no venture's record"
+    },
+    "packages/naive/src/functions/marketing-and-sales/marketing/publish-build.ts": {
+      "writes": 1,
+      "why": "The publish build's output in the release folder, a build file that publishing reads; no venture's record"
+    },
+    "packages/naive/src/functions/products/frameworks/product-anatomy/anatomy.ts": {
+      "writes": 1,
+      "why": "Cannot move yet: the anatomy answers file is written to whatever path the caller passes, with no venture folder named; the command must take a venture and a path first"
+    },
+    "packages/naive/src/functions/strategy/frameworks/idea-map/graph.ts": {
+      "writes": 1,
+      "why": "Cannot move yet: the idea graph (purpose/ideas/graph.json) is a venture's file, but the module reads and writes it at the folder root and not through the venture's layout, so its reads must move to ventureFile first"
+    },
+    "packages/naive/src/functions/strategy/frameworks/idea-map/ideamap.ts": {
+      "writes": 1,
+      "why": "Cannot move yet: the idea map (purpose/ideas/map.mdx) is a venture's file, but the module reads and writes it at the folder root and not through the venture's layout, so its reads must move to ventureFile first"
+    },
+    "packages/naive/src/interfaces/adapters.ts": {
+      "writes": 2,
+      "why": "The adapter verification suite edits a harness entry file in a temporary venture to prove adapt keeps a person's edit; no record"
+    },
+    "packages/naive/src/interfaces/cli/naive.ts": {
+      "writes": 2,
+      "why": "The generated type files under .naive/types in this repository"
+    },
+    "packages/naive/src/interfaces/demo/board.ts": {
+      "writes": 1,
+      "why": "A cache of vendored script and style files in the user's home folder"
+    },
+    "packages/naive/src/interfaces/demo/decision-harness.ts": {
+      "writes": 1,
+      "why": "Copies the example workspace into a temporary folder for the demo"
+    },
+    "packages/naive/src/interfaces/demo/live-agent.ts": {
+      "writes": 2,
+      "why": "Copies the example workspace into a temporary folder and writes the agent's MCP config there"
+    },
+    "packages/naive/src/interfaces/harness/run.ts": {
+      "writes": 3,
+      "why": "The agent's MCP config, the run trace and a temporary answers file at the workspace root, all outside any venture"
+    },
+    "packages/naive/src/records/record-types.ts": {
+      "writes": 1,
+      "why": "The generated record types in this repository"
+    },
+    "packages/naive/src/terms/admit.ts": {
+      "writes": 1,
+      "why": "A generated file in this repository (admitted.json); terms comes before store and may not import the writer"
+    },
+    "packages/naive/src/terms/gen-concepts.ts": {
+      "writes": 1,
+      "why": "Generated Lean concepts in this repository"
+    },
+    "packages/naive/src/terms/operating-rules.ts": {
+      "writes": 1,
+      "why": "A temporary file for the schema validator"
+    }
+  }
+}

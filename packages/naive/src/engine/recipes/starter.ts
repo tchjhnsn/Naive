@@ -11,11 +11,11 @@
 // The starter knows the signal types the venture's libraries hold when it is made. A signal of a type version it
 // does not know is noise to it (the record is the same without it); running init again on a new pattern, or editing
 // the recipe, takes in new versions.
-import { existsSync, mkdirSync, writeFileSync } from "node:fs";
-import { dirname } from "node:path";
-import { actingAgent, agentFromEnv, record } from "../../core/provenance.ts";
+import { existsSync } from "node:fs";
+import { actingAgent, agentFromEnv } from "../../core/provenance.ts";
 import { ventureFile } from "../../core/venture-paths.ts";
 import { validateValue } from "../../records/validate.ts";
+import { writeRecord } from "../../store/record-write.ts";
 import { idsIn, libraries, mergeTypes, resolveType, splitRange, typesIn } from "../signals.ts";
 import { plainListeners } from "./outcomes.ts";
 import { lintRecipe, recipeExports } from "./sandbox.ts";
@@ -223,8 +223,6 @@ export async function initRecipe(dir: string, pattern: string, o: { by?: string 
   if (!ex.ok) return { ok: false, errors: [ex.reason] };
   const v = validateValue("recipe.schema.json", ex.output);
   if (v.status !== 0) return { ok: false, errors: [`the starter's exports do not match recipe.schema.json: ${(v.stdout || v.stderr).trim()}`] };
-  mkdirSync(dirname(ventureFile(dir, rel)), { recursive: true });
-  writeFileSync(ventureFile(dir, rel), s.source);
-  const line = record(dir, { entity: rel, route: "knowledge/recipe", activity: "create", agent: agentFromEnv("person", "cli", { id: o.by }), note: `naive recipes init: the plain fold for ${pattern} from the signal types' projects` }) as { sha256: string };
+  const line = writeRecord(dir, rel, s.source, { route: "knowledge/recipe", activity: "create", agent: agentFromEnv("person", "cli", { id: o.by }), note: `naive recipes init: the plain fold for ${pattern} from the signal types' projects` }) as { sha256: string };
   return { ok: true, file: rel, hears: s.hears, sha256: line.sha256 };
 }
