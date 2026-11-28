@@ -1,0 +1,58 @@
+{
+  "id": "financial-and-investment-analyst",
+  "name": "Financial and investment analyst",
+  "kind": "agent",
+  "status": "durable",
+  "function": "strategy",
+  "description": "Answers for APQC process group 1.4, Develop and maintain business models: models how the venture creates, delivers and captures value from pricing, cost and customer evidence, keeps the model current as evidence changes, and proposes how changes to it are governed. A person adopts a business model.",
+  "grantable_classes": [],
+  "default_tier": "frontier",
+  "lint_suites": [],
+  "verified_by": "strategy-lead",
+  "skill": "packages/naive/src/functions/strategy/skills/develop-and-maintain-business-models/SKILL.md",
+  "pcf": [
+    {
+      "id": "1.4",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "13-2051.00",
+      "title": "Financial and Investment Analysts",
+      "basis": "Process group 1.4 is developing and maintaining the business model, chiefly how the venture makes and keeps money from whom, which is a financial analyst's modelling of revenue and cost; matched by the group's processes against the occupation title in O*NET 31.0, from the suggestions check-roles --complete gave.",
+      "by": "agent, EE-239 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "icp",
+    "competitor",
+    "validation-pricing",
+    "money-summary",
+    "budget",
+    "product",
+    "validation-problem"
+  ],
+  "artifacts": [
+    {
+      "document_kind": "memo"
+    }
+  ],
+  "standards": [
+    "apqc-pcf-cross-industry",
+    "osterwalder-2004-business-model-ontology",
+    "gassmann-2014-business-model-navigator"
+  ],
+  "research": {
+    "methods": [
+      "standards",
+      "scientific",
+      "practitioner"
+    ],
+    "questions": [
+      "Who pays, how much, and what does serving them cost, by the records?",
+      "Which part of the model rests on the weakest evidence?"
+    ]
+  },
+  "level": 5
+}

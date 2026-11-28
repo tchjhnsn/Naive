@@ -13,7 +13,7 @@ The supply chain function (APQC 4.0, Manage Supply Chain for Physical Products).
 | [function.json](./function.json) | The manifest: purpose, intake, measures, capability clusters |
 | [agent.md](./agent.md) | The supply chain agent's instructions |
 | [decisions.json](./decisions.json) | The decision matrix |
-| [workflows/intake.json](./workflows/intake.json) | Workflow: learn the venture's suppliers and orders. Its steps for records need-now suggests only after Discovery, or never, are steps to consider that name the phase they start in (check-functions.ts). |
+| [workflows/intake.json](./workflows/intake.json) | Workflow: learn the venture's suppliers and orders. Its steps for records need-now suggests only after Discovery, or never, are steps to consider that name the phase they start in (check-functions.ts). Its summarize step writes decisions, so the decision it raises is the evidence the run proof reads. |
 | [workflows/monthly-supply-review.json](./workflows/monthly-supply-review.json) | Workflow: review suppliers, orders and supply risk each month |
 | [workflows/](./workflows) | One workflow per APQC level 3 process of category 4.0, named by its hierarchy id. See the table below |
 | [skills/supplier-and-purchasing](./skills/supplier-and-purchasing) | Skill: keep the approved supplier list and purchase orders: supplier evaluation, Kraljic risk classes and single sources, Incoterms 2020, landed cost and reorder points |
