@@ -4401,6 +4401,45 @@
       ]
     },
     {
+      "id": "EE-249",
+      "date": "2026-11-28",
+      "status": "in-force",
+      "decision": "The role library gains one durable role per APQC PCF level 2 process group of the risk and compliance function that no role was responsible or accountable for (roles plan step 11, first cut): financial-risk-specialist (11.1, O*NET 13-2054.00, agent); compliance-manager (11.2, O*NET 11-9199.02, agent); compliance-officer (11.3, O*NET 13-1041.00, agent); business-continuity-planner (11.4, O*NET 13-1199.04, agent). Each is accountable for its process group, named after the best O*NET 31.0 match judged from check-roles --complete's suggestions, verified by finance-lead, draws on the function's skill for its process group, reads and makes only data-model record types or document kinds, works to apqc-pcf-cross-industry and lists no grantable class. Each O*NET match is marked by an agent and not yet reviewed by a person. check-roles --complete reports no gap under risk and compliance.",
+      "why": "Torian on 2026-11-28 (roles plan, step 11): a business needs a row for every process group it runs, and the first cut is one role per uncovered level 2 group named after its O*NET match, one function per pull request.",
+      "related": [
+        "EE-229",
+        "EE-232",
+        "EE-233",
+        "EE-238"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/roles/financial-risk-specialist/role.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/roles/compliance-manager/role.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/roles/compliance-officer/role.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/roles/business-continuity-planner/role.json",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
       "id": "EE-129",
       "date": "2026-11-19",
       "status": "proposed",
