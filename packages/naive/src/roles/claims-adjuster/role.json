@@ -1,0 +1,49 @@
+{
+  "id": "claims-adjuster",
+  "name": "Claims adjuster (after-sales service)",
+  "kind": "agent",
+  "status": "durable",
+  "function": "customer-service",
+  "description": "Serves what the venture has already sold: knows what each customer bought, works warranty claims from receipt to close, prepares recovery from a supplier whose part failed, and checks that a service a customer is owed was delivered.",
+  "grantable_classes": [],
+  "default_tier": "workhorse",
+  "lint_suites": [],
+  "verified_by": "growth-lead",
+  "skill": "packages/naive/src/functions/customer-service/skills/service-products-after-sales/SKILL.md",
+  "pcf": [
+    {
+      "id": "6.3",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "13-1031.00",
+      "title": "Claims Adjusters, Examiners, and Investigators",
+      "basis": "The role works warranty claims from receipt to close and recovers cost from a supplier whose part failed, which is the review and settlement of claims this occupation does; matched by the process group's activities (6.3.2 and 6.3.3) against the occupation in O*NET 31.0.",
+      "by": "agent, EE-244 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "support-case",
+    "customer",
+    "product",
+    "supplier",
+    "purchase-order"
+  ],
+  "artifacts": [],
+  "standards": [
+    "apqc-pcf-cross-industry"
+  ],
+  "research": {
+    "methods": [
+      "organizational",
+      "practitioner"
+    ],
+    "questions": [
+      "Was this item sold by the venture, and is it still under the warranty it was sold with?",
+      "Which supplier supplied the failed part, and what does the purchase order say they owe?"
+    ]
+  },
+  "level": 4
+}

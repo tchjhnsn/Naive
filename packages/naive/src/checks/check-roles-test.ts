@@ -76,7 +76,7 @@ fails("a raci value outside RACI fails the schema", edit("builder", (r) => { Obj
 fails("a second accountable role for one element fails", edit("architect", (r) => { r.pcf = [{ id: "2.0", raci: "accountable" }]; }), /PCF 2\.0: architect and product-lead are each accountable for it; RACI allows one accountable role per element/);
 fails("an accountable role outside the element's function and portfolio fails", edit("marketing-lead", (r) => { r.pcf = [{ id: "9.1", raci: "accountable" }]; }), /marketing-lead is accountable for PCF 9.1, which is under finance, but the role is neither in finance nor a lead whose portfolio covers it/);
 t("an accountable role in the element's function passes", broken(edit("marketing-lead", (r) => { r.pcf = [{ id: "3.2", raci: "accountable" }]; })).status === 0);
-t("a lead accountable for a process group its portfolio covers passes", broken(edit("growth-lead", (r) => { r.pcf = [...(r.pcf ?? []), { id: "6.2", raci: "accountable" }]; })).status === 0);
+t("a lead accountable for a process group its portfolio covers passes", broken((lib, root) => { edit("customer-service-representative", (r) => { r.pcf = (r.pcf ?? []).filter((p) => p.id !== "6.2"); })(lib, root); edit("growth-lead", (r) => { r.pcf = [...(r.pcf ?? []), { id: "6.2", raci: "accountable" }]; })(lib, root); }).status === 0);
 fails("an O*NET code in the wrong format fails the schema", edit("builder", (r) => { r.onet = [{ code: "151252", title: "Software Developers", basis: "x", by: "y" }]; }), /builder\/role.json: does not match role.schema.json/);
 fails("an O*NET entry with no basis fails the schema", edit("builder", (r) => { Object.assign(r, { onet: [{ code: "15-1252.00", title: "Software Developers", by: "y" }] }); }), /builder\/role.json: does not match role.schema.json/);
 fails("an O*NET code the reference lacks fails", edit("builder", (r) => { r.onet = [{ code: "99-9999.00", title: "Nobody", basis: "x", by: "y" }]; }), /builder\/role.json: onet 99-9999.00 is not an occupation in packages\/naive\/src\/functions\/onet.json/);
@@ -98,7 +98,9 @@ const complete = (root: string, venture?: string, extra: string[] = []) => {
 const withoutRole = (id: string): string => { const root = join(tmp, `r-${++n}`); cpSync(join(repo, LIBRARY), join(root, LIBRARY), { recursive: true, filter: (f) => !/\/role\.(ts|mjs)$/.test(f) }); rmSync(join(root, LIBRARY, id), { recursive: true }); return root; };
 const today = complete(withoutRole("business-intelligence-analyst"));
 t("--complete fails on a library with a process group no role covers, naming each one with no responsible or accountable role", today.status === 1 && /GAP {3}PCF 1\.1 Define the business concept and long-term vision \(strategy\): no role is responsible or accountable/.test(today.out) && !/GAP {3}PCF 1\.0 /.test(today.out) && !/GAP {3}PCF 2\.3 /.test(today.out), today.out);
-t("--complete suggests O*NET occupations for a gap", /GAP {3}PCF 9\.5 Process payroll \(finance\): .*O\*NET 31\.0 suggests 43-3051\.00 Payroll and Timekeeping Clerks/.test(today.out), today.out);
+// The payroll clerk (EE-247) covers 9.5 in the library, so the gap is opened on a copy without it.
+const payrollGap = (() => { const root = join(tmp, `r-${++n}`); cpSync(join(repo, LIBRARY), join(root, LIBRARY), { recursive: true }); rmSync(join(root, LIBRARY, "payroll-clerk"), { recursive: true, force: true }); return complete(root); })();
+t("--complete suggests O*NET occupations for a gap", /GAP {3}PCF 9\.5 Process payroll \(finance\): .*O\*NET 31\.0 suggests 43-3051\.00 Payroll and Timekeeping Clerks/.test(payrollGap.out), payrollGap.out);
 t("--complete never suggests an All Other occupation", !/All Other/.test(today.out));
 const strategyOnly = join(tmp, "strategy-only");
 mkdirSync(strategyOnly, { recursive: true });
