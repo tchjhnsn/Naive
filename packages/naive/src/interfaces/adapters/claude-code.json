@@ -15,10 +15,20 @@
     "xlsx": { "use": "the xlsx skill", "how": "A model or a budget, only when a person asked for a spreadsheet." },
     "html": { "use": "the artifact-design skill, then the Artifact tool", "how": "One page from the approved reading copy, published privately, and the link given to the person." }
   },
+  "artifacts": [
+    { "id": "claude-doc", "formats": ["md", "pdf", "docx"], "use": "the docs skill, then the Claude Docs connector", "how": "A document people keep editing and pass around, built from the approved reading copy; it exports to Markdown, PDF or Word, and no fact changes on the way." },
+    { "id": "artifact-page", "formats": ["html"], "use": "the artifact-design skill, then the Artifact tool", "how": "One page from the approved reading copy, published privately, and the link given to the person." },
+    { "id": "slides", "formats": ["pptx", "pdf"], "use": "the Artifact tool's Slides type", "how": "A deck from the approved reading copy, one point a slide, styled by a design system; it downloads as pptx or PDF." },
+    { "id": "dashboard", "formats": ["html"], "use": "the Artifact tool's Dashboard type", "how": "A page of data people read, filled from records and never from numbers typed in by hand." },
+    { "id": "pdf", "formats": ["pdf"], "use": "the pdf skill", "how": "Build it from the approved Markdown reading copy, changing no fact." },
+    { "id": "docx", "formats": ["docx"], "use": "the docx skill", "how": "Only when the reader must edit the words, such as counsel marking up terms." },
+    { "id": "pptx", "formats": ["pptx"], "use": "the pptx skill", "how": "A structured deck: a theme, layouts and placeholders, built from the approved reading copy, one point a slide." },
+    { "id": "xlsx", "formats": ["xlsx"], "use": "the xlsx skill", "how": "A model or a budget, only when a person asked for a spreadsheet." }
+  ],
   "sources": [
     "https://docs.claude.com/en/docs/claude-code/memory",
     "https://docs.claude.com/en/docs/claude-code/skills",
     "https://github.com/anthropics/skills"
   ],
-  "note": "Claude Code reads CLAUDE.md, which imports the venture's AGENTS.md with @AGENTS.md, and loads project skills from .claude/skills/<name>/SKILL.md. The adapter copies the skill of each package open now, so the agent has the installed version's skill. The documents map names Anthropic's own document skills (Apache 2.0) for the formats Naive does not render itself (EE-218); the writing-documents skill is where the ladder and the order are written."
+  "note": "Claude Code reads CLAUDE.md, which imports the venture's AGENTS.md with @AGENTS.md, and loads project skills from .claude/skills/<name>/SKILL.md. The adapter copies the skill of each package open now, so the agent has the installed version's skill. The documents map names Anthropic's own document skills (Apache 2.0) for the formats Naive does not render itself (EE-218); the writing-documents skill is where the ladder and the order are written. The artifacts list is every kind of artifact Claude Code can produce, with the formats each yields and the skill or tool that makes it (EE-230): a Claude doc, an artifact page, slides, a dashboard and the four document skills."
 }

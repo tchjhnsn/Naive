@@ -15,6 +15,8 @@ import { CODE_OVER_DOCS } from "../core/code-over-docs.ts";
 import { cmp, registry, snapshot, updateFramework } from "./upgrades.ts";
 import type { upgrade } from "./upgrades.ts";
 import { rewriteRoute } from "./migrations/kit-to-package.ts";
+import { documentGaps } from "./adapters.ts";
+import type { Adapter } from "../records/types/records.d.ts";
 
 const repo = new URL("../../../..", import.meta.url).pathname;
 let failed = 0;
@@ -268,6 +270,18 @@ expect("without NAIVE_PLATFORM_ADAPTER only the harness adapters are listed", JS
 for (const name of ["claude-code", "codex", "cursor"]) {
   const r = JSON.parse(mentura(["adapters", "verify", name, "--json"]).stdout)[0];
   expect(`the ${name} adapter is verified: it passes the framework's adapter tests`, r.verified, JSON.stringify(r.results.filter((x: Result) => !x.passed)));
+}
+{
+  // EE-230: the documents map and the artifacts list agree, so verify fails when they drift.
+  const cc = JSON.parse(readFileSync(join(repo, "packages/naive/src/interfaces/adapters/claude-code.json"), "utf8")) as Adapter;
+  expect("Claude Code's artifacts list yields every format its documents map names, with the same tool", documentGaps(cc).length === 0, documentGaps(cc).join("; "));
+  expect("Claude Code lists a Claude doc, an artifact page, slides and a dashboard beside its document skills",
+    ["claude-doc", "artifact-page", "slides", "dashboard", "pdf", "docx", "pptx", "xlsx"].every((id) => (cc.artifacts ?? []).some((x) => x.id === id)), JSON.stringify(cc.artifacts));
+  const missing = documentGaps({ ...cc, artifacts: (cc.artifacts ?? []).filter((x) => x.id !== "pdf" && x.id !== "slides" && x.id !== "claude-doc") });
+  expect("a documents format no artifacts entry yields is named", missing.length === 1 && /documents\.pdf uses the pdf skill, and no artifacts entry yields pdf/.test(missing[0]), missing.join("; "));
+  const drifted = documentGaps({ ...cc, artifacts: (cc.artifacts ?? []).map((x) => (x.id === "artifact-page" ? { ...x, use: "a page builder" } : x)) });
+  expect("an artifacts entry that yields the format with another tool is named", drifted.length === 1 && /documents\.html uses the artifact-design skill, then the Artifact tool, but the artifacts entries that yield html \(artifact-page, dashboard\)/.test(drifted[0]), drifted.join("; "));
+  expect("a harness with no documents map has nothing to match", documentGaps({ artifacts: [] }).length === 0);
 }
 if (!process.env.NAIVE_SKIP_PLATFORM_VERIFY) {
   const m = mentura(["adapters", "verify", "mentura", "--json"], withPlatform);

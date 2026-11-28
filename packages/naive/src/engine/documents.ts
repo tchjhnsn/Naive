@@ -92,6 +92,8 @@ const field = (body: unknown, path: string): unknown =>
  * it reads is a hole.
  */
 function block(s: Section, found: { path: string; body: unknown }[]): string[] {
+  // A fact the catalog knows no record type holds yet is always shown as a hole (EE-230).
+  if (s.hole !== undefined) return [`## ${s.title}`, "", `_Not recorded: ${s.hole}_`, ""];
   const body: string[] = [];
   if (!found.length) {
     if (s.optional) return [];
@@ -130,7 +132,7 @@ export function renderMarkdown(c: DocumentCatalog, kindId: string, read: Read, {
     "> This is a view of the records, not a record. Change a fact in its record and render again; never edit a fact here.",
     "",
   ];
-  for (const s of k.sections) lines.push(...block(s, read(s.from)));
+  for (const s of k.sections) lines.push(...block(s, s.from === undefined ? [] : read(s.from)));
   const highest = k.highest_rung;
   lines.push("---", "", `Next rung: ${highest === "reading-copy" ? "none, this kind stops at the reading copy" : `${highest}, once a person has approved this copy`}.`, "");
   return lines.join("\n");

@@ -217,6 +217,17 @@ export type Adapter = {
       /** What to watch for, in one plain sentence. */
       how?: string;
     } };
+  /** Every kind of artifact this harness can produce (EE-230), each with the formats it yields and the skill or tool that makes it. The document catalog says which formats a document takes and names no vendor; this list says how this harness makes them. Every format in documents must be yielded by an entry here that uses the same tool, which node packages/naive/src/interfaces/adapters.ts verify checks. An empty list says the harness has no tool Naive names, so every format past Markdown is left to the agent. */
+  artifacts?: {
+    /** The artifact kind as this harness names it, unique in the list. */
+    id: string;
+    /** The formats it yields, as the document catalog names them (xlsx beside them for a spreadsheet). */
+    formats: ("md" | "pdf" | "docx" | "pptx" | "xlsx" | "html" | "site")[];
+    /** The skill, tool or command the agent loads to make it in this harness. */
+    use: string;
+    /** What to watch for, in one plain sentence. */
+    how?: string;
+  }[];
   note?: string;
 };
 
@@ -331,6 +342,10 @@ export type Artifact = {
   document_kind?: string;
   /** The format it was rendered in (EE-218). The catalog gives each format a rung, and the ladder is fail closed: a rung is built only once the rung below it is a live artifact a person approved. */
   format?: "md" | "pdf" | "docx" | "pptx" | "html" | "site";
+  /** The role that made it, as a role id (EE-231). The artifact lint names it on each finding, so naive lint report can count findings by role. */
+  role?: string;
+  /** The harness adapter that rendered it, as the adapter's name in packages/naive/src/interfaces/adapters/ (EE-231). The artifact lint checks the format is one that harness's artifacts list yields, and names it on each finding. */
+  harness?: string;
   /** The person who read this rung and approved building the one above it (EE-218). Never an agent. Publishing has its own approver, in governance/publications.json. */
   approved_by?: string;
   /** It has gone out to its audience; a person decides that */
@@ -1731,17 +1746,32 @@ export type DocumentCatalog = {
     words_per_page?: number;
     /** An unvalidated prior: about how many pages or slides this kind runs to. */
     pages?: number;
-    /** The reading copy's sections, in order. Each names the record it reads, so every claim in the rendered document cites a record. */
-    sections: {
+    /** The brand fields this kind is styled with (EE-230), each a field of the venture's brand (marketing/brand.json) or design system (marketing/design-system.json). Every kind names the brand voice, because every document's words follow it; a kind that is laid out also names the fonts, colors and marks it uses. The values stay in the venture's records and the catalog names only which fields apply, so whoever renders the kind, Naive or the harness, styles it from the venture's own brand. packages/naive/src/checks/check-documents.ts fails on a field the record type's schema does not define. */
+    style: {
+      /** The brand record type, as packages/naive/src/records/data-model.json names it. */
+      record_type: "marketing-brand" | "marketing-design-system";
+      /** A dotted path to a field that record type's schema defines, such as voice.rules or components. */
+      field: string;
+    }[];
+    /** The reading copy's sections, in order. Each names the record it reads, so every claim in the rendered document cites a record, or is a hole that says which fact no record holds yet. */
+    sections: ({
       id: string;
       title: string;
       /** The logical path of the record it reads, such as foundation/problem.json. A path with * reads every record it matches, one block each. */
-      from: string;
+      from?: string;
       /** A dotted path to a string or a list of strings in that record. Without it the section names the record and leaves the words to the writer. */
       field?: string;
       /** True when a hole is left out instead of shown: a missing record, or a record with nothing in the field, leaves the section out rather than printing what is not recorded. */
       optional?: boolean;
-    }[];
+      /** In place of from: a fact the document needs that no record type holds yet, said in one plain sentence with the record that would hold it (EE-230). The reading copy always shows it as a hole, so the gap stays visible until a record type is added and the section reads it. */
+      hole?: string;
+    } & ({
+      /** The logical path of the record it reads, such as foundation/problem.json. A path with * reads every record it matches, one block each. */
+      from: string;
+    } | {
+      /** In place of from: a fact the document needs that no record type holds yet, said in one plain sentence with the record that would hold it (EE-230). The reading copy always shows it as a hole, so the gap stays visible until a record type is added and the section reads it. */
+      hole: string;
+    }))[];
   }[];
 };
 
@@ -3539,6 +3569,44 @@ export type LifecyclePlaybook = {
   }[];
 };
 
+/** One finding of a lint run, one line of <venture>/.naive/lint-findings.jsonl, the log every lint appends to whatever the finding's severity (packages/naive/src/engine/lint-findings.ts). lint says which lint wrote it: publish (packages/naive/src/engine/publish-lint.ts, a page's copy) or artifact (packages/naive/src/checks/artifact-lint.ts, an artifact against its declared type, EE-231). A line with no lint was written by the publish lint before the field existed. naive lint report aggregates the log by rule, role or harness. */
+export type LintFinding = {
+  /**
+   * When the run that found it started; one run's lines share it
+   * @format date-time
+   */
+  at: string;
+  /** The lint that wrote the line */
+  lint?: "publish" | "artifact";
+  /** The rule's id within its lint */
+  rule: string;
+  /** An artifact lint rule's family: a protocol rule is always an error; a design rule is off, warn or error under artifact_lint.rules in naive.config.json */
+  family?: "protocol" | "design";
+  /** The level the rule had when it ran; a rule set off writes nothing */
+  severity: "warn" | "error";
+  message: string;
+  /** The artifact linted, as a logical path in the venture (artifact lint) */
+  artifact?: string;
+  /** The type the artifact claims: a document kind in packages/naive/src/functions/documents.json or a record type in the data model (artifact lint) */
+  kind?: string;
+  /** The role that made the artifact, when it is known */
+  role?: string;
+  /** The harness adapter that rendered the artifact, when it is known */
+  harness?: string;
+  /** The file whose copy was linted (publish lint) */
+  file?: string;
+  /** The field of a JSON record the copy came from (publish lint) */
+  field?: string;
+  /** The line the copy sits on (publish lint) */
+  line?: number;
+  /** The words found (publish lint) */
+  text?: string;
+  /** The file was already published (publish lint) */
+  published?: boolean;
+  /** A person waived the finding under publish_lint.waived (publish lint) */
+  waived?: boolean;
+};
+
 /** The edge between a signal type and one consumer (everything-ecosystem docs/design/SIGNAL_LIBRARY_2026-11-06.md): the type range it hears, the consumer's criterion, and what happens to a signal that meets it. Noise is not a property of a signal: it is the outcome of one signal at one listener, so the same signal can be salient at one consumer and noise at another. A listener is not a file of its own. Listeners merge, like triggers, from naive.config.json listeners (a same-id listener replaces any other), each installed package's listeners, each frame's listens and each listed kit's listeners; naive.config.json listeners_off turns one off. The types a pull reads are derived from the listeners, so there is no subscription list. packages/naive/src/engine/signals/render.ts evaluates listeners and packages/naive/src/engine/signals.ts merges them from packages, frames and naive.config.json; kits' listeners are not built. */
 export type Listener = {
   /** Unique among the venture's listeners once merged; a same-id listener in naive.config.json replaces any other */
@@ -4266,6 +4334,17 @@ export type NaiveConfig = {
     };
     /** The person who set these weights */
     set_by: string;
+  };
+  /** The artifact lint (packages/naive/src/checks/artifact-lint.ts, EE-231): each design rule off, warn (the default) or error. The protocol rules (kind-exists, format-allowed, sections-present, section-cited, ladder) are always errors and cannot be set here. */
+  artifact_lint?: {
+    rules?: {
+      "style-filled"?: "off" | "warn" | "error";
+      "voice-terms"?: "off" | "warn" | "error";
+      "heading-levels"?: "off" | "warn" | "error";
+      length?: "off" | "warn" | "error";
+    };
+    /** The person who set these levels */
+    set_by?: string;
   };
   /** The premise-attack linter (packages/naive/src/checks/premise-lint.ts): each rule, one per aspect, is off, warn (the default) or error */
   premise_lint?: {

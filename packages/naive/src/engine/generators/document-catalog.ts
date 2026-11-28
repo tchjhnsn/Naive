@@ -11,7 +11,8 @@ export const record = "document-catalog";
 export const FILE = "packages/naive/src/functions/documents.json";
 type Kind = DocumentCatalog["kinds"][number];
 export const describe = () => ({ record, ask: questions(schemaOf(record).properties.kinds.items, "kinds[]."),
-  derived: { id: "a slug of the title unless given; a kind already in the file is refused", highest_rung: "reading-copy unless given, because most kinds stop there" } });
+  derived: { id: "a slug of the title unless given; a kind already in the file is refused", highest_rung: "reading-copy unless given, because most kinds stop there",
+    style: "the brand voice (marketing-brand voice) unless given, because every document's words follow it (EE-230)" } });
 
 export function draft(a: Partial<Kind>, { root = repo }: { root?: string } = {}) {
   if (!a.title || !a.function || !a.purpose || !a.audience?.length || !a.artifact_kind || !a.formats?.length || !a.why_format || !a.sections?.length)
@@ -28,7 +29,7 @@ export function draft(a: Partial<Kind>, { root = repo }: { root?: string } = {})
   if (unknown.length) return { ok: false, record, errors: unknown.map((f) => `${f} is not a format the catalog has`) };
   const kind = drop({ id, title: a.title, function: a.function, purpose: a.purpose, audience: a.audience, artifact_kind: a.artifact_kind,
     highest_rung: highest, formats: a.formats, why_format: a.why_format, approves: a.approves, words_per_page: a.words_per_page,
-    pages: a.pages, sections: a.sections }) as Kind;
+    pages: a.pages, style: a.style?.length ? a.style : [{ record_type: "marketing-brand", field: "voice" }], sections: a.sections }) as Kind;
   const rec = { ...now, kinds: [...now.kinds, kind] };
   const v = validate(record, rec);
   return { ok: v.ok, record, file: FILE, draft: rec, added: id, errors: v.errors };
