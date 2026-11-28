@@ -1,0 +1,48 @@
+{
+  "id": "internal-public-relations-specialist",
+  "name": "Public relations specialist (employee communication)",
+  "kind": "either",
+  "status": "durable",
+  "function": "human-capital",
+  "description": "Plans what the venture tells the people who work on it, how often and who says it, judges whether the team is large enough for an anonymous survey, and drafts every message for a person to send.",
+  "grantable_classes": [],
+  "default_tier": "frontier",
+  "lint_suites": [],
+  "verified_by": "strategy-lead",
+  "skill": "packages/naive/src/functions/human-capital/skills/manage-employee-communication/SKILL.md",
+  "pcf": [
+    {
+      "id": "7.8",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "27-3031.00",
+      "title": "Public Relations Specialists",
+      "basis": "The role plans what the venture tells the people who work on it and drafts each message, and O*NET lists preparing organizational publications for internal audiences, such as employee newsletters, among this occupation's tasks; matched by that task, since O*NET has no occupation for internal communication alone.",
+      "by": "agent, EE-245 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "people",
+    "team-plan",
+    "goal"
+  ],
+  "artifacts": [],
+  "standards": [
+    "apqc-pcf-cross-industry"
+  ],
+  "research": {
+    "methods": [
+      "stakeholder",
+      "organizational",
+      "practitioner"
+    ],
+    "questions": [
+      "What does each person need to hear, from whom and how often?",
+      "Is the team large enough for a survey to stay anonymous?"
+    ]
+  },
+  "level": 4
+}

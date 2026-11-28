@@ -1,0 +1,48 @@
+{
+  "id": "compensation-and-benefits-manager",
+  "name": "Compensation and benefits manager",
+  "kind": "either",
+  "status": "durable",
+  "function": "human-capital",
+  "description": "Proposes what the venture pays and offers, administers benefits honestly, prepares each payroll run for the founder to pay, and collects what the people doing the work suggest.",
+  "grantable_classes": [],
+  "default_tier": "frontier",
+  "lint_suites": [],
+  "verified_by": "strategy-lead",
+  "skill": "packages/naive/src/functions/human-capital/skills/reward-and-retain-employees/SKILL.md",
+  "pcf": [
+    {
+      "id": "7.5",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "11-3111.00",
+      "title": "Compensation and Benefits Managers",
+      "basis": "The role sets out what the venture pays and offers, administers benefits and prepares each payroll run, which is this occupation's work; matched by the process group's activities against the occupation in O*NET 31.0.",
+      "by": "agent, EE-245 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "people",
+    "team-plan",
+    "budget"
+  ],
+  "artifacts": [],
+  "standards": [
+    "apqc-pcf-cross-industry"
+  ],
+  "research": {
+    "methods": [
+      "organizational",
+      "practitioner",
+      "standards"
+    ],
+    "questions": [
+      "What does the budget allow for this role, and what does the market pay for it?",
+      "Is every payroll line backed by an agreement a person signed?"
+    ]
+  },
+  "level": 5
+}

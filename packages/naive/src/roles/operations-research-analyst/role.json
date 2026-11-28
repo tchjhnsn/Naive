@@ -1,0 +1,55 @@
+{
+  "id": "operations-research-analyst",
+  "name": "Operations research analyst",
+  "kind": "agent",
+  "status": "durable",
+  "function": "service-delivery",
+  "description": "Answers for APQC process group 5.2, Manage service delivery resources: forecasts how much delivery work is coming from the pipeline and engagements on record, plans who or what will do it, counts hours, and prepares the materials someone learns from. A person agrees the forecast, hires and pays anyone, and teaches a person.",
+  "grantable_classes": [],
+  "default_tier": "workhorse",
+  "lint_suites": [],
+  "verified_by": "product-lead",
+  "skill": "packages/naive/src/functions/service-delivery/skills/manage-service-delivery-resources/SKILL.md",
+  "pcf": [
+    {
+      "id": "5.2",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "15-2031.00",
+      "title": "Operations Research Analysts",
+      "basis": "Process group 5.2 is forecasting service delivery resource demand and creating the resource plan, which is modelling capacity against demand; matched by the group's processes against the occupation title in O*NET 31.0.",
+      "by": "agent, EE-243 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "engagement",
+    "opportunity",
+    "team-plan",
+    "validation-team",
+    "budget",
+    "supplier",
+    "service-offer"
+  ],
+  "artifacts": [
+    {
+      "record_type": "engagement"
+    }
+  ],
+  "standards": [
+    "apqc-pcf-cross-industry"
+  ],
+  "research": {
+    "methods": [
+      "scientific",
+      "organizational"
+    ],
+    "questions": [
+      "How many engagements will run at once, and from which forecast line?",
+      "Who or what does each one need, and when is capacity first short?"
+    ]
+  },
+  "level": 4
+}

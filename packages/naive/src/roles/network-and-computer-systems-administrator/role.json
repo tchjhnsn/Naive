@@ -1,0 +1,54 @@
+{
+  "id": "network-and-computer-systems-administrator",
+  "name": "Network and computer systems administrator (support services)",
+  "kind": "agent",
+  "status": "durable",
+  "function": "it",
+  "description": "Keeps the venture's systems running and its users answered: names the services it must keep alive, plans the operating week, knows the headroom and the renewals, watches what is running and works the support queue.",
+  "grantable_classes": [],
+  "default_tier": "workhorse",
+  "lint_suites": [],
+  "verified_by": "product-lead",
+  "skill": "packages/naive/src/functions/it/skills/create-and-manage-support-services-solutions/SKILL.md",
+  "pcf": [
+    {
+      "id": "8.7",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "15-1244.00",
+      "title": "Network and Computer Systems Administrators",
+      "basis": "The role keeps the venture's systems running, watches their headroom and renewals and works the support queue, which is the day-to-day operation of systems this occupation does; matched by the process group's activities against the occupation in O*NET 31.0.",
+      "by": "agent, EE-246 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "connection",
+    "systems-catalog",
+    "worker",
+    "spend-register",
+    "support-case"
+  ],
+  "artifacts": [
+    {
+      "record_type": "connection"
+    }
+  ],
+  "standards": [
+    "apqc-pcf-cross-industry",
+    "google-sre-book"
+  ],
+  "research": {
+    "methods": [
+      "organizational",
+      "practitioner"
+    ],
+    "questions": [
+      "Which services must stay up, and what tells us one is down?",
+      "Which renewals fall due in the next 30 days?"
+    ]
+  },
+  "level": 4
+}

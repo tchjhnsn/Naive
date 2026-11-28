@@ -1,0 +1,53 @@
+{
+  "id": "computer-and-information-systems-manager",
+  "name": "Computer and information systems manager (IT strategy)",
+  "kind": "either",
+  "status": "durable",
+  "function": "it",
+  "description": "Works out what the venture should build on, what it should rent and what it should drop, and how that is governed and measured: technology intelligence, the IT portfolio, architecture principles, the measures and control points, and the value each system returns.",
+  "grantable_classes": [],
+  "default_tier": "frontier",
+  "lint_suites": [],
+  "verified_by": "product-lead",
+  "skill": "packages/naive/src/functions/it/skills/develop-and-manage-it-business-strategy/SKILL.md",
+  "pcf": [
+    {
+      "id": "8.2",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "11-3021.00",
+      "title": "Computer and Information Systems Managers",
+      "basis": "The role works out what the venture should build on, rent and drop and how that is governed and measured, which is the planning and direction of information technology this occupation does; matched by the process group's activities against the occupation in O*NET 31.0.",
+      "by": "agent, EE-246 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "systems-catalog",
+    "connection",
+    "capability-cluster",
+    "language-rubric",
+    "visibility-rubric",
+    "spend-register",
+    "decision-record"
+  ],
+  "artifacts": [],
+  "standards": [
+    "apqc-pcf-cross-industry",
+    "iso-42010-2022-architecture-description"
+  ],
+  "research": {
+    "methods": [
+      "organizational",
+      "standards",
+      "practitioner"
+    ],
+    "questions": [
+      "What does each system cost and what does it return?",
+      "Which systems hold the venture's records, and who could take them away?"
+    ]
+  },
+  "level": 6
+}

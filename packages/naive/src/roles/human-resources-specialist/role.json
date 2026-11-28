@@ -1,0 +1,49 @@
+{
+  "id": "human-resources-specialist",
+  "name": "Human resources specialist (redeployment and separation)",
+  "kind": "either",
+  "status": "durable",
+  "function": "human-capital",
+  "description": "Prepares a move up or down against one written test, readies the end or pause of an engagement so that access, handover, final pay and surviving obligations are all accounted for, and checks an assignment in another country before it starts.",
+  "grantable_classes": [],
+  "default_tier": "frontier",
+  "lint_suites": [],
+  "verified_by": "strategy-lead",
+  "skill": "packages/naive/src/functions/human-capital/skills/redeploy-and-retire-employees/SKILL.md",
+  "pcf": [
+    {
+      "id": "7.6",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "13-1071.00",
+      "title": "Human Resources Specialists",
+      "basis": "The role prepares promotions, demotions, separations and assignments against one written test and accounts for access, handover and final pay, which is this occupation's personnel work; matched by the process group's activities against the occupation in O*NET 31.0.",
+      "by": "agent, EE-245 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "people",
+    "team-plan",
+    "worker",
+    "connection"
+  ],
+  "artifacts": [],
+  "standards": [
+    "apqc-pcf-cross-industry"
+  ],
+  "research": {
+    "methods": [
+      "organizational",
+      "standards",
+      "practitioner"
+    ],
+    "questions": [
+      "What written test does this move meet or miss?",
+      "Which systems, credentials and obligations must be closed when this engagement ends?"
+    ]
+  },
+  "level": 4
+}

@@ -22,6 +22,21 @@ Strategy process group roles (EE-239): `business-intelligence-analyst` (1.1), `m
 
 Products process group roles (EE-240): `architectural-and-engineering-manager` (2.1), each accountable for one APQC process group and named after its closest O*NET occupation.
 
+Marketing and sales process group roles (EE-241): `market-research-analyst` (3.1), `advertising-and-promotions-manager` (3.3), `sales-manager` (3.4), `sales-representative-of-services` (3.5), each accountable for one APQC process group and named after its closest O*NET occupation.
+
+Supply chain process group roles (EE-242): `supply-chain-manager` (4.1), `purchasing-agent` (4.2), `industrial-production-manager` (4.3), `logistician` (4.4), each accountable for one APQC process group and named after its closest O*NET occupation.
+
+Service delivery process group roles (EE-243): `general-and-operations-manager` (5.1), `operations-research-analyst` (5.2), `administrative-services-manager` (5.3), `business-operations-specialist` (5.4), each accountable for one APQC process group and named after its closest O*NET occupation.
+
+Process group roles for customer-service (EE-244), one accountable for each of 6.1 to 6.5: `customer-service-representative`, `claims-adjuster` and `survey-researcher` are agent roles; `customer-service-management-analyst` and `regulatory-affairs-specialist` are either.
+
+Process group roles for human-capital (EE-245), one accountable for each of 7.3 to 7.8: `training-and-development-specialist` and `human-resources-assistant` are agent roles; `labor-relations-specialist`, `compensation-and-benefits-manager`, `human-resources-specialist` and `internal-public-relations-specialist` are either.
+
+Process group roles for it (EE-246), one accountable for each of 8.1 to 8.7: `computer-systems-analyst`, `information-security-analyst`, `database-architect`, `computer-systems-engineer`, `information-technology-project-manager` and `network-and-computer-systems-administrator` are agent roles; `computer-and-information-systems-manager` is either.
+
+Process group roles for assets (EE-248), one accountable for each of 10.1 to 10.4: `facilities-manager` (10.1), `construction-manager` (10.2), `first-line-supervisor-of-mechanics-installers-and-repairers` (10.3) and `appraiser-of-personal-and-business-property` (10.4). The construction manager and the first-line supervisor are agent roles; the facilities manager and the appraiser are either.
+Process group roles for finance (EE-247, roles plan step 11), each accountable for one APQC level 2 process group and named after its O*NET match: `budget-analyst`, `billing-and-posting-clerk`, `accountant`, `financial-analyst`, `payroll-clerk`, `bookkeeping-clerk`, `treasurer`, `auditor`, `tax-preparer`, `controller` and `customs-broker`.
+
 ## Role programs
 
 Every role has a program (EE-237, [`role-program.ts`](../checks/role-program.ts)): deterministic checks of what the role makes, each an Effect over `VentureFs` that fails only with Naive's tagged errors. The default program comes from `role.json`:

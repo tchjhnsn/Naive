@@ -1,0 +1,47 @@
+{
+  "id": "tax-preparer",
+  "name": "Tax preparer",
+  "kind": "agent",
+  "status": "durable",
+  "function": "finance",
+  "description": "Manages taxes (APQC 9.9): drafts the tax plan from the venture's structure and money, prepares each return and filing for a person to sign, and keeps the tax calendar.",
+  "grantable_classes": [],
+  "default_tier": "workhorse",
+  "lint_suites": [],
+  "verified_by": "finance-lead",
+  "skill": "packages/naive/src/functions/finance/skills/manage-taxes/SKILL.md",
+  "pcf": [
+    {
+      "id": "9.9",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "13-2082.00",
+      "title": "Tax Preparers",
+      "basis": "APQC 9.9 is tax strategy and processing taxes, and processing is the work O*NET describes for tax preparers (prepare tax returns); the first --complete suggestion. Tax strategy may need an accountant or counsel.",
+      "by": "agent, EE-247 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "money-summary",
+    "ownership",
+    "obligation"
+  ],
+  "artifacts": [],
+  "standards": [
+    "apqc-pcf-cross-industry"
+  ],
+  "research": {
+    "methods": [
+      "standards",
+      "practitioner"
+    ],
+    "questions": [
+      "Which filings fall due in the next quarter?",
+      "Does the venture's structure change what it owes?"
+    ]
+  },
+  "level": 4
+}

@@ -1,0 +1,51 @@
+{
+  "id": "computer-systems-analyst",
+  "name": "Computer systems analyst (IT customer relationships)",
+  "kind": "agent",
+  "status": "durable",
+  "function": "it",
+  "description": "Serves the people and agent roles inside the venture that depend on its systems: who they are, what they need, what they can rely on, what IT will and will not provide, and how a service level is agreed and then measured.",
+  "grantable_classes": [],
+  "default_tier": "frontier",
+  "lint_suites": [],
+  "verified_by": "product-lead",
+  "skill": "packages/naive/src/functions/it/skills/develop-and-manage-it-customer-relationships/SKILL.md",
+  "pcf": [
+    {
+      "id": "8.1",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "15-1211.00",
+      "title": "Computer Systems Analysts",
+      "basis": "The role finds out what the people and agent roles inside the venture need from its systems, plans the services and measures the service levels agreed, which is this occupation's work between users and IT; matched by the process group's activities against the occupation in O*NET 31.0.",
+      "by": "agent, EE-246 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "connection",
+    "systems-catalog",
+    "people",
+    "worker",
+    "support-case"
+  ],
+  "artifacts": [],
+  "standards": [
+    "apqc-pcf-cross-industry",
+    "iso-iec-25010-2023"
+  ],
+  "research": {
+    "methods": [
+      "stakeholder",
+      "organizational",
+      "practitioner"
+    ],
+    "questions": [
+      "Who depends on each system, and what do they need from it?",
+      "Which service level was agreed, and did it hold?"
+    ]
+  },
+  "level": 5
+}

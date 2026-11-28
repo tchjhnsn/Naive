@@ -1,0 +1,46 @@
+{
+  "id": "bookkeeping-clerk",
+  "name": "Bookkeeping clerk",
+  "kind": "agent",
+  "status": "durable",
+  "function": "finance",
+  "description": "Processes accounts payable and expense reimbursements (APQC 9.6): matches each bill and expense claim to a spend line and a receipt, codes it and queues it for payment, and reconciles the corporate cards.",
+  "grantable_classes": [],
+  "default_tier": "workhorse",
+  "lint_suites": [],
+  "verified_by": "finance-lead",
+  "skill": "packages/naive/src/functions/finance/skills/process-accounts-payable-and-expense/SKILL.md",
+  "pcf": [
+    {
+      "id": "9.6",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "43-3031.00",
+      "title": "Bookkeeping, Accounting, and Auditing Clerks",
+      "basis": "APQC 9.6 is accounts payable, expense reimbursements and corporate cards, routine posting and checking of financial records that O*NET describes for bookkeeping, accounting and auditing clerks; chosen over the --complete suggestions, which are credit roles.",
+      "by": "agent, EE-247 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "spend-register",
+    "money-account"
+  ],
+  "artifacts": [],
+  "standards": [
+    "apqc-pcf-cross-industry"
+  ],
+  "research": {
+    "methods": [
+      "organizational",
+      "practitioner"
+    ],
+    "questions": [
+      "Does each bill match a spend line and a receipt?",
+      "Which card charges have no claim behind them?"
+    ]
+  },
+  "level": 3
+}
