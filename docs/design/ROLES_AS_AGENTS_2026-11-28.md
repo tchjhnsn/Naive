@@ -1,6 +1,6 @@
 # Roles as agents, linked to the PCF
 
-Date: 2026-11-28. Decisions: EE-229 (step 1), EE-230 (step 2), EE-231 (step 3), EE-232 (step 4), EE-233 (step 5), EE-235 (step 7) and EE-237 (step 9) are built; EE-234, EE-236, EE-238 and EE-239 (steps 6, 8, 10 and 11) are decided and not built.
+Date: 2026-11-28. Decisions: EE-229 (step 1), EE-230 (step 2), EE-231 (step 3), EE-232 (step 4), EE-233 (step 5), EE-235 (step 7), EE-237 (step 9) and EE-238 (step 10) are built; EE-234, EE-236 and EE-239 (steps 6, 8 and 11) are decided and not built.
 
 ## The ask
 
@@ -101,7 +101,29 @@ flowchart LR
   RJ --> CR
 ```
 
-## Steps 2 to 11 (steps 2 to 5, 7 and 9 built, the rest not built)
+## Step 10: rows for Naive (EE-238, built)
+
+- Naive's own roles live at `agents/<id>/`, beside `agents/chief-of-staff/`: a `role.json` against `role.schema.json` and a SKILL.md, the shape of a role module. The chief of staff's folder holds an AGENTS.md and no `role.json`, because its role is in the library; a folder like it is a shipped agent of a library role, and `check-roles.ts` holds its name to one.
+- They are a scope of their own. `naiveRoles()` in `packages/naive/src/engine/agents/roles.ts` overlays the library with them for Naive; `loadRoles` and `knownRoles`, which venture checks read, never see them. `check-roles.ts` checks them when no venture is given, and checks a venture with the library alone, since each is its own business.
+- One source of truth: a role may name a library role in `extends` and leave out every field it inherits but its aliases. Product-manager extends `product-design-lead` (whose alias product-manager is allowed beside it, since the role with that id extends the alias's owner), and architect extends the library's architect by the same id. Requirements-engineer, release-manager, technical-writer and instruction-steward have no library counterpart and stand alone. The schema asks an agent role with `extends` only for its id, name, kind and description, and `check-roles.ts` validates the merged role.
+- Each role is an agent role with PCF links, artifacts, standards (reference ids), research methods and an SFIA level, and is verified by another role:
+
+| Role | PCF | Artifacts | Standards | Verified by |
+|---|---|---|---|---|
+| product-manager | 2.1.1, 2.1.2 accountable | product-capability, goal | APQC PCF | founder |
+| architect | 8.2.3 responsible, 2.3.1.6 consulted | adr, design-document | ISO/IEC/IEEE 42010 | founder, also requirements-engineer |
+| requirements-engineer | 2.3.1.6 accountable, 2.3.1.3 responsible | requirement, requirements-spec | ISO/IEC/IEEE 29148 | product-manager, also architect |
+| release-manager | 8.6.3 accountable, 8.6.5 responsible | release | ISO/IEC/IEEE 12207 | product-manager, also founder |
+| technical-writer | 13.6.5 accountable, 13.6.6 responsible | docs-page, release-note, changelog-entry | ISO/IEC/IEEE 26514 | product-manager, also release-manager |
+| instruction-steward | 13.6.4 accountable, 8.1.5.3 responsible | decision-record | ISO/IEC/IEEE 26514 | founder |
+
+- O*NET: requirements-engineer is 15-1211.00 Computer Systems Analysts and technical-writer 27-3042.00 Technical Writers; architect inherits 15-1299.08 from the library. No occupation in O*NET 31.0 fits the product manager, the release manager or the instruction steward closely enough, so they name none.
+- The release manager holds the release's facts (the `release` record type) and the technical writer writes the pages. `documents.json` gains `docs-page`, a page of the docs site that reads a capability's summary, status and requirements and the decisions behind it, with holes for how to use it and what changed when, styled by the brand's name, voice, fonts, typefaces, colors and marks and the design system's components, and climbing to the live site. A kind's new `made_by` names the one role that may list it: `docs-page`, `release-note` and `changelog-entry` name technical-writer, and `check-roles.ts` fails when another role names one, or when technical-writer is in scope and leaves one out.
+- The instruction steward is memoryless and reads only the codebase. It may propose deleting a stale instruction as a decision record and never deletes one without a person. Whether stale instructions may be deleted, and by whom, is not decided.
+- `check-roles.ts` also checks, for every scope, that each artifact is a record type or a document kind (EE-230) and each standard is a reference id. The references for ISO/IEC/IEEE 29148, 26514 and 12207 were added with method `standards`.
+- `functions/pcf-roles.json` keeps the library's links only: `agents/` is not in the package's `files`, and the file is the map a venture reads.
+
+## Steps 2 to 11 (steps 2 to 5, 7, 9 and 10 built, the rest not built)
 
 Each step is one pull request with its decision id assigned.
 
@@ -113,7 +135,7 @@ Each step is one pull request with its decision id assigned.
 7. **EE-235 Digital workers (built).** The deployment record, its statechart with a Lean model, and `naive workers`. Specialists are migrated, leads write temporary roles and merges, and promotion is proposed as a decision only a person accepts. Built in `packages/naive/src/engine/agents/workers.ts`, `packages/naive/src/engine/agents/worker-state.ts` and `packages/naive/lean/Naive/Workers.lean`; see `packages/naive/src/engine/agents/README.md` for the statechart. A worker goes active only when a person activates it, which is the hook step 8 uses.
 8. **EE-236 Staffing gate.** SAD's gate questions run as checks. After 1B a lead drafts a staffing plan from the specs as one decision with EE-211 candidates. Deployments go active only once a person decides, and the gate fails closed (EE-217).
 9. **EE-237 Role programs on Effect (built).** The `RoleProgram` interface and `naive role check <role>`, which run deterministic checks of a role's artifacts. See the step 9 section below.
-10. **EE-238 Rows for Naive.** `agents/<role>/` for the six Naive roles.
+10. **EE-238 Rows for Naive (built, above).** `agents/<role>/` for the six Naive roles.
 11. **EE-239 and after: rows for businesses.** One function per pull request. The first cut is one role per PCF level 2 process group (74), named after its best O*NET match.
 
 ## Step 9: role programs (EE-237, built)
@@ -127,5 +149,5 @@ Each step is one pull request with its decision id assigned.
 
 ## Not built
 
-- Everything in steps 6, 8, 10 and 11. The step 1 schema holds their optional fields, which every role leaves empty except `pcf` and `onet` (step 4) and the `reads` and `artifacts` of the architect and the product and design lead (step 9).
+- Everything in steps 6, 8 and 11. The step 1 schema holds their optional fields, which every library role leaves empty except `pcf` and `onet` (step 4) and the `reads` and `artifacts` of the architect and the product and design lead (step 9); Naive's own roles under `agents/` fill them (step 10).
 - Vault wikilinks to the archived `roles/ceo` and `roles/cto` remain in a few skills and the venture template's `index.md` and `pillars/product.md`. They pointed at vault paths that were already broken, and are left for the step that writes those rows.

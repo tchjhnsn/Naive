@@ -664,6 +664,67 @@
         "is": "adapted",
         "why": "Naive counts the obtainable market as reachable buyers (a head count) as well as dollars, because gate thresholds scale with how many people can be reached (EE-157)."
       }
+    },
+    {
+      "id": "iso-iec-ieee-29148-2018-requirements-engineering",
+      "title": "ISO/IEC/IEEE 29148:2018 Systems and software engineering: Life cycle processes, Requirements engineering",
+      "authors": [
+        "ISO/IEC JTC 1/SC 7",
+        "IEEE"
+      ],
+      "year": 2018,
+      "kind": "standard",
+      "method": "standards",
+      "summary": "The processes and products of requirements engineering: eliciting stakeholder needs, writing each requirement so it is necessary, unambiguous, verifiable and traceable, and the content of the stakeholder, system and software requirements specifications.",
+      "url": "https://www.iso.org/standard/72089.html",
+      "informs": [
+        "field:role.standards",
+        "field:requirement.statement"
+      ],
+      "stance": {
+        "is": "adopted",
+        "why": "Naive's requirements engineer works to it (EE-238): each requirement record says what it serves and how it is verified, and the requirements-spec document kind renders them as a specification."
+      }
+    },
+    {
+      "id": "iso-iec-ieee-26514-2022-information-for-users",
+      "title": "ISO/IEC/IEEE 26514:2022 Systems and software engineering: Design and development of information for users",
+      "authors": [
+        "ISO/IEC JTC 1/SC 7",
+        "IEEE"
+      ],
+      "year": 2022,
+      "kind": "standard",
+      "method": "standards",
+      "summary": "How information for the users of a system is designed and developed: knowing the audience and its tasks, structuring topics by kind, keeping the information accurate against the system it describes, and reviewing and testing it before release.",
+      "url": "https://www.iso.org/standard/77451.html",
+      "informs": [
+        "field:role.standards"
+      ],
+      "stance": {
+        "is": "adopted",
+        "why": "Naive's technical writer and instruction steward work to it (EE-238): a docs page reads its facts from records and says where none exist, and the instructions agents read are kept true against the code."
+      }
+    },
+    {
+      "id": "iso-iec-ieee-12207-2017-software-life-cycle",
+      "title": "ISO/IEC/IEEE 12207:2017 Systems and software engineering: Software life cycle processes",
+      "authors": [
+        "ISO/IEC JTC 1/SC 7",
+        "IEEE"
+      ],
+      "year": 2017,
+      "kind": "standard",
+      "method": "standards",
+      "summary": "The processes of a software life cycle, among them configuration management, which identifies, records and releases baselines, and transition, which moves a release into use.",
+      "url": "https://www.iso.org/standard/63712.html",
+      "informs": [
+        "field:role.standards"
+      ],
+      "stance": {
+        "is": "adopted",
+        "why": "Naive's release manager works to its configuration management and transition processes (EE-238): a release records what was frozen into it, and production ship stays a person's decision."
+      }
     }
   ]
 }
