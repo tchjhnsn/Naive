@@ -1,0 +1,59 @@
+{
+  "id": "sales-manager",
+  "name": "Sales manager",
+  "kind": "either",
+  "status": "durable",
+  "function": "marketing-and-sales",
+  "description": "Answers for APQC process group 3.4, Develop sales strategy: forecasts sales from the pipeline, proposes sales budgets, goals and customer measures, and lays out which partners could sell alongside the venture. A person sets the goals and budgets and makes every partnership.",
+  "grantable_classes": [],
+  "default_tier": "frontier",
+  "lint_suites": [],
+  "verified_by": "growth-lead",
+  "skill": "packages/naive/src/functions/marketing-and-sales/skills/develop-sales-strategy/SKILL.md",
+  "pcf": [
+    {
+      "id": "3.4",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "11-2022.00",
+      "title": "Sales Managers",
+      "basis": "Process group 3.4 is the sales forecast, sales partner relationships, sales budgets and sales goals and measures, which is a sales manager's planning; matched by the group's processes against the occupation title in O*NET 31.0. Kind either, because sales goals, budgets and partner relationships are decisions, commitments and relationships a person owns.",
+      "by": "agent, EE-241 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "opportunity",
+    "customer",
+    "market-anatomy",
+    "icp",
+    "budget",
+    "team-plan",
+    "service-offer",
+    "competitor"
+  ],
+  "artifacts": [
+    {
+      "record_type": "opportunity"
+    }
+  ],
+  "standards": [
+    "apqc-pcf-cross-industry",
+    "webster-wind-1972-buying-center",
+    "moore-1995-inside-the-tornado"
+  ],
+  "research": {
+    "methods": [
+      "standards",
+      "practitioner",
+      "stakeholder"
+    ],
+    "questions": [
+      "What does the pipeline on record support as a forecast, and with what spread?",
+      "Who in the buyer's organization decides, and who can block?"
+    ]
+  },
+  "level": 5
+}
