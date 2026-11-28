@@ -125,7 +125,7 @@ def «pillar» : Concept Placement := ⟨[
 def «ventureTemplate» : Concept Placement := ⟨[
   ("level venture", fun f => Decidable.decide (f.level = Level.«venture»))]⟩
 
-/-- [D] product (kept). One thing a venture offers, stored as a card in products/. Standard: common usage. Fields: broader ["information artifact"]; handoff_type false. -/
+/-- [D] product (kept). A role: something a venture offers, borne by a thing whose kind picks the framework that builds it (software, a material object such as a rocket, or a service). The same thing can bear other roles at once. Its record is a product card in products/. Standard: BFO role (ISO/IEC 21838-2); common usage. Fields: broader ["capacity"]; handoff_type false. -/
 def «product» : Concept Placement := ⟨[
   ("level purpose", fun f => Decidable.decide (f.level = Level.«purpose»))]⟩
 

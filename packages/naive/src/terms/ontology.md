@@ -74,7 +74,7 @@ The system is opinionated: it names one default for each choice, and every defau
 
 | Noun | Meaning | Standard | References | Function | Handoff type |
 | --- | --- | --- | --- | --- | --- |
-| product | One thing a venture offers, stored as a card in products/ | common usage |  |  |  |
+| product | A role: something a venture offers, borne by a thing whose kind picks the framework that builds it (software, a material object such as a rocket, or a service). The same thing can bear other roles at once. Its record is a product card in products/ | BFO role (ISO/IEC 21838-2); common usage |  |  |  |
 | market | Who a product serves: customer type, segment, geography, vertical or horizontal | Abell (customer groups) | abell-1980-defining-the-business |  |  |
 | job | The need a product meets | Abell (customer functions); jobs to be done | abell-1980-defining-the-business |  |  |
 | technology | How a product meets the need | Abell (alternative technologies) | abell-1980-defining-the-business |  |  |
