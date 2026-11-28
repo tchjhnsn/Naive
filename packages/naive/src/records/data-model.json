@@ -3125,6 +3125,21 @@
       "note": "How strict each phase gate is (EE-156): per item, what proves it and its evidence ladder (very low to high), and the lenient, standard and strict presets giving each item's minimum level and whether it fails closed or open. Thresholds are unvalidated priors"
     },
     {
+      "id": "spec-gates",
+      "layer": "operations",
+      "function": "strategy",
+      "level": "method",
+      "schema": "packages/naive/src/records/spec-gates.schema.json",
+      "generator": "packages/naive/src/engine/generators/spec-gates.ts",
+      "paths": [
+        "packages/naive/src/phases/spec-gates.json"
+      ],
+      "refs": [
+        { "field": "gates.questions.answers.record", "to": "(record types)", "checked_by": "packages/naive/src/engine/generators/spec-gates.ts" }
+      ],
+      "note": "The specification gates and the staffing gate (EE-236): SAD's gate questions for 0A to 1B asked of Naive's own records, each answer naming the record type and field it is read from and each question no record type answers named as a hole, then the staffing plan a lead drafts as one decision once 1B is reached. Read by packages/naive/src/engine/spec-gates.ts and packages/naive/src/engine/staffing.ts"
+    },
+    {
       "id": "function-decisions",
       "layer": "governance",
       "function": "capabilities",
