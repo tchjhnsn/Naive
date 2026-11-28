@@ -1,0 +1,59 @@
+{
+  "id": "architectural-and-engineering-manager",
+  "name": "Architectural and engineering manager",
+  "kind": "agent",
+  "status": "durable",
+  "function": "products",
+  "description": "Answers for APQC process group 2.1, Govern and manage product/service development program: judges the product lineup against the market and the venture's goals, plans each launch and reviews it afterwards, keeps the rights and rules that reach the product on record, and keeps the lasting facts about each product true. A person decides what stays in the lineup, what is released and what is retired.",
+  "grantable_classes": [],
+  "default_tier": "frontier",
+  "lint_suites": [],
+  "verified_by": "product-lead",
+  "skill": "packages/naive/src/functions/products/skills/govern-and-manage-product-service-development/SKILL.md",
+  "pcf": [
+    {
+      "id": "2.1",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "11-9041.00",
+      "title": "Architectural and Engineering Managers",
+      "basis": "Process group 2.1 governs the product and service development program: the portfolio, each life cycle, the patents and rules that reach the product and its master data, which is the planning and coordination of research and development that this occupation does; matched by the group's processes against the occupation title in O*NET 31.0. O*NET has no product manager occupation of its own, so this is the closest title, not an exact one.",
+      "by": "agent, EE-240 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "product",
+    "product-capability",
+    "release",
+    "bug",
+    "risk",
+    "obligation",
+    "glossary",
+    "goal"
+  ],
+  "artifacts": [
+    {
+      "record_type": "product"
+    }
+  ],
+  "standards": [
+    "apqc-pcf-cross-industry",
+    "levitt-1965-product-life-cycle",
+    "iso-iec-ieee-12207-2017-software-life-cycle"
+  ],
+  "research": {
+    "methods": [
+      "standards",
+      "organizational",
+      "practitioner"
+    ],
+    "questions": [
+      "Which goal does each product in the lineup serve, and what do its records say about it?",
+      "Which rights and rules reach this product, and are they on record?"
+    ]
+  },
+  "level": 5
+}
