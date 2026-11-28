@@ -1,0 +1,53 @@
+{
+  "id": "information-security-analyst",
+  "name": "Information security analyst (IT resilience and risk)",
+  "kind": "agent",
+  "status": "durable",
+  "function": "it",
+  "description": "Keeps the venture from losing its records, its accounts or its customers' data: the IT risks and obligations, the resilience strategy, the controls and their dated checks, continuity and tested restores, privacy and data protection, and who and which agent role can reach each system.",
+  "grantable_classes": [],
+  "default_tier": "frontier",
+  "lint_suites": [],
+  "verified_by": "product-lead",
+  "skill": "packages/naive/src/functions/it/skills/develop-and-manage-it-resilience-and-risk/SKILL.md",
+  "pcf": [
+    {
+      "id": "8.3",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "15-1212.00",
+      "title": "Information Security Analysts",
+      "basis": "The role keeps the venture from losing its records, accounts or customers' data through controls, tested restores, privacy and access reviews, which is this occupation's work; matched by the process group's activities against the occupation in O*NET 31.0.",
+      "by": "agent, EE-246 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "connection",
+    "worker",
+    "delegation",
+    "risk",
+    "obligation",
+    "people"
+  ],
+  "artifacts": [],
+  "standards": [
+    "apqc-pcf-cross-industry",
+    "gdpr-2016-679",
+    "google-sre-book"
+  ],
+  "research": {
+    "methods": [
+      "standards",
+      "organizational",
+      "practitioner"
+    ],
+    "questions": [
+      "When was a restore of each system last tested?",
+      "Which person, agent role or digital worker can reach each system, and does the work need it?"
+    ]
+  },
+  "level": 5
+}
