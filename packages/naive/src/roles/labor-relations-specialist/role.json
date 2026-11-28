@@ -1,0 +1,48 @@
+{
+  "id": "labor-relations-specialist",
+  "name": "Labor relations specialist",
+  "kind": "either",
+  "status": "durable",
+  "function": "human-capital",
+  "description": "Finds which labour obligations reach the venture, writes the route for raising a complaint or grievance, keeps the record of any forum that decides things with the people who do the work, and watches the rules for changes.",
+  "grantable_classes": [],
+  "default_tier": "frontier",
+  "lint_suites": [],
+  "verified_by": "strategy-lead",
+  "skill": "packages/naive/src/functions/human-capital/skills/manage-employee-relations/SKILL.md",
+  "pcf": [
+    {
+      "id": "7.4",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "13-1075.00",
+      "title": "Labor Relations Specialists",
+      "basis": "The role finds the labour obligations that reach the venture, writes the route for raising a grievance and keeps the record of any forum with the people who do the work, which is this occupation's work; matched by the process group's activities against the occupation in O*NET 31.0.",
+      "by": "agent, EE-245 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "people",
+    "obligation",
+    "team-plan"
+  ],
+  "artifacts": [],
+  "standards": [
+    "apqc-pcf-cross-industry"
+  ],
+  "research": {
+    "methods": [
+      "standards",
+      "organizational",
+      "practitioner"
+    ],
+    "questions": [
+      "Which employment law reaches the venture, where its people work?",
+      "Has a grievance been raised, and was the written route followed?"
+    ]
+  },
+  "level": 5
+}
