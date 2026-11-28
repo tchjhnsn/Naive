@@ -118,7 +118,7 @@ export const REGISTRY: Registry = {
   "packages/naive/src/checks/check-recipes-test.ts": plain("proves the recipes check breaks on each rule on copies of the example venture"),
   "packages/naive/src/checks/check-direct-writes-test.ts": plain("proves the direct writes check catches what it must"),
   "packages/naive/src/checks/check-direct-writes.ts": plain("code outside the router writes files through the shared record writer; it counts write calls by name and compares them with a list"),
-  "packages/naive/src/checks/check-roles.ts": plain("the role library check validates each role file against its schema, compares ids with folders, resolves verifier ids and aliases, and compares a person role's declared tier with one fixed value, so no term is decided"),
+  "packages/naive/src/checks/check-roles.ts": plain("the role library check validates each role file against its schema, compares ids with folders, resolves verifier ids and aliases, compares a person role's declared tier with one fixed value, looks PCF ids and O*NET codes up in their files, counts accountable roles per element and compares function ids with a portfolio (EE-232); --complete suggests occupations by word overlap and never decides one, so no term is decided"),
   "packages/naive/src/checks/check-roles-test.ts": plain("proves the role library check breaks on each rule on copies"),
   "packages/naive/src/checks/check-record-paths-test.ts": plain("proves the record paths check catches what it must"),
   "packages/naive/src/checks/check-record-paths.ts": plain("code reads schema files and the data model through packages/naive/src/records; it matches path text"),

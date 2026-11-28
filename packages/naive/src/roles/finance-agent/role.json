@@ -14,5 +14,11 @@
     "money/lint"
   ],
   "verified_by": "founder",
-  "skill": "packages/naive/library/packages/finance/skill/SKILL.md"
+  "skill": "packages/naive/library/packages/finance/skill/SKILL.md",
+  "pcf": [
+    {
+      "id": "9.0",
+      "raci": "responsible"
+    }
+  ]
 }

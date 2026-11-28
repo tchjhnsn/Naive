@@ -12,5 +12,27 @@
     "people/lint"
   ],
   "verified_by": "founder",
-  "skill": "packages/naive/library/packages/people/skill/SKILL.md"
+  "skill": "packages/naive/library/packages/people/skill/SKILL.md",
+  "pcf": [
+    {
+      "id": "7.0",
+      "raci": "responsible"
+    },
+    {
+      "id": "7.1",
+      "raci": "responsible"
+    },
+    {
+      "id": "7.2",
+      "raci": "responsible"
+    }
+  ],
+  "onet": [
+    {
+      "code": "11-3121.00",
+      "title": "Human Resources Managers",
+      "basis": "The role owns the team plan, roles and recruiting; matched by the role's description against the occupation title in O*NET 31.0.",
+      "by": "agent, EE-232 step 4 (not yet reviewed by a person)"
+    }
+  ]
 }

@@ -4525,6 +4525,35 @@ export type Obligation = {
   note?: string;
 };
 
+/** A compact O*NET reference at packages/naive/src/functions/onet.json (EE-232): every occupation of one O*NET database release by its O*NET-SOC code and title, the detailed work activities (DWAs) of that release, and for each occupation the DWAs its task statements link to. It is what Naive needs to suggest occupations for a PCF element no role answers for, and nothing more: no descriptions, task statements, ratings or other O*NET content. O*NET is licensed under CC BY 4.0, so the file carries the attribution O*NET asks for. Written by scripts/import-onet.ts; an empty reference (no occupations and no DWAs) is valid and means no release was imported. */
+export type Onet = {
+  /** The O*NET database release, such as 31.0. */
+  release: string;
+  /** The year and month the release was published, from its Read Me.txt when the import found one. */
+  published?: string;
+  /** A reference id in packages/naive/src/records/layers/<layer>/references/references.json. */
+  source: string;
+  /** The attribution O*NET's CC BY 4.0 licence asks for in every copy and derivative work, naming the release. */
+  attribution: string;
+  note?: string;
+  /** Every detailed work activity of the release, sorted by element id. */
+  dwas: {
+    /** The DWA's O*NET element id, such as 4.A.2.a.4.i.3. */
+    id: string;
+    /** The DWA's name, verbatim from O*NET. */
+    title: string;
+  }[];
+  /** Every occupation of the release, sorted by code. */
+  occupations: {
+    /** The O*NET-SOC code, such as 11-3031.00. */
+    code: string;
+    /** The occupation's title, verbatim from O*NET. */
+    title: string;
+    /** The DWAs the occupation's task statements link to, by element id, sorted. Empty for an occupation O*NET gives no tasks. */
+    dwas: string[];
+  }[];
+};
+
 /** The catalog of ontologies (N-050): one file, packages/naive/src/terms/ontology-catalog.json, lists every name@function scope with its own version, owner, status and imports. Seeded with one scope per function (gate G5, Torian 2026-11-05). That each scope's suffix is a function id and its owner, that imports are acyclic and that every term a scope uses is defined in it or in a scope it imports is checked by node packages/naive/src/terms/catalog-test.ts, not here. mappings names the SKOS and OWL term for each class and field, or none. */
 export type OntologyCatalog = OntologyCatalogCatalog;
 
@@ -5037,6 +5066,26 @@ export type Ownership = {
     /** The class it converts into at the next priced round */
     converts_to?: string;
     rights?: ("board-seat" | "board-observer" | "information" | "pro-rata" | "protective-provisions" | "anti-dilution-broad-based" | "anti-dilution-full-ratchet" | "drag-along" | "tag-along" | "right-of-first-refusal" | "co-sale" | "registration" | "redemption")[];
+  }[];
+};
+
+/** The PCF side of the link between roles and APQC's Process Classification Framework (EE-232), at packages/naive/src/functions/pcf-roles.json: for each element some role in the role library names in its pcf field, every such role with its RACI part. The role side is the source: packages/naive/src/engine/generators/pcf-roles.ts writes this file from packages/naive/src/roles/<id>/role.json and its --check fails when the file is stale, so the link is held both ways and cannot drift. Never edited by hand. It names PCF hierarchy ids, so it carries APQC's attribution. */
+export type PcfRoles = {
+  /** The version of packages/naive/src/functions/pcf.json the hierarchy ids belong to. */
+  pcf_version: string;
+  /** APQC's attribution, copied from pcf.json. */
+  attribution: string;
+  note?: string;
+  /** Every element some library role links to, sorted by hierarchy id. */
+  elements: {
+    /** A hierarchy id in packages/naive/src/functions/pcf.json. */
+    id: string;
+    /** The roles linked to the element: accountable first, then responsible, consulted and informed, each by role id. */
+    roles: {
+      /** A role id in the role library. */
+      role: string;
+      raci: "responsible" | "accountable" | "consulted" | "informed";
+    }[];
   }[];
 };
 
