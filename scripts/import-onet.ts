@@ -35,7 +35,7 @@ if (!dir || !release) fail("usage: node scripts/import-onet.ts <onet db dir> --r
 function table(name: string, columns: string[]): Record<string, string>[] {
   const file = join(dir as string, name);
   if (!existsSync(file)) fail(`${file}: missing; <onet db dir> must be an O*NET database release in its text form`);
-  const [head, ...lines] = readFileSync(file, "utf8").replace(/^﻿/, "").split(/\r?\n/).filter((l) => l.length);
+  const [head, ...lines] = readFileSync(file, "utf8").replace(/^\uFEFF/, "").split(/\r?\n/).filter((l) => l.length);
   const header = (head ?? "").split("\t").map((h) => h.trim());
   for (const c of columns) if (!header.includes(c)) fail(`${file}: has no column ${c}`);
   return lines.map((l) => { const cells = l.split("\t"); return Object.fromEntries(header.map((h, i) => [h, (cells[i] ?? "").trim()])); });

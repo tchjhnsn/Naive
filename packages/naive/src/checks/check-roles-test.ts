@@ -92,8 +92,8 @@ const complete = (root: string, venture?: string, extra: string[] = []) => {
   return { status: r.status, out: r.stdout + r.stderr };
 };
 const today = complete(repo);
-t("--complete fails on the library today, naming each process group with no responsible or accountable role", today.status === 1 && /GAP   PCF 1\.1 Define the business concept and long-term vision \(strategy\): no role is responsible or accountable/.test(today.out) && !/GAP   PCF 1\.0 /.test(today.out) && !/GAP   PCF 2\.3 /.test(today.out), today.out);
-t("--complete suggests O*NET occupations for a gap", /GAP   PCF 9\.5 Process payroll \(finance\): .*O\*NET 31\.0 suggests 43-3051\.00 Payroll and Timekeeping Clerks/.test(today.out), today.out);
+t("--complete fails on the library today, naming each process group with no responsible or accountable role", today.status === 1 && /GAP {3}PCF 1\.1 Define the business concept and long-term vision \(strategy\): no role is responsible or accountable/.test(today.out) && !/GAP {3}PCF 1\.0 /.test(today.out) && !/GAP {3}PCF 2\.3 /.test(today.out), today.out);
+t("--complete suggests O*NET occupations for a gap", /GAP {3}PCF 9\.5 Process payroll \(finance\): .*O\*NET 31\.0 suggests 43-3051\.00 Payroll and Timekeeping Clerks/.test(today.out), today.out);
 t("--complete never suggests an All Other occupation", !/All Other/.test(today.out));
 const strategyOnly = join(tmp, "strategy-only");
 mkdirSync(strategyOnly, { recursive: true });
@@ -102,9 +102,9 @@ writeRole(join(strategyOnly, "governance/roles"), "strategy-desk", { id: "strate
 const covered = complete(repo, strategyOnly);
 t("--complete passes for a venture that runs only strategy and has a role for each of its process groups", covered.status === 0 && /every PCF element of levels 1 to 2 under 1 function\(s\)/.test(covered.out), covered.out);
 const deeper = complete(repo, strategyOnly, ["--level", "3"]);
-t("--complete --level 3 also asks for each process", deeper.status === 1 && /GAP   PCF 1\.1\.1 Assess the external environment/.test(deeper.out), deeper.out);
+t("--complete --level 3 also asks for each process", deeper.status === 1 && /GAP {3}PCF 1\.1\.1 Assess the external environment/.test(deeper.out), deeper.out);
 const noSuggest = (() => { const root = join(tmp, `r-${++n}`); cpSync(join(repo, LIBRARY), join(root, LIBRARY), { recursive: true }); emptyOnet(join(root, LIBRARY), root); return complete(root); })();
-t("--complete with an empty O*NET reference reports gaps without suggestions", noSuggest.status === 1 && /GAP   PCF 1\.1 Define the business concept and long-term vision \(strategy\): no role is responsible or accountable\n/.test(noSuggest.out), noSuggest.out);
+t("--complete with an empty O*NET reference reports gaps without suggestions", noSuggest.status === 1 && /GAP {3}PCF 1\.1 Define the business concept and long-term vision \(strategy\): no role is responsible or accountable\n/.test(noSuggest.out), noSuggest.out);
 
 rmSync(tmp, { recursive: true, force: true });
 console.log(failed ? `\n${failed} failing` : "\nall passed");
