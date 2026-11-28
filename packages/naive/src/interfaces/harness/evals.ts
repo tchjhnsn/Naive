@@ -87,8 +87,9 @@ export function evaluate(dir: string, { researched = [], settled = [] }: { resea
   const summaryFile = join(ventureFile(dir, "money/_summary.json"));
   if (existsSync(summaryFile)) {
     const m = load<MoneySummary>(summaryFile);
-    const age = (Date.now() - Date.parse(m.synced_at)) / 864e5;
-    add("money_fresh", age <= 7 ? 1 : 0, `money synced from ${m.source} ${age.toFixed(1)} days ago (7 at most); activity as of ${m.as_of}`);
+    // A summary written from the records has no sync, so its as_of is when it was written.
+    const age = (Date.now() - Date.parse(m.synced_at ?? m.as_of)) / 864e5;
+    add("money_fresh", age <= 7 ? 1 : 0, `money ${m.synced_at ? "synced" : "written"} from ${m.source} ${age.toFixed(1)} days ago (7 at most); activity as of ${m.as_of}`);
     // Only what touches money has to cite it: pricing, spend, hiring, runway, fundraising, cash.
     const records = [...agentDrafted, ...(problem ? [{ problem: load<unknown>(problem) }] : [])].map((d) => JSON.stringify(d));
     const touching = records.filter((x) => /money\/summary|\b(pric(e|ing)|spend|budget|hir(e|ing)|runway|burn|fundrais|cash|revenue)\b/i.test(x));

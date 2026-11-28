@@ -53,7 +53,7 @@
     },
     {
       "id": "ar-reports",
-      "do": "Write what is owed, by whom and how many days past due into the money summary, citing the invoices and receipts behind each figure.",
+      "do": "Write what is owed, by whom and how many days past due into the money summary, citing the invoices and receipts behind each figure. Set source to records and as_of to the time you write it, and leave synced_at out, since it is only for a summary that came from a sync.",
       "skill": "perform-revenue-accounting",
       "activity": "9.2.3.4",
       "writes": [

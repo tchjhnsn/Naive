@@ -36,7 +36,7 @@
     },
     {
       "id": "state-the-position",
-      "do": "Rewrite the money summary from the accounts, the spend register and the budget so cash, monthly burn, revenue booked and months of runway are current, each figure citing the record it came from.",
+      "do": "Rewrite the money summary from the accounts, the spend register and the budget so cash, monthly burn, revenue booked and months of runway are current, each figure citing the record it came from. Set source to records and as_of to the time you write it, and leave synced_at out, since it is only for a summary that came from a sync.",
       "skill": "perform-planning-and-management-accounting",
       "writes": [
         "purpose/money/summary"
