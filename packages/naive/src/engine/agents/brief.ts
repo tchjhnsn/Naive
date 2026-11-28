@@ -5,10 +5,10 @@
 //   agentBrief("finance-agent", null)   // { kind: "function-agent", role, spec, instructions: { path, text }, workflows, decisions, env }
 //   agentBrief("finance-agent", dir)    // the same, with the venture's activity assignments for finance (EE-173)
 //   agentBrief("finance-lead", dir)     // { kind: "lead", role, spec, skill: { path, text }, env, staffed, fix? }
-//   agentBrief("finance-specialist-dunning", dir)  // { kind: "specialist", role, spec (its spawn record and the reach
-//                                       //   it still has), instructions (its parent's), skills, env, how }
+//   agentBrief("finance-worker-dunning", dir)  // { kind: "worker", role, spec (its deployment record and the reach it
+//                                       //   still has), instructions (its role's), skills, env, how } (EE-235)
 //   agentRoles()                        // every role a brief exists for: each <function>-agent, then each lead. A
-//                                       //   specialist is not listed: it lives in one venture, not in Naive's data
+//                                       //   digital worker is not listed: it lives in one venture, not in Naive's data
 
 import { existsSync, readFileSync } from "node:fs";
 import { join, relative } from "node:path";
@@ -18,7 +18,8 @@ import { assignedSteps, assignmentsFor } from "./assignments.ts";
 import type { Phase, TeamPlanRole } from "./function-spec.ts";
 import { functionAgent, functionIds, naivePath, teamPlanEntry } from "./function-spec.ts";
 import { leadAgent, leadIds, leadTeamPlanEntry } from "./lead-spec.ts";
-import { SPECIALISTS, readSpecialist, specialistOfAgent, specialistReach } from "./reach.ts";
+import { WORKERS, functionOfAgent, readWorker, workerOfAgent, workerReach } from "./reach.ts";
+import { loadRoles } from "./roles.ts";
 
 /** A file the brief carries: its path from the Naive root and its whole text. */
 export interface BriefFile { readonly path: string, readonly text: string }
@@ -26,7 +27,7 @@ export interface BriefFile { readonly path: string, readonly text: string }
 export interface BriefJson { readonly path: string, readonly id: string, readonly content: unknown }
 
 export interface AgentBrief {
-  readonly kind: "function-agent" | "lead" | "specialist",
+  readonly kind: "function-agent" | "lead" | "worker",
   readonly role: string,
   /** The spec with every machine path made relative to the Naive root. */
   readonly spec: Record<string, unknown>,
@@ -40,11 +41,11 @@ export interface AgentBrief {
   readonly decisions?: BriefJson | null,
   /** lead: the template's SKILL.md. */
   readonly skill?: BriefFile | null,
-  /** specialist: the SKILL.md of each skill its spawn named, from its parent function's module (EE-213). */
+  /** worker: the SKILL.md of each skill its deployment named, from its role's function module (EE-235). */
   readonly skills?: readonly BriefFile[],
   /** The environment to act under, so every write through the CLI or router is the role's. */
   readonly env: { readonly MENTURA_ACTOR_ID: string },
-  /** The team-plan entry a person adds so a venture staffs the role. The agent never writes it. A specialist has none: its reach is its spawn record, not the plan. */
+  /** The team-plan entry a person adds so a venture staffs the role. The agent never writes it. A worker has none: its reach is its deployment record, not the plan. */
   readonly team_plan_entry?: TeamPlanRole,
   /** With a venture: whether its team plan has the role as an agent's. */
   readonly staffed?: boolean,
@@ -89,21 +90,24 @@ export function agentBrief(role: string, dir: string | null): AgentBrief | Error
       how: `Act as ${s.role}: follow instructions, read foundation/telos and foundation/goals first and name which goal the run serves, run a workflow's steps in order (a step with consider is optional: run it only when its when condition holds or a person asks, and otherwise say you considered it and why you did not run it), reach the workflow's goal and stop only when its done_criteria pass, raise a question in decisions/* when the decision matrix says escalate, and write only the routes in spec.writes. Ask the person what only they can know; when no one answers, record the gap as an assumption on the record and never write a guess as a fact. Cite the record behind every claim. Skill paths under /function/ are relative to spec.module.${assigned?.activities.length ? " Some of your activities have a rule, from the venture's own assignments or by default from the activity's kind: follow the rule of each entry in assignments, and of a step's assignment." : ""}`,
     };
   }
-  // A temporary specialist (EE-213): its spec is its spawn record, its instructions its parent's, and its reach what
-  // the router will still give it now. It is only a role in a venture, so without a venture folder there is no brief.
-  const sp = specialistOfAgent(role);
-  if (sp) {
-    const rec = readSpecialist(dir, role);
-    if (!rec) return new Error(`no specialist ${role}${dir ? ` in this venture: its record would be ${SPECIALISTS}/${role}.json` : ": name the venture it was spawned in with --venture"}`);
-    const p = functionAgent(rec.function);
-    const { writes, gone } = specialistReach(rec, new Date().toISOString());
+  // A digital worker (EE-235): its spec is its deployment record, its instructions its role's, and its reach what the
+  // router will still give it now. It is only a deployment in a venture, so without a venture folder there is no brief.
+  if (workerOfAgent(role)) {
+    const rec = readWorker(dir, role);
+    if (!rec) return new Error(`no worker ${role}${dir ? ` in this venture: its record would be ${WORKERS}/${role}.json` : ": name the venture it was deployed in with --venture"}`);
+    const r = loadRoles(dir ?? undefined).get(rec.role);
+    const wfn = functionOfAgent(rec.role) ?? (r?.function && (functionIds() as string[]).includes(r.function) ? r.function : null);
+    const p = wfn ? functionAgent(wfn) : null;
+    const { writes, gone } = workerReach(rec, dir, new Date().toISOString());
     const named = new Set(rec.skills ?? []);
-    const skills = p.skills.filter((s) => named.has(s.name)).map((s) => text(join(p.module, `${s.path.replace("/function/", "")}SKILL.md`))).filter((f): f is BriefFile => !!f);
+    const skills = p ? p.skills.filter((s) => named.has(s.name)).map((s) => text(join(p.module, `${s.path.replace("/function/", "")}SKILL.md`))).filter((f): f is BriefFile => !!f) : [];
+    const instructions = functionOfAgent(rec.role) && p ? text(p.instructions) : text(r?.skill ? naivePath(r.skill) : null);
+    const task = rec.task?.trim();
     return {
-      kind: "specialist", role: rec.id,
-      spec: { ...rec, writes, label: p.label, charter: p.charter, module: rel(p.module), ...(gone ? { reach_gone: gone } : {}) },
-      instructions: text(p.instructions), skills, env: { MENTURA_ACTOR_ID: rec.id }, ...staffing(rec.id),
-      how: `Act as ${rec.id}, a temporary specialist ${rec.parent} spawned for one task: ${/[.!?]$/.test(rec.task.trim()) ? rec.task.trim() : `${rec.task.trim()}.`} Do that task and nothing else, hand anything beyond it back to ${rec.parent}, and write only the routes in spec.writes. ${gone ? `Your reach is already gone because ${gone}, so every write is refused: tell ${rec.parent} so it spawns a new specialist.` : `Your reach ends at ${rec.expires}, after which every write is refused.`} It is never wider than ${rec.parent}'s own.`,
+      kind: "worker", role: rec.id,
+      spec: { ...rec, writes, ...(p ? { label: p.label, charter: p.charter, module: rel(p.module) } : {}), ...(gone ? { reach_gone: gone } : {}) },
+      instructions, skills, env: { MENTURA_ACTOR_ID: rec.id }, ...staffing(rec.id),
+      how: `Act as ${rec.id}, a digital worker deployed as ${rec.role} by ${rec.deployed_by}, sponsored by ${rec.sponsor}${task ? `, for one task: ${/[.!?]$/.test(task) ? task : `${task}.`} Do that task and nothing else` : ". Do the role's work"}, hand anything beyond it back to ${rec.deployed_by}, and write only the routes in spec.writes. ${gone ? `Your reach is gone because ${gone}, so every write is refused: tell ${rec.deployed_by}.` : rec.expires ? `Your reach ends at ${rec.expires}, after which every write is refused.` : "Your reach lasts until a person suspends or ends you."} It is never wider than ${rec.role}'s reach or ${rec.deployed_by}'s.`,
     };
   }
   if ((leadIds() as string[]).includes(role)) {

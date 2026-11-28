@@ -86,7 +86,7 @@ On a record read, the router adds short entries for the routes the agent is like
 | --- | --- |
 | `ref <field>` | A ref field in the data model, such as a product's `part_of` |
 | `link` | A string in the record that is a route, such as `foundation/icp` |
-| `reads first` | The `after` links in `library/packages/catalog.json` |
+| `reads first` | The `after` links in `packages/naive/library/packages/catalog.json` |
 | `waits on this` | Records whose `after` names this one |
 | `next step` | The first record need-now suggests now |
 | `asked` | Routes you name with `--prefetch`, like prefetch on hover |
@@ -192,5 +192,5 @@ node packages/naive/src/router/vitals.ts ~/ventures/prefetch-demo --trace --sess
 | `template` | The template, recomputed on every read |
 | Streaming and `loading` | Parts as they are ready; a computed route answers with its state first |
 | Bundle size | The context budget |
-| `instrumentation.ts` | `naive.config.json` instrumentation and `register()` in `packages/core/instrumentation.mjs` |
+| `instrumentation.ts` | `naive.config.json` instrumentation and `register()` in `packages/naive/src/core/instrumentation.ts` |
 | Core Web Vitals | Agent vitals |

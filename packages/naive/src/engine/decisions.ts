@@ -648,6 +648,11 @@ function peopleOf(dir: string): Set<string> {
 function notAPerson(dir: string, del: Delegation | null, by: string | undefined, { rosterRequired }: { rosterRequired: boolean }): string | null {
   const agent = actingAgent(by);
   if (agent) return `an agent (${agent}) is acting: it cannot act as the person ${by}`;
+  return notNamedPerson(dir, del, by, { rosterRequired });
+}
+
+/** Why by does not name a person of this venture, or null, whoever this process says is acting. */
+function notNamedPerson(dir: string, del: Delegation | null, by: string | undefined, { rosterRequired }: { rosterRequired: boolean }): string | null {
   const roles = new Set([...(del?.grants ?? []).flatMap((g) => [g.to, g.from]), ...agentRoleIds()].filter((r) => r && r !== del?.root));
   if (by !== undefined && roles.has(by)) return `${by} is a role, not a person`;
   const people = peopleOf(dir);
@@ -658,6 +663,12 @@ function notAPerson(dir: string, del: Delegation | null, by: string | undefined,
 /** Why by may not write as a person in this venture, or null: the check approve makes, for a door that writes records. */
 export function refusedPerson(dir: string, by: string | undefined): string | null {
   try { return notAPerson(dir, delegationOf(dir), by, { rosterRequired: false }); } catch (e) { return `${(e as Error).message}: no one writes until it is fixed`; }
+}
+
+/** Why id does not name a person of this venture, or null, whoever is acting: a worker's sponsor is named by
+ *  whoever deploys it, an agent included, so this is refusedPerson without the acting-agent check. */
+export function notVenturePerson(dir: string, id: string): string | null {
+  try { return notNamedPerson(dir, delegationOf(dir), id, { rosterRequired: false }); } catch (e) { return `${(e as Error).message}: no one is named until it is fixed`; }
 }
 
 /** Who may merge a decided version. A person may (with no grant, only the founder merges), and only a

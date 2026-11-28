@@ -3713,6 +3713,74 @@
       ]
     },
     {
+      "id": "EE-235",
+      "date": "2026-11-28",
+      "status": "in-force",
+      "decision": "A running agent is a digital worker: one role deployed as an agent, recorded at operations/workers/<id>.json (record type worker, route operations/workers/[id], packages/naive/src/records/worker.schema.json) with its role, mode (temporary or durable), level, sponsor (a person of the venture), writes, started_at, expires, status (proposed, active, suspended or ended), deployed_by, who activated and ended it, and its run and session. A person role is never deployed. Its status follows a pure, total statechart (packages/naive/src/engine/agents/worker-state.ts) over propose, activate, suspend, resume, end and expire, in which only a person activates or resumes and ended is absorbing; packages/naive/lean/Naive/Workers.lean models it and proves those properties and that writes never widen, and packages/naive/lean/Naive/Generated/WorkerCases.lean holds every TypeScript transition as a case lake build checks. A worker writes only while active and unexpired, and only the globs its record names that its role's reach and its deployer's both cover; the router refuses anything else before the schema (rule worker-reach), and refuses a write to the record that moves its status off the statechart, changes a fixed field, widens its writes or moves its expiry without a person (rule worker-lifecycle). naive workers lists, counts and gives the history of a venture's workers and drives them. Temporary specialists (EE-213) become temporary workers: naive agent spawn deploys one, an agent's spawn now stays proposed until a person activates it, which narrows EE-213's rule that a spawn needs no person, and naive upgrade moves old specialist records and specialists.default_ttl (migration specialists-to-workers, operations package 0.4.0). A lead writes a temporary venture role (status temporary, proposed_by, created_at) and deploys workers as it, a lead or a person merges two or more (merged_from, the union of their pcf and artifacts, a reach never wider than the lead's portfolio), and a temporary role deployed promote_after times is proposed as an open decision that only a person accepts to make it durable. The ttl, level and promote_after defaults are unvalidated priors in packages/naive/src/engine/workers.json. This is step 7 of the roles as agents plan (docs/design/ROLES_AS_AGENTS_2026-11-28.md); the staffing gate of step 8 will activate a worker through a person decision.",
+      "why": "Torian on 2026-11-28 decided that roles link to deployments: a role module is what an agent is deployed as, and every running agent should be a record a person can see, count and stop, never an unrecorded process. Temporary specialists were one kind of running agent with their own record and rule, and a spawn activated itself, so an agent could start another without a person. One record and one statechart for every deployment, with activation a person act, gives the staffing gate one place to hook in and keeps every write inside a reach the role and the deployer already hold.",
+      "related": [
+        "EE-124",
+        "EE-213",
+        "EE-215",
+        "EE-227",
+        "EE-229"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/records/worker.schema.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/agents/workers.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/agents/worker-state.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/lean/Naive/Workers.lean",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/migrations/specialists-to-workers.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/records/specialist.schema.json",
+          "root": "repo",
+          "expect": "absent"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/agents/specialist.ts",
+          "root": "repo",
+          "expect": "absent"
+        },
+        {
+          "kind": "record",
+          "target": "worker",
+          "expect": "exists"
+        },
+        {
+          "kind": "decision",
+          "target": "EE-213",
+          "expect": "narrowed"
+        }
+      ]
+    },
+    {
       "id": "EE-152",
       "date": "2026-11-19",
       "status": "in-force",

@@ -118,16 +118,18 @@
         }
       }
     },
-    "specialists": {
+    "workers": {
       "type": "object",
       "additionalProperties": false,
-      "description": "The venture's own lines for the temporary specialists a function agent spawns (EE-213, packages/naive/src/engine/agents/specialist.ts, naive agent spawn). Naive's defaults are unvalidated priors in packages/naive/src/engine/specialists.json.",
+      "description": "The venture's own lines for its digital workers (EE-235, packages/naive/src/engine/agents/workers.ts, naive workers and naive agent spawn). Naive's defaults are unvalidated priors in packages/naive/src/engine/workers.json. Replaces specialists (EE-213), which naive upgrade moves here.",
       "properties": {
         "default_ttl": {
           "type": "string",
           "pattern": "^[0-9]+(\\.[0-9]+)? (millis?|seconds?|minutes?|hours?|days?|weeks?)$",
-          "description": "How long a specialist's reach lasts when the spawn names no ttl, as a number and a unit such as \"2 hours\". A spawn's own --ttl still wins"
-        }
+          "description": "How long a temporary worker's reach lasts when the deployment names no ttl, as a number and a unit such as \"2 hours\". A deployment's own --ttl still wins"
+        },
+        "default_level": { "type": "integer", "minimum": 1, "maximum": 7, "description": "The SFIA level a worker works at when neither the deployment nor its role names one" },
+        "promote_after": { "type": "integer", "minimum": 1, "description": "How many deployments of a temporary role propose it, as an open decision, to become durable. Only a person accepts" }
       }
     },
     "activity_proposals": {
