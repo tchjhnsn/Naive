@@ -128,10 +128,12 @@
 //                                                   cover each, how they score on visibility and ownership, and the
 //                                                   blind spots; --propose files one open decision per function for a
 //                                                   person (EE-222)
-//   naive graph [--function <id>] [--element <id>] [--json] [--mermaid]
+//   naive graph [--function <id> | --element <id> | --role <id>] [--json] [--mermaid]
 //                                                   the element graph: which APQC elements feed which through the
 //                                                   routes the function workflows write and read, and the routes
-//                                                   read that no workflow writes or written that none reads (EE-188)
+//                                                   read that no workflow writes or written that none reads (EE-188);
+//                                                   --role gives a role's derived depends-on both ways, its elements
+//                                                   by RACI part and its artifacts (EE-234)
 //   naive effects [<element>] [--at <iso>] [--json]  each element's state, capability level (ISO/IEC 33020, capped at
 //                                                   3) and the harm and caps it takes from what feeds it; for one
 //                                                   element, what happens downstream if it were absent, weak or
