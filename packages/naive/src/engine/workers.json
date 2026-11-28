@@ -1,0 +1,11 @@
+{
+  "note": "Naive's defaults for digital workers (EE-235). A venture overrides them under `workers` in naive.config.json, or a person names one on the deployment. They are unvalidated priors: nothing has measured how long a temporary worker's task takes, what level a role works at, or how often a temporary role must be used before it earns a place.",
+  "default_ttl": "4 hours",
+  "default_level": 3,
+  "promote_after": 3,
+  "why": {
+    "default_ttl": "A temporary worker is deployed for one task inside one working session, so its reach should be gone by the end of the day even when its run never reports back. 4 hours is a guess, not a measurement.",
+    "default_level": "SFIA level 3 (apply) is work done to a known method under general direction, which is what a role with no level of its own is asked to do. A guess.",
+    "promote_after": "A temporary role deployed three times is being used as a standing role, so a person is asked whether it should be durable. A guess."
+  }
+}

@@ -8,7 +8,7 @@
 // A step result (StepResult) says one of:
 //   done               the step was done. Its evidence is the hash of every provenance line it wrote. Each must be a
 //                      line of this venture's log, written under the step's session by the role that ran the run (or a
-//                      specialist of its function), inside the step's time window, through the router, to a route the
+//                      digital worker of its function), inside the step's time window, through the router, to a route the
 //                      step may write (its `writes`, else its function's write reach), with its bytes in the blob
 //                      store. A done step with no evidence, or with one line that fails, is unproven.
 //   not-needed         only for a step with `consider` (EE-181): the run judged it not right for this business now,
@@ -38,7 +38,7 @@ import { CannotRun, Refused } from "../core/effect/errors.ts";
 import type { NaiveError } from "../core/effect/errors.ts";
 import { runMain } from "../core/effect/run.ts";
 import { entriesEffect, lineHash, type Entry } from "../core/provenance.ts";
-import { functionOfAgent, functionWrites, specialistOfAgent, within } from "./agents/reach.ts";
+import { functionOfAgent, functionWrites, within, workerOfAgent } from "./agents/reach.ts";
 import { readRuns, routeMatches, workflowsOf, type DueWorkflow, type WorkflowRun } from "./due.ts";
 import type { FunctionWorkflow } from "../records/types/records.d.ts";
 
@@ -76,19 +76,19 @@ export const WORK = new Set(["write", "draft", "accept", "merge", "rollback", "c
 const OK: ReadonlySet<StepVerdict> = new Set(["proven", "considered", "reasoned"]);
 const zero = (): Record<StepVerdict, number> => ({ proven: 0, considered: 0, reasoned: 0, unproven: 0, skipped: 0, missing: 0, "not-allowed": 0 });
 
-/** Whether a role may stand for the run's runner: the runner itself, or a specialist of the runner's function. */
+/** Whether a role may stand for the run's runner: the runner itself, or a digital worker deployed as the runner's function agent (EE-235). */
 export function actsFor(runner: string, line: Entry): boolean {
   const id = line.agent?.id;
   if (runner === "person") return line.agent?.kind === "person";
   if (id === runner) return true;
   const fn = functionOfAgent(runner);
-  return fn !== null && specialistOfAgent(id)?.function === fn;
+  return fn !== null && workerOfAgent(id)?.function === fn;
 }
 
 /** The routes a step's evidence may be written to: its declared writes, else its runner's write reach. */
 export function allowedRoutes(step: Step, runner: string): string[] {
   if (step.writes?.length) return [...step.writes];
-  const fn = functionOfAgent(runner) ?? specialistOfAgent(runner)?.function ?? null;
+  const fn = functionOfAgent(runner) ?? workerOfAgent(runner)?.function ?? null;
   return fn ? functionWrites(fn) : ["decisions/*", "operations/handoff/*"];
 }
 const fits = (route: string, patterns: readonly string[]) => patterns.some((p) => routeMatches(p, route) || within(route, p));
@@ -123,7 +123,7 @@ export function verifyStep(step: Step, result: StepResult | undefined, run: { ru
     const where = `${line.entity} (${h.slice(0, 12)})`;
     if (!WORK.has(line.activity)) problems.push(`${where} is a ${line.activity}, which puts no work down`);
     if (line.agent?.session !== session) problems.push(`${where} was written under session ${line.agent?.session ?? "none"}, not ${session}`);
-    if (!actsFor(run.by, line)) problems.push(`${where} was written by ${line.agent?.id ?? line.agent?.kind ?? "nobody named"}, not ${run.by} or a specialist of its function`);
+    if (!actsFor(run.by, line)) problems.push(`${where} was written by ${line.agent?.id ?? line.agent?.kind ?? "nobody named"}, not ${run.by} or a worker of its function`);
     if (from && Date.parse(line.at) < Date.parse(from)) problems.push(`${where} was written at ${line.at}, before the step started at ${from}`);
     if (to && Date.parse(line.at) > Date.parse(to)) problems.push(`${where} was written at ${line.at}, after the step ended at ${to}`);
     if (!line.route) problems.push(`${where} did not go through the router`);
