@@ -1,24 +1,41 @@
 ---
 title: Changelog
-description: What changed in these docs, in Keep a Changelog format, from this migration.
+description: What changed in Naive, newest first. Each entry says what you can now do, or what you must change.
 type: reference
 status: draft
-lastReviewed: 2026-10-28
-owner: builder
+lastReviewed: 2026-11-28
+owner: technical-writer
 ---
 
-This log starts when the docs moved to Fumadocs. It follows Keep a Changelog.
+What changed in Naive, newest first. Each entry says what you can now do, or what you must change. Naive has no release tags yet, so entries are grouped by week until the first one.
 
-## [Unreleased]
-
-### Changed
-
-- The site in `site/` uses Fumadocs instead of Nextra.
-- Docs URLs live under `/docs`, in four sections: get started, guides, concepts and reference.
-- The docs home that was `/` is now `/docs`. `/` is the marketing page. Old Nextra paths redirect.
+## Unreleased, week of 2026-11-23
 
 ### Added
 
-- A quickstart, a Naive and Mentura page, and this changelog.
-- Marketing pages at `/`, `/why` and `/for`.
-- `/llms.txt`, `/llms-full.txt`, `/docs/<slug>.md`, and Markdown on `Accept: text/markdown`.
+- Proof of work. A workflow run is checked against the record of what was written, step by step. A phase cannot be closed without it unless a person overrides.
+- Prerequisites. Each workflow says what must exist before it can run, and the work stays locked until it does.
+- Pre-registration. A business writes down what would prove its idea wrong before it writes its strategy.
+- Bets. A strategy claim is a record with a line that can fail, a rival, and a score once it resolves.
+- Goals as durable records, settled only by a person, with their full history.
+- Several ideas held on one open decision, so nothing is guessed while a question is open.
+- A page's words as records, each tied to the records it comes from, with a gate that refuses to build a page a person has not approved.
+- The document catalog and `naive render`: a printable copy first, then slides or a page, then the live site.
+- Feature reports written from a business's own records.
+- A workflow for every process in the APQC framework, and a report of what is covered.
+
+### Changed
+
+- `naive check` runs every checker that needs only a business folder, apart from the seam sensors, the readiness check and the premise lint. It ran 22 before and runs 43 now.
+- Record writes outside the router go through one shared writer. A check fails on any new write that skips it, and the list of older modules that still skip it may only shrink.
+- The router's write path runs on Effect.
+
+### Fixed
+
+- The publish lint reported a missing path as a pass. It is now an error.
+- Starting a business on the src layout past Discovery wrote its files in the wrong place.
+- An agent could reopen a decision a person had withdrawn by proposing it again.
+
+### Removed
+
+- The blog and the showcase on this site.

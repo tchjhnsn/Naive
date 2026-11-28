@@ -13,7 +13,9 @@
 //   - a rule names a format the catalog lacks, or names one in both `then` and `not`;
 //   - a kind's function is not in departments.json, its artifact_kind is not one artifact.schema.json lists, its
 //     highest_rung is not reachable, or one of its formats sits on a rung off that climb;
-//   - a kind's section reads a path no venture record type in the data model matches;
+//   - a kind's section reads a path no venture record type in the data model matches (a hole section reads nothing);
+//   - a kind's style names a brand record type the data model lacks, or a field that record type's schema does not
+//     define (EE-230);
 //   - a rung requires a record path no record type matches, or a decision class no function's decisions.json has.
 //
 // A venture fails when a document artifact (one with document_kind) sits on a rung whose rung below is missing or has
@@ -42,11 +44,38 @@ export const DATA_MODEL = "packages/naive/src/records/data-model.json";
 export const ARTIFACT_SCHEMA = "packages/naive/src/records/artifact.schema.json";
 export const FUNCTIONS = "packages/naive/src/functions";
 
-/** What the catalog is checked against: the ids and globs it may name. */
-export type Known = { functions: Set<string>; artifactKinds: Set<string>; recordGlobs: RegExp[]; classes: Set<string> };
+/**
+ * What the catalog is checked against: the ids and globs it may name, and the schema of each record type a kind's
+ * style names, by record type id.
+ */
+export type Known = { functions: Set<string>; artifactKinds: Set<string>; recordGlobs: RegExp[]; classes: Set<string>; styleSchemas: Map<string, unknown> };
 
 const isObject = (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null && !Array.isArray(v);
 const matchesARecord = (known: Known, path: string) => known.recordGlobs.some((g) => g.test(path));
+
+/**
+ * True when a JSON Schema defines the dotted field: each step is a declared property, after following a local $ref
+ * and stepping into a list's items. A key of a free map (a brand's color token names) is not a field.
+ */
+export function schemaHasField(schema: unknown, dotted: string): boolean {
+  const defs = isObject(schema) && isObject(schema.$defs) ? schema.$defs : {};
+  const resolve = (s: unknown): unknown => {
+    let at = s;
+    for (let hops = 0; hops < 8; hops++) {
+      if (isObject(at) && typeof at.$ref === "string" && at.$ref.startsWith("#/$defs/")) at = defs[at.$ref.slice("#/$defs/".length)];
+      else if (isObject(at) && at.type === "array" && isObject(at.items)) at = at.items;
+      else return at;
+    }
+    return at;
+  };
+  let at: unknown = schema;
+  for (const key of dotted.split(".")) {
+    at = resolve(at);
+    if (!isObject(at) || !isObject(at.properties) || !(key in at.properties)) return false;
+    at = at.properties[key];
+  }
+  return true;
+}
 
 /** Every finding for a catalog that already matches its schema. Pure, so the test can call it on copies. */
 export function catalogErrors(c: DocumentCatalog, known: Known): string[] {
@@ -101,7 +130,12 @@ export function catalogErrors(c: DocumentCatalog, known: Known): string[] {
       if (!k.formats.some((f) => reachable.has(c.formats.find((x) => x.id === f)?.rung ?? "")
         && c.formats.find((x) => x.id === f)?.rung === climb[0].id)) out.push(`${at} has no format on the first rung, so it would skip the reading copy`);
     }
-    for (const s of k.sections) if (!matchesARecord(known, s.from)) out.push(`${at} section ${s.id} reads ${s.from}, which no venture record type in ${DATA_MODEL} matches`);
+    for (const s of k.sections) if (s.from !== undefined && !matchesARecord(known, s.from)) out.push(`${at} section ${s.id} reads ${s.from}, which no venture record type in ${DATA_MODEL} matches`);
+    for (const st of k.style) {
+      const schema = known.styleSchemas.get(st.record_type);
+      if (schema === undefined) out.push(`${at} is styled by ${st.record_type}, which no record type in ${DATA_MODEL} names with a schema`);
+      else if (!schemaHasField(schema, st.field)) out.push(`${at} is styled by ${st.record_type} ${st.field}, which is not a field of the ${st.record_type} schema`);
+    }
   }
   return out;
 }
@@ -133,13 +167,24 @@ export function ladderErrors(c: DocumentCatalog, venture: string, docs: Document
 
 const read = (file: string) => readJson(join(root, file)).pipe(Effect.mapError((e) => new CannotRun({ message: `${file}: ${describe(e)}`, cause: e })));
 
-const knownFrom = (departments: unknown, model: unknown, artifactSchema: unknown, classes: Set<string>): Known => ({
+const knownFrom = (departments: unknown, model: unknown, artifactSchema: unknown, classes: Set<string>, styleSchemas: Map<string, unknown>): Known => ({
   functions: new Set(isObject(departments) && Array.isArray(departments.departments)
     ? departments.departments.flatMap((d: unknown) => (isObject(d) && typeof d.id === "string" ? [d.id] : [])) : []),
   artifactKinds: new Set(isObject(artifactSchema) && isObject(artifactSchema.properties) && isObject(artifactSchema.properties.kind)
     && Array.isArray(artifactSchema.properties.kind.enum) ? artifactSchema.properties.kind.enum.map(String) : []),
   recordGlobs: ((model as DataModel).records ?? []).flatMap((r) => venturePaths(r).map(globRegExp)),
   classes,
+  styleSchemas,
+});
+
+/** The schema of each record type a kind's style names, read from the path the data model gives it. */
+const styleSchemasFor = (c: DocumentCatalog, model: unknown) => Effect.gen(function* () {
+  const out = new Map<string, unknown>();
+  for (const id of new Set(c.kinds.flatMap((k) => k.style.map((s) => s.record_type)))) {
+    const schema = ((model as DataModel).records ?? []).find((r) => r.id === id)?.schema;
+    if (typeof schema === "string") out.set(id, yield* read(schema));
+  }
+  return out;
 });
 
 /** Every decision class any function's decisions.json names. */
@@ -178,7 +223,8 @@ export const checkDocuments = (ventures: string[] = []) => Effect.gen(function* 
     return { errors: errors.map((e) => `${CATALOG}: ${e}`), kinds: 0, documents: 0 };
   }
   const c = raw as DocumentCatalog;
-  const known = knownFrom(yield* read(DEPARTMENTS), yield* read(DATA_MODEL), yield* read(ARTIFACT_SCHEMA), yield* decisionClasses);
+  const model = yield* read(DATA_MODEL);
+  const known = knownFrom(yield* read(DEPARTMENTS), model, yield* read(ARTIFACT_SCHEMA), yield* decisionClasses, yield* styleSchemasFor(c, model));
   const errors = catalogErrors(c, known).map((e) => `${CATALOG}: ${e}`);
   let documents = 0;
   for (const dir of ventures) {

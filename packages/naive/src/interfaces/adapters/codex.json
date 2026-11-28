@@ -6,9 +6,10 @@
   "reads": ["AGENTS.md"],
   "files": [],
   "skills": null,
+  "artifacts": [],
   "sources": [
     "https://agents.md/",
     "https://github.com/openai/codex"
   ],
-  "note": "Codex reads AGENTS.md natively, from the venture root down to the folder it works in, which is the layout chain Naive already writes. Nothing else is needed."
+  "note": "Codex reads AGENTS.md natively, from the venture root down to the folder it works in, which is the layout chain Naive already writes. Nothing else is needed. Its artifacts list is empty: Naive names no document tool of its own, so every format past Markdown is left to the agent (EE-230)."
 }

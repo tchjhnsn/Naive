@@ -157,6 +157,7 @@
       "why_format": "It is read alone, and printed for a meeting, so it is a document and never slides.",
       "words_per_page": 400,
       "pages": 1,
+      "style": [{ "record_type": "marketing-brand", "field": "name" }, { "record_type": "marketing-brand", "field": "voice" }, { "record_type": "marketing-brand", "field": "fonts" }, { "record_type": "marketing-brand", "field": "typefaces" }, { "record_type": "marketing-brand", "field": "colors" }, { "record_type": "marketing-brand", "field": "marks" }],
       "sections": [
         { "id": "promise", "title": "What it is", "from": "venture.json", "field": "core.promise" },
         { "id": "for-whom", "title": "Who it is for", "from": "venture.json", "field": "core.promised_to" },
@@ -178,6 +179,7 @@
       "why_format": "A reader weighs ideas against each other, going back and forth. Slides force one order and hide the comparison.",
       "words_per_page": 500,
       "pages": 2,
+      "style": [{ "record_type": "marketing-brand", "field": "voice" }, { "record_type": "marketing-brand", "field": "fonts" }, { "record_type": "marketing-brand", "field": "typefaces" }],
       "sections": [
         { "id": "question", "title": "The question", "from": "decisions/*.decision.json", "field": "question" },
         { "id": "statement", "title": "What it settles", "from": "decisions/*.decision.json", "field": "statement", "optional": true },
@@ -197,6 +199,7 @@
       "why_format": "It is read on a screen beside the work and changes as the work moves, so it stays Markdown and is never printed or laid out.",
       "words_per_page": 500,
       "pages": 1,
+      "style": [{ "record_type": "marketing-brand", "field": "voice" }],
       "sections": [
         { "id": "what", "title": "The work", "from": "operations/handoffs/*.json", "field": "title" },
         { "id": "who", "title": "Who holds it", "from": "operations/handoffs/*.json", "field": "role", "optional": true },
@@ -215,6 +218,7 @@
       "why_format": "It is printed and read before the meeting, in order, by people who will not all be in the room when it is explained.",
       "words_per_page": 500,
       "pages": 6,
+      "style": [{ "record_type": "marketing-brand", "field": "name" }, { "record_type": "marketing-brand", "field": "voice" }, { "record_type": "marketing-brand", "field": "fonts" }, { "record_type": "marketing-brand", "field": "typefaces" }, { "record_type": "marketing-brand", "field": "colors" }, { "record_type": "marketing-brand", "field": "marks" }],
       "sections": [
         { "id": "where-we-are", "title": "Where the venture is", "from": "venture.json", "field": "phase" },
         { "id": "promise", "title": "The promise we are held to", "from": "venture.json", "field": "core.promise" },
@@ -234,6 +238,7 @@
       "why_format": "It is read alone, kept, and often forwarded, so the layout must not change under the reader. That is a PDF, not a deck and not a live page.",
       "words_per_page": 500,
       "pages": 3,
+      "style": [{ "record_type": "marketing-brand", "field": "name" }, { "record_type": "marketing-brand", "field": "voice" }, { "record_type": "marketing-brand", "field": "fonts" }, { "record_type": "marketing-brand", "field": "typefaces" }, { "record_type": "marketing-brand", "field": "colors" }, { "record_type": "marketing-brand", "field": "marks" }],
       "sections": [
         { "id": "phase", "title": "Where the venture is", "from": "venture.json", "field": "phase" },
         { "id": "goals", "title": "The goals in force", "from": "foundation/goals/*.json", "field": "statement" },
@@ -253,6 +258,7 @@
       "why_format": "Slides because a person speaks over it, and a reading copy first because the argument is settled in words, not in layout. The PDF is the handout, not the talk.",
       "words_per_page": 40,
       "pages": 12,
+      "style": [{ "record_type": "marketing-brand", "field": "name" }, { "record_type": "marketing-brand", "field": "voice" }, { "record_type": "marketing-brand", "field": "fonts" }, { "record_type": "marketing-brand", "field": "typefaces" }, { "record_type": "marketing-brand", "field": "colors" }, { "record_type": "marketing-brand", "field": "marks" }, { "record_type": "marketing-design-system", "field": "choices" }, { "record_type": "marketing-design-system", "field": "components" }],
       "sections": [
         { "id": "problem", "title": "The problem", "from": "foundation/problem.json", "field": "statement" },
         { "id": "who", "title": "Who has it", "from": "foundation/icp/*.json", "field": "who" },
@@ -274,6 +280,7 @@
       "why_format": "It lives beside the code, is read in parts and changes often, so it stays Markdown in the repository.",
       "words_per_page": 500,
       "pages": 8,
+      "style": [{ "record_type": "marketing-brand", "field": "voice" }],
       "sections": [
         { "id": "what", "title": "What it is", "from": "products/*.json", "field": "description" },
         { "id": "job", "title": "The job it does", "from": "products/*.json", "field": "job" },
@@ -293,12 +300,94 @@
       "why_format": "The only kind that climbs the whole ladder: the words as a reading copy a person approves, then one page to click through, then the live site through the publishing gate.",
       "words_per_page": 300,
       "pages": 2,
+      "style": [{ "record_type": "marketing-brand", "field": "name" }, { "record_type": "marketing-brand", "field": "voice" }, { "record_type": "marketing-brand", "field": "fonts" }, { "record_type": "marketing-brand", "field": "typefaces" }, { "record_type": "marketing-brand", "field": "colors" }, { "record_type": "marketing-brand", "field": "marks" }, { "record_type": "marketing-brand", "field": "scopes" }, { "record_type": "marketing-design-system", "field": "ethos" }, { "record_type": "marketing-design-system", "field": "choices" }, { "record_type": "marketing-design-system", "field": "components" }],
       "sections": [
         { "id": "promise", "title": "The first thing a stranger reads", "from": "venture.json", "field": "core.promise" },
         { "id": "for-whom", "title": "Who it is for", "from": "foundation/icp/*.json", "field": "who" },
         { "id": "problem", "title": "The problem, in their words", "from": "foundation/problem.json", "field": "statement" },
         { "id": "jobs", "title": "What they are trying to do", "from": "foundation/icp/*.json", "field": "jobs" },
         { "id": "must-not", "title": "What we will not claim", "from": "venture.json", "field": "core.must_not" }
+      ]
+    },
+    {
+      "id": "adr",
+      "title": "Architecture decision record",
+      "function": "it",
+      "purpose": "Let someone who joins later see one architecture decision: the question, the options weighed, what was decided and why",
+      "audience": ["team"],
+      "artifact_kind": "document",
+      "highest_rung": "reading-copy",
+      "formats": ["md"],
+      "why_format": "It lives in the repository beside the code it decides, is read on a screen and kept with the code's history, so it stays Markdown and is never laid out.",
+      "words_per_page": 500,
+      "pages": 2,
+      "style": [{ "record_type": "marketing-brand", "field": "voice" }],
+      "sections": [
+        { "id": "question", "title": "The question", "from": "decisions/*.decision.json", "field": "question" },
+        { "id": "status", "title": "Status", "from": "decisions/*.decision.json", "field": "status" },
+        { "id": "context", "title": "Context", "from": "decisions/*.decision.json" },
+        { "id": "options", "title": "The options weighed", "from": "decisions/*.decision.json", "field": "options", "optional": true },
+        { "id": "decision", "title": "The decision", "from": "decisions/*.decision.json", "field": "answer" },
+        { "id": "consequences", "title": "Consequences", "hole": "What becomes easier or harder because of this decision. No record type holds consequences yet: a decision record's outcomes say what it is expected to achieve, not what it costs." }
+      ]
+    },
+    {
+      "id": "release-note",
+      "title": "Release note",
+      "function": "products",
+      "purpose": "Tell the people who use the product what it does now and what changed in this release, in their words",
+      "audience": ["customer", "team"],
+      "artifact_kind": "document",
+      "highest_rung": "reading-copy",
+      "formats": ["md"],
+      "why_format": "It is read once, on a screen, where the product is, and kept beside the release, so it stays Markdown; putting it on the site is the site's own ladder.",
+      "words_per_page": 300,
+      "pages": 1,
+      "style": [{ "record_type": "marketing-brand", "field": "name" }, { "record_type": "marketing-brand", "field": "voice" }],
+      "sections": [
+        { "id": "release", "title": "The release", "hole": "The release's version and date. No record type holds a release yet: the release card under .release/ has no schema." },
+        { "id": "capabilities", "title": "What the product does now", "from": "product/capabilities/*.json", "field": "summary" },
+        { "id": "changed", "title": "What is new and what was fixed", "hole": "Which capabilities and bugs belong to this release. A bug's fixed_in names a version, and no record says which version this release is, so they cannot be picked out yet." }
+      ]
+    },
+    {
+      "id": "changelog-entry",
+      "title": "Changelog entry",
+      "function": "products",
+      "purpose": "Record what changed in one version for the people who build on it, grouped as added, changed and fixed",
+      "audience": ["team"],
+      "artifact_kind": "document",
+      "highest_rung": "reading-copy",
+      "formats": ["md"],
+      "why_format": "A changelog is one Markdown file in the repository, newest version first, read in a terminal or on the forge, so it is never laid out.",
+      "words_per_page": 300,
+      "pages": 1,
+      "style": [{ "record_type": "marketing-brand", "field": "voice" }],
+      "sections": [
+        { "id": "version", "title": "Version", "hole": "The release's version and date. No record type holds a release yet: the release card under .release/ has no schema." },
+        { "id": "grouped", "title": "Added, changed and fixed", "hole": "Which capabilities were added or changed and which bugs were fixed in this version. That needs a release record, which no record type holds yet." },
+        { "id": "capabilities", "title": "Capabilities on record", "from": "product/capabilities/*.json", "field": "name" },
+        { "id": "bugs", "title": "Bugs on record", "from": "product/bugs/*.json", "field": "title", "optional": true }
+      ]
+    },
+    {
+      "id": "requirements-spec",
+      "title": "Requirements specification",
+      "function": "strategy",
+      "purpose": "Say what the venture requires, which goal each requirement serves and how each is verified, closely enough that someone can build to it and someone else can check it",
+      "audience": ["team"],
+      "artifact_kind": "document",
+      "highest_rung": "reading-copy",
+      "formats": ["md"],
+      "why_format": "It is read in parts beside the work and changes as requirements settle, so it stays Markdown in the repository.",
+      "words_per_page": 500,
+      "pages": 6,
+      "style": [{ "record_type": "marketing-brand", "field": "voice" }],
+      "sections": [
+        { "id": "goals", "title": "The goals they serve", "from": "foundation/goals/*.json", "field": "statement" },
+        { "id": "requirements", "title": "The requirements", "from": "foundation/requirements/*.json", "field": "statement" },
+        { "id": "verification", "title": "How each is verified", "from": "foundation/requirements/*.json" },
+        { "id": "must-not", "title": "What it must not do", "from": "venture.json", "field": "core.must_not" }
       ]
     }
   ]
