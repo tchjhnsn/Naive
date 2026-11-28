@@ -11,6 +11,7 @@ import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import type { Artifact, DocumentCatalog } from "../records/types/records.d.ts";
+import { readDataModel } from "../records/index.ts";
 import { ARTIFACT_SCHEMA, CATALOG, DATA_MODEL, DEPARTMENTS, FUNCTIONS } from "./check-documents.ts";
 
 const repo = new URL("../../../../", import.meta.url).pathname;
@@ -26,8 +27,11 @@ const run = (script: string, args: string[] = [], env: Record<string, string> = 
 };
 const original = JSON.parse(readFileSync(join(repo, CATALOG), "utf8")) as DocumentCatalog;
 
-// The brand schemas a kind's style names (EE-230), read from the paths the data model gives them.
-const STYLE_SCHEMAS = ["packages/naive/src/records/marketing-brand.schema.json", "packages/naive/src/records/marketing-design-system.schema.json"];
+// The brand schemas a kind's style names (EE-230), at the paths the data model gives them, as the check reads them.
+const STYLE_SCHEMAS = ["marketing-brand", "marketing-design-system"].flatMap((id) => {
+  const schema = readDataModel().records.find((r) => r.id === id)?.schema;
+  return typeof schema === "string" ? [schema] : [];
+});
 /** A small copy of the repository: the catalog, what it cites, and every function's decisions.json for the classes a rung may require. */
 function copyRoot(root: string) {
   for (const f of [CATALOG, DEPARTMENTS, DATA_MODEL, ARTIFACT_SCHEMA, ...STYLE_SCHEMAS]) { mkdirSync(dirname(join(root, f)), { recursive: true }); cpSync(join(repo, f), join(root, f)); }
