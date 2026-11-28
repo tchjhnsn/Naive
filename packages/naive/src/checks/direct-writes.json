@@ -73,6 +73,10 @@
       "writes": 1,
       "why": "A temporary copy for the schema validator"
     },
+    "packages/naive/src/engine/lint-findings.ts": {
+      "writes": 1,
+      "why": "An append to the lint findings log under .naive/, the one writer for the publish lint and the artifact lint (EE-231); moved here from publish-lint.ts"
+    },
     "packages/naive/src/engine/migrations/src-layout.ts": {
       "writes": 2,
       "why": "Cannot move yet: the rename that moves files to the new layout, and the layout field of venture.json, which the upgrade command logs after the migration returns; fold the two when that line moves into the migration"
@@ -92,10 +96,6 @@
     "packages/naive/src/engine/port-venture.ts": {
       "writes": 4,
       "why": "The port plan and run trace under .release/, and the rename that moves the ported folder in, which the port line logs"
-    },
-    "packages/naive/src/engine/publish-lint.ts": {
-      "writes": 1,
-      "why": "An append to the lint findings log under .naive/"
     },
     "packages/naive/src/engine/publish.ts": {
       "writes": 2,
