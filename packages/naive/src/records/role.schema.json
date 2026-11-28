@@ -10,10 +10,10 @@
     "name": { "type": "string" },
     "aliases": { "type": "array", "items": { "type": "string", "pattern": "^[a-z0-9-]+$" }, "uniqueItems": true, "description": "Other names for this role (such as cto for architect); the id is canonical. No alias is another role's id or alias" },
     "kind": { "enum": ["person", "agent", "either"], "description": "Who holds the role: a person, an agent or either. A person role is never deployed as an agent, and its default_tier, when it has one, is person" },
-    "status": { "enum": ["durable", "temporary"], "description": "Optional: durable for a library role (the default); temporary for a role a lead wrote for one venture, which only a person makes durable (not built)" },
-    "merged_from": { "type": "array", "items": { "type": "string", "pattern": "^[a-z0-9-]+$" }, "minItems": 2, "uniqueItems": true, "description": "Optional: the roles this one merges, by id (not built)" },
-    "proposed_by": { "type": "string", "description": "Optional: who wrote a temporary role (not built)" },
-    "created_at": { "type": "string", "description": "Optional: when a temporary role was written, an ISO date-time (not built)" },
+    "status": { "enum": ["durable", "temporary"], "description": "Optional: durable for a library role (the default); temporary for a role a lead wrote for one venture, which only a person makes durable by accepting the promote-role-<id> decision (naive workers promote, EE-235)" },
+    "merged_from": { "type": "array", "items": { "type": "string", "pattern": "^[a-z0-9-]+$" }, "minItems": 2, "uniqueItems": true, "description": "Optional: the roles this one merges, by id; its pcf and artifacts are the union of theirs and its reach the union of their reaches, never wider than the lead that writes it (naive workers role --merge, EE-235)" },
+    "proposed_by": { "type": "string", "description": "Optional: who wrote a temporary role (naive workers role, EE-235): a lead, or a person" },
+    "created_at": { "type": "string", "description": "Optional: when a temporary role was written, an ISO date-time (naive workers role, EE-235)" },
     "chief_delegator": { "type": "boolean", "description": "True for the founder only: the root of every delegation chain" },
     "function": { "type": "string", "pattern": "^[a-z0-9-]+$", "description": "The function the role serves: an id in packages/naive/src/functions/departments.json (such as products, marketing-and-sales or human-capital), or all for the chief delegator and for a lead (a role with a portfolio). packages/naive/src/checks/check-delegation.ts fails on any other value" },
     "portfolio": { "type": "array", "items": { "type": "string", "pattern": "^[a-z0-9-]+$" }, "minItems": 1, "uniqueItems": true, "description": "A lead only (lead agents design, 2026-11-08): the functions, ids in packages/naive/src/functions/departments.json, whose cross-function work this lead plans and verifies. A role with a portfolio is a lead: its function is all, it may be granted no never-redelegated class and no one-way door, and the leads' portfolios cover every function exactly once (packages/naive/src/checks/check-delegation.ts)" },
@@ -88,5 +88,6 @@
   "dependentRequired": { "portfolio": ["default_measure_kinds"], "default_measure_kinds": ["portfolio"] },
   "if": { "properties": { "kind": { "enum": ["agent", "either"] } } },
   "then": { "required": ["function", "grantable_classes", "default_tier", "lint_suites", "verified_by", "skill"] },
+  "allOf": [{ "if": { "properties": { "status": { "const": "temporary" } }, "required": ["status"] }, "then": { "required": ["proposed_by", "created_at"] } }],
   "additionalProperties": false
 }

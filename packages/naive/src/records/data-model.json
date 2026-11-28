@@ -1508,18 +1508,18 @@
       "note": "One meeting (EE-200): a goal and the outcome that shows it was reached, stated before it opens; people and agents attending; an agenda worked in order, which may walk a function workflow step by step; minutes; the outcome; and what each attendee takes away. Closed meetings are an app's shared memory for its agents. A meeting spans functions, so the type names none (function null); the gate and the team plan decide who writes it. Route operations/meeting/[id]"
     },
     {
-      "id": "specialist",
+      "id": "worker",
       "layer": "operations",
       "function": null,
       "level": "venture",
       "data": "transactional",
-      "schema": "packages/naive/src/records/specialist.schema.json",
-      "generator": "packages/naive/src/engine/generators/specialist.ts",
+      "schema": "packages/naive/src/records/worker.schema.json",
+      "generator": "packages/naive/src/engine/generators/worker.ts",
       "paths": [
-        "instance/**/operations/specialists/*.json",
-        "packages/naive/src/records/examples/**/operations/specialists/*.json"
+        "instance/**/operations/workers/*.json",
+        "packages/naive/src/records/examples/**/operations/workers/*.json"
       ],
-      "note": "One temporary specialist a function agent spawned for one task (EE-213): its parent, the task, the skills it may load, the write reach it was given and when it expires. The record is the reach, and the router intersects it with the parent's own on every write, so a specialist is never wider than its parent (reachRefusal in packages/naive/src/engine/agents/reach.ts). Any function can spawn one, so the type names none (function null). Written by naive agent spawn as the parent agent, or by a person revoking it. Route operations/specialist/[id]"
+      "note": "One digital worker (EE-235): a role deployed as a running agent, with its mode (temporary or durable), level, sponsor, write reach, status and who deployed and activated it. The record is the reach, and the router narrows it to the role's reach and the deployer's on every write, only while the worker is active (reachRefusal in packages/naive/src/engine/agents/reach.ts). Its status follows the statechart in packages/naive/src/engine/agents/worker-state.ts, and only a person activates one. Temporary specialists (EE-213) became temporary workers. Any function's role can be deployed, so the type names none (function null). Written by naive workers and naive agent spawn; through the router an agent only proposes, suspends or ends one (workerWriteRefusal in packages/naive/src/engine/agents/workers.ts). Route operations/workers/[id]"
     },
     {
       "id": "activity",
@@ -3818,8 +3818,8 @@
       "reason": "The framework's default patterns for internal text, read by packages/naive/src/engine/check-leaks.ts (the publishing gate); configuration, not a record"
     },
     {
-      "path": "packages/naive/src/engine/specialists.json",
-      "reason": "EE-213: how long a temporary specialist's reach lasts when its spawn names no ttl, an unvalidated prior read by packages/naive/src/engine/agents/specialist.ts and overridden under specialists in a venture's naive.config.json; configuration, not a record"
+      "path": "packages/naive/src/engine/workers.json",
+      "reason": "EE-235: the unvalidated priors for digital workers (how long a temporary worker's reach lasts, the level a role with none works at, how many deployments propose a temporary role as durable), read by packages/naive/src/engine/agents/workers.ts and overridden under workers in a venture's naive.config.json; configuration, not a record"
     },
     {
       "path": "packages/naive/src/engine/generators/gaps.json",
