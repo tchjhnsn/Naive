@@ -33,7 +33,7 @@ What changed in Naive, newest first. Each entry says what you can now do, or wha
 - The staffing gate (EE-236). `naive staffing` asks the gate questions for 0A to 1B of a business's own records. After 1B, `naive staffing draft` files one decision whose candidates are teams of proposed workers, and `naive staffing apply --by <person>` activates the team a person chose.
 - Role programs and `naive role check` (EE-237). Each role has deterministic checks of what it makes, derived from its `role.json`, and a library role can add its own in `role.ts`. `naive role check <role>` or `naive role check --all` runs them and logs every finding.
 - Naive's own roles under `agents/` (EE-238): product manager, architect, requirements engineer, release manager, technical writer and instruction steward. `node packages/naive/src/checks/check-roles.ts` checks them when no business is given. The catalog gains `docs-page`, and only the technical writer makes `docs-page`, `release-note` and `changelog-entry`.
-- A library role for each APQC process group that no role was responsible or accountable for, added one function at a time and each named after its closest O*NET occupation (EE-239 to EE-250). `node packages/naive/src/checks/check-roles.ts --complete` lists the process groups still without one.
+- Library roles for the APQC process groups that no role was responsible or accountable for, in 12 of the 13 functions, added one function at a time and each named after its closest O*NET occupation (EE-239 to EE-250). The capabilities function's 9 process groups are still without one, and `node packages/naive/src/checks/check-roles.ts --complete` lists them.
 
 ### Changed
 
