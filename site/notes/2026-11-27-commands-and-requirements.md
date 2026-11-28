@@ -13,11 +13,12 @@
 
 ## What changed on the pages
 
-- 23 uses of `mentura <command>` in prose and in shell blocks now say `naive <command>`.
+- 16 uses of `mentura <command>` in prose now say `naive <command>`. Each was checked against `packages/naive/src/interfaces/cli/naive.ts`: the command falls through to `mentura` and runs the same code.
 - The errors page quotes the recovery hint as the program prints it now, with `validate.ts` in place of the Python validator.
 - The install page no longer lists Python, names Node 22.19, and no longer says Naive has no dependencies.
 
 ## Left as it is, and why
 
 - 10 uses of `mentura <command>` inside quoted program output. The program still prints those words, and a page that quotes output has to match it. Changing the hints the program prints is a code change, not a docs change.
+- 7 uses where `naive` and `mentura` differ, so the page stays true only with `mentura`: `naive phase` runs the lifecycle and does not ask for `--as person`, `naive migrate` without `--from` fails, `naive upgrade --venture` takes a folder and not an id, and two sentences in the CLI reference whose point is that the `mentura` alias still works. Found by the independent check of this change.
 - `get-started/whats-built.mdx`, which is generated from `docs/design/naive-nextjs-status.json`.
