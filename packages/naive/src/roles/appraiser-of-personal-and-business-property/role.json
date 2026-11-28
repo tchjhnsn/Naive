@@ -1,0 +1,47 @@
+{
+  "id": "appraiser-of-personal-and-business-property",
+  "name": "Appraiser (asset end of life)",
+  "kind": "either",
+  "status": "durable",
+  "function": "assets",
+  "description": "Takes an asset out of the venture properly: spots what is at the end of its life, values it, readies its decommissioning and the destruction of its data, and prepares its sale, trade or recycling through a named route.",
+  "grantable_classes": [],
+  "default_tier": "frontier",
+  "lint_suites": [],
+  "verified_by": "finance-lead",
+  "skill": "packages/naive/src/functions/assets/skills/manage-asset-end-of-life/SKILL.md",
+  "pcf": [
+    {
+      "id": "10.4",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "13-2022.00",
+      "title": "Appraisers of Personal and Business Property",
+      "basis": "The role spots what is at the end of its life and readies each asset for sale, trade or disposal with a value behind it, which is the valuation this occupation does; matched by the process group's activities (10.4.1 and 10.4.3) against the occupation in O*NET 31.0.",
+      "by": "agent, EE-248 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "fixed-asset",
+    "lease",
+    "budget"
+  ],
+  "artifacts": [],
+  "standards": [
+    "apqc-pcf-cross-industry"
+  ],
+  "research": {
+    "methods": [
+      "organizational",
+      "practitioner"
+    ],
+    "questions": [
+      "What is this asset worth today, and to whom?",
+      "Has its data been destroyed, and who can prove it?"
+    ]
+  },
+  "level": 4
+}
