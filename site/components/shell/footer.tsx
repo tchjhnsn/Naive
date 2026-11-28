@@ -1,15 +1,11 @@
 import Link from "next/link";
-import { footerNav, githubUrl } from "@/components/shell/nav";
+import { footerNav } from "@/components/shell/nav";
 import { ThemeControl } from "@/components/shell/theme-control";
 
 const columns = [
   {
     title: "Explore",
     links: footerNav.map((item) => ({ href: item.href, label: item.label })),
-  },
-  {
-    title: "Project",
-    links: [{ href: githubUrl, label: "GitHub" }],
   },
 ];
 
