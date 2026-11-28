@@ -15,6 +15,7 @@ import { execSync, spawnSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { ventureFile } from "../core/venture-paths.ts";
+import { checkMethod } from "./method-contract.ts";
 import { knownRoles } from "../engine/agents/roles.ts";
 import { reviewIsIndependent } from "./verify.ts";
 import { writeRecord, writerFromEnv } from "../store/record-write.ts";
@@ -63,8 +64,9 @@ const logs = [join(root, "docs/decisions/decisions.json"), join(ventureFile(dir,
 const decisions = new Map(logs.map((d) => [d.id, d]));
 const badDecisions = (h.governed_by ?? []).filter((d) => !decisions.has(d) || (["withdrawn", "superseded"] as (string | undefined)[]).includes(decisions.get(d)?.status));
 item("every governing decision exists and is in force or proposed", !badDecisions.length, badDecisions.join(", "));
-// A method assignment (such as a MAD A-NNN) belongs to the build method a venture uses, which is
-// not part of Mentura (EE-038); a handoff may cite one, and this does not check it.
+// The method the work runs under, in the framework that owns it (EE-154): its record, part and templates resolve.
+// An old assignment (MAD A-NNN, before MAD's restart) is not checked.
+if (h.method) { const p = checkMethod(dir, h.method); item(`its method resolves in ${h.method.framework} (${h.method.record}, part ${h.method.part})`, !p.length, p.join("; ")); }
 // An input is a file the work needs: a record of this venture by its logical path, an absolute path,
 // else a file of the framework checkout. The venture comes first, because a handoff in a venture names
 // the venture's own records (EE-214).
