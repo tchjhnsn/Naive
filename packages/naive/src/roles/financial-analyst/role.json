@@ -1,0 +1,51 @@
+{
+  "id": "financial-analyst",
+  "name": "Financial analyst",
+  "kind": "agent",
+  "status": "durable",
+  "function": "finance",
+  "description": "Plans capital spending and accounts for capital projects (APQC 9.4): evaluates each proposed project's cost and return, writes the case for approval as a memo and tracks spend against the approved project.",
+  "grantable_classes": [],
+  "default_tier": "frontier",
+  "lint_suites": [],
+  "verified_by": "finance-lead",
+  "skill": "packages/naive/src/functions/finance/skills/manage-fixed-asset-project-accounting/SKILL.md",
+  "pcf": [
+    {
+      "id": "9.4",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "13-2051.00",
+      "title": "Financial and Investment Analysts",
+      "basis": "APQC 9.4 opens with capital planning and project approval, which is the evaluation of investments O*NET describes for financial and investment analysts; a --complete suggestion.",
+      "by": "agent, EE-247 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "budget",
+    "money-summary"
+  ],
+  "artifacts": [
+    {
+      "document_kind": "memo"
+    }
+  ],
+  "standards": [
+    "apqc-pcf-cross-industry"
+  ],
+  "research": {
+    "methods": [
+      "organizational",
+      "practitioner",
+      "scientific"
+    ],
+    "questions": [
+      "What does the project cost, over what period, and what does it return?",
+      "Does the approved project still fit the budget?"
+    ]
+  },
+  "level": 4
+}

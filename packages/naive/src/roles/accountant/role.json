@@ -1,0 +1,52 @@
+{
+  "id": "accountant",
+  "name": "Accountant",
+  "kind": "agent",
+  "status": "durable",
+  "function": "finance",
+  "description": "Keeps the general ledger and reports on it (APQC 9.3): applies the financial policies, closes each period, accounts for fixed assets and writes the money summary the finance lead and the board read.",
+  "grantable_classes": [],
+  "default_tier": "workhorse",
+  "lint_suites": [],
+  "verified_by": "finance-lead",
+  "skill": "packages/naive/src/functions/finance/skills/perform-general-accounting-and-reporting/SKILL.md",
+  "pcf": [
+    {
+      "id": "9.3",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "13-2011.00",
+      "title": "Accountants and Auditors",
+      "basis": "APQC 9.3 is general accounting, fixed-asset accounting and financial reporting, the core of O*NET's accountants and auditors (prepare, examine and analyze accounting records and financial statements).",
+      "by": "agent, EE-247 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "money-account",
+    "spend-register",
+    "budget"
+  ],
+  "artifacts": [
+    {
+      "record_type": "money-summary"
+    }
+  ],
+  "standards": [
+    "apqc-pcf-cross-industry"
+  ],
+  "research": {
+    "methods": [
+      "standards",
+      "organizational",
+      "practitioner"
+    ],
+    "questions": [
+      "Does every account reconcile with the system of record for the period?",
+      "What changed in cash, flows and runway since the last close?"
+    ]
+  },
+  "level": 4
+}

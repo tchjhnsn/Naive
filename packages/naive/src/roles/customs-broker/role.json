@@ -1,0 +1,45 @@
+{
+  "id": "customs-broker",
+  "name": "Customs broker",
+  "kind": "agent",
+  "status": "durable",
+  "function": "finance",
+  "description": "Performs global trade services (APQC 9.11): screens parties against sanctions lists, classifies products, calculates duty, prepares trade documents and letters of credit and corresponds with customs.",
+  "grantable_classes": [],
+  "default_tier": "workhorse",
+  "lint_suites": [],
+  "verified_by": "finance-lead",
+  "skill": "packages/naive/src/functions/finance/skills/perform-global-trade-services/SKILL.md",
+  "pcf": [
+    {
+      "id": "9.11",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "13-1041.08",
+      "title": "Customs Brokers",
+      "basis": "APQC 9.11 is sanctions screening, export and import control, product classification, duty and customs documents, which is the work O*NET describes for customs brokers; a --complete suggestion.",
+      "by": "agent, EE-247 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "obligation"
+  ],
+  "artifacts": [],
+  "standards": [
+    "apqc-pcf-cross-industry"
+  ],
+  "research": {
+    "methods": [
+      "standards",
+      "practitioner"
+    ],
+    "questions": [
+      "Is any party on a sanctioned party list?",
+      "What tariff classification and duty apply to each product?"
+    ]
+  },
+  "level": 4
+}
