@@ -27,6 +27,7 @@ Marketing and sales process group roles (EE-241): `market-research-analyst` (3.1
 Supply chain process group roles (EE-242): `supply-chain-manager` (4.1), `purchasing-agent` (4.2), `industrial-production-manager` (4.3), `logistician` (4.4), each accountable for one APQC process group and named after its closest O*NET occupation.
 
 Service delivery process group roles (EE-243): `general-and-operations-manager` (5.1), `operations-research-analyst` (5.2), `administrative-services-manager` (5.3), `business-operations-specialist` (5.4), each accountable for one APQC process group and named after its closest O*NET occupation.
+Process group roles for customer-service (EE-244), one accountable for each of 6.1 to 6.5: `customer-service-representative`, `claims-adjuster` and `survey-researcher` are agent roles; `customer-service-management-analyst` and `regulatory-affairs-specialist` are either.
 
 ## Role programs
 
