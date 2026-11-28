@@ -1,0 +1,57 @@
+{
+  "id": "supply-chain-manager",
+  "name": "Supply chain manager",
+  "kind": "agent",
+  "status": "durable",
+  "function": "supply-chain",
+  "description": "Answers for APQC process group 4.1, Plan for and align supply chain resources: drafts the production and materials strategy, forecasts demand from the pipeline and orders on record, plans materials, the production schedule and distribution, and proposes quality standards. A person approves the plan and every commitment it implies.",
+  "grantable_classes": [],
+  "default_tier": "frontier",
+  "lint_suites": [],
+  "verified_by": "product-lead",
+  "skill": "packages/naive/src/functions/supply-chain/skills/plan-for-and-align-supply-chain-resources/SKILL.md",
+  "pcf": [
+    {
+      "id": "4.1",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "11-3071.04",
+      "title": "Supply Chain Managers",
+      "basis": "Process group 4.1 is the production and materials strategy, demand, the materials plan, the master production schedule and distribution planning, which is supply chain planning; matched by the group's processes against the occupation title in O*NET 31.0, from the suggestions check-roles --complete gave.",
+      "by": "agent, EE-242 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "product",
+    "customer",
+    "opportunity",
+    "purchase-order",
+    "supplier",
+    "budget",
+    "constraints"
+  ],
+  "artifacts": [
+    {
+      "record_type": "supplier"
+    }
+  ],
+  "standards": [
+    "apqc-pcf-cross-industry",
+    "fine-1998-clockspeed"
+  ],
+  "research": {
+    "methods": [
+      "standards",
+      "practitioner",
+      "organizational"
+    ],
+    "questions": [
+      "What demand do the records support, and for which weeks?",
+      "Which supplier or material is first to run short?"
+    ]
+  },
+  "level": 5
+}
