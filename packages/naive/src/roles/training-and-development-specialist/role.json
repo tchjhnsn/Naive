@@ -1,0 +1,50 @@
+{
+  "id": "training-and-development-specialist",
+  "name": "Training and development specialist",
+  "kind": "agent",
+  "status": "durable",
+  "function": "human-capital",
+  "description": "Gets each new person or agent role productive: plans onboarding, keeps objectives tied to a goal, and finds and closes the competency gaps the goals demand.",
+  "grantable_classes": [],
+  "default_tier": "workhorse",
+  "lint_suites": [],
+  "verified_by": "strategy-lead",
+  "skill": "packages/naive/src/functions/human-capital/skills/manage-employee-onboarding-training-and/SKILL.md",
+  "pcf": [
+    {
+      "id": "7.3",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "13-1151.00",
+      "title": "Training and Development Specialists",
+      "basis": "The role plans onboarding, ties each person's objectives to a goal and closes competency gaps with training, which is this occupation's work; matched by the process group's activities against the occupation in O*NET 31.0.",
+      "by": "agent, EE-245 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "team-plan",
+    "people",
+    "agent-capability",
+    "goal",
+    "worker"
+  ],
+  "artifacts": [],
+  "standards": [
+    "apqc-pcf-cross-industry"
+  ],
+  "research": {
+    "methods": [
+      "organizational",
+      "practitioner",
+      "scientific"
+    ],
+    "questions": [
+      "What must this person or agent be able to do in the first week, and who shows them?",
+      "Which goal does each objective serve, and how will it be measured?"
+    ]
+  },
+  "level": 4
+}
