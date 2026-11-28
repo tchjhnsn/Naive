@@ -13,9 +13,14 @@
     "purpose/money/summary",
     "foundation/goals",
     "decisions/*",
-    "investors"
+    "investors",
+    "governance/ownership"
   ],
   "steps": [
+    {
+      "id": "check-holders",
+      "do": "Stop here unless someone holds equity or a SAFE in the venture besides its founders, by the ownership record or the investor records."
+    },
     {
       "id": "gather",
       "do": "Read last month's update and gather the same metrics, defined the same way, from their source records."
