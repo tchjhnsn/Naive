@@ -17,7 +17,7 @@ const shared = {
   description: z.string().min(40).max(160),
   status,
   lastReviewed: reviewed,
-  owner: z.string().optional(),
+  owner: z.string().min(1),
   sources: z.array(z.string().url()).optional(),
 };
 const schemas = {
@@ -129,7 +129,7 @@ for (const file of walk(root).filter((f) => f.endsWith(".mdx"))) {
   const parts = inside.split("/");
   if (parts.at(-1) === "index") parts.pop();
   const url = collection === "docs" ? `/${["docs", ...parts].filter(Boolean).join("/")}` : `/${parts.join("/")}`;
-  pages.push({ rel, collection, inside, url: url === "/" ? "/" : url.replace(/\/$/, ""), slugs, body: prose });
+  pages.push({ rel, collection, inside, url: url === "/" ? "/" : url.replace(/\/$/, ""), slugs, body: prose, owner: split.data.owner });
 }
 
 const byUrl = new Map(pages.map((p) => [p.url, p]));
@@ -181,6 +181,24 @@ for (const collection of ["docs", "marketing"]) {
   for (const file of walk(base).filter((f) => f.endsWith(".mdx"))) {
     if (!listed.has(relative(root, file))) fail(relative(root, file), "not listed in a meta.json");
   }
+}
+
+// Page owners: every page's owner is the site owner, and every page has contributors whose
+// roles are in Naive's role library (packages/naive/src/roles/<id>/).
+const owners = JSON.parse(readFileSync(join(root, "owners.json"), "utf8"));
+const rolesDir = new URL("../../packages/naive/src/roles/", import.meta.url).pathname;
+const roles = new Set(readdirSync(rolesDir).filter((name) => statSync(join(rolesDir, name)).isDirectory()));
+for (const [key, list] of Object.entries(owners.contributors ?? {})) {
+  for (const role of list) if (!roles.has(role)) fail("owners.json", `${key}: ${role} is not a role in the role library`);
+}
+const contributorsOf = (rel) => {
+  const keys = Object.keys(owners.contributors ?? {}).filter((key) => rel === key || rel.startsWith(`${key}/`));
+  keys.sort((a, b) => b.length - a.length);
+  return keys.length ? owners.contributors[keys[0]] : null;
+};
+for (const page of pages) {
+  if (page.owner !== owners.site_owner) fail(page.rel, `owner is ${page.owner}, not the site owner ${owners.site_owner}`);
+  if (!contributorsOf(page.rel)) fail(page.rel, "no contributors in owners.json");
 }
 
 if (errors.length) {
