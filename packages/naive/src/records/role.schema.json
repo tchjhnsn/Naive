@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "role.schema.json",
+  "title": "Role",
+  "description": "One role module (EE-229): a role an agent or a person holds, at packages/naive/src/roles/<id>/role.json in the role library beside the role's SKILL.md, overlaid by a venture's own roles at <venture>/governance/roles/<id>/role.json. A person role (kind person) is never deployed as an agent. The founder is the chief delegator and holds all authority; every other role holds only what is granted to it in governance/delegation.json, and only from the classes it lists as grantable. An agent's work is verified by another role (verified_by), never by itself; only the chief delegator has no verifier. Checked by packages/naive/src/checks/check-roles.ts and packages/naive/src/checks/check-delegation.ts.",
+  "type": "object",
+  "required": ["id", "name", "kind", "description"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9-]+$", "description": "Matches the role's folder name" },
+    "name": { "type": "string" },
+    "aliases": { "type": "array", "items": { "type": "string", "pattern": "^[a-z0-9-]+$" }, "uniqueItems": true, "description": "Other names for this role (such as cto for architect); the id is canonical. No alias is another role's id or alias" },
+    "kind": { "enum": ["person", "agent", "either"], "description": "Who holds the role: a person, an agent or either. A person role is never deployed as an agent, and its default_tier, when it has one, is person" },
+    "status": { "enum": ["durable", "temporary"], "description": "Optional: durable for a library role (the default); temporary for a role a lead wrote for one venture, which only a person makes durable (not built)" },
+    "merged_from": { "type": "array", "items": { "type": "string", "pattern": "^[a-z0-9-]+$" }, "minItems": 2, "uniqueItems": true, "description": "Optional: the roles this one merges, by id (not built)" },
+    "proposed_by": { "type": "string", "description": "Optional: who wrote a temporary role (not built)" },
+    "created_at": { "type": "string", "description": "Optional: when a temporary role was written, an ISO date-time (not built)" },
+    "chief_delegator": { "type": "boolean", "description": "True for the founder only: the root of every delegation chain" },
+    "function": { "type": "string", "pattern": "^[a-z0-9-]+$", "description": "The function the role serves: an id in packages/naive/src/functions/departments.json (such as products, marketing-and-sales or human-capital), or all for the chief delegator and for a lead (a role with a portfolio). packages/naive/src/checks/check-delegation.ts fails on any other value" },
+    "portfolio": { "type": "array", "items": { "type": "string", "pattern": "^[a-z0-9-]+$" }, "minItems": 1, "uniqueItems": true, "description": "A lead only (lead agents design, 2026-11-08): the functions, ids in packages/naive/src/functions/departments.json, whose cross-function work this lead plans and verifies. A role with a portfolio is a lead: its function is all, it may be granted no never-redelegated class and no one-way door, and the leads' portfolios cover every function exactly once (packages/naive/src/checks/check-delegation.ts)" },
+    "default_measure_kinds": { "type": "array", "items": { "enum": ["primary", "revenue", "usage_or_adoption", "cost_or_time_saved", "compliance_met", "learning", "flow_and_lead_time", "impact"] }, "minItems": 1, "uniqueItems": true, "description": "A lead only: the telos measure kinds it is bound to by default (primary means the telos's primary measure). A venture binds the lead to concrete measure ids in its lead plan (operations/lead/[id]); the defaults only route a task whose measure no lead plan binds (packages/naive/src/engine/route-task.ts)" },
+    "description": { "type": "string" },
+    "grantable_classes": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+      "uniqueItems": true,
+      "description": "Decision classes (from decision-rights.json) this role may be granted; the chief delegator lists none, since it holds all"
+    },
+    "default_tier": { "enum": ["person", "frontier", "workhorse", "none"], "description": "Who runs the role by default: person (a human, who holds accountability), frontier (the strongest available model, for high-leverage, novel, low-volume work), workhorse (a strong, cheaper model for high-volume, well-specified work) or none (deterministic scripts and CI)" },
+    "lint_suites": { "type": "array", "items": { "type": "string", "pattern": "^[a-z0-9-]+/[a-z0-9-]+$" }, "uniqueItems": true, "description": "Lint routes it runs, such as marketing/brand-lint" },
+    "verified_by": { "type": ["string", "null"], "description": "The role that verifies its work; null only for the chief delegator" },
+    "also_verified_by": { "type": "array", "items": { "type": "string" }, "description": "Further verifiers for some work, such as the founder for spend" },
+    "skill": { "type": "string", "description": "Path from the repository root to the skill the role's work draws on; the role's own SKILL.md beside role.json says how to act as the role" },
+    "person_kind": { "enum": ["builder", "investor", "operator", "advisor", "governor"], "description": "A person role only: what kind of part the person plays in the venture (EE-082)" },
+    "founder": { "type": "boolean", "description": "A person role only: whether the holder is a founder of the venture, with a file in people/founders/ and a place in the founder agreement" },
+    "owns_when_solo": { "type": "boolean", "description": "A person role only: whether a person alone in this role owns every function the venture imports" },
+    "onet": {
+      "type": "array",
+      "description": "Optional: the O*NET occupations the role matches (filled from EE-232)",
+      "items": {
+        "type": "object",
+        "required": ["code", "title", "basis", "by"],
+        "additionalProperties": false,
+        "properties": {
+          "code": { "type": "string", "pattern": "^[0-9]{2}-[0-9]{4}\\.[0-9]{2}$", "description": "An O*NET-SOC code, such as 11-3031.00" },
+          "title": { "type": "string" },
+          "basis": { "type": "string", "description": "On what basis the occupation was matched" },
+          "by": { "type": "string", "description": "Who matched it" }
+        }
+      }
+    },
+    "pcf": {
+      "type": "array",
+      "description": "Optional: the APQC PCF elements the role answers for, each with its RACI part (filled from EE-232)",
+      "items": {
+        "type": "object",
+        "required": ["id", "raci"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[0-9]+(\\.[0-9]+)*$", "description": "A hierarchy id in packages/naive/src/functions/pcf.json" },
+          "raci": { "enum": ["responsible", "accountable", "consulted", "informed"] }
+        }
+      }
+    },
+    "reads": { "type": "array", "items": { "type": "string", "pattern": "^[a-z0-9-]+$" }, "uniqueItems": true, "description": "Optional: the record types the role reads. What it depends on is derived from these against other roles' artifacts, never typed" },
+    "artifacts": {
+      "type": "array",
+      "description": "Optional: what the role produces, each a record type in the data model or a document kind in packages/naive/src/functions/documents.json (filled from EE-230)",
+      "items": {
+        "oneOf": [
+          { "type": "object", "required": ["record_type"], "additionalProperties": false, "properties": { "record_type": { "type": "string", "pattern": "^[a-z0-9-]+$" } } },
+          { "type": "object", "required": ["document_kind"], "additionalProperties": false, "properties": { "document_kind": { "type": "string", "pattern": "^[a-z0-9-]+$" } } }
+        ]
+      }
+    },
+    "standards": { "type": "array", "items": { "type": "string" }, "uniqueItems": true, "description": "Optional: the standards the role works to, as reference ids" },
+    "research": {
+      "type": "object",
+      "description": "Optional: how the role researches (filled from EE-233)",
+      "required": ["methods"],
+      "additionalProperties": false,
+      "properties": {
+        "methods": { "type": "array", "items": { "enum": ["standards", "scientific", "organizational", "practitioner", "stakeholder"] }, "minItems": 1, "uniqueItems": true, "description": "The research methods in the order the role reaches for them" },
+        "questions": { "type": "array", "items": { "type": "string" }, "description": "The questions the role asks first" }
+      }
+    },
+    "level": { "type": "integer", "minimum": 1, "maximum": 7, "description": "Optional: the role's default responsibility level on SFIA's scale of 1 to 7" }
+  },
+  "dependentRequired": { "portfolio": ["default_measure_kinds"], "default_measure_kinds": ["portfolio"] },
+  "if": { "properties": { "kind": { "enum": ["agent", "either"] } } },
+  "then": { "required": ["function", "grantable_classes", "default_tier", "lint_suites", "verified_by", "skill"] },
+  "additionalProperties": false
+}

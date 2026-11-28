@@ -165,20 +165,20 @@
     {
       "id": "spend-register-upkeep",
       "description": "Record statements, tag charges by entity, flag anomalies",
-      "owner": "operations-finance-lead",
+      "owner": "finance-agent",
       "level": "decide"
     },
     {
       "id": "cancel-or-downgrade",
       "description": "Cancel, downgrade or change the plan of a paid service",
-      "owner": "operations-finance-lead",
+      "owner": "finance-agent",
       "level": "recommend-approve",
       "condition": "Founder approves; Architect consulted if the service is in use"
     },
     {
       "id": "move-payment-method",
       "description": "Move an existing subscription to the business card or account",
-      "owner": "operations-finance-lead",
+      "owner": "finance-agent",
       "level": "recommend-approve",
       "condition": "Founder performs the change in the vendor account"
     }

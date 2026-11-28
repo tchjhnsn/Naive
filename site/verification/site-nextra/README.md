@@ -61,7 +61,7 @@ Replay against a built site (`cd site && npm run build && npm start`):
 - `GET /templates` and `GET /llms.txt` and `GET /llms-full.txt` and `GET /md/docs` and `GET /og/docs` are 307 to `/waitlist`.
 - `GET /waitlist` is HTML, the page records interest and does not create an account, and the HTML says `noindex`.
 - `GET /getting-started` is 308 to `/docs/get-started`, and that URL is 307 to `/waitlist`.
-- `GET /why`, `/for`, `/about` are 200. `/blog` and `/showcase` were removed on 2026-11-27.
+- `GET /about` is 200. `/why` and `/for` redirect to `/` with 308 (removed on 2026-11-27). `/blog` and `/showcase` were removed on 2026-11-27.
 - `GET /` does not link to `/docs` or `/templates`.
 - `GET /robots.txt` is `Disallow: /`.
 

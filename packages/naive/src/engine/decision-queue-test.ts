@@ -71,7 +71,7 @@ try {
   const disc = ctxAt("discovery");
   expect("the context reads the phase's weights", disc.weights.products === 0.25 && disc.weights["marketing-and-sales"] === 0.15, disc.weights);
   expect("the context reads lead plans, handoffs and the class owners", disc.bound["weekly-active"] === "growth-lead" && disc.handoffs["dq-a"]?.join() === "h1" && disc.classes["spend-register-upkeep"] === "finance", { bound: disc.bound, handoffs: disc.handoffs });
-  expect("leads come from role templates with a portfolio", disc.leads.some((l) => l.id === "growth-lead" && l.portfolio.includes("marketing-and-sales")));
+  expect("leads come from library roles with a portfolio", disc.leads.some((l) => l.id === "growth-lead" && l.portfolio.includes("marketing-and-sales")));
 
   const items: Item[] = [
     { entry: { id: "price", score: 40, impact: { changed: ["product/shop.json"] } }, decision: { decides: { record: "product" } }, raw: {} },

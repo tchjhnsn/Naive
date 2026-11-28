@@ -20,10 +20,10 @@
 //   4. default    a category the venture lists in venture.json departments is owned by its function's agent,
 //                 <function>-agent. A category the venture does not list has no owner, and neither do its elements.
 //
-// A role is a role template (packages/naive/template/governance/roles/, overlaid by the venture's governance/roles/)
-// or a function agent. A role whose template has default_tier person is a person, and the rest are agents. A role
-// answers only within its reach: a lead within its portfolio, a role whose template names a function within that
-// function, a function agent within its own function, and a role of function all anywhere.
+// A role is a role in the role library (packages/naive/src/roles/, overlaid by the venture's governance/roles/, EE-229)
+// or a function agent. A person role (kind person) is a person, and the rest are agents. A role
+// answers only within its reach: a lead within its portfolio, a role that names a function within that
+// function, a function agent within its own function, and a role of function all, or of none, anywhere.
 //
 // It reads, and writes nothing. packages/naive/src/checks/check-owners.ts fails on what ownerProblems() finds.
 
@@ -35,6 +35,7 @@ import { readJson, VentureFs } from "../core/effect/fs.ts";
 import { describe, runMain } from "../core/effect/run.ts";
 import { ventureFile } from "../core/venture-paths.ts";
 import { kindOf } from "./activity-kinds.ts";
+import { isPersonRole, loadRoles, type Role } from "./agents/roles.ts";
 import { readCatalog, readPcf } from "./activity-proposals.ts";
 import { assignmentOf, readAssignments } from "./agents/assignments.ts";
 import { functionsOf } from "./research-programs.ts";
@@ -43,7 +44,6 @@ import type { ActivityCatalog, DepartmentCatalog, ElementOwners, Pcf } from "../
 const repo = new URL("../../../..", import.meta.url).pathname;
 /** The venture record that names owners. */
 export const OWNERS = "operations/element-owners.json";
-const ROLES = "packages/naive/template/governance/roles";
 const DELEGATION = "packages/naive/template/governance/delegation.json";
 const DEPARTMENTS = "packages/naive/src/functions/departments.json";
 
@@ -146,7 +146,7 @@ export function ownerProblems(i: OwnerInputs, resolved: readonly ElementOwner[])
     if (!listed.has(e.function)) out.push(`${OWNERS}: ${id} is under ${e.function}, which the venture does not list in venture.json departments`);
     if (owner.role === undefined) continue;
     const role = i.roles.get(owner.role);
-    if (!role) out.push(`${OWNERS}: ${id} names the role ${owner.role}, which is not a role: no role template has it and it is not a function agent (<function>-agent)`);
+    if (!role) out.push(`${OWNERS}: ${id} names the role ${owner.role}, which is not a role: it is in neither the role library nor the venture's roles and it is not a function agent (<function>-agent)`);
     else if (role.reach !== "all" && !role.reach.includes(e.function)) out.push(`${OWNERS}: ${id} is under ${e.function}, and the role ${owner.role} answers only for ${role.reach.join(", ")}`);
   }
   if (resolved.some((e) => e.source === "root") && !i.roles.has(i.root)) out.push(`the delegation root ${i.root} is not a role, so the activities a person performs have no owner`);
@@ -157,18 +157,10 @@ export function ownerProblems(i: OwnerInputs, resolved: readonly ElementOwner[])
 const isObject = (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null && !Array.isArray(v);
 const cannot = (what: string) => (e: Parameters<typeof describe>[0]) => new CannotRun({ message: `${what}: ${describe(e)}`, cause: e });
 
-/** The role templates in one folder, by id. An index file (a roles array) is skipped. */
-const rolesIn = (dir: string) => Effect.gen(function* () {
-  const fs = yield* VentureFs;
-  const found = new Map<string, RoleInfo>();
-  if (!(yield* fs.isDirectory(dir))) return found;
-  for (const f of (yield* fs.list(dir).pipe(Effect.mapError(cannot(dir)))).filter((n) => n.endsWith(".json")).sort()) {
-    const r = yield* readJson(join(dir, f)).pipe(Effect.mapError(cannot(join(dir, f))));
-    if (!isObject(r) || Array.isArray(r.roles) || typeof r.id !== "string") continue;
-    const reach = Array.isArray(r.portfolio) ? r.portfolio.filter((x): x is string => typeof x === "string") : typeof r.function === "string" && r.function !== "all" ? [r.function] : "all";
-    found.set(r.id, { kind: r.default_tier === "person" ? "person" : "agent", reach });
-  }
-  return found;
+/** What the resolver needs from a role: a person role is a person, and its reach is its portfolio, its function or all. */
+const roleInfo = (r: Role): RoleInfo => ({
+  kind: isPersonRole(r) ? "person" : "agent",
+  reach: r.portfolio ?? (r.function !== undefined && r.function !== "all" ? [r.function] : "all"),
 });
 
 /** Everything the resolver reads for a venture. */
@@ -176,8 +168,7 @@ export const ownerInputs = (dir: string) => Effect.gen(function* () {
   const departments = (yield* readJson(join(repo, DEPARTMENTS)).pipe(Effect.mapError(cannot(DEPARTMENTS)))) as DepartmentCatalog;
   const categories = new Map(departments.departments.map((d) => [d.apqc.id, d.id]));
   const roles = new Map<string, RoleInfo>(departments.departments.map((d) => [agentOf(d.id), { kind: "agent", reach: [d.id] }]));
-  for (const [id, r] of yield* rolesIn(join(repo, ROLES))) roles.set(id, r);
-  for (const [id, r] of yield* rolesIn(ventureFile(dir, "governance/roles"))) roles.set(id, r);
+  for (const [id, r] of loadRoles(dir)) roles.set(id, roleInfo(r));
   const own = ventureFile(dir, "governance/delegation.json");
   const delegation = yield* readJson(existsSync(own) ? own : join(repo, DELEGATION)).pipe(Effect.mapError(cannot("governance/delegation.json")));
   const root = isObject(delegation) && typeof delegation.root === "string" ? delegation.root : "founder";
