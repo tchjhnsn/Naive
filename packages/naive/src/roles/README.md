@@ -24,6 +24,8 @@ Products process group roles (EE-240): `architectural-and-engineering-manager` (
 
 Marketing and sales process group roles (EE-241): `market-research-analyst` (3.1), `advertising-and-promotions-manager` (3.3), `sales-manager` (3.4), `sales-representative-of-services` (3.5), each accountable for one APQC process group and named after its closest O*NET occupation.
 
+Supply chain process group roles (EE-242): `supply-chain-manager` (4.1), `purchasing-agent` (4.2), `industrial-production-manager` (4.3), `logistician` (4.4), each accountable for one APQC process group and named after its closest O*NET occupation.
+
 ## Role programs
 
 Every role has a program (EE-237, [`role-program.ts`](../checks/role-program.ts)): deterministic checks of what the role makes, each an Effect over `VentureFs` that fails only with Naive's tagged errors. The default program comes from `role.json`:

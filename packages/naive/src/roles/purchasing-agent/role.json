@@ -1,0 +1,58 @@
+{
+  "id": "purchasing-agent",
+  "name": "Purchasing agent",
+  "kind": "agent",
+  "status": "durable",
+  "function": "supply-chain",
+  "description": "Answers for APQC process group 4.2, Procure materials and services: compares suppliers on record, drafts category plans and purchase orders, and tracks each supplier's performance. A person signs every contract and approves every order and spend.",
+  "grantable_classes": [],
+  "default_tier": "workhorse",
+  "lint_suites": [],
+  "verified_by": "product-lead",
+  "skill": "packages/naive/src/functions/supply-chain/skills/procure-materials-and-services/SKILL.md",
+  "pcf": [
+    {
+      "id": "4.2",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "13-1023.00",
+      "title": "Purchasing Agents, Except Wholesale, Retail, and Farm Products",
+      "basis": "Process group 4.2 is sourcing governance, category plans, selecting suppliers and keeping contracts, ordering and managing suppliers, which is a purchasing agent's work; matched by the group's processes against the occupation title in O*NET 31.0.",
+      "by": "agent, EE-242 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "supplier",
+    "purchase-order",
+    "budget",
+    "spend-register",
+    "decision-rights",
+    "risk",
+    "obligation"
+  ],
+  "artifacts": [
+    {
+      "record_type": "supplier"
+    },
+    {
+      "record_type": "purchase-order"
+    }
+  ],
+  "standards": [
+    "apqc-pcf-cross-industry"
+  ],
+  "research": {
+    "methods": [
+      "practitioner",
+      "organizational"
+    ],
+    "questions": [
+      "Which suppliers on record can meet this need, at what price and lead time?",
+      "Which decision class does this order fall in, and who approves it?"
+    ]
+  },
+  "level": 4
+}

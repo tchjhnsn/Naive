@@ -1,0 +1,54 @@
+{
+  "id": "industrial-production-manager",
+  "name": "Industrial production manager",
+  "kind": "agent",
+  "status": "durable",
+  "function": "supply-chain",
+  "description": "Answers for APQC process group 4.3, Produce/Assemble/Test product: schedules production against orders, records each build and its quality tests, and keeps lot traceability so any defect can be traced to its inputs. A person releases product to customers.",
+  "grantable_classes": [],
+  "default_tier": "frontier",
+  "lint_suites": [],
+  "verified_by": "product-lead",
+  "skill": "packages/naive/src/functions/supply-chain/skills/produce-assemble-test-product/SKILL.md",
+  "pcf": [
+    {
+      "id": "4.3",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "11-3051.00",
+      "title": "Industrial Production Managers",
+      "basis": "Process group 4.3 is scheduling production, producing and assembling the product, quality testing and keeping production records and lot traceability, which this occupation plans and coordinates; matched by the group's processes against the occupation title in O*NET 31.0.",
+      "by": "agent, EE-242 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "product",
+    "purchase-order",
+    "supplier",
+    "fixed-asset",
+    "bug",
+    "support-case"
+  ],
+  "artifacts": [
+    {
+      "record_type": "purchase-order"
+    }
+  ],
+  "standards": [
+    "apqc-pcf-cross-industry"
+  ],
+  "research": {
+    "methods": [
+      "practitioner",
+      "organizational"
+    ],
+    "questions": [
+      "Which order does this run serve, and is every input on record?",
+      "Can a defect in this lot be traced to its inputs?"
+    ]
+  },
+  "level": 5
+}
