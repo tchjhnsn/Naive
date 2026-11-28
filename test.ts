@@ -241,6 +241,7 @@ const steps: Step[] = [
   ["Lean ontology concepts: a two-noun fixture regenerates both, --check catches an edited noun, name clashes stop the run", "node", ["packages/naive/src/terms/gen-concepts-test.ts"]],
   ["upper ontology: every noun reaches exactly one top category through broader (term top-category); an orphan, a noun with two top categories and a cycle are named", "node", ["packages/naive/src/terms/upper-test.ts"]],
   ["ontology catalog: one name@function scope per function, imports acyclic (term layer, L2), every term defined or imported; a cycle is printed and a missing term is an open item for its owning scope", "node", ["packages/naive/src/terms/catalog-test.ts"]],
+  ["standards catalog: each id is its file name, every noun and record type named exists, an adopted or mapped standard names a user, an unconfirmed one says why (EE-150)", "node", ["packages/naive/src/terms/standards-test.ts"]],
   ["record types match the schemas (regenerate with node packages/naive/src/records/record-types.ts)", "node", ["packages/naive/src/records/record-types.ts", "--check"]],
   ["record types: the mapping, its refusals, the stale check and every record against its type", "node", ["packages/naive/src/records/record-types-test.ts"]],
   ["record paths: every schema and data-model path goes through packages/naive/src/records", "node", ["packages/naive/src/checks/check-record-paths.ts"]],

@@ -1,0 +1,20 @@
+{
+  "id": "ddd",
+  "name": "Domain-Driven Design (the Shared Kernel pattern)",
+  "issuer": "Eric Evans, Domain Language",
+  "identifier": "Domain-Driven Design Reference, 2015-03",
+  "version": "2015-03",
+  "url": "https://www.domainlanguage.com/wp-content/uploads/2016/05/DDD_Reference_2015-03.pdf",
+  "status": "considered",
+  "checked": "2026-11-19",
+  "copyright": "open",
+  "uses": "The name and the rule for the part every framework in the Everything Ecosystem shares: a shared kernel, an explicitly bounded subset of the domain model, code included, that the teams agree to share, keep small and change only with each other's consent, held together by continuous integration. In the ecosystem it holds mechanisms (the record schema, the EE-095 term engine, the checks); frameworks hold their contents.",
+  "used_by": {
+    "nouns": [],
+    "record_types": []
+  },
+  "gaps": [
+    "The pattern says to keep the kernel small and agreed, but gives no check that a change to it was agreed or that it stayed small."
+  ],
+  "note": "Chosen 2026-11-19 as the name of the ecosystem's shared layer, in place of shared foundation. No noun or record type uses it yet, so it is considered, not adopted. The 2015 reference is published under Creative Commons Attribution 4.0; the 2003 book is restricted."
+}

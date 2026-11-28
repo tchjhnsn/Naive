@@ -4,7 +4,7 @@ Up: [src](../README.md)
 
 ## What this is
 
-The EE-095 term engine: every term is admitted through one pipeline with a valid test, cross-runs and the Lean theorems it names. Also the ontology (the canonical nouns), the catalog of ontologies and Naive's operating rules. Nothing symbolic bypasses it (`bypass-guard-test.ts`).
+The EE-095 term engine: every term is admitted through one pipeline with a valid test, cross-runs and the Lean theorems it names. Also the ontology (the canonical nouns), the catalog of ontologies, the catalog of outside standards and Naive's operating rules. Nothing symbolic bypasses it (`bypass-guard-test.ts`).
 
 ## Where things are
 
@@ -28,6 +28,8 @@ The EE-095 term engine: every term is admitted through one pipeline with a valid
 | [`lean-agreement-test.ts`](./lean-agreement-test.ts) | Runs `lean-agreement.ts` as a test: fails the suite when the term engine and the Lean proofs disagree about which terms and theorems exist. |
 | [`levels.ts`](./levels.ts) | The levels terms are defined at, each with its facts and a seeded case generator. The detector and trial levels hold the signal detection terms. The reception level (one signal arriving at one listener) holds the signal library terms; its signals and listeners come from pools, so one signal reaches many listeners. The experiment, plan and settlement levels hold the autoresearch terms. The data level holds sourced, estimated, synthetic, gold, held-out-item and person-label. `dataCases` draws the six label flags and the eval flags on their own, so each property passes and fails. The source level holds allowed-source. `sourceCases` draws hostDenied and loggedOff on their own. |
 | [`ontology-catalog.json`](./ontology-catalog.json) | The catalog of ontologies, one scope per function (N-050). |
+| [`standards/`](./standards/README.md) | The catalog of outside standards, one record per standard: status, users and gaps (EE-150). |
+| [`standards-test.ts`](./standards-test.ts) | Checks the catalog of standards: ids, the nouns and record types named, and status (EE-150). |
 | [`ontology-gate-test.ts`](./ontology-gate-test.ts) | Behavior of the membership gate. |
 | [`ontology-gate.ts`](./ontology-gate.ts) | The membership gate (the first gate of the handoff pipeline). |
 | [`ontology-metamodel-test.ts`](./ontology-metamodel-test.ts) | Behavior of the ontology metamodel (N-048). |

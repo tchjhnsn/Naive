@@ -1,0 +1,17 @@
+{
+  "id": "ifc",
+  "name": "Industry Foundation Classes",
+  "issuer": "buildingSMART International",
+  "identifier": "ISO 16739-1:2024",
+  "url": "https://technical.buildingsmart.org/standards/ifc/",
+  "status": "considered",
+  "checked": null,
+  "copyright": "restricted",
+  "uses": "Building geometry and elements. The pattern-language design lets IFC own geometry.",
+  "used_by": {
+    "nouns": [],
+    "record_types": []
+  },
+  "gaps": [],
+  "note": "The site refused an automated request on 2026-11-19, so the url is not confirmed. buildingSMART publishes the schema openly; the ISO edition is restricted."
+}

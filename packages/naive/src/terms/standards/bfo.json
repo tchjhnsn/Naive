@@ -1,0 +1,22 @@
+{
+  "id": "bfo",
+  "name": "Basic Formal Ontology",
+  "issuer": "ISO/IEC JTC 1 (BFO project)",
+  "identifier": "ISO/IEC 21838-2:2021",
+  "version": "BFO 2020",
+  "url": "https://basic-formal-ontology.org/",
+  "status": "adopted",
+  "checked": "2026-11-19",
+  "copyright": "restricted",
+  "uses": "The upper ontology. Naive's top categories map to BFO classes by IRI (information artifact to generically dependent continuant, party to independent continuant, capacity to realizable entity, process, characteristic to quality), and BFO role gives role its meaning: a role a bearer has and realizes in processes.",
+  "used_by": {
+    "nouns": [],
+    "record_types": [
+      "ontology"
+    ]
+  },
+  "gaps": [
+    "BFO says what kinds of thing exist, but nothing checks a team's records against it."
+  ],
+  "note": "The ISO text is restricted; the BFO project's own documentation at the url is open. The top categories are not nouns in ontology.json, so they are not listed under nouns."
+}
