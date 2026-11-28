@@ -1,0 +1,52 @@
+{
+  "id": "facilities-manager",
+  "name": "Facilities manager (plan and acquire assets)",
+  "kind": "either",
+  "status": "durable",
+  "function": "assets",
+  "description": "Plans where the venture works and the space and equipment it needs: holds property requirements against the venture's goals, reads the market from public listings, costs build against buy against lease to the exit, and keeps every space, membership and move in a record.",
+  "grantable_classes": [],
+  "default_tier": "frontier",
+  "lint_suites": [],
+  "verified_by": "finance-lead",
+  "skill": "packages/naive/src/functions/assets/skills/plan-and-acquire-assets/SKILL.md",
+  "pcf": [
+    {
+      "id": "10.1",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "11-3013.00",
+      "title": "Facilities Managers",
+      "basis": "The role plans where the venture works, provides its space and runs its facilities, which is this occupation's work; matched by the process group's activities (10.1.2 to 10.1.4) against the occupation in O*NET 31.0.",
+      "by": "agent, EE-248 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "lease",
+    "fixed-asset",
+    "budget",
+    "goal"
+  ],
+  "artifacts": [
+    {
+      "record_type": "lease"
+    }
+  ],
+  "standards": [
+    "apqc-pcf-cross-industry"
+  ],
+  "research": {
+    "methods": [
+      "organizational",
+      "practitioner"
+    ],
+    "questions": [
+      "What does the venture need from a space, and which goal says so?",
+      "What does each option cost through to the exit, and how hard is it to leave?"
+    ]
+  },
+  "level": 5
+}

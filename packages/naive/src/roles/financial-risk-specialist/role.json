@@ -1,0 +1,52 @@
+{
+  "id": "financial-risk-specialist",
+  "name": "Financial risk specialist",
+  "kind": "agent",
+  "status": "durable",
+  "function": "risk-and-compliance",
+  "description": "Manages enterprise risk (APQC 11.1): proposes the risk framework, keeps the risk register, assesses each risk's likelihood and impact, proposes a treatment and an owner, and reports the risks that changed to the finance lead.",
+  "grantable_classes": [],
+  "default_tier": "frontier",
+  "lint_suites": [],
+  "verified_by": "finance-lead",
+  "skill": "packages/naive/src/functions/risk-and-compliance/skills/manage-enterprise-risk/SKILL.md",
+  "pcf": [
+    {
+      "id": "11.1",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "13-2054.00",
+      "title": "Financial Risk Specialists",
+      "basis": "APQC 11.1 is establishing and running the enterprise risk framework, the identifying, analyzing and monitoring of risk that O*NET describes for financial risk specialists; the first --complete suggestion. O*NET has no occupation for enterprise risk as a whole, so a person should confirm.",
+      "by": "agent, EE-249 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "obligation",
+    "budget",
+    "money-summary"
+  ],
+  "artifacts": [
+    {
+      "record_type": "risk"
+    }
+  ],
+  "standards": [
+    "apqc-pcf-cross-industry"
+  ],
+  "research": {
+    "methods": [
+      "standards",
+      "organizational",
+      "practitioner"
+    ],
+    "questions": [
+      "Which risks would stop the venture, and how likely is each?",
+      "Which risk has no treatment or no owner?"
+    ]
+  },
+  "level": 5
+}
