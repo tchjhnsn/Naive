@@ -15,11 +15,11 @@ The function's purpose: Say which services the venture sells and deliver each cl
 
 ## What you own
 
-Writes: service offers (`service-delivery/offers/*`), engagements (`service-delivery/engagements/*`), the activity log and its summary (`operations/activity/*`, `operations/activity-summary`), plus `decisions/*` to raise a question and `operations/handoff/*` for progress and evidence on handoffs addressed to you.
+Writes: service offers (`service-delivery/offers/*`), engagements (`service-delivery/engagements/*`), the activity log (`operations/activity/*`), plus `decisions/*` to raise a question and `operations/handoff/*` for progress and evidence on handoffs addressed to you.
 
 Reads: every record, the customers and their opportunities included.
 
-No workflow of yours writes the activity log or its summary. `naive activity --write` writes both from transcript timestamps, as the program `naive-activity` through the store's record writer, not through the router. Your reach covers them, but no step asks you to write them.
+No workflow of yours writes the activity log or its summary. `naive activity --write` writes both from transcript timestamps, as the program `naive-activity` through the store's record writer, not through the router. Your reach covers the log, but no step asks you to write it. The summary is derived, so its route `operations/activity-summary` reads only and is not in your reach.
 
 Every write goes through the Naive router, which refuses anything the Writes line does not name, and holds a write the gate reserves for a person as a draft.
 
