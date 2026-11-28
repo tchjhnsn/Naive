@@ -14,7 +14,7 @@ The external relationships function (APQC 12.0, Manage External Relationships). 
 | [agent.md](./agent.md) | The external relationships agent's instructions |
 | [decisions.json](./decisions.json) | The decision matrix |
 | [workflows/intake.json](./workflows/intake.json) | Workflow: learn the venture's investors and raise. It waits on a live problem record, live goals and a meeting that walked `strategy/intake` and closed with its goal reached (EE-217), so nobody is asked for money before the venture can say what it is for. Its steps for records need-now suggests only after Discovery, or never, are steps to consider that name the phase they start in (check-functions.ts). |
-| [workflows/monthly-investor-update.json](./workflows/monthly-investor-update.json) | Workflow: draft the monthly investor update |
+| [workflows/monthly-investor-update.json](./workflows/monthly-investor-update.json) | Workflow: draft the monthly investor update; its first step, `check-holders`, stops the run unless someone besides the founders holds equity or a SAFE |
 | [workflows/weekly-raise-review.json](./workflows/weekly-raise-review.json) | Workflow: review an open raise each week |
 | [skills/fundraise](./skills/fundraise) | Skill: Run a fundraise as a bounded project in a raise record: the ask and milestone, start and stop dates, the securities exemption, materials, target investors and every meeting with its follow-up |
 | [skills/stakeholder-update](./skills/stakeholder-update) | Skill: Compose a stakeholder update tailored to audience + cadence. |
