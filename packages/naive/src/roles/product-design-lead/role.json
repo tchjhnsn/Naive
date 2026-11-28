@@ -29,5 +29,13 @@
       "id": "2.2",
       "raci": "responsible"
     }
+  ],
+  "reads": [
+    "goal"
+  ],
+  "artifacts": [
+    {
+      "record_type": "product-capability"
+    }
   ]
 }

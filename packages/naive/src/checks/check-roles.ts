@@ -6,9 +6,13 @@
 //     researcher) and never the role itself;
 //   - ids and aliases are unique: no alias is another role's id or alias, in the library or once a venture's roles
 //     overlay it (a venture role with a library role's id replaces that role, which is the overlay);
-//   - a person role grants no agent tier: its default_tier, when it has one, is person.
+//   - a person role grants no agent tier: its default_tier, when it has one, is person;
 //   - each role a merged role names in merged_from is a known role, not itself and not a person role, and a temporary
-//     role names who proposed it and when (the schema, EE-235).
+//     role names who proposed it and when (the schema, EE-235);
+//   - a library role's role.ts (EE-237) imports and its default export is a valid RoleProgram whose id is the role's,
+//     whose checks each have an id, a description and a run function, and repeat no default check
+//     (programProblems in packages/naive/src/checks/role-program.ts);
+//   - a venture role has no role.ts, because Naive never loads code from a venture folder.
 // The links to APQC's framework and to O*NET (EE-232):
 //   - each pcf[].id is a hierarchy id in packages/naive/src/functions/pcf.json, named once per role, and its raci is
 //     responsible, accountable, consulted or informed (the schema holds the values);
@@ -31,13 +35,15 @@
 // are read from that copy when it has them, else from this repository. Exit 0 passes, 1 fails.
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
-import { join } from "node:path";
+import { join, relative } from "node:path";
+import { runPromise } from "../core/effect/run.ts";
 import { ventureFile } from "../core/venture-paths.ts";
 import { LIBRARY, roleFiles, VENTURE_ROLES, type Role, type RoleFile } from "../engine/agents/roles.ts";
 import { functionsOf } from "../engine/research-programs.ts";
 import { elementTexts, occupationIndex, suggestOccupations, type Suggestion } from "../engine/onet-match.ts";
 import { validateValue } from "../records/validate.ts";
 import type { DepartmentCatalog, Onet, Pcf } from "../records/types/records.d.ts";
+import { importProgram, programFile } from "./role-program.ts";
 
 /** One scope's role files: the library's or a venture's. */
 export interface Scope { readonly name: "library" | "venture", readonly files: readonly RoleFile[] }
@@ -162,6 +168,21 @@ function referenceIds(root: string): Set<string> {
   return ids;
 }
 
+/** Every problem with role programs: a library role.ts that is not a valid RoleProgram for its role, and any venture role.ts. */
+export async function programFileProblems(root: string, venture?: string): Promise<string[]> {
+  const errors: string[] = [];
+  for (const f of roleFiles(join(root, LIBRARY))) {
+    const file = programFile(f.folder, root);
+    if (!file) continue;
+    const at = relative(root, file);
+    try { await runPromise(importProgram(file, f.folder)); }
+    catch (e) { errors.push(`${at}: ${(e instanceof Error ? e.message : String(e)).replace(`${file}: `, "")}`); }
+  }
+  if (venture) for (const f of roleFiles(ventureFile(venture, VENTURE_ROLES))) for (const n of ["role.ts", "role.mjs"])
+    if (existsSync(ventureFile(venture, `${VENTURE_ROLES}/${f.folder}/${n}`))) errors.push(`${VENTURE_ROLES}/${f.folder}/${n}: Naive never loads code from a venture folder; a venture role's program is the default one and the library's role.ts of the same id`);
+  return errors;
+}
+
 if (import.meta.url === `file://${process.argv[1]}`) {
   const args = process.argv.slice(2);
   const opt = (n: string) => { const i = args.indexOf(`--${n}`); return i < 0 ? undefined : args[i + 1]; };
@@ -178,7 +199,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const links: Links = { pcf, onet, functions: catalog.departments.map((d) => ({ id: d.id, category: d.apqc.id })) };
   const scopes: Scope[] = [{ name: "library", files: roleFiles(join(root, LIBRARY)) }];
   if (venture) scopes.push({ name: "venture", files: roleFiles(ventureFile(venture, VENTURE_ROLES)) });
-  const errors = roleProblems(scopes, links.functions.map((f) => f.id), links);
+  const errors = [...roleProblems(scopes, links.functions.map((f) => f.id), links), ...await programFileProblems(root, venture)];
   if (onet && !referenceIds(existsSync(join(root, LAYERS)) ? root : REPO).has(onet.source)) errors.push(`${ONET_FILE}: source ${onet.source} is not a reference id in ${LAYERS}/<layer>/references/references.json`);
   const roles = new Map<string, Role>();
   for (const s of scopes) for (const f of s.files) if (isObject(f.value) && typeof f.value.id === "string") roles.set(f.value.id, f.value as Role);
@@ -194,7 +215,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       console.log(`GAP   PCF ${g.id} ${g.name} (${g.function}): no role is responsible or accountable${hint}`);
     }
     if (errors.length) console.log(`${errors.length} error(s) in ${count} role files`);
-    else console.log(`role library: ${count} role files valid, ids match folders, every verifier a known role and never itself, ids and aliases unique, no person role with an agent tier, every PCF link a known element with one accountable role in its function or portfolio, every O*NET code an occupation`);
+    else console.log(`role library: ${count} role files valid, ids match folders, every verifier a known role and never itself, ids and aliases unique, no person role with an agent tier, every PCF link a known element with one accountable role in its function or portfolio, every O*NET code an occupation, every role.ts a valid program`);
     if (args.includes("--complete")) console.log(gaps.length ? `${gaps.length} PCF element(s) of levels 1 to ${level} under ${run.length} function(s) have no responsible or accountable role` : `every PCF element of levels 1 to ${level} under ${run.length} function(s) has a responsible or accountable role`);
   }
   process.exit(failed ? 1 : 0);

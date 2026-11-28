@@ -263,8 +263,8 @@ export const toLines = (input: LintInput, findings: Finding[], at: string): Lint
   ...(input.role ? { role: input.role } : {}), ...(input.harness ? { harness: input.harness } : {}),
 }));
 
-/** The venture's artifacts and what they are checked against, read through VentureFs. */
-const readVenture = (dir: string) => Effect.gen(function* () {
+/** The venture's artifacts and what they are checked against, read through VentureFs. naive role check reads them too. */
+export const readArtifacts = (dir: string) => Effect.gen(function* () {
   const fs = yield* VentureFs;
   const model = readDataModel() as DataModel;
   const catalog = readCatalog();
@@ -297,7 +297,7 @@ const readVenture = (dir: string) => Effect.gen(function* () {
 
 /** Lints every artifact the venture holds and appends every finding to the log. */
 export const lintVenture = (dir: string, { at = new Date().toISOString(), config }: { at?: string; config?: NaiveConfig } = {}) => Effect.gen(function* () {
-  const { inputs, ctx, skipped } = yield* readVenture(dir);
+  const { inputs, ctx, skipped } = yield* readArtifacts(dir);
   const lv = levels(config ?? readConfig(dir));
   const results = inputs.map((input) => ({ input, findings: lintArtifact(input, ctx, lv) }));
   const lines = results.flatMap((r) => toLines(r.input, r.findings, at));

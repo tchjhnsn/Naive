@@ -1,0 +1,14 @@
+{
+  "site_owner": "technical-writer",
+  "note": "One role owns every word on the site and is the owner of every page. Each section lists the roles that send it notes for their part (site/notes/). The longest matching key wins.",
+  "contributors": {
+    "docs": ["product-lead"],
+    "docs/changelog.mdx": ["builder"],
+    "docs/roadmap.mdx": ["product-lead"],
+    "docs/get-started": ["builder"],
+    "docs/guides": ["builder"],
+    "docs/concepts": ["architect"],
+    "docs/reference": ["builder"],
+    "marketing": ["marketing-lead"]
+  }
+}
