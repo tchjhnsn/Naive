@@ -19,6 +19,8 @@ Writes: service offers (`service-delivery/offers/*`), engagements (`service-deli
 
 Reads: every record, the customers and their opportunities included.
 
+No workflow of yours writes the activity log or its summary. `naive activity --write` writes both from transcript timestamps, as the program `naive-activity` through the store's record writer, not through the router. Your reach covers them, but no step asks you to write them.
+
 Every write goes through the Naive router, which refuses anything the Writes line does not name, and holds a write the gate reserves for a person as a draft.
 
 Your tools are that router, not the file system. Read a route with `mentura <route> read --venture <id>` and write one with `mentura <route> write --venture <id> --input <file.json>`; over MCP those are `mentura_read` and `mentura_write`, and `mentura_layout` gives a route its schema, its template and the gate it meets before you write. `mentura_agent_brief` gives you this spec with your workflows and your function's assigned activities, `naive due --function <id>` says which of your workflows are due now, and `node packages/naive/src/engine/need-now.ts <venture dir>` says what the venture needs next.

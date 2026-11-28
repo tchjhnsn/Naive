@@ -2629,7 +2629,7 @@
         "instance/**/money/_summary.json",
         "packages/naive/src/records/examples/**/money/_summary.json"
       ],
-      "note": "Cash, monthly flows and runway from the money source's last sync; versioned, and the only money record a model sees (EE-070)"
+      "note": "Cash, monthly flows and runway, from the money source's last sync or written by the finance agent from the money accounts and the budget; versioned. A model reads it and the money accounts, and check-private keeps the transaction streams out of model inputs and releases (EE-070)"
     },
     {
       "id": "spend-register",

@@ -4018,6 +4018,44 @@
       ]
     },
     {
+      "id": "EE-241",
+      "date": "2026-11-28",
+      "status": "in-force",
+      "decision": "The marketing and sales function's APQC level 2 process groups that no role was responsible or accountable for each gain one library role at packages/naive/src/roles/<id>/, a role.json and a SKILL.md, named after the closest O*NET occupation: 3.1 market-research-analyst (O*NET 13-1161.00 Market Research Analysts and Marketing Specialists, agent); 3.3 advertising-and-promotions-manager (O*NET 11-2011.00 Advertising and Promotions Managers, agent); 3.4 sales-manager (O*NET 11-2022.00 Sales Managers, either); 3.5 sales-representative-of-services (O*NET 41-3091.00 Sales Representatives of Services, Except Advertising, Insurance, Financial Services, and Travel, either). Each role is durable, in the marketing-and-sales function, accountable for its one process group and for nothing else, verified by growth-lead, granted no decision class by default, and runs no lint suite. Its onet entry names the code, the exact title in packages/naive/src/functions/onet.json, the basis and who matched it, an agent not yet reviewed by a person. Its skill is the function's skill for that process group, and its reads, artifacts, standards and research methods come from the workflows of that group and from reference ids that exist. sales-manager and sales-representative-of-services are kind either, because the group's work is mostly decisions, commitments or relationships a person owns; the rest are agent roles. Process group 3.2 already has the marketing lead responsible for it, so only 3.1, 3.3, 3.4 and 3.5 gain a role. packages/naive/src/functions/pcf-roles.json is regenerated. This is step 11 of the roles as agents plan (docs/design/ROLES_AS_AGENTS_2026-11-28.md).",
+      "why": "Torian on 2026-11-28 (roles plan, step 11): the first cut of business roles is one role per APQC PCF level 2 process group that no role answers for, named after the best O*NET match, one function per pull request, so check-roles --complete reports no gap under the function.",
+      "related": [
+        "EE-229",
+        "EE-232",
+        "EE-233"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/roles/market-research-analyst/role.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/roles/advertising-and-promotions-manager/role.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/roles/sales-manager/role.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/roles/sales-representative-of-services/role.json",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
       "id": "EE-150",
       "date": "2026-11-19",
       "status": "in-force",
