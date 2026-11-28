@@ -19,11 +19,12 @@
 //   node presence.ts score <site.json> [--answers <jev.json>] [--venture <dir>] [--raising] [--hiring] [--contributors]
 //   node presence.ts <venture> [--json]                                      the saved result
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { ventureFile } from "../../../../core/venture-paths.ts";
 import { icpProfiles } from "../../../../engine/foundation.ts";
+import { writeRecord, programWriter } from "../../../../store/record-write.ts";
 import type { SitePresence, Venture } from "../../../../records/types/records.d.ts";
 
 /** A prominence level: where on the site an item sits. */
@@ -290,7 +291,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     const answers = answersFile ? ((load(answersFile) as { answers?: JevAnswers }).answers ?? load(answersFile)) as JevAnswers : null;
     const facts = factsOf(dir, Object.fromEntries(["raising", "hiring", "contributors"].filter(has).map((k) => [k, true])));
     const r = score(site, { answers, facts, icp: icpOf(dir, site), venture: dir ? (load(join(dir, "venture.json")) as Venture).id : null });
-    if (dir) { mkdirSync(dirname(ventureFile(dir, PRESENCE)), { recursive: true }); writeFileSync(ventureFile(dir, PRESENCE), JSON.stringify(r, null, 2) + "\n"); }
+    if (dir) writeRecord(dir, PRESENCE, r, { agent: programWriter("naive-site-presence"), activity: existsSync(ventureFile(dir, PRESENCE)) ? "write" : "create", note: `scored the site presence of ${r.site} (${r.judged_by})` });
     console.log(JSON.stringify(r, null, 2));
   } else if (a && existsSync(join(a, "venture.json"))) {
     if (!existsSync(ventureFile(a, PRESENCE))) { console.error(`${PRESENCE} does not exist yet: read the site first (node packages/naive/src/interfaces/harness/site.ts <url> --venture <dir>)`); process.exit(1); }

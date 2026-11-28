@@ -45,6 +45,7 @@ import { logicalFiles, ventureFile } from "../core/venture-paths.ts";
 import { globRegExp, pathKind, schemaNameOf, VENTURE_PREFIX, venturePaths, readDataModel } from "../records/index.ts";
 import { glob as routeGlob, routes, type RecordRoute } from "../records/routes/routes.ts";
 import { validateValue } from "../records/validate.ts";
+import { writeRecord } from "../store/record-write.ts";
 import { mergeRecord, type Json } from "./merge.ts";
 import { readConfig } from "./naive-config.ts";
 import { fileConflicts } from "./sync-conflicts.ts";
@@ -381,13 +382,15 @@ export async function pull(dir: string, o: Options = {}): Promise<PullResult> {
     if (bytes === null ? current === null : current !== null && current.equals(bytes)) {
       out.unchanged.push(r.path);
     } else {
-      if (bytes === null) rmSync(file, { force: true });
-      else { mkdirSync(dirname(file), { recursive: true }); writeFileSync(file, bytes); }
-      record(dir, {
-        entity: r.path, activity: "write", agent: { kind: "agent", via: "cli", id: SYNC_AGENT },
-        ...(bytes === null ? { content: "" } : {}),
-        note: `naive sync pull from the business store ${s.business}: ${how === "merged" ? `merged with the local copy${conflicts.length ? `, ${conflicts.length} conflict(s) for a person` : ""}` : how === "removed" ? "removed in the store" : "the store's value"}`,
-      });
+      const agent = { kind: "agent", via: "cli", id: SYNC_AGENT };
+      const note = `naive sync pull from the business store ${s.business}: ${how === "merged" ? `merged with the local copy${conflicts.length ? `, ${conflicts.length} conflict(s) for a person` : ""}` : how === "removed" ? "removed in the store" : "the store's value"}`;
+      if (bytes === null) {
+        rmSync(file, { force: true });
+        record(dir, { entity: r.path, activity: "write", agent, content: "", note });
+      } else {
+        // A record is a JSON value; one that is a bare string is passed as its JSON text, so the bytes stay bytesOf's.
+        writeRecord(dir, r.path, typeof value === "string" ? bytes.toString("utf8") : value, { agent, note });
+      }
       out.written.push({ path: r.path, how });
     }
 

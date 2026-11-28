@@ -38,9 +38,11 @@ const css = `:root {
   --naive-radius-sm: ${sharp.value}${sharp.unit};
 }
 .dark {
-  --naive-accent: #8eb4e8;
-  --naive-accent-on: #0d1b2a;
+  --naive-accent: #ededed;
+  --naive-accent-on: #0a0a0a;
   --naive-muted: #d4d4d8;
+  --naive-move: #ededed;
+  --naive-move-on: #0a0a0a;
 }
 `;
 const out = new URL("../generated/", import.meta.url).pathname;

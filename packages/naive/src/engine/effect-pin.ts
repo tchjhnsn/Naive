@@ -2,10 +2,12 @@
 // venture's package.json lists the same exact pin, so Naive and the venture's own programs load one copy and agree
 // on every service's identity. create-venture writes the pin, `naive upgrade` moves it with the framework (the
 // effect-pin migration, then alignPin on every run), and `naive check` asserts it (checkCopies).
-import { existsSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, realpathSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { PACKAGE_ROOT } from "../core/scripts.ts";
+import type { EntryAgent } from "../core/provenance.ts";
+import { writeRecord, writerFromEnv } from "../store/record-write.ts";
 
 type Manifest = { dependencies?: Record<string, string>; devDependencies?: Record<string, string>; peerDependencies?: Record<string, string>; [key: string]: unknown };
 const read = (file: string): Manifest => JSON.parse(readFileSync(file, "utf8")) as Manifest;
@@ -38,14 +40,15 @@ export function pinnedText(dir: string, pin: string): string | null {
   return JSON.stringify(m, null, 2) + "\n";
 }
 
-/** Moves the venture's Effect pin to Naive's, when it has a package.json. Returns the change, or null. */
-export function alignPin(dir: string, { dry = false, root = PACKAGE_ROOT }: { dry?: boolean; root?: string } = {}): { from: string | null; to: string } | null {
+/** Moves the venture's Effect pin to Naive's, when it has a package.json, and logs the write as `agent`. Returns the change, or null. */
+export function alignPin(dir: string, { dry = false, root = PACKAGE_ROOT, agent }: { dry?: boolean; root?: string; agent?: EntryAgent } = {}): { from: string | null; to: string } | null {
   const was = venturePin(dir);
   if (was === undefined) return null;
   const to = wantedPin(root);
   const text = pinnedText(dir, to);
   if (text === null) return null;
-  if (!dry) writeFileSync(join(dir, "package.json"), text);
+  // The exact text, not the object: package.json keeps the key order pinnedText gave it, and no record type claims it.
+  if (!dry) writeRecord(dir, "package.json", text, { agent: agent ?? writerFromEnv("cli"), note: `pinned effect ${to}${was ? ` (was ${was})` : ""}, Naive's peer version (EE-161)` });
   return { from: was, to };
 }
 

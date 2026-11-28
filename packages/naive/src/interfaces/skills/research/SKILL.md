@@ -10,7 +10,9 @@ description: >
   <function>-researcher role): read the function's research program, improve
   one recipe at a time against its frozen eval plan, read the experiment log,
   never see dev or holdout outcomes, and stop at the budget. The same loop for
-  every function; the program says what to research.
+  every function; the program says what to research. Every source names
+  its research method, worked in order: standards, scientific,
+  organizational, practitioner, stakeholder.
   MANDATORY TRIGGERS: research program, researcher, improve a recipe,
   autoresearch, run the research loop, experiment log.
 ---
@@ -42,6 +44,18 @@ One pass of the loop is done when it has written one experiment line for one cha
 
 A person accepts a kept recipe with `mentura accept recipes/<pattern>`, which runs the one-bit holdout check: a pass writes it live, a fail leaves it a draft unless the person accepts over it, which is logged. You never accept your own work, and you never see a holdout score. After an accept, monitor compares the live recipe with the one before it on later points and proposes a rollback decision when it regressed.
 
+## Research methods
+
+Every source has a method, from the fixed list in `packages/naive/src/records/research-method.schema.json` (EE-233), worked in this order:
+
+1. `standards`: a standards body or a law that defines the thing, cited by its own term, version and clause (EE-014).
+2. `scientific`: peer-reviewed studies and systematic reviews, graded high to very low after GRADE.
+3. `organizational`: the venture's own records. This is what a recipe hears, read as of the cut, and it is cited by record and hash.
+4. `practitioner`: vendor docs, books, talks and open-source code, saying who wrote it and what they sell. Never the only support for a change you keep.
+5. `stakeholder`: the person and the customers. The program is the person's word on what matters; never infer a value they did not state.
+
+A change to a recipe rests on the venture's records first. When it also rests on something they do not hold, such as a standard's definition or a study, work the methods in order and say in your report which method each source came from. A source that backs one of Naive's defaults is recorded as a reference with its `method` through the find-reference skill (`packages/naive/src/functions/capabilities/skills/find-reference/SKILL.md`), which says how to work each method.
+
 ## Rules
 
 - One change per experiment, so the log says what each change did.
@@ -69,3 +83,4 @@ A person accepts a kept recipe with `mentura accept recipes/<pattern>`, which ru
 | Knob search with no model | built (`naive recipes search <pattern>`, `packages/naive/src/router/orchestration/recipe-search.ts`) |
 | Probes: a share of noise surfaced anyway and scored by inverse propensity | the draw, the mark and the estimate are built (`packages/naive/src/engine/recipes/probes.ts`); the pull does not mark them in the reception files it writes yet |
 | The unattended loop with spend limits | Mentura, not built |
+| Research methods: the fixed list, and every reference naming its method | built (`packages/naive/src/records/research-method.schema.json`, EE-233); a research program has no field naming its methods (not built) |
