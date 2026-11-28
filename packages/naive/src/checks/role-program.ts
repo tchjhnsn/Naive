@@ -121,7 +121,8 @@ export const runSuite = (suite: string, dir: string): Effect.Effect<readonly Sui
   catch: (cause) => new CannotRun({ message: `lint suite ${suite} cannot run${cause instanceof Error ? `: ${cause.message}` : ""}`, cause }),
 });
 
-const role = (r: Role) => `${LIBRARY}/${r.id}/role.json`;
+// A role names itself in a finding by id: its role.json may be the library's or a venture's overlay.
+const role = (r: Role) => `role ${r.id}`;
 
 const artifactTypes: RoleCheck = {
   id: "artifact-types",
