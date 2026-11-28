@@ -22,7 +22,7 @@ The Chief-of-Staff-sponsored skill for composing updates tailored to specific au
 
 ## Why stakeholder-update exists
 
-Per [[../../venture-template/roles/chief-of-staff|Chief of Staff role]], CoS owns the rhythm of stakeholder communications — all-hands, board updates, investor updates, customer comms. These updates draw from project state but need translation: an engineering team's progress reads differently to engineers vs. the board vs. customers. The skill handles the translation.
+Per [[../../../../roles/chief-of-staff/SKILL|Chief of Staff role]], CoS owns the rhythm of stakeholder communications — all-hands, board updates, investor updates, customer comms. These updates draw from project state but need translation: an engineering team's progress reads differently to engineers vs. the board vs. customers. The skill handles the translation.
 
 ## When to invoke
 
@@ -59,7 +59,7 @@ A stakeholder update sized to the audience + cadence. Structure varies by type:
 
 - **What's new** — user-facing capabilities, in customer register (not engineer register)
 - **What's better** — improvements, in customer-relevant framing
-- **What's coming** — light foreshadowing of next version (per [[../foreshadowing-audit/SKILL|foreshadowing-audit]] discipline)
+- **What's coming** — light foreshadowing of next version (per [[../../../capabilities/skills/foreshadowing-audit/SKILL|foreshadowing-audit]] discipline)
 - Length: short; voice-aligned with brand
 
 ### Investor update (monthly/quarterly to investors)
@@ -147,7 +147,7 @@ tags: [stakeholder-update, <entity>, <audience>]
 
 ### Step 6 — Surface to the orchestration HTML
 
-Per [[../../_ideas/build-roadmap-and-html-orchestration-2026-05-12|§32]], stakeholder updates show in the Business pillar section of the orchestration HTML with their audience + date.
+Each update is kept as an `investor-relations/updates` record with its audience and date.
 
 ## Posture
 
