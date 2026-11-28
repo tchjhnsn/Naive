@@ -106,14 +106,14 @@ export function functionScopes(records: typeof model.records, fn: string): { sco
 
 // The team plan sets every agent's reach, so no agent writes it, whichever function owns its record type.
 // The routes each function may write: decisions, handoffs, and every record route whose record type the function owns
-// and the router serves with a write action. This mirrors functionWrites in ../engine/agents/reach.ts, the list the
+// and the router serves with a write action, less a route only the signal projector writes. This mirrors functionWrites in ../engine/agents/reach.ts, the list the
 // router enforces, and is derived here so --root can check a copy of the repository.
 const owner = new Map(model.records.map((r) => [r.id, r.function ?? null]));
 const SHARED = ["decisions/*", "operations/handoff/*"];
 export const writeReach = (fn: string): string[] => [...new Set([...SHARED,
-  ...[...new Set((routes() as { kind: string, record?: string, route: string, actions?: string[], files?: string[] }[])
+  ...[...new Set((routes() as { kind: string, record?: string, route: string, actions?: string[], files?: string[], writer?: string }[])
     .filter((r) => r.kind === "record" && r.record && owner.get(r.record) === fn && (r.actions ?? []).includes("write")
-      && (r.files ?? []).length && !(r.files ?? []).some((f) => PLANS.includes(f)))
+      && r.writer !== "projection" && (r.files ?? []).length && !(r.files ?? []).some((f) => PLANS.includes(f)))
     .map((r) => r.route.replace("[id]", "*")))].sort()])];
 const star = (route: string) => route.replace(/\[id\]/g, "*");
 const reaches = (reach: readonly string[], route: string) => reach.some((r) => r === star(route)

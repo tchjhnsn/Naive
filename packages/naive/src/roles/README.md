@@ -18,6 +18,8 @@ A venture's own roles live at `<venture>/governance/roles/<id>/role.json` and ov
 
 The roles: `architect`, `builder`, `chief-of-staff`, `domain-lead`, `finance-agent`, `finance-lead`, `growth-lead`, `marketing-lead`, `people-lead`, `product-design-lead`, `product-lead`, `strategy-lead` and `validation-lead` are agent roles; `counsel` is either; `founder`, `co-founder`, `general-partner`, `limited-partner`, `operator`, `advisor` and `board-member` are person roles.
 
+Strategy process group roles (EE-239): `business-intelligence-analyst` (1.1), `management-analyst` (1.2), `project-management-specialist` (1.3), `financial-and-investment-analyst` (1.4), each accountable for one APQC process group and named after its closest O*NET occupation.
+
 ## Role programs
 
 Every role has a program (EE-237, [`role-program.ts`](../checks/role-program.ts)): deterministic checks of what the role makes, each an Effect over `VentureFs` that fails only with Naive's tagged errors. The default program comes from `role.json`:
