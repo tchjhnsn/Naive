@@ -3580,7 +3580,7 @@ export type LifecyclePlaybook = {
   }[];
 };
 
-/** One finding of a lint run, one line of <venture>/.naive/lint-findings.jsonl, the log every lint appends to whatever the finding's severity (packages/naive/src/engine/lint-findings.ts). lint says which lint wrote it: publish (packages/naive/src/engine/publish-lint.ts, a page's copy) or artifact (packages/naive/src/checks/artifact-lint.ts, an artifact against its declared type, EE-231). A line with no lint was written by the publish lint before the field existed. naive lint report aggregates the log by rule, role or harness. */
+/** One finding of a lint run, one line of <venture>/.naive/lint-findings.jsonl, the log every lint appends to whatever the finding's severity (packages/naive/src/engine/lint-findings.ts). lint says which lint wrote it: publish (packages/naive/src/engine/publish-lint.ts, a page's copy), artifact (packages/naive/src/checks/artifact-lint.ts, an artifact against its declared type, EE-231) or role (packages/naive/src/checks/role-program.ts, a role's program of checks on what it makes, EE-237). A line with no lint was written by the publish lint before the field existed. naive lint report aggregates the log by rule, role or harness. */
 export type LintFinding = {
   /**
    * When the run that found it started; one run's lines share it
@@ -3588,10 +3588,10 @@ export type LintFinding = {
    */
   at: string;
   /** The lint that wrote the line */
-  lint?: "publish" | "artifact";
+  lint?: "publish" | "artifact" | "role";
   /** The rule's id within its lint */
   rule: string;
-  /** An artifact lint rule's family: a protocol rule is always an error; a design rule is off, warn or error under artifact_lint.rules in naive.config.json */
+  /** An artifact or role lint rule's family: a protocol rule is always an error; an artifact lint design rule is off, warn or error under artifact_lint.rules in naive.config.json */
   family?: "protocol" | "design";
   /** The level the rule had when it ran; a rule set off writes nothing */
   severity: "warn" | "error";
@@ -3600,7 +3600,7 @@ export type LintFinding = {
   artifact?: string;
   /** The type the artifact claims: a document kind in packages/naive/src/functions/documents.json or a record type in the data model (artifact lint) */
   kind?: string;
-  /** The role that made the artifact, when it is known */
+  /** The role that made the artifact, when it is known; for the role lint, the role whose program ran */
   role?: string;
   /** The harness adapter that rendered the artifact, when it is known */
   harness?: string;
