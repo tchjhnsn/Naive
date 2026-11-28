@@ -101,6 +101,7 @@ const steps: Step[] = [
   ["prerequisites: a workflow's requires judged fail closed, the shipped chain, the checks, and one venture where the foundation records, a closed meeting and a person's line open each lock while due, the loop, naive agent run and the router refuse a blocked workflow for an agent and a person alike (EE-217)", "node", ["packages/naive/src/engine/prerequisites-test.ts"]],
   ["the element graph: edges from workflow reads and writes, feeds with their evidence, upstream and downstream, unfed and unread routes, determinism, and naive graph (EE-188)", "node", ["packages/naive/src/engine/element-graph-test.ts"]],
   ["element state: the statechart over every state and event, capability levels, propagation over feeds with a chain and cycles, determinism and the what-if (EE-190)", "node", ["packages/naive/src/engine/element-state-test.ts"]],
+  ["digital worker state: the statechart over every phase, event and actor, ended absorbing, only a person activating, and reach only while active (EE-235)", "node", ["packages/naive/src/engine/agents/worker-state-test.ts"]],
   ["element effects: state, level and effects from a venture's provenance, run log, schedules and freshness, and naive effects (EE-190)", "node", ["packages/naive/src/engine/element-effects-test.ts"]],
   ["what is due: each workflow trigger kind against the run log and the provenance log, cadence arithmetic, the route match, and naive due with record (EE-182)", "node", ["packages/naive/src/engine/due-test.ts"]],
   ["a time box write is refused unless it ends after it starts (EE-186)", "node", ["packages/naive/src/interfaces/tests/time-box-write-test.ts"]],
@@ -298,6 +299,7 @@ const cheap: Step[] = [
   ["layer relationships in docs/design/LAYERS_AND_KITS_2026-10-27.md match the kits (regenerate with node packages/naive/src/checks/check-data-model.ts --md)", "node", ["packages/naive/src/checks/check-data-model.ts", "--md"], rendered("docs/design/LAYERS_AND_KITS_2026-10-27.md", "### Layer relationships")],
   ["docs/reference/ROUTES.md matches the kits (regenerate with node packages/naive/src/router/router.ts --md)", "node", ["packages/naive/src/router/router.ts", "--md"], rendered("docs/reference/ROUTES.md", "## Routes")],
   ["packages/naive/lean/Naive/Generated/ElementCases.lean matches packages/naive/src/engine/element-state.ts (regenerate with node packages/naive/src/engine/element-cases.ts; lake build checks the Lean model against it, EE-190)", "node", ["packages/naive/src/engine/element-cases.ts", "--check"]],
+  ["packages/naive/lean/Naive/Generated/WorkerCases.lean matches packages/naive/src/engine/agents/worker-state.ts (regenerate with node packages/naive/src/engine/agents/worker-cases.ts; lake build checks the Lean model against it, EE-235)", "node", ["packages/naive/src/engine/agents/worker-cases.ts", "--check"]],
   ["packages/naive/lean/Naive/Generated/Ontology.lean matches packages/naive/src/terms/ontology.json (regenerate with node packages/naive/src/terms/gen-concepts.ts)", "node", ["packages/naive/src/terms/gen-concepts.ts", "--check"]],
 ];
 
