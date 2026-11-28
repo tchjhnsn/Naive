@@ -19,5 +19,15 @@
   "also_verified_by": [
     "founder"
   ],
-  "skill": "packages/naive/library/packages/product/skill/SKILL.md"
+  "skill": "packages/naive/library/packages/product/skill/SKILL.md",
+  "pcf": [
+    {
+      "id": "2.0",
+      "raci": "responsible"
+    },
+    {
+      "id": "2.2",
+      "raci": "responsible"
+    }
+  ]
 }

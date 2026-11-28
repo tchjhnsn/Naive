@@ -106,6 +106,6 @@ It registers `engine/gate-service.ts` as plain too: the gate as an Effect servic
 
 `bypass-guard-test.ts` registers `packages/naive/src/checks/check-runs.ts` (proof of work, EE-227) as a plain check: it compares provenance line hashes, sessions, roles, times and routes with a run's package, so no term is decided.
 
-`bypass-guard-test.ts` registers `packages/naive/src/checks/check-roles.ts` (the role library, EE-229) and its test as plain checks: they validate each role file against its schema, resolve verifier ids and aliases, and compare a person role's declared tier with one fixed value, so no term is decided.
+`bypass-guard-test.ts` registers `packages/naive/src/checks/check-roles.ts` (the role library, EE-229) and its test as plain checks: they validate each role file against its schema, resolve verifier ids and aliases, compare a person role's declared tier with one fixed value, look PCF ids and O*NET codes up in their files, count accountable roles per element and compare function ids with a portfolio (EE-232); `--complete` suggests O*NET occupations by word overlap and never decides one, so no term is decided.
 
 `bypass-guard-test.ts` registers `packages/naive/src/checks/check-direct-writes.ts` and its test as plain checks: they count write calls by name and compare them with a list, and decide nothing about what a thing is.

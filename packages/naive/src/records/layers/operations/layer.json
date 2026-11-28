@@ -309,6 +309,8 @@
     "operating-rules",
     "department-catalog",
     "pcf",
+    "onet",
+    "pcf-roles",
     "activity-catalog",
     "activity-assignments",
     "element-owners",

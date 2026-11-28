@@ -21,5 +21,27 @@
   "default_tier": "frontier",
   "lint_suites": [],
   "verified_by": "founder",
-  "skill": "packages/naive/src/interfaces/skills/lead/SKILL.md"
+  "skill": "packages/naive/src/interfaces/skills/lead/SKILL.md",
+  "pcf": [
+    {
+      "id": "9.0",
+      "raci": "accountable"
+    },
+    {
+      "id": "10.0",
+      "raci": "accountable"
+    },
+    {
+      "id": "11.0",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "11-3031.00",
+      "title": "Financial Managers",
+      "basis": "The role plans and verifies the finance, assets and risk functions; matched by the role's description against the occupation title in O*NET 31.0.",
+      "by": "agent, EE-232 step 4 (not yet reviewed by a person)"
+    }
+  ]
 }
