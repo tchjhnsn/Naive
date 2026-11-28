@@ -26,13 +26,19 @@ const run = (script: string, args: string[] = [], env: Record<string, string> = 
 };
 const original = JSON.parse(readFileSync(join(repo, CATALOG), "utf8")) as DocumentCatalog;
 
+// The brand schemas a kind's style names (EE-230), read from the paths the data model gives them.
+const STYLE_SCHEMAS = ["packages/naive/src/records/marketing-brand.schema.json", "packages/naive/src/records/marketing-design-system.schema.json"];
+/** A small copy of the repository: the catalog, what it cites, and every function's decisions.json for the classes a rung may require. */
+function copyRoot(root: string) {
+  for (const f of [CATALOG, DEPARTMENTS, DATA_MODEL, ARTIFACT_SCHEMA, ...STYLE_SCHEMAS]) { mkdirSync(dirname(join(root, f)), { recursive: true }); cpSync(join(repo, f), join(root, f)); }
+  cpSync(join(repo, FUNCTIONS), join(root, FUNCTIONS), { recursive: true, filter: (src) => !/\/(skills|templates|frameworks|workflows)(\/|$)/.test(src) });
+}
+
 let n = 0;
 /** A copy of the repository's files with the catalog changed, run through the check. */
 function broken(change: (_c: DocumentCatalog) => void, ventures: string[] = []) {
   const root = join(tmp, `c-${++n}`);
-  for (const f of [CATALOG, DEPARTMENTS, DATA_MODEL, ARTIFACT_SCHEMA]) { mkdirSync(dirname(join(root, f)), { recursive: true }); cpSync(join(repo, f), join(root, f)); }
-  // The check reads every function's decisions.json for the classes a rung may require.
-  cpSync(join(repo, FUNCTIONS), join(root, FUNCTIONS), { recursive: true, filter: (src) => !/\/(skills|templates|frameworks|workflows)(\/|$)/.test(src) });
+  copyRoot(root);
   const c = structuredClone(original); change(c);
   writeFileSync(join(root, CATALOG), JSON.stringify(c, null, 2) + "\n");
   return run(CHECK, ventures, { EE_ROOT: root });
@@ -68,8 +74,7 @@ fails("a kind whose function is not a department", (c) => { kind(c, "one-pager")
 // break: the two files drifting apart, with artifact.schema.json no longer listing a kind the catalog uses.
 {
   const root = join(tmp, "drift");
-  for (const f of [CATALOG, DEPARTMENTS, DATA_MODEL, ARTIFACT_SCHEMA]) { mkdirSync(dirname(join(root, f)), { recursive: true }); cpSync(join(repo, f), join(root, f)); }
-  cpSync(join(repo, FUNCTIONS), join(root, FUNCTIONS), { recursive: true, filter: (src) => !/\/(skills|templates|frameworks|workflows)(\/|$)/.test(src) });
+  copyRoot(root);
   const schema = JSON.parse(readFileSync(join(root, ARTIFACT_SCHEMA), "utf8")) as { properties: { kind: { enum: string[] } } };
   schema.properties.kind.enum = schema.properties.kind.enum.filter((k) => k !== "deck");
   writeFileSync(join(root, ARTIFACT_SCHEMA), JSON.stringify(schema, null, 2) + "\n");
@@ -83,6 +88,20 @@ fails("a section that reads a path no record type matches", (c) => { kind(c, "on
 fails("a rung that requires a decision class no function has", (c) => { rung(c, "live").requires = { records: [], meetings: [], decisions: ["vibes"] }; }, /class vibes, which no function's decisions\.json has/);
 fails("a rung that requires a record no record type matches", (c) => { rung(c, "live").requires = { records: ["nowhere/at-all.json"], meetings: [], decisions: [] }; }, /requires the record nowhere\/at-all\.json/);
 fails("a kind listed twice", (c) => { c.kinds.push(structuredClone(kind(c, "one-pager"))); }, /kind one-pager is listed twice/);
+fails("a style field the brand schema does not define", (c) => { kind(c, "one-pager").style[0].field = "colours"; }, /one-pager is styled by marketing-brand colours, which is not a field of the marketing-brand schema/);
+fails("a nested style field the brand schema does not define", (c) => { kind(c, "memo").style[0].field = "voice.loudness"; }, /memo is styled by marketing-brand voice\.loudness, which is not a field/);
+fails("a token name is not a brand field: colors is a free map", (c) => { kind(c, "one-pager").style[0].field = "colors.primary"; }, /styled by marketing-brand colors\.primary, which is not a field/);
+fails("a design-system field the schema does not define", (c) => { kind(c, "pitch-deck").style.push({ record_type: "marketing-design-system", field: "palette" }); }, /pitch-deck is styled by marketing-design-system palette, which is not a field/);
+{
+  // The record types a style names drift out of the data model: the check says so instead of passing.
+  const root = join(tmp, "style-drift");
+  copyRoot(root);
+  const model = JSON.parse(readFileSync(join(root, DATA_MODEL), "utf8")) as { records: { id: string }[] };
+  model.records = model.records.filter((r) => r.id !== "marketing-design-system");
+  writeFileSync(join(root, DATA_MODEL), JSON.stringify(model, null, 2) + "\n");
+  const r = run(CHECK, [], { EE_ROOT: root });
+  t("a style record type the data model no longer has", r.status === 1 && /styled by marketing-design-system, which no record type in .*data-model\.json names with a schema/.test(r.out), r);
+}
 fails("a first rung with no format Naive renders itself", (c) => { const f = c.formats.find((x) => x.id === "md"); if (f) f.renderer = "harness"; }, /has no format Naive renders itself/);
 
 // A venture's own documents against the ladder.
@@ -131,6 +150,10 @@ const record = JSON.parse(readFileSync(join(copy, "artifacts/one-pager-reading-c
 t("the artifact record names its kind, format and every record with a hash", record.document_kind === "one-pager" && record.format === "md"
   && record.built_from.length === 2 && record.built_from.every((b) => typeof b.sha256 === "string"), record);
 t("the render does not approve anything: that is a person's", record.approved_by === undefined, record);
+const adr = run(RENDER, [copy, "adr"]);
+const adrMd = existsSync(join(copy, "artifacts/adr-reading-copy.md")) ? readFileSync(join(copy, "artifacts/adr-reading-copy.md"), "utf8") : "";
+t("a hole section is always shown as a hole, naming the record that would hold it (EE-230)",
+  adr.status === 0 && /## Consequences\n\n_Not recorded: What becomes easier or harder because of this decision\. No record type holds consequences yet/.test(adrMd), adr.out + adrMd.slice(0, 400));
 
 const again = run(RENDER, [copy, "site-copy", "--format", "html"]);
 t("an interactive page before the reading copy is refused, naming the ladder", again.status === 1 && /ladder-order/.test(again.out) && /site-copy-reading-copy\.json is missing/.test(again.out), again);
@@ -142,6 +165,8 @@ writeFileSync(file, JSON.stringify({ ...JSON.parse(readFileSync(file, "utf8")), 
 const afterApproval = run(RENDER, [copy, "site-copy", "--format", "html"]);
 t("once a person approved it, the html rung hands the work to the harness and renders nothing here",
   afterApproval.status === 0 && /the harness's to render, not Naive's/.test(afterApproval.out) && !existsSync(join(copy, "artifacts/site-copy-interactive.html")), afterApproval);
+t("the harness is told which brand fields style the kind, by the records that hold them (EE-230)",
+  /using only these fields: marketing\/brand\.json \(name, voice, fonts, typefaces, colors, marks, scopes\); marketing\/design-system\.json \(ethos, choices, components\)/.test(afterApproval.out), afterApproval);
 // The live rung: its records, the rung below approved, and a decided public-commitment decision naming this document.
 const approve = (id: string) => { const f = join(copy, `artifacts/${id}.json`); writeFileSync(f, JSON.stringify({ id, kind: "site", title: "Site copy", audience: "customers", document_kind: "site-copy", format: "html", built_at: "2026-11-01T00:00:00Z", built_from: [{ record: "venture.json" }], ...(existsSync(f) ? JSON.parse(readFileSync(f, "utf8")) : {}), approved_by: "Torian" }, null, 2) + "\n"); };
 approve("site-copy-interactive");

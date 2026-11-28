@@ -1731,17 +1731,32 @@ export type DocumentCatalog = {
     words_per_page?: number;
     /** An unvalidated prior: about how many pages or slides this kind runs to. */
     pages?: number;
-    /** The reading copy's sections, in order. Each names the record it reads, so every claim in the rendered document cites a record. */
-    sections: {
+    /** The brand fields this kind is styled with (EE-230), each a field of the venture's brand (marketing/brand.json) or design system (marketing/design-system.json). Every kind names the brand voice, because every document's words follow it; a kind that is laid out also names the fonts, colors and marks it uses. The values stay in the venture's records and the catalog names only which fields apply, so whoever renders the kind, Naive or the harness, styles it from the venture's own brand. packages/naive/src/checks/check-documents.ts fails on a field the record type's schema does not define. */
+    style: {
+      /** The brand record type, as packages/naive/src/records/data-model.json names it. */
+      record_type: "marketing-brand" | "marketing-design-system";
+      /** A dotted path to a field that record type's schema defines, such as voice.rules or components. */
+      field: string;
+    }[];
+    /** The reading copy's sections, in order. Each names the record it reads, so every claim in the rendered document cites a record, or is a hole that says which fact no record holds yet. */
+    sections: ({
       id: string;
       title: string;
       /** The logical path of the record it reads, such as foundation/problem.json. A path with * reads every record it matches, one block each. */
-      from: string;
+      from?: string;
       /** A dotted path to a string or a list of strings in that record. Without it the section names the record and leaves the words to the writer. */
       field?: string;
       /** True when a hole is left out instead of shown: a missing record, or a record with nothing in the field, leaves the section out rather than printing what is not recorded. */
       optional?: boolean;
-    }[];
+      /** In place of from: a fact the document needs that no record type holds yet, said in one plain sentence with the record that would hold it (EE-230). The reading copy always shows it as a hole, so the gap stays visible until a record type is added and the section reads it. */
+      hole?: string;
+    } & ({
+      /** The logical path of the record it reads, such as foundation/problem.json. A path with * reads every record it matches, one block each. */
+      from: string;
+    } | {
+      /** In place of from: a fact the document needs that no record type holds yet, said in one plain sentence with the record that would hold it (EE-230). The reading copy always shows it as a hole, so the gap stays visible until a record type is added and the section reads it. */
+      hole: string;
+    }))[];
   }[];
 };
 
