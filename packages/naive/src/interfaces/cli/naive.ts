@@ -203,6 +203,9 @@
 //                                                   every finding goes to .naive/lint-findings.jsonl (EE-231)
 //   naive lint report [--by rule|role|harness] [--since <iso>] [--json]
 //                                                   count the findings in .naive/lint-findings.jsonl
+//   naive role check <role> | --all [--json]        run a role's program: the default checks from its role.json and
+//                                                   the library role.ts's; findings go to .naive/lint-findings.jsonl
+//                                                   with lint role, and any error exits 1 (EE-237)
 //
 // --venture <dir> names the venture when you are not inside it.
 
@@ -659,6 +662,16 @@ else if (cmd === "build" || cmd === "start") {
   if (what === "report") process.exit(run("packages/naive/src/engine/lint-findings.ts", [here(), ...args]));
   console.error("usage: naive lint premises [<route>] [--drafts] [--json] [--propose] | artifacts [<venture dir>] [--json] | report [--by rule|role|harness] [--since <iso>] [--json]");
   process.exit(2);
+} else if (cmd === "role") {
+  // Role programs (EE-237): packages/naive/src/checks/role-check.ts. Outside a venture only the checks that need none run.
+  const [what, ...args] = rest.filter((a, i) => !(a === "--venture" || rest[i - 1] === "--venture"));
+  const named = args.filter((a) => !a.startsWith("--"));
+  if (what !== "check" || named.length !== (args.includes("--all") ? 0 : 1)) {
+    console.error("usage: naive role check <role> | --all [--venture <dir>] [--json]");
+    process.exit(2);
+  }
+  const at = opt("venture") ? here() : findVenture();
+  process.exit(run("packages/naive/src/checks/role-check.ts", [...args, ...(at ? [at] : [])]));
 } else if (cmd === "copy") {
   // The site's words before the site (EE-216): packages/naive/src/functions/marketing-and-sales/marketing/copy.ts.
   const args = rest.filter((a, i) => !(a === "--venture" || rest[i - 1] === "--venture"));

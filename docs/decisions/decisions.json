@@ -3818,6 +3818,45 @@
           "expect": "exists"
         }
       ]
+    },
+    {
+      "id": "EE-237",
+      "date": "2026-11-28",
+      "status": "in-force",
+      "decision": "Every role has a program of deterministic checks of what it makes, an Effect over VentureFs that fails only with Naive's tagged errors (EE-125). packages/naive/src/checks/role-program.ts defines RoleProgram ({ id, checks }), RoleCheck ({ id, description, run(ctx) }) and RoleFinding (rule, family protocol or design, severity, message, artifact, kind). The default program is derived from role.json: artifact-types (each artifact is a record type or a document kind through artifactKind of EE-230, and each artifact record of a kind the role names, made by it or by no named role, passes lintArtifact of EE-231 with that rule's family and level), reads (each record type is in the data model, a protocol error; in a venture, holding none of it is a design warning) and lint-suites (each suite is a command route, a protocol error; in a venture each suite's lint(dir) runs and its findings are design findings, an error when the rule is fail-closed). A library role may add checks in role.ts beside its role.json, a default export whose id is the role's; its checks run after the default ones and may not reuse a default check id, so role.ts extends and never replaces. Only the library's role.ts is loaded: a venture folder is data agents write and sync copies, so importing its code would run it with the CLI's rights outside the gate, and check-roles.ts fails on a role.ts in a venture. A check that fails or throws is a protocol error under its own id and the rest still run, and a protocol finding is always an error. naive role check <role> | --all [--venture <dir>] [--json] (packages/naive/src/checks/role-check.ts) runs the programs, appends every finding to .naive/lint-findings.jsonl with lint role, which the lint-finding schema gains, and exits 1 on any error; with no venture only the checks that need none run and nothing is logged. check-roles.ts holds each library role.ts to a valid RoleProgram for its role. The architect makes adr and reads decision-record, and its role.ts requires every adr artifact to be built from a decision record the venture has. The product and design lead makes product-capability and reads goal, and its role.ts warns on a live or building capability that names no goal and fails on a goal it names that the venture lacks.",
+      "why": "Step 9 of the roles plan decided on 2026-11-28: each role module may carry role.ts, an Effect RoleProgram with deterministic checks of the role's artifacts. A role names what it makes and reads, and step 3 linted an artifact against its type, but nothing checked a role's own output against the rules only that role knows, such as an ADR that cites no decision, and nothing ran a role's lint suites as that role.",
+      "related": [
+        "EE-125",
+        "EE-229",
+        "EE-230",
+        "EE-231"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/checks/role-program.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/checks/role-check.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/roles/architect/role.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/roles/product-design-lead/role.ts",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
     }
   ]
 }
