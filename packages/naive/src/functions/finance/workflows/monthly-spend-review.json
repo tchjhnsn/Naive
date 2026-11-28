@@ -11,7 +11,7 @@
     { "id": "find-unused", "do": "Compare the spend register with the tools in use and flag anything unused, duplicated or renewing soon." },
     { "id": "propose-cuts", "do": "For each flagged item, propose cancel, downgrade or keep, with the saving and the evidence, as a decision for the founder.", "raises": ["cancel-or-downgrade"] },
     { "id": "compare-to-budget", "do": "Compare this month's actual spend and revenue with the budget's lines by category, flag categories more than 10% over, and revise the budget's future lines from the facts, leaving past months as planned.", "skill": "budget-and-runway", "writes": ["finance/budget/[id]"] },
-    { "id": "update-summary", "do": "Rewrite the money summary with this month's burn and the runway projected from the revised budget, and raise priorities to the finance lead if runway fell under six months.", "writes": ["purpose/money/summary"], "raises": ["set-priorities"] }
+    { "id": "update-summary", "do": "Rewrite the money summary with this month's burn and the runway projected from the revised budget, and raise priorities to the finance lead if runway fell under six months. Set source to records and as_of to the time you write it, and leave synced_at out, since it is only for a summary that came from a sync.", "writes": ["purpose/money/summary"], "raises": ["set-priorities"] }
   ],
   "done_criteria": [
     { "id": "records-valid", "kind": "conformance", "check": "node packages/naive/src/checks/check-records.ts \"$NAIVE_VENTURE\"" },

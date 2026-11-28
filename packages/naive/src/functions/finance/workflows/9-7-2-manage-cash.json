@@ -77,7 +77,7 @@
     },
     {
       "id": "cash-reports",
-      "do": "Write the cash position, the period's receipts and payments and the months of runway into the money summary, each figure citing the account and the records behind it.",
+      "do": "Write the cash position, the period's receipts and payments and the months of runway into the money summary, each figure citing the account and the records behind it. Set source to records and as_of to the time you write it, and leave synced_at out, since it is only for a summary that came from a sync.",
       "skill": "manage-treasury-operations",
       "activity": "9.7.2.6",
       "writes": [

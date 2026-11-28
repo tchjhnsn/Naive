@@ -96,7 +96,7 @@
     },
     {
       "id": "debt-and-investment-reports",
-      "do": "Report what the venture owes and what it holds with each instrument's next payment date and the interest earned or paid in the period, and put the totals into the money summary.",
+      "do": "Report what the venture owes and what it holds with each instrument's next payment date and the interest earned or paid in the period, and put the totals into the money summary. Set source to records and as_of to the time you write it, and leave synced_at out, since it is only for a summary that came from a sync.",
       "skill": "manage-treasury-operations",
       "activity": "9.7.4.7",
       "writes": [

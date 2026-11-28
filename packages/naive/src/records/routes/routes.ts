@@ -127,6 +127,10 @@ const CLAIMS = new Set(["handoff"]);
 // The site planner names these variants (packages/naive/src/functions/marketing-and-sales/marketing/site/plan.ts) and
 // the public gate checks them (packages/naive/src/engine/check-public.ts).
 const TEXT_ITEMS = new Set(["marketing-content"]);
+// Derived records a program writes through the store's writeRecord (packages/naive/src/store/record-write.ts), never
+// the router: their route reads only, so no agent's write reach holds them. naive activity --write writes the activity
+// summary from the days (packages/naive/src/engine/activity.ts).
+const READ_ONLY = new Set(["activity-summary"]);
 const DEEP = /\/\*\*\/\*\.[a-z]+$/;
 /** Whether an item route's id may hold slashes: its files sit under a folder of any depth. */
 export const deepItem = (r: { collection?: string; files?: string[] }): boolean => r.collection === "item" && !!r.files?.length && r.files.every((f) => DEEP.test(f));
@@ -173,7 +177,7 @@ function buildRoutes(): Route[] {
     // A JSON record with a schema is written whole and checked against it. Prose a person owns (writer person, a
     // research program) is written whole as text; it has no schema, and only a person writes it (writerRule).
     const prose = r.writer === "person" && (form === "prose" || form === "markdown");
-    const writable = !!(((r.schema && form === "json") || prose) && (collection || concrete));
+    const writable = !READ_ONLY.has(r.id) && !!(((r.schema && form === "json") || prose) && (collection || concrete));
     if (collection) {
       out.push({ ...common, route: base, files: filesOf, collection: "list" as const, actions: ["read", "view", "layout", ...(checks.length ? ["check"] : []), ...(template ? ["template"] : [])] });
       out.push({ ...common, route: `${base}/[id]`, files: filesOf, collection: "item" as const,

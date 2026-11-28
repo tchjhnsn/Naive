@@ -220,7 +220,7 @@ async function tick(){
     const m=s.money,box=document.getElementById("money");box.hidden=!m;
     if(m){const $=(x)=>(x.amount/100).toLocaleString(undefined,{style:"currency",currency:x.currency,maximumFractionDigits:0});
       document.getElementById("money-h").textContent="Money, from "+(m.source==="rho"?"Rho":"Rho's sandbox")+(m.business?" ("+m.business+")":"")+": the system of record";
-      document.getElementById("money-l").innerHTML=[["Cash",$(m.cash)],["Monthly in",$(m.monthly_inflow)],["Monthly out",$(m.monthly_outflow)],["Monthly net",$(m.monthly_net)],["Runway",m.runway_months!=null?m.runway_months+" months":"not limited by burn"],["As of",new Date(m.as_of).toLocaleDateString()+" · synced "+new Date(m.synced_at).toLocaleString()]].map(([k,v])=>'<li><b>'+esc(k)+'</b>'+esc(v)+'</li>').join("");}
+      document.getElementById("money-l").innerHTML=[["Cash",$(m.cash)],["Monthly in",$(m.monthly_inflow)],["Monthly out",$(m.monthly_outflow)],["Monthly net",$(m.monthly_net)],["Runway",m.runway_months!=null?m.runway_months+" months":"not limited by burn"],["As of",new Date(m.as_of).toLocaleDateString()+(m.synced_at?" · synced "+new Date(m.synced_at).toLocaleString():"")]].map(([k,v])=>'<li><b>'+esc(k)+'</b>'+esc(v)+'</li>').join("");}
     document.getElementById("cols").innerHTML=COLS.map(([k,label])=>{const xs=ds.filter((d)=>d.render===k);return xs.length?'<section><h2>'+label+' ('+xs.length+')</h2>'+xs.map((d)=>
       '<div class="card '+k+'">'+(d.rank!=null?'<span class="rank">#'+(ranked.indexOf(d.id)+1)+'</span>':'')+'<div class="q">'+esc(d.question)+'</div><div class="id">'+esc(d.id)+' · '+esc(d.layer)+' · '+esc(d.boundary)+'</div>'+
       (d.awaiting?'<span class="tag ask">agent wording, awaiting approval</span>':'')+

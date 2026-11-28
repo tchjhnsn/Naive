@@ -71,7 +71,7 @@
     },
     {
       "id": "profitability",
-      "do": "Write margin per product and per customer into the money summary with the cost and revenue figures behind each, and say plainly which of them are negative.",
+      "do": "Write margin per product and per customer into the money summary with the cost and revenue figures behind each, and say plainly which of them are negative. Set source to records and as_of to the time you write it, and leave synced_at out, since it is only for a summary that came from a sync.",
       "skill": "perform-planning-and-management-accounting",
       "activity": "9.1.3.6",
       "writes": [

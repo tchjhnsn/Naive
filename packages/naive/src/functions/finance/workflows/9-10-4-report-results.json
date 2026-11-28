@@ -47,7 +47,7 @@
     },
     {
       "id": "report-the-combined-result",
-      "do": "Report the combined result with each entity's and each currency's own figures beside it, and put the cash position in the reporting currency into the money summary.",
+      "do": "Report the combined result with each entity's and each currency's own figures beside it, and put the cash position in the reporting currency into the money summary. Set source to records and as_of to the time you write it, and leave synced_at out, since it is only for a summary that came from a sync.",
       "skill": "manage-international-funds-consolidation",
       "writes": [
         "purpose/money/summary"

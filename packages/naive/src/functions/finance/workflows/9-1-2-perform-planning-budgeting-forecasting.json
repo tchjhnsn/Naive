@@ -51,7 +51,7 @@
     },
     {
       "id": "forecast",
-      "do": "Project cash forward month by month from the budget and the current balances and rewrite the money summary with that forecast and the months of runway it gives, saying which months rest on assumptions.",
+      "do": "Project cash forward month by month from the budget and the current balances and rewrite the money summary with that forecast and the months of runway it gives, saying which months rest on assumptions. Set source to records and as_of to the time you write it, and leave synced_at out, since it is only for a summary that came from a sync.",
       "skill": "perform-planning-and-management-accounting",
       "activity": "9.1.2.4",
       "writes": [

@@ -17,7 +17,7 @@ The ways a person, or an agent, works with a venture: the `naive` and `mentura` 
 | [`context-test.ts`](./context-test.ts) | Tests for context (packages/naive/src/router/context.ts), instrumentation (packages/naive/src/core/instrumentation.ts) and agent vitals (packages/naive/src/router/vitals.ts). |
 | [`demo/`](./demo) | Demos: the decision harness and a live agent over MCP. |
 | [`dev/`](./dev) | `naive dev` setup and its test. |
-| [`harness/`](./harness) | The agent harness, its evals and examples. Hosted (`NAIVE_RUNTIME=hosted`), `run.mjs` refuses to start, and `site.ts` reads a site and judges it through the host's `site` and `judge` hooks, refusing without a `site` hook. Its first pass proposes wording for `founding-team` only while that question is still open. |
+| [`harness/`](./harness) | The agent harness, its evals and examples. Hosted (`NAIVE_RUNTIME=hosted`), `run.mjs` refuses to start, and `site.ts` reads a site and judges it through the host's `site` and `judge` hooks, refusing without a `site` hook. Its first pass proposes wording for `founding-team` only while that question is still open. The `money_fresh` eval reads a money summary's `synced_at`, or its `as_of` when the finance agent wrote it from records. |
 | [`mcp/`](./mcp) | The MCP server over the router. It lists a resource for each record route without a dynamic segment (`[id]` or the recipe route's `[...pattern]`). `mentura_agent_brief` tells any MCP client how to act as a function agent or lead, and `mentura_route_task` who takes a task ([`engine/agents`](../engine/agents/README.md)). |
 | [`operator-console/`](./operator-console/README.md) | The operator console. |
 | [`plugin-mcp.json`](./plugin-mcp.json) | The Claude Code plugin's MCP server entry (EE-084). |

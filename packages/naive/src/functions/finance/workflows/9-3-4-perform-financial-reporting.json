@@ -49,7 +49,7 @@
     },
     {
       "id": "management-reporting",
-      "do": "Write the one-page money report for the founder and the finance lead, cash, burn, runway, revenue and margin with what changed since last period, the reason for each move and the goal it bears on, and put its figures into the money summary.",
+      "do": "Write the one-page money report for the founder and the finance lead, cash, burn, runway, revenue and margin with what changed since last period, the reason for each move and the goal it bears on, and put its figures into the money summary. Set source to records and as_of to the time you write it, and leave synced_at out, since it is only for a summary that came from a sync.",
       "skill": "perform-general-accounting-and-reporting",
       "activity": "9.3.4.3",
       "writes": [

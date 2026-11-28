@@ -4037,16 +4037,18 @@ export type Meeting = {
   note?: string;
 };
 
-/** The money package's summary (money/_summary.json, EE-070): cash, monthly flows and runway, as of the last sync from the system of record (a bank such as Rho) or as the finance agent wrote it from the money accounts and the budget. It is the one money record that is versioned. An agent reads it and the money accounts, and check-private keeps the transaction streams out of model inputs and releases. source says whether it came from a sandbox, a saved fixture, the founder's live account or the venture's own records. */
+/** The money package's summary (money/_summary.json, EE-070): cash, monthly flows and runway, as of the last sync from the system of record (a bank such as Rho) or as the finance agent wrote it from the money accounts and the budget. It is the one money record that is versioned. An agent reads it and the money accounts, and check-private keeps the transaction streams out of model inputs and releases. source says whether it came from a sandbox, a saved fixture, the founder's live account or the venture's own records. synced_at is required only for a summary that came from a sync; when source is records, as_of is when the finance agent wrote it and synced_at is left out. */
 export type MoneySummary = {
   /** rho-sandbox, rho-live, a fixture's name, or records when the finance agent wrote it from the venture's money accounts and budget */
   source: string;
   business?: string;
   /**
+   * When the money source was last synced. Required unless source is records
    * @format date-time
    */
-  synced_at: string;
+  synced_at?: string;
   /**
+   * The time the figures hold as of. When source is records, this is when the finance agent wrote the summary from the records
    * @format date-time
    */
   as_of: string;
