@@ -1,5 +1,5 @@
 // Breaks check-owners on venture folders made here (EE-187). A venture with no owners record passes, one with good
-// owners passes, and each broken record fails with the rule named. A venture role template counts as a role.
+// owners passes, and each broken record fails with the rule named. A role the venture keeps in governance/roles/ counts as a role.
 //
 //   node packages/naive/src/checks/check-owners-test.ts
 
@@ -44,8 +44,8 @@ try {
   t("an owner that is both a role and a person fails the schema", both.status === 1 && both.out.includes("element-owners.json"), both);
   const badId = venture({ owners: { "three": { role: "founder" } } });
   t("a key that is not an APQC hierarchy id fails the schema", badId.status === 1, badId);
-  const own = venture({ owners: { "3.5": { role: "sales-desk" } } }, { "governance/roles/sales-desk.json": { id: "sales-desk", name: "Sales desk", function: "marketing-and-sales", default_tier: "workhorse" } });
-  t("a role template the venture keeps in governance/roles/ counts as a role", own.status === 0, own);
+  const own = venture({ owners: { "3.5": { role: "sales-desk" } } }, { "governance/roles/sales-desk/role.json": { id: "sales-desk", name: "Sales desk", kind: "agent", function: "marketing-and-sales", default_tier: "workhorse" } });
+  t("a role the venture keeps in governance/roles/<id>/role.json counts as a role", own.status === 0, own);
   const root = venture(undefined, { "governance/delegation.json": { root: "owner-in-chief", grants: [] } });
   t("a delegation root that is not a role fails, since the activities a person performs need it", root.status === 1 && root.out.includes("delegation root owner-in-chief is not a role"), root);
 } finally { rmSync(tmp, { recursive: true, force: true }); }

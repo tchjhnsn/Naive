@@ -1,0 +1,14 @@
+{
+  "id": "domain-lead",
+  "name": "Domain lead",
+  "kind": "agent",
+  "function": "capabilities",
+  "description": "Knows the domain: what the sources say and how reliable they are, whether a record is official, domain design within decided strategy, and which sources to add to the source register. It owns the domain-fact class. It has no portfolio, so it is not a lead in the lead agents sense; the id is kept because decision rights name it.",
+  "grantable_classes": [
+    "domain-fact"
+  ],
+  "default_tier": "frontier",
+  "lint_suites": [],
+  "verified_by": "chief-of-staff",
+  "skill": "packages/naive/src/functions/capabilities/skills/find-reference/SKILL.md"
+}

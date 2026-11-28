@@ -139,6 +139,8 @@ const steps: Step[] = [
   ["the Next.js translation status (every concept has a status, its evidence exists, the docs page exists in site/ and What's built is current)", "node", ["packages/naive/src/checks/check-nextjs-status.ts", "--docs", "site/content/docs"]],
   ["the docs site's marketing pages carry no internal text (Naive's terms and the frozen gate list in site/gate)", "node", ["packages/naive/src/engine/check-leaks.ts", "site/content/marketing", "--venture", "site/gate"]],
   ["the docs site's marketing pages carry no internal text", "node", ["packages/naive/src/engine/check-leaks.ts", "site/content/marketing"]],
+  ["roles: the role library (every role file valid against role.schema.json, its id its folder, every verifier a known role and never itself, ids and aliases unique, no person role with an agent tier) (EE-229)", "node", ["packages/naive/src/checks/check-roles.ts"]],
+  ["roles check broken on copies of the role library and on a venture's own roles (EE-229)", "node", ["packages/naive/src/checks/check-roles-test.ts"]],
   ["delegation: template (grants within the grantor's, chains reach the founder, no self-verification)", "node", ["packages/naive/src/checks/check-delegation.ts"]],
   ["delegation and the verification substrate (cases that must fail)", "node", ["packages/naive/src/interfaces/tests/delegation-test.ts"]],
   ["docs claim only what is built (commands, flags, files and routes in the docs, master docs and skills)", "node", ["packages/naive/src/checks/docs-claims-test.ts"]],

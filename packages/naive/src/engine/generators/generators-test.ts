@@ -153,7 +153,7 @@ t("product-capability: a category may sit directly under the products function",
 t("product-capability: a capability with no category, or no owner, is refused", !productCapability.draft({ ...cap.draft, parent: null }).ok && !productCapability.draft({ ...cap.draft, owner: undefined }).ok);
 t("product-capability: the schema refuses a capability whose parent is null, and an unknown status", !validate("product-capability", { ...cap.draft, parent: null }).ok && !validate("product-capability", { ...cap.draft, status: "paused" }).ok);
 const lp = leadPlan.draft({ lead: "growth-lead", measures: ["paying-teams"] });
-t("lead-plan: draft takes the portfolio from the role template, no bets and a monthly review", lp.ok && lp.route === "operations/lead/growth-lead"
+t("lead-plan: draft takes the portfolio from the library role, no bets and a monthly review", lp.ok && lp.route === "operations/lead/growth-lead"
   && lp.draft.portfolio.join() === "marketing-and-sales,customer-service" && lp.draft.bets.length === 0 && lp.draft.review_cadence === "monthly");
 const rd = rawDump.draft({ text: "Weekend lists differ.", captured: "2026-11-09T00:30:00Z", suffix: "k4p2", channel: "naive capture" });
 t("raw-dump: draft keeps the text verbatim under frontmatter, at raw/dump/<capture id>.md", rd.ok && rd.file === "raw/dump/20261109-003000-k4p2.md" && rd.draft.text.endsWith("\n\nWeekend lists differ.\n"));

@@ -25,7 +25,7 @@
           "role": {
             "type": "string",
             "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
-            "description": "A role id: a role template in packages/naive/template/governance/roles/ or the venture's governance/roles/, or a function agent, <function>-agent. A role whose template has default_tier person is a person; the rest are agents"
+            "description": "A role id: a role in the role library (packages/naive/src/roles/) or the venture's governance/roles/, or a function agent, <function>-agent. A person role (kind person) is a person; the rest are agents"
           },
           "person": {
             "type": "string",
