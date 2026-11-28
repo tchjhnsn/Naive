@@ -1,0 +1,65 @@
+{
+  "id": "management-analyst",
+  "name": "Management analyst",
+  "kind": "either",
+  "status": "durable",
+  "function": "strategy",
+  "description": "Answers for APQC process group 1.2, Develop business strategy: drafts the mission, lays out the strategic options with the evidence for each, proposes objectives and the organizational design, and says how the strategy is told inside and outside the venture. A person chooses the mission, the option and the objectives.",
+  "grantable_classes": [],
+  "default_tier": "frontier",
+  "lint_suites": [],
+  "verified_by": "strategy-lead",
+  "skill": "packages/naive/src/functions/strategy/skills/develop-business-strategy/SKILL.md",
+  "pcf": [
+    {
+      "id": "1.2",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "13-1111.00",
+      "title": "Management Analysts",
+      "basis": "Process group 1.2 is defining and evaluating strategic options, setting objectives and creating the organizational design, which is a management analyst's study and proposal of how an organization should work; matched by the group's processes against the occupation title in O*NET 31.0. Kind either, because the mission, the strategy chosen and the objectives set are decisions and values a person owns.",
+      "by": "agent, EE-239 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "telos",
+    "competitor",
+    "icp",
+    "goal",
+    "bet",
+    "constraints",
+    "market-anatomy",
+    "industry-anatomy"
+  ],
+  "artifacts": [
+    {
+      "record_type": "goal"
+    },
+    {
+      "record_type": "icp"
+    },
+    {
+      "document_kind": "memo"
+    }
+  ],
+  "standards": [
+    "apqc-pcf-cross-industry",
+    "porter-1985-competitive-advantage",
+    "porter-1979-five-forces"
+  ],
+  "research": {
+    "methods": [
+      "standards",
+      "scientific",
+      "practitioner"
+    ],
+    "questions": [
+      "What are the real options, including doing nothing, and what evidence backs each?",
+      "Which objective would show the chosen strategy is working?"
+    ]
+  },
+  "level": 6
+}
