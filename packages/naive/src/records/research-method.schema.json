@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "research-method.schema.json",
+  "title": "Research method",
+  "description": "How a source was found (EE-233), worked in this order. standards: a standards body (ISO, IEEE, NIST, APQC, W3C, IETF) or a law, cited by its own term, version and clause (EE-014). scientific: peer-reviewed literature and systematic reviews, graded high to very low after GRADE. organizational: the business's own records, cited by record and hash. practitioner: practitioner and grey literature (vendor docs, books, talks, open-source code), saying who wrote it and what they sell; never the sole support for a default. stakeholder: the person and customers (interviews, decisions, values); only a person states a value. After evidence-based management's four sources (CEBMa), with standards first.",
+  "enum": [
+    "standards",
+    "scientific",
+    "organizational",
+    "practitioner",
+    "stakeholder"
+  ]
+}
