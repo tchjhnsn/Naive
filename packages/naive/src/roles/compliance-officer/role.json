@@ -1,0 +1,48 @@
+{
+  "id": "compliance-officer",
+  "name": "Compliance officer",
+  "kind": "agent",
+  "status": "durable",
+  "function": "risk-and-compliance",
+  "description": "Manages remediation (APQC 11.3): after a breach, failure or finding, investigates the cause, confers with experts and counsel, drafts the remediation plan and the policy change, and tracks the plan until it is closed.",
+  "grantable_classes": [],
+  "default_tier": "frontier",
+  "lint_suites": [],
+  "verified_by": "finance-lead",
+  "skill": "packages/naive/src/functions/risk-and-compliance/skills/manage-remediation-efforts/SKILL.md",
+  "pcf": [
+    {
+      "id": "11.3",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "13-1041.00",
+      "title": "Compliance Officers",
+      "basis": "APQC 11.3 is remediation plans, investigating cause and legal aspects and amending policy, the examining, investigating and correcting of nonconformity with laws that O*NET describes for compliance officers; chosen over the --complete suggestions, which are environmental site roles.",
+      "by": "agent, EE-249 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "obligation",
+    "risk",
+    "postmortem"
+  ],
+  "artifacts": [],
+  "standards": [
+    "apqc-pcf-cross-industry"
+  ],
+  "research": {
+    "methods": [
+      "organizational",
+      "standards",
+      "stakeholder"
+    ],
+    "questions": [
+      "What caused the failure, and which obligation did it break?",
+      "What must change so it cannot happen again?"
+    ]
+  },
+  "level": 4
+}

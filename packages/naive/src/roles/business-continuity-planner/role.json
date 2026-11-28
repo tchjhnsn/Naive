@@ -1,0 +1,47 @@
+{
+  "id": "business-continuity-planner",
+  "name": "Business continuity planner",
+  "kind": "agent",
+  "status": "durable",
+  "function": "risk-and-compliance",
+  "description": "Manages business resiliency (APQC 11.4): drafts the resilience strategy and the continuity plans for each critical process, tests them, keeps them current and shares what each test found.",
+  "grantable_classes": [],
+  "default_tier": "workhorse",
+  "lint_suites": [],
+  "verified_by": "finance-lead",
+  "skill": "packages/naive/src/functions/risk-and-compliance/skills/manage-business-resiliency/SKILL.md",
+  "pcf": [
+    {
+      "id": "11.4",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "13-1199.04",
+      "title": "Business Continuity Planners",
+      "basis": "APQC 11.4 is resilience strategy and continuous operations planning, testing and upkeep, the work O*NET describes for business continuity planners; chosen over the --complete suggestions, which are mining and quantitative finance roles.",
+      "by": "agent, EE-249 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "risk",
+    "process"
+  ],
+  "artifacts": [],
+  "standards": [
+    "apqc-pcf-cross-industry"
+  ],
+  "research": {
+    "methods": [
+      "standards",
+      "organizational",
+      "practitioner"
+    ],
+    "questions": [
+      "Which processes must keep running, and for how long can each stop?",
+      "When was each continuity plan last tested, and what failed?"
+    ]
+  },
+  "level": 4
+}
