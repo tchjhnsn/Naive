@@ -1,0 +1,52 @@
+{
+  "id": "budget-analyst",
+  "name": "Budget analyst",
+  "kind": "agent",
+  "status": "durable",
+  "function": "finance",
+  "description": "Plans, budgets and forecasts the venture's money and accounts for its costs (APQC 9.1): drafts each budget from the goals and the spend register, compares actuals with the plan and reports the variance to the finance lead.",
+  "grantable_classes": [],
+  "default_tier": "workhorse",
+  "lint_suites": [],
+  "verified_by": "finance-lead",
+  "skill": "packages/naive/src/functions/finance/skills/perform-planning-and-management-accounting/SKILL.md",
+  "pcf": [
+    {
+      "id": "9.1",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "13-2031.00",
+      "title": "Budget Analysts",
+      "basis": "APQC 9.1 is planning, budgeting, forecasting and cost accounting, which is the work O*NET describes for budget analysts (examine budget estimates, analyze costs, prepare budget reports); chosen over the --complete suggestion of financial managers, which the finance lead already matches.",
+      "by": "agent, EE-247 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "goal",
+    "spend-register",
+    "money-summary"
+  ],
+  "artifacts": [
+    {
+      "record_type": "budget"
+    }
+  ],
+  "standards": [
+    "apqc-pcf-cross-industry"
+  ],
+  "research": {
+    "methods": [
+      "organizational",
+      "practitioner",
+      "standards"
+    ],
+    "questions": [
+      "Which goals does the budget fund, and with what planned spend?",
+      "Where do actuals differ from the plan, and why?"
+    ]
+  },
+  "level": 4
+}
