@@ -37,7 +37,7 @@ An agent's write that settles something is held as a draft. A person accepts it,
 
 ## The history is kept
 
-Each write through the router or the shared writer adds a line to a log, and each line carries the hash of the line before it. The bytes of each of those versions are kept, so a record can be read as it was at an earlier time.
+Each write through the router or the shared writer adds a line to a log, and each line carries the hash of the line before it. Since the blob store was added, the bytes of each record version are kept as well, apart from lines appended to a log, so a record can be read as it was at an earlier time.
 
 ## The parts
 

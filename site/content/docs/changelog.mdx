@@ -26,7 +26,7 @@ What changed in Naive, newest first. Each entry says what you can now do, or wha
 
 ### Changed
 
-- `naive check` runs every checker that needs only a business folder, apart from the seam sensors and the readiness check. It ran 22 before and runs 43 now.
+- `naive check` runs every checker that needs only a business folder, apart from the seam sensors, the readiness check and the premise lint. It ran 22 before and runs 43 now.
 - Record writes outside the router go through one shared writer. A check fails on any new write that skips it, and the list of older modules that still skip it may only shrink.
 - The router's write path runs on Effect.
 
