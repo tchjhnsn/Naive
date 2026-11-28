@@ -1,0 +1,49 @@
+{
+  "id": "survey-researcher",
+  "name": "Survey researcher (customer satisfaction)",
+  "kind": "agent",
+  "status": "durable",
+  "function": "customer-service",
+  "description": "Judges how well the venture serves its customers: asks them about being helped, about complaint handling, about the product after buying and about warranty handling, counts what the support cases say, and evaluates a finished recall.",
+  "grantable_classes": [],
+  "default_tier": "workhorse",
+  "lint_suites": [],
+  "verified_by": "growth-lead",
+  "skill": "packages/naive/src/functions/customer-service/skills/evaluate-customer-service-operations-and-customer/SKILL.md",
+  "pcf": [
+    {
+      "id": "6.5",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "19-3022.00",
+      "title": "Survey Researchers",
+      "basis": "The role asks customers about being helped, about complaint handling and about the product, and counts what the answers and the cases say, which is the design and analysis of surveys this occupation does; matched by the process group's activities against the occupation in O*NET 31.0.",
+      "by": "agent, EE-244 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "support-case",
+    "support-policy",
+    "customer",
+    "validation-feedback"
+  ],
+  "artifacts": [],
+  "standards": [
+    "apqc-pcf-cross-industry"
+  ],
+  "research": {
+    "methods": [
+      "stakeholder",
+      "scientific",
+      "organizational"
+    ],
+    "questions": [
+      "Are there enough answers for a rate to mean anything, and who did not answer?",
+      "Did the support policy's targets hold, case by case?"
+    ]
+  },
+  "level": 4
+}

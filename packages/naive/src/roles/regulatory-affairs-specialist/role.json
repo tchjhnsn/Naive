@@ -1,0 +1,50 @@
+{
+  "id": "regulatory-affairs-specialist",
+  "name": "Regulatory affairs specialist (recalls and audits)",
+  "kind": "either",
+  "status": "durable",
+  "function": "customer-service",
+  "description": "Prepares a recall and the regulatory work around it: rates the hazards behind it, says what each audience is told, drafts every report a regulator is owed, counts whether the recall is reaching people, and readies it to close.",
+  "grantable_classes": [],
+  "default_tier": "frontier",
+  "lint_suites": [],
+  "verified_by": "growth-lead",
+  "skill": "packages/naive/src/functions/customer-service/skills/manage-product-recalls-and-regulatory-audits/SKILL.md",
+  "pcf": [
+    {
+      "id": "6.4",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "13-1041.07",
+      "title": "Regulatory Affairs Specialists",
+      "basis": "The role rates the hazards behind a recall, drafts the reports a regulator is owed and audits whether the recall is reaching people, which is this occupation's work with regulators; matched by the process group's activities against the occupation in O*NET 31.0.",
+      "by": "agent, EE-244 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "obligation",
+    "risk",
+    "product",
+    "support-case",
+    "customer"
+  ],
+  "artifacts": [],
+  "standards": [
+    "apqc-pcf-cross-industry"
+  ],
+  "research": {
+    "methods": [
+      "standards",
+      "organizational",
+      "practitioner"
+    ],
+    "questions": [
+      "Which authority must be told, by when, and in what form?",
+      "How many of the affected customers has the recall reached so far?"
+    ]
+  },
+  "level": 5
+}
