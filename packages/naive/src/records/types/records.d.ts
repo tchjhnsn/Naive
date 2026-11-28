@@ -8150,6 +8150,11 @@ export type Worker = {
    * @format date-time
    */
   expires?: string;
+  /** The staffing plan that proposed it (EE-236): the decision and the candidate this worker is part of. naive staffing apply activates the workers of the candidate a person chose, and nobody changes it once the worker is proposed */
+  plan?: {
+    decision: string;
+    candidate: string;
+  };
   /** Its place in the statechart. Only active has reach */
   status: "proposed" | "active" | "suspended" | "ended";
   /** Who deployed it: a person, a lead (its reach bounded by the lead's portfolio) or a function agent (bounded by its own reach). A worker never deploys another */
