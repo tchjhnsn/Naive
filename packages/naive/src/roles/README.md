@@ -37,6 +37,10 @@ Process group roles for it (EE-246), one accountable for each of 8.1 to 8.7: `co
 Process group roles for assets (EE-248), one accountable for each of 10.1 to 10.4: `facilities-manager` (10.1), `construction-manager` (10.2), `first-line-supervisor-of-mechanics-installers-and-repairers` (10.3) and `appraiser-of-personal-and-business-property` (10.4). The construction manager and the first-line supervisor are agent roles; the facilities manager and the appraiser are either.
 Process group roles for finance (EE-247, roles plan step 11), each accountable for one APQC level 2 process group and named after its O*NET match: `budget-analyst`, `billing-and-posting-clerk`, `accountant`, `financial-analyst`, `payroll-clerk`, `bookkeeping-clerk`, `treasurer`, `auditor`, `tax-preparer`, `controller` and `customs-broker`.
 
+Process group roles for risk and compliance (EE-249, roles plan step 11), each accountable for one APQC level 2 process group and named after its O*NET match: `financial-risk-specialist`, `compliance-manager`, `compliance-officer` and `business-continuity-planner`.
+
+Process group roles for external relationships (EE-250, roles plan step 11), each accountable for one APQC level 2 process group and named after its O*NET match: `fundraising-manager`, `public-relations-manager`, `executive-secretary` and `public-relations-specialist`.
+
 ## Role programs
 
 Every role has a program (EE-237, [`role-program.ts`](../checks/role-program.ts)): deterministic checks of what the role makes, each an Effect over `VentureFs` that fails only with Naive's tagged errors. The default program comes from `role.json`:
