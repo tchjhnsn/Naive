@@ -1,12 +1,9 @@
 #!/usr/bin/env node
-// The postbuild page gate and the blog's approval rule.
+// The postbuild page gate.
 
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { isListed } from "../lib/blog/posts.ts";
-import { showcaseData } from "../content/showcase/entries.ts";
-import type { Post } from "../lib/blog/types.ts";
 import { gatedMatchers, gatedMentions, isGatedPath, matcherCovers, WAITLIST_PATH } from "../lib/waitlist-gate.ts";
 import { gateRoots, loadGate, marketingGate, marketingUrls, pagePath, scan, urlFromBuiltPage } from "./gate-pages.ts";
 import { prerenderUrl } from "./search-index.mjs";
@@ -53,9 +50,6 @@ try {
   page("templates/x.html", `<p>${secret}</p>`);
   expect("internal wording fails on any page", scan(root, venture).failures.length > 0);
   rmSync(join(root, "templates"), { recursive: true });
-  page("blog/x.html", "<p>see EE-001</p>");
-  expect("an internal term fails on the blog", scan(root, venture).failures.length > 0);
-  rmSync(join(root, "blog"), { recursive: true });
   page("docs/x.html", "<p>see EE-001</p>");
   const docs = scan(root, venture);
   expect("an internal term in docs is counted, not failed", docs.failures.length === 0 && docs.counted === 1);
@@ -114,10 +108,10 @@ try {
   write(`APP_PAGE/${hash}/$/index.html`, "<p>A public page.</p>");
   const held = gateRoots([emptyApp, cacheRoot], { expectAll: true });
   expect("marketing pages that exist only in route-cache pass", held.failures.length === 0 && held.seen.size === marketingUrls().size);
-  write(`APP_PAGE/${hash}/$/why.html`, "<p>see EE-001</p>");
+  write(`APP_PAGE/${hash}/$/about.html`, "<p>see EE-001</p>");
   const strict = scan(cacheRoot, venture);
   expect("an internal term on a route-cache marketing page fails", strict.failures.some((f) => f.what.includes("EE-001")));
-  write(`APP_PAGE/${hash}/$/why.html`, "<p>A public page.</p>");
+  write(`APP_PAGE/${hash}/$/about.html`, "<p>A public page.</p>");
   write(`APP_PAGE/${hash}/$/docs/x.html`, "<p>see EE-001</p>");
   const docsCache = scan(cacheRoot, venture);
   expect("an internal term in route-cache docs is counted, not failed", docsCache.failures.length === 0 && docsCache.counted === 1);
@@ -137,7 +131,6 @@ expect("/og/docs/concepts/provenance is gated", isGatedPath("/og/docs/concepts/p
 expect("the waitlist is not gated", !isGatedPath(WAITLIST_PATH));
 expect("the home page is not gated", !isGatedPath("/"));
 expect("/og/home is not gated", !isGatedPath("/og/home"));
-expect("/blog is not gated", !isGatedPath("/blog"));
 expect("/documentary is not a docs route", !isGatedPath("/documentary"));
 expect("a docs href is a gated mention", gatedMentions('<a href="/docs">Docs</a>').join(",") === "/docs");
 expect("a waitlist href is not a gated mention", gatedMentions('<a href="/waitlist">Waitlist</a>').length === 0);
@@ -164,11 +157,6 @@ expect(
   "every sample gated path is covered by a matcher",
   samples.every((sample) => isGatedPath(sample) && gatedMatchers.some((matcher) => matcherCovers(matcher, sample))),
 );
-
-const post = { draft: false, approved: true, date: "2026-01-01" } as Post;
-expect("an approved post is listed", isListed(post, "2026-02-01"));
-expect("an unapproved post is not listed", !isListed({ ...post, approved: false }, "2026-02-01"));
-expect("the showcase holds only example fixtures", showcaseData.entries.every((e: { example: boolean }) => e.example));
 
 rmSync(venture, { recursive: true, force: true });
 

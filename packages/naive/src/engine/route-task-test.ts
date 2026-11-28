@@ -1,16 +1,15 @@
-// Tests the routing rule (packages/naive/src/engine/route-task.ts) against the template's lead role templates,
+// Tests the routing rule (packages/naive/src/engine/route-task.ts) against the role library's leads,
 // departments and delegation lists: each of rules 1 to 5, and that the four portfolios route every pair of functions.
 //
 //   node packages/naive/src/engine/route-task-test.ts
-import { readdirSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { accountableLead, routeTask, type Context, type LeadTemplate } from "./route-task.ts";
+import { loadRoles } from "./agents/roles.ts";
 
 const repo = new URL("../../../..", import.meta.url).pathname;
 const load = (p: string): unknown => JSON.parse(readFileSync(join(repo, p), "utf8"));
-const rolesDir = "packages/naive/template/governance/roles";
-const isLead = (r: unknown): r is LeadTemplate => !!r && typeof r === "object" && "id" in r && "portfolio" in r && Array.isArray(r.portfolio);
-const leads = readdirSync(join(repo, rolesDir)).filter((f) => f.endsWith(".json")).map((f) => load(`${rolesDir}/${f}`)).filter(isLead);
+const leads: LeadTemplate[] = [...loadRoles().values()].flatMap((r) => r.portfolio ? [{ id: r.id, portfolio: r.portfolio, default_measure_kinds: r.default_measure_kinds }] : []);
 const departments = load("packages/naive/src/functions/departments.json") as { departments: { id: string }[] };
 const delegation = load("packages/naive/template/governance/delegation.json") as { one_way_doors: string[]; never_redelegated: string[] };
 const functions = departments.departments.map((d) => d.id);

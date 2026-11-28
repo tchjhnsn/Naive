@@ -19,12 +19,12 @@
 //   - a one_way_door detector with a line or costs;
 //   - an evidence source that is neither "venture" nor a source id in the venture's knowledge/sources.json;
 //   - a resolver or sensor that does not exist, where that can be checked: a person resolver or a person sensor
-//     must be a role in the venture roles or agent roles register (the venture's own copy, else Naive's), or a
+//     must be a role in the role library, overlaid by the venture's own roles (EE-229), or a
 //     founder or person the venture names; a record resolver must be a record type in the data model, or draft
 //     (the gate's held drafts); a check sensor that names a module path must name a file in Naive or the venture.
 //     A producer resolver and the sensors of the other kinds are free text and are not checked;
 //   - an assign_to (the role a yes call's decision is put to, as seam detectors name a lead) that is not a role in
-//     the registers, a person the venture names, or a role template (governance/roles/<id>.json, the venture's or Naive's);
+//     the role library, the venture's own roles or a person the venture names;
 //   - a ledger line that is not JSON or does not match detector-trial.schema.json, a broken hash chain, an id used
 //     twice, a line naming another detector, a resolution of a trial no earlier line is, a trial resolved twice, an
 //     outcome the call cannot have (a yes call resolves as a hit or a false alarm, a no call as a miss or a correct
@@ -49,6 +49,7 @@ import { CannotRun } from "../core/effect/errors.ts";
 import { readJson, VentureFs } from "../core/effect/fs.ts";
 import { runMain, runSync } from "../core/effect/run.ts";
 import { lineHash } from "../core/provenance.ts";
+import { knownRoles } from "../engine/agents/roles.ts";
 import { ventureFile } from "../core/venture-paths.ts";
 import { ROOT, readDataModel } from "../records/index.ts";
 import { validateValue } from "../records/validate.ts";
@@ -111,18 +112,8 @@ const tenth = (x: number): string => String(Math.round(x * 10) / 10);
 /** Whether a score is a yes call at a yes line. Under above a score at or above the line is yes; under below a score strictly below it is. */
 export const yesAt = (score: number, line: number, yesWhen: YesWhen): boolean => (yesWhen === "below" ? score < line : score >= line);
 
-const rolesKnown = (dir: string) => Effect.gen(function* () {
-  const fs = yield* VentureFs;
-  const out = new Set<string>(signers(dir) as Set<string>);
-  for (const name of ["venture-roles.json", "agent-roles.json"]) {
-    const own = ventureFile(dir, `governance/roles/${name}`);
-    const f = (yield* fs.exists(own)) ? own : join(ROOT, "packages/naive/template/governance/roles", name);
-    if (!(yield* fs.exists(f))) continue;
-    const r = yield* readJson(f);
-    if (isObj(r) && Array.isArray(r.roles)) for (const x of r.roles) if (isObj(x) && typeof x.id === "string") out.add(x.id);
-  }
-  return out;
-});
+/** The roles a detector may name: the role library overlaid by the venture's roles (EE-229), and the people it names. */
+const rolesKnown = (dir: string) => Effect.sync(() => new Set<string>([...(signers(dir) as Set<string>), ...knownRoles(dir)]));
 
 const sourcesKnown = (dir: string) => Effect.gen(function* () {
   const fs = yield* VentureFs;
@@ -159,17 +150,19 @@ const detectorErrors = (dir: string, d: Detector, where: string, known: { roles:
     if (!known.sources.has(s.source)) errors.push(`${where}: evidence source ${s.source} is neither venture nor a source in ${MAP}`);
   }
   const r = d.resolution?.resolver;
-  if (r?.kind === "person" && !known.roles.has(r.id)) errors.push(`${where}: resolver ${r.id} is not a role in the roles registers or a person the venture names`);
+  if (r?.kind === "person" && !known.roles.has(r.id)) errors.push(`${where}: resolver ${r.id} is not a role in the role library, the venture's roles or a person the venture names`);
   if (r?.kind === "record" && !known.records.has(r.id) && !NON_MODEL_RECORDS.has(r.id)) errors.push(`${where}: resolver record ${r.id} is not a record type in the data model`);
-  // assign_to (seam detectors): a role in the registers, a person the venture names, or a role template, the venture's or Naive's.
+  // assign_to (seam detectors): a role in the role library or the venture's roles, or a person the venture names.
   const assign = d.assign_to;
-  if (assign && !known.roles.has(assign) && !(yield* fs.exists(ventureFile(dir, `governance/roles/${assign}.json`))) && !(yield* fs.exists(join(ROOT, "packages/naive/template/governance/roles", `${assign}.json`)))) {
-    errors.push(`${where}: assign_to ${assign} is not a role in the roles registers, a role template or a person the venture names`);
+  if (assign && !known.roles.has(assign)) {
+    errors.push(`${where}: assign_to ${assign} is not a role in the role library, the venture's roles or a person the venture names`);
   }
   const sensor = d.evidence?.sensor ?? "";
-  if (d.evidence?.kind === "person" && !known.roles.has(sensor)) errors.push(`${where}: sensor ${sensor} is not a role in the roles registers or a person the venture names`);
+  if (d.evidence?.kind === "person" && !known.roles.has(sensor)) errors.push(`${where}: sensor ${sensor} is not a role in the role library, the venture's roles or a person the venture names`);
   const path = sensor.split(/\s/)[0];
-  if (d.evidence?.kind === "check" && /\.(m?js|ts)$/.test(path) && !(yield* fs.exists(join(ROOT, path))) && !(yield* fs.exists(ventureFile(dir, path)))) {
+  if (d.evidence?.kind === "check" && /\.(m?js|ts)$/.test(path) && !(yield* fs.exists(join(ROOT, path)))
+    // The compiled package (EE-159) holds the same module as .mjs, so a default that names the .ts source still resolves there.
+    && !(yield* fs.exists(join(ROOT, path.replace(/\.ts$/, ".mjs")))) && !(yield* fs.exists(ventureFile(dir, path)))) {
     errors.push(`${where}: sensor ${path} is not a file in Naive or the venture`);
   }
   return errors;
@@ -305,7 +298,7 @@ export const readVenture = (dir: string) => Effect.gen(function* () {
   const shippedIds = (yield* fs.list(TEMPLATE)).filter((f) => f.endsWith(".json")).map((f) => f.slice(0, -5));
   const defaults = shippedIds.filter((id) => !ownIds.includes(id));
   const known = { roles: yield* rolesKnown(dir), sources: yield* sourcesKnown(dir), records: new Set<string>(readDataModel().records.map((r: { id: string }) => r.id)) };
-  checked.push("evidence sources against venture and knowledge/sources.json", "person resolvers and person sensors against the roles registers and the founders the venture names", "record resolvers against the data model (and draft)", "check sensors that name a module path against the files of Naive and the venture", "assign_to against the roles registers, the founders the venture names and the role templates", "not checked: producer resolvers and the sensors of founder-agent, accumulated and sequential detectors, which are free text");
+  checked.push("evidence sources against venture and knowledge/sources.json", "person resolvers and person sensors against the role library, the venture's roles and the founders the venture names", "record resolvers against the data model (and draft)", "check sensors that name a module path against the files of Naive and the venture", "assign_to against the role library, the venture's roles and the founders the venture names", "not checked: producer resolvers and the sensors of founder-agent, accumulated and sequential detectors, which are free text");
   const v = yield* readJson(join(dir, "venture.json")).pipe(Effect.orElseSucceed((): unknown => null));
   const venture = isObj(v) && typeof v.id === "string" ? v.id : dir;
 

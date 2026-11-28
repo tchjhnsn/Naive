@@ -30,6 +30,7 @@ import { artifacts } from "./check-artifacts.ts";
 import { leaks } from "./check-leaks.ts";
 import { check, frontmatter } from "./publish-lint.ts";
 import { record } from "../core/provenance.ts";
+import { writeRecord, programWriter, writerFromEnv } from "../store/record-write.ts";
 import type { PublicationPolicy, Publications } from "../records/types/records.d.ts";
 
 /** A publishing channel as the gate reads it; kind is read loosely, since older policies name kinds the schema no longer lists. */
@@ -40,7 +41,6 @@ type PublishDelegation = { founder?: string[], delegations?: { class?: string, d
 type Reversibility = { how: string, takes?: string };
 
 const load = (f: string) => JSON.parse(readFileSync(f, "utf8"));
-const save = (f: string, x: unknown) => { mkdirSync(dirname(f), { recursive: true }); writeFileSync(f, JSON.stringify(x, null, 2) + "\n"); };
 const shaFile = (f: string) => createHash("sha256").update(readFileSync(f)).digest("hex");
 const CONTENT = ["marketing/content", "operations/marketing/content"];
 const ONE_WAY_KINDS = new Set(["social", "newsletter", "email", "app-store", "press", "launch"]);
@@ -94,10 +94,11 @@ export function build(dir: string, channel: string, { artifact }: { artifact?: s
     if (rec && existsSync(ventureFile(dir, rec))) from.set(rec, shaFile(ventureFile(dir, rec)));
   }
   const aFile = ventureFile(dir, `artifacts/${id}.json`);
-  const prior = existsSync(aFile) ? load(aFile) : {};
+  const had = existsSync(aFile);
+  const prior = had ? load(aFile) : {};
   const a = { ...prior, id, kind: prior.kind ?? (ch.kind === "docs-site" || ch.kind === "site" ? "site" : "page"), title: prior.title ?? ch.name ?? id,
     built_at: new Date().toISOString(), built_from: [...from].map(([r, s]) => ({ record: r, sha256: s })), output: { path: rel, sha256: sha, channel } };
-  save(aFile, a);
+  writeRecord(dir, `artifacts/${id}.json`, a, { agent: programWriter("naive-publish"), activity: had ? "write" : "create", note: `naive publish build ${channel}: the artifact record of ${rel}` });
   return { artifact: id, output: rel, sha256: sha, sources: srcs.map((s) => s.file), leaks: found };
 }
 
@@ -143,7 +144,8 @@ function decide(dir: string, { channel, artifact, sha256, url, action, door, exp
     provenance: { drafted_by: { kind: "framework" }, ...(ok ? { approved_by: by, approved_at: at, phase: v.phase, wording: "approved", authority: "public-commitment", via: "naive publish" } : {}) },
     publish: { channel, artifact, sha256, url, action, door, exposure: { level: exposure, ...(who?.length ? { who } : {}) }, reversibility, approver_role: as, not_before },
   };
-  save(ventureFile(dir, file), JSON.parse(JSON.stringify(rec)));
+  writeRecord(dir, file, JSON.parse(JSON.stringify(rec)), { agent: writerFromEnv("cli", by), activity: "create",
+    note: ok ? `${action} decision on ${channel} for ${artifact}, approved by ${by}` : `${action} decision on ${channel} for ${artifact}, refused: ${why}` });
   return file;
 }
 
@@ -192,8 +194,9 @@ export async function publish(dir: string, channel: string, { by, as = "founder"
   if (entry.sha256 && entry.sha256 !== sha) entry.previous = [{ sha256: entry.sha256, output: `.release/publish/${channel}/versions/${entry.sha256}.md`, approved_by: entry.approved_by, at: entry.at, decision: entry.decision }, ...(entry.previous ?? [])];
   Object.assign(entry, { url: url ?? entry.url, kind: entry.kind ?? kindOf(ch), sources: a.built_from.map((b: { record: string }) => b.record).filter((r: string) => r.endsWith(".mdx")), output: kept, sha256: sha, approved_by: by, at, decision, door: d.door });
   delete entry.stale;
-  save(manifestPath(dir), m);
-  save(aFile, { ...a, published: true, ...(entry.url ? { url: entry.url } : {}) });
+  const approver = { kind: "person", via: "cli", id: by };
+  writeRecord(dir, "governance/publications.json", m, { agent: approver, decision, note: `published ${id} on ${channel}: the manifest entry` });
+  writeRecord(dir, `artifacts/${id}.json`, { ...a, published: true, ...(entry.url ? { url: entry.url } : {}) }, { agent: approver, decision, note: `published ${id} on ${channel}: the artifact marked published` });
   record(dir, ({ entity: kept, activity: "publish", agent: { kind: "person", via: "cli", id: by }, derived_from: [a.output.path], decision, sha256: sha, note: `published ${id} on ${channel}${entry.url ? ` at ${entry.url}` : ""} (${d.door} door)` }) as Parameters<typeof record>[1]);
   return { decision, entry };
 }
@@ -218,7 +221,7 @@ export function rollback(dir: string, channel: string, { by, as = "founder" }: {
   const undone = { sha256: entry.sha256, output: entry.output, approved_by: entry.approved_by, at: entry.at, decision: entry.decision };
   Object.assign(entry, { sha256: prev.sha256, output: prev.output, approved_by: by, at: new Date().toISOString(), decision });
   entry.previous = [undone, ...(entry.previous ?? []).slice(1)];
-  save(manifestPath(dir), m);
+  writeRecord(dir, "governance/publications.json", m, { agent: { kind: "person", via: "cli", id: by }, decision, note: `rolled ${channel} back: the manifest entry` });
   record(dir, ({ entity: prev.output, activity: "rollback", agent: { kind: "person", via: "cli", id: by }, decision, sha256: prev.sha256, note: `rolled ${channel} back from ${undone.sha256.slice(0, 12)} to ${prev.sha256.slice(0, 12)}` }) as Parameters<typeof record>[1]);
   return { decision, entry };
 }
@@ -228,13 +231,15 @@ export function stale(dir: string, { mark = true } = {}) {
   const states = new Map(artifacts(dir).map((a: { id: string, state?: string, changed?: string[], missing?: string[] }) => [a.id, a] as const));
   const m = manifest(dir);
   const out: { channel: string, artifact: string, changed: string[] }[] = [];
+  // Written only when a mark changed, so reading the status does not add a provenance line.
+  let changed = false;
   for (const e of m.entries) {
     const a = states.get(e.artifact);
     const isStale = a?.state === "stale" || a?.state === "broken";
     if (isStale) out.push({ channel: e.channel, artifact: e.artifact, changed: [...(a.changed ?? []), ...(a.missing ?? [])] });
-    if (mark && isStale !== !!e.stale) { if (isStale) e.stale = true; else delete e.stale; }
+    if (mark && isStale !== !!e.stale) { changed = true; if (isStale) e.stale = true; else delete e.stale; }
   }
-  if (mark && existsSync(manifestPath(dir))) save(manifestPath(dir), m);
+  if (mark && changed && existsSync(manifestPath(dir))) writeRecord(dir, "governance/publications.json", m, { agent: programWriter("naive-publish"), note: `updated the stale marks: ${out.length} publication${out.length === 1 ? " is" : "s are"} stale` });
   return out;
 }
 

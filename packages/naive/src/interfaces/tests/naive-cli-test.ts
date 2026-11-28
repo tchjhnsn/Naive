@@ -1,10 +1,11 @@
 // One CLI: naive new starts a venture, and every record command of mentura runs through naive in it.
 import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
-import { existsSync, mkdtempSync, readFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { ventureFile } from "../../core/venture-paths.ts";
 
 const cli = fileURLToPath(new URL("../cli/naive.ts", import.meta.url));
 const root = mkdtempSync(join(tmpdir(), "naive-cli-"));
@@ -39,6 +40,25 @@ t("naive help lists naive's commands and the record commands, named naive", () =
   assert.match(r.stderr, /^naive decide /m);
   assert.doesNotMatch(r.stderr, /^mentura /m);
   assert.doesNotMatch(r.stderr, /naive naive/);
+});
+
+t("naive check runs every checker that reads a venture, and honours checks.off and checks.warn", () => {
+  const checks = fileURLToPath(new URL("../../checks/", import.meta.url));
+  // The checkers of Naive's own files, and the ones that need an argument a venture folder does not give.
+  const notVenture = new Set(["check-activities", "check-boundary", "check-canary", "check-data-model", "check-direct-writes", "check-docs-claims", "check-evals", "check-functions", "check-integrations",
+    "check-language-rubric", "check-nextjs-status", "check-nouns", "check-pcf", "check-pcf-coverage", "check-phases", "check-ready", "check-record-paths", "check-sdlc-catalog", "check-seams", "check-tools",
+    "check-types", "check-visibility-rubric", "check-visibility", "check-write-scope"]);
+  const all = readdirSync(checks).filter((f) => /^(check|lint)-[a-z-]+\.ts$/.test(f) && !f.endsWith("-test.ts")).map((f) => f.replace(/\.ts$/, ""));
+  const r = naive(dir, "check");
+  const ran = new Set([...r.stdout.matchAll(/^(?:pass|FAIL|warn|off )\s+([a-z-]+):/gm)].map((m) => m[1]));
+  const missed = all.filter((c) => !notVenture.has(c) && !ran.has(c.replace(/^check-/, "")));
+  assert.deepEqual(missed, [], `naive check leaves out: ${missed.join(", ")}`);
+  assert.equal(r.status, 0, r.stdout);
+  const cfg = ventureFile(dir, "naive.config.json");
+  writeFileSync(cfg, JSON.stringify({ ...(existsSync(cfg) ? JSON.parse(readFileSync(cfg, "utf8")) : {}), checks: { off: ["packages/naive/src/checks/check-telos.ts"], warn: [] } }, null, 2));
+  const off = naive(dir, "check");
+  assert.match(off.stdout, /^off\s+telos: turned off/m, off.stdout + off.stderr);
+  assert.doesNotMatch(off.stdout, /^(pass|FAIL)\s+telos:/m);
 });
 
 t("an unknown command still fails with usage", () => {

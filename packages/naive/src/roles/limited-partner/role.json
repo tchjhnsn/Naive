@@ -1,0 +1,9 @@
+{
+  "id": "limited-partner",
+  "name": "Limited partner",
+  "kind": "person",
+  "description": "Commits capital to a fund and receives reports; does not run it",
+  "person_kind": "investor",
+  "founder": false,
+  "owns_when_solo": false
+}

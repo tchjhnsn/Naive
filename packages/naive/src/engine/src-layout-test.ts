@@ -58,6 +58,14 @@ expect("init-venture --layout src copies the template's src/ and public/ and put
 const fc = spawnSync("node", [naiveScript("check-ventures"), fresh], { encoding: "utf8" });
 expect("a new src venture passes check-ventures", fc.status === 0, fc.stdout + fc.stderr);
 
+// Every phase starts on the src layout: the layer folders past discovery are made where their paths resolve.
+for (const phase of ["validation", "beachhead", "scale", "platform"]) {
+  const at = join(fresh, `v-${phase}`);
+  const r = spawnSync("node", [join(repo, "packages/naive/src/engine/init-venture.ts"), at, `fresh-${phase}`, "--layout", "src", "--phase", phase], { encoding: "utf8" });
+  const c = spawnSync("node", [naiveScript("check-ventures"), fresh], { encoding: "utf8" });
+  expect(`init-venture --layout src --phase ${phase} makes a venture that passes check-ventures`, r.status === 0 && layoutOf(at) === "src" && c.status === 0, r.stderr + c.stdout + c.stderr);
+}
+
 rmSync(base, { recursive: true, force: true });
 console.log(failed ? `\n${failed} failing` : "\nall passing");
 process.exit(failed ? 1 : 0);

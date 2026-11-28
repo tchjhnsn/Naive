@@ -33,7 +33,7 @@ The EE-095 term engine: every term is admitted through one pipeline with a valid
 | [`ontology-metamodel-test.ts`](./ontology-metamodel-test.ts) | Behavior of the ontology metamodel (N-048). |
 | [`ontology.json`](./ontology.json) | The canonical nouns (EE-014). The lead agents design proposes `handoff claim` (a kind of process), `capability cluster` and `connection` (function it), `spend register` (function finance), `access matrix`, `seam` (a seam detector compares two functions' records), and `lead`, `portfolio` and `lead plan`, all status proposed. |
 | [`ontology.md`](./ontology.md) | The readable form of `ontology.json`. |
-| [`operating-rules-test.ts`](./operating-rules-test.ts) | The operating-rules module. |
+| [`operating-rules-test.ts`](./operating-rules-test.ts) | The operating-rules module, including the chief of staff's role in the role library (`packages/naive/src/roles/chief-of-staff/role.json`). |
 | [`operating-rules.json`](./operating-rules.json) | Naive's default operating rules, which a venture can override. |
 | [`operating-rules.ts`](./operating-rules.ts) | Naive's operating rules, as a module a venture can override. |
 | [`sources.ts`](./sources.ts) | Builds the facts for one source write and runs allowed-source (EE-192). A denied host or a logged-in fetch is refused here, and nowhere else. |
@@ -103,3 +103,7 @@ It registers `engine/gate-service.ts` as plain too: the gate as an Effect servic
 `bypass-guard-test.ts` registers `packages/naive/src/checks/check-goals.ts` (the goal ledger, EE-210) and its test as plain checks: they compare goal ids, parents and statuses, so no term is decided.
 
 `bypass-guard-test.ts` registers `packages/naive/src/checks/check-runs.ts` (proof of work, EE-227) as a plain check: it compares provenance line hashes, sessions, roles, times and routes with a run's package, so no term is decided.
+
+`bypass-guard-test.ts` registers `packages/naive/src/checks/check-roles.ts` (the role library, EE-229) and its test as plain checks: they validate each role file against its schema, resolve verifier ids and aliases, and compare a person role's declared tier with one fixed value, so no term is decided.
+
+`bypass-guard-test.ts` registers `packages/naive/src/checks/check-direct-writes.ts` and its test as plain checks: they count write calls by name and compare them with a list, and decide nothing about what a thing is.

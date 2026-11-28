@@ -14,7 +14,7 @@ The model is the request, not the React tree. Each action is one request, and th
 | MissingIsGated | A docs URL that is not a page redirects to `/waitlist` as well. | Holds. The prefix is gated, so the docs 404 is not the answer. |
 | TemplatesAreGated | `/templates` and a template detail URL redirect to `/waitlist`. | Holds. |
 | OldPathRedirects | An old path (the list in `site/next.config.mjs`) redirects to a docs URL. It does not render a second copy. | Holds. The next request for that docs URL is gated. |
-| NavIsLive | Header and footer links that remain public are live pages: Blog, Showcase, About, and Waitlist. Docs, Templates, `llms.txt`, and `llms-full.txt` are not in that nav. | Holds. |
+| NavIsLive | Footer links that remain public are live pages: About and Waitlist. The header has no links. Docs, Templates, `llms.txt`, and `llms-full.txt` are not in that nav. | Holds. |
 | WaitlistIsPage | `/waitlist` is a page. Its form records an email as interest and does not create an account. | Holds. |
 | LlmsIsGated | `llms.txt` and `llms-full.txt` redirect to `/waitlist`. They are not the docs Markdown. | Holds. |
 | DocsResolves | A request comes back as a page, as a redirect, or as the waitlist gate. | Holds. |
@@ -34,7 +34,7 @@ The chart draws 5 states and 10 arrows. It does not draw 9 steps that stay in th
 
 ## What the model leaves out
 
-It does not model search, the sidebar, dark mode, or the bytes of a page. It treats every docs page as one request, and every remaining nav link as one request. It does not model marketing pages asking for Markdown: the proxy does not rewrite those URLs. Showcase pages may still name a docs URL in their HTML. A request for that URL redirects to `/waitlist`. The build gate in `site/scripts/gate-pages.ts` fails when a rendered marketing page names a gated route. `/waitlist` records an email as interest and does not create an account. Docs and templates still redirect to that page.
+It does not model search, the sidebar, dark mode, or the bytes of a page. It treats every docs page as one request, and every remaining nav link as one request. It does not model marketing pages asking for Markdown: the proxy does not rewrite those URLs. The build gate in `site/scripts/gate-pages.ts` fails when a rendered marketing page names a gated route. `/waitlist` records an email as interest and does not create an account. Docs and templates still redirect to that page.
 
 ## Run it again
 
@@ -61,7 +61,7 @@ Replay against a built site (`cd site && npm run build && npm start`):
 - `GET /templates` and `GET /llms.txt` and `GET /llms-full.txt` and `GET /md/docs` and `GET /og/docs` are 307 to `/waitlist`.
 - `GET /waitlist` is HTML, the page records interest and does not create an account, and the HTML says `noindex`.
 - `GET /getting-started` is 308 to `/docs/get-started`, and that URL is 307 to `/waitlist`.
-- `GET /blog`, `/showcase`, `/why`, `/for`, `/about` are 200.
+- `GET /about` is 200. `/why` and `/for` redirect to `/` with 308 (removed on 2026-11-27). `/blog` and `/showcase` were removed on 2026-11-27.
 - `GET /` does not link to `/docs` or `/templates`.
 - `GET /robots.txt` is `Disallow: /`.
 

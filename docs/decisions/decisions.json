@@ -3574,6 +3574,85 @@
           "expect": "exists"
         }
       ]
+    },
+    {
+      "id": "EE-228",
+      "date": "2026-11-27",
+      "status": "in-force",
+      "decision": "A feature report is derived from the venture's records and stored nowhere. A feature is a product capability (EE-224). product-capability.schema.json gains three optional fields, goals (goal ids or goal/measure), requirements (requirement ids) and rice (a person's reach, impact on Intercom's 0.25 to 3 scale, confidence 0 to 1, effort in person-months, set_by and at), and bug.schema.json gains capability, the capability a bug breaks. packages/naive/src/engine/feature-report.ts gives one feature's place, its status history from provenance and the blob store, the goals and requirements it serves with their status, RICE, open bugs and the support cases through them, validation feedback, telemetry counts and the proof of its bytes, and a portfolio of every feature by product and category; naive features and the route product/features print them. Each section names the files its facts came from and a hole, with the record that would fill it, for each fact no record holds. RICE is scored only when provenance shows a person wrote the inputs; breadth, time to adopt and stickiness are holes because no record holds the eligible users or a user id. check-ventures.ts checks every new reference.",
+      "why": "Torian on 2026-11-27: \"generate some sort of feature reports. research what a product manager does and how they keep track of features.\" Product managers keep each feature with a lifecycle status, the goal it serves and progress against that goal (Aha!, Productboard), rank features by RICE (Intercom), and measure adoption by breadth, depth, time to adopt and stickiness (Pendo), while adoption alone does not prove value. Naive held the capability and the records around it, but bugs named no capability and nothing read them together. docs/design/FEATURE_REPORTS_2026-11-27.md.",
+      "related": [
+        "EE-031",
+        "EE-210",
+        "EE-224"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/feature-report.ts",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
+      "id": "EE-233",
+      "date": "2026-11-28",
+      "status": "in-force",
+      "decision": "Research follows a fixed list of methods, and every reference says which method found it. packages/naive/src/records/research-method.schema.json holds the list in the order it is worked: standards (a standards body such as ISO, IEEE, NIST, APQC, W3C or IETF, or a law, cited by its own term, version and clause, EE-014), scientific (peer-reviewed literature and systematic reviews, graded high to very low after GRADE), organizational (the business's own records, cited by record and hash), practitioner (practitioner and grey literature such as vendor docs, books, talks and open-source code, saying who wrote it and what they sell, never the only support for a default) and stakeholder (the person and customers: interviews, decisions, values; only a person states a value). A schema that needs a method refers to that file with $ref, and code reads the list as RESEARCH_METHODS from packages/naive/src/records/research-methods.ts. reference.schema.json requires method on every reference, so a reference with none fails validate.ts. scripts/reference-methods.ts filled it on the 56 references written before, from each one's kind (standard and law as standards, paper as scientific, book and article as practitioner, conversation as stakeholder) or, for a dataset, its id, and fails on a reference no rule places. The find-reference skill says how to work each method and the generic research skill names them. kind says what a source is and method how it was found.",
+      "why": "Torian on 2026-11-28 (roles plan, step 5): research in Naive follows a fixed enumeration of methods instead of hand-typed reference lists, so a role's research field and every reference share one list. The basis is evidence-based management, which draws on four sources (scientific literature, organizational data, practitioners' expertise and stakeholders' values, after CEBMa), with Naive's standards-first rule ahead of them.",
+      "related": [
+        "EE-014",
+        "EE-099"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/records/research-method.schema.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "scripts/reference-methods.ts",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
+      "id": "EE-229",
+      "date": "2026-11-28",
+      "status": "in-force",
+      "decision": "Naive has one role record and one role library. packages/naive/src/records/role.schema.json replaces role-template.schema.json and venture-role.schema.json: a role has an id, a name, a kind (person, agent or either) and a description; an agent or either role also carries its function, grantable classes, default tier, lint suites, verifier and skill; a person role carries person_kind, founder and owns_when_solo; and the fields later steps fill are optional (status, merged_from, onet, pcf, reads, artifacts, standards, research, level). Every role is a module at packages/naive/src/roles/<id>/, a role.json and a SKILL.md, and a venture's own roles at <venture>/governance/roles/<id>/role.json overlay the library by id. The 14 role templates moved into the library; domain-lead joined it from the agent capability register because decision rights name it; business-lead is superseded by the four leads and operations-finance-lead by finance-agent (EE-123), whose classes it held; the person roles from the venture role register joined it with kind person. The registers, their rendered page and script, and the vault-era role files are archived in docs/archive/roles-2026-11/. loadRoles and knownRoles in packages/naive/src/engine/agents/roles.ts are the one loader every reader uses, and packages/naive/src/checks/check-roles.ts checks every role file: it validates, its id matches its folder, its verifiers are known roles and never itself, ids and aliases are unique, and a person role grants no agent tier. This is step 1 of the roles as agents plan (docs/design/ROLES_AS_AGENTS_2026-11-28.md), whose later steps are EE-230 to EE-239.",
+      "why": "Torian on 2026-11-28 decided that every role in Naive and in a business is a role module in one role library, callable by a lead agent or a person, with person roles as modules that are never deployed as agents, and that roles link to PCF elements, artifacts and deployments. Before this, roles lived in three shapes that no one check read together: role templates with a schema, an agent capability register and a venture role register with none of their own fields checked, and vault-era Markdown files no code read. Ten readers scanned those folders separately, and decision rights named owners no check knew.",
+      "related": [
+        "EE-082",
+        "EE-123",
+        "EE-124",
+        "EE-187",
+        "EE-213"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/records/role.schema.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/checks/check-roles.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/records/role-template.schema.json",
+          "root": "repo",
+          "expect": "absent"
+        }
+      ]
     }
   ]
 }

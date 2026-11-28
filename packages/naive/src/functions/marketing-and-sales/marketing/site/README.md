@@ -89,3 +89,5 @@ Next work, logged in EE-062:
 - derive the recommended sitemap and the order a visitor meets information from those priorities, beyond suggested pages;
 - write skills and kits for organizing marketing content (MDX, EE-044);
 - draft missing marketing records from what the site already says.
+
+`plan.ts --write` and `presence.ts score --venture` write their records (`operations/marketing/sitemap.json`, `operations/marketing/site-presence.json`) through the shared record writer, `packages/naive/src/store/record-write.ts`. It checks each against its schema and logs it as written by the program (`naive-planner`, `naive-site-presence`), or by the acting agent when the environment names one, and never by a person.

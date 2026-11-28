@@ -17,14 +17,14 @@
 // Plans are a person's. The router never serves _eval/. Its recipe route (router/recipes.ts) calls loadPlan,
 // loadEvalSet and scoreExperiment to score a recipe write against the tip, scoreHoldout when a person accepts the
 // tip, and forwardSet and scoreForward when monitor runs (build plan item 8).
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { dirname } from "node:path";
-import { actingAgent, agentFromEnv, entries, record } from "../../core/provenance.ts";
+import { existsSync, readFileSync } from "node:fs";
+import { actingAgent, agentFromEnv, entries } from "../../core/provenance.ts";
 import { sessions, spans } from "../../core/instrumentation.ts";
 import { ventureFile } from "../../core/venture-paths.ts";
 import { readDataModel, globRegExp, venturePaths } from "../../records/index.ts";
 import { validateValue } from "../../records/validate.ts";
 import { readAsOf } from "../../store/as-of.ts";
+import { writeRecord } from "../../store/record-write.ts";
 import { draft as draftPlan } from "../generators/eval-plan.ts";
 import { LOCAL_LIBRARY, LOCAL_ROOT, dedupeSignals, fill, libraries, mergeTypes, resolveType, signalsOf, splitRange, typesIn } from "../signals.ts";
 import { baselineRecord, forecastOutcome, recipeInput, settledRecord, timeMs } from "./outcomes.ts";
@@ -227,12 +227,8 @@ export async function planRecipe(dir: string, pattern: string, o: PlanOptions = 
 
   const agentOf = agentFromEnv("person", "cli", { id: o.by });
   const setRel = `${EVAL}/${plan.sha}/eval-set.json`, planRel = `${pattern}.plan.json`;
-  mkdirSync(dirname(evalFile(dir, plan.sha)), { recursive: true });
-  writeFileSync(evalFile(dir, plan.sha), JSON.stringify(set, null, 2) + "\n");
-  record(dir, { entity: setRel, activity: "create", agent: agentOf, note: `eval set for ${pattern}, plan ${plan.sha}` });
-  mkdirSync(dirname(planFile(dir, pattern)), { recursive: true });
-  writeFileSync(planFile(dir, pattern), JSON.stringify(plan, null, 2) + "\n");
-  record(dir, { entity: planRel, activity: previous ? "write" : "create", agent: agentOf, derived_from: [setRel] });
+  writeRecord(dir, setRel, set, { activity: "create", agent: agentOf, note: `eval set for ${pattern}, plan ${plan.sha}` });
+  writeRecord(dir, planRel, plan, { activity: previous ? "write" : "create", agent: agentOf, derived_from: [setRel] });
   return { ok: true, plan, file: planRel, eval_set: `${EVAL}/${plan.sha}/`, rows: count, problems };
 }
 
