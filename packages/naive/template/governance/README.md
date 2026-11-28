@@ -42,15 +42,10 @@ venture-template/
 │   ├── product.md              ← Product pillar reference
 │   ├── brand.md                ← Brand pillar reference
 │   └── business.md             ← Business pillar reference
-├── detectors/              ← Naive's default detectors, one per threshold (below)
-└── roles/
-    ├── README.md               ← Index of role files + status
-    ├── ceo.md                  ← Chief Executive — cross-pillar lead
-    ├── (cto.md — Product lead — to-author)
-    ├── (cmo.md — Brand lead — to-author)
-    ├── (coo.md — Business lead — to-author)
-    └── (founder.md, chief-of-staff.md, etc. — to-author)
+└── detectors/              ← Naive's default detectors, one per threshold (below)
 ```
+
+Roles are not in this folder. Every role, agent or person, is one module in the role library at `packages/naive/src/roles/<id>/` (EE-229), and a venture's own roles at `<venture>/governance/roles/<id>/role.json` overlay it. The role templates, the role registers and the vault-era role files that sat here are archived in `docs/archive/roles-2026-11/`.
 
 ## Default detectors
 
@@ -93,6 +88,7 @@ Model steps have no detector here: each step's line is its own `threshold` in th
 ## Status
 
 - **2026-05-14:** Initial scaffold. index + 3 pillars + 1 role (CEO) authored. Other roles + product-type-specific variants queued.
+- **2026-11-28:** The roles moved to the role library, `packages/naive/src/roles/` (EE-229).
 
 ## Where ideas about this template go
 

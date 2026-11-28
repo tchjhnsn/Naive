@@ -1,0 +1,9 @@
+{
+  "id": "general-partner",
+  "name": "General partner",
+  "kind": "person",
+  "description": "Runs a fund or firm: sets the thesis, raises from limited partners, makes and manages investments",
+  "person_kind": "investor",
+  "founder": true,
+  "owns_when_solo": true
+}

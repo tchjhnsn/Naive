@@ -16,7 +16,7 @@ expect("the repository's function modules pass", real.status === 0, real.stdout 
 
 const copy = (): string => {
   const d = mkdtempSync(join(tmpdir(), "check-functions-"));
-  for (const p of ["packages/naive/src/functions", "packages/naive/src/records", "packages/naive/template/governance", "packages/naive/src/engine/need-now.json"]) cpSync(join(repo, p), join(d, p), { recursive: true });
+  for (const p of ["packages/naive/src/functions", "packages/naive/src/records", "packages/naive/src/roles", "packages/naive/template/governance", "packages/naive/src/engine/need-now.json"]) cpSync(join(repo, p), join(d, p), { recursive: true });
   return d;
 };
 type Row = { class: string, level: string, approver?: string, examples: string[] };

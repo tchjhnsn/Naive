@@ -11,7 +11,7 @@ Use this page to find your way around a venture folder and to keep it in a shape
 
 ## The venture folder
 
-`mentura init` creates this:
+`naive init` creates this:
 
 ```text
 my-venture/
@@ -84,7 +84,7 @@ node packages/naive/src/engine/structure.ts ~/ventures/wr-structure
 | `kits` | Mentura kits, each naming the one package it extends. The venture must use that package |
 | `layers` | The older layer layout. A layer set to `false` makes need-now report its records as "layer off" |
 
-`mentura venture read` returns this manifest, with the function owners and packages filled in when venture.json leaves them out. `node packages/naive/src/engine/structure.ts <venture dir>` exits 1 when venture.json names an unknown package or function, a function without an owner, or a kit on a package the venture does not use. `parent` names the venture a nested venture belongs to.
+`naive venture read` returns this manifest, with the function owners and packages filled in when venture.json leaves them out. `node packages/naive/src/engine/structure.ts <venture dir>` exits 1 when venture.json names an unknown package or function, a function without an owner, or a kit on a package the venture does not use. `parent` names the venture a nested venture belongs to.
 
 ## Private folders
 

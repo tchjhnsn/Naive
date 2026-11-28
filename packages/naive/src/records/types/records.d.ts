@@ -1562,7 +1562,7 @@ export type Detector = {
   description?: string;
   /** Where the call is made, such as a module and the setting it reads, for example packages/naive/src/engine/gate.ts confidence_below. */
   call_site?: string;
-  /** Optional: the role a yes call is put to as an open decision, by id: a role in the roles registers or a role template (governance/roles/<id>.json). A seam detector names the lead whose portfolio spans the seam, such as finance-lead for tools against spend. It changes who is asked, not who decides: only a person settles the decision, and settling it resolves the call's trial. */
+  /** Optional: the role a yes call is put to as an open decision, by id: a role in the role library (packages/naive/src/roles/) or the venture's governance/roles/<id>/role.json. A seam detector names the lead whose portfolio spans the seam, such as finance-lead for tools against spend. It changes who is asked, not who decides: only a person settles the decision, and settling it resolves the call's trial. */
   assign_to?: string;
   /** The impact tier of the question type, from operating-rules.json. It sets the default costs: low makes a miss and a false alarm cost the same, and costly makes a miss cost three times a false alarm. one_way_door has no criterion: every call goes to a person, the ledger still records each trial, and no criterion change is ever proposed. */
   tier: "low" | "costly" | "one_way_door";
@@ -1750,12 +1750,12 @@ export type ElementOwners = {
   /** Per element, by its APQC hierarchy id (3.0 for a category, 3.5 for a process group, 3.5.1.6 for an activity): the role or the person accountable for it */
   owners: {
     [key: string]: {
-      /** A role id: a role template in packages/naive/template/governance/roles/ or the venture's governance/roles/, or a function agent, <function>-agent. A role whose template has default_tier person is a person; the rest are agents */
+      /** A role id: a role in the role library (packages/naive/src/roles/) or the venture's governance/roles/, or a function agent, <function>-agent. A person role (kind person) is a person; the rest are agents */
       role?: string;
       /** A person by name, when the accountable owner is a named person rather than a role */
       person?: string;
     } & ({
-      /** A role id: a role template in packages/naive/template/governance/roles/ or the venture's governance/roles/, or a function agent, <function>-agent. A role whose template has default_tier person is a person; the rest are agents */
+      /** A role id: a role in the role library (packages/naive/src/roles/) or the venture's governance/roles/, or a function agent, <function>-agent. A person role (kind person) is a person; the rest are agents */
       role: string;
     } | {
       /** A person by name, when the accountable owner is a named person rather than a role */
@@ -3434,7 +3434,7 @@ export type Layer = {
   name: string;
 };
 
-/** One lead's plan (lead agents design, "Who writes what"), at operations/leads/<lead>.json (route operations/lead/[id]); the file name avoids *.plan.json, which the evidence/eval-plan route matches. A lead is a role with a portfolio (packages/naive/template/governance/roles/<lead>.json). The plan names the lead, the functions of its portfolio it plans for, the telos measures it is bound to (foundation/telos measures[].id), its current bets, each citing measure ids and handoff ids, and how often it reviews them. A lead writes only this plan, decisions/* and operations/handoff/*; packages/naive/src/checks/check-team.ts refuses a lead in a team plan with no plan binding a measure. */
+/** One lead's plan (lead agents design, "Who writes what"), at operations/leads/<lead>.json (route operations/lead/[id]); the file name avoids *.plan.json, which the evidence/eval-plan route matches. A lead is a role with a portfolio (packages/naive/src/roles/<lead>/role.json). The plan names the lead, the functions of its portfolio it plans for, the telos measures it is bound to (foundation/telos measures[].id), its current bets, each citing measure ids and handoff ids, and how often it reviews them. A lead writes only this plan, decisions/* and operations/handoff/*; packages/naive/src/checks/check-team.ts refuses a lead in a team plan with no plan binding a measure. */
 export type LeadPlan = {
   /** The lead's role id, a role template with a portfolio; the file name without .json */
   lead: string;
@@ -5002,7 +5002,7 @@ export type People = {
   people: {
     id: string;
     name: string;
-    /** A role id from packages/naive/template/governance/roles/venture-roles.json */
+    /** A role id: a role a person can hold (kind person or either) in the role library, packages/naive/src/roles/ */
     role: string;
     /** The functions this person owns. In the structured layout (EE-086) hats are read from the org chart in venture.json and not stored here */
     hats?: ("strategy" | "products" | "marketing-and-sales" | "supply-chain" | "service-delivery" | "customer-service" | "human-capital" | "it" | "finance" | "assets" | "risk-and-compliance" | "external-relationships" | "capabilities")[];
@@ -6188,33 +6188,85 @@ export type Risk = {
   note?: string;
 };
 
-/** One role a venture can install, at packages/naive/template/governance/roles/<id>.json. The founder is the chief delegator and holds all authority; every other role holds only what is granted to it in governance/delegation.json, and only from the classes it lists as grantable. Its work is verified by another role (verified_by), never by itself; only the chief delegator has no verifier. Checked by packages/naive/src/checks/check-delegation.ts. */
-export type RoleTemplate = {
-  /** Matches the file name */
+/** One role module (EE-229): a role an agent or a person holds, at packages/naive/src/roles/<id>/role.json in the role library beside the role's SKILL.md, overlaid by a venture's own roles at <venture>/governance/roles/<id>/role.json. A person role (kind person) is never deployed as an agent. The founder is the chief delegator and holds all authority; every other role holds only what is granted to it in governance/delegation.json, and only from the classes it lists as grantable. An agent's work is verified by another role (verified_by), never by itself; only the chief delegator has no verifier. Checked by packages/naive/src/checks/check-roles.ts and packages/naive/src/checks/check-delegation.ts. */
+export type Role = {
+  /** Matches the role's folder name */
   id: string;
   name: string;
-  /** Other names for this role (such as cto for architect); the id is canonical and matches agent-roles.json and decision-rights.json */
+  /** Other names for this role (such as cto for architect); the id is canonical. No alias is another role's id or alias */
   aliases?: string[];
+  /** Who holds the role: a person, an agent or either. A person role is never deployed as an agent, and its default_tier, when it has one, is person */
+  kind: "person" | "agent" | "either";
+  /** Optional: durable for a library role (the default); temporary for a role a lead wrote for one venture, which only a person makes durable (not built) */
+  status?: "durable" | "temporary";
+  /** Optional: the roles this one merges, by id (not built) */
+  merged_from?: string[];
+  /** Optional: who wrote a temporary role (not built) */
+  proposed_by?: string;
+  /** Optional: when a temporary role was written, an ISO date-time (not built) */
+  created_at?: string;
   /** True for the founder only: the root of every delegation chain */
   chief_delegator?: boolean;
   /** The function the role serves: an id in packages/naive/src/functions/departments.json (such as products, marketing-and-sales or human-capital), or all for the chief delegator and for a lead (a role with a portfolio). packages/naive/src/checks/check-delegation.ts fails on any other value */
-  function: string;
+  function?: string;
   /** A lead only (lead agents design, 2026-11-08): the functions, ids in packages/naive/src/functions/departments.json, whose cross-function work this lead plans and verifies. A role with a portfolio is a lead: its function is all, it may be granted no never-redelegated class and no one-way door, and the leads' portfolios cover every function exactly once (packages/naive/src/checks/check-delegation.ts) */
   portfolio?: string[];
   /** A lead only: the telos measure kinds it is bound to by default (primary means the telos's primary measure). A venture binds the lead to concrete measure ids in its lead plan (operations/lead/[id]); the defaults only route a task whose measure no lead plan binds (packages/naive/src/engine/route-task.ts) */
   default_measure_kinds?: ("primary" | "revenue" | "usage_or_adoption" | "cost_or_time_saved" | "compliance_met" | "learning" | "flow_and_lead_time" | "impact")[];
-  description?: string;
+  description: string;
   /** Decision classes (from decision-rights.json) this role may be granted; the chief delegator lists none, since it holds all */
-  grantable_classes: string[];
-  default_tier: "person" | "frontier" | "workhorse" | "none";
+  grantable_classes?: string[];
+  /** Who runs the role by default: person (a human, who holds accountability), frontier (the strongest available model, for high-leverage, novel, low-volume work), workhorse (a strong, cheaper model for high-volume, well-specified work) or none (deterministic scripts and CI) */
+  default_tier?: "person" | "frontier" | "workhorse" | "none";
   /** Lint routes it runs, such as marketing/brand-lint */
-  lint_suites: string[];
+  lint_suites?: string[];
   /** The role that verifies its work; null only for the chief delegator */
-  verified_by: string | null;
+  verified_by?: string | null;
   /** Further verifiers for some work, such as the founder for spend */
   also_verified_by?: string[];
-  /** Path from the repository root to the role's skill */
-  skill: string;
+  /** Path from the repository root to the skill the role's work draws on; the role's own SKILL.md beside role.json says how to act as the role */
+  skill?: string;
+  /** A person role only: what kind of part the person plays in the venture (EE-082) */
+  person_kind?: "builder" | "investor" | "operator" | "advisor" | "governor";
+  /** A person role only: whether the holder is a founder of the venture, with a file in people/founders/ and a place in the founder agreement */
+  founder?: boolean;
+  /** A person role only: whether a person alone in this role owns every function the venture imports */
+  owns_when_solo?: boolean;
+  /** Optional: the O*NET occupations the role matches (filled from EE-232) */
+  onet?: {
+    /** An O*NET-SOC code, such as 11-3031.00 */
+    code: string;
+    title: string;
+    /** On what basis the occupation was matched */
+    basis: string;
+    /** Who matched it */
+    by: string;
+  }[];
+  /** Optional: the APQC PCF elements the role answers for, each with its RACI part (filled from EE-232) */
+  pcf?: {
+    /** A hierarchy id in packages/naive/src/functions/pcf.json */
+    id: string;
+    raci: "responsible" | "accountable" | "consulted" | "informed";
+  }[];
+  /** Optional: the record types the role reads. What it depends on is derived from these against other roles' artifacts, never typed */
+  reads?: string[];
+  /** Optional: what the role produces, each a record type in the data model or a document kind in packages/naive/src/functions/documents.json (filled from EE-230) */
+  artifacts?: ({
+    record_type: string;
+  } | {
+    document_kind: string;
+  })[];
+  /** Optional: the standards the role works to, as reference ids */
+  standards?: string[];
+  /** Optional: how the role researches (filled from EE-233) */
+  research?: {
+    /** The research methods in the order the role reaches for them */
+    methods: ("standards" | "scientific" | "organizational" | "practitioner" | "stakeholder")[];
+    /** The questions the role asks first */
+    questions?: string[];
+  };
+  /** Optional: the role's default responsibility level on SFIA's scale of 1 to 7 */
+  level?: number;
 };
 
 /** Renamed routes (EE-032). Routes are an API that agents and scripts depend on, so a renamed record keeps its old route as an alias: the router follows it and answers with a deprecation note. Remove an alias only after the version it was deprecated in has been out for a release. packages/naive/src/interfaces/test.ts checks that every alias points at a route that exists. */
@@ -7683,22 +7735,6 @@ export type VentureCore = {
   lifecycle_playbook?: string;
 };
 
-/** The roles a person can hold in a venture (packages/naive/template/governance/roles/venture-roles.json), as distinct from the agent roles beside it. create-venture asks for one; people/people.json records who holds which. */
-export type VentureRole = {
-  version: string;
-  note?: string;
-  roles: {
-    id: string;
-    name: string;
-    kind: "builder" | "investor" | "operator" | "advisor" | "governor";
-    description: string;
-    /** Whether the holder is a founder of this venture, with a file in people/founders/ and a place in the founder agreement */
-    founder: boolean;
-    /** Whether a person alone in this role owns every function the venture imports */
-    owns_when_solo: boolean;
-  }[];
-};
-
 /** The kinds of venture create-venture scaffolds (packages/naive/src/engine/venture-types.json). A venture's type decides its starting packages, its first decisions, the functions it imports and the roles a person can hold in it. venture.json names its type. */
 export type VentureTypes = {
   version: string;
@@ -7709,7 +7745,7 @@ export type VentureTypes = {
     description: string;
     /** Words a founder might use for it; the classifier reads them */
     examples: string[];
-    /** Role ids from packages/naive/template/governance/roles/venture-roles.json a person can hold in this type */
+    /** Role ids from the role library (packages/naive/src/roles/) a person can hold in this type */
     roles: string[];
     default_role: string;
     /** Functions the type imports from the start (packages/naive/src/functions/departments.json); a solo founder owns them all */

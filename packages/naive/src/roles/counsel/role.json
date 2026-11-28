@@ -1,0 +1,14 @@
+{
+  "id": "counsel",
+  "name": "Counsel",
+  "kind": "either",
+  "function": "risk-and-compliance",
+  "description": "Drafts and reviews terms and public claims; outside counsel for regulated matters.",
+  "grantable_classes": [],
+  "default_tier": "frontier",
+  "lint_suites": [
+    "legal/lint"
+  ],
+  "verified_by": "founder",
+  "skill": "packages/naive/src/functions/human-capital/skills/cofounder-structure/SKILL.md"
+}
