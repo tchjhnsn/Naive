@@ -1,0 +1,58 @@
+{
+  "id": "market-research-analyst",
+  "name": "Market research analyst",
+  "kind": "agent",
+  "status": "durable",
+  "function": "marketing-and-sales",
+  "description": "Answers for APQC process group 3.1, Understand markets, customers, and capabilities: analyzes the market, the customers and the competition from interviews and public sources, and ranks the market opportunities with the evidence behind each. A person chooses which opportunity the venture pursues.",
+  "grantable_classes": [],
+  "default_tier": "workhorse",
+  "lint_suites": [],
+  "verified_by": "growth-lead",
+  "skill": "packages/naive/src/functions/marketing-and-sales/skills/understand-markets-customers-and-capabilities/SKILL.md",
+  "pcf": [
+    {
+      "id": "3.1",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "13-1161.00",
+      "title": "Market Research Analysts and Marketing Specialists",
+      "basis": "Process group 3.1 is customer and market intelligence analysis and evaluating and prioritizing market opportunities, which is market research; matched by the group's processes against the occupation title in O*NET 31.0, the first suggestion check-roles --complete gave.",
+      "by": "agent, EE-241 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "market-anatomy",
+    "industry-anatomy",
+    "icp",
+    "competitor",
+    "customer",
+    "opportunity",
+    "validation-interview"
+  ],
+  "artifacts": [
+    {
+      "document_kind": "memo"
+    }
+  ],
+  "standards": [
+    "apqc-pcf-cross-industry",
+    "moore-1991-crossing-the-chasm",
+    "naics-2022"
+  ],
+  "research": {
+    "methods": [
+      "standards",
+      "stakeholder",
+      "scientific"
+    ],
+    "questions": [
+      "Which segment has the problem worst, by the interviews?",
+      "How large is each opportunity, and from which source?"
+    ]
+  },
+  "level": 4
+}
