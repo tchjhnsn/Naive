@@ -9,6 +9,7 @@ import { existsSync, mkdtempSync, readFileSync, utimesSync, writeFileSync } from
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { readDataModel } from "../../records/index.ts";
+import { writeRecord } from "../../store/record-write.ts";
 
 const repo = new URL("../../../../..", import.meta.url).pathname;
 const ws = mkdtempSync(join(tmpdir(), "freshness-test-"));
@@ -108,7 +109,8 @@ f = await F.freshness(dir);
 expect("verify: a record checked and still right is fresh again, unchanged", v.ok && item(f, cardPath).state === "fresh" && /freshness log: verified/.test(item(f, cardPath).basis), item(f, cardPath));
 
 // Where-used drift: a child record that repeats a fact goes stale when the parent changes.
-writeFileSync(join(dir, "profile.md"), "Clinic booking for solo clinics.\n");
+// init logs profile.md, so the founder's edit is logged too: an edit outside the log would read as older than the card.
+writeRecord(dir, "profile.md", "Clinic booking for solo clinics.\n", { agent: { kind: "person", via: "cli", id: "founder" }, note: "the profile names the product" });
 writeFileSync(join(dir, "knowledge/where-used.json"), JSON.stringify({ facts: [{ id: "product-name", parent: { route: "product/booking", pointer: "/name" }, children: [
   { source: "venture", path: "profile.md", match: { kind: "text", template: "{value}" }, status: "live", deliver: "agent" },
   { source: "venture", path: "public/index.md", match: { kind: "text", template: "{value}" }, status: "live", deliver: "person" }] }] }));

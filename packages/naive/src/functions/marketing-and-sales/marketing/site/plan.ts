@@ -16,12 +16,13 @@
 //
 //   node plan.ts <venture> [--raising] [--hiring] [--contributors] [--write] [--json]
 
-import { existsSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 import { customerNeeds, factsOf, MATRIX, needs, typesOf, weights } from "./presence.ts";
 import type { JevAnswers } from "./presence.ts";
 import { ventureFile } from "../../../../core/venture-paths.ts";
 import { filesOf, icpProfiles } from "../../../../engine/foundation.ts";
+import { writeRecord, programWriter } from "../../../../store/record-write.ts";
 import type { IcpProfile, MarketingSitemap, Product, Venture } from "../../../../records/types/records.d.ts";
 
 /** A page of the planned sitemap. */
@@ -120,7 +121,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   if (!dir || !existsSync(join(dir, "venture.json"))) { console.error("usage: node plan.ts <venture> [--raising] [--hiring] [--contributors] [--write] [--json]"); process.exit(2); }
   const has = (n: string) => process.argv.includes(`--${n}`);
   const r = plan(dir, { flags: Object.fromEntries(["raising", "hiring", "contributors"].filter(has).map((k) => [k, true])) });
-  if (has("write")) { mkdirSync(dirname(ventureFile(dir, SITEMAP)), { recursive: true }); writeFileSync(ventureFile(dir, SITEMAP), JSON.stringify(r, null, 2) + "\n"); }
+  if (has("write")) writeRecord(dir, SITEMAP, r, { agent: programWriter("naive-planner"), activity: existsSync(ventureFile(dir, SITEMAP)) ? "write" : "create", note: `planned the sitemap (${r.planned_by})` });
   if (has("json")) console.log(JSON.stringify(r, null, 2));
   else {
     console.log(`${r.name}: site planned for ${r.audience.offered_to.map((p) => p.id).join(", ") || "no ICP yet"} (${r.audience.types.map((t) => t.label).join(", ") || "customers in general"})${r.audience.partner_led ? "; partner-led" : ""}`);

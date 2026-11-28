@@ -35,9 +35,11 @@ const ws = mkdtempSync(join(tmpdir(), "hosted-runtime-"));
 const dir = join(ws, "kettle");
 const init = spawnSync("node", [join(repo, "packages/naive/src/engine/init-venture.ts"), dir, "kettle", "--layers", "purpose"], { encoding: "utf8" });
 if (init.status !== 0) throw new Error(init.stderr);
+// A whole handoff: run-handoff writes it back through the shared record writer, which refuses one its schema refuses.
+const HANDOFF = { title: "Hosted runtime test", venture: "v", role: "builder", brief: "h.md", decision_classes: ["implementation-detail"], status: "ready", attempts: 0, max_attempts: 3, run_cap: "2h" };
 const handoffs = ventureFile(dir, "operations/handoffs");
 mkdirSync(handoffs, { recursive: true });
-writeFileSync(join(handoffs, "h1.json"), JSON.stringify({ id: "h1", done_criteria: [{ id: "c1", kind: "conformance", check: "true" }] }, null, 2) + "\n");
+writeFileSync(join(handoffs, "h1.json"), JSON.stringify({ ...HANDOFF, id: "h1", done_criteria: [{ id: "c1", kind: "conformance", check: "true" }] }, null, 2) + "\n");
 const judgeScript = join(ws, "judge.ts");
 writeFileSync(judgeScript, "let s='';process.stdin.on('data',(d)=>s+=d).on('end',()=>{const r=JSON.parse(s);console.log(JSON.stringify({model:'cmd',answers:Object.fromEntries(Object.keys(r.questions).map((k)=>[k,'from the command']))}));});\n");
 process.env.NAIVE_JUDGE_CMD = `node ${judgeScript}`;
@@ -81,7 +83,7 @@ ok("hosted: run-handoff refuses bash done-criteria without a sandbox", HOSTED.te
 
 // An effect criterion runs on the venture runtime, so hosted it needs no sandbox (EE-161).
 writeFileSync(join(dir, "done-check.ts"), "export default async () => ({ passed: true, output: 'ran on the venture runtime' });\n");
-writeFileSync(join(handoffs, "h2.json"), JSON.stringify({ id: "h2", done_criteria: [{ id: "e1", kind: "conformance", runs: "effect", check: "done-check.ts" }] }, null, 2) + "\n");
+writeFileSync(join(handoffs, "h2.json"), JSON.stringify({ ...HANDOFF, id: "h2", done_criteria: [{ id: "e1", kind: "conformance", runs: "effect", check: "done-check.ts" }] }, null, 2) + "\n");
 const effectRun = await runHandoff(dir, "h2", { log: () => {} });
 ok("hosted: an effect done-criterion runs with no sandbox", effectRun.evidence.passed && effectRun.evidence.results[0]?.output === "ran on the venture runtime", JSON.stringify(effectRun.evidence.results));
 

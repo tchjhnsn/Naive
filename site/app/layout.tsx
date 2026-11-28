@@ -26,9 +26,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <Head
         backgroundColor={{ light: "#ffffff", dark: "#0a0a0a" }}
         color={{
-          hue: { light: 213, dark: 213 },
-          saturation: { light: 64, dark: 48 },
-          lightness: { light: 32, dark: 72 },
+          hue: { light: 0, dark: 0 },
+          saturation: { light: 0, dark: 0 },
+          lightness: { light: 4, dark: 93 },
         }}
       />
       <body>

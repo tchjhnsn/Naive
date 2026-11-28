@@ -26,6 +26,7 @@ import { artifactPath, catalog, climbTo, kind, outputPath, prerequisites, rung, 
 import { decisionFiles } from "./decisions.ts";
 import { gatherFacts, judge, requirementsIn } from "./prerequisites.ts";
 import type { Artifact, DocumentCatalog } from "../records/types/records.d.ts";
+import { writeRecordEffect, programWriter } from "../store/record-write.ts";
 
 /** What a render produced, or what stands in its way. */
 export type Rendered = { kind: string; rung: string; format: string; output?: string; record?: string; instructions: string[] };
@@ -121,7 +122,8 @@ export const render = (venture: string, kindId: string, want: string, { now = ne
     const cited = new Map([...found.values()].flat().map((s) => [s.path, s.body] as const));
 
     const out = outputPath(k.id, r.id, "md");
-    yield* fs.writeText(ventureFile(venture, out), md);
+    const agent = programWriter("naive-render");
+    yield* writeRecordEffect(venture, out, md, { agent, note: `naive render ${k.id}: the ${r.id}` });
     const record: Artifact = {
       id: `${k.id}-${r.id}`,
       kind: k.artifact_kind,
@@ -136,7 +138,7 @@ export const render = (venture: string, kindId: string, want: string, { now = ne
       output: { path: out, sha256: sha(md) },
     };
     const file = artifactPath(k.id, r.id);
-    yield* fs.writeText(ventureFile(venture, file), `${JSON.stringify(record, null, 2)}\n`);
+    yield* writeRecordEffect(venture, file, record, { agent, derived_from: [...cited.keys()], note: `naive render ${k.id}: the artifact record of the ${r.id}` });
     return { kind: k.id, rung: r.id, format: want, output: out, record: file, instructions: [
       `Wrote ${out}, the reading copy, and ${file}, the artifact record naming every record it cites.`,
       "Read it end to end, then approve it as a person. No rung above it is built until you have.",

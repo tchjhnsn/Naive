@@ -9,6 +9,6 @@ Purpose layer, second kit (EE-026). How probable it is that a venture is validat
 | Grading and score | `node packages/naive/src/checks/check-validation.ts <dir> [--json] [--score]`: GRADE levels per evidence item and record, data facts (Ellis share, retention levelling off, team gaps), and the validation score |
 | Skills | `skills/problem-validation/`, `skills/validation-score/` |
 | Templates | `templates/<sub-score>.md` for each record, plus `templates/problem-interview.md` |
-| References | `references/references.json` |
+| References | `references/references.json`, each naming the research method that found it (EE-233) |
 
 Sub-scores: problem, solution, product-market fit, pricing, go-to-market, team, operations readiness per MAD tier.

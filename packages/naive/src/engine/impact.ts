@@ -15,14 +15,15 @@
 //   node packages/naive/src/engine/impact.ts <venture dir> <decision id> [--json]
 //   mentura impact <decision> --venture <id>
 
-import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { decisionFile, propose, recordOf } from "./decisions.ts";
 import { HOME } from "./packages.ts";
-import { entries as provenance, type Entry } from "../core/provenance.ts";
+import { agentFromEnv, entries as provenance, type Entry } from "../core/provenance.ts";
 import { mark, notify } from "./stale.ts";
 import { layoutOf, logicalFiles, ventureFile } from "../core/venture-paths.ts";
 import { readDataModel } from "../records/index.ts";
+import { writeRecord } from "../store/record-write.ts";
 
 import type { DataModel, DecisionImpact, DecisionRecord } from "../records/types/records.d.ts";
 
@@ -111,7 +112,7 @@ export function impact(dir: string, id: string, { via = "framework", proposeFoll
     return { function: fn, affected_records: recs, stale: recs.filter((f) => marked.has(f)), note: null, proposed_decisions: proposed };
   });
   const out = { decision: id, version, changed, functions, built_at: stamp() };
-  writeFileSync(ventureFile(dir, at), JSON.stringify(out, null, 2) + "\n");
+  writeRecord(dir, at, out, { agent: agentFromEnv("agent", via, { id: "naive-impact" }), activity: prior ? "write" : "create", derived_from: [file], note: `impact map of ${why}` });
   return { ok: true, result: summary(at, functions, affected.length) };
 }
 
