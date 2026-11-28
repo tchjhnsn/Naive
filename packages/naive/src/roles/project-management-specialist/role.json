@@ -1,0 +1,64 @@
+{
+  "id": "project-management-specialist",
+  "name": "Project management specialist",
+  "kind": "agent",
+  "status": "durable",
+  "function": "strategy",
+  "description": "Answers for APQC process group 1.3, Develop and measure strategic initiatives: turns the strategy into initiatives with high-level measures, plans and tracks their execution as handoffs, and reviews and refines them against what the measures show. A person selects which initiatives run.",
+  "grantable_classes": [],
+  "default_tier": "frontier",
+  "lint_suites": [],
+  "verified_by": "strategy-lead",
+  "skill": "packages/naive/src/functions/strategy/skills/develop-and-measure-strategic-initiatives/SKILL.md",
+  "pcf": [
+    {
+      "id": "1.3",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "13-1082.00",
+      "title": "Project Management Specialists",
+      "basis": "Process group 1.3 is developing, evaluating, executing, reviewing and refining strategic initiatives and their project plans, which is project management work; matched by the group's processes against the occupation title in O*NET 31.0, from the suggestions check-roles --complete gave.",
+      "by": "agent, EE-239 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "goal",
+    "telos",
+    "exit-criteria",
+    "requirement",
+    "budget",
+    "time-box",
+    "lead-plan",
+    "constraints"
+  ],
+  "artifacts": [
+    {
+      "record_type": "goal"
+    },
+    {
+      "record_type": "handoff"
+    },
+    {
+      "document_kind": "brief"
+    }
+  ],
+  "standards": [
+    "apqc-pcf-cross-industry",
+    "baghai-coley-white-1999-alchemy-of-growth"
+  ],
+  "research": {
+    "methods": [
+      "standards",
+      "organizational",
+      "practitioner"
+    ],
+    "questions": [
+      "Which goal and measure does this initiative move?",
+      "What does the record show it has done so far, against its plan?"
+    ]
+  },
+  "level": 5
+}

@@ -15,9 +15,9 @@ The function's purpose: Find the people the venture is for, tell them clearly wh
 
 ## What you own
 
-Writes: customers (`customers/*`), sales opportunities (`sales/opportunities/*`), the brand (`marketing/brand`), the marketing design system (`marketing/design-system`), the site's sitemap (`marketing/sitemap`), its page content (`marketing/content/*`), each element of a page's words (`marketing/message/*`), the names the publish lint flags in public copy (`marketing/publish-terms`), the venture's markets (`markets/*`) and, for a fund, its deals (`deals/*`), plus `decisions/*` to raise a question and `operations/handoff/*` for progress and evidence on handoffs addressed to you.
+Writes: customers (`customers/*`), sales opportunities (`sales/opportunities/*`), the brand (`marketing/brand`), the marketing design system (`marketing/design-system`), the site's sitemap (`marketing/sitemap`), its public content variants (`marketing/content/*`), each element of a page's words (`marketing/message/*`), the names the publish lint flags in public copy (`marketing/publish-terms`), the venture's markets (`markets/*`) and, for a fund, its deals (`deals/*`), plus `decisions/*` to raise a question and `operations/handoff/*` for progress and evidence on handoffs addressed to you.
 
-Reads: every record. Public page content (`marketing/content`) is read-only through the router: you plan which variant each page needs in the sitemap, and an engineering agent writes the MDX (EE-065).
+Reads: every record. You write each public content variant the sitemap plans; an engineering agent builds the site from the sitemap, those variants and the brand, and does not decide what goes where (EE-065).
 
 Every write goes through the Naive router, which refuses anything the Writes line does not name, and holds a write the gate reserves for a person as a draft.
 
