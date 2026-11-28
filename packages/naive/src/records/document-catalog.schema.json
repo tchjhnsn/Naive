@@ -89,7 +89,7 @@
       "description": "The documents this framework is opinionated about. A kind a venture wants and the catalog lacks is a pull request, not a local invention.",
       "items": {
         "type": "object",
-        "required": ["id", "title", "function", "purpose", "audience", "artifact_kind", "highest_rung", "formats", "why_format", "sections"],
+        "required": ["id", "title", "function", "purpose", "audience", "artifact_kind", "highest_rung", "formats", "why_format", "style", "sections"],
         "additionalProperties": false,
         "properties": {
           "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
@@ -111,20 +111,36 @@
           "approves": { "type": "string", "description": "The role that approves it, when it is not the founder. A person either way." },
           "words_per_page": { "type": "integer", "minimum": 1, "description": "An unvalidated prior: about how many words belong on one page or one slide of this kind. A venture overrides it in naive.config.json." },
           "pages": { "type": "integer", "minimum": 1, "description": "An unvalidated prior: about how many pages or slides this kind runs to." },
+          "style": {
+            "type": "array",
+            "minItems": 1,
+            "description": "The brand fields this kind is styled with (EE-230), each a field of the venture's brand (marketing/brand.json) or design system (marketing/design-system.json). Every kind names the brand voice, because every document's words follow it; a kind that is laid out also names the fonts, colors and marks it uses. The values stay in the venture's records and the catalog names only which fields apply, so whoever renders the kind, Naive or the harness, styles it from the venture's own brand. packages/naive/src/checks/check-documents.ts fails on a field the record type's schema does not define.",
+            "items": {
+              "type": "object",
+              "required": ["record_type", "field"],
+              "additionalProperties": false,
+              "properties": {
+                "record_type": { "enum": ["marketing-brand", "marketing-design-system"], "description": "The brand record type, as packages/naive/src/records/data-model.json names it." },
+                "field": { "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*$", "description": "A dotted path to a field that record type's schema defines, such as voice.rules or components." }
+              }
+            }
+          },
           "sections": {
             "type": "array",
             "minItems": 1,
-            "description": "The reading copy's sections, in order. Each names the record it reads, so every claim in the rendered document cites a record.",
+            "description": "The reading copy's sections, in order. Each names the record it reads, so every claim in the rendered document cites a record, or is a hole that says which fact no record holds yet.",
             "items": {
               "type": "object",
-              "required": ["id", "title", "from"],
+              "required": ["id", "title"],
+              "oneOf": [{ "required": ["from"] }, { "required": ["hole"] }],
               "additionalProperties": false,
               "properties": {
                 "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
                 "title": { "type": "string", "minLength": 1 },
                 "from": { "type": "string", "minLength": 1, "description": "The logical path of the record it reads, such as foundation/problem.json. A path with * reads every record it matches, one block each." },
                 "field": { "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*$", "description": "A dotted path to a string or a list of strings in that record. Without it the section names the record and leaves the words to the writer." },
-                "optional": { "type": "boolean", "description": "True when a hole is left out instead of shown: a missing record, or a record with nothing in the field, leaves the section out rather than printing what is not recorded." }
+                "optional": { "type": "boolean", "description": "True when a hole is left out instead of shown: a missing record, or a record with nothing in the field, leaves the section out rather than printing what is not recorded." },
+                "hole": { "type": "string", "minLength": 1, "description": "In place of from: a fact the document needs that no record type holds yet, said in one plain sentence with the record that would hold it (EE-230). The reading copy always shows it as a hole, so the gap stays visible until a record type is added and the section reads it." }
               }
             }
           }

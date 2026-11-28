@@ -8,9 +8,10 @@
     { "path": ".cursor/rules/naive.mdc", "text": "---\ndescription: How to work in this Naive venture\nalwaysApply: true\n---\n\nRead AGENTS.md at the venture root, and the AGENTS.md of each folder down to the one you work in, before writing anything. Write records through the router (node packages/naive/src/interfaces/cli/mentura.ts), never by editing files, and never read _private/.\n\nWhen a repository's documentation and its existing code disagree, follow the conventions used in the existing code, and in your final reply point out each inconsistency you found between the documentation and the code.\n" }
   ],
   "skills": null,
+  "artifacts": [],
   "sources": [
     "https://docs.cursor.com/context/rules",
     "https://agents.md/"
   ],
-  "note": "Cursor reads AGENTS.md and project rules in .cursor/rules/. The adapter adds one rule that always applies and points at the AGENTS.md chain."
+  "note": "Cursor reads AGENTS.md and project rules in .cursor/rules/. The adapter adds one rule that always applies and points at the AGENTS.md chain. Its artifacts list is empty: Naive names no document tool of its own, so every format past Markdown is left to the agent (EE-230)."
 }
