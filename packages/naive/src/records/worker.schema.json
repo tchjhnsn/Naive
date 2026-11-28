@@ -32,7 +32,26 @@
     },
     "started_at": { "type": "string", "format": "date-time", "description": "When it was deployed" },
     "expires": { "type": "string", "format": "date-time", "description": "When its reach is gone: started_at plus the ttl. Required for a temporary worker. The default ttl is an unvalidated prior in packages/naive/src/engine/workers.json, overridden under workers in naive.config.json" },
-    "status": { "enum": ["proposed", "active", "suspended", "ended"], "description": "Its place in the statechart. Only active has reach" },
+    "plan": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "decision",
+    "candidate"
+   ],
+   "description": "The staffing plan that proposed it (EE-236): the decision and the candidate this worker is part of. naive staffing apply activates the workers of the candidate a person chose, and nobody changes it once the worker is proposed",
+   "properties": {
+    "decision": {
+     "type": "string",
+     "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "candidate": {
+     "type": "string",
+     "pattern": "^[a-z0-9][a-z0-9-]*$"
+    }
+   }
+  },
+  "status": { "enum": ["proposed", "active", "suspended", "ended"], "description": "Its place in the statechart. Only active has reach" },
     "deployed_by": { "type": "string", "minLength": 1, "description": "Who deployed it: a person, a lead (its reach bounded by the lead's portfolio) or a function agent (bounded by its own reach). A worker never deploys another" },
     "activated_by": { "type": "string", "minLength": 1, "description": "The person who activated it. Only a person activates a worker" },
     "activated_at": { "type": "string", "format": "date-time" },

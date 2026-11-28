@@ -84,7 +84,7 @@ The operating-rules loader and the ontology gate check a module or a handoff aga
 
 It registers `engine/gate-service.ts` as plain too: the gate as an Effect service, whose default runs `gate.ts`'s route rules, pins and role access, so it decides no term.
 
-`bypass-guard-test.ts` registers `packages/naive/src/engine/phase-gate.ts` (gate strength, EE-156) and its test as plain checks: they grade evidence by GRADE arithmetic, count interviews and compare levels with a policy's minimums, so no term is decided. It registers `packages/naive/src/engine/gate-calibration.ts` (EE-157) and its test as plain checks for the same reason: they compare anatomy cell values with listed values and numeric thresholds and raise levels by rule.
+`bypass-guard-test.ts` registers `packages/naive/src/engine/phase-gate.ts` (gate strength, EE-156) and its test as plain checks: they grade evidence by GRADE arithmetic, count interviews and compare levels with a policy's minimums, so no term is decided. It registers `packages/naive/src/engine/gate-calibration.ts` (EE-157) and its test as plain checks for the same reason: they compare anatomy cell values with listed values and numeric thresholds and raise levels by rule. It registers `packages/naive/src/engine/spec-gates.ts` (SAD's 0A to 1B gate questions, EE-236) as a plain check: it checks that named record fields are filled, listed values are present, counts meet a minimum and open decisions touch no listed path, so no term is decided.
 
 `bypass-guard-test.ts` registers `packages/naive/src/checks/check-owners.ts` and its test as plain checks: they resolve each element's owner by a fixed precedence and compare role ids, so no term is decided.
 
