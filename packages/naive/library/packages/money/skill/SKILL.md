@@ -22,7 +22,7 @@ Package `packages/naive/library/packages/money`. A venture function is a part of
 |---|---|---|
 | `money` | List of money accounts | `money-account` |
 | `money/[id]` | One money account | `money-account` |
-| `purpose/money/summary` | Cash, monthly flows and runway from the last sync; the only money record a model sees | `money-summary` |
+| `purpose/money/summary` | Cash, monthly flows and runway, from the last sync or written by the finance agent from the accounts and the budget; a model reads it and the accounts, never the transaction streams | `money-summary` |
 
 The schemas are listed in `packages/naive/library/packages/money/package.json`. Call `mentura_layout` with a route to get its schema, template, gate and what need-now says before you act.
 
