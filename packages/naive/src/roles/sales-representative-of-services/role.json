@@ -1,0 +1,60 @@
+{
+  "id": "sales-representative-of-services",
+  "name": "Sales representative of services",
+  "kind": "either",
+  "status": "durable",
+  "function": "marketing-and-sales",
+  "description": "Answers for APQC process group 3.5, Develop and manage sales plans: keeps every lead, opportunity, customer and account record true, prepares proposals, quotes and orders for the founder, and tracks partners. As an agent it never sends a message, presents a quote, signs or contacts anyone outside the venture.",
+  "grantable_classes": [],
+  "default_tier": "workhorse",
+  "lint_suites": [],
+  "verified_by": "growth-lead",
+  "skill": "packages/naive/src/functions/marketing-and-sales/skills/develop-and-manage-sales-plans/SKILL.md",
+  "pcf": [
+    {
+      "id": "3.5",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "41-3091.00",
+      "title": "Sales Representatives of Services, Except Advertising, Insurance, Financial Services, and Travel",
+      "basis": "Process group 3.5 is managing leads, opportunities, customers and accounts, proposals and quotes, orders and partners, which is the work of selling a venture's services; matched by the group's processes against the occupation title in O*NET 31.0. Kind either, because selling is a relationship a person owns: the founder sells and the agent keeps the record of every sale true.",
+      "by": "agent, EE-241 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "opportunity",
+    "customer",
+    "account",
+    "service-offer",
+    "marketing-message",
+    "publication-policy",
+    "validation-pricing",
+    "engagement"
+  ],
+  "artifacts": [
+    {
+      "record_type": "opportunity"
+    },
+    {
+      "record_type": "customer"
+    }
+  ],
+  "standards": [
+    "apqc-pcf-cross-industry",
+    "webster-wind-1972-buying-center"
+  ],
+  "research": {
+    "methods": [
+      "stakeholder",
+      "practitioner"
+    ],
+    "questions": [
+      "Where does this deal stand, by its record, and what is the next step?",
+      "Does this quote match the offer and price on record?"
+    ]
+  },
+  "level": 4
+}
