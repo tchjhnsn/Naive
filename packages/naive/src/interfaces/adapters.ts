@@ -4,7 +4,8 @@
 // harness. Mentura is the first, as Vercel is for Next.js; its adapter file lives in the app and is handed
 // in with NAIVE_PLATFORM_ADAPTER. Claude Code, Codex and Cursor adapt the framework through the venture's AGENTS.md and skills (packages/naive/src/interfaces/adapters/*.json):
 // adapt() writes the entry files a harness reads and copies the skills of the packages open now. An
-// adapter is verified when it passes the framework's tests: verify() runs them.
+// adapter is verified when it passes the framework's tests: verify() runs them, including that every format a
+// harness's documents map names is yielded by an entry of its artifacts list that uses the same tool (EE-230).
 //
 //   node packages/naive/src/interfaces/adapters.ts [--json]                        the adapters
 //   node packages/naive/src/interfaces/adapters.ts adapt <adapter> <venture dir>   write a harness's files into a venture
@@ -22,10 +23,10 @@ import { tmpdir } from "node:os";
 import { dirname, isAbsolute, join } from "node:path";
 import { CODE_OVER_DOCS } from "../core/code-over-docs.ts";
 import { ventureFile } from "../core/venture-paths.ts";
-import { adapt, adapters, byName, refresh, skillsFor } from "../engine/adapters.ts";
+import { adapt, adapters, byName, documentGaps, refresh, skillsFor } from "../engine/adapters.ts";
 import type { Adapter } from "../records/types/records.d.ts";
 
-export { adapt, adapters, refresh, skillsFor, STATE } from "../engine/adapters.ts";
+export { adapt, adapters, documentGaps, refresh, skillsFor, STATE } from "../engine/adapters.ts";
 
 const repo = new URL("../../../..", import.meta.url).pathname;
 /** An adapter as adapters() lists it: the record, where it was read from, and a platform adapter's folder. */
@@ -48,6 +49,8 @@ async function harnessSuite(a: Listed): Promise<Result[]> {
     t("the harness reaches the venture's AGENTS.md (it reads it, or an entry file imports or names it)", a.reads.includes("AGENTS.md") || a.files.some((f) => /(^|\s)@AGENTS\.md\b|AGENTS\.md/.test(f.text)));
     const root = readFileSync(join(dir, "AGENTS.md"), "utf8");
     t("the harness gets the rule that existing code wins over stale docs (EE-225), from an entry file or the venture's AGENTS.md", root.includes(CODE_OVER_DOCS) && (a.files.some((f) => f.text.includes(CODE_OVER_DOCS)) || a.reads.includes("AGENTS.md")));
+    const gaps = documentGaps(a);
+    t("every format in the documents map is yielded by an artifacts entry that uses the same tool (EE-230)", gaps.length === 0, gaps.join("; "));
     t("no entry file is private or outside the venture", a.files.every((f) => !f.path.startsWith("_private/") && !f.path.includes("..") && !f.path.startsWith("/")));
     const { call } = await import("../router/router.ts");
     const lay = await call({ venture: "adapted", workspace: ws, route: "foundation/problem", action: "layout" });

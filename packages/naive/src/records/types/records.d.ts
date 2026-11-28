@@ -217,6 +217,17 @@ export type Adapter = {
       /** What to watch for, in one plain sentence. */
       how?: string;
     } };
+  /** Every kind of artifact this harness can produce (EE-230), each with the formats it yields and the skill or tool that makes it. The document catalog says which formats a document takes and names no vendor; this list says how this harness makes them. Every format in documents must be yielded by an entry here that uses the same tool, which node packages/naive/src/interfaces/adapters.ts verify checks. An empty list says the harness has no tool Naive names, so every format past Markdown is left to the agent. */
+  artifacts?: {
+    /** The artifact kind as this harness names it, unique in the list. */
+    id: string;
+    /** The formats it yields, as the document catalog names them (xlsx beside them for a spreadsheet). */
+    formats: ("md" | "pdf" | "docx" | "pptx" | "xlsx" | "html" | "site")[];
+    /** The skill, tool or command the agent loads to make it in this harness. */
+    use: string;
+    /** What to watch for, in one plain sentence. */
+    how?: string;
+  }[];
   note?: string;
 };
 
