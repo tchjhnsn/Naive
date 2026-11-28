@@ -4094,6 +4094,44 @@
       ]
     },
     {
+      "id": "EE-243",
+      "date": "2026-11-28",
+      "status": "in-force",
+      "decision": "The service delivery function's APQC level 2 process groups that no role was responsible or accountable for each gain one library role at packages/naive/src/roles/<id>/, a role.json and a SKILL.md, named after the closest O*NET occupation: 5.1 general-and-operations-manager (O*NET 11-1021.00 General and Operations Managers, either); 5.2 operations-research-analyst (O*NET 15-2031.00 Operations Research Analysts, agent); 5.3 administrative-services-manager (O*NET 11-3012.00 Administrative Services Managers, agent); 5.4 business-operations-specialist (O*NET 13-1199.00 Business Operations Specialists, All Other, agent). Each role is durable, in the service-delivery function, accountable for its one process group and for nothing else, verified by product-lead, granted no decision class by default, and runs no lint suite. Its onet entry names the code, the exact title in packages/naive/src/functions/onet.json, the basis and who matched it, an agent not yet reviewed by a person. Its skill is the function's skill for that process group, and its reads, artifacts, standards and research methods come from the workflows of that group and from reference ids that exist. general-and-operations-manager is kind either, because the group's work is mostly decisions, commitments or relationships a person owns; the rest are agent roles. O*NET files the delivery of a service under no single occupation, so 5.4 takes the catch-all Business Operations Specialists, All Other until a venture names its service, and 5.3 takes the closest title, not an exact one; each role's basis says so. packages/naive/src/functions/pcf-roles.json is regenerated. This is step 11 of the roles as agents plan (docs/design/ROLES_AS_AGENTS_2026-11-28.md).",
+      "why": "Torian on 2026-11-28 (roles plan, step 11): the first cut of business roles is one role per APQC PCF level 2 process group that no role answers for, named after the best O*NET match, one function per pull request, so check-roles --complete reports no gap under the function.",
+      "related": [
+        "EE-229",
+        "EE-232",
+        "EE-233"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/roles/general-and-operations-manager/role.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/roles/operations-research-analyst/role.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/roles/administrative-services-manager/role.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/roles/business-operations-specialist/role.json",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
       "id": "EE-151",
       "date": "2026-11-19",
       "status": "in-force",
