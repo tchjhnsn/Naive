@@ -9,6 +9,7 @@
     {"id": "1.3", "roles": [{"role": "project-management-specialist", "raci": "accountable"}]},
     {"id": "1.4", "roles": [{"role": "financial-and-investment-analyst", "raci": "accountable"}]},
     {"id": "2.0", "roles": [{"role": "product-lead", "raci": "accountable"}, {"role": "architect", "raci": "responsible"}, {"role": "builder", "raci": "responsible"}, {"role": "product-design-lead", "raci": "responsible"}]},
+    {"id": "2.1", "roles": [{"role": "architectural-and-engineering-manager", "raci": "accountable"}]},
     {"id": "2.2", "roles": [{"role": "product-design-lead", "raci": "responsible"}]},
     {"id": "2.3", "roles": [{"role": "builder", "raci": "responsible"}]},
     {"id": "3.0", "roles": [{"role": "growth-lead", "raci": "accountable"}, {"role": "marketing-lead", "raci": "responsible"}]},
