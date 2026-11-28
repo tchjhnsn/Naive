@@ -1,0 +1,50 @@
+{
+  "id": "administrative-services-manager",
+  "name": "Administrative services manager",
+  "kind": "agent",
+  "status": "durable",
+  "function": "service-delivery",
+  "description": "Answers for APQC process group 5.3, Manage and Operate Service Delivery System: lists what each offer runs on with its owner, checks it before an engagement starts, works the queue day to day, and records what broke and why. A person buys anything and confirms a start.",
+  "grantable_classes": [],
+  "default_tier": "workhorse",
+  "lint_suites": [],
+  "verified_by": "product-lead",
+  "skill": "packages/naive/src/functions/service-delivery/skills/manage-and-operate-service-delivery-system/SKILL.md",
+  "pcf": [
+    {
+      "id": "5.3",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "11-3012.00",
+      "title": "Administrative Services Managers",
+      "basis": "Process group 5.3 is planning, starting, operating and assuring the delivery system, which in a small venture is the tools, accounts, environments and procedures that let an offer be delivered twice the same way, the supportive services this occupation plans and coordinates; matched by the group's processes against the occupation title in O*NET 31.0. It is the closest title, not an exact one.",
+      "by": "agent, EE-243 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "connection",
+    "service-offer",
+    "engagement",
+    "fixed-asset",
+    "supplier"
+  ],
+  "artifacts": [],
+  "standards": [
+    "apqc-pcf-cross-industry",
+    "google-sre-book"
+  ],
+  "research": {
+    "methods": [
+      "practitioner",
+      "organizational"
+    ],
+    "questions": [
+      "What does each live offer run on, and who owns each part?",
+      "Did the dry run pass, and what broke in it?"
+    ]
+  },
+  "level": 4
+}
