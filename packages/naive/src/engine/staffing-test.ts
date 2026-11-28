@@ -85,8 +85,10 @@ try {
     plans[0].deployments.map((d) => `${d.role}/${d.deployer}`).join() === "products-agent/product-lead,strategy-agent/strategy-lead", plans[0]);
   expect("library-roles proposes the library's roles for each function, never a lead or a person",
     plans[1].deployments.some((d) => d.role === "architect") && plans[1].deployments.every((d) => !(roles.get(d.role) as Role | undefined)?.portfolio && (roles.get(d.role) as Role | undefined)?.kind !== "person"), plans[1]);
-  expect("a function no library role serves falls back to its agent", planCandidates(shipped.staffing, ["supply-chain"], roles)[1].deployments[0]?.role === "supply-chain-agent");
-  expect("a candidate that proposes the same workers as an earlier one is dropped", distinct(planCandidates(shipped.staffing, ["supply-chain"], roles)).length === 1);
+  // A library with no role for supply chain, so the fallback holds whatever roles the shipped library gains (EE-242).
+  const unserved = new Map([...roles].filter(([, r]) => (r as Role).function !== "supply-chain" || Boolean((r as Role).portfolio)));
+  expect("a function no library role serves falls back to its agent", planCandidates(shipped.staffing, ["supply-chain"], unserved)[1].deployments[0]?.role === "supply-chain-agent");
+  expect("a candidate that proposes the same workers as an earlier one is dropped", distinct(planCandidates(shipped.staffing, ["supply-chain"], unserved)).length === 1);
   expect("the stages follow the gate, the decision and its workers",
     staffingState(false, null, []) === "specs-missing" && staffingState(true, null, []) === "ready-to-draft"
     && staffingState(true, { status: "open", candidates: [] }, []) === "awaiting-decision"
