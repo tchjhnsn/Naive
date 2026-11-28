@@ -1,0 +1,64 @@
+{
+  "id": "requirements-engineer",
+  "name": "Requirements engineer (Naive)",
+  "kind": "agent",
+  "function": "products",
+  "description": "Turns Naive's goals and decisions into requirements, each one stating what it serves and how it is verified, and keeps the requirements specification.",
+  "grantable_classes": [],
+  "default_tier": "frontier",
+  "lint_suites": [],
+  "verified_by": "product-manager",
+  "also_verified_by": [
+    "architect"
+  ],
+  "skill": "agents/requirements-engineer/SKILL.md",
+  "pcf": [
+    {
+      "id": "2.3.1.6",
+      "raci": "accountable"
+    },
+    {
+      "id": "2.3.1.3",
+      "raci": "responsible"
+    }
+  ],
+  "onet": [
+    {
+      "code": "15-1211.00",
+      "title": "Computer Systems Analysts",
+      "basis": "The role analyzes what a software system must do and writes it as requirements; matched by the role's description against the occupation title in O*NET 31.0.",
+      "by": "agent, EE-238 step 10 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "goal",
+    "requirement",
+    "product-capability",
+    "decision-record",
+    "constraints"
+  ],
+  "artifacts": [
+    {
+      "record_type": "requirement"
+    },
+    {
+      "document_kind": "requirements-spec"
+    }
+  ],
+  "standards": [
+    "iso-iec-ieee-29148-2018-requirements-engineering"
+  ],
+  "research": {
+    "methods": [
+      "standards",
+      "stakeholder",
+      "organizational",
+      "scientific"
+    ],
+    "questions": [
+      "Which goal or measure does this requirement derive from?",
+      "How would someone other than its author verify it?"
+    ]
+  },
+  "level": 5
+}
