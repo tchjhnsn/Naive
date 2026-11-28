@@ -10,7 +10,7 @@
 // handoff has a PR and passing evidence for every done-criterion; a review passes only from
 // its named reviewer, who is never the holder's role. A handoff that names its requester (requested_by) has
 // every review judged by that requester, and only the requester verifies it. Every evidence file's
-// passed flag matches its results.
+// passed flag matches its results, and no result passes with a measured value outside its limit.
 
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
@@ -44,6 +44,12 @@ const results = new Map<string, Evidence>();
 for (const f of jsonIn(join(ventureFile(dir, "evidence/results")))) {
   const e = load<Evidence>(f);
   if (e.passed !== e.results.every((r) => r.passed)) errors.push(`evidence/${e.id}: passed says ${e.passed} but its results disagree`);
+  for (const m of e.conditions ?? []) if (m.limit && m.limit.min !== undefined && m.limit.max !== undefined && m.limit.min > m.limit.max) errors.push(`evidence/${e.id}: condition ${m.quantity} has a limit whose min is above its max`);
+  for (const r of e.results) for (const m of r.measured ?? []) {
+    const { min, max } = m.limit ?? {};
+    if (min !== undefined && max !== undefined && min > max) errors.push(`evidence/${e.id}: ${r.criterion} measures ${m.quantity} against a limit whose min is above its max`);
+    else if (r.passed && ((min !== undefined && m.value < min) || (max !== undefined && m.value > max))) errors.push(`evidence/${e.id}: ${r.criterion} passed, but ${m.quantity} ${m.value} ${m.unit} is outside its limit ${min ?? "-"} to ${max ?? "-"}`);
+  }
   results.set(resolve(f), e);
 }
 
