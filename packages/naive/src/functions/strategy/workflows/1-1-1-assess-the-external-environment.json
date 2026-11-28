@@ -44,7 +44,8 @@
       "skill": "define-the-business-concept-and-long-term-vision",
       "activity": "1.1.1.2",
       "writes": [
-        "purpose/competitor/[id]"
+        "purpose/competitor/[id]",
+        "industries/[id]"
       ]
     },
     {
@@ -60,7 +61,10 @@
       "id": "identify-economic-trends",
       "do": "Read public figures for what this customer spends and what it costs a new entrant to reach them, and write the industry record's buyer_power, capital_intensity and time_to_revenue_days cells with the status known or estimated, the source and the date each value was true.",
       "skill": "define-the-business-concept-and-long-term-vision",
-      "activity": "1.1.1.4"
+      "activity": "1.1.1.4",
+      "writes": [
+        "industries/[id]"
+      ]
     },
     {
       "id": "identify-political-and-regulatory-factors",
@@ -68,7 +72,8 @@
       "skill": "define-the-business-concept-and-long-term-vision",
       "activity": "1.1.1.5",
       "writes": [
-        "operations/handoff/[id]"
+        "operations/handoff/[id]",
+        "industries/[id]"
       ]
     },
     {
@@ -95,7 +100,10 @@
       "id": "assess-new-technologies",
       "do": "List the technologies that could build this offering more cheaply, replace it outright or become a dependency, and write the industry record's clockspeed and threat_of_substitutes cells with the evidence and date behind each.",
       "skill": "define-the-business-concept-and-long-term-vision",
-      "activity": "1.1.1.8"
+      "activity": "1.1.1.8",
+      "writes": [
+        "industries/[id]"
+      ]
     },
     {
       "id": "analyze-demographics",
@@ -112,7 +120,8 @@
       "skill": "define-the-business-concept-and-long-term-vision",
       "activity": "1.1.1.10",
       "writes": [
-        "operations/handoff/[id]"
+        "operations/handoff/[id]",
+        "industries/[id]"
       ],
       "consider": {
         "why": "A name or a method the venture cannot use is cheap to find now and expensive to find after launch.",

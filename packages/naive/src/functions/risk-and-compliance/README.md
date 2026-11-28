@@ -13,7 +13,7 @@ The legal, risk and compliance function (APQC 11.0, Manage Enterprise Risk, Comp
 | [function.json](./function.json) | The function's manifest: purpose, intake workflow, measures and capability clusters |
 | [agent.md](./agent.md) | The risk and compliance agent's instructions |
 | [decisions.json](./decisions.json) | The decision matrix |
-| [workflows/intake.json](./workflows/intake.json) | Workflow: learn the venture's legal duties and risks. Its steps for records need-now suggests only after Discovery, or never, are steps to consider that name the phase they start in (check-functions.ts). |
+| [workflows/intake.json](./workflows/intake.json) | Workflow: learn the venture's legal duties and risks. Its steps for records need-now suggests only after Discovery, or never, are steps to consider that name the phase they start in (check-functions.ts). Its summarize step writes decisions, so the decision it raises is the evidence the run proof reads. |
 | [workflows/weekly-compliance-check.json](./workflows/weekly-compliance-check.json) | Workflow: check the compliance calendar each week |
 | [workflows/quarterly-risk-review.json](./workflows/quarterly-risk-review.json) | Workflow: review the risk register each quarter |
 | [skills/compliance-calendar](./skills/compliance-calendar) | Skill: keep the obligations register (`legal/obligations/[id]`), raise each duty in time and record its evidence |
