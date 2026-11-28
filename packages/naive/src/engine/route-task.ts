@@ -1,7 +1,7 @@
 // The routing rule for a classified task (lead agents design, "Routing a task", rules 2 to 5; default 11 puts the code
 // in Naive so every harness routes the same way). A model labels the task with the functions it touches, the telos
 // measure it serves if it can and the decision classes it names (rule 1); this code picks the target. It is pure: no
-// I/O and no model. The caller passes the venture's lead role templates (roles with a portfolio), its lead plans, its
+// I/O and no model. The caller passes the venture's leads (library roles with a portfolio), its lead plans, its
 // telos measures and its delegation lists.
 //
 //   rule 2  a one-way door or a never-redelegated class goes to a person; no agent takes it

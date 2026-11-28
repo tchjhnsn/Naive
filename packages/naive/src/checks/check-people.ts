@@ -10,7 +10,7 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { roles as ROLES, types as TYPES } from "../engine/venture-type.ts";
 import { ventureFile } from "../core/venture-paths.ts";
-import type { Founder, People, Venture, VentureRole, VentureTypes } from "../records/types/records.d.ts";
+import type { Founder, People, Role, Venture, VentureTypes } from "../records/types/records.d.ts";
 
 /** people/people.json as this check reads it: hats are strings, since a hat that is not a function is a finding. */
 type Roster = Omit<People, "people"> & { people: (Omit<People["people"][number], "hats"> & { hats?: string[] })[] };
@@ -22,7 +22,7 @@ const walk = (d: string): string[] => readdirSync(d, { withFileTypes: true }).fl
   : e.isDirectory() ? walk(join(d, e.name)) : e.name === "venture.json" ? [d] : []);
 
 const types = new Map((TYPES() as VentureTypes["types"]).map((t) => [t.id, t]));
-const roles = new Map((ROLES() as VentureRole["roles"]).map((r) => [r.id, r]));
+const roles = new Map<string, Role>(ROLES().map((r) => [r.id, r]));
 const errors: string[] = [];
 let ventures = 0, rosters = 0;
 for (const dir of walk(ws)) {
@@ -53,7 +53,7 @@ for (const dir of walk(ws)) {
   }
   for (const p of roster.people) {
     const role = roles.get(p.role);
-    if (!role) { at(`${p.id} has role ${p.role}, which is not in packages/naive/template/governance/roles/venture-roles.json`); continue; }
+    if (!role) { at(`${p.id} has role ${p.role}, which is not a role a person can hold in the role library (packages/naive/src/roles/)`); continue; }
     if (type && !type.roles.includes(p.role)) at(`${p.id} is a ${p.role}, which a ${type.label.toLowerCase()} does not have (${type.roles.join(", ")})`);
     for (const h of p.hats ?? []) if (imported.size && !imported.has(h)) at(`${p.id} wears the ${h} hat, but venture.json does not import ${h}`);
     p.hats ??= [];

@@ -1,0 +1,9 @@
+{
+  "id": "board-member",
+  "name": "Board member",
+  "kind": "person",
+  "description": "Sits on the board and governs; owns no function",
+  "person_kind": "governor",
+  "founder": false,
+  "owns_when_solo": false
+}

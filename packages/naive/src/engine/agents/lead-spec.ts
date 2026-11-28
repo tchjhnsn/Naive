@@ -1,8 +1,8 @@
 // What a lead agent is, derived from Naive's own data (lead agents design, Naive docs/design/LEAD_AGENTS_2026-11-08.md,
-// build plan item 4). There is no list of leads here: a lead is any role template in the installed Naive with a
+// build plan item 4). There is no list of leads here: a lead is any role in the installed Naive's role library with a
 // portfolio, and everything the lead needs comes from data Naive already ships.
 //
-//   template/governance/roles/<id>.json    the id, name, portfolio, default measure kinds, grantable classes and skill
+//   src/roles/<id>/role.json               the id, name, portfolio, default measure kinds, grantable classes and skill
 //   template/governance/delegation.json    the one-way doors and never-redelegated classes no agent takes
 //   departments.json (through function-spec.ts)   the function agents a lead hands work to
 //   engine/route-task.ts                   the routing rule: which of a function agent, a lead or a person takes a task
@@ -11,7 +11,7 @@
 // operations/handoff/*, never a function's records and never the team plan (Naive's check-team.ts holds a venture's
 // team plan to the same rule).
 //
-//   const spec = leadAgent("growth-lead");       // throws on an id no role template with a portfolio has
+//   const spec = leadAgent("growth-lead");       // throws on an id no role with a portfolio has
 //   spec.portfolio                               // ["marketing-and-sales", "customer-service"]
 //   spec.writes                                  // ["operations/lead/growth-lead", "decisions/*", "operations/handoff/*"]
 //   routeFor({ functions: ["finance"] }, dir)    // { to: "function-agent", role: "finance-agent", tool: "agent_finance", ... }
@@ -26,11 +26,12 @@ import type { Context, LeadPlanBinding, Measure, Routed, Task } from "../route-t
 import { routes } from "../../records/routes/routes.ts";
 import type { FunctionId, Phase, TeamPlanRole } from "./function-spec.ts";
 import { functionAgent, functionIds, naivePath, reachesTeamPlan, teamPlanEntry } from "./function-spec.ts";
+import { loadRoles, type Role } from "./roles.ts";
 
-/** Only leadAgent() makes a spec, so a spec always agrees with Naive's role templates. Erased at runtime. */
+/** Only leadAgent() makes a spec, so a spec always agrees with Naive's role library. Erased at runtime. */
 declare const derived: unique symbol;
 
-/** A lead id: a role template with a portfolio. Made only by leadIds() and leadAgent(). */
+/** A lead id: a role with a portfolio. Made only by leadIds() and leadAgent(). */
 export type LeadId = string & { readonly __lead: true };
 
 /**
@@ -41,15 +42,15 @@ export interface LeadAgentSpec {
   readonly [derived]: true,
   readonly id: LeadId,
   readonly label: string,
-  /** The team-plan role the lead acts in: its template id (growth-lead). */
+  /** The team-plan role the lead acts in: its role id (growth-lead). */
   readonly role: string,
   readonly description: string,
   readonly portfolio: readonly FunctionId[],
   /** The telos measure kinds the lead is bound to by default, which route a task whose measure no lead plan binds. */
   readonly measureKinds: readonly string[],
-  /** The decision classes its template says may be granted to it (from the chief of staff). */
+  /** The decision classes its role says may be granted to it (from the chief of staff). */
   readonly grantable: readonly string[],
-  /** The folder of the template's skill in the installed Naive, mounted read-only at /lead/ in the agent's files. */
+  /** The folder of the role's skill in the installed Naive, mounted read-only at /lead/ in the agent's files. */
   readonly skill: string | null,
   /** Its lead plan route, operations/lead/<id> (file operations/leads/<id>.json). */
   readonly plan: string,
@@ -57,17 +58,12 @@ export interface LeadAgentSpec {
   readonly writes: readonly string[],
 }
 
-interface RoleTemplate { id: string, name?: string, description?: string, portfolio?: string[], default_measure_kinds?: string[], grantable_classes?: string[], skill?: string }
-
-const ROLES = "packages/naive/template/governance/roles";
 const DELEGATION = "packages/naive/template/governance/delegation.json";
 const load = (file: string): unknown => JSON.parse(readFileSync(file, "utf8"));
 
-/** Every role template with a portfolio in the installed Naive, by file name order. */
-function leadTemplates(): RoleTemplate[] {
-  const dir = naivePath(ROLES);
-  return readdirSync(dir).filter((f) => f.endsWith(".json")).sort().map((f) => load(join(dir, f)))
-    .filter((r): r is RoleTemplate => !!r && typeof r === "object" && "id" in r && Array.isArray((r as RoleTemplate).portfolio));
+/** Every role with a portfolio in the installed Naive's role library, by id order. */
+function leadTemplates(): Role[] {
+  return [...loadRoles().values()].filter((r) => Array.isArray(r.portfolio));
 }
 
 /** Every lead the installed Naive defines. */
@@ -91,18 +87,18 @@ export function beyondLead(id: string, globs: readonly string[]): string[] {
 const cache = new Map<string, LeadAgentSpec>();
 
 /**
- * The lead agent for one role template id. Throws an Error naming the leads when no template with a portfolio has
- * that id, and an Error naming the file when the template breaks an invariant above. Derived once per process.
+ * The lead agent for one role id. Throws an Error naming the leads when no role with a portfolio has
+ * that id, and an Error naming the file when the role breaks an invariant above. Derived once per process.
  */
 export function leadAgent(id: string): LeadAgentSpec {
   const hit = cache.get(id);
   if (hit) return hit;
   const all = leadTemplates();
   const t = all.find((r) => r.id === id);
-  if (!t) throw new Error(`no lead ${id}: the role templates with a portfolio are ${all.map((r) => r.id).join(", ")}`);
+  if (!t) throw new Error(`no lead ${id}: the roles with a portfolio are ${all.map((r) => r.id).join(", ")}`);
   const known = new Set<string>(functionIds());
   const unknown = (t.portfolio ?? []).filter((f) => !known.has(f));
-  if (unknown.length) throw new Error(`${ROLES}/${id}.json: portfolio names ${unknown.join(", ")}, which departments.json does not list`);
+  if (unknown.length) throw new Error(`packages/naive/src/roles/${id}/role.json: portfolio names ${unknown.join(", ")}, which departments.json does not list`);
   const writes = [`operations/lead/${id}`, "decisions/*", "operations/handoff/*"];
   const beyond = beyondLead(id, writes);
   if (beyond.length || reachesTeamPlan(writes)) throw new Error(`${id}'s write routes reach beyond its plan, decisions and handoffs: ${beyond.join(", ") || "the team plan"}`);
@@ -136,7 +132,7 @@ export type RouteAnswer = Routed & { tool: string | null, staffed: boolean, fix?
 export const leadToolName = (id: string): string => `lead_${id}`;
 
 /**
- * The routing rule's context for one venture, read from its files: the leads (role templates with a portfolio), the
+ * The routing rule's context for one venture, read from its files: the leads (roles with a portfolio), the
  * venture's lead plans (operations/leads/*.json), its telos measures (Naive's canonical measures), the one-way doors
  * and never-redelegated classes (the template's delegation lists and the venture's own, both bind), and the function
  * ids. With no venture folder, the template alone.

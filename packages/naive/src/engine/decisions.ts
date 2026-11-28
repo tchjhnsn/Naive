@@ -36,6 +36,7 @@ import { canonical, glob as routeFileGlob, routes, type RecordRoute } from "../r
 // Caching hook (F-12): the decision list is computed once per router action (packages/naive/src/engine/caching.ts).
 import { memo } from "./caching.ts";
 import { roles as ventureRoles } from "./venture-type.ts";
+import { isPersonRole, knownRoles, loadRoles } from "./agents/roles.ts";
 import { impact } from "./impact.ts";
 import { mark } from "./stale.ts";
 import { changedReasons, citesOf, stamp } from "./reasons.ts";
@@ -691,14 +692,10 @@ export function mayMerge(dir: string, d: Pick<DecisionRecord, "id" | "class" | "
 let agentRoles: string[] | undefined;
 function agentRoleIds(): string[] {
   if (agentRoles) return agentRoles;
-  const f = join(new URL("../../../..", import.meta.url).pathname, "packages/naive/template/governance/roles/agent-roles.json");
-  try { agentRoles = ((load(f) as { roles?: { id: string }[] }).roles ?? []).map((r) => r.id).filter((id) => id && id !== "founder"); } catch { agentRoles = []; }
-  // The function agents and researchers (<function>-agent, <function>-researcher, one per department) and the role
-  // templates (the leads among them) are roles too, so none of them can approve or withdraw as a person.
-  const root = new URL("../../../..", import.meta.url).pathname;
-  try { agentRoles.push(...((load(join(root, "packages/naive/src/functions/departments.json")) as { departments?: { id: string }[] }).departments ?? []).flatMap((d) => [`${d.id}-agent`, `${d.id}-researcher`])); } catch {} // a missing departments file leaves the register's roles
-  const roles = join(root, "packages/naive/template/governance/roles");
-  try { agentRoles.push(...readdirSync(roles).filter((n) => n.endsWith(".json") && !["agent-roles.json", "venture-roles.json", "founder.json"].includes(n)).map((n) => n.replace(/\.json$/, ""))); } catch {} // no role templates, no extra roles
+  // Every role in the role library that is not a person role, and the function agents and researchers
+  // (<function>-agent, <function>-researcher, one per department): none of them can approve or withdraw as a person.
+  const library = loadRoles();
+  agentRoles = [...knownRoles()].filter((id) => !isPersonRole(library.get(id)));
   return agentRoles;
 }
 
