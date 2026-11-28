@@ -4054,6 +4054,44 @@
           "expect": "exists"
         }
       ]
+    },
+    {
+      "id": "EE-242",
+      "date": "2026-11-28",
+      "status": "in-force",
+      "decision": "The supply chain function's APQC level 2 process groups that no role was responsible or accountable for each gain one library role at packages/naive/src/roles/<id>/, a role.json and a SKILL.md, named after the closest O*NET occupation: 4.1 supply-chain-manager (O*NET 11-3071.04 Supply Chain Managers, agent); 4.2 purchasing-agent (O*NET 13-1023.00 Purchasing Agents, Except Wholesale, Retail, and Farm Products, agent); 4.3 industrial-production-manager (O*NET 11-3051.00 Industrial Production Managers, agent); 4.4 logistician (O*NET 13-1081.00 Logisticians, agent). Each role is durable, in the supply-chain function, accountable for its one process group and for nothing else, verified by product-lead, granted no decision class by default, and runs no lint suite. Its onet entry names the code, the exact title in packages/naive/src/functions/onet.json, the basis and who matched it, an agent not yet reviewed by a person. Its skill is the function's skill for that process group, and its reads, artifacts, standards and research methods come from the workflows of that group and from reference ids that exist. Every role is an agent role. packages/naive/src/functions/pcf-roles.json is regenerated. This is step 11 of the roles as agents plan (docs/design/ROLES_AS_AGENTS_2026-11-28.md).",
+      "why": "Torian on 2026-11-28 (roles plan, step 11): the first cut of business roles is one role per APQC PCF level 2 process group that no role answers for, named after the best O*NET match, one function per pull request, so check-roles --complete reports no gap under the function.",
+      "related": [
+        "EE-229",
+        "EE-232",
+        "EE-233"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/roles/supply-chain-manager/role.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/roles/purchasing-agent/role.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/roles/industrial-production-manager/role.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/roles/logistician/role.json",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
     }
   ]
 }

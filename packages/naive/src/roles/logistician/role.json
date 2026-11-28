@@ -1,0 +1,54 @@
+{
+  "id": "logistician",
+  "name": "Logistician",
+  "kind": "agent",
+  "status": "durable",
+  "function": "supply-chain",
+  "description": "Answers for APQC process group 4.4, Manage logistics and warehousing: plans inbound material flow, keeps stock and shipments on record, and tracks outbound and last mile delivery to each customer. A person approves carriers and any spend.",
+  "grantable_classes": [],
+  "default_tier": "workhorse",
+  "lint_suites": [],
+  "verified_by": "product-lead",
+  "skill": "packages/naive/src/functions/supply-chain/skills/manage-logistics-and-warehousing/SKILL.md",
+  "pcf": [
+    {
+      "id": "4.4",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "13-1081.00",
+      "title": "Logisticians",
+      "basis": "Process group 4.4 is logistics governance, inbound material flow, warehousing, outbound transport and last mile delivery, which is a logistician's work; matched by the group's processes against the occupation title in O*NET 31.0.",
+      "by": "agent, EE-242 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "purchase-order",
+    "supplier",
+    "customer",
+    "deal",
+    "product",
+    "support-case"
+  ],
+  "artifacts": [
+    {
+      "record_type": "purchase-order"
+    }
+  ],
+  "standards": [
+    "apqc-pcf-cross-industry"
+  ],
+  "research": {
+    "methods": [
+      "practitioner",
+      "organizational"
+    ],
+    "questions": [
+      "Where is each open order, by its record?",
+      "Which delivery is at risk of missing what the customer was promised?"
+    ]
+  },
+  "level": 4
+}
