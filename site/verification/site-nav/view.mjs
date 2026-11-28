@@ -1,12 +1,8 @@
 export const title = "Each entry in the Naive site nav";
 
 const names = {
-  docs: "Docs",
-  blog: "Blog",
-  templates: "Templates",
-  showcase: "Showcase",
-  why: "Why",
-  who: "Who it is for",
+  about: "About",
+  waitlist: "Waitlist",
 };
 
 export const state = (v) => {
@@ -24,12 +20,8 @@ export const group = (v) => {
 export const colors = { start: "tan", page: "teal", missing: "pink" };
 
 export const step = (action) => ({
-  OpenDocs: "you open Docs",
-  OpenBlog: "you open Blog",
-  OpenTemplates: "you open Templates",
-  OpenShowcase: "you open Showcase",
-  OpenWhy: "you open Why",
-  OpenWho: "you open Who it is for",
+  OpenAbout: "you open About",
+  OpenWaitlist: "you open Waitlist",
   Again: "you ask for something else",
   Done: null,
 })[action] ?? action;

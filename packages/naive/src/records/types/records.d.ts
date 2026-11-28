@@ -5538,8 +5538,8 @@ export type ProvenanceEntry = {
   entity: string;
   /** The route the write went through, when it went through the router */
   route?: string;
-  /** write: written in place. draft: an agent's write to a gated record, held in _drafts/, or any write to a source that takes writes by pull request, held there until the pull request is merged. accept: a person accepted a draft. baseline: a record that existed before the log, adopted with its current content (prov:Activity). confirm: a person confirmed one guiding statement in the record, by typing its id (EE-051); the content is unchanged. move: a file moved to a new path; derived_from names the old path. release: a set of moves recorded as one release. publish: an artifact's built output went out on a channel (entity is the output, the decision names the publish decision). rollback: the previous version was restored merge: a person (or a role a delegation grant allows) applied a decided decision version to the records it decides; the decision file is the entity. gate: the membership gate ran on a handoff package. The line lives in the sidecar <id>.provenance.jsonl and binds to the package body's sha256, so gates may be recorded in any order. */
-  activity: "write" | "draft" | "accept" | "baseline" | "confirm" | "move" | "release" | "publish" | "rollback" | "merge" | "gate";
+  /** write: written in place. create: a record written for the first time by code that knows it is new. draft: an agent's write to a gated record, held in _drafts/, or any write to a source that takes writes by pull request, held there until the pull request is merged. accept: a person accepted a draft. baseline: a record that existed before the log, adopted with its current content (prov:Activity). confirm: a person confirmed one guiding statement in the record, by typing its id (EE-051); the content is unchanged. move: a file moved to a new path; derived_from names the old path. port: a folder moved into the venture whole and named as a source. release: a set of moves recorded as one release. publish: an artifact's built output went out on a channel (entity is the output, the decision names the publish decision). rollback: the previous version was restored merge: a person (or a role a delegation grant allows) applied a decided decision version to the records it decides; the decision file is the entity. gate: the membership gate ran on a handoff package. The line lives in the sidecar <id>.provenance.jsonl and binds to the package body's sha256, so gates may be recorded in any order. */
+  activity: "write" | "create" | "draft" | "accept" | "baseline" | "confirm" | "move" | "port" | "release" | "publish" | "rollback" | "merge" | "gate";
   /** Who acted (prov:wasAttributedTo / prov:wasAssociatedWith) */
   agent: {
     /** unverified: a door with no sign-in said a person acted; the id is a claimed name */
@@ -6065,7 +6065,7 @@ export type Recipe = {
 /** A number, a short string (a rating floor such as B2), a boolean, or a short list of them */
 export type RecipeKnob = number | boolean | string | (number | boolean | string)[];
 
-/** A layer's references (EE-014): the sources behind its opinionated defaults and the alternatives it considered. One file per layer at <layer>/references/references.json. A URL is recorded when one exists and re-checked; the find-reference skill fills gaps from title, authors and year. */
+/** A layer's references (EE-014): the sources behind its opinionated defaults and the alternatives it considered, each with the research method that found it (EE-233). One file per layer at <layer>/references/references.json. A URL is recorded when one exists and re-checked; the find-reference skill fills gaps from title, authors and year. */
 export type Reference = {
   layer: "purpose" | "knowledge" | "operations" | "evidence" | "governance" | "interface";
   references: {
@@ -6074,6 +6074,8 @@ export type Reference = {
     authors: string[];
     year: number;
     kind: "book" | "article" | "paper" | "standard" | "law" | "dataset" | "conversation";
+    /** Which research method found the source (EE-233): standards, scientific, organizational, practitioner or stakeholder */
+    method: ResearchMethod;
     summary: string;
     /**
      * @format uri
@@ -6112,6 +6114,9 @@ export type Requirement = {
   /** The founder's messages this record was made from (naive diagnose catches) */
   conversation?: ConversationRef[];
 };
+
+/** How a source was found (EE-233), worked in this order. standards: a standards body (ISO, IEEE, NIST, APQC, W3C, IETF) or a law, cited by its own term, version and clause (EE-014). scientific: peer-reviewed literature and systematic reviews, graded high to very low after GRADE. organizational: the business's own records, cited by record and hash. practitioner: practitioner and grey literature (vendor docs, books, talks, open-source code), saying who wrote it and what they sell; never the sole support for a default. stakeholder: the person and customers (interviews, decisions, values); only a person states a value. After evidence-based management's four sources (CEBMa), with standards first. */
+export type ResearchMethod = "standards" | "scientific" | "organizational" | "practitioner" | "stakeholder";
 
 /** One entry of the venture's risk register (ISO 31000:2018 clauses 6.4 to 6.6: risk assessment, risk treatment, monitoring and review), at legal/risks/<id>.json (route legal/risks/[id]): what could happen, why, what it would cost, who owns it and what the venture does about it. Likelihood and impact are 90% ranges, not ordinal scores (Hubbard, The Failure of Risk Management; Cox 2008), so expected loss can be computed and compared. The impact cites a source or is marked an estimate, and expected loss carries the same label (EE-212). Every live risk has a person owner and a review date. The risk-and-compliance function owns it, and only the risk-and-compliance agent (role risk-and-compliance-agent) or a person writes it (writer function in packages/naive/src/records/data-model.json). */
 export type Risk = {

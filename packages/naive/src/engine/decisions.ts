@@ -42,6 +42,7 @@ import { changedReasons, citesOf, stamp } from "./reasons.ts";
 import { grantBacked, layoutOf, liveGrant, logicalFiles, readDelegation, scopeWithin, ventureFile } from "../core/venture-paths.ts";
 import { readDataModel, schemaNameOf, venturePaths } from "../records/index.ts";
 import { validateFile } from "../records/validate.ts";
+import { writeRecord } from "../store/record-write.ts";
 import type { DataModel, DecisionRecord, DecisionRecordReason, DecisionRights, Delegation, People, StrategicFoundation, Venture } from "../records/types/records.d.ts";
 
 /** Where a decision in the matrix comes from: a root, a decision record, an unconfirmed foundation statement or an agent's draft. */
@@ -487,9 +488,7 @@ export function propose(dir: string, input: ProposeInput | null | undefined, { a
   }
   const bad = validate(d);
   if (bad) return { ok: false, error: `does not match packages/naive/src/records/decision-record.schema.json:\n${bad}` };
-  mkdirSync(dirname(ventureFile(dir, file)), { recursive: true });
-  writeFileSync(ventureFile(dir, file), JSON.stringify(d, null, 2) + "\n");
-  const e = prov(dir, { entity: file, route: "governance/decisions", activity: "draft", agent: agentFromEnv("agent", via, { ...(agentId ? { id: agentId } : {}), ...(harness ? { harness } : {}), ...(model ? { model } : {}) }), note: `proposed decision ${d.id}` } as Parameters<typeof prov>[1]);
+  const e = writeRecord(dir, file, d, { route: "governance/decisions", activity: "draft", agent: agentFromEnv("agent", via, { ...(agentId ? { id: agentId } : {}), ...(harness ? { harness } : {}), ...(model ? { model } : {}) }), note: `proposed decision ${d.id}` });
   return { ok: true, result: { proposed: rest.id, file, awaiting: "approval", provenance: e.hash } };
 }
 
@@ -576,8 +575,7 @@ export function merge(dir: string, id: string, { by, role, via = "cli", note, to
     files.push(t.file);
   }
   const out = { ...d, merged: { version, by, at: new Date().toISOString().replace(/\.\d+Z$/, "Z"), files } };
-  writeFileSync(ventureFile(dir, file), JSON.stringify(out, null, 2) + "\n");
-  const e = prov(dir, { entity: file, route: "governance/decisions", activity: "merge", agent: actor, note: note ?? `merged ${id} version ${version}${may.grant ? ` under grant ${may.grant}` : ""}` });
+  const e = writeRecord(dir, file, out, { route: "governance/decisions", activity: "merge", agent: actor, note: note ?? `merged ${id} version ${version}${may.grant ? ` under grant ${may.grant}` : ""}` });
   // Public variants written from a merged field (MDX with variant_of: <file>#<field>) were worded from
   // the old version: they are marked stale so they are re-linted before the next publish (the hook
   // item 11, republish-on-change, builds on).
@@ -739,8 +737,7 @@ export function rollback(dir: string, id: string, to: string | number, { by, via
   else delete out.reasons;
   const bad = validate(out);
   if (bad) return { ok: false, error: bad };
-  writeFileSync(ventureFile(dir, file), JSON.stringify(out, null, 2) + "\n");
-  const e = prov(dir, { entity: file, route: "governance/decisions", activity: "accept", agent: agentFromEnv("person", via, { id: by }), note: `rolled ${id} back to version ${to} as version ${out.version}` } as Parameters<typeof prov>[1]);
+  const e = writeRecord(dir, file, out, { route: "governance/decisions", activity: "accept", agent: agentFromEnv("person", via, { id: by }), note: `rolled ${id} back to version ${to} as version ${out.version}` });
   return { ok: true, result: { decided: id, version: out.version, restored: Number(to), provenance: e.hash, next: out.applies_to?.length ? `mentura merge ${id}` : null } };
 }
 
@@ -792,8 +789,7 @@ export function approve(dir: string, id: string, { by, answer, via = "cli", note
   const out = { ...d, status: "decided", answer: answer ?? d.answer, ...(frozen ? { reasons: frozen } : {}), provenance: { ...pv, drafted_by: drafted, approved_by: by, approved_at: new Date().toISOString().replace(/\.\d+Z$/, "Z"), phase, ...(unverified ? { signer: "unverified" } : { wording }), ...(account ? { signer: "verified", signer_account: account } : {}), via, ...(frozen ? { reasons: frozen } : {}) } };
   const bad = validate(out);
   if (bad) return { ok: false, error: bad };
-  writeFileSync(ventureFile(dir, file), JSON.stringify(out, null, 2) + "\n");
-  const e = prov(dir, { entity: file, route: "governance/decisions", activity: "accept", agent: agentFromEnv(unverified ? "unverified" : "person", via, { id: by, account }), note: note ?? (unverified ? `approved decision ${id} through ${via} with no sign-in: ${by} is unverified` : `approved decision ${id} (${wording})`) } as Parameters<typeof prov>[1]);
+  const e = writeRecord(dir, file, out, { route: "governance/decisions", activity: "accept", agent: agentFromEnv(unverified ? "unverified" : "person", via, { id: by, account }), note: note ?? (unverified ? `approved decision ${id} through ${via} with no sign-in: ${by} is unverified` : `approved decision ${id} (${wording})`) });
   return { ok: true, result: { decided: id, wording: unverified ? null : wording, ...(unverified ? { signer: "unverified" } : {}), ...(account ? { signer: "verified" } : {}), phase, provenance: e.hash, unlocks: (out.unlocks ?? []).map((u) => u.activity), ...(frozen ? { reasons: frozen.length, cites: citesOf(frozen) } : {}) } };
 }
 
@@ -824,8 +820,7 @@ export function withdraw(dir: string, id: string, { by, duplicateOf, option, why
   const out: DecisionRecord = { ...d, status: "withdrawn", ...(duplicateOf ? { duplicate_of: duplicateOf } : {}), withdrawn_by: by, withdrawn_at: new Date().toISOString().replace(/\.\d+Z$/, "Z") };
   const bad = validate(out);
   if (bad) return { ok: false, error: bad };
-  writeFileSync(ventureFile(dir, file), JSON.stringify(out, null, 2) + "\n");
-  const e = prov(dir, { entity: file, route: "governance/decisions", activity: "write", agent: agentFromEnv("person", via, { id: by }), note: note ?? (duplicateOf ? `withdrew decision ${id} as a duplicate of ${duplicateOf}` : `withdrew decision ${id}`) } as Parameters<typeof prov>[1]);
+  const e = writeRecord(dir, file, out, { route: "governance/decisions", activity: "write", agent: agentFromEnv("person", via, { id: by }), note: note ?? (duplicateOf ? `withdrew decision ${id} as a duplicate of ${duplicateOf}` : `withdrew decision ${id}`) });
   return { ok: true, result: { withdrawn: id, ...(duplicateOf ? { duplicate_of: duplicateOf } : {}), provenance: e.hash } };
 }
 
@@ -842,9 +837,8 @@ function withdrawOption(dir: string, file: string, d: DecisionRecord, option: st
     ? { ...x, withdrawn_by: by, withdrawn_at: new Date().toISOString().replace(/\.\d+Z$/, "Z"), ...(why ? { withdrawn_why: why } : {}) } : x) };
   const bad = validate(out);
   if (bad) return { ok: false, error: bad };
-  writeFileSync(ventureFile(dir, file), JSON.stringify(out, null, 2) + "\n");
-  const e = prov(dir, { entity: file, route: "governance/decisions", activity: "write", agent: agentFromEnv("person", via ?? "cli", { id: by }),
-    note: note ?? `withdrew option ${option} from decision ${d.id}${why ? `: ${why}` : ""}` } as Parameters<typeof prov>[1]);
+  const e = writeRecord(dir, file, out, { route: "governance/decisions", activity: "write", agent: agentFromEnv("person", via ?? "cli", { id: by }),
+    note: note ?? `withdrew option ${option} from decision ${d.id}${why ? `: ${why}` : ""}` });
   return { ok: true, result: { withdrawn: d.id, option, left: optionsOf(out), provenance: e.hash } };
 }
 
@@ -881,10 +875,9 @@ export function addCandidate(dir: string, id: string, input: CandidateInput | nu
   // What the candidate would write has to resolve now, so a person is never offered an idea that cannot be merged.
   const w = writeOf(next, d.decides?.path ?? decidedPath(file));
   if (!w.ok) return { ok: false, error: w.error };
-  writeFileSync(ventureFile(dir, file), JSON.stringify(out, null, 2) + "\n");
-  const e = prov(dir, { entity: file, route: "governance/decisions", activity: person ? "write" : "draft",
+  const e = writeRecord(dir, file, out, { route: "governance/decisions", activity: person ? "write" : "draft",
     agent: agentFromEnv(person ? "person" : "agent", via, person ? { id: by } : { ...(agentId ? { id: agentId } : {}) }),
-    note: note ?? `${was ? "put back" : "added"} option ${next.id} on decision ${id}: ${next.label}` } as Parameters<typeof prov>[1]);
+    note: note ?? `${was ? "put back" : "added"} option ${next.id} on decision ${id}: ${next.label}` });
   return { ok: true, result: { decision: id, option: next.id, options: optionsOf(out), ...(was ? { restored: true as const } : {}), proposes: proposesOf(next, d.decides?.path ?? decidedPath(file)),
     provenance: e.hash, decide: `mentura decide ${id} --by <your name> --answer ${next.id}` } };
 }
@@ -921,9 +914,8 @@ export function reopen(dir: string, id: string, { by, why, override = false, via
     reopened: [...(d.reopened ?? []), { version: from, answer: d.answer ?? null, by, at: new Date().toISOString().replace(/\.\d+Z$/, "Z"), phase: phase as NonNullable<DecisionRecord["reopened"]>[number]["phase"], ...(why ? { why } : {}), ...(override ? { override: true as const } : {}) }] };
   const bad = validate(out);
   if (bad) return { ok: false, error: bad };
-  writeFileSync(ventureFile(dir, file), JSON.stringify(out, null, 2) + "\n");
-  const e = prov(dir, { entity: file, route: "governance/decisions", activity: "write", agent: agentFromEnv("person", via, { id: by }),
-    note: note ?? `reopened decision ${id} from version ${from}${override ? ` with the override in ${phase}` : ""}${why ? `: ${why}` : ""}` } as Parameters<typeof prov>[1]);
+  const e = writeRecord(dir, file, out, { route: "governance/decisions", activity: "write", agent: agentFromEnv("person", via, { id: by }),
+    note: note ?? `reopened decision ${id} from version ${from}${override ? ` with the override in ${phase}` : ""}${why ? `: ${why}` : ""}` });
   return { ok: true, result: { reopened: id, version: out.version, was: d.answer ?? null, from_version: from, phase, ...(override ? { override: true as const } : {}),
     options: optionsOf(out), provenance: e.hash, restore: `mentura decide ${id} --by ${by} --rollback ${from}` } };
 }

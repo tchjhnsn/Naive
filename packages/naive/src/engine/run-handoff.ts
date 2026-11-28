@@ -18,12 +18,14 @@
 // criterion needs no sandbox: it runs on the venture runtime with the host's services.
 
 import { execSync, spawnSync } from "node:child_process";
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
 import { ventureFile } from "../core/venture-paths.ts";
 import { HostedRefusal, git, hostHook, isHosted, missingHook } from "../core/runtime.ts";
 import type { Evidence, Handoff } from "../records/types/records.d.ts";
 import { outputOf, passes, runProgram } from "./venture-program.ts";
+import { agentFromEnv } from "../core/provenance.ts";
+import { writeRecord } from "../store/record-write.ts";
 
 const root = new URL("../../../..", import.meta.url).pathname;
 const trim = (s: string) => s.trim().split("\n").slice(-12).join("\n");
@@ -104,11 +106,12 @@ export async function runHandoff(dir: string, id: string, { runner = "local", re
   const at = new Date().toISOString().replace(/\.\d+Z$/, "Z");
   const ev = evidenceOf(h, results, { at, runner, version });
   const eid = ev.id;
-  mkdirSync(join(ventureFile(dir, "evidence/results")), { recursive: true });
+  // The runner wrote the evidence: a program, named by its runner id, so the line says agent and never a person.
+  const agent = agentFromEnv("agent", "cli", { id: runner });
   const ePath = join(ventureFile(dir, "evidence/results"), `${eid}.json`);
-  writeFileSync(ePath, JSON.stringify(ev, null, 2) + "\n");
+  writeRecord(dir, `evidence/results/${eid}.json`, ev, { agent, activity: "create", derived_from: [`operations/handoffs/${id}.json`], note: `ran the done-criteria of handoff ${h.id}` });
   h.evidence = [...(h.evidence ?? []), relative(join(ventureFile(dir, "operations/handoffs")), ePath)];
-  writeFileSync(hPath, JSON.stringify(h, null, 2) + "\n");
+  writeRecord(dir, `operations/handoffs/${id}.json`, h, { agent, note: `named evidence ${eid} on handoff ${h.id}` });
   const pending = h.done_criteria.filter((d) => d.kind === "review" && d.id !== reviewId).map((d) => `${d.id} (${d.reviewer})`);
   return { evidence: ev, path: ePath, pending };
 }

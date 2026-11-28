@@ -78,12 +78,14 @@ t("publish-terms: the same name again adds nothing", publishTerms.draft({ name: 
 t("publish-terms: listing a public mark as private is refused", !publishTerms.draft({ name: "nike", private: true, why: "no" }, { venture: v }).ok);
 
 mkdirSync(join(v, "packages/naive/src/records/layers/purpose/references"), { recursive: true });
-writeFileSync(join(v, "packages/naive/src/records/layers/purpose/references/references.json"), JSON.stringify({ layer: "purpose", references: [{ id: "minsky-1974-framework", title: "x", authors: ["M"], year: 1974, kind: "paper", summary: "s", informs: [], stance: { is: "adopted", why: "w" } }] }));
-const r = reference.draft({ layer: "purpose", title: "A Framework for Representing Knowledge", authors: ["Marvin Minsky"], year: 1974, kind: "paper", summary: "frames", stance: { is: "adapted", why: "Naive's frame record" } }, { root: v });
+writeFileSync(join(v, "packages/naive/src/records/layers/purpose/references/references.json"), JSON.stringify({ layer: "purpose", references: [{ id: "minsky-1974-framework", title: "x", authors: ["M"], year: 1974, kind: "paper", method: "scientific", summary: "s", informs: [], stance: { is: "adopted", why: "w" } }] }));
+const r = reference.draft({ layer: "purpose", title: "A Framework for Representing Knowledge", authors: ["Marvin Minsky"], year: 1974, kind: "paper", method: "scientific", summary: "frames", stance: { is: "adapted", why: "Naive's frame record" } }, { root: v });
 t("reference: draft passes the schema", r.ok);
 t("reference: id is unique in the file", r.added === "minsky-1974-framework-2");
 const second = r.draft?.references[1];
 t("reference: checked without a url is dropped", second !== undefined && !("checked" in second));
+t("reference: the research method is asked as a choice of the five (EE-233)", reference.describe().ask.some((q) => q.field === "references[].method" && q.required && q.choices?.join() === "standards,scientific,organizational,practitioner,stakeholder"));
+t("reference: a draft with no research method is refused", !reference.draft({ layer: "purpose", title: "Society of Mind", authors: ["Marvin Minsky"], year: 1986, kind: "book", summary: "agents", stance: { is: "alternative", why: "w" } }, { root: v }).ok);
 
 const det = detector.draft({ id: "recipe-ready", tier: "low", question: { verb: "publish", noun: "publication", asking_function: "marketing-and-sales" },
   evidence: { kind: "person", sensor: "reviewer", sources: [{ source: "venture", records: "decisions/[id]" }], scale: { min: 1, max: 5 } }, criterion: { yes: { value: 4, set_by: "founder" }, no: { value: 2, set_by: "founder" } },
