@@ -6269,13 +6269,13 @@ export type Role = {
   aliases?: string[];
   /** Who holds the role: a person, an agent or either. A person role is never deployed as an agent, and its default_tier, when it has one, is person */
   kind: "person" | "agent" | "either";
-  /** Optional: durable for a library role (the default); temporary for a role a lead wrote for one venture, which only a person makes durable (not built) */
+  /** Optional: durable for a library role (the default); temporary for a role a lead wrote for one venture, which only a person makes durable by accepting the promote-role-<id> decision (naive workers promote, EE-235) */
   status?: "durable" | "temporary";
-  /** Optional: the roles this one merges, by id (not built) */
+  /** Optional: the roles this one merges, by id; its pcf and artifacts are the union of theirs and its reach the union of their reaches, never wider than the lead that writes it (naive workers role --merge, EE-235) */
   merged_from?: string[];
-  /** Optional: who wrote a temporary role (not built) */
+  /** Optional: who wrote a temporary role (naive workers role, EE-235): a lead, or a person */
   proposed_by?: string;
-  /** Optional: when a temporary role was written, an ISO date-time (not built) */
+  /** Optional: when a temporary role was written, an ISO date-time (naive workers role, EE-235) */
   created_at?: string;
   /** True for the founder only: the root of every delegation chain */
   chief_delegator?: boolean;

@@ -7,6 +7,8 @@
 //   - ids and aliases are unique: no alias is another role's id or alias, in the library or once a venture's roles
 //     overlay it (a venture role with a library role's id replaces that role, which is the overlay);
 //   - a person role grants no agent tier: its default_tier, when it has one, is person.
+//   - each role a merged role names in merged_from is a known role, not itself and not a person role, and a temporary
+//     role names who proposed it and when (the schema, EE-235).
 // What the delegation rules need (a verifier for every agent role, grantable classes, leads' portfolios) is
 // packages/naive/src/checks/check-delegation.ts.
 //
@@ -52,6 +54,11 @@ export function roleProblems(scopes: readonly Scope[], functions: readonly strin
       const owner = names.get(a);
       if (owner !== undefined && owner !== role.id) errors.push(`${at}: alias ${a} is already ${owner === a ? "a role id" : `an alias of ${owner}`}`);
       else names.set(a, role.id);
+    }
+    for (const p of role.merged_from ?? []) {
+      if (p === role.id) errors.push(`${at}: ${role.id} may not merge itself`);
+      else if (!known.has(p)) errors.push(`${at}: merged_from names ${p}, which is not a known role`);
+      else if (roles.get(p)?.role.kind === "person") errors.push(`${at}: merged_from names ${p}, a person role, which is never deployed as an agent`);
     }
     if (role.kind === "person" && role.default_tier !== undefined && role.default_tier !== "person") errors.push(`${at}: a person role grants no agent tier, but its default_tier is ${role.default_tier}`);
   }
