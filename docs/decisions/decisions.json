@@ -3655,6 +3655,32 @@
       ]
     },
     {
+      "id": "EE-230",
+      "date": "2026-11-28",
+      "status": "in-force",
+      "decision": "Every artifact a Naive role makes is a type defined in code: a record type in packages/naive/src/records/data-model.json or a document kind in packages/naive/src/functions/documents.json, and nothing else. packages/naive/src/engine/artifact-kind.ts exports artifactKind(ref, { model, catalog }), pure, which says whether { record_type } names a data-model record type or { document_kind } names a catalog kind, and the two names never cross; the role check calls it once the role library lands. The catalog gains four kinds Naive's own roles make: adr, release-note, changelog-entry and requirements-spec. Each kind gains style, the brand fields it is styled with, as { record_type, field } into marketing-brand or marketing-design-system, and check-documents.ts fails on a field the record type's schema does not define. A section may be a hole in place of from: a fact no record type holds yet, said with the record that would hold it, always shown as a hole. naive render tells the harness the style fields for every format it leaves to the harness. A harness adapter gains artifacts, every kind of artifact the harness can produce with the formats it yields and the skill or tool that makes it (Claude Code: claude-doc, artifact-page, slides, dashboard, pdf, docx, pptx, xlsx; Codex and Cursor: none Naive names), and adapters verify fails when a format in its documents map has no artifacts entry that yields it with the same tool. The catalog stays vendor free; the adapter says how one harness makes each artifact.",
+      "why": "Step 2 of the roles plan decided on 2026-11-28: a role names the artifacts it makes, so each must resolve to a type Naive defines, a document must look like the venture that made it without the catalog naming a vendor, and the harness must say what it can produce before a role is deployed in it. Before this, the catalog had no kind for an architecture decision, a release note, a changelog entry or a requirements specification, a kind said nothing about the brand, and an adapter named the tool for a format only in its documents map, with no list of what the harness could make.",
+      "related": [
+        "EE-216",
+        "EE-218",
+        "EE-225"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/artifact-kind.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/functions/documents.json",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
       "id": "EE-151",
       "date": "2026-11-19",
       "status": "in-force",

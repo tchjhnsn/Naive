@@ -15,6 +15,7 @@ description: >
   for Claude Code.
   MANDATORY TRIGGERS: write a one-pager, write a memo, make a brief, meeting
   pack, board update, investor update, pitch deck, write a spec, site copy,
+  write an ADR, release note, changelog entry, requirements specification,
   make a PDF, make a PowerPoint, make a deck, which format, build the page,
   build the website, print this, render this document.
 ---
@@ -36,7 +37,11 @@ This is the founder's rule and the catalog enforces it (EE-218). Build down the 
 
 `naive render <kind> --format html` is refused until the reading copy's artifact record carries a person's `approved_by`, and `--format site` until the page does. The refusal names what is missing. Do not work around it; render the rung below and hand it to a person.
 
-**Never let the document become the record.** A fact the records do not hold shows in the reading copy as a hole (`_Not recorded: ..._`). Write the record, or raise the question as a decision, then render again. Do not type the fact into the document.
+**Never let the document become the record.** A fact the records do not hold shows in the reading copy as a hole (`_Not recorded: ..._`). Write the record, or raise the question as a decision, then render again. Do not type the fact into the document. Some sections are holes in the catalog itself (`hole`), because no record type holds that fact yet, such as a release's version: say so to the person and leave it a hole.
+
+## Style comes from the brand, by name
+
+Each kind's `style` names the brand fields it is styled with, such as `marketing-brand` `voice`, `fonts` and `colors`, or `marketing-design-system` `components` (EE-230). The values are the venture's, in `marketing/brand.json` and `marketing/design-system.json`; the catalog names only which fields apply. `naive render <kind> --format <format>` prints them for every format it leaves to the harness. Use those fields and no others. When the venture has not written a field, that is a hole to raise, never a colour or a typeface to pick yourself.
 
 ## Choosing a format
 
@@ -73,7 +78,7 @@ Only a person approves a rung. After you render:
 
 ## In Claude Code
 
-Claude Code has Anthropic's own document skills, under the Apache 2.0 licence, and they are the right tool for every format Naive does not render:
+Each harness adapter's `artifacts` list (`packages/naive/src/interfaces/adapters/<harness>.json`) says what that harness can produce, the formats each yields and the skill or tool that makes it. Claude Code's lists a Claude doc, an artifact page, slides and a dashboard beside the four document skills. Claude Code has Anthropic's own document skills, under the Apache 2.0 licence, and they are the right tool for every format Naive does not render:
 
 | Format | Skill to load | Note |
 |---|---|---|

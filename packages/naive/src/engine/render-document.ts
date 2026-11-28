@@ -25,6 +25,7 @@ import { ventureFile } from "../core/venture-paths.ts";
 import { artifactPath, catalog, climbTo, kind, outputPath, prerequisites, rung, format as formatOf, renderMarkdown, type Requires } from "./documents.ts";
 import { decisionFiles } from "./decisions.ts";
 import { gatherFacts, judge, requirementsIn } from "./prerequisites.ts";
+import { readDataModel, venturePaths } from "../records/index.ts";
 import type { Artifact, DocumentCatalog } from "../records/types/records.d.ts";
 import { writeRecordEffect, programWriter } from "../store/record-write.ts";
 
@@ -33,6 +34,14 @@ export type Rendered = { kind: string; rung: string; format: string; output?: st
 
 const sha = (text: string) => createHash("sha256").update(text).digest("hex");
 const dir = (path: string) => path.replace(/\/[^/]*$/, "");
+
+/** The brand fields a kind is styled with (EE-230), grouped by the venture record that holds them. */
+const styleLine = (style: DocumentCatalog["kinds"][number]["style"]): string => {
+  const records = readDataModel().records;
+  const fields = new Map<string, string[]>();
+  for (const s of style) fields.set(s.record_type, [...(fields.get(s.record_type) ?? []), s.field]);
+  return [...fields].map(([id, f]) => `${venturePaths(records.find((r) => r.id === id))[0] ?? id} (${f.join(", ")})`).join("; ");
+};
 
 /** Every record matching a section's `from`: one for a plain path, all of them for a path with *. */
 const readSection = (venture: string, from: string) => Effect.gen(function* () {
@@ -111,13 +120,14 @@ export const render = (venture: string, kindId: string, want: string, { now = ne
       return { kind: k.id, rung: r.id, format: want, instructions: [
         `${k.title} as ${f.name} is the harness's to render, not Naive's: ${f.why}`,
         `Read the approved reading copy at ${outputPath(k.id, climbTo(c, r.id).at(-2)?.id ?? "reading-copy", "md")} and build the ${want} from it, changing no fact.`,
-        f.renderer === "site-build" ? "Publishing is naive publish, under the gate a person approves (EE-025)." : "Your harness adapter names the skill for this format; use it and nothing heavier.",
+        f.renderer === "site-build" ? "Publishing is naive publish, under the gate a person approves (EE-025)." : "Your harness adapter names the skill for this format in its artifacts list; use it and nothing heavier.",
+        `Style it from the venture's own brand, using only these fields: ${styleLine(k.style)}. A field the venture has not written is a hole to raise, never a style to invent.`,
         `Then give it to a person. Only a person approves a rung (${r.approved_by}).`,
       ] } satisfies Rendered;
 
     // Read every section's records once, then render from what was read, so the document cites exactly those bytes.
     const found = new Map<string, { path: string; body: unknown }[]>();
-    for (const s of k.sections) if (!found.has(s.from)) found.set(s.from, yield* readSection(venture, s.from));
+    for (const s of k.sections) if (s.from !== undefined && !found.has(s.from)) found.set(s.from, yield* readSection(venture, s.from));
     const md = renderMarkdown(c, k.id, (from) => found.get(from) ?? [], { at: now });
     const cited = new Map([...found.values()].flat().map((s) => [s.path, s.body] as const));
 

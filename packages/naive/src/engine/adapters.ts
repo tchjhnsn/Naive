@@ -31,6 +31,22 @@ export function adapters(): LoadedAdapter[] {
   if (platform && existsSync(platform)) out.unshift({ ...load(platform), path: platform, dir: dirname(platform) });
   return out;
 }
+/**
+ * Each format in an adapter's documents map that no artifacts entry yields with the same tool (EE-230), one line each.
+ * The documents map says which tool renders a format the catalog leaves to the harness; the artifacts list says what
+ * the harness can produce. A format with no entry, or one whose entries name another tool, means the two drifted.
+ * Pure, so verify() and a test can call it on any adapter.
+ */
+export function documentGaps(a: Pick<Adapter, "documents" | "artifacts">): string[] {
+  const out: string[] = [];
+  for (const [format, d] of Object.entries(a.documents ?? {})) {
+    const yields = (a.artifacts ?? []).filter((x) => x.formats.includes(format as (typeof x.formats)[number]));
+    if (!yields.length) out.push(`documents.${format} uses ${d.use}, and no artifacts entry yields ${format}`);
+    else if (!yields.some((x) => x.use === d.use)) out.push(`documents.${format} uses ${d.use}, but the artifacts entries that yield ${format} (${yields.map((x) => x.id).join(", ")}) use ${yields.map((x) => x.use).join(" or ")}`);
+  }
+  return out;
+}
+
 export const byName = (name: string): LoadedAdapter => { const a = adapters().find((x) => x.name === name); if (!a) throw new Error(`no adapter ${name}: ${adapters().map((x) => x.name).join(", ")}`); return a; };
 
 /** The skills of the packages open now in a venture. */
