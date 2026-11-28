@@ -13,4 +13,4 @@ tags: [operating-model, stub]
 
 The full design of the operating model for the agent team (roles, decision rights, handoff contract, escalation classes and decision ledger) is kept privately.
 
-The operational rules a skill needs are in the skills and templates that cite this note: the handoff contract is in `templates/handoff-v2.md`, and roles and decision rights are in the role library (`packages/naive/src/roles/`) and `packages/naive/template/governance/decision-rights.json`.
+The operational rules a skill needs are in the skills and templates that cite this note: the handoff contract is in `packages/naive/src/functions/capabilities/handoff-v2.md`, and roles and decision rights are in the role library (`packages/naive/src/roles/`) and `packages/naive/template/governance/decision-rights.json`.

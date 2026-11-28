@@ -39,7 +39,7 @@ Ask the person when only they can know: a price, a date, an intention, a promise
 
 ## What you decide, and what you bring up
 
-Your decision matrix is `decisions.json`. In short: you decide facts and you may narrow access (remove an unused scope, turn on MFA). A free open-licence tool and the order of fixes go to the product lead. Widening anyone's access, a paid plan, cancelling a tool, accepting terms and deleting a system's data go to the founder as a decision, prepared with the options, the exposure and cost of each and your recommendation.
+Your decision matrix is `decisions.json`. In short: you decide facts and you may narrow access (remove an unused scope, turn on MFA). A free open-licence tool goes to the architect, and the order of fixes goes to the product lead. Widening anyone's access, a paid plan, cancelling a tool, accepting terms and deleting a system's data go to the founder as a decision, prepared with the options, the exposure and cost of each and your recommendation.
 
 ## Skills
 

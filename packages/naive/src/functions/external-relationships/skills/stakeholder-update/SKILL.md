@@ -6,9 +6,9 @@ created: 2026-05-15
 source: hybrid
 name: stakeholder-update
 description: >
-  Compose a stakeholder update tailored to audience + cadence. Reads project
-  state (recent SESSION_LOG entries, articulation closure status, metrics
-  review outputs, decisions log) and produces an update in the right register
+  Compose a stakeholder update tailored to audience + cadence. Reads the
+  venture's records (the last update, the money summary, goals, decisions,
+  investors, ownership and open raises) and produces an update in the right register
   for the audience: exec brief / engineering detail / customer-facing / investor
   update / board materials. Sponsored by Chief of Staff role.
   MANDATORY TRIGGERS: stakeholder update, status update, weekly update,
@@ -22,7 +22,7 @@ The Chief-of-Staff-sponsored skill for composing updates tailored to specific au
 
 ## Why stakeholder-update exists
 
-Per [[../../venture-template/roles/chief-of-staff|Chief of Staff role]], CoS owns the rhythm of stakeholder communications — all-hands, board updates, investor updates, customer comms. These updates draw from project state but need translation: an engineering team's progress reads differently to engineers vs. the board vs. customers. The skill handles the translation.
+Per [[../../../../roles/chief-of-staff/SKILL|Chief of Staff role]], CoS owns the rhythm of stakeholder communications — all-hands, board updates, investor updates, customer comms. These updates draw from project state but need translation: an engineering team's progress reads differently to engineers vs. the board vs. customers. The skill handles the translation.
 
 ## When to invoke
 
@@ -44,7 +44,7 @@ A stakeholder update sized to the audience + cadence. Structure varies by type:
 - **Status** — green / yellow / red on key initiatives
 - **Highlights** — 3-5 bullets, mostly outcomes (shipped, achieved, decided)
 - **Risks + asks** — what's at risk + what the audience can help with
-- **Numbers** — relevant metrics (from [[../metrics-review/SKILL|metrics-review]] outputs)
+- **Numbers** — relevant metrics (from [[../../../strategy/skills/metrics-review/SKILL|metrics-review]] outputs)
 - Length: 1-2 paragraphs + scorecard
 
 ### Engineering detail (technical team / CTO)
@@ -59,7 +59,7 @@ A stakeholder update sized to the audience + cadence. Structure varies by type:
 
 - **What's new** — user-facing capabilities, in customer register (not engineer register)
 - **What's better** — improvements, in customer-relevant framing
-- **What's coming** — light foreshadowing of next version (per [[../foreshadowing-audit/SKILL|foreshadowing-audit]] discipline)
+- **What's coming** — light foreshadowing of next version (per [[../../../capabilities/skills/foreshadowing-audit/SKILL|foreshadowing-audit]] discipline)
 - Length: short; voice-aligned with brand
 
 ### Investor update (monthly/quarterly to investors)
@@ -94,13 +94,13 @@ Ask:
 
 ### Step 2 — Read project state
 
-Pull from:
-- Recent SESSION_LOG entries (the project's institutional memory)
-- Articulation closure inventory (what's done vs in-flight vs deferred)
-- Metrics review outputs (numbers + interpretation)
-- Decision log (significant calls)
-- Idea archive (what was tried + decided against, if relevant)
-- The per-project orchestration HTML (current state overview)
+Pull from the venture's records, read through the router:
+- The last update (`investor-relations/updates`), so this one reports the same metrics, defined the same way
+- The money summary (`purpose/money/summary`): cash, burn and runway
+- Goals (`foundation/goals`) and their measures, for what moved and what did not
+- Decisions (`decisions/*`) settled or opened since the last update
+- Investors (`investors`), the ownership record (`governance/ownership`) and open raises (`investor-relations/raises`), for who receives the update and what to ask
+- Metrics review outputs (numbers + interpretation), when a metrics review has run
 
 If any input is missing, surface to the operator.
 
@@ -147,14 +147,14 @@ tags: [stakeholder-update, <entity>, <audience>]
 
 ### Step 6 — Surface to the orchestration HTML
 
-Per [[../../_ideas/build-roadmap-and-html-orchestration-2026-05-12|§32]], stakeholder updates show in the Business pillar section of the orchestration HTML with their audience + date.
+Each update is kept as an `investor-relations/updates` record with its audience and date.
 
 ## Posture
 
 Stakeholder-update runs in a **mode that matches the audience**:
 
 - **Executive / board / investor updates** — office-hours-mode posture. Sharp, evidence-driven, honest about risks.
-- **Customer / all-hands** — friend-mode posture. Generative, energetic, celebratory.
+- **Customer / all-hands** — warm posture. Generative, energetic, celebratory.
 - **Engineering** — office-hours-mode by default; engineers appreciate directness.
 
 The skill should declare its posture explicitly so the operator can adjust if needed.
@@ -167,10 +167,8 @@ The skill should declare its posture explicitly so the operator can adjust if ne
 
 ## Relationship to other skills
 
-- [[../metrics-review/SKILL|metrics-review]] — feeds the numbers section of most updates
-- [[../articulation-closure/SKILL|articulation-closure]] — feeds the what-shipped section
-- [[../friend-mode/SKILL|friend-mode]] / [[../office-hours-mode/SKILL|office-hours-mode]] — posture per audience
-- [[../canonicalize/SKILL|canonicalize]] — recurring update types (weekly investor, monthly all-hands) have canonical formats
+- [[../../../strategy/skills/metrics-review/SKILL|metrics-review]] — feeds the numbers section of most updates
+- [[../../../strategy/skills/office-hours-mode/SKILL|office-hours-mode]] — posture for executive, board, investor and engineering updates
 
 ## Status
 

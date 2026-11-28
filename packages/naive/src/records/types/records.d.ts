@@ -4037,9 +4037,9 @@ export type Meeting = {
   note?: string;
 };
 
-/** The money package's summary (money/_summary.json, EE-070): cash, monthly flows and runway as of the last sync from the system of record (a bank such as Rho), the one money record that is versioned and the only one an agent or a trace sees. source says whether it came from a sandbox, a saved fixture, or the founder's live account. */
+/** The money package's summary (money/_summary.json, EE-070): cash, monthly flows and runway, as of the last sync from the system of record (a bank such as Rho) or as the finance agent wrote it from the money accounts and the budget. It is the one money record that is versioned. An agent reads it and the money accounts, and check-private keeps the transaction streams out of model inputs and releases. source says whether it came from a sandbox, a saved fixture, the founder's live account or the venture's own records. */
 export type MoneySummary = {
-  /** rho-sandbox, rho-live, or a fixture's name */
+  /** rho-sandbox, rho-live, a fixture's name, or records when the finance agent wrote it from the venture's money accounts and budget */
   source: string;
   business?: string;
   /**
