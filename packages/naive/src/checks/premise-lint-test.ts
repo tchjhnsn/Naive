@@ -207,8 +207,8 @@ ok(answered.length >= 1 && premiseFiles(d9).length === answered.length, "adding 
 
 // Each missing parent and each mismatched requirement is its own decision.
 const d10 = fresh("Grow a business.");
-put(d10, "foundation/requirements/two-missing.json", { id: "two-missing", statement: "Holds.", derives_from: ["g", "gone-a", "gone-b"], must_hold_by: "discovery", verified_by: { kind: "check", ref: "x" } });
-for (const id of ["late-a", "late-b"]) put(d10, `foundation/requirements/${id}.json`, { id, statement: `${id} holds.`, derives_from: ["g/m"], must_hold_by: "scale", verified_by: { kind: "check", ref: "x" } });
+put(d10, "foundation/requirements/two-missing.json", { id: "two-missing", statement: "Holds.", owner: "T", derives_from: ["g", "gone-a", "gone-b"], must_hold_by: "discovery", verified_by: { kind: "check", ref: "x" } });
+for (const id of ["late-a", "late-b"]) put(d10, `foundation/requirements/${id}.json`, { id, statement: `${id} holds.`, owner: "T", derives_from: ["g/m"], must_hold_by: "scale", verified_by: { kind: "check", ref: "x" } });
 put(d10, "foundation/exit-criteria/discovery.json", { phase: "discovery", criteria: [{ id: "c", statement: "Done", serves: ["g/m"] }] });
 run(d10); run(d10);
 const asked = premiseFiles(d10).map((f) => JSON.parse(readFileSync(join(d10, "decisions", f), "utf8")).question);
@@ -235,7 +235,17 @@ put(d13, "decisions/under-nothing.decision.json", { id: "under-nothing", questio
 const parents = lint(d13, { config: {} }).filter((f) => f.field === "parent");
 ok(parents.length === 1 && parents[0].record === "decisions/under-nothing", "linter-drafted, venture and foundation parents resolve; a missing one is still reported");
 
-for (const d of [d4, d5, d6, d7, d8, d9, d10, d11, d13]) rmSync(d, { recursive: true, force: true });
+// A requirement names one owner; a deleted one is no premise, and a requirement deriving from it says who deleted it.
+const d14 = fresh("Grow a business.");
+put(d14, "foundation/requirements/unowned.json", { id: "unowned", statement: "Holds.", derives_from: ["g/m"], must_hold_by: "discovery", verified_by: { kind: "check", ref: "x" } });
+put(d14, "foundation/requirements/cut.json", { id: "cut", statement: "Holds.", status: "deleted", deleted: { by: "Torian", at: "2026-11-19T05:00:00Z", why: "No goal needs it." }, derives_from: ["gone"] });
+put(d14, "foundation/requirements/child.json", { id: "child", statement: "Holds.", owner: "T", derives_from: ["g/m", "cut"], must_hold_by: "discovery", verified_by: { kind: "check", ref: "x" } });
+const f14 = lint(d14, { config: {} });
+ok(f14.some((f) => f.record === "foundation/requirements/unowned" && f.field === "owner" && f.aspect === "no-owner"), "a requirement with no owner is asked who owns it");
+ok(!f14.some((f) => f.record === "foundation/requirements/cut"), "a deleted requirement is not linted");
+ok(f14.some((f) => f.record === "foundation/requirements/child" && f.aspect === "dependency" && /Torian deleted: No goal needs it/.test(JSON.stringify(f))), "a requirement deriving from a deleted one names who deleted it and why");
+
+for (const d of [d4, d5, d6, d7, d8, d9, d10, d11, d13, d14]) rmSync(d, { recursive: true, force: true });
 rmSync(d3, { recursive: true, force: true });
 rmSync(dir, { recursive: true, force: true }); rmSync(d2, { recursive: true, force: true });
 console.log(failed ? `\n${failed} failing` : "\nall passing");

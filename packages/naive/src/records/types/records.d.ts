@@ -6230,11 +6230,27 @@ export type Reference = {
   }[];
 };
 
-/** A canonical requirement, at <venture>/foundation/requirements/<id>.json: something that must hold, derived from goals or their measures, by a phase, constraining named functions and verified by a check, evidence or a person. Read by validation and the decision index; framework-neutral. */
+/** A canonical requirement, at <venture>/foundation/requirements/<id>.json: something that must hold, derived from goals or their measures, by a phase, constraining named functions and verified by a check, evidence or a person, owned by one named person. A requirement is never removed: deleting one sets status deleted and records who deleted it, when and why, so the deletion can be traced and the requirement added back. Read by validation, premise lint and the decision index; framework-neutral. */
 export type Requirement = {
   id: string;
   venture?: string;
   statement: string;
+  /** The one person who answers for this requirement and decides when it changes or goes: a person's name, never a team or function */
+  owner?: string;
+  /** active when missing. A deleted requirement stays as a record and no longer constrains anything */
+  status?: "active" | "deleted";
+  /** Who deleted the requirement, when and why. Present exactly when status is deleted */
+  deleted?: {
+    /** The person who deleted it */
+    by: string;
+    /**
+     * @format date-time
+     */
+    at: string;
+    why: string;
+    /** The decision that deleted it, when one did */
+    decision?: string;
+  };
   /** Goal ids or measure ids (goal/measure or a bare measure id) */
   derives_from: string[];
   must_hold_by?: "discovery" | "validation" | "beachhead" | "scale" | "platform";

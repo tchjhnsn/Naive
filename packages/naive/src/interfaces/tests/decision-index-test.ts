@@ -7,7 +7,7 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "nod
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { decisions, ownScore, propose } from "../../engine/decisions.ts";
-import { phaseWeight, rankHistory, read, rebuild, update, type DecisionIndex, type IndexEntry } from "../../engine/decision-index.ts";
+import { phaseWeight, rankHistory, read, rebuild, update, violations, type DecisionIndex, type IndexedRequirement, type IndexEntry } from "../../engine/decision-index.ts";
 import { read as readAnswer } from "./answer.ts";
 import { record } from "../../core/provenance.ts";
 import { call } from "../../router/router.ts";
@@ -91,6 +91,10 @@ try {
   expect("the lifted, flagged decision now ranks first", idx.entries[0].id === "shop-scale", idx.entries.map((e: Entry) => e.id));
   const s = spawnSync(process.execPath, [join(repo, "packages/naive/src/records/validate.ts"), "--schema", "decision-record.schema.json", "--file", join(v, "product/decisions/shop-scale.decision.json")], { encoding: "utf8" });
   expect("the requirements field matches the decision-record schema", s.status === 0, s.stdout + s.stderr);
+  // A deleted requirement constrains nothing: a decision naming it is told who deleted it and why.
+  const cut = new Map<string, IndexedRequirement>([["cut", { id: "cut", file: "foundation/requirements/cut.json", statement: "Use one vendor", status: "deleted", deleted: { by: "Torian", at: "2026-11-19T05:00:00Z", why: "No goal needs it." }, check: { answer_must_not_match: "two" } } as IndexedRequirement]]);
+  const gone = violations({ answer: "two vendors", requirements: [{ id: "cut", relation: "constrains" }] }, cut);
+  expect("a decision naming a deleted requirement is told who deleted it, and its check no longer runs", gone.length === 1 && gone[0].why === "names requirement cut, which Torian deleted at 2026-11-19T05:00:00Z: No goal needs it.", gone);
 
   // --since counts events from a time.
   idx = update(v, { since: "2000-01-01T00:00:00Z" });

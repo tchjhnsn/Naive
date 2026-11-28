@@ -116,7 +116,7 @@ The checkers and lints. A checker reads a workspace, a venture or the repository
 | [`lint-product.ts`](./lint-product.ts) | Product alignment lint. |
 | [`lint-validation.ts`](./lint-validation.ts) | Validation alignment lint. |
 | [`premise-lint-test.ts`](./premise-lint-test.ts) | Tests the premise-attack linter. |
-| [`premise-lint.ts`](./premise-lint.ts) | Premise-attack linter (Torian, 2026-10-30). Since EE-221 a bet (`foundation/bets`) is a sixth kind of record it attacks, with one new aspect, `no-counter-evidence`, for a claim with no evidence against it and no rival; the bet cells also cover a claim gap, nothing that would falsify it, nobody's odds on it, an unresolved or cyclic premise, a premise weakened or refuted while the bet is supported, and two bets whose statements restate each other. |
+| [`premise-lint.ts`](./premise-lint.ts) | Premise-attack linter (Torian, 2026-10-30). Since EE-221 a bet (`foundation/bets`) is a sixth kind of record it attacks, with one new aspect, `no-counter-evidence`, for a claim with no evidence against it and no rival; the bet cells also cover a claim gap, nothing that would falsify it, nobody's odds on it, an unresolved or cyclic premise, a premise weakened or refuted while the bet is supported, and two bets whose statements restate each other. It also asks who owns a requirement with no owner, skips a deleted requirement, and names who deleted one that another derives from. |
 | [`test.mjs`](./test.ts) | Tests for the schema's checkers. |
 | [`verify.ts`](./verify.ts) | The verification substrate. |
 
