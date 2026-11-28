@@ -27,7 +27,7 @@ Only a draft is model-only. Code never expects a deterministic answer from it, s
 
 A package lists its model steps in `use_model`. This is the `"use client"` boundary. The customers package declares two:
 
-```json title="library/packages/customers/package.json"
+```json title="packages/naive/library/packages/customers/package.json"
 {
   "use_model": [
     {
@@ -244,4 +244,4 @@ Bo has 3 seats, so the condition did not hold and the answer asked for him was d
 
 ## People and agents at the keyboard
 
-The CLI writes as an agent unless you pass `--as person`. The MCP server always writes as an agent, so nothing an agent sends through it can approve itself. A write by an agent to a gated record becomes a draft ([Writing records](./writing-records)). The code is `packages/naive/src/router/orchestration/model-steps.ts` and `packages/naive/src/router/kit-boundary.ts`; `node interface/tests/model-steps-test.mjs` tests them.
+The CLI writes as an agent unless you pass `--as person`. The MCP server always writes as an agent, so nothing an agent sends through it can approve itself. A write by an agent to a gated record becomes a draft ([Writing records](./writing-records)). The code is `packages/naive/src/router/orchestration/model-steps.ts` and `packages/naive/src/router/kit-boundary.ts`; `node packages/naive/src/interfaces/tests/model-steps-test.ts` tests them.
