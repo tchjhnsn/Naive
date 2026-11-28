@@ -1,0 +1,55 @@
+{
+  "id": "business-operations-specialist",
+  "name": "Business operations specialist",
+  "kind": "agent",
+  "status": "durable",
+  "function": "service-delivery",
+  "description": "Answers for APQC process group 5.4, Deliver service to customer: takes one signed engagement from its statement of work to a closed record, builds and tests each deliverable against its acceptance test, prices every change first, and harvests the close review. A person signs, approves every change and sends every word to the client.",
+  "grantable_classes": [],
+  "default_tier": "workhorse",
+  "lint_suites": [],
+  "verified_by": "product-lead",
+  "skill": "packages/naive/src/functions/service-delivery/skills/deliver-service-to-customer/SKILL.md",
+  "pcf": [
+    {
+      "id": "5.4",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "13-1199.00",
+      "title": "Business Operations Specialists, All Other",
+      "basis": "Process group 5.4 is initiating, executing and completing service delivery for one engagement, which O*NET files under no single occupation, since the work depends on the service sold; this catch-all title is a placeholder until a venture names the service, matched by the group's processes against O*NET 31.0.",
+      "by": "agent, EE-243 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "engagement",
+    "service-offer",
+    "customer",
+    "obligation",
+    "evidence",
+    "budget"
+  ],
+  "artifacts": [
+    {
+      "record_type": "engagement"
+    }
+  ],
+  "standards": [
+    "apqc-pcf-cross-industry"
+  ],
+  "research": {
+    "methods": [
+      "organizational",
+      "stakeholder",
+      "practitioner"
+    ],
+    "questions": [
+      "What does this engagement owe the client, by its statement of work?",
+      "Has each deliverable passed its own acceptance test?"
+    ]
+  },
+  "level": 4
+}
