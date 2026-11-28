@@ -22,6 +22,9 @@
 //
 // Its own level is levelOf() over that state and its runs. Effects are propagate() over the feeds edges.
 //
+// Roles (EE-234) are left out: effectsGraph() builds the graph without them, so neither a role node nor an element
+// that only a role's RACI link reaches takes a state or carries harm. A role does work; it is not an element.
+//
 //   node packages/naive/src/engine/element-effects.ts <venture dir> [<element>] [--at <iso>] [--json]
 //   naive effects [<element>] [--venture <dir>] [--at <iso>] [--json]
 
@@ -37,11 +40,14 @@ import { resolve } from "../records/routes/routes.ts";
 import { LIVE, dueFor, readRuns } from "./due.ts";
 import type { WorkflowRun } from "./due.ts";
 import { buildGraph, elementOf, shippedInput, toJson } from "./element-graph.ts";
-import type { ElementGraph, ElementNode } from "./element-graph.ts";
+import type { ElementGraph, ElementNode, GraphInput } from "./element-graph.ts";
 import { LEVELS, causeKey, levelOf, propagate, replay, whatIf, SCENARIOS } from "./element-state.ts";
 import type { Data, Effective, ElementEvent, Feeds, Own, Quality, Scenario, WhatIf } from "./element-state.ts";
 import { freshness } from "./freshness.ts";
 import { functionsOf } from "./research-programs.ts";
+
+/** The graph effects read: the element graph without its roles. */
+export const effectsGraph = (input: GraphInput): ElementGraph => buildGraph({ ...input, roles: [], documents: {} });
 
 /** What belongs to an element: its workflows and the record types its steps write. */
 export interface Attachment { readonly workflows: readonly string[], readonly records: readonly string[] }
@@ -169,7 +175,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const program: Effect.Effect<void, NaiveError, "naive/VentureFs"> = Effect.gen(function* () {
     if (!dir || stray.length || !at || Number.isNaN(Date.parse(at)) || args.some((a) => a.startsWith("--") && !["--at", "--json"].includes(a))) return yield* new CannotRun({ message: usage });
     const now = new Date(at).toISOString();
-    const g = buildGraph(yield* shippedInput());
+    const g = effectsGraph(yield* shippedInput());
     const reports = report(g, yield* evidenceOf(dir, now), now);
     const json = args.includes("--json");
     if (ref !== undefined) {
