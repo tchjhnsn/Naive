@@ -42,6 +42,21 @@
         }
       }
     },
+    "artifacts": {
+      "type": "array",
+      "description": "Every kind of artifact this harness can produce (EE-230), each with the formats it yields and the skill or tool that makes it. The document catalog says which formats a document takes and names no vendor; this list says how this harness makes them. Every format in documents must be yielded by an entry here that uses the same tool, which node packages/naive/src/interfaces/adapters.ts verify checks. An empty list says the harness has no tool Naive names, so every format past Markdown is left to the agent.",
+      "items": {
+        "type": "object",
+        "required": ["id", "formats", "use"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$", "description": "The artifact kind as this harness names it, unique in the list." },
+          "formats": { "type": "array", "minItems": 1, "items": { "enum": ["md", "pdf", "docx", "pptx", "xlsx", "html", "site"] }, "description": "The formats it yields, as the document catalog names them (xlsx beside them for a spreadsheet)." },
+          "use": { "type": "string", "minLength": 1, "description": "The skill, tool or command the agent loads to make it in this harness." },
+          "how": { "type": "string", "description": "What to watch for, in one plain sentence." }
+        }
+      }
+    },
     "note": { "type": "string" }
   }
 }
