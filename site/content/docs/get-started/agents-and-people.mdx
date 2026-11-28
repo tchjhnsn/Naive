@@ -3,7 +3,7 @@ title: Agents and people
 description: Declare the steps where a model judges or drafts, see what it is given, run it, and see whose each answer is.
 type: tutorial
 status: draft
-lastReviewed: 2026-10-29
+lastReviewed: 2026-11-28
 owner: technical-writer
 ---
 
@@ -244,4 +244,4 @@ Bo has 3 seats, so the condition did not hold and the answer asked for him was d
 
 ## People and agents at the keyboard
 
-The CLI writes as an agent unless you pass `--as person`. The MCP server always writes as an agent, so nothing an agent sends through it can approve itself. A write by an agent to a gated record becomes a draft ([Writing records](./writing-records)). The code is `packages/naive/src/router/orchestration/model-steps.ts` and `packages/naive/src/router/kit-boundary.ts`; `node packages/naive/src/interfaces/tests/model-steps-test.ts` tests them.
+The CLI writes as an agent unless you pass `--as person`. The MCP server always writes as an agent, so nothing an agent sends through it can approve itself. A write by an agent to a gated record becomes a draft ([Writing records](./writing-records)). An agent deployed as a role is a digital worker: a record a person can see, count and stop, which writes nothing until a person activates it ([Roles and digital workers](../concepts/roles-and-workers)). The code is `packages/naive/src/router/orchestration/model-steps.ts` and `packages/naive/src/router/kit-boundary.ts`; `node packages/naive/src/interfaces/tests/model-steps-test.ts` tests them.

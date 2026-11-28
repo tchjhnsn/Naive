@@ -3,7 +3,7 @@ title: Venture types and roles
 description: Choose what kind of venture you are creating and your role in it, and see who owns which function.
 type: explanation
 status: draft
-lastReviewed: 2026-10-29
+lastReviewed: 2026-11-28
 owner: technical-writer
 ---
 
@@ -41,7 +41,7 @@ Investors are a role, like founders. A general partner runs a fund, so an invest
 | `advisor` | advisor | no | no |
 | `board-member` | governor | no | no |
 
-Each role is a folder in the role library, `packages/naive/src/roles/<id>/`, beside the agent roles. A business's own roles in `governance/roles/` replace or add to them.
+Each role is a module in the role library, `packages/naive/src/roles/<id>/`, with `kind` set to `person`, beside the agent roles. A person role is never deployed as an agent. A business's own roles in `governance/roles/<id>/role.json` replace a library role with the same id or add new ones ([Roles and digital workers](../concepts/roles-and-workers)).
 
 ## Hats
 
@@ -73,7 +73,7 @@ Check that every role, hat and founder file agrees:
 node packages/naive/src/checks/check-people.ts ~/ventures
 ```
 
-The check fails when a role is not in the registry or not one the venture's type has, when a hat is a function the venture does not import, when a solo founder is missing a hat, when no one owns a function, and when a founder file and the roster disagree. `naive check` runs it too.
+The check fails when a role is not in the role library or not one the venture's type has, when a hat is a function the venture does not import, when a solo founder is missing a hat, when no one owns a function, and when a founder file and the roster disagree. `naive check` runs it too.
 
 ## A fund's records
 
