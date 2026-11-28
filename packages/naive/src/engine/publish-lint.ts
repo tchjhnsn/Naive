@@ -18,17 +18,20 @@
 // marketing/publish-terms.json, the record the function that writes the words owns; the levels stay in the config.
 //
 // The feedback loop: every run appends its findings to .naive/lint-findings.jsonl (the venture's, else the
-// working directory's). A finding is waived by listing it under publish_lint.waived ({ rule, file, text? }).
+// working directory's), through packages/naive/src/engine/lint-findings.ts, the log it shares with the artifact lint
+// (EE-231); a rule set off writes nothing. A finding is waived by listing it under publish_lint.waived ({ rule, file, text? }).
 //
 //   node packages/naive/src/engine/publish-lint.ts check <file or folder>... [--venture <dir>] [--json] [--log <file>]
 //   node packages/naive/src/engine/publish-lint.ts check --report [--venture <dir>] [--json] [--log <file>]
 //       the rules most often waived, and the leaks found in files already published
 
-import { appendFileSync, existsSync, mkdirSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 import { configFile, logical, ventureFile } from "../core/venture-paths.ts";
 import { frontmatter } from "./frontmatter.ts";
 import { leaks, patterns } from "./check-leaks.ts";
+import { appendFindings, LOG, lintOf, readFindings, type LintFinding } from "./lint-findings.ts";
+import { runSync } from "../core/effect/run.ts";
 import type { NaiveConfig, PublishTerms } from "../records/types/records.d.ts";
 
 export { frontmatter } from "./frontmatter.ts";
@@ -223,16 +226,19 @@ export async function check(paths: string[], { venture }: { venture?: string } =
   return { ok: !findings.some((f) => f.severity === "error" && !f.waived), stages, findings };
 }
 
-export const logFile = (venture: string | undefined, log: string | undefined) => log ?? join(venture ?? process.cwd(), ".naive", "lint-findings.jsonl");
+export const logFile = (venture: string | undefined, log: string | undefined) => log ?? join(venture ?? process.cwd(), LOG);
 
+/** Appends a run's findings to the shared lint findings log, tagged as the publish lint's; a rule set off writes nothing. */
 export function append(file: string, findings: Finding[], at = new Date().toISOString()) {
-  mkdirSync(dirname(file), { recursive: true });
-  appendFileSync(file, findings.map((f) => JSON.stringify({ at, ...f }) + "\n").join(""));
+  const lines = findings.filter((f) => f.severity === "warn" || f.severity === "error")
+    .map(({ term_severity: _t, at_least: _a, ...f }) => ({ at, lint: "publish", ...f }) as LintFinding);
+  runSync(appendFindings(file, lines));
 }
 
 /** The loop: which rules are waived most often, and leaks found in files already published. */
 export function report(file: string, { venture }: { venture?: string } = {}) {
-  const rows: (Finding & { at: string })[] = existsSync(file) ? readFileSync(file, "utf8").split("\n").filter(Boolean).map((l) => { try { return JSON.parse(l); } catch { return null; } }).filter(Boolean) : [];
+  // The log is shared with the artifact lint (EE-231); this report reads the publish lint's lines only.
+  const rows = runSync(readFindings(file)).filter((l) => lintOf(l) === "publish") as unknown as (Finding & { at: string })[];
   const { waived } = configFor(venture);
   const isWaived = (f: Finding) => f.waived || waived.some((w) => w.rule === f.rule && (!w.file || w.file === f.file) && (!w.text || w.text === f.text));
   const counts: Record<string, { rule: string, findings: number, waived: number }> = {};

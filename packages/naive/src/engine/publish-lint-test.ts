@@ -7,6 +7,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { check, configFor, report } from "./publish-lint.ts";
 import type { Finding } from "./publish-lint.ts";
+import { validateValue } from "../records/validate.ts";
 
 const repo = new URL("../../../..", import.meta.url).pathname;
 let failed = 0;
@@ -75,6 +76,8 @@ try {
   expect("exit 1 on an error", cli([join(v, "pages/secret.mdx"), "--venture", v, "--log", log]).status === 1);
   cli([join(v, "pages/leak.mdx"), "--venture", v, "--log", log]);
   expect("every run appends to the log", readFileSync(log, "utf8").trim().split("\n").length >= 2);
+  const lines = readFileSync(log, "utf8").trim().split("\n").map((l) => JSON.parse(l));
+  expect("each logged line is the publish lint's and matches lint-finding.schema.json (EE-231)", lines.every((l) => l.lint === "publish" && validateValue("lint-finding.schema.json", l).status === 0), lines);
   const r = report(log, { venture: v });
   expect("report: the waived rule is counted", r.most_waived[0]?.rule === "leaks" && r.most_waived[0].waived >= 1, r);
   expect("report: a leak in a published page is found after publish", r.leaks_after_publish.some((f) => f.file === "pages/leak.mdx"), r);

@@ -168,6 +168,7 @@ const steps: Step[] = [
   ["field visibility: only a person sets public, the public reader, the publish check", "node", ["packages/naive/src/interfaces/tests/visibility-test.ts"]],
   ["internal terms: the founder-edited dictionary, its schema, warn and fail terms", "node", ["packages/naive/src/engine/internal-terms-test.ts"]],
   ["publish lint: copy distance, leaks, brand, claims, marks, personal data, secrets, and the findings loop", "node", ["packages/naive/src/engine/publish-lint-test.ts"]],
+  ["lint findings log: one schema for the publish and artifact lints, append and read through VentureFs, report by rule, role and harness (EE-231)", "node", ["packages/naive/src/engine/lint-findings-test.ts"]],
   ["leak canaries: every internal record seeded, facts and both artifacts built through the publish build, only known leaks", "node", ["packages/naive/src/functions/marketing-and-sales/marketing/canaries-test.ts"]],
   ["publish lint: copy distance, leaks, brand, claims, marks, personal data, secrets, and the findings loop", "node", ["packages/naive/src/engine/publish-lint-test.ts"]],
   ["publish build: every public word compiled through the gate; canaries reach no channel", "node", ["packages/naive/src/functions/marketing-and-sales/marketing/publish-build-test.ts"]],
