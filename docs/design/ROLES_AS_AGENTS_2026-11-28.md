@@ -208,5 +208,6 @@ flowchart TD
 ## Not built
 
 - Everything in step 11.
-- In step 8: a record type for the research synthesis and one for the venture's own data model, so their gate questions stop being holes; and a temporary worker in a staffing plan, whose expiry would run from the draft rather than the decision. The step 1 schema holds their optional fields, which every library role leaves empty except `pcf` and `onet` (step 4) and the `reads` and `artifacts` of the architect and the product and design lead (step 9); Naive's own roles under `agents/` fill them (step 10).
+- In step 8: a record type for the research synthesis and one for the venture's own data model, so their gate questions stop being holes; and a temporary worker in a staffing plan, whose expiry would run from the draft rather than the decision.
+- The step 1 schema holds their optional fields, which every library role leaves empty except `pcf` and `onet` (step 4) and the `reads` and `artifacts` of the architect and the product and design lead (step 9); Naive's own roles under `agents/` fill them (step 10).
 - Vault wikilinks to the archived `roles/ceo` and `roles/cto` remain in a few skills and the venture template's `index.md` and `pillars/product.md`. They pointed at vault paths that were already broken, and are left for the step that writes those rows.
