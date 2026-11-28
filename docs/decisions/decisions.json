@@ -4282,6 +4282,125 @@
       ]
     },
     {
+      "id": "EE-248",
+      "date": "2026-11-28",
+      "status": "in-force",
+      "decision": "The role library gains one role per APQC PCF level 2 process group of assets that no role was responsible or accountable for (10.1 to 10.4): facilities-manager (10.1), construction-manager (10.2), first-line-supervisor-of-mechanics-installers-and-repairers (10.3) and appraiser-of-personal-and-business-property (10.4). Each is a durable library role at packages/naive/src/roles/<id>/ with a role.json and a SKILL.md, in function assets, accountable for its process group, named after its best O*NET 31.0 occupation with the match recorded as an agent's and not yet reviewed by a person, verified by finance-lead, the lead whose portfolio covers assets, granted no decision class by default, and pointing at the function's skill for that process group. Acquiring space and selling an asset are commitments a person makes, so those two roles are either. The facilities manager makes lease records and the maintenance supervisor asset register entries. 10.3 is matched to the supervisor occupation, not the hands-on repairer (49-9071.00), because the role plans and records maintenance. pcf-roles.json is regenerated. This is step 11 of the roles as agents plan for assets (docs/design/ROLES_AS_AGENTS_2026-11-28.md).",
+      "why": "Torian on 2026-11-28 decided that the first cut of business rows is one role per level 2 process group that no role answers for, named after the best O*NET match, one function per pull request, so check-roles --complete shows every process group of a function covered and each role a person can review.",
+      "related": [
+        "EE-229",
+        "EE-232",
+        "EE-233"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/roles/facilities-manager/role.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/roles/construction-manager/role.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/roles/first-line-supervisor-of-mechanics-installers-and-repairers/role.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/roles/appraiser-of-personal-and-business-property/role.json",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
+      "id": "EE-247",
+      "date": "2026-11-28",
+      "status": "in-force",
+      "decision": "The role library gains one durable role per APQC PCF level 2 process group of the finance function that no role was responsible or accountable for (roles plan step 11, first cut): budget-analyst (9.1, O*NET 13-2031.00, agent); billing-and-posting-clerk (9.2, O*NET 43-3021.00, agent); accountant (9.3, O*NET 13-2011.00, agent); financial-analyst (9.4, O*NET 13-2051.00, agent); payroll-clerk (9.5, O*NET 43-3051.00, agent); bookkeeping-clerk (9.6, O*NET 43-3031.00, agent); treasurer (9.7, O*NET 11-3031.01, either); auditor (9.8, O*NET 13-2011.00, agent); tax-preparer (9.9, O*NET 13-2082.00, agent); controller (9.10, O*NET 11-3031.01, agent); customs-broker (9.11, O*NET 13-1041.08, agent). Each is accountable for its process group, named after the best O*NET 31.0 match judged from check-roles --complete's suggestions, verified by finance-lead, draws on the function's skill for its process group, reads and makes only data-model record types or document kinds, works to apqc-pcf-cross-industry and lists no grantable class. treasurer is kind either, because the work is mostly a relationship or a commitment a person owns, and an agent holding it prepares and recommends. Each O*NET match is marked by an agent and not yet reviewed by a person. check-roles --complete reports no gap under finance.",
+      "why": "Torian on 2026-11-28 (roles plan, step 11): a business needs a row for every process group it runs, and the first cut is one role per uncovered level 2 group named after its O*NET match, one function per pull request.",
+      "related": [
+        "EE-229",
+        "EE-232",
+        "EE-233",
+        "EE-238"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/roles/budget-analyst/role.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/roles/billing-and-posting-clerk/role.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/roles/accountant/role.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/roles/financial-analyst/role.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/roles/payroll-clerk/role.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/roles/bookkeeping-clerk/role.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/roles/treasurer/role.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/roles/auditor/role.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/roles/tax-preparer/role.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/roles/controller/role.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/roles/customs-broker/role.json",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
       "id": "EE-152",
       "date": "2026-11-19",
       "status": "in-force",
