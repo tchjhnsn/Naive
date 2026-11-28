@@ -3892,6 +3892,34 @@
       ]
     },
     {
+      "id": "EE-234",
+      "date": "2026-11-28",
+      "status": "in-force",
+      "decision": "Roles are nodes of the element graph (EE-188). packages/naive/src/engine/element-graph.ts reads the role library and the document catalog: each role and each document kind a role produces is a node; a role's pcf links are raci edges to elements naming the RACI part, and an element only a role names joins the graph with its ancestors; a record_type artifact is a produces edge to a record type and a document_kind artifact a produces edge to the document kind, resolved through artifactKind so an unknown one is left out; a role's reads and a document kind's sources (the record types its sections read) are reads edges. depends-on between roles is derived and never typed: role A depends on role B when A reads a record type B produces, or produces a document kind rendered from one, and each edge names the record type, and the document kind when there is one, as its evidence. A role reading what it produces itself is not a dependency, and a cycle is reported, never refused. naive graph --role <id> [--json] [--mermaid] gives what the role depends on, what depends on it, its elements by RACI part, its artifacts and the library's cycles. Element effects (EE-190) build the graph without roles, so a role takes no state and carries no harm.",
+      "why": "Torian on 2026-11-28 (roles plan, step 6): a role's dependencies on other roles should come from what it reads and what others produce, so they can never drift from the role records, and the element graph is the one place Naive already joins work to the PCF.",
+      "related": [
+        "EE-188",
+        "EE-190",
+        "EE-229",
+        "EE-230",
+        "EE-232"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/element-graph.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/element-graph-test.ts",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
       "id": "EE-153",
       "date": "2026-11-19",
       "status": "in-force",
