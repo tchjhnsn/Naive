@@ -1,0 +1,51 @@
+{
+  "id": "architect",
+  "name": "Architect (Naive)",
+  "extends": "architect",
+  "kind": "agent",
+  "description": "Owns Naive's structure: its units and the order they import in, its formats and its dependencies, each choice written as an architecture decision record.",
+  "also_verified_by": [
+    "requirements-engineer"
+  ],
+  "skill": "agents/architect/SKILL.md",
+  "pcf": [
+    {
+      "id": "8.2.3",
+      "raci": "responsible"
+    },
+    {
+      "id": "2.3.1.6",
+      "raci": "consulted"
+    }
+  ],
+  "reads": [
+    "requirement",
+    "decision-record",
+    "design-document",
+    "product-capability"
+  ],
+  "artifacts": [
+    {
+      "document_kind": "adr"
+    },
+    {
+      "record_type": "design-document"
+    }
+  ],
+  "standards": [
+    "iso-42010-2022-architecture-description"
+  ],
+  "research": {
+    "methods": [
+      "standards",
+      "practitioner",
+      "scientific",
+      "organizational"
+    ],
+    "questions": [
+      "Which requirement does this structure serve?",
+      "What becomes harder once it is chosen, and can it be undone?"
+    ]
+  },
+  "level": 6
+}

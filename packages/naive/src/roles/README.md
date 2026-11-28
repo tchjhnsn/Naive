@@ -6,7 +6,7 @@ Up: [src](../README.md)
 
 The role library (EE-229): every role Naive knows, agent or person, as one module. A role is a folder holding `role.json`, a record that [`role.schema.json`](../records/role.schema.json) governs, and a short SKILL.md that tells an agent how to act in the role or how to work with the person who holds it. `kind` says who may hold the role: `agent`, `person` or `either`. An agent or either role carries what delegation needs (its function, the decision classes it may be granted, its default tier, its lint suites, its verifier and its skill); a person role carries what governance needs (`person_kind`, `founder`, `owns_when_solo`). A role with a `portfolio` is a lead. The library replaced the role templates under the venture template and the two role registers, which are archived in [`docs/archive/roles-2026-11/`](../../../../docs/archive/roles-2026-11/README.md).
 
-A venture's own roles live at `<venture>/governance/roles/<id>/role.json` and overlay the library by id: a venture role with a library role's id replaces it whole, and any other id adds a role.
+A venture's own roles live at `<venture>/governance/roles/<id>/role.json` and overlay the library by id: a venture role with a library role's id replaces it, and any other id adds a role. Naive's own roles, the ones that build Naive itself, live at [`agents/<id>/`](../../../../agents/README.md) in the same shape and overlay the library for Naive alone (EE-238). A role in either overlay may name a library role in `extends` and leave out every field it inherits but its aliases, so what the two share has one source: Naive's product-manager extends `product-design-lead`, whose alias is product-manager.
 
 ## Where things are
 
@@ -46,7 +46,7 @@ flowchart LR
 
 ## Run and test
 
-- `node packages/naive/src/checks/check-roles.ts [venture dir] [--json]` checks the library and, with a venture, its overlay: every file validates, its id matches its folder, `verified_by` and each `also_verified_by` name a known role and never the role itself, ids and aliases are unique, a person role grants no agent tier, each library `role.ts` exports a valid program whose id is its role's, and no venture role has a `role.ts`.
+- `node packages/naive/src/checks/check-roles.ts [venture dir] [--json]` checks the library and, with a venture, its overlay, or with none Naive's own roles under `agents/`: every file validates, its id matches its folder, `verified_by` and each `also_verified_by` name a known role and never the role itself, ids and aliases are unique, a person role grants no agent tier, each library `role.ts` exports a valid program whose id is its role's, and no venture role has a `role.ts`.
 - It also checks the links to APQC's framework and O*NET (EE-232): each `pcf[].id` is a hierarchy id in [`pcf.json`](../functions/pcf.json), named once per role; at most one role is accountable for an element, across the library and a venture's overlay; an accountable role is in the element's function or is a lead whose portfolio covers it; and each `onet[].code` is an occupation in [`onet.json`](../functions/onet.json) with the same title.
 - `node packages/naive/src/checks/check-roles.ts [venture dir] --complete [--level <n>]` also fails on each element of levels 1 to `--level` (2 by default) under a function the business runs (all 13, or the venture's `venture.json` departments) that no role is responsible or accountable for, and suggests three O*NET occupations for it by word overlap ([`onet-match.ts`](../engine/onet-match.ts)). A suggestion is a lead for a person, never a match.
 - `node scripts/pcf-roles.ts` writes [`pcf-roles.json`](../functions/pcf-roles.json), the element side of the links, from every role's `pcf` field; `node scripts/pcf-roles.ts --check` fails when it is stale.
@@ -77,7 +77,7 @@ Today the four leads are accountable for the categories in their portfolios, eac
 
 ## Not built
 
-- The fields later steps fill (`standards`, `research`, `level`) are in the schema and empty in every role, and only the architect and the product and design lead fill `reads` and `artifacts`; linking roles to deployments is not built.
+- The fields later steps fill (`reads`, `artifacts`, `standards`, `research`, `level`) are in the schema and empty in every library role, except the `reads` and `artifacts` of the architect and the product and design lead (EE-237); Naive's own roles under `agents/` fill them (EE-238), and `check-roles.ts` checks each artifact, the kinds only one role makes (`made_by` in `documents.json`) and each standard. Linking roles to deployments is not built.
 - A role for each of the 67 process groups with no responsible or accountable role is not built (step 11 of the roles plan). The person roles link to no PCF element.
 - Setting a role program's own design rules (`reads-present`, a `role.ts` warning) off, warn or error is not built: they always warn. The artifact lint's design rules follow `artifact_lint.rules`, and a lint suite's findings follow that suite's own rule modes.
 - `recordsOf`, which a `role.ts` uses to read a record type's files, reads only paths whose folder has no wildcard.
