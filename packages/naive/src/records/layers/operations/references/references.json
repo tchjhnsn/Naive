@@ -110,7 +110,8 @@
       "stance": {
         "is": "adopted",
         "why": "O*NET is the reference for which roles are missing (EE-232): Naive carries each occupation's code and title and its work activity links, with O*NET's attribution, and suggests occupations for a PCF element no role answers for. A role's onet field names an occupation from it with who matched it and on what basis."
-      }
+      },
+      "method": "standards"
     },
     {
       "id": "parshall-lopez-luzuriaga-2026-cdr",
