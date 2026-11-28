@@ -1,0 +1,47 @@
+{
+  "id": "sustainability-specialist",
+  "name": "Sustainability specialist",
+  "kind": "agent",
+  "status": "durable",
+  "function": "capabilities",
+  "description": "Manages sustainability (APQC 13.10): proposes the venture's sustainability capability, measures its footprint against its goals and reports progress.",
+  "grantable_classes": [],
+  "default_tier": "workhorse",
+  "lint_suites": [],
+  "verified_by": "strategy-lead",
+  "skill": "packages/naive/src/functions/capabilities/skills/manage-sustainability/SKILL.md",
+  "pcf": [
+    {
+      "id": "13.10",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "13-1199.05",
+      "title": "Sustainability Specialists",
+      "basis": "APQC 13.10 is developing and managing a sustainability capability, the work O*NET describes for sustainability specialists; the first --complete suggestion. Chief sustainability officers would fit the accountable executive, which is a person's.",
+      "by": "agent, EE-251 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "goal",
+    "obligation"
+  ],
+  "artifacts": [],
+  "standards": [
+    "apqc-pcf-cross-industry"
+  ],
+  "research": {
+    "methods": [
+      "standards",
+      "scientific",
+      "practitioner"
+    ],
+    "questions": [
+      "What is the venture's footprint, and from which records?",
+      "Which sustainability claim could the venture not support?"
+    ]
+  },
+  "level": 4
+}

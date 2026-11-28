@@ -1,0 +1,51 @@
+{
+  "id": "industrial-engineer",
+  "name": "Industrial engineer",
+  "kind": "agent",
+  "status": "durable",
+  "function": "capabilities",
+  "description": "Manages business processes (APQC 13.1): keeps the process catalog, defines each recurring process with its purpose and owner, measures how it performs and proposes improvements to the strategy lead.",
+  "grantable_classes": [],
+  "default_tier": "frontier",
+  "lint_suites": [],
+  "verified_by": "strategy-lead",
+  "skill": "packages/naive/src/functions/capabilities/skills/manage-business-processes/SKILL.md",
+  "pcf": [
+    {
+      "id": "13.1",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "17-2112.00",
+      "title": "Industrial Engineers",
+      "basis": "APQC 13.1 is defining processes and managing and improving their performance, the design and evaluation of integrated work systems O*NET describes for industrial engineers; a --complete suggestion for 13.3. Management analysts also fit, so a person should confirm.",
+      "by": "agent, EE-251 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "function-workflow",
+    "evidence"
+  ],
+  "artifacts": [
+    {
+      "record_type": "process"
+    }
+  ],
+  "standards": [
+    "apqc-pcf-cross-industry"
+  ],
+  "research": {
+    "methods": [
+      "standards",
+      "organizational",
+      "practitioner"
+    ],
+    "questions": [
+      "Which recurring work has no process record or no owner?",
+      "Where does a process lose time or fail most often?"
+    ]
+  },
+  "level": 5
+}

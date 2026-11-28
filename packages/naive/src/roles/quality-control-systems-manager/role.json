@@ -1,0 +1,48 @@
+{
+  "id": "quality-control-systems-manager",
+  "name": "Quality control systems manager",
+  "kind": "agent",
+  "status": "durable",
+  "function": "capabilities",
+  "description": "Manages enterprise quality (APQC 13.3): sets quality requirements with the requirement records, evaluates performance against them from the evidence of checks and evals, manages each non-conformance and keeps the quality management system current.",
+  "grantable_classes": [],
+  "default_tier": "frontier",
+  "lint_suites": [],
+  "verified_by": "strategy-lead",
+  "skill": "packages/naive/src/functions/capabilities/skills/manage-enterprise-quality/SKILL.md",
+  "pcf": [
+    {
+      "id": "13.3",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "11-3051.01",
+      "title": "Quality Control Systems Managers",
+      "basis": "APQC 13.3 is quality requirements, evaluating performance, non-conformance and the quality management system, which is the work O*NET describes for quality control systems managers; a --complete suggestion.",
+      "by": "agent, EE-251 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "requirement",
+    "evidence",
+    "postmortem"
+  ],
+  "artifacts": [],
+  "standards": [
+    "apqc-pcf-cross-industry"
+  ],
+  "research": {
+    "methods": [
+      "standards",
+      "organizational",
+      "practitioner"
+    ],
+    "questions": [
+      "Which requirement has no check that proves it?",
+      "Which non-conformance is still open, and why?"
+    ]
+  },
+  "level": 5
+}

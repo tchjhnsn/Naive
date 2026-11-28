@@ -1,0 +1,47 @@
+{
+  "id": "industrial-organizational-psychologist",
+  "name": "Industrial-organizational psychologist",
+  "kind": "agent",
+  "status": "durable",
+  "function": "capabilities",
+  "description": "Manages change (APQC 13.4): plans each change with the people and processes it touches, designs how it lands, follows its rollout and checks the improvement holds.",
+  "grantable_classes": [],
+  "default_tier": "frontier",
+  "lint_suites": [],
+  "verified_by": "strategy-lead",
+  "skill": "packages/naive/src/functions/capabilities/skills/manage-change/SKILL.md",
+  "pcf": [
+    {
+      "id": "13.4",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "19-3032.00",
+      "title": "Industrial-Organizational Psychologists",
+      "basis": "APQC 13.4 is planning, designing, implementing and sustaining organizational change, and organizational development and analysis is in O*NET's description of industrial-organizational psychologists; chosen over the --complete suggestions, which share only the word change. Management analysts also fit, so a person should confirm.",
+      "by": "agent, EE-251 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "process",
+    "decision-record"
+  ],
+  "artifacts": [],
+  "standards": [
+    "apqc-pcf-cross-industry"
+  ],
+  "research": {
+    "methods": [
+      "scientific",
+      "organizational",
+      "practitioner"
+    ],
+    "questions": [
+      "Who does the change touch, and what must each of them do differently?",
+      "Did the improvement hold after the change landed?"
+    ]
+  },
+  "level": 5
+}

@@ -1,0 +1,48 @@
+{
+  "id": "portfolio-project-management-specialist",
+  "name": "Project management specialist (portfolio and programs)",
+  "kind": "agent",
+  "status": "durable",
+  "function": "capabilities",
+  "description": "Manages the portfolio, programs and projects (APQC 13.2): lists what is running against the goals and lead plans, plans each project's scope, schedule and handoffs, tracks progress in time boxes and reports what slips.",
+  "grantable_classes": [],
+  "default_tier": "workhorse",
+  "lint_suites": [],
+  "verified_by": "strategy-lead",
+  "skill": "packages/naive/src/functions/capabilities/skills/manage-portfolio-program-and-project/SKILL.md",
+  "pcf": [
+    {
+      "id": "13.2",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "13-1082.00",
+      "title": "Project Management Specialists",
+      "basis": "APQC 13.2 is managing the portfolio, programs and projects, which is the work O*NET describes for project management specialists; the first --complete suggestion. The id is qualified with portfolio because project-management-specialist is the strategy row for 1.3 (EE-239).",
+      "by": "agent, EE-251 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "goal",
+    "lead-plan",
+    "time-box"
+  ],
+  "artifacts": [],
+  "standards": [
+    "apqc-pcf-cross-industry"
+  ],
+  "research": {
+    "methods": [
+      "organizational",
+      "standards",
+      "practitioner"
+    ],
+    "questions": [
+      "Which running project serves no goal?",
+      "Which project is late, and what is it waiting on?"
+    ]
+  },
+  "level": 4
+}
