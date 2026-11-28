@@ -1742,6 +1742,8 @@ export type DocumentCatalog = {
     why_format: string;
     /** The role that approves it, when it is not the founder. A person either way. */
     approves?: string;
+    /** Optional: the one role that may name this kind among its artifacts (EE-238), such as technical-writer for the pages of Naive's docs site. packages/naive/src/checks/check-roles.ts fails when another role names the kind, and when the role is in the scope it checks and does not name it. */
+    made_by?: string;
     /** An unvalidated prior: about how many words belong on one page or one slide of this kind. A venture overrides it in naive.config.json. */
     words_per_page?: number;
     /** An unvalidated prior: about how many pages or slides this kind runs to. */
@@ -6332,6 +6334,8 @@ export type Role = {
   name: string;
   /** Other names for this role (such as cto for architect); the id is canonical. No alias is another role's id or alias */
   aliases?: string[];
+  /** Optional, in Naive's own roles (agents/<id>/role.json) and a venture's overlay: the library role this one specializes, by id. Every field this file leaves out is read from that role, except aliases, which stay with the library role; packages/naive/src/engine/agents/roles.ts merges them and packages/naive/src/checks/check-roles.ts validates the merged role (EE-238) */
+  extends?: string;
   /** Who holds the role: a person, an agent or either. A person role is never deployed as an agent, and its default_tier, when it has one, is person */
   kind: "person" | "agent" | "either";
   /** Optional: durable for a library role (the default); temporary for a role a lead wrote for one venture, which only a person makes durable by accepting the promote-role-<id> decision (naive workers promote, EE-235) */

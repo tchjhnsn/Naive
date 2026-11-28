@@ -1,0 +1,51 @@
+{
+  "id": "release-manager",
+  "name": "Release manager (Naive)",
+  "kind": "agent",
+  "function": "it",
+  "description": "Holds the facts of each Naive release: what is frozen into it, which capabilities changed and which bugs were fixed, and readies production ship for the founder to decide.",
+  "grantable_classes": [],
+  "default_tier": "workhorse",
+  "lint_suites": [],
+  "verified_by": "product-manager",
+  "also_verified_by": [
+    "founder"
+  ],
+  "skill": "agents/release-manager/SKILL.md",
+  "pcf": [
+    {
+      "id": "8.6.3",
+      "raci": "accountable"
+    },
+    {
+      "id": "8.6.5",
+      "raci": "responsible"
+    }
+  ],
+  "reads": [
+    "product-capability",
+    "bug",
+    "decision-record",
+    "release"
+  ],
+  "artifacts": [
+    {
+      "record_type": "release"
+    }
+  ],
+  "standards": [
+    "iso-iec-ieee-12207-2017-software-life-cycle"
+  ],
+  "research": {
+    "methods": [
+      "organizational",
+      "standards",
+      "practitioner"
+    ],
+    "questions": [
+      "What changed since the last release, by record?",
+      "Is there an open P0 or P1 bug?"
+    ]
+  },
+  "level": 4
+}
