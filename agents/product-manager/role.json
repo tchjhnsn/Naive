@@ -1,0 +1,51 @@
+{
+  "id": "product-manager",
+  "name": "Product manager (Naive)",
+  "extends": "product-design-lead",
+  "kind": "agent",
+  "description": "Owns what Naive is and for whom: Naive's portfolio of capabilities and each capability's life cycle, from proposal to retirement, read from Naive's own records.",
+  "verified_by": "founder",
+  "also_verified_by": [],
+  "skill": "agents/product-manager/SKILL.md",
+  "pcf": [
+    {
+      "id": "2.1.1",
+      "raci": "accountable"
+    },
+    {
+      "id": "2.1.2",
+      "raci": "accountable"
+    }
+  ],
+  "reads": [
+    "product-capability",
+    "goal",
+    "bug",
+    "validation-feedback",
+    "decision-record"
+  ],
+  "artifacts": [
+    {
+      "record_type": "product-capability"
+    },
+    {
+      "record_type": "goal"
+    }
+  ],
+  "standards": [
+    "apqc-pcf-cross-industry"
+  ],
+  "research": {
+    "methods": [
+      "stakeholder",
+      "organizational",
+      "practitioner",
+      "scientific"
+    ],
+    "questions": [
+      "Who uses this capability, and what job does it do for them?",
+      "Which goal does it serve, and what would show that it does not?"
+    ]
+  },
+  "level": 5
+}

@@ -9,6 +9,7 @@
     "id": { "type": "string", "pattern": "^[a-z0-9-]+$", "description": "Matches the role's folder name" },
     "name": { "type": "string" },
     "aliases": { "type": "array", "items": { "type": "string", "pattern": "^[a-z0-9-]+$" }, "uniqueItems": true, "description": "Other names for this role (such as cto for architect); the id is canonical. No alias is another role's id or alias" },
+    "extends": { "type": "string", "pattern": "^[a-z0-9-]+$", "description": "Optional, in Naive's own roles (agents/<id>/role.json) and a venture's overlay: the library role this one specializes, by id. Every field this file leaves out is read from that role, except aliases, which stay with the library role; packages/naive/src/engine/agents/roles.ts merges them and packages/naive/src/checks/check-roles.ts validates the merged role (EE-238)" },
     "kind": { "enum": ["person", "agent", "either"], "description": "Who holds the role: a person, an agent or either. A person role is never deployed as an agent, and its default_tier, when it has one, is person" },
     "status": { "enum": ["durable", "temporary"], "description": "Optional: durable for a library role (the default); temporary for a role a lead wrote for one venture, which only a person makes durable by accepting the promote-role-<id> decision (naive workers promote, EE-235)" },
     "merged_from": { "type": "array", "items": { "type": "string", "pattern": "^[a-z0-9-]+$" }, "minItems": 2, "uniqueItems": true, "description": "Optional: the roles this one merges, by id; its pcf and artifacts are the union of theirs and its reach the union of their reaches, never wider than the lead that writes it (naive workers role --merge, EE-235)" },
@@ -86,7 +87,7 @@
     "level": { "type": "integer", "minimum": 1, "maximum": 7, "description": "Optional: the role's default responsibility level on SFIA's scale of 1 to 7" }
   },
   "dependentRequired": { "portfolio": ["default_measure_kinds"], "default_measure_kinds": ["portfolio"] },
-  "if": { "properties": { "kind": { "enum": ["agent", "either"] } } },
+  "if": { "properties": { "kind": { "enum": ["agent", "either"] } }, "not": { "required": ["extends"] } },
   "then": { "required": ["function", "grantable_classes", "default_tier", "lint_suites", "verified_by", "skill"] },
   "allOf": [{ "if": { "properties": { "status": { "const": "temporary" } }, "required": ["status"] }, "then": { "required": ["proposed_by", "created_at"] } }],
   "additionalProperties": false
