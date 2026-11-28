@@ -23,6 +23,17 @@ What changed in Naive, newest first. Each entry says what you can now do, or wha
 - The document catalog and `naive render`: a printable copy first, then slides or a page, then the live site.
 - Feature reports written from a business's own records.
 - A workflow for every process in the APQC framework, and a report of what is covered.
+- One role record and one role library (EE-229). Every role, a person's or an agent's, is a module at `packages/naive/src/roles/<id>/`: a `role.json` and a SKILL.md. A business's own roles at `governance/roles/<id>/role.json` replace a library role with the same id or add new ones. `node packages/naive/src/checks/check-roles.ts` checks every role file, and `naive check` runs it on a business. The role template and venture role schemas are gone, replaced by `role.schema.json`.
+- Every artifact a role makes is a record type or a document kind (EE-230). The document catalog gains `adr`, `release-note`, `changelog-entry` and `requirements-spec`, each kind names the brand fields that style it, and each harness adapter lists the artifacts its harness can produce. `naive render` prints the catalog.
+- `naive lint artifacts` and `naive lint report` (EE-231). Each artifact is checked against the type it declares. Protocol rules are always errors, and design rules warn unless you set them under `artifact_lint.rules` in `naive.config.json`. Every finding goes to `.naive/lint-findings.jsonl`, and `naive lint report --by rule|role|harness` counts them.
+- Roles linked to the APQC Process Classification Framework both ways, and to O*NET (EE-232). A role names the elements it answers for with its RACI part. `node scripts/pcf-roles.ts --check` fails when the generated element map is stale, and `node packages/naive/src/checks/check-roles.ts --complete` lists elements no role covers, with suggested O*NET occupations.
+- Every reference names the research method that found it (EE-233): standards, scientific, organizational, practitioner or stakeholder. `node packages/naive/src/records/validate.ts` fails a reference with none.
+- Roles in the element graph (EE-234). `naive graph --role <id>` shows what a role depends on, what depends on it, its elements by RACI part, its artifacts and any cycles. Dependencies are derived from what each role reads and produces.
+- Digital workers (EE-235). An agent deployed as a role is a record at `operations/workers/<id>.json`, and only a person activates or resumes it. `naive workers` lists, counts and shows the history of workers, and deploys, suspends and ends them. An agent's `naive agent spawn` now waits, proposed, until a person runs `naive workers activate`. Run `naive upgrade` to move `operations/specialists/*.json` to `operations/workers/`.
+- The staffing gate (EE-236). `naive staffing` asks the gate questions for 0A to 1B of a business's own records. After 1B, `naive staffing draft` files one decision whose candidates are teams of proposed workers, and `naive staffing apply --by <person>` activates the team a person chose.
+- Role programs and `naive role check` (EE-237). Each role has deterministic checks of what it makes, derived from its `role.json`, and a library role can add its own in `role.ts`. `naive role check <role>` or `naive role check --all` runs them and logs every finding.
+- Naive's own roles under `agents/` (EE-238): product manager, architect, requirements engineer, release manager, technical writer and instruction steward. `node packages/naive/src/checks/check-roles.ts` checks them when no business is given. The catalog gains `docs-page`, and only the technical writer makes `docs-page`, `release-note` and `changelog-entry`.
+- Library roles for the APQC process groups that no role was responsible or accountable for, in 12 of the 13 functions, added one function at a time and each named after its closest O*NET occupation (EE-239 to EE-250). The capabilities function's 9 process groups are still without one, and `node packages/naive/src/checks/check-roles.ts --complete` lists them.
 
 ### Changed
 
@@ -35,6 +46,9 @@ What changed in Naive, newest first. Each entry says what you can now do, or wha
 - The publish lint reported a missing path as a pass. It is now an error.
 - Starting a business on the src layout past Discovery wrote its files in the wrong place.
 - An agent could reopen a decision a person had withdrawn by proposing it again.
+- Function agents agree with their workflows and the router (naive#223). A function agent's write reach leaves out routes only the signal projector writes. Every intake summary step that raises a priority decision may write `decisions/*`, so `naive runs verify` no longer refuses the decision. The site documents workflow hands each hole to the function that owns the record.
+- A second round of function agent and skill docs made true to the code (naive#225). The finance agent writes the money summary from records. The monthly investor update workflow now stops at its first step unless someone besides the founders holds equity or a SAFE. The postmortem workflow accepts a security event as a trigger.
+- The activity summary route only reads now, and a money summary needs `synced_at` only when it came from a sync (naive#235).
 
 ### Removed
 
