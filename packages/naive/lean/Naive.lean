@@ -5,6 +5,7 @@ import Naive.Elements
 import Naive.Evals
 import Naive.Founder
 import Naive.Generated.ElementCases
+import Naive.Generated.WorkerCases
 import Naive.Generated.Ontology
 import Naive.Labels
 import Naive.Layer
@@ -13,3 +14,4 @@ import Naive.Signals
 import Naive.Sources
 import Naive.Terms
 import Naive.Upper
+import Naive.Workers

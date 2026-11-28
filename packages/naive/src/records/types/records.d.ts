@@ -4136,10 +4136,14 @@ export type NaiveConfig = {
       [key: string]: number;
     };
   };
-  /** The venture's own lines for the temporary specialists a function agent spawns (EE-213, packages/naive/src/engine/agents/specialist.ts, naive agent spawn). Naive's defaults are unvalidated priors in packages/naive/src/engine/specialists.json. */
-  specialists?: {
-    /** How long a specialist's reach lasts when the spawn names no ttl, as a number and a unit such as "2 hours". A spawn's own --ttl still wins */
+  /** The venture's own lines for its digital workers (EE-235, packages/naive/src/engine/agents/workers.ts, naive workers and naive agent spawn). Naive's defaults are unvalidated priors in packages/naive/src/engine/workers.json. Replaces specialists (EE-213), which naive upgrade moves here. */
+  workers?: {
+    /** How long a temporary worker's reach lasts when the deployment names no ttl, as a number and a unit such as "2 hours". A deployment's own --ttl still wins */
     default_ttl?: string;
+    /** The SFIA level a worker works at when neither the deployment nor its role names one */
+    default_level?: number;
+    /** How many deployments of a temporary role propose it, as an open decision, to become durable. Only a person accepts */
+    promote_after?: number;
   };
   /** The venture's own lines for the activity catalog's proposal rules (EE-170, packages/naive/src/engine/activity-proposals.ts, naive activities). A rule left out keeps the catalog's lines. packages/naive/src/checks/check-config.ts holds each rule id to the catalog and each line to its scale's range. */
   activity_proposals?: {
@@ -6269,13 +6273,13 @@ export type Role = {
   aliases?: string[];
   /** Who holds the role: a person, an agent or either. A person role is never deployed as an agent, and its default_tier, when it has one, is person */
   kind: "person" | "agent" | "either";
-  /** Optional: durable for a library role (the default); temporary for a role a lead wrote for one venture, which only a person makes durable (not built) */
+  /** Optional: durable for a library role (the default); temporary for a role a lead wrote for one venture, which only a person makes durable by accepting the promote-role-<id> decision (naive workers promote, EE-235) */
   status?: "durable" | "temporary";
-  /** Optional: the roles this one merges, by id (not built) */
+  /** Optional: the roles this one merges, by id; its pcf and artifacts are the union of theirs and its reach the union of their reaches, never wider than the lead that writes it (naive workers role --merge, EE-235) */
   merged_from?: string[];
-  /** Optional: who wrote a temporary role (not built) */
+  /** Optional: who wrote a temporary role (naive workers role, EE-235): a lead, or a person */
   proposed_by?: string;
-  /** Optional: when a temporary role was written, an ISO date-time (not built) */
+  /** Optional: when a temporary role was written, an ISO date-time (naive workers role, EE-235) */
   created_at?: string;
   /** True for the founder only: the root of every delegation chain */
   chief_delegator?: boolean;
@@ -6668,41 +6672,6 @@ export type SitePresence = {
     [key: string]: unknown;
   }[];
   [key: string]: unknown;
-};
-
-/** One temporary specialist a function agent spawned for one task (EE-213), at operations/specialists/<role>.json (route operations/specialist/[id]): its parent function agent, the task, the skills it may load, the write reach it was given and when it expires. The record is the reach: the router gives the role the globs here that its parent's own reach still covers, and nothing else, so a specialist can never be wider than its parent whatever this file says (reachRefusal in packages/naive/src/engine/agents/reach.ts). Once status is not live, or expires has passed, the reach is gone and every write by the role is refused. Written by naive agent spawn as the parent agent, or by a person revoking it; reach is not a decision about the venture, only the agent dividing work it may already do. */
-export type Specialist = {
-  /** The role id and the file name without .json: <parent function>-specialist-<slug>. It is what MENTURA_ACTOR_ID is set to */
-  id: string;
-  /** The function agent that spawned it, <function>-agent. A lead, a researcher and another specialist cannot spawn one */
-  parent: string;
-  /** The parent's function, an id in packages/naive/src/functions/departments.json */
-  function: string;
-  /** The one task it was spawned for, in the parent's words. Its brief names this and the parent */
-  task: string;
-  /** Skills from the parent function's module to load, by name. A skill the parent does not have is refused at the spawn */
-  skills?: string[];
-  /** The write globs it was given, each inside one of the parent's (functionWrites). The router intersects them with the parent's reach again on every write */
-  writes: string[];
-  /**
-   * @format date-time
-   */
-  spawned_at: string;
-  /** The acting role or person that spawned it: the parent agent, or a person */
-  spawned_by: string;
-  /**
-   * When the reach is gone, spawned_at plus the ttl. The default ttl is an unvalidated prior in packages/naive/src/engine/specialists.json, overridden under specialists in naive.config.json
-   * @format date-time
-   */
-  expires: string;
-  /** live: the reach stands until expires. finished: its run ended, so the reach is gone. revoked: a person ended it early */
-  status: "live" | "finished" | "revoked";
-  /**
-   * When its run ended or a person revoked it
-   * @format date-time
-   */
-  finished_at?: string;
-  note?: string;
 };
 
 /** One line of the spend register (lead agents design, "The spend register and the access matrix"): one paid service or recurring charge per record, at finance/spend/<id>.json (route finance/spend/[id]). The finance function owns it, and only the finance agent (role finance-agent) or a person writes it (writer function in packages/naive/src/records/data-model.json). Where each field is mastered is the access matrix: the source map's rules for spend-register (packages/naive/template/knowledge/sources.json), where the bank statement sync is the system of record for amount, currency and dates, finance owns status, and IT's tool record is the system of record for approval. The paying account is named by reference to a money record, never by a card or account number. */
@@ -8101,6 +8070,61 @@ export type WhereUsed = {
     }[];
     note?: string;
   }[];
+  note?: string;
+};
+
+/** One digital worker (EE-235): a role from the role library, or a venture's own role, deployed as a running agent, at operations/workers/<id>.json (route operations/workers/[id]). The id is the role the agent acts as (MENTURA_ACTOR_ID). The record is the reach: the router gives the worker the globs in writes that its role's reach and its deployer's reach still cover, and only while its status is active and it has not expired (reachRefusal in packages/naive/src/engine/agents/reach.ts). Its status follows the statechart in packages/naive/src/engine/agents/worker-state.ts, modelled in packages/naive/lean/Naive/Workers.lean: proposed, then active only once a person activates it, suspended and resumed, and ended for good. A person role (kind person) is never deployed. A running agent is a digital worker, never an employee. */
+export type Worker = {
+  /** The role the agent acts as and the file name without .json: <role stem>-worker-<slug>, where the stem is the role id less a trailing -agent. A worker migrated from a temporary specialist (EE-213) keeps its old id, <function>-specialist-<slug>, so its provenance still names it */
+  id: string;
+  /** The role deployed: an id in the role library or the venture's governance/roles, or <function>-agent. Never a person role */
+  role: string;
+  /** temporary: deployed for one task, with an expiry. durable: deployed to hold the role until it is ended */
+  mode: "temporary" | "durable";
+  /** The responsibility level it works at, on SFIA's scale of 1 to 7: the role's level unless the deployment names one, else the prior in packages/naive/src/engine/workers.json */
+  level: number;
+  /** The person of the venture who answers for this worker */
+  sponsor: string;
+  /** The write globs it was given, each inside its role's reach and its deployer's when it was deployed. The router narrows them to both again on every write, and no event widens them */
+  writes: string[];
+  /** The one task a temporary worker was deployed for, in its deployer's words */
+  task?: string;
+  /** Skills from its role's function module to load, by name */
+  skills?: string[];
+  /**
+   * When it was deployed
+   * @format date-time
+   */
+  started_at: string;
+  /**
+   * When its reach is gone: started_at plus the ttl. Required for a temporary worker. The default ttl is an unvalidated prior in packages/naive/src/engine/workers.json, overridden under workers in naive.config.json
+   * @format date-time
+   */
+  expires?: string;
+  /** Its place in the statechart. Only active has reach */
+  status: "proposed" | "active" | "suspended" | "ended";
+  /** Who deployed it: a person, a lead (its reach bounded by the lead's portfolio) or a function agent (bounded by its own reach). A worker never deploys another */
+  deployed_by: string;
+  /** The person who activated it. Only a person activates a worker */
+  activated_by?: string;
+  /**
+   * @format date-time
+   */
+  activated_at?: string;
+  /** The decision a person decided that its activation follows, when there is one. The staffing gate (EE-236) activates workers this way */
+  decision?: string;
+  /**
+   * @format date-time
+   */
+  ended_at?: string;
+  /** Who ended it: a person, its deployer, the worker's own run finishing, or the expiry sweep */
+  ended_by?: string;
+  /** finished: its run ended. revoked: someone ended it early. expired: its expiry passed */
+  ended_how?: "finished" | "revoked" | "expired";
+  /** The run id it works under, when a workflow run deployed it */
+  run?: string;
+  /** The session id of the agent process acting as it, when known */
+  session?: string;
   note?: string;
 };
 

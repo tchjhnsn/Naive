@@ -75,9 +75,9 @@ export function prerequisiteOfWrite({ dir, r, route, actor = "agent", acting = f
  * A function agent's write reach, checked on every write before the schema: an agent acting as <function>-agent
  * (a function in departments.json) writes only a route its derived write globs match (functionWrites in
  * packages/naive/src/engine/agents/reach.ts: decisions/* and the routes of the record types the data model gives
- * its function). A temporary specialist (<function>-specialist-<slug>, EE-213) writes only its spawn record's globs
- * that its parent's reach covers too, and only while that record is live and unexpired, which is why `dir` is read
- * here. A person's call made while the process says an agent is acting counts as the agent's. A person, the
+ * its function). A digital worker (<stem>-worker-<slug>, EE-235; a migrated <function>-specialist-<slug>) writes only
+ * its deployment record's globs that its role's reach and its deployer's cover too, and only while it is active and
+ * unexpired, which is why `dir` is read here. A person's call made while the process says an agent is acting counts as the agent's. A person, the
  * projector and every other role (leads, researchers, the chief of staff, plain agent) are not checked here.
  * Returns the refusal as a router answer, or null.
  */
