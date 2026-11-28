@@ -1,0 +1,56 @@
+{
+  "id": "general-and-operations-manager",
+  "name": "General and operations manager",
+  "kind": "either",
+  "status": "durable",
+  "function": "service-delivery",
+  "description": "Answers for APQC process group 5.1, Establish service delivery governance and strategies: drafts how the venture's offers are delivered, the rules every engagement runs under, and the strategy for which offers to deliver and how. A person adopts the strategy and the rules.",
+  "grantable_classes": [],
+  "default_tier": "frontier",
+  "lint_suites": [],
+  "verified_by": "product-lead",
+  "skill": "packages/naive/src/functions/service-delivery/skills/establish-service-delivery-governance-and/SKILL.md",
+  "pcf": [
+    {
+      "id": "5.1",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "11-1021.00",
+      "title": "General and Operations Managers",
+      "basis": "Process group 5.1 is establishing service delivery governance and strategies, the policies and plans that operations run under, which is general and operations management; matched by the group's processes against the occupation title in O*NET 31.0, the first suggestion check-roles --complete gave. Kind either, because a delivery strategy and its rules are decisions a person owns.",
+      "by": "agent, EE-243 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "service-offer",
+    "engagement",
+    "customer",
+    "goal",
+    "telos",
+    "validation-pricing",
+    "evidence"
+  ],
+  "artifacts": [
+    {
+      "record_type": "service-offer"
+    }
+  ],
+  "standards": [
+    "apqc-pcf-cross-industry"
+  ],
+  "research": {
+    "methods": [
+      "standards",
+      "organizational",
+      "practitioner"
+    ],
+    "questions": [
+      "Which offers does the venture deliver, and under which rules?",
+      "What does the record of past engagements say the rules should be?"
+    ]
+  },
+  "level": 5
+}
