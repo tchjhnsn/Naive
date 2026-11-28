@@ -11,7 +11,7 @@ Naive keeps everything a business knows in one place, as files, and controls who
 
 ## A business is a folder of records
 
-A record is one JSON file: a goal, a decision, a customer profile, a handoff. Each record type has a schema and one function that owns it. There are 13 functions, the same 13 categories as the APQC process framework.
+A record is one file, usually JSON: a goal, a decision, a customer profile, a handoff. Most record types have a schema. A record type belongs to one function or is shared by all of them. There are 13 functions, the same 13 categories as the APQC process framework.
 
 ## Every change goes down one path
 
@@ -33,11 +33,11 @@ flowchart TD
 
 ## People decide. Agents draft.
 
-An agent's write that settles something is held as a draft. A person accepts it, changes it or sends it back. One-way doors, such as spending money or publishing, are never delegated.
+An agent's write that settles something is held as a draft. A person accepts it, changes it or sends it back. One-way doors, such as shipping to production or changing who owns the business, are never delegated. Spending money and publishing are delegated at most once, straight from the founder, and never passed on.
 
 ## The history is kept
 
-Each write adds a line to a log, and each line carries the hash of the line before it. The bytes of every version are kept, so a record can be read as it was at an earlier time.
+Each write through the router or the shared writer adds a line to a log, and each line carries the hash of the line before it. The bytes of each of those versions are kept, so a record can be read as it was at an earlier time.
 
 ## The parts
 
@@ -49,8 +49,8 @@ The rules for element states, and several others, are modelled in Lean and prove
 
 ## What Naive does not do
 
-- It does not call a model. Agents run in your own tool, such as Claude Code or Cursor, and reach Naive through the three ways in.
+- It does not call a model on its own. The one exception is the design-coverage check, which calls a hosted model unless you pass `--quick`. Agents run in your own tool, such as Claude Code or Cursor, and reach Naive through the three ways in.
 - It does not verify identity. A role is declared by the environment, not signed.
 - It does not deploy a site or send anything for you.
 - It ships one store, the file system. A hosted store is the host's to provide.
-- Reading a record as it was works only for versions written through the router.
+- Reading a record as it was works only for versions whose bytes were stored. Those are the writes through the router or the shared writer since the blob store was added.
