@@ -1,0 +1,51 @@
+{
+  "id": "information-technology-project-manager",
+  "name": "Information technology project manager (deployment)",
+  "kind": "agent",
+  "status": "durable",
+  "function": "it",
+  "description": "Puts a change in front of customers without breaking what already works: one written deployment procedure, a dated plan with a roll-back that has been tried, the founder's approval before anything goes out, and a record of what happened.",
+  "grantable_classes": [],
+  "default_tier": "workhorse",
+  "lint_suites": [],
+  "verified_by": "product-lead",
+  "skill": "packages/naive/src/functions/it/skills/deploy-services-solutions/SKILL.md",
+  "pcf": [
+    {
+      "id": "8.6",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "15-1299.09",
+      "title": "Information Technology Project Managers",
+      "basis": "The role plans each deployment with dates and a tried roll-back and records what actually happened, which is the planning and control of IT projects this occupation does; matched by the process group's activities against the occupation in O*NET 31.0.",
+      "by": "agent, EE-246 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "release",
+    "product-capability",
+    "bug",
+    "decision-record"
+  ],
+  "artifacts": [],
+  "standards": [
+    "apqc-pcf-cross-industry",
+    "iso-iec-ieee-12207-2017-software-life-cycle",
+    "google-sre-book"
+  ],
+  "research": {
+    "methods": [
+      "organizational",
+      "practitioner",
+      "standards"
+    ],
+    "questions": [
+      "Has the roll-back for this change been tried?",
+      "Is any P0 or P1 bug open against what ships?"
+    ]
+  },
+  "level": 5
+}
