@@ -191,6 +191,11 @@
 //   naive lint premises [<route>] [--drafts] [--json] [--propose]
 //                                                   attack the premises of the venture's goals, requirements, exit criteria,
 //                                                   constraints and decisions; --propose writes findings as open decisions
+//   naive lint artifacts [<venture dir>] [--json]   check each artifact against the type it declares: protocol rules
+//                                                   always error, design rules off|warn|error under artifact_lint.rules;
+//                                                   every finding goes to .naive/lint-findings.jsonl (EE-231)
+//   naive lint report [--by rule|role|harness] [--since <iso>] [--json]
+//                                                   count the findings in .naive/lint-findings.jsonl
 //
 // --venture <dir> names the venture when you are not inside it.
 
@@ -632,8 +637,15 @@ else if (cmd === "build" || cmd === "start") {
   process.exit(run("packages/naive/src/engine/sync.ts", [here(), what, ...more]));
 } else if (cmd === "lint") {
   const [what, ...args] = rest.filter((a, i) => !(a === "--venture" || rest[i - 1] === "--venture"));
-  if (what !== "premises") { console.error("usage: naive lint premises [<route>] [--drafts] [--json] [--propose]"); process.exit(2); }
-  process.exit(run("packages/naive/src/checks/premise-lint.ts", [here(), ...args]));
+  if (what === "premises") process.exit(run("packages/naive/src/checks/premise-lint.ts", [here(), ...args]));
+  if (what === "artifacts") {
+    // The artifact lint (EE-231): a venture directory may be named in place of --venture.
+    const named = args[0] && !args[0].startsWith("--") && existsSync(join(resolve(args[0]), "venture.json")) ? resolve(args.shift() as string) : null;
+    process.exit(run("packages/naive/src/checks/artifact-lint.ts", [named ?? here(), ...args]));
+  }
+  if (what === "report") process.exit(run("packages/naive/src/engine/lint-findings.ts", [here(), ...args]));
+  console.error("usage: naive lint premises [<route>] [--drafts] [--json] [--propose] | artifacts [<venture dir>] [--json] | report [--by rule|role|harness] [--since <iso>] [--json]");
+  process.exit(2);
 } else if (cmd === "copy") {
   // The site's words before the site (EE-216): packages/naive/src/functions/marketing-and-sales/marketing/copy.ts.
   const args = rest.filter((a, i) => !(a === "--venture" || rest[i - 1] === "--venture"));

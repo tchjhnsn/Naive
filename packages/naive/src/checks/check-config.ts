@@ -7,7 +7,8 @@
 // activity_proposals is a proposal rule of the activity catalog, with lines on its scales and inside their ranges (EE-170);
 // every criterion under visibility is a criterion of the visibility rubric (EE-222);
 // every function and workflow under loops is one the venture has, and a mode of ask or auto names who set it (EE-183);
-// every workflow and entry under prerequisites is one the venture has, and every `off` names an entry it really has (EE-217).
+// every workflow and entry under prerequisites is one the venture has, and every `off` names an entry it really has (EE-217);
+// every rule under artifact_lint is a design rule of the artifact lint set off, warn or error, never a protocol rule (EE-231).
 //
 //   node packages/naive/src/checks/check-config.ts <venture dir> [--json]        check; exit 1 on a problem
 //   node packages/naive/src/checks/check-config.ts <venture dir> --resolved      the config with the defaults filled in
@@ -28,6 +29,7 @@ import { readCatalog, ventureLineProblems } from "../engine/activity-proposals.t
 import { readRubric, ventureOptionProblems } from "../engine/tool-recommendations.ts";
 import { loopProblems } from "../engine/loop.ts";
 import { prerequisiteProblems } from "../engine/prerequisites.ts";
+import { configProblems as artifactLintProblems } from "./artifact-lint.ts";
 import { workflowsOf } from "../engine/due.ts";
 import { functionsOf } from "../engine/research-programs.ts";
 import { runSync } from "../core/effect/run.ts";
@@ -82,6 +84,8 @@ export function check(dir: string): { errors: string[], warnings: string[], note
   if (v.status === 0 && config.loops) {
     try { errors.push(...loopProblems(config.loops, functionsOf(dir), runSync(workflowsOf(dir)).map((w) => `${w.function}/${w.id}`))); } catch (e) { errors.push(e instanceof Error ? e.message : String(e)); }
   }
+  // Named even when the schema already refused it, so the message says which rules exist and that a protocol rule is fixed.
+  if (raw && typeof raw === "object" && "artifact_lint" in raw) errors.push(...artifactLintProblems((raw as NaiveConfig).artifact_lint?.rules));
   for (const fw of Object.keys(config.questions ?? {})) if (!FRAMEWORKS.includes(fw)) errors.push(`questions: ${fw} asks no System 1 questions (one of ${FRAMEWORKS.join(", ")})`);
   return { errors, warnings };
 }

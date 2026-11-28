@@ -3681,6 +3681,38 @@
       ]
     },
     {
+      "id": "EE-231",
+      "date": "2026-11-28",
+      "status": "in-force",
+      "decision": "An artifact is linted against the type it declares, with naive lint artifacts [<venture dir>] [--json] (packages/naive/src/checks/artifact-lint.ts). Two families of rules. Protocol rules are always errors and cannot be configured: kind-exists (the document kind or record type exists, through artifactKind of EE-230), format-allowed (the kind lists the format, and the harness the artifact record names has an artifacts entry that yields it), sections-present (the rendered Markdown copy exists with every section the kind requires), section-cited (every block of a section cites a record the section reads and its field, or is a hole, and a declared hole shows only the hole) and ladder (EE-218's rung order and approval, reusing check-documents through documentLadderErrors). Design rules default to warn and are set off, warn or error under artifact_lint.rules in naive.config.json, as premise_lint.rules and publish_lint.rules are: style-filled, voice-terms, heading-levels and length. The rules are pure over one artifact, its claimed type, its format, its text, its role and its harness, so a role's artifact is linted the same way once role records land. An artifact record may name its role and harness. Every finding of any severity is appended to .naive/lint-findings.jsonl, which becomes the lint-finding record type with packages/naive/src/records/lint-finding.schema.json and one writer, packages/naive/src/engine/lint-findings.ts, shared with the publish lint, whose lines now carry lint: publish and which logs no finding of a rule set off. naive lint report [--by rule|role|harness] [--since <iso>] [--json] aggregates the log. check-config.ts refuses a protocol rule, an unknown rule and a bad level under artifact_lint.rules.",
+      "why": "Step 3 of the roles plan decided on 2026-11-28: protocol rules are always errors, design rules default to warn, every finding is logged, and each design rule is off, warn or error under artifact_lint.rules. A role that makes an artifact must make one its type allows, and the log lets a person see which rules, roles and harnesses produce findings before tightening a rule. Before this, check-documents checked the ladder but nothing checked a rendered document's sections, citations, brand or length, and the findings log held only the publish lint's lines with no schema.",
+      "related": [
+        "EE-214",
+        "EE-218",
+        "EE-230"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/checks/artifact-lint.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/engine/lint-findings.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/records/lint-finding.schema.json",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
       "id": "EE-154",
       "date": "2026-11-19",
       "status": "in-force",

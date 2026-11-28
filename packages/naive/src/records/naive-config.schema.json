@@ -727,6 +727,27 @@
         }
       }
     },
+    "artifact_lint": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "The artifact lint (packages/naive/src/checks/artifact-lint.ts, EE-231): each design rule off, warn (the default) or error. The protocol rules (kind-exists, format-allowed, sections-present, section-cited, ladder) are always errors and cannot be set here.",
+      "properties": {
+        "rules": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "style-filled": { "enum": ["off", "warn", "error"] },
+            "voice-terms": { "enum": ["off", "warn", "error"] },
+            "heading-levels": { "enum": ["off", "warn", "error"] },
+            "length": { "enum": ["off", "warn", "error"] }
+          }
+        },
+        "set_by": {
+          "type": "string",
+          "description": "The person who set these levels"
+        }
+      }
+    },
     "premise_lint": {
       "type": "object",
       "additionalProperties": false,

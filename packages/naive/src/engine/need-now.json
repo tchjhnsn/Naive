@@ -1360,6 +1360,16 @@
       "when": [],
       "why": "Capabilities matter once a product does several things people can name, each with an owner who keeps its words and its pages current; before Validation a product is one job"
     },
+    "lint-finding": {
+      "base": {
+        "discovery": 0.1,
+        "validation": 0.2,
+        "beachhead": 0.3,
+        "scale": 0.3,
+        "platform": 0.3
+      },
+      "why": "A lint's findings log; it fills itself when a lint runs, so a venture never needs to write one"
+    },
     "telemetry-event": {
       "base": {
         "discovery": 0.1,
