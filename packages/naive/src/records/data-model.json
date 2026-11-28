@@ -1121,6 +1121,37 @@
       "note": "APQC's Process Classification Framework 8.0, cross-industry, levels 1 to 5 (EE-165): each element's hierarchy id, name verbatim from APQC and element id, with the attribution APQC's licence requires. Written by scripts/import-pcf.ts"
     },
     {
+      "id": "onet",
+      "layer": "operations",
+      "function": null,
+      "level": "method",
+      "schema": "packages/naive/src/records/onet.schema.json",
+      "generator": "packages/naive/src/engine/generators/onet.ts",
+      "paths": [
+        "packages/naive/src/functions/onet.json"
+      ],
+      "refs": [
+        { "field": "source", "to": "reference", "checked_by": "packages/naive/src/checks/check-roles.ts" }
+      ],
+      "note": "A compact O*NET reference (EE-232): one release's occupations by code and title, its detailed work activities and each occupation's activity links, with the attribution O*NET's CC BY 4.0 licence asks for. Written by scripts/import-onet.ts; check-roles.ts --complete reads it to suggest occupations for a PCF element no role answers for"
+    },
+    {
+      "id": "pcf-roles",
+      "layer": "operations",
+      "function": null,
+      "level": "method",
+      "schema": "packages/naive/src/records/pcf-roles.schema.json",
+      "generator": "packages/naive/src/engine/generators/pcf-roles.ts",
+      "paths": [
+        "packages/naive/src/functions/pcf-roles.json"
+      ],
+      "refs": [
+        { "field": "elements[].id", "to": "pcf", "checked_by": "packages/naive/src/engine/generators/pcf-roles.ts" },
+        { "field": "elements[].roles[].role", "to": "role", "checked_by": "packages/naive/src/engine/generators/pcf-roles.ts" }
+      ],
+      "note": "The PCF side of the link between roles and APQC's framework (EE-232): for each element some library role names in its pcf field, those roles with their RACI part. Generated from the role library by packages/naive/src/engine/generators/pcf-roles.ts, never written by hand, so the link is held both ways and cannot drift; --check fails when it is stale"
+    },
+    {
       "id": "activity-assignments",
       "layer": "operations",
       "function": null,
@@ -1495,18 +1526,18 @@
       "note": "One meeting (EE-200): a goal and the outcome that shows it was reached, stated before it opens; people and agents attending; an agenda worked in order, which may walk a function workflow step by step; minutes; the outcome; and what each attendee takes away. Closed meetings are an app's shared memory for its agents. A meeting spans functions, so the type names none (function null); the gate and the team plan decide who writes it. Route operations/meeting/[id]"
     },
     {
-      "id": "specialist",
+      "id": "worker",
       "layer": "operations",
       "function": null,
       "level": "venture",
       "data": "transactional",
-      "schema": "packages/naive/src/records/specialist.schema.json",
-      "generator": "packages/naive/src/engine/generators/specialist.ts",
+      "schema": "packages/naive/src/records/worker.schema.json",
+      "generator": "packages/naive/src/engine/generators/worker.ts",
       "paths": [
-        "instance/**/operations/specialists/*.json",
-        "packages/naive/src/records/examples/**/operations/specialists/*.json"
+        "instance/**/operations/workers/*.json",
+        "packages/naive/src/records/examples/**/operations/workers/*.json"
       ],
-      "note": "One temporary specialist a function agent spawned for one task (EE-213): its parent, the task, the skills it may load, the write reach it was given and when it expires. The record is the reach, and the router intersects it with the parent's own on every write, so a specialist is never wider than its parent (reachRefusal in packages/naive/src/engine/agents/reach.ts). Any function can spawn one, so the type names none (function null). Written by naive agent spawn as the parent agent, or by a person revoking it. Route operations/specialist/[id]"
+      "note": "One digital worker (EE-235): a role deployed as a running agent, with its mode (temporary or durable), level, sponsor, write reach, status and who deployed and activated it. The record is the reach, and the router narrows it to the role's reach and the deployer's on every write, only while the worker is active (reachRefusal in packages/naive/src/engine/agents/reach.ts). Its status follows the statechart in packages/naive/src/engine/agents/worker-state.ts, and only a person activates one. Temporary specialists (EE-213) became temporary workers. Any function's role can be deployed, so the type names none (function null). Written by naive workers and naive agent spawn; through the router an agent only proposes, suspends or ends one (workerWriteRefusal in packages/naive/src/engine/agents/workers.ts). Route operations/workers/[id]"
     },
     {
       "id": "activity",
@@ -1741,9 +1772,19 @@
           "field": "grantable_classes",
           "to": "decision-rights",
           "checked_by": "packages/naive/src/checks/check-delegation.ts"
+        },
+        {
+          "field": "pcf[].id",
+          "to": "pcf",
+          "checked_by": "packages/naive/src/checks/check-roles.ts"
+        },
+        {
+          "field": "onet[].code",
+          "to": "onet",
+          "checked_by": "packages/naive/src/checks/check-roles.ts"
         }
       ],
-      "note": "One role module in the role library (EE-229), beside its SKILL.md: a person, agent or either role with its function, portfolio, grantable decision classes, default tier, lint suites, verifier (never itself) and skill. A venture's own roles at governance/roles/<id>/role.json overlay it by id"
+      "note": "One role module in the role library (EE-229), beside its SKILL.md: a person, agent or either role with its function, portfolio, grantable decision classes, default tier, lint suites, verifier (never itself) and skill, and the APQC PCF elements it answers for with their RACI part and the O*NET occupations it matches (EE-232). A venture's own roles at governance/roles/<id>/role.json overlay it by id"
     },
     {
       "id": "pillar",
@@ -3805,8 +3846,8 @@
       "reason": "The framework's default patterns for internal text, read by packages/naive/src/engine/check-leaks.ts (the publishing gate); configuration, not a record"
     },
     {
-      "path": "packages/naive/src/engine/specialists.json",
-      "reason": "EE-213: how long a temporary specialist's reach lasts when its spawn names no ttl, an unvalidated prior read by packages/naive/src/engine/agents/specialist.ts and overridden under specialists in a venture's naive.config.json; configuration, not a record"
+      "path": "packages/naive/src/engine/workers.json",
+      "reason": "EE-235: the unvalidated priors for digital workers (how long a temporary worker's reach lasts, the level a role with none works at, how many deployments propose a temporary role as durable), read by packages/naive/src/engine/agents/workers.ts and overridden under workers in a venture's naive.config.json; configuration, not a record"
     },
     {
       "path": "packages/naive/src/engine/generators/gaps.json",

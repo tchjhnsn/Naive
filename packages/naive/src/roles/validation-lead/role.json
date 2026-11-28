@@ -12,5 +12,11 @@
     "validation/lint"
   ],
   "verified_by": "founder",
-  "skill": "packages/naive/src/functions/strategy/kits/validation/skills/problem-validation/SKILL.md"
+  "skill": "packages/naive/src/functions/strategy/kits/validation/skills/problem-validation/SKILL.md",
+  "pcf": [
+    {
+      "id": "1.0",
+      "raci": "responsible"
+    }
+  ]
 }

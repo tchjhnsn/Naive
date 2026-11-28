@@ -100,7 +100,7 @@ Two steps are deliberately held back. Breach response runs only when something i
 
 ## Records
 
-The workflows read `venture`, `it/connections`, `legal/obligations`, `legal/risks`, `governance/delegation`, `governance/decision-rights`, `governance/detector`, `people`, `people/team-plan`, `operations/handoff`, `operations/specialist`, `operations/element-owners`, `customers`, `finance/spend`, `foundation/goals`, `foundation/constraints`, `knowledge/knowledge-sources`, `markets`, `industries`, `system/provenance`, `system/release`, `evidence` and `decisions`.
+The workflows read `venture`, `it/connections`, `legal/obligations`, `legal/risks`, `governance/delegation`, `governance/decision-rights`, `governance/detector`, `people`, `people/team-plan`, `operations/handoff`, `operations/workers`, `operations/element-owners`, `customers`, `finance/spend`, `foundation/goals`, `foundation/constraints`, `knowledge/knowledge-sources`, `markets`, `industries`, `system/provenance`, `system/release`, `evidence` and `decisions`.
 
 They write only `it/connections/[id]` and `decisions/[id]`. The register, the rules page, the continuity plan, the assessment report and each test result go on `operations/handoff/[id]` as evidence. A risk that belongs to the venture rather than to IT is written by the legal function to `legal/risks/[id]`, which you read and never write.
 

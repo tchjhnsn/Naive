@@ -1,6 +1,6 @@
 # Roles as agents, linked to the PCF
 
-Date: 2026-11-28. Decisions: EE-229 (step 1, built), EE-230 to EE-239 (steps 2 to 11, not built). Status: step 1 built; every later step is decided and not built.
+Date: 2026-11-28. Decisions: EE-229 (step 1), EE-230 (step 2), EE-231 (step 3), EE-232 (step 4), EE-233 (step 5) and EE-235 (step 7) are built; EE-234 and EE-236 to EE-239 (steps 6 and 8 to 11) are decided and not built.
 
 ## The ask
 
@@ -82,7 +82,26 @@ A deployment (step 7) at `operations/workers/<id>.json` carries `role`, `mode` (
   - a person role grants no agent tier.
 - `check-roles-test.ts` breaks each rule on a copy. `node test.ts` runs both, and `naive check` runs the check on a venture.
 
-## Steps 2 to 11 (not built)
+## Step 4: PCF links both ways (EE-232, built)
+
+- `check-roles.ts` checks each role's `pcf` against `functions/pcf.json`: every id a hierarchy id named once per role, at most one accountable role per element across the library and a venture's overlay, and an accountable role in the element's function or a lead whose portfolio covers it. The schema holds the RACI values and the O*NET-SOC code format; the check also looks each `onet[].code` up in the O*NET reference and compares its title.
+- `scripts/import-onet.ts <onet db dir> --release <tag>` writes `functions/onet.json` (record type `onet`) from one O*NET text release: occupations by code and title, the detailed work activities, and each occupation's activity links, sorted, with O*NET's CC BY 4.0 attribution. The committed reference is release 31.0: 1,016 occupations, 2,087 activities and 18,583 links. Its test runs on a tiny release written in the test.
+- `scripts/pcf-roles.ts` writes `functions/pcf-roles.json` (record type `pcf-roles`) through the pcf-roles generator: each element some role links to, with its roles and their RACI part. The role side is the source; `--check` fails when the element side is stale, and `node test.ts` runs it.
+- `check-roles.ts --complete [--level <n>]` fails on each element of levels 1 to 2 (or n) under a function the business runs with no responsible or accountable role, and suggests three O*NET occupations by word overlap between the element's names and each occupation's title and activities (`engine/onet-match.ts`). A suggestion is a lead for a person, never a match.
+- The library's links: the four leads are accountable for their portfolio categories; validation-lead, architect, builder, product-design-lead, marketing-lead, people-lead, counsel, finance-agent, chief-of-staff and domain-lead are responsible for their function's category, and for process groups their description plainly covers (2.2, 2.3, 3.2, 7.1, 7.2, 12.4 and 13.5). Six roles name an O*NET occupation their title matches (counsel, finance-lead, marketing-lead, people-lead, builder, architect), each with its basis and who matched it. `--complete` reports 67 of the 74 process groups; every category has an accountable role.
+
+```mermaid
+flowchart LR
+  RJ["role.json pcf and onet"] -- "scripts/pcf-roles.ts" --> PR["functions/pcf-roles.json"]
+  PR -. "--check" .-> RJ
+  RJ --> PCF["functions/pcf.json"]
+  RJ --> ON["functions/onet.json"]
+  IM["scripts/import-onet.ts"] --> ON
+  ON -- "onet-match.ts" --> CR["check-roles --complete<br/>gaps with suggested occupations"]
+  RJ --> CR
+```
+
+## Steps 2 to 11 (steps 2 to 5 and 7 built, the rest not built)
 
 Each step is one pull request with its decision id assigned.
 
@@ -91,7 +110,7 @@ Each step is one pull request with its decision id assigned.
 4. **EE-232 PCF links both ways.** The `pcf` and `onet` fields are filled. `scripts/import-onet.ts` imports O*NET, a generated `functions/pcf-roles.json` maps each element to its roles with `--check`, and `check-roles --complete` fails on a gap.
 5. **EE-233 Research methods.** The method enum: references record their method, and the find-reference and research skills take a method.
 6. **EE-234 Roles in the graph.** `naive graph` gains role nodes and the derived depends-on edges, and `naive graph --role`.
-7. **EE-235 Digital workers.** The deployment record, its statechart with a Lean model, and `naive workers`. Specialists are migrated, leads write temporary roles and merges, and promotion is proposed as a decision only a person accepts.
+7. **EE-235 Digital workers (built).** The deployment record, its statechart with a Lean model, and `naive workers`. Specialists are migrated, leads write temporary roles and merges, and promotion is proposed as a decision only a person accepts. Built in `packages/naive/src/engine/agents/workers.ts`, `packages/naive/src/engine/agents/worker-state.ts` and `packages/naive/lean/Naive/Workers.lean`; see `packages/naive/src/engine/agents/README.md` for the statechart. A worker goes active only when a person activates it, which is the hook step 8 uses.
 8. **EE-236 Staffing gate.** SAD's gate questions run as checks. After 1B a lead drafts a staffing plan from the specs as one decision with EE-211 candidates. Deployments go active only once a person decides, and the gate fails closed (EE-217).
 9. **EE-237 Role programs on Effect.** The `RoleProgram` interface and `naive role check <role>`, which run deterministic checks of a role's artifacts.
 10. **EE-238 Rows for Naive.** `agents/<role>/` for the six Naive roles.
@@ -99,5 +118,5 @@ Each step is one pull request with its decision id assigned.
 
 ## Not built
 
-- Everything in steps 2 to 11. The step 1 schema holds their optional fields, and every role leaves them empty.
+- Everything in steps 6 and 8 to 11. The step 1 schema holds their optional fields, and every role leaves them empty except `pcf` and `onet`, which step 4 filled.
 - Vault wikilinks to the archived `roles/ceo` and `roles/cto` remain in a few skills and the venture template's `index.md` and `pillars/product.md`. They pointed at vault paths that were already broken, and are left for the step that writes those rows.
