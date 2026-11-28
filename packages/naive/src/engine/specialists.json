@@ -1,5 +1,0 @@
-{
-  "note": "Naive's defaults for temporary specialists (EE-213). A venture overrides them under `specialists` in naive.config.json, or a person names one on the spawn. They are unvalidated priors: nothing has measured how long a specialist's task takes.",
-  "default_ttl": "4 hours",
-  "why": "A specialist is spawned for one task inside one working session, so its reach should be gone by the end of the day even when its run never reports back. 4 hours is a guess, not a measurement."
-}
