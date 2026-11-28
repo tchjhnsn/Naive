@@ -124,6 +124,8 @@ export interface DeployInput {
   readonly at?: string,
   readonly run?: string,
   readonly session?: string,
+  /** The staffing plan decision and candidate that propose it (EE-236). */
+  readonly plan?: { readonly decision: string, readonly candidate: string },
 }
 
 /** What a deployment needs to know, read before the plan so the plan is pure. */
@@ -198,7 +200,7 @@ export function deployPlan(input: DeployInput, ctx: DeployContext): Plan<Worker>
   return { ok: true, record: {
     id: workerId(role, task, ctx.taken), role, mode, level, sponsor, writes, ...(task ? { task } : {}), ...(skills.length ? { skills } : {}),
     started_at, ...(expires ? { expires } : {}), status: "proposed", deployed_by: by,
-    ...(input.run ? { run: input.run } : {}), ...(input.session ? { session: input.session } : {}),
+    ...(input.run ? { run: input.run } : {}), ...(input.session ? { session: input.session } : {}), ...(input.plan ? { plan: { ...input.plan } } : {}),
   } };
 }
 
@@ -241,7 +243,7 @@ export function movePlan(rec: Worker, input: MoveInput, ctx: MoveContext): Plan<
 }
 
 /** Fields no write may change once a worker is proposed: who it is, what it was deployed as and by whom. */
-const FIXED = ["id", "role", "mode", "level", "sponsor", "started_at", "deployed_by", "task", "skills"] as const;
+const FIXED = ["id", "role", "mode", "level", "sponsor", "started_at", "deployed_by", "task", "skills", "plan"] as const;
 
 /**
  * The router's rule for a write to a worker record (applied before the schema, like goals and bets): the status moves
@@ -294,16 +296,25 @@ const skillsOf = (role: string, r: Role | undefined): string[] => {
   return fn ? functionAgent(fn).skills.map((s) => s.name) : [];
 };
 
-/** Deploys a worker: the plan's rules, then the record. A person's deployment is activated at once in their name. */
-export const deploy = (dir: string, input: DeployInput): Effect.Effect<Worker, NaiveError, "naive/VentureFs"> => Effect.gen(function* () {
-  const roles = loadRoles(dir);
-  const r = roles.get(input.role);
+/** What deployPlan needs to know about a deployment, read from the venture. `acting` as for deploy. */
+export const deployContext = (dir: string, input: DeployInput, opts: { acting?: string | null } = {}): Effect.Effect<DeployContext, NaiveError, "naive/VentureFs"> => Effect.gen(function* () {
+  const r = loadRoles(dir).get(input.role);
   const by = input.by?.trim() ?? "";
-  const plan = deployPlan(input, {
+  return {
     roleRecord: r, roleWrites: roleReach(input.role, dir), deployerWrites: by ? deployerReach(by, dir) : null,
     byIsLead: !!portfolioOf(by, dir), roleSkills: skillsOf(input.role, r), sponsorRefused: input.sponsor ? notVenturePerson(dir, input.sponsor) : null,
-    acting: actingAgent(by), taken: new Set((yield* readWorkers(dir)).map((w) => w.id)), config: yield* configFor(dir),
-  });
+    acting: "acting" in opts ? opts.acting ?? null : actingAgent(by), taken: new Set((yield* readWorkers(dir)).map((w) => w.id)), config: yield* configFor(dir),
+  };
+});
+
+/**
+ * Deploys a worker: the plan's rules, then the record. A person's deployment is activated at once in their name.
+ * `acting` replaces the agent this process says is acting, for an orchestration that checked who acts itself: the
+ * staffing plan (EE-236) proposes each worker in the name of the lead whose portfolio bounds it.
+ */
+export const deploy = (dir: string, input: DeployInput, opts: { acting?: string | null } = {}): Effect.Effect<Worker, NaiveError, "naive/VentureFs"> => Effect.gen(function* () {
+  const by = input.by?.trim() ?? "";
+  const plan = deployPlan(input, yield* deployContext(dir, input, opts));
   if (!plan.ok) return yield* new Refused({ rule: plan.rule, message: plan.error, ...(plan.hint ? { hint: plan.hint } : {}) });
   const person = isPerson(dir, by);
   const rec = yield* store(dir, plan.record, by, person, `deployed ${plan.record.id} as ${plan.record.role} (${plan.record.mode}), sponsored by ${plan.record.sponsor}; it waits for a person to activate it`);
