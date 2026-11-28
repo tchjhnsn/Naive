@@ -1,0 +1,54 @@
+{
+  "id": "human-resources-assistant",
+  "name": "Human resources assistant (people records)",
+  "kind": "agent",
+  "status": "durable",
+  "function": "human-capital",
+  "description": "Keeps the venture's people records correct, minimal and sourced, knows which system holds what, produces the people reports the venture owes, answers questions from the records, and runs a workforce analysis only when a decision needs one.",
+  "grantable_classes": [],
+  "default_tier": "workhorse",
+  "lint_suites": [],
+  "verified_by": "strategy-lead",
+  "skill": "packages/naive/src/functions/human-capital/skills/manage-employee-information-and-analytics/SKILL.md",
+  "pcf": [
+    {
+      "id": "7.7",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "43-4161.00",
+      "title": "Human Resources Assistants, Except Payroll and Timekeeping",
+      "basis": "The role keeps the venture's people records correct, minimal and sourced and answers questions from them, which is the personnel record keeping this occupation does; matched by the process group's activities against the occupation in O*NET 31.0. Workforce analytics (7.7.7 and 7.7.8) is a small part of the group and is not this occupation's core.",
+      "by": "agent, EE-245 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "people",
+    "founder",
+    "team-plan",
+    "worker",
+    "knowledge-sources"
+  ],
+  "artifacts": [
+    {
+      "record_type": "people"
+    }
+  ],
+  "standards": [
+    "apqc-pcf-cross-industry",
+    "gdpr-2016-679"
+  ],
+  "research": {
+    "methods": [
+      "organizational",
+      "standards"
+    ],
+    "questions": [
+      "Does the venture need this field about a person at all, and who may read it?",
+      "Which record answers this question, and is it current?"
+    ]
+  },
+  "level": 3
+}

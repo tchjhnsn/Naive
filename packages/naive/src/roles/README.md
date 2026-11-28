@@ -29,6 +29,8 @@ Supply chain process group roles (EE-242): `supply-chain-manager` (4.1), `purcha
 Service delivery process group roles (EE-243): `general-and-operations-manager` (5.1), `operations-research-analyst` (5.2), `administrative-services-manager` (5.3), `business-operations-specialist` (5.4), each accountable for one APQC process group and named after its closest O*NET occupation.
 Process group roles for customer-service (EE-244), one accountable for each of 6.1 to 6.5: `customer-service-representative`, `claims-adjuster` and `survey-researcher` are agent roles; `customer-service-management-analyst` and `regulatory-affairs-specialist` are either.
 
+Process group roles for human-capital (EE-245), one accountable for each of 7.3 to 7.8: `training-and-development-specialist` and `human-resources-assistant` are agent roles; `labor-relations-specialist`, `compensation-and-benefits-manager`, `human-resources-specialist` and `internal-public-relations-specialist` are either.
+
 ## Role programs
 
 Every role has a program (EE-237, [`role-program.ts`](../checks/role-program.ts)): deterministic checks of what the role makes, each an Effect over `VentureFs` that fails only with Naive's tagged errors. The default program comes from `role.json`:
