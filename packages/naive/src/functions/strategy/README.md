@@ -18,9 +18,9 @@ The strategy function (APQC 1.0, Develop Vision and Strategy). Its governance si
 | [workflows/intake.json](./workflows/intake.json) | Workflow: learn the venture's strategy. It is the root of the shipped prerequisite chain and waits on nothing (EE-217), so the first lock can always be opened. Its second step drafts a pre-registration (`foundation/pre-registration/[id]`), before the mission and the vision (EE-220); its telos step drafts the venture goal telos (`foundation/goals/[id]`), which starts in Discovery; the limits step is one to consider from Validation (check-functions.ts). |
 | [workflows/strategy-review.json](./workflows/strategy-review.json) | Workflow: review the strategy against the evidence. It waits on the strategy foundation (problem, ICP, goals) and on a meeting that walked `strategy/intake` and closed with its goal reached (EE-217) |
 | [features/decisions.feature](./features/decisions.feature) | Gherkin behaviors (EE-050) |
-| [features/decisions.steps.mjs](./features/decisions.steps.ts) | Step definitions for the behaviors beside it |
+| [features/decisions.steps.ts](./features/decisions.steps.ts) | Step definitions for the behaviors beside it |
 | [features/strategic-foundation.feature](./features/strategic-foundation.feature) | Gherkin behaviors (EE-050) |
-| [features/strategic-foundation.steps.mjs](./features/strategic-foundation.steps.ts) | Step definitions for the behaviors beside it |
+| [features/strategic-foundation.steps.ts](./features/strategic-foundation.steps.ts) | Step definitions for the behaviors beside it |
 | [frameworks/business-discovery-framework-amendments-2026-05-20.md](./frameworks/business-discovery-framework-amendments-2026-05-20.md) | Discovery Framework Amendments: 2026-05-20 |
 | [frameworks/business-discovery-framework.html](./frameworks/business-discovery-framework.html) | A rendered document |
 | [frameworks/business-discovery-framework.md](./frameworks/business-discovery-framework.md) | Business Discovery Framework |
