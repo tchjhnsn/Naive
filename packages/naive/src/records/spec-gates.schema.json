@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "spec-gates.schema.json",
+  "title": "Spec gates",
+  "description": "The specification gates and the staffing gate (EE-236), packages/naive/src/phases/spec-gates.json. SAD's gate questions for its phases 0A, 0B, 0C, 1A and 1B, asked of Naive's own records and never of SAD's documents (EE-036 stands). Each gate is named by its question, and each question says which record type answers it, at which field, and what value counts; a question no record type can answer is a hole, named as not built, which is reported and never blocks. After the last gate passes, a lead drafts a staffing plan as one open decision whose candidates are sets of proposed digital workers (EE-211, EE-235), and only a person's decision and naive staffing apply make them active. packages/naive/src/engine/spec-gates.ts evaluates the gates; packages/naive/src/engine/staffing.ts drafts and applies the plan.",
+  "type": "object",
+  "required": ["version", "gates", "staffing"],
+  "additionalProperties": false,
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+    "scalar": { "type": ["string", "number", "boolean"] },
+    "answer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["record"],
+      "description": "Where in the records one answer lives: the records of one type in the venture, the field read on each, and what counts. Without none, the answer holds when at least min records count (each with the field filled and, with in, a value in it), and with every, when every record counts too. With none, the answer holds when no record matches: its field is in in and, with touches, it names a path under one of them in decides.path or applies_to.",
+      "properties": {
+        "record": { "type": "string", "pattern": "^[a-z0-9-]+$", "description": "A record type id in packages/naive/src/records/data-model.json with venture paths" },
+        "field": { "type": "string", "minLength": 1, "description": "A dotted field read on each record, such as core.promise. Left out, the record's presence is the answer" },
+        "in": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/scalar" }, "description": "The values that count. An array field counts when any of its items is one of them" },
+        "where": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["field", "in"],
+          "description": "Only the records whose field is one of these values are read",
+          "properties": { "field": { "type": "string", "minLength": 1 }, "in": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/scalar" } } }
+        },
+        "min": { "type": "integer", "minimum": 1, "default": 1, "description": "How many records must count" },
+        "every": { "type": "boolean", "description": "Every record read must count, not only min of them" },
+        "none": { "type": "boolean", "description": "The answer holds when no record matches: a blocker check, such as no open decision on a spec record" },
+        "touches": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 }, "description": "With none: a record matches only when its decides.path or one of its applies_to files starts with one of these venture paths" }
+      },
+      "allOf": [
+        { "if": { "required": ["touches"] }, "then": { "required": ["none"] } },
+        { "if": { "required": ["none"], "properties": { "none": { "const": true } } }, "then": { "required": ["field", "in"], "not": { "anyOf": [{ "required": ["every"] }, { "required": ["min"] }] } } }
+      ]
+    },
+    "question": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "question"],
+      "description": "One gate question: answered by records, or a hole that no record type answers yet",
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "question": { "type": "string", "minLength": 1, "description": "The question, in plain words" },
+        "answers": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/answer" } },
+        "any": { "type": "boolean", "description": "One answer is enough. Left out, every answer must hold" },
+        "hole": { "type": "string", "minLength": 1, "description": "Why no record type answers this yet, named as not built. A hole is reported and never blocks the gate" }
+      },
+      "oneOf": [{ "required": ["answers"], "not": { "required": ["hole"] } }, { "required": ["hole"], "not": { "anyOf": [{ "required": ["answers"] }, { "required": ["any"] }] } }]
+    },
+    "candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "label", "roles"],
+      "description": "One idea for the staffing plan: which roles serve the functions the specs name",
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "label": { "type": "string", "minLength": 1 },
+        "roles": { "enum": ["function-agent", "library"], "description": "function-agent: each function's own agent. library: the library's agent roles that serve the function (leads left out), and the function's agent where none does" }
+      }
+    }
+  },
+  "properties": {
+    "version": { "type": "string" },
+    "note": { "type": "string" },
+    "gates": {
+      "type": "array",
+      "minItems": 1,
+      "description": "The gates in order. A gate is reached when it and every gate before it pass",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "sad", "name", "question", "questions"],
+        "properties": {
+          "id": { "$ref": "#/$defs/id" },
+          "sad": { "enum": ["0A", "0B", "0C", "1A", "1B"], "description": "The SAD phase whose gate this asks" },
+          "name": { "type": "string", "minLength": 1 },
+          "question": { "type": "string", "minLength": 1, "description": "The gate's question, its name in reports" },
+          "questions": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/question" } }
+        }
+      }
+    },
+    "staffing": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["after", "decision", "at", "question", "drafted_by_function", "mode", "candidates"],
+      "description": "The staffing gate: once the gate named in after is reached, a lead drafts one open decision with these candidates",
+      "properties": {
+        "after": { "$ref": "#/$defs/id", "description": "The gate that must be reached before anything is drafted" },
+        "decision": { "$ref": "#/$defs/id", "description": "The decision's id" },
+        "at": { "type": "string", "pattern": "^[a-z0-9-]+(/[a-z0-9-]+)*$", "description": "The folder its decisions/ sits in" },
+        "question": { "type": "string", "minLength": 1, "description": "The question the decision poses" },
+        "drafted_by_function": { "type": "string", "pattern": "^[a-z0-9-]+$", "description": "The function whose lead drafts the plan: the lead whose portfolio holds it" },
+        "mode": { "enum": ["durable", "temporary"], "description": "The mode each proposed worker is deployed in" },
+        "candidates": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/candidate" } }
+      }
+    }
+  }
+}
