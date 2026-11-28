@@ -1,0 +1,9 @@
+{
+  "id": "advisor",
+  "name": "Advisor",
+  "kind": "person",
+  "description": "Advises the founders; owns no function",
+  "person_kind": "advisor",
+  "founder": false,
+  "owns_when_solo": false
+}

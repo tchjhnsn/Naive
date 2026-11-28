@@ -72,7 +72,7 @@ The answer also carries each record's metadata, left out here. Reading `customer
 
 ## A failing package
 
-This translates `error.js`: errors bubble to the nearest boundary. Each package is a boundary. A failing record or check in one package is contained there, and the other packages proceed. `mentura <package> check` checks one package; `mentura venture check` checks the venture level first (venture.json and the folder structure), then every package it uses:
+This translates `error.js`: errors bubble to the nearest boundary. Each package is a boundary. A failing record or check in one package is contained there, and the other packages proceed. `naive <package> check` checks one package; `naive venture check` checks the venture level first (venture.json and the folder structure), then every package it uses:
 
 ```sh
 node packages/naive/src/interfaces/cli/mentura.ts venture check --venture wr-errors # exits 1
@@ -108,10 +108,10 @@ wr-errors: venture.json does not parse: Unexpected end of JSON input (at the end
 Recovery:
   1. Fix it by hand: it must be a JSON object with id, name, parent, phase, owner, status, layers
   2. Or rebuild a minimal one, keeping the broken file in _private/: node packages/naive/src/router/boundaries.ts recover ~/ventures/wr-errors --confirm recover
-  3. Then check it: python3 schema/validate.py --schema venture.schema.json --file ~/ventures/wr-errors/venture.json
+  3. Then check it: node packages/naive/src/records/validate.ts --schema venture.schema.json --file ~/ventures/wr-errors/venture.json
 ```
 
-When the venture is in git, the first step is to restore the committed file. `recover` moves the broken file to `_private/` and writes a minimal venture.json; copy back what you need from the kept file. One broken venture never stops the router finding the others: `mentura ventures` lists it as broken.
+When the venture is in git, the first step is to restore the committed file. `recover` moves the broken file to `_private/` and writes a minimal venture.json; copy back what you need from the kept file. One broken venture never stops the router finding the others: `naive ventures` lists it as broken.
 
 A broken framework file, such as `packages/naive/src/records/data-model.json`, stops every route the same way, before any module reads it. The answer names the file and says to restore it and run `node packages/naive/src/checks/check-data-model.ts`.
 

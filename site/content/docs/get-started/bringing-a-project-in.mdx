@@ -109,7 +109,7 @@ failed    recheck (run 2): no route purpose/validation/asess
           mentura decide trigger-recheck-failed-2 --venture bakery --by <your name> --answer "Retry" (or "Skip this event", "Turn the trigger off")
 ```
 
-Triggers run after each write, so you do not start them yourself. `mentura triggers` shows what ran. A trigger starts only on events after it was configured, never on its own writes, and acts as an agent, `trigger-<id>`. So a record behind a gate is drafted for you, not written.
+Triggers run after each write, so you do not start them yourself. `naive triggers` shows what ran. A trigger starts only on events after it was configured, never on its own writes, and acts as an agent, `trigger-<id>`. So a record behind a gate is drafted for you, not written.
 
 `on` can name an `activity`, a `route` or `entity` glob, and `by` (`person` or `agent`). Add `"once": true` to run a trigger only once. The schema is `packages/naive/src/records/trigger.schema.json`.
 

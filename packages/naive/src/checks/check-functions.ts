@@ -47,6 +47,7 @@
 
 import { join } from "node:path";
 import { PLANS } from "../engine/access.ts";
+import { loadRoles } from "../engine/agents/roles.ts";
 import { Effect } from "effect";
 import { CannotRun } from "../core/effect/errors.ts";
 import { readJson, VentureFs } from "../core/effect/fs.ts";
@@ -101,7 +102,7 @@ export function functionScopes(records: typeof model.records, fn: string): { sco
   }
   return { scopes: [...scopes].filter((d) => ![...scopes].some((e) => e !== d && d.startsWith(`${e}/`))).sort(), shared: [...shared].sort() };
 }
-const ROLES = join(root, "packages/naive/template/governance/roles");
+
 
 // The team plan sets every agent's reach, so no agent writes it, whichever function owns its record type.
 // The routes each function may write: decisions, handoffs, and every record route whose record type the function owns
@@ -145,9 +146,7 @@ export const checkFunctions = Effect.gen(function* () {
   const today = new Date().toISOString().slice(0, 10);
   const personOnly = new Set(isObject(delegation) ? [...strings(delegation.one_way_doors), ...strings(delegation.never_redelegated)] : []);
   const clusters = new Set(ids(yield* required(join(FUNCTIONS, "it/capability-clusters.json")), "clusters"));
-  const roleFiles = (yield* fs.list(ROLES)).filter((f) => f.endsWith(".json"));
-  const leads = (yield* Effect.forEach(roleFiles, (f) => readJson(join(ROLES, f)))).filter(isObject)
-    .filter((r) => Array.isArray(r.portfolio)).map((r) => ({ id: String(r.id), portfolio: strings(r.portfolio) }));
+  const leads = [...loadRoles(undefined, root).values()].filter((r) => Array.isArray(r.portfolio)).map((r) => ({ id: r.id, portfolio: r.portfolio ?? [] }));
 
   // Each function's APQC category number, APQC's level 4 activities and the activity catalog's ids with their category.
   const departmentsFile = yield* required(join(FUNCTIONS, "departments.json"));
@@ -322,7 +321,7 @@ export const checkFunctions = Effect.gen(function* () {
       if (!skills.length) fail(fn, rel("skills/"), "has no skill");
       if (!model.records.some((r) => r.function === fn && r.level === "venture")) fail(fn, "the data model", "the function owns no venture record type, so its agent could write nothing of its own");
       const in_ = leads.filter((l) => l.portfolio.includes(fn));
-      if (in_.length !== 1) fail(fn, "packages/naive/template/governance/roles/", `sits in ${in_.length} lead portfolios; it must sit in exactly one`);
+      if (in_.length !== 1) fail(fn, "packages/naive/src/roles/", `sits in ${in_.length} lead portfolios; it must sit in exactly one`);
     }
   }
 

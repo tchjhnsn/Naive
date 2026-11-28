@@ -19,6 +19,7 @@
 //   node packages/naive/src/checks/check-publication.ts <workspace or venture dir>
 
 import { ventureFile } from "../core/venture-paths.ts";
+import { isPersonRole, loadRoles } from "../engine/agents/roles.ts";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import type { Handoff, PublicationPolicy, Venture } from "../records/types/records.d.ts";
@@ -28,7 +29,8 @@ if (!dir) { console.error("usage: node packages/naive/src/checks/check-publicati
 const load = <T>(p: string | URL): T => JSON.parse(readFileSync(p, "utf8")) as T;
 const walk = (d: string): string[] => readdirSync(d, { withFileTypes: true }).flatMap((e) => e.name === "node_modules" || e.name.startsWith(".") ? []
   : e.isDirectory() ? walk(join(d, e.name)) : e.name === "venture.json" ? [d] : []);
-const roles = new Map(load<{ roles: { id: string, occupant?: string }[] }>(new URL("../../template/governance/roles/agent-roles.json", import.meta.url)).roles.map((r) => [r.id, r]));
+// The roles: the role library (EE-229).
+const roles = loadRoles();
 const errors: string[] = [], warnings: string[] = [];
 let checked = 0;
 
@@ -68,7 +70,7 @@ for (const root of walk(dir)) {
     if (g.url && !g.checked) warnings.push(`${at}: guideline ${g.id} has a url but no checked date`);
   }
 
-  const person = (id: string) => roles.get(id)?.occupant === "person";
+  const person = (id: string) => isPersonRole(roles.get(id));
   for (const c of policy.channels) {
     for (const g of c.guidelines ?? []) if (!guidelines.has(g)) errors.push(`${at}: channel ${c.id} follows unknown guideline ${g}`);
     if (!(c.guidelines ?? []).some((g) => (["brand", "editorial"] as (string | undefined)[]).includes(guidelines.get(g)?.kind))) warnings.push(`${at}: channel ${c.id} follows no brand or editorial guideline`);
