@@ -1,0 +1,52 @@
+{
+  "id": "compliance-manager",
+  "name": "Compliance manager",
+  "kind": "agent",
+  "status": "durable",
+  "function": "risk-and-compliance",
+  "description": "Manages compliance (APQC 11.2): proposes the compliance framework and policies, identifies the laws and rules the venture must meet, keeps the obligations register and its calendar, and warns before an obligation falls due.",
+  "grantable_classes": [],
+  "default_tier": "frontier",
+  "lint_suites": [],
+  "verified_by": "finance-lead",
+  "skill": "packages/naive/src/functions/risk-and-compliance/skills/manage-compliance/SKILL.md",
+  "pcf": [
+    {
+      "id": "11.2",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "11-9199.02",
+      "title": "Compliance Managers",
+      "basis": "APQC 11.2 is the compliance framework and regulatory compliance, the planning, directing and coordinating of compliance that O*NET describes for compliance managers; the first --complete suggestion.",
+      "by": "agent, EE-249 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "risk",
+    "ownership"
+  ],
+  "artifacts": [
+    {
+      "record_type": "obligation"
+    }
+  ],
+  "standards": [
+    "apqc-pcf-cross-industry",
+    "gdpr-2016-679"
+  ],
+  "research": {
+    "methods": [
+      "standards",
+      "organizational",
+      "practitioner"
+    ],
+    "questions": [
+      "Which laws and rules apply to the venture where it operates?",
+      "Which obligation falls due next, and who owns it?"
+    ]
+  },
+  "level": 5
+}
