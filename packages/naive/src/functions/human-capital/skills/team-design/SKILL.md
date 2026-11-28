@@ -8,8 +8,9 @@ name: team-design
 description: >
   Decide who the venture needs, agent or person, and when: which roles agents
   fill, what authority each gets, where a human stays in the loop, and which
-  person roles to recruit. Records operations/team-plan.json against the agent
-  capability register and decision rights; packages/naive/src/checks/check-team.ts checks it (EE-029).
+  person roles to recruit. Drafts the team plan (operations/team-plan.json)
+  against the agent capability register and decision rights for a person to
+  write; packages/naive/src/checks/check-team.ts checks it (EE-029).
   MANDATORY TRIGGERS: team design, who do we need, hire or agent, can an agent
   do this, human in the loop, delegate to agents, agent roles, org design,
   what authority should the agent have, when do we need a person.
@@ -17,7 +18,7 @@ description: >
 
 # Team design
 
-Operations layer, governance tier (EE-029). Writes `operations/team-plan.json`; `node packages/naive/src/checks/check-team.ts <dir>` checks it.
+Operations layer, governance tier (EE-029). The agent drafts the team plan and a person writes it to `operations/team-plan.json`: no agent's reach includes it (`functionWrites` in `packages/naive/src/engine/agents/reach.ts` leaves out every team-plan file). `node packages/naive/src/checks/check-team.ts <dir>` checks it.
 
 ## Push agents to their limit, and find the loops that need a person
 
