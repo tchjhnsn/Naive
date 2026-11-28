@@ -1,6 +1,6 @@
 # Roles as agents, linked to the PCF
 
-Date: 2026-11-28. Decisions: EE-229 (step 1, built), EE-230 to EE-239 (steps 2 to 11, not built). Status: step 1 built; every later step is decided and not built.
+Date: 2026-11-28. Decisions: EE-229 (step 1, built), EE-235 (step 7, built), EE-230 to EE-234 and EE-236 to EE-239 (steps 2 to 6 and 8 to 11, not built). Status: steps 1 and 7 built; every other step is decided and not built.
 
 ## The ask
 
@@ -82,7 +82,7 @@ A deployment (step 7) at `operations/workers/<id>.json` carries `role`, `mode` (
   - a person role grants no agent tier.
 - `check-roles-test.ts` breaks each rule on a copy. `node test.ts` runs both, and `naive check` runs the check on a venture.
 
-## Steps 2 to 11 (not built)
+## Steps 2 to 11 (step 7 built, the rest not built)
 
 Each step is one pull request with its decision id assigned.
 
@@ -91,7 +91,7 @@ Each step is one pull request with its decision id assigned.
 4. **EE-232 PCF links both ways.** The `pcf` and `onet` fields are filled. `scripts/import-onet.ts` imports O*NET, a generated `functions/pcf-roles.json` maps each element to its roles with `--check`, and `check-roles --complete` fails on a gap.
 5. **EE-233 Research methods.** The method enum: references record their method, and the find-reference and research skills take a method.
 6. **EE-234 Roles in the graph.** `naive graph` gains role nodes and the derived depends-on edges, and `naive graph --role`.
-7. **EE-235 Digital workers.** The deployment record, its statechart with a Lean model, and `naive workers`. Specialists are migrated, leads write temporary roles and merges, and promotion is proposed as a decision only a person accepts.
+7. **EE-235 Digital workers (built).** The deployment record, its statechart with a Lean model, and `naive workers`. Specialists are migrated, leads write temporary roles and merges, and promotion is proposed as a decision only a person accepts. Built in `packages/naive/src/engine/agents/workers.ts`, `packages/naive/src/engine/agents/worker-state.ts` and `packages/naive/lean/Naive/Workers.lean`; see `packages/naive/src/engine/agents/README.md` for the statechart. A worker goes active only when a person activates it, which is the hook step 8 uses.
 8. **EE-236 Staffing gate.** SAD's gate questions run as checks. After 1B a lead drafts a staffing plan from the specs as one decision with EE-211 candidates. Deployments go active only once a person decides, and the gate fails closed (EE-217).
 9. **EE-237 Role programs on Effect.** The `RoleProgram` interface and `naive role check <role>`, which run deterministic checks of a role's artifacts.
 10. **EE-238 Rows for Naive.** `agents/<role>/` for the six Naive roles.
@@ -99,5 +99,5 @@ Each step is one pull request with its decision id assigned.
 
 ## Not built
 
-- Everything in steps 2 to 11. The step 1 schema holds their optional fields, and every role leaves them empty.
+- Everything in steps 2 to 6 and 8 to 11. The step 1 schema holds their optional fields, and every role leaves them empty.
 - Vault wikilinks to the archived `roles/ceo` and `roles/cto` remain in a few skills and the venture template's `index.md` and `pillars/product.md`. They pointed at vault paths that were already broken, and are left for the step that writes those rows.
