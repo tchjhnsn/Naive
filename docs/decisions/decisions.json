@@ -4440,6 +4440,45 @@
       ]
     },
     {
+      "id": "EE-250",
+      "date": "2026-11-28",
+      "status": "in-force",
+      "decision": "The role library gains one durable role per APQC PCF level 2 process group of the external relationships function that no role was responsible or accountable for (roles plan step 11, first cut): fundraising-manager (12.1, O*NET 11-2033.00, either); public-relations-manager (12.2, O*NET 11-2032.00, either); executive-secretary (12.3, O*NET 43-6011.00, agent); public-relations-specialist (12.5, O*NET 27-3031.00, agent). Each is accountable for its process group, named after the best O*NET 31.0 match judged from check-roles --complete's suggestions, verified by strategy-lead, draws on the function's skill for its process group, reads and makes only data-model record types or document kinds, works to apqc-pcf-cross-industry and lists no grantable class. fundraising-manager and public-relations-manager are kind either, because the work is mostly a relationship or a commitment a person owns, and an agent holding it prepares and recommends. Each O*NET match is marked by an agent and not yet reviewed by a person. check-roles --complete reports no gap under external relationships.",
+      "why": "Torian on 2026-11-28 (roles plan, step 11): a business needs a row for every process group it runs, and the first cut is one role per uncovered level 2 group named after its O*NET match, one function per pull request.",
+      "related": [
+        "EE-229",
+        "EE-232",
+        "EE-233",
+        "EE-238"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/roles/fundraising-manager/role.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/roles/public-relations-manager/role.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/roles/executive-secretary/role.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "packages/naive/src/roles/public-relations-specialist/role.json",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
       "id": "EE-154",
       "date": "2026-11-19",
       "status": "in-force",
