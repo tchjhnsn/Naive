@@ -1756,9 +1756,19 @@
           "field": "grantable_classes",
           "to": "decision-rights",
           "checked_by": "packages/naive/src/checks/check-delegation.ts"
+        },
+        {
+          "field": "pcf[].id",
+          "to": "pcf",
+          "checked_by": "packages/naive/src/checks/check-roles.ts"
+        },
+        {
+          "field": "onet[].code",
+          "to": "onet",
+          "checked_by": "packages/naive/src/checks/check-roles.ts"
         }
       ],
-      "note": "One role module in the role library (EE-229), beside its SKILL.md: a person, agent or either role with its function, portfolio, grantable decision classes, default tier, lint suites, verifier (never itself) and skill. A venture's own roles at governance/roles/<id>/role.json overlay it by id"
+      "note": "One role module in the role library (EE-229), beside its SKILL.md: a person, agent or either role with its function, portfolio, grantable decision classes, default tier, lint suites, verifier (never itself) and skill, and the APQC PCF elements it answers for with their RACI part and the O*NET occupations it matches (EE-232). A venture's own roles at governance/roles/<id>/role.json overlay it by id"
     },
     {
       "id": "pillar",

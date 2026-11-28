@@ -10,5 +10,23 @@
     "legal/lint"
   ],
   "verified_by": "founder",
-  "skill": "packages/naive/src/functions/human-capital/skills/cofounder-structure/SKILL.md"
+  "skill": "packages/naive/src/functions/human-capital/skills/cofounder-structure/SKILL.md",
+  "pcf": [
+    {
+      "id": "11.0",
+      "raci": "responsible"
+    },
+    {
+      "id": "12.4",
+      "raci": "responsible"
+    }
+  ],
+  "onet": [
+    {
+      "code": "23-1011.00",
+      "title": "Lawyers",
+      "basis": "The role drafts and reviews terms and public claims, which is a lawyer's work; matched by the role's description against the occupation title in O*NET 31.0.",
+      "by": "agent, EE-232 step 4 (not yet reviewed by a person)"
+    }
+  ]
 }
