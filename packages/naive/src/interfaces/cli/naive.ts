@@ -6,7 +6,7 @@
 //   naive new [dir] [--yes] [--type <type>] [...]    start a venture: create-venture's questions and scaffold (EE-082)
 //   naive agent [list] | brief <role> | run <role> "<task>" | spawn <function>-agent --task "<text>"
 //                                                   Naive's agents from the terminal: run uses NAIVE_AGENT_CMD (such as claude -p), else prints
-//                                                   the prompt, and spawn records a temporary specialist of that agent and runs it (EE-213)
+//                                                   the prompt, and spawn deploys a temporary worker of that agent, run once a person activates it (EE-213, EE-235)
 //   naive <route> <action> | decide | decisions | accept | ...
 //                                                   every record command of mentura runs here too: see naive help
 //   naive dev [--port 4331]                         the setup page at /setup and the board, live: edit a record and it updates; each saved
@@ -116,6 +116,13 @@
 //   naive owners [--function <id>] [--level <n>] [--json]
 //                                                   the accountable owner of each APQC element the venture runs, a
 //                                                   person or an agent, and where it came from (EE-187)
+//   naive workers [list|count|history [<id>]] [--json]
+//                                                   the venture's digital workers: the live ones, how many are active by
+//                                                   role, function and mode, and every change from provenance (EE-235)
+//   naive workers deploy <role> --sponsor <person> [--mode temporary|durable] [--task "<text>"] | activate <id> --by <person>
+//                                                   deploy a role as a worker, proposed until a person activates it;
+//                                                   suspend, resume, end and expire move it on; role and promotions
+//                                                   write a lead's temporary roles and propose them as durable
 //   naive tools recommend [--goal <id>] [--activity <id>] [--function <id>] [--json] [--propose]
 //                                                   which activities a goal needs to be visible, the tool kinds that
 //                                                   cover each, how they score on visibility and ownership, and the
@@ -604,6 +611,12 @@ else if (cmd === "build" || cmd === "start") {
   // packages/naive/src/router/orchestration/pre-registration.ts). register is a person's.
   const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
   process.exit(run("packages/naive/src/router/orchestration/pre-registration.ts", [here(), ...(args.length ? args : ["show"])]));
+} else if (cmd === "workers") {
+  // Digital workers (EE-235, packages/naive/src/engine/agents/workers.ts): the live workers, the count by role,
+  // function and mode, their history, and deploying, activating, suspending, resuming and ending one. Activate and
+  // resume are a person's, and so is promote.
+  const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
+  process.exit(run("packages/naive/src/engine/agents/workers.ts", [here(), ...(args.length ? args : ["list"])]));
 } else if (cmd === "owners") {
   // Who is accountable for each element of APQC's framework (packages/naive/src/engine/element-owners.ts, EE-187).
   const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");

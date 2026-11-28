@@ -9,6 +9,10 @@
       "writes": 1,
       "why": "A generated docs page in this repository"
     },
+    "packages/naive/src/engine/agents/worker-cases.ts": {
+      "writes": 1,
+      "why": "A generated Lean file in this repository, like element-cases.ts"
+    },
     "packages/naive/src/engine/adapters.ts": {
       "writes": 2,
       "why": "A harness adapter's entry files and skill copies in the harness folder, and the adapter state under .naive/"

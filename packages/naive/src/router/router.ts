@@ -55,6 +55,7 @@ import { address } from "../store/connectors/contract.ts";
 import { decisionFile, holding, locked, undecidedFor } from "../engine/decisions.ts";
 // Goal ledger hook (EE-210): a goal's lifecycle is a person's (packages/naive/src/engine/goals.ts).
 import { goalSettles, goalWriteRefusal } from "../engine/goals.ts";
+import { workerWriteRefusal } from "../engine/agents/workers.ts";
 import { timeBoxSpan } from "../engine/time-box-span.ts";
 import { configOf, hold } from "../engine/gate.ts";
 import { blocked as betaBlocked } from "../engine/beta-gate.ts";
@@ -98,7 +99,7 @@ import { coreOf, statementsIn, withCore } from "../engine/venture-core.ts";
 import { telosView } from "../../../../frameworks/telos/adapter.ts";
 import { migrated, scale } from "../engine/canonical.ts";
 import { schemaNameOf } from "../records/index.ts";
-import type { Bet, DecisionRecord, Goal, PreRegistration, TeamPlan, Venture } from "../records/types/records.d.ts";
+import type { Bet, DecisionRecord, Goal, PreRegistration, TeamPlan, Venture, Worker } from "../records/types/records.d.ts";
 import type { RecordRoute, Route } from "../records/routes/routes.ts";
 import {
   ID_CHECKS, PHASES, allowed, deepItem, defaultWorkspace, files, gateOf, glob, groups, kits, load, repo, resolve, routes, skillsOf, ventureDir, ventures,
@@ -543,8 +544,8 @@ const writeRecord = Effect.fnUntraced(function* ({ dir, r, route, requested, par
     claimed = !!rule.stored?.requested_by && !!rule.stored?.claimed_by && rule.stored.role === actor_id;
   }
   // Function agent reach (reachOfWrite in packages/naive/src/router/gate-hooks.ts): <function>-agent writes only
-  // decisions and its function's record routes, and a temporary specialist only its spawn record's globs inside
-  // its parent's reach while it is live (EE-213), refused before the schema. A handoff addressed to its role that it
+  // decisions and its function's record routes, and a digital worker only its deployment record's globs inside its
+  // role's reach and its deployer's while it is active (EE-235), refused before the schema. A handoff addressed to its role that it
   // has claimed is the exception: the claim rule above already limits the claimant to progress and evidence.
   const outOfReach = claimed ? null : reachOfWrite({ dir, r, route, projector, actor, acting: !!actingAgent(provenance.agent?.id), role: actor_id });
   if (outOfReach) return { ...outOfReach, ...deprecated };
@@ -557,6 +558,14 @@ const writeRecord = Effect.fnUntraced(function* ({ dir, r, route, requested, par
   if (r.record === "goal" && inp) {
     const why = goalWriteRefusal({ stored: storedGoal, input: inp as Goal, person: actor === "person" && !actingAgent(provenance.agent?.id) });
     if (why) return { ok: false, error: why, ...deprecated };
+  }
+  // Worker hook (workerWriteRefusal in packages/naive/src/engine/agents/workers.ts, EE-235): a worker's status moves
+  // only along its statechart, so an agent never activates or resumes one, proposes one only in its own name, and
+  // nobody widens a worker's writes or rewrites what it was deployed as. Refused before the schema.
+  if (r.record === "worker" && inp && !remote) {
+    const storedWorker = (yield* fs.exists(ventureFile(dir, file))) ? (yield* readJson(ventureFile(dir, file))) as Worker : null;
+    const why = workerWriteRefusal({ stored: storedWorker, input: inp as Worker, person: actor === "person" && !actingAgent(provenance.agent?.id), by: actor_id ?? provenance.agent?.id ?? null });
+    if (why) return { ok: false, error: why, gate_rule: "worker-lifecycle", refused_by: "digital worker", ...deprecated };
   }
   // Prerequisites hook (prerequisiteOfWrite in packages/naive/src/router/gate-hooks.ts, EE-217): a route that only
   // blocked function workflows write is refused, for an agent and for a person alike, until the records and meetings
