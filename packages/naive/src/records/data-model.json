@@ -1121,6 +1121,21 @@
       "note": "APQC's Process Classification Framework 8.0, cross-industry, levels 1 to 5 (EE-165): each element's hierarchy id, name verbatim from APQC and element id, with the attribution APQC's licence requires. Written by scripts/import-pcf.ts"
     },
     {
+      "id": "onet",
+      "layer": "operations",
+      "function": null,
+      "level": "method",
+      "schema": "packages/naive/src/records/onet.schema.json",
+      "generator": "packages/naive/src/engine/generators/onet.ts",
+      "paths": [
+        "packages/naive/src/functions/onet.json"
+      ],
+      "refs": [
+        { "field": "source", "to": "reference", "checked_by": "packages/naive/src/checks/check-roles.ts" }
+      ],
+      "note": "A compact O*NET reference (EE-232): one release's occupations by code and title, its detailed work activities and each occupation's activity links, with the attribution O*NET's CC BY 4.0 licence asks for. Written by scripts/import-onet.ts; check-roles.ts --complete reads it to suggest occupations for a PCF element no role answers for"
+    },
+    {
       "id": "activity-assignments",
       "layer": "operations",
       "function": null,
