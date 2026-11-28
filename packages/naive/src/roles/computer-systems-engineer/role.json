@@ -1,0 +1,52 @@
+{
+  "id": "computer-systems-engineer",
+  "name": "Computer systems engineer (services and solutions)",
+  "kind": "agent",
+  "status": "durable",
+  "function": "it",
+  "description": "Recommends build, buy or connect for each capability the venture needs, writes the standards its own code follows, and runs the build and the fixes so that each one is tested against the requirement it was asked for.",
+  "grantable_classes": [],
+  "default_tier": "frontier",
+  "lint_suites": [],
+  "verified_by": "product-lead",
+  "skill": "packages/naive/src/functions/it/skills/develop-and-manage-services-solutions/SKILL.md",
+  "pcf": [
+    {
+      "id": "8.5",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "15-1299.08",
+      "title": "Computer Systems Engineers/Architects",
+      "basis": "The role decides build, buy or connect for each capability, writes the standards its own code follows and runs each build and fix against the requirement it answers, which is this occupation's design of whole systems; matched by the process group's activities against the occupation in O*NET 31.0. The library's architect names the same occupation for product structure.",
+      "by": "agent, EE-246 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "requirement",
+    "product-capability",
+    "connection",
+    "systems-catalog",
+    "bug"
+  ],
+  "artifacts": [],
+  "standards": [
+    "apqc-pcf-cross-industry",
+    "iso-iec-ieee-12207-2017-software-life-cycle",
+    "iso-iec-25010-2023"
+  ],
+  "research": {
+    "methods": [
+      "standards",
+      "practitioner",
+      "organizational"
+    ],
+    "questions": [
+      "Does something the venture can rent or connect already do this?",
+      "Which requirement does this build answer, and which test shows it?"
+    ]
+  },
+  "level": 5
+}
