@@ -3998,6 +3998,26 @@
       ]
     },
     {
+      "id": "EE-240",
+      "date": "2026-11-28",
+      "status": "in-force",
+      "decision": "The products function's APQC level 2 process groups that no role was responsible or accountable for each gain one library role at packages/naive/src/roles/<id>/, a role.json and a SKILL.md, named after the closest O*NET occupation: 2.1 architectural-and-engineering-manager (O*NET 11-9041.00 Architectural and Engineering Managers, agent). Each role is durable, in the products function, accountable for its one process group and for nothing else, verified by product-lead, granted no decision class by default, and runs no lint suite. Its onet entry names the code, the exact title in packages/naive/src/functions/onet.json, the basis and who matched it, an agent not yet reviewed by a person. Its skill is the function's skill for that process group, and its reads, artifacts, standards and research methods come from the workflows of that group and from reference ids that exist. Every role is an agent role. Process groups 2.2 and 2.3 already have a responsible role (the product and design lead and the architect), so only 2.1 gains one. O*NET has no product manager occupation of its own, so the closest title is used and the role's basis says so. packages/naive/src/functions/pcf-roles.json is regenerated. This is step 11 of the roles as agents plan (docs/design/ROLES_AS_AGENTS_2026-11-28.md).",
+      "why": "Torian on 2026-11-28 (roles plan, step 11): the first cut of business roles is one role per APQC PCF level 2 process group that no role answers for, named after the best O*NET match, one function per pull request, so check-roles --complete reports no gap under the function.",
+      "related": [
+        "EE-229",
+        "EE-232",
+        "EE-233"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "packages/naive/src/roles/architectural-and-engineering-manager/role.json",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
+    },
+    {
       "id": "EE-154",
       "date": "2026-11-19",
       "status": "in-force",

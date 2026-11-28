@@ -20,6 +20,8 @@ The roles: `architect`, `builder`, `chief-of-staff`, `domain-lead`, `finance-age
 
 Strategy process group roles (EE-239): `business-intelligence-analyst` (1.1), `management-analyst` (1.2), `project-management-specialist` (1.3), `financial-and-investment-analyst` (1.4), each accountable for one APQC process group and named after its closest O*NET occupation.
 
+Products process group roles (EE-240): `architectural-and-engineering-manager` (2.1), each accountable for one APQC process group and named after its closest O*NET occupation.
+
 ## Role programs
 
 Every role has a program (EE-237, [`role-program.ts`](../checks/role-program.ts)): deterministic checks of what the role makes, each an Effect over `VentureFs` that fails only with Naive's tagged errors. The default program comes from `role.json`:
