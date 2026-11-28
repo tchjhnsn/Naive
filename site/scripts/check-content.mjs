@@ -189,6 +189,7 @@ const owners = JSON.parse(readFileSync(join(root, "owners.json"), "utf8"));
 const rolesDir = new URL("../../packages/naive/src/roles/", import.meta.url).pathname;
 const roles = new Set(readdirSync(rolesDir).filter((name) => statSync(join(rolesDir, name)).isDirectory()));
 for (const [key, list] of Object.entries(owners.contributors ?? {})) {
+  if (!Array.isArray(list) || list.length === 0) fail("owners.json", `${key}: lists no role that sends notes`);
   for (const role of list) if (!roles.has(role)) fail("owners.json", `${key}: ${role} is not a role in the role library`);
 }
 const contributorsOf = (rel) => {
