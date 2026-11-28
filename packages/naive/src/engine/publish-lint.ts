@@ -231,7 +231,7 @@ export const logFile = (venture: string | undefined, log: string | undefined) =>
 /** Appends a run's findings to the shared lint findings log, tagged as the publish lint's; a rule set off writes nothing. */
 export function append(file: string, findings: Finding[], at = new Date().toISOString()) {
   const lines = findings.filter((f) => f.severity === "warn" || f.severity === "error")
-    .map(({ term_severity: _t, at_least: _a, ...f }) => ({ at, lint: "publish", ...f }) as LintFinding);
+    .map((f) => { const l: Finding & { at: string, lint: "publish" } = { at, lint: "publish", ...f }; delete l.term_severity; delete l.at_least; return l as LintFinding; });
   runSync(appendFindings(file, lines));
 }
 

@@ -148,19 +148,25 @@ export type Document = { file: string; kind: string; format: string; approved_by
  * unapproved. Pure, so the test can call it on a list.
  */
 export function ladderErrors(c: DocumentCatalog, venture: string, docs: Document[]): string[] {
+  return docs.flatMap((d) => documentLadderErrors(c, d, docs).map((e) => `${venture}: ${e}`));
+}
+
+/**
+ * The ladder findings for one document among the venture's documents, each starting with its file. Pure; the artifact
+ * lint (packages/naive/src/checks/artifact-lint.ts, EE-231) calls it per artifact.
+ */
+export function documentLadderErrors(c: DocumentCatalog, d: Document, docs: Document[]): string[] {
   const out: string[] = [];
   const rungOf = (format: string) => c.formats.find((f) => f.id === format)?.rung ?? null;
-  for (const d of docs) {
-    const kind = c.kinds.find((k) => k.id === d.kind);
-    if (!kind) { out.push(`${venture}: ${d.file} is a ${d.kind}, which the catalog has no kind for`); continue; }
-    const on = rungOf(d.format);
-    if (!on) { out.push(`${venture}: ${d.file} is a ${d.format}, which the catalog has no format for`); continue; }
-    const climb = climbTo(c, on);
-    for (const below of climb.slice(0, -1)) {
-      const under = docs.find((x) => x.kind === d.kind && rungOf(x.format) === below.id);
-      if (!under) out.push(`${venture}: ${d.file} sits on ${on} with no ${below.id} of ${d.kind} rendered: ${below.what}`);
-      else if (!under.approved_by) out.push(`${venture}: ${d.file} sits on ${on} and ${under.file}, its ${below.id}, has no approved_by: a person approves each rung before the next`);
-    }
+  const kind = c.kinds.find((k) => k.id === d.kind);
+  if (!kind) return [`${d.file} is a ${d.kind}, which the catalog has no kind for`];
+  const on = rungOf(d.format);
+  if (!on) return [`${d.file} is a ${d.format}, which the catalog has no format for`];
+  const climb = climbTo(c, on);
+  for (const below of climb.slice(0, -1)) {
+    const under = docs.find((x) => x.kind === d.kind && rungOf(x.format) === below.id);
+    if (!under) out.push(`${d.file} sits on ${on} with no ${below.id} of ${d.kind} rendered: ${below.what}`);
+    else if (!under.approved_by) out.push(`${d.file} sits on ${on} and ${under.file}, its ${below.id}, has no approved_by: a person approves each rung before the next`);
   }
   return out;
 }

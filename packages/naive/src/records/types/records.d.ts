@@ -342,6 +342,10 @@ export type Artifact = {
   document_kind?: string;
   /** The format it was rendered in (EE-218). The catalog gives each format a rung, and the ladder is fail closed: a rung is built only once the rung below it is a live artifact a person approved. */
   format?: "md" | "pdf" | "docx" | "pptx" | "html" | "site";
+  /** The role that made it, as a role id (EE-231). The artifact lint names it on each finding, so naive lint report can count findings by role. */
+  role?: string;
+  /** The harness adapter that rendered it, as the adapter's name in packages/naive/src/interfaces/adapters/ (EE-231). The artifact lint checks the format is one that harness's artifacts list yields, and names it on each finding. */
+  harness?: string;
   /** The person who read this rung and approved building the one above it (EE-218). Never an agent. Publishing has its own approver, in governance/publications.json. */
   approved_by?: string;
   /** It has gone out to its audience; a person decides that */
@@ -4330,6 +4334,17 @@ export type NaiveConfig = {
     };
     /** The person who set these weights */
     set_by: string;
+  };
+  /** The artifact lint (packages/naive/src/checks/artifact-lint.ts, EE-231): each design rule off, warn (the default) or error. The protocol rules (kind-exists, format-allowed, sections-present, section-cited, ladder) are always errors and cannot be set here. */
+  artifact_lint?: {
+    rules?: {
+      "style-filled"?: "off" | "warn" | "error";
+      "voice-terms"?: "off" | "warn" | "error";
+      "heading-levels"?: "off" | "warn" | "error";
+      length?: "off" | "warn" | "error";
+    };
+    /** The person who set these levels */
+    set_by?: string;
   };
   /** The premise-attack linter (packages/naive/src/checks/premise-lint.ts): each rule, one per aspect, is off, warn (the default) or error */
   premise_lint?: {

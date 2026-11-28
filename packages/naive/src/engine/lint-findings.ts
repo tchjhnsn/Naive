@@ -7,10 +7,15 @@
 //   readFindings(file)                     an Effect that reads every line, skipping one that does not parse
 //   aggregate(lines, { by, since })        pure: counts per rule, role or harness
 //
+//   node packages/naive/src/engine/lint-findings.ts <venture dir> [--by rule|role|harness] [--since <iso>] [--json]
+//   naive lint report [--by rule|role|harness] [--since <iso>] [--json]
+//
 // A line written before the lint field existed is the publish lint's.
 
 import { Effect } from "effect";
 import { VentureFs } from "../core/effect/fs.ts";
+import { runMain } from "../core/effect/run.ts";
+import { ventureFile } from "../core/venture-paths.ts";
 import type { LintFinding } from "../records/types/records.d.ts";
 
 export const LOG = ".naive/lint-findings.jsonl";
@@ -71,4 +76,22 @@ export function aggregate(lines: readonly LintFinding[], { by = "rule", since }:
   const out = [...groups.values()].map(({ touched, ...g }) => ({ ...g, artifacts: touched.size }))
     .sort((a, b) => b.findings - a.findings || a.key.localeCompare(b.key));
   return { by, since: since ?? null, findings: kept.length, groups: out };
+}
+
+if (import.meta.url === `file://${process.argv[1]}`) {
+  const argv = process.argv.slice(2);
+  const opt = (n: string) => { const i = argv.indexOf(`--${n}`); return i >= 0 ? argv[i + 1] : undefined; };
+  const dir = argv.find((a, i) => !a.startsWith("--") && !["--by", "--since"].includes(argv[i - 1]));
+  const by = (opt("by") ?? "rule") as Grouping;
+  const since = opt("since");
+  if (!dir || !GROUPINGS.includes(by) || (since !== undefined && Number.isNaN(Date.parse(since)))) {
+    console.error("usage: node packages/naive/src/engine/lint-findings.ts <venture dir> [--by rule|role|harness] [--since <iso>] [--json]");
+    process.exit(2);
+  }
+  await runMain(Effect.map(readFindings(ventureFile(dir, LOG)), (lines) => {
+    const r = aggregate(lines, { by, since });
+    if (argv.includes("--json")) { console.log(JSON.stringify(r, null, 2)); return; }
+    for (const g of r.groups) console.log(`${String(g.findings).padStart(5)}  ${g.key.padEnd(32)} ${g.errors} error(s), ${g.warns} warning(s), ${g.artifacts} artifact(s) or file(s), last ${g.last}`);
+    console.log(`${r.findings} finding(s) in ${LOG}${since ? ` since ${since}` : ""}, by ${by}`);
+  }));
 }
