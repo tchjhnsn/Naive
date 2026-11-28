@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "lead-plan.schema.json",
   "title": "Lead plan",
-  "description": "One lead's plan (lead agents design, \"Who writes what\"), at operations/leads/<lead>.json (route operations/lead/[id]); the file name avoids *.plan.json, which the evidence/eval-plan route matches. A lead is a role with a portfolio (packages/naive/template/governance/roles/<lead>.json). The plan names the lead, the functions of its portfolio it plans for, the telos measures it is bound to (foundation/telos measures[].id), its current bets, each citing measure ids and handoff ids, and how often it reviews them. A lead writes only this plan, decisions/* and operations/handoff/*; packages/naive/src/checks/check-team.ts refuses a lead in a team plan with no plan binding a measure.",
+  "description": "One lead's plan (lead agents design, \"Who writes what\"), at operations/leads/<lead>.json (route operations/lead/[id]); the file name avoids *.plan.json, which the evidence/eval-plan route matches. A lead is a role with a portfolio (packages/naive/src/roles/<lead>/role.json). The plan names the lead, the functions of its portfolio it plans for, the telos measures it is bound to (foundation/telos measures[].id), its current bets, each citing measure ids and handoff ids, and how often it reviews them. A lead writes only this plan, decisions/* and operations/handoff/*; packages/naive/src/checks/check-team.ts refuses a lead in a team plan with no plan binding a measure.",
   "type": "object",
   "required": ["lead", "portfolio", "measures", "bets", "review_cadence"],
   "additionalProperties": false,

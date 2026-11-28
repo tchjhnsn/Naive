@@ -1061,7 +1061,7 @@
         },
         {
           "field": "groups[].processes[].owner_role",
-          "to": "role-template",
+          "to": "role",
           "checked_by": "packages/naive/src/checks/check-sdlc-catalog.ts"
         },
         {
@@ -1224,7 +1224,7 @@
       "refs": [
         {
           "field": "rejection.edit.role",
-          "to": "role-template",
+          "to": "role",
           "checked_by": "packages/naive/src/terms/operating-rules-test.ts"
         }
       ],
@@ -1462,7 +1462,7 @@
       "refs": [
         {
           "field": "lead",
-          "to": "role-template",
+          "to": "role",
           "checked_by": "packages/naive/src/checks/check-team.ts"
         },
         {
@@ -1735,12 +1735,28 @@
       "layer": "governance",
       "function": null,
       "level": "method",
-      "schema": null,
-      "form": "json",
+      "schema": "packages/naive/src/records/role.schema.json",
       "paths": [
-        "packages/naive/template/governance/roles/agent-roles.json"
+        "packages/naive/src/roles/*/role.json"
       ],
-      "note": "Roles and their tiers; shape used, no schema yet"
+      "refs": [
+        {
+          "field": "verified_by",
+          "to": "role",
+          "checked_by": "packages/naive/src/checks/check-roles.ts"
+        },
+        {
+          "field": "also_verified_by",
+          "to": "role",
+          "checked_by": "packages/naive/src/checks/check-roles.ts"
+        },
+        {
+          "field": "grantable_classes",
+          "to": "decision-rights",
+          "checked_by": "packages/naive/src/checks/check-delegation.ts"
+        }
+      ],
+      "note": "One role module in the role library (EE-229), beside its SKILL.md: a person, agent or either role with its function, portfolio, grantable decision classes, default tier, lint suites, verifier (never itself) and skill. A venture's own roles at governance/roles/<id>/role.json overlay it by id"
     },
     {
       "id": "pillar",
@@ -2823,53 +2839,6 @@
       "note": "The venture types create-venture scaffolds, and what each starts with (EE-082)"
     },
     {
-      "id": "venture-role",
-      "layer": "governance",
-      "function": null,
-      "level": "method",
-      "schema": "packages/naive/src/records/venture-role.schema.json",
-      "paths": [
-        "packages/naive/template/governance/roles/venture-roles.json"
-      ],
-      "note": "Roles a person can hold in a venture, beside the agent roles (EE-082)"
-    },
-    {
-      "id": "role-template",
-      "layer": "governance",
-      "function": null,
-      "level": "method",
-      "schema": "packages/naive/src/records/role-template.schema.json",
-      "paths": [
-        "packages/naive/template/governance/roles/founder.json",
-        "packages/naive/template/governance/roles/chief-of-staff.json",
-        "packages/naive/template/governance/roles/product-design-lead.json",
-        "packages/naive/template/governance/roles/architect.json",
-        "packages/naive/template/governance/roles/builder.json",
-        "packages/naive/template/governance/roles/marketing-lead.json",
-        "packages/naive/template/governance/roles/finance-lead.json",
-        "packages/naive/template/governance/roles/finance-agent.json",
-        "packages/naive/template/governance/roles/growth-lead.json",
-        "packages/naive/template/governance/roles/product-lead.json",
-        "packages/naive/template/governance/roles/strategy-lead.json",
-        "packages/naive/template/governance/roles/validation-lead.json",
-        "packages/naive/template/governance/roles/people-lead.json",
-        "packages/naive/template/governance/roles/counsel.json"
-      ],
-      "refs": [
-        {
-          "field": "verified_by",
-          "to": "role-template",
-          "checked_by": "packages/naive/src/checks/check-delegation.ts"
-        },
-        {
-          "field": "grantable_classes",
-          "to": "decision-rights",
-          "checked_by": "packages/naive/src/checks/check-delegation.ts"
-        }
-      ],
-      "note": "One role a venture can install: function, grantable decision classes, default tier, lint suites, verifier (never itself) and skill"
-    },
-    {
       "id": "delegation",
       "layer": "governance",
       "function": null,
@@ -2884,12 +2853,12 @@
       "refs": [
         {
           "field": "grants.from",
-          "to": "role-template",
+          "to": "role",
           "checked_by": "packages/naive/src/checks/check-delegation.ts"
         },
         {
           "field": "grants.to",
-          "to": "role-template",
+          "to": "role",
           "checked_by": "packages/naive/src/checks/check-delegation.ts"
         },
         {
@@ -3717,6 +3686,10 @@
     }
   ],
   "ignore": [
+    {
+      "path": "docs/archive/**/*.json",
+      "reason": "Archived records kept for their history: EE-229 archived the agent and venture role registers when the role library replaced them. Read by no code, not live records"
+    },
     {
       "path": "docs/design/preserved/**/*.json",
       "reason": "Copies preserved byte for byte by the ontology program's stage 1 and not reconciled; each has a .preserved.md sidecar naming its source, sha256 and ledger row. Records of off-main sources, not live records"

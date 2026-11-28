@@ -9,7 +9,7 @@ status: READY
 progress: "Not started."
 governed-by:
   - "<the ADR or decision this executes>"
-role: builder            # the position this handoff is assigned to (agent-roles.json id)
+role: builder            # the role this handoff is assigned to (a role id in packages/naive/src/roles/)
 entity: "<entity>"       # where the position lives (decision levels)
 domain: <domain>
 serves: [<product or harness>]

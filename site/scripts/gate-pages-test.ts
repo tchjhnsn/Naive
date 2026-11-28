@@ -108,10 +108,10 @@ try {
   write(`APP_PAGE/${hash}/$/index.html`, "<p>A public page.</p>");
   const held = gateRoots([emptyApp, cacheRoot], { expectAll: true });
   expect("marketing pages that exist only in route-cache pass", held.failures.length === 0 && held.seen.size === marketingUrls().size);
-  write(`APP_PAGE/${hash}/$/why.html`, "<p>see EE-001</p>");
+  write(`APP_PAGE/${hash}/$/about.html`, "<p>see EE-001</p>");
   const strict = scan(cacheRoot, venture);
   expect("an internal term on a route-cache marketing page fails", strict.failures.some((f) => f.what.includes("EE-001")));
-  write(`APP_PAGE/${hash}/$/why.html`, "<p>A public page.</p>");
+  write(`APP_PAGE/${hash}/$/about.html`, "<p>A public page.</p>");
   write(`APP_PAGE/${hash}/$/docs/x.html`, "<p>see EE-001</p>");
   const docsCache = scan(cacheRoot, venture);
   expect("an internal term in route-cache docs is counted, not failed", docsCache.failures.length === 0 && docsCache.counted === 1);

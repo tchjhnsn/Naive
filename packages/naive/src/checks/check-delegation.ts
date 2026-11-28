@@ -1,6 +1,6 @@
 // Checks delegation: who has handed which decision classes to whom, and who verifies whose work.
 // Rules:
-//   roles: each role template's verified_by is another known role (never itself); only the chief
+//   roles: each role's verified_by is another role in the role library or the venture overlay (EE-229), never itself; only the chief
 //     delegator, the root, has none; its grantable classes exist in decision rights; its function is an
 //     id in packages/naive/src/functions/departments.json, or all for the chief delegator and for a lead.
 //   leads (lead agents design, 2026-11-08): a role with a portfolio is a lead; its function is all, its
@@ -18,12 +18,13 @@
 //
 // With no argument it checks the template (packages/naive/template/governance/delegation.json).
 
-import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { existsSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { grantBacked, liveGrant, readDelegation } from "../core/venture-paths.ts";
+import { loadRoles, type Role } from "../engine/agents/roles.ts";
 import { independent } from "./verify.ts";
 import { readSchema } from "../records/index.ts";
-import type { Delegation, DecisionRights, DepartmentCatalog, RoleTemplate } from "../records/types/records.d.ts";
+import type { Delegation, DecisionRights, DepartmentCatalog } from "../records/types/records.d.ts";
 
 const root = new URL("../../../..", import.meta.url).pathname;
 const template = join(root, "packages/naive/template/governance");
@@ -46,32 +47,28 @@ const ownRights = own("decision-rights.json");
 if (ownRights) for (const c of load<DecisionRights>(ownRights).classes) classes.add(c.id);
 const functions = new Set(load<DepartmentCatalog>(join(root, "packages/naive/src/functions/departments.json")).departments.map((f) => f.id));
 const errors: string[] = [];
-// Every file in roles/ is one role template, except the indexes, which list roles in a roles array.
-// A template missing its id or verified_by is reported, never skipped.
-const roles = new Map<string, RoleTemplate>();
-for (const dir of [join(template, "roles"), own("roles")].filter((p): p is string => Boolean(p))) for (const f of readdirSync(dir).filter((f) => f.endsWith(".json"))) {
-  const r = load<RoleTemplate & { roles?: unknown }>(join(dir, f));
-  if (Array.isArray(r.roles)) continue;
-  if (!r.id) errors.push(`role file ${f}: has no id`);
-  else if (r.verified_by === undefined) errors.push(`role/${r.id}: has no verified_by (null only for the chief delegator)`);
-  else roles.set(r.id, r);
-}
+// Roles come from the role library, overlaid by the venture's own governance/roles/<id>/role.json (EE-229).
+// An agent role missing verified_by is reported, never skipped; a person role may name no verifier.
+const roles = loadRoles(venture ?? undefined);
+for (const r of roles.values()) if (r.verified_by === undefined && r.kind !== "person") errors.push(`role/${r.id}: has no verified_by (null only for the chief delegator)`);
 
 // Roles: never their own verifier.
 for (const r of roles.values()) {
   const at = `role/${r.id}`;
-  if (r.verified_by === null) { if (!r.chief_delegator) errors.push(`${at}: only the chief delegator has no verifier`); }
+  if (r.verified_by === undefined) { /* reported above, or a person role, which names no verifier */ }
+  else if (r.verified_by === null) { if (!r.chief_delegator) errors.push(`${at}: only the chief delegator has no verifier`); }
   else if (!roles.has(r.verified_by)) errors.push(`${at}: verifier ${r.verified_by} is not a role`);
   else if (!independent(r.id, r.verified_by)) errors.push(`${at}: may not verify its own work`);
   for (const v of r.also_verified_by ?? []) if (!roles.has(v) || !independent(r.id, v)) errors.push(`${at}: also_verified_by ${v} is not another role`);
-  for (const c of r.grantable_classes) if (!classes.has(c)) errors.push(`${at}: grantable class ${c} is not a decision class`);
-  if (r.function === "all") { if (!r.chief_delegator && !r.portfolio) errors.push(`${at}: function all is for the chief delegator and for a lead (a role with a portfolio) only`); }
+  for (const c of r.grantable_classes ?? []) if (!classes.has(c)) errors.push(`${at}: grantable class ${c} is not a decision class`);
+  if (r.function === undefined) { /* a person role serves no one function */ }
+  else if (r.function === "all") { if (!r.chief_delegator && !r.portfolio) errors.push(`${at}: function all is for the chief delegator and for a lead (a role with a portfolio) only`); }
   else if (!functions.has(r.function)) errors.push(`${at}: function ${r.function} is not an id in packages/naive/src/functions/departments.json`);
   if (r.portfolio) {
     if (r.function !== "all") errors.push(`${at}: has a portfolio, so it is a lead and its function is all, not ${r.function}`);
     for (const f of r.portfolio) if (!functions.has(f)) errors.push(`${at}: portfolio function ${f} is not an id in packages/naive/src/functions/departments.json`);
   }
-  if (!existsSync(join(root, r.skill))) errors.push(`${at}: skill ${r.skill} not found`);
+  if (r.skill !== undefined && !existsSync(join(root, r.skill))) errors.push(`${at}: skill ${r.skill} not found`);
 }
 const delegators = [...roles.values()].filter((r) => r.chief_delegator).map((r) => r.id);
 if (delegators.length !== 1 || delegators[0] !== d.root) errors.push(`root ${d.root} must be the one chief delegator (found ${delegators.join(", ") || "none"})`);
@@ -80,8 +77,8 @@ const oneWay = new Set(d.one_way_doors ?? []);
 const never = new Set(d.never_redelegated ?? []);
 
 // Leads: no one-way door or never-redelegated class is grantable to one, and the portfolios cover every function once.
-const leads = [...roles.values()].filter((r): r is RoleTemplate & { portfolio: string[] } => Boolean(r.portfolio));
-for (const r of leads) for (const c of r.grantable_classes) {
+const leads = [...roles.values()].filter((r): r is Role & { portfolio: string[] } => Boolean(r.portfolio));
+for (const r of leads) for (const c of r.grantable_classes ?? []) {
   if (oneWay.has(c)) errors.push(`role/${r.id}: is a lead and lists ${c}, a one-way door, as grantable; a person decides it`);
   if (never.has(c)) errors.push(`role/${r.id}: is a lead and lists ${c}, which is never re-delegated, as grantable; it comes straight from ${d.root} to a function agent or a person`);
 }
@@ -109,7 +106,7 @@ d.grants.forEach((g, i) => {
     if (!classes.has(c)) errors.push(`${at}: ${c} is not a decision class`);
     if (oneWay.has(c)) errors.push(`${at}: ${c} is a one-way door and stays with ${d.root}`);
     const to = roles.get(g.to);
-    if (to && !to.grantable_classes.includes(c)) errors.push(`${at}: ${c} is not grantable to ${g.to}`);
+    if (to && !(to.grantable_classes ?? []).includes(c)) errors.push(`${at}: ${c} is not grantable to ${g.to}`);
     if (to?.portfolio && never.has(c)) errors.push(`${at}: ${c} is never re-delegated, and ${g.to} is a lead`);
   }
   const b = grantBacked(d, g, today);

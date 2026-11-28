@@ -158,7 +158,7 @@ The agent-run upgrade is a Mentura kit, `platform/kits/agent-upgrade` in Mentura
 
 ## Verify adapters
 
-An adapter runs Naive on a platform or in an agent harness, as a Next.js adapter does for a host. Mentura is Naive's first adapter, as Vercel is for Next.js. Claude Code, Codex and Cursor adapt the framework through `AGENTS.md` and skills: `mentura adapt` writes the files each one reads. For Claude Code that is a `CLAUDE.md` that imports `AGENTS.md`, and a copy of each open package's skill in `.claude/skills/`. An adapter is verified when it passes the framework's tests:
+An adapter runs Naive on a platform or in an agent harness, as a Next.js adapter does for a host. Mentura is Naive's first adapter, as Vercel is for Next.js. Claude Code, Codex and Cursor adapt the framework through `AGENTS.md` and skills: `naive adapt` writes the files each one reads. For Claude Code that is a `CLAUDE.md` that imports `AGENTS.md`, and a copy of each open package's skill in `.claude/skills/`. An adapter is verified when it passes the framework's tests:
 
 ```sh
 node packages/naive/src/interfaces/cli/mentura.ts adapt claude-code --venture upgrade-demo
@@ -175,7 +175,7 @@ verified  claude-code (harness)
 
 The output above is shortened; the full run has eleven checks.
 
-`mentura adapters` lists them all. `mentura adapters verify mentura` runs the tests the platform adapter names: the connector contract suite, the webhooks and the kits. An upgrade refreshes the adapters a venture has, so its skill copies follow the installed packages, and a file you changed is kept.
+`naive adapters` lists them all. `naive adapters verify mentura` runs the tests the platform adapter names: the connector contract suite, the webhooks and the kits. An upgrade refreshes the adapters a venture has, so its skill copies follow the installed packages, and a file you changed is kept.
 
 ## What is not built yet
 
