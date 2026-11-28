@@ -41,6 +41,7 @@ import { connect, LOCAL, sourcesOf } from "../store/connectors/index.ts";
 import { decisions as decisionMatrix, PHASES, type RankedDecision } from "./decisions.ts";
 import { ventureFile } from "../core/venture-paths.ts";
 import { validateFile } from "../records/validate.ts";
+import { writeRecord } from "../store/record-write.ts";
 import type { FreshnessLog, FreshnessProfiles, FreshnessProfilesProfile, ProvenanceEntry, WhereUsed } from "../records/types/records.d.ts";
 
 /** The route table entry fields this module reads (packages/naive/src/records/routes/routes.ts). */
@@ -448,8 +449,7 @@ export function phase(dir: string, to: string, { reason, by, now }: { reason?: s
   // The log goes first: it can refuse, and a refused move must leave the phase where it was.
   const stamp = iso(Math.max(nowOf(now), ...events(dir).map((e) => Date.parse(e.at) + 1)));
   const w = append(dir, { at: stamp, event: "phase", from, to, reason }, agent);
-  writeFileSync(file, JSON.stringify(next, null, 2) + "\n");
-  prov(dir, { entity: "venture.json", activity: "write", agent, note: `phase ${from} -> ${to}${reason ? `: ${reason}` : ""}` });
+  writeRecord(dir, "venture.json", next, { agent, note: `phase ${from} -> ${to}${reason ? `: ${reason}` : ""}` });
   const P = profiles(dir);
   const due = recordFiles(dir).filter((i) => P.profiles[profileFor(P, i.record, i.route)].per_phase).map((i) => i.path);
   return { ok: true, result: { venture: v.id, from, to, at: stamp, stale: due, provenance: w.provenance, note: `${count(due.length, "record")} with a per-phase profile ${due.length === 1 ? "is" : "are"} stale until checked or redone in ${to}${next.core && !v.core ? "; fill in the core product in venture.json" : ""}` } };

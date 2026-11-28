@@ -38,9 +38,10 @@ import { CannotRun, NotFound, Refused, SchemaInvalid, type NaiveError } from "..
 import { VentureFs, readJson } from "../core/effect/fs.ts";
 import { runMain } from "../core/effect/run.ts";
 import { readBlobEffect } from "../core/blobs.ts";
-import { agentFromEnv, entriesEffect, recordEffect, type Entry } from "../core/provenance.ts";
+import { agentFromEnv, entriesEffect, type Entry } from "../core/provenance.ts";
 import { ventureFile } from "../core/venture-paths.ts";
 import { readAsOf } from "../store/as-of.ts";
+import { writeRecordEffect } from "../store/record-write.ts";
 import { validateValue } from "../records/validate.ts";
 import { refusedPerson } from "./decisions.ts";
 import { inbox } from "./gate-drafts.ts";
@@ -262,9 +263,7 @@ export const setStatus = (dir: string, id: string, status: GoalStatus, input: St
   }
   const v = validateValue("goal.schema.json", next);
   if (v.status !== 0) return yield* new SchemaInvalid({ schema: "goal.schema.json", errors: (v.stdout + v.stderr).trim().split("\n").filter(Boolean) });
-  const text = JSON.stringify(next, null, 2) + "\n";
-  yield* fs.writeText(file, text);
-  const entry = yield* recordEffect(dir, { entity: fileOf(id), route: `${GOALS}/${id}`, activity: "write", agent: agentFromEnv("person", input.via ?? "cli", { id: by }),
+  const entry = yield* writeRecordEffect(dir, fileOf(id), next, { route: `${GOALS}/${id}`, activity: "write", agent: agentFromEnv("person", input.via ?? "cli", { id: by }),
     note: `${id} is ${status}${status === "superseded" ? `, replaced by ${next.superseded_by}` : ""} (set by ${by})` });
   return { goal: next, from, provenance: entry.hash };
 });

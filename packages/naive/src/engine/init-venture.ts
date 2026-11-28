@@ -22,6 +22,7 @@ import { fileURLToPath } from "node:url";
 import { CODE_OVER_DOCS } from "../core/code-over-docs.ts";
 import { KBASE, ventureFile } from "../core/venture-paths.ts";
 import { primaryAnatomy } from "./generators/anatomy-cells.ts";
+import { writeRecord, programWriter } from "../store/record-write.ts";
 import type { Venture, VentureLayer, VentureTypes } from "../records/types/records.d.ts";
 
 // scaffold/defaults.json has no schema (record type scaffold): its shape is the one this script reads.
@@ -57,6 +58,9 @@ const on = only !== null ? only.split(",").filter(Boolean) : [...new Set([...(la
 const unknown = on.filter((l) => !ALL.includes(l));
 if (unknown.length) { console.error(`unknown layers: ${unknown.join(", ")}; one of ${ALL.join(", ")}`); process.exit(2); }
 mkdirSync(dir, { recursive: true });
+// Whoever runs init: the acting agent when the environment names one, else a person. Every record it creates is logged.
+// init copies templates: its lines are a program's, so no stub reads as a record a person confirmed.
+const agent = programWriter("naive-init");
 const venture: Draft = { id, name: id, ...(vtype ? { type: vtype.id } : {}), parent: parent ?? null, phase };
 if (legalForm || vtype?.funding) venture.form = { ...(legalForm ? { legal_form: legalForm } : {}), ...(vtype?.funding ? { funding: vtype.funding } : {}) };
 if (phase !== "discovery") venture.core = { promise: "", promised_to: "", must_not: "", competence: "" };
@@ -70,6 +74,8 @@ if (structured) {
   venture.layout = "structured";
   venture.functions = Object.fromEntries(packageDirs.map((p) => [p, { owner: null }]));
   for (const layer of ALL) ventureLayers[layer] = on.includes(layer) ? { location: `${KBASE}/` } : false;
+  // Written directly, not through writeRecord: the org chart's owners are null until create-venture or the founder
+  // names them, and venture.schema.json refuses a null owner, so the shared writer would refuse this draft.
   writeFileSync(join(dir, "venture.json"), JSON.stringify(venture, null, 2) + "\n");
   for (const sub of [KBASE, "meta"]) mkdirSync(join(dir, sub), { recursive: true });
 }
@@ -77,6 +83,8 @@ if (layout === "src") {
   // venture.json first, so every package path below resolves into src/<function>/, then the template's
   // src/ and public/ (packages/naive/template/), one folder per function and the static files.
   venture.layout = "src";
+  // Written directly, not through writeRecord: this draft has no layers yet, which venture.schema.json refuses. It is
+  // here only so the paths below resolve; the whole record is written and logged below.
   writeFileSync(join(dir, "venture.json"), JSON.stringify(venture, null, 2) + "\n");
   for (const sub of ["src", "public"]) cpSync(join(repo, "packages/naive/template", sub), join(dir, sub), { recursive: true });
 }
@@ -105,10 +113,10 @@ if (structured) for (const pkg of packageDirs) {
 if (!structured) mkdirSync(join(ventureFile(dir, "pillars")), { recursive: true });
 for (const [name, what] of Object.entries(structured ? {} : pillars.stubs)) {
   const guide = relative(join(ventureFile(dir, "pillars")), join(repo, pillars.guides, `${name}.md`));
-  writeFileSync(join(ventureFile(dir, "pillars"), `${name}.md`), `# ${name[0].toUpperCase() + name.slice(1)} pillar\n\n${what}\n\nGuide: [${name} pillar](${guide})\n`);
+  writeRecord(dir, `pillars/${name}.md`, `# ${name[0].toUpperCase() + name.slice(1)} pillar\n\n${what}\n\nGuide: [${name} pillar](${guide})\n`, { agent, note: `the ${name} pillar stub` });
 }
-writeFileSync(join(ventureFile(dir, "profile.md")), `# ${id}\n\nWhat this venture is, in a few sentences. Its machine fields are in venture.json (EE-011).\n\n## Changelog\n`);
-if (!structured) writeFileSync(join(dir, "venture.json"), JSON.stringify(venture, null, 2) + "\n");
+writeRecord(dir, "profile.md", `# ${id}\n\nWhat this venture is, in a few sentences. Its machine fields are in venture.json (EE-011).\n\n## Changelog\n`, { agent, note: `the profile of venture ${id}` });
+if (!structured) writeRecord(dir, "venture.json", venture, { agent, note: `created venture ${id}` });
 // The venture's root layout (EE-072, I-4): every route's layout chain starts here. Lines shaped
 // "key: value" are instructions the router hands an agent with the layout.
 writeFileSync(join(dir, "AGENTS.md"), `# AGENTS.md: ${id}
@@ -146,10 +154,10 @@ const productFoundation = [
 // The team question (EE-060): asked in Discovery, failing open, so validation never waits on it. A
 // founding team, or a founder looking for one, gets the founder-agreement kit beside validation.
 mkdirSync(join(ventureFile(dir, "decisions")), { recursive: true });
-writeFileSync(join(ventureFile(dir, "decisions/venture.team.decision.json")), JSON.stringify({ id: "founding-team", question: "Who is founding this venture: you alone, you with cofounders, or you looking for cofounders?",
+writeRecord(dir, "decisions/venture.team.decision.json", { id: "founding-team", question: "Who is founding this venture: you alone, you with cofounders, or you looking for cofounders?",
   decides: { record: "founder-agreement", path: "governance/founder-agreement.json" }, layer: "governance", boundary: "fail-open", needed_in: phase, status: "open",
   options: ["Solo: I am founding it alone", "Cofounders: we are founding it together", "Looking: I want cofounders"],
-  unlocks: [{ activity: "Draft the founder agreement with the founding-agreement kit", routes: ["governance/founder-agreement"] }], provenance: framework }, null, 2) + "\n");
+  unlocks: [{ activity: "Draft the founder agreement with the founding-agreement kit", routes: ["governance/founder-agreement"] }], provenance: framework }, { agent, note: "the founding-team question, open" });
 // A fund's foundation (EE-082): the thesis first, then the terms it raises under, then the first close.
 const fundFoundation = [
   { id: "fund-thesis", question: "What does the fund invest in, and why does it win: rounds, sectors, geographies, check size and its edge?", decides: { record: "fund-thesis", path: "fund/thesis.json" },
@@ -162,14 +170,14 @@ const fundFoundation = [
 const decisionSet = vtype?.decisions ?? "product-foundation";
 if (decisionSet === "fund-foundation") {
   mkdirSync(join(ventureFile(dir, "fund/decisions")), { recursive: true });
-  for (const d of fundFoundation) writeFileSync(join(ventureFile(dir, "fund/decisions"), `${d.id === "first-close" ? "terms.first-close" : d.id.replace(/^fund-/, "")}.decision.json`),
-    JSON.stringify({ ...d, layer: "purpose", boundary: "fail-closed", needed_in: phase, status: "open", provenance: framework }, null, 2) + "\n");
+  for (const d of fundFoundation) writeRecord(dir, `fund/decisions/${d.id === "first-close" ? "terms.first-close" : d.id.replace(/^fund-/, "")}.decision.json`,
+    { ...d, layer: "purpose", boundary: "fail-closed", needed_in: phase, status: "open", provenance: framework }, { agent, note: `the ${d.id} question, open` });
 }
 // The product questions sit beside the products: product/ in the structured layout, products/ in the flat one.
 const productDecisions = structured ? "product/decisions" : "products/decisions";
 if (decisionSet === "product-foundation") mkdirSync(join(ventureFile(dir, productDecisions)), { recursive: true });
-if (decisionSet === "product-foundation") for (const d of productFoundation) writeFileSync(join(ventureFile(dir, productDecisions), `product.${d.id.replace(/^product-/, "")}.decision.json`),
-  JSON.stringify({ ...d, layer: "purpose", boundary: "fail-closed", needed_in: phase, status: "open", provenance: framework }, null, 2) + "\n");
+if (decisionSet === "product-foundation") for (const d of productFoundation) writeRecord(dir, `${productDecisions}/product.${d.id.replace(/^product-/, "")}.decision.json`,
+  { ...d, layer: "purpose", boundary: "fail-closed", needed_in: phase, status: "open", provenance: framework }, { agent, note: `the ${d.id} question, open` });
 // The Venture Anatomy Matrix (EE-157): every venture starts with its primary market and industry, every cell unknown,
 // so the matrix is whole from the first day and filling it moves cells to estimated or known. The cells come from the
 // schemas through generators/anatomy-cells.ts, which the market and industry generators share.
@@ -177,7 +185,7 @@ const anatomy = primaryAnatomy(id);
 if (anatomy.errors.length) { console.error(anatomy.errors.join("\n")); process.exit(1); }
 for (const [file, rec] of [["industries/primary.json", anatomy.industry], ["markets/primary.json", anatomy.market]] as const) {
   mkdirSync(dirname(ventureFile(dir, file)), { recursive: true });
-  writeFileSync(ventureFile(dir, file), JSON.stringify(rec, null, 2) + "\n");
+  writeRecord(dir, file, rec, { agent, note: `the primary ${file.startsWith("markets/") ? "market" : "industry"}, every cell unknown` });
 }
 // The type's functions are imported like any department (EE-047): listed in venture.json, with their folders.
 // In the structured layout the org chart is venture.json's functions; the flat layout imports departments.

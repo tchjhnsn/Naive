@@ -9,7 +9,7 @@
 \* site/next.config.mjs still redirects the old paths onto docs URLs. The next
 \* request for that docs URL is gated, so the reader does not get the page.
 \* site/content/marketing/waitlist.mdx records an email as interest. It does not create an account.
-\* site/components/shell/nav.ts names Blog, Showcase, About, and Waitlist.
+\* site/components/shell/nav.ts names About and Waitlist, in the footer.
 \* The footer does not name docs, templates, or the llms files.
 \* site/app/layout.tsx sets robots noindex, site/app/robots.ts disallows /, and
 \* next.config.mjs sends X-Robots-Tag: noindex on every response. The redirect
@@ -65,7 +65,7 @@ FollowGate ==
     /\ outcome = "gated"
     /\ asked' = "waitlist" /\ outcome' = "page" /\ indexed' = FALSE
 
-\* A header or footer link that is still public: /blog, /showcase, /about, /waitlist.
+\* A footer link that is still public: /about, /waitlist.
 \* Docs, templates, and the llms files are not in that nav.
 OpenNav ==
     /\ outcome = "waiting"

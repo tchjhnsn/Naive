@@ -13,7 +13,7 @@
 // operations/activity/_summary.json (days since last touch, streak; packages/naive/src/records/activity-summary.schema.json) in each
 // venture. Reads transcripts only: nothing is sent anywhere, and nothing is scheduled.
 
-import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { basename, dirname, join, relative, resolve, sep } from "node:path";
 import { humanText, transcriptFiles } from "./transcripts.ts";
@@ -22,6 +22,7 @@ import { ventureFile } from "../core/venture-paths.ts";
 import { findWorkspace } from "./workspace.ts";
 import { HostedRefusal, isHosted } from "../core/runtime.ts";
 import type { Activity, ActivitySummary, Venture } from "../records/types/records.d.ts";
+import { writeRecord, programWriter } from "../store/record-write.ts";
 
 export const GAP_MINUTES = 10;
 export const NUDGE_DAYS = 7;
@@ -154,13 +155,13 @@ export function writeActivity(result: VentureActivity[], now = new Date()): stri
     mkdirSync(folder, { recursive: true });
     for (const d of v.days) {
       const p = join(folder, `${d.date}.json`);
-      writeFileSync(p, JSON.stringify({ ...d, computed: now.toISOString() }, null, 2) + "\n");
+      writeRecord(v.dir, `operations/activity/${d.date}.json`, { ...d, computed: now.toISOString() }, { agent: programWriter("naive-activity"), activity: existsSync(p) ? "write" : "create", note: `activity of ${v.venture} on ${d.date}, from transcripts` });
       written.push(p);
     }
     const dates = readdirSync(folder).filter((f) => /^\d{4}-\d{2}-\d{2}\.json$/.test(f)).map((f) => f.slice(0, 10))
       .filter((d) => (readJson(join(folder, `${d}.json`))?.messages ?? 0) > 0);
     const p = join(folder, "_summary.json");
-    writeFileSync(p, JSON.stringify(summarize(v.venture, v.time_zone, dates, localDate(now, v.time_zone)), null, 2) + "\n");
+    writeRecord(v.dir, "operations/activity/_summary.json", summarize(v.venture, v.time_zone, dates, localDate(now, v.time_zone)), { agent: programWriter("naive-activity"), activity: existsSync(p) ? "write" : "create", note: `activity summary of ${v.venture}, from its days` });
     written.push(p);
   }
   return written;

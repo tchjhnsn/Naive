@@ -32,6 +32,7 @@ import { schemaNameOf } from "../records/index.ts";
 import { validateFile } from "../records/validate.ts";
 import type { NaiveConfig, UpgradeRegistry } from "../records/types/records.d.ts";
 import { alignPin } from "./effect-pin.ts";
+import { writeRecord } from "../store/record-write.ts";
 
 export type Registry = UpgradeRegistry;
 export type Migration = Registry["migrations"][number];
@@ -199,8 +200,8 @@ export async function upgrade(dir: string, { reg = registry(), dry = false, git 
     if (!dry) for (const x of programs) record(dir, ({ entity: x.path, activity: "write", agent, derived_from: [x.template], note: `starter research program for ${x.function}, copied because it was missing; the venture's copy is the founder's from now on` }) as Parameters<typeof record>[1]);
     // One Effect, shared (EE-161): the venture's effect pin moves with the framework on every upgrade, not only the
     // one that crosses 0.4.0 (packages/naive/src/engine/effect-pin.ts).
-    const effect = alignPin(dir, { dry });
-    if (effect && !dry) record(dir, ({ entity: "package.json", activity: "write", agent, note: `pinned effect ${effect.to}${effect.from ? ` (was ${effect.from})` : ""}, Naive's peer version (EE-161)` }) as Parameters<typeof record>[1]);
+    // alignPin writes package.json through the shared record writer, which logs it as this agent.
+    const effect = alignPin(dir, { dry, agent });
     // Pins (U-1, U-4): the framework, the channel, and every package the venture uses.
     const before = JSON.stringify(cfg);
     cfg.naive = { ...(cfg.naive ?? {}), version: p.to, channel: cfg.naive?.channel ?? "stable" };
@@ -218,11 +219,9 @@ export async function upgrade(dir: string, { reg = registry(), dry = false, git 
       packages: p.packages.filter((x) => !x.missing).map((x) => ({ name: x.name, from: x.from, to: x.to })), guides: p.steps.map((s) => s.guide).filter((g): g is string => Boolean(g)), escalated: [...ran.flatMap((r) => r.escalated), ...escalated], programs, ...(effect ? { effect } : {}) };
     const release: typeof built & { adapters?: unknown } = built;
     if (!dry && (p.pending || configChanged)) {
-      if (configChanged) { writeConfig(dir, cfg); record(dir, ({ entity: CONFIG, activity: "write", agent, note: `pinned Naive ${p.to} and ${Object.keys(cfg.packages).length} packages (U-1)` }) as Parameters<typeof record>[1]); }
+      if (configChanged) writeConfig(dir, cfg, { agent, note: `pinned Naive ${p.to} and ${Object.keys(cfg.packages).length} packages (U-1)` });
       const rel = `.release/upgrade-${p.to}.json`;
-      mkdirSync(join(ventureFile(dir, ".release")), { recursive: true });
-      writeFileSync(ventureFile(dir, rel), JSON.stringify(release, null, 2) + "\n");
-      record(dir, ({ entity: rel, activity: "release", agent, derived_from: [...new Set([...ran.flatMap((r) => [...r.moves.map((m) => m.to), ...r.rewrote]), ...(configChanged ? [CONFIG] : [])])], note: `upgraded from Naive ${p.from} to ${p.to}` }) as Parameters<typeof record>[1]);
+      writeRecord(dir, rel, release, { agent, activity: "release", derived_from: [...new Set([...ran.flatMap((r) => [...r.moves.map((m) => m.to), ...r.rewrote]), ...(configChanged ? [CONFIG] : [])])], note: `upgraded from Naive ${p.from} to ${p.to}` });
       // Adapters installed in the venture (Z-4) are refreshed, so their copies of package skills follow the upgrade.
       release.adapters = await refreshAdapters(dir);
     }
@@ -247,8 +246,7 @@ export function setChannel(dir: string, channel: string, { reg = registry() }: {
   const experimental = Object.entries(pins(cfg)).filter(([n]) => reg.packages[n]?.channel === "experimental").map(([n]) => n);
   if (channel === "stable" && experimental.length) throw new Error(`the venture uses experimental packages (${experimental.join(", ")}): drop them first (--drop <package>)`);
   cfg.naive = { version: versionOf(dir), ...(cfg.naive ?? {}), channel };
-  writeConfig(dir, cfg);
-  record(dir, ({ entity: CONFIG, activity: "write", agent: agentFromEnv(process.env.MENTURA_ACTOR === "agent" ? "agent" : "person", "cli"), note: `channel set to ${channel} (U-5)` }) as Parameters<typeof record>[1]);
+  writeConfig(dir, cfg, { agent: agentFromEnv(process.env.MENTURA_ACTOR === "agent" ? "agent" : "person", "cli"), note: `channel set to ${channel} (U-5)` });
   return { changed: true, channel };
 }
 
@@ -270,8 +268,7 @@ export function adopt(dir: string, name: string, { reg = registry() }: { reg?: R
   if (fit?.in === "now" && info.channel !== "experimental") return { changed: false as const, name, note: `${name} already fits this phase (fit ${fit.fit}); nothing to adopt` };
   current[name] = { version: info.version, early: true, ...(info.channel === "experimental" ? { channel: "experimental" } : {}) };
   cfg.packages = Object.fromEntries(Object.entries(current).sort(([a], [b]) => a.localeCompare(b)));
-  writeConfig(dir, cfg);
-  record(dir, ({ entity: CONFIG, activity: "write", agent: agentFromEnv(process.env.MENTURA_ACTOR === "agent" ? "agent" : "person", "cli"), note: `adopted the ${name} package early (U-5)` }) as Parameters<typeof record>[1]);
+  writeConfig(dir, cfg, { agent: agentFromEnv(process.env.MENTURA_ACTOR === "agent" ? "agent" : "person", "cli"), note: `adopted the ${name} package early (U-5)` });
   return { changed: true as const, name, version: info.version, channel: info.channel, fit: fit?.fit ?? null };
 }
 
@@ -282,8 +279,7 @@ export function drop(dir: string, name: string) {
   if (!current[name]?.early) throw new Error(`${name} was not adopted early, so there is nothing to drop`);
   delete current[name];
   cfg.packages = current;
-  writeConfig(dir, cfg);
-  record(dir, ({ entity: CONFIG, activity: "write", agent: agentFromEnv(process.env.MENTURA_ACTOR === "agent" ? "agent" : "person", "cli"), note: `dropped the early adoption of ${name} (U-5)` }) as Parameters<typeof record>[1]);
+  writeConfig(dir, cfg, { agent: agentFromEnv(process.env.MENTURA_ACTOR === "agent" ? "agent" : "person", "cli"), note: `dropped the early adoption of ${name} (U-5)` });
   return { changed: true, name };
 }
 

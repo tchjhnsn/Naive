@@ -210,6 +210,7 @@ import { naiveScript, PACKAGE_ROOT } from "../../core/scripts.ts";
 import { validateFile } from "../../records/validate.ts";
 import type { VentureRole, VentureTypes } from "../../records/types/records.d.ts";
 import { blockingStdio } from "../../core/stdio.ts";
+import { programWriter, writeRecord, writerFromEnv } from "../../store/record-write.ts";
 
 blockingStdio();
 const repo = new URL("../../../../..", import.meta.url).pathname;
@@ -239,7 +240,7 @@ async function schemaFor(file: string): Promise<string | null> {
 async function dev(dir: string): Promise<void> {
   // The root layout is required (I-21): a venture without AGENTS.md gets a stub, as next dev writes a root layout.
   if (!existsSync(join(dir, "AGENTS.md"))) {
-    writeFileSync(join(dir, "AGENTS.md"), `# AGENTS.md: ${basename(dir)}\n\nThe map of this venture for agents. Read it, then a route's layout, before writing anything here.\n\n- ${CODE_OVER_DOCS}\n\n## Instructions\n\nphase: ${JSON.parse(readFileSync(join(dir, "venture.json"), "utf8")).phase}\nprivate: _private/\n`);
+    writeRecord(dir, "AGENTS.md", `# AGENTS.md: ${basename(dir)}\n\nThe map of this venture for agents. Read it, then a route's layout, before writing anything here.\n\n- ${CODE_OVER_DOCS}\n\n## Instructions\n\nphase: ${JSON.parse(readFileSync(join(dir, "venture.json"), "utf8")).phase}\nprivate: _private/\n`, { agent: programWriter("naive-dev"), activity: "create", note: "the root layout stub naive dev writes when AGENTS.md is missing" });
     console.log("   wrote AGENTS.md, the venture's root layout, because it was missing");
   }
   const { workspace, venture } = asRouted(dir);
@@ -362,7 +363,7 @@ function upgradeFramework(dir: string): number {
     const pin = deps[name].replace(/#.*$/, `#${head}`);
     const j = JSON.parse(readFileSync(pkg, "utf8"));
     for (const k of ["devDependencies", "dependencies"]) if (j[k]?.[name]) j[k][name] = pin;
-    writeFileSync(pkg, JSON.stringify(j, null, 2) + "\n");
+    writeRecord(dir, "package.json", j, { agent: writerFromEnv("cli"), note: `pinned the framework to ${pin}` });
     console.log(`updating the framework: pinned ${pin}; npm install --no-save ${PACKAGE_ROOT}`);
     return spawnSync("npm", ["install", "--no-save", PACKAGE_ROOT], { cwd: dir, stdio: "inherit" }).status ?? 1;
   }

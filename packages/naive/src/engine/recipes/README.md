@@ -59,8 +59,8 @@ The signal pull ([`packages/naive/src/router/orchestration/signals.ts`](../../ro
 | [`sandbox-test.ts`](./sandbox-test.ts) | The sandbox's tests. |
 | [`outcomes.ts`](./outcomes.ts) | Pure. Who settles what: `settledSignals`, `settledRecord`, `forecastOutcome`, `baselineRecord` (the plain fold), `claimKey`, and `recipeInput`, what a recipe is given at a point. |
 | [`scoring.ts`](./scoring.ts) | Pure. `fieldLoss`, `brier`, `rowLoss`, `fieldLosses`, `settledLoss`, `seeded` (sfc32 from a sha), `blockBootstrap` and `verdict`. |
-| [`eval-set.ts`](./eval-set.ts) | Reads the venture and runs the sandbox: `loadSignals`, `recordTypeFor`, `drawWindows`, `planRecipe`, `loadPlan`, `loadEvalSet`, `evaluate` (with ablation), `checkRecipe`, `recipeSize` and `scoreExperiment`. |
-| [`starter.ts`](./starter.ts) | `starterData` and `starterRecipe(types, pattern)`, the starter's source, and `initRecipe(dir, pattern, { by })`, `naive recipes init`. |
+| [`eval-set.ts`](./eval-set.ts) | Reads the venture and runs the sandbox: `loadSignals`, `recordTypeFor`, `drawWindows`, `planRecipe`, `loadPlan`, `loadEvalSet`, `evaluate` (with ablation), `checkRecipe`, `recipeSize` and `scoreExperiment`. The plan and the frozen eval set are written through the shared record writer (`../../store/record-write.ts`). |
+| [`starter.ts`](./starter.ts) | `starterData` and `starterRecipe(types, pattern)`, the starter's source, and `initRecipe(dir, pattern, { by })`, `naive recipes init`. The recipe is written through the shared record writer (`../../store/record-write.ts`). |
 | [`render.ts`](./render.ts) | What the signal pull decides about recipes: `projectedPatterns`, `patternType`, `liveRecipes`, `renderSubjects`, `producerShares`, `receptionsDoc`, `sameReceptions`, `factsAsOf`, `hindsightDue` and `hindsightDoc`. |
 | [`cli.ts`](./cli.ts) | `naive recipes init`, `naive recipes plan` and `naive recipes check`. |
 | [`scoring-test.ts`](./scoring-test.ts) | The pure tests: losses, Brier, the bootstrap and verdict, and outcomes only people and producers resolve. |

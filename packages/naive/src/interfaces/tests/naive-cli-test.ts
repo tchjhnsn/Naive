@@ -45,7 +45,7 @@ t("naive help lists naive's commands and the record commands, named naive", () =
 t("naive check runs every checker that reads a venture, and honours checks.off and checks.warn", () => {
   const checks = fileURLToPath(new URL("../../checks/", import.meta.url));
   // The checkers of Naive's own files, and the ones that need an argument a venture folder does not give.
-  const notVenture = new Set(["check-activities", "check-boundary", "check-canary", "check-data-model", "check-docs-claims", "check-evals", "check-functions", "check-integrations",
+  const notVenture = new Set(["check-activities", "check-boundary", "check-canary", "check-data-model", "check-direct-writes", "check-docs-claims", "check-evals", "check-functions", "check-integrations",
     "check-language-rubric", "check-nextjs-status", "check-nouns", "check-pcf", "check-pcf-coverage", "check-phases", "check-ready", "check-record-paths", "check-sdlc-catalog", "check-seams", "check-tools",
     "check-types", "check-visibility-rubric", "check-visibility", "check-write-scope"]);
   const all = readdirSync(checks).filter((f) => /^(check|lint)-[a-z-]+\.ts$/.test(f) && !f.endsWith("-test.ts")).map((f) => f.replace(/\.ts$/, ""));
