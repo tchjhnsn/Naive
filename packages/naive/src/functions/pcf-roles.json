@@ -74,7 +74,11 @@
     {"id": "11.3", "roles": [{"role": "compliance-officer", "raci": "accountable"}]},
     {"id": "11.4", "roles": [{"role": "business-continuity-planner", "raci": "accountable"}]},
     {"id": "12.0", "roles": [{"role": "strategy-lead", "raci": "accountable"}]},
+    {"id": "12.1", "roles": [{"role": "fundraising-manager", "raci": "accountable"}]},
+    {"id": "12.2", "roles": [{"role": "public-relations-manager", "raci": "accountable"}]},
+    {"id": "12.3", "roles": [{"role": "executive-secretary", "raci": "accountable"}]},
     {"id": "12.4", "roles": [{"role": "counsel", "raci": "responsible"}]},
+    {"id": "12.5", "roles": [{"role": "public-relations-specialist", "raci": "accountable"}]},
     {"id": "13.0", "roles": [{"role": "strategy-lead", "raci": "accountable"}, {"role": "chief-of-staff", "raci": "responsible"}, {"role": "domain-lead", "raci": "responsible"}]},
     {"id": "13.5", "roles": [{"role": "domain-lead", "raci": "responsible"}]}
   ]

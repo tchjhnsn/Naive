@@ -1,0 +1,60 @@
+{
+  "id": "fundraising-manager",
+  "name": "Fundraising manager",
+  "kind": "either",
+  "status": "durable",
+  "function": "external-relationships",
+  "description": "Builds investor relationships (APQC 12.1): keeps the investor records, prepares each raise's materials and the pitch deck, writes the periodic investor update, and readies every contact and term for the founder, who holds the relationship and decides.",
+  "grantable_classes": [],
+  "default_tier": "frontier",
+  "lint_suites": [],
+  "verified_by": "strategy-lead",
+  "skill": "packages/naive/src/functions/external-relationships/skills/build-investor-relationships/SKILL.md",
+  "pcf": [
+    {
+      "id": "12.1",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "11-2033.00",
+      "title": "Fundraising Managers",
+      "basis": "For a young venture APQC 12.1 is mostly finding, courting and reporting to investors and lenders, which is the raising of money and the donor relations O*NET describes for fundraising managers; chosen over the --complete suggestions, which are public relations and sales roles. A listed company's analyst relations would fit public relations managers better, so a person should confirm.",
+      "by": "agent, EE-250 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "raise",
+    "money-summary",
+    "budget",
+    "ownership"
+  ],
+  "artifacts": [
+    {
+      "record_type": "investor"
+    },
+    {
+      "record_type": "stakeholder-update"
+    },
+    {
+      "document_kind": "pitch-deck"
+    }
+  ],
+  "standards": [
+    "apqc-pcf-cross-industry",
+    "sec-regulation-s-k"
+  ],
+  "research": {
+    "methods": [
+      "stakeholder",
+      "organizational",
+      "practitioner"
+    ],
+    "questions": [
+      "Which investors fit the venture's stage, sector and ask?",
+      "What has changed since the last update investors received?"
+    ]
+  },
+  "level": 5
+}

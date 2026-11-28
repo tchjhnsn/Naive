@@ -1,0 +1,47 @@
+{
+  "id": "public-relations-manager",
+  "name": "Public relations manager",
+  "kind": "either",
+  "status": "durable",
+  "function": "external-relationships",
+  "description": "Manages government and industry relationships (APQC 12.2): maps the government bodies, regulators and trade groups that bear on the venture, tracks what they are doing, prepares each meeting and position, and keeps the record of contacts for the founder, who holds the relationships.",
+  "grantable_classes": [],
+  "default_tier": "frontier",
+  "lint_suites": [],
+  "verified_by": "strategy-lead",
+  "skill": "packages/naive/src/functions/external-relationships/skills/manage-government-and-industry-relationships/SKILL.md",
+  "pcf": [
+    {
+      "id": "12.2",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "11-2032.00",
+      "title": "Public Relations Managers",
+      "basis": "APQC 12.2 is relations with government, quasi-government bodies and trade groups and lobby activities, and O*NET's public relations managers plan and direct an organization's relations with the public and its officials; the first --complete suggestion among roles a business would staff. O*NET has no lobbyist or government relations occupation, so a person should confirm.",
+      "by": "agent, EE-250 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "obligation",
+    "goal"
+  ],
+  "artifacts": [],
+  "standards": [
+    "apqc-pcf-cross-industry"
+  ],
+  "research": {
+    "methods": [
+      "stakeholder",
+      "standards",
+      "organizational"
+    ],
+    "questions": [
+      "Which government bodies and trade groups can change the venture's market?",
+      "What position does the venture hold on each matter before them?"
+    ]
+  },
+  "level": 5
+}
