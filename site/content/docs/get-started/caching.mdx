@@ -61,7 +61,7 @@ A write never reads from the cache and never stores in it. Only reads use it: `r
 
 A route is cached only when something declares it. Packages declare it in their definition with `use_cache`, the Naive form of the `use cache` directive. The decisions package declares the decision list:
 
-```json title="library/packages/decisions/package.json"
+```json title="packages/naive/library/packages/decisions/package.json"
 "use_cache": [
   { "route": "governance/decisions", "level": "record", "life": "minutes", "vary": ["hour", "env:DECISIONS_NOW"] }
 ]
