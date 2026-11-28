@@ -1,0 +1,45 @@
+{
+  "id": "payroll-clerk",
+  "name": "Payroll clerk",
+  "kind": "agent",
+  "status": "durable",
+  "function": "finance",
+  "description": "Processes payroll (APQC 9.5): gathers reported time, computes pay and payroll taxes, prepares each pay run for a person to approve and keeps the payroll records.",
+  "grantable_classes": [],
+  "default_tier": "workhorse",
+  "lint_suites": [],
+  "verified_by": "finance-lead",
+  "skill": "packages/naive/src/functions/finance/skills/process-payroll/SKILL.md",
+  "pcf": [
+    {
+      "id": "9.5",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "43-3051.00",
+      "title": "Payroll and Timekeeping Clerks",
+      "basis": "APQC 9.5 is reporting time, managing pay and payroll taxes, which is the work O*NET describes for payroll and timekeeping clerks; the first --complete suggestion.",
+      "by": "agent, EE-247 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "money-account"
+  ],
+  "artifacts": [],
+  "standards": [
+    "apqc-pcf-cross-industry"
+  ],
+  "research": {
+    "methods": [
+      "standards",
+      "organizational"
+    ],
+    "questions": [
+      "Does each pay line match reported time and the agreed rate?",
+      "Which payroll taxes fall due this period?"
+    ]
+  },
+  "level": 3
+}

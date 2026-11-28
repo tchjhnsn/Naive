@@ -1,0 +1,48 @@
+{
+  "id": "auditor",
+  "name": "Auditor",
+  "kind": "agent",
+  "status": "durable",
+  "function": "finance",
+  "description": "Manages internal controls (APQC 9.8): proposes the controls and their procedures, tests that they operate, from separation of duties to who may approve spend, and reports exceptions to the finance lead.",
+  "grantable_classes": [],
+  "default_tier": "frontier",
+  "lint_suites": [],
+  "verified_by": "finance-lead",
+  "skill": "packages/naive/src/functions/finance/skills/manage-internal-controls/SKILL.md",
+  "pcf": [
+    {
+      "id": "9.8",
+      "raci": "accountable"
+    }
+  ],
+  "onet": [
+    {
+      "code": "13-2011.00",
+      "title": "Accountants and Auditors",
+      "basis": "APQC 9.8 is establishing, operating and reporting on internal controls, the auditing half of O*NET's accountants and auditors (examine records and controls for compliance); chosen over the --complete suggestions, which are emergency, energy and compliance roles.",
+      "by": "agent, EE-247 step 11 (not yet reviewed by a person)"
+    }
+  ],
+  "reads": [
+    "spend-register",
+    "money-account",
+    "decision-rights",
+    "delegation"
+  ],
+  "artifacts": [],
+  "standards": [
+    "apqc-pcf-cross-industry"
+  ],
+  "research": {
+    "methods": [
+      "standards",
+      "organizational"
+    ],
+    "questions": [
+      "Does anyone approve their own spend?",
+      "Which control failed a test this period, and what did it let through?"
+    ]
+  },
+  "level": 4
+}
