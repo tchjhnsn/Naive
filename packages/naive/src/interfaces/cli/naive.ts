@@ -113,6 +113,10 @@
 //   naive prereg result <id> --measure <m>=<value> [--evidence <ref>] [--by <person>]
 //                                                   what was observed for one measure, with its pass or fail against
 //                                                   the registered threshold; the verdict over the test is a person's
+//   naive staffing [status|draft|apply] [--json]   the specification gates, SAD's 0A to 1B asked of the venture's records,
+//                                                   then the staffing plan: draft files one decision a lead drafts with
+//                                                   proposed workers, refused while a gate is missing, and apply --by
+//                                                   <person> activates the chosen ones once a person decides (EE-236)
 //   naive owners [--function <id>] [--level <n>] [--json]
 //                                                   the accountable owner of each APQC element the venture runs, a
 //                                                   person or an agent, and where it came from (EE-187)
@@ -622,6 +626,11 @@ else if (cmd === "build" || cmd === "start") {
   // resume are a person's, and so is promote.
   const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
   process.exit(run("packages/naive/src/engine/agents/workers.ts", [here(), ...(args.length ? args : ["list"])]));
+} else if (cmd === "staffing") {
+  // The specification gates and the staffing gate (EE-236, packages/naive/src/engine/staffing.ts). status reads only;
+  // draft is a lead's; apply is a person's.
+  const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
+  process.exit(run("packages/naive/src/engine/staffing.ts", [here(), ...(args.length ? args : ["status"])]));
 } else if (cmd === "owners") {
   // Who is accountable for each element of APQC's framework (packages/naive/src/engine/element-owners.ts, EE-187).
   const args = rest.filter((a, i) => a !== "--venture" && rest[i - 1] !== "--venture");
